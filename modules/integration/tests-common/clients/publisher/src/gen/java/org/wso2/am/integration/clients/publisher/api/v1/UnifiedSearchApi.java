@@ -56,7 +56,7 @@ public class UnifiedSearchApi {
     }
 
     /**
-     * Build call for searchGet
+     * Build call for search
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query **Search**.  You can search by proving a keyword.  (optional)
@@ -72,7 +72,7 @@ public class UnifiedSearchApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call searchGetCall(Integer limit, Integer offset, String query, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call searchCall(Integer limit, Integer offset, String query, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -118,10 +118,10 @@ public class UnifiedSearchApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call searchGetValidateBeforeCall(Integer limit, Integer offset, String query, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call searchValidateBeforeCall(Integer limit, Integer offset, String query, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = searchGetCall(limit, offset, query, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = searchCall(limit, offset, query, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -143,8 +143,8 @@ public class UnifiedSearchApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public SearchResultListDTO searchGet(Integer limit, Integer offset, String query, String ifNoneMatch) throws ApiException {
-        ApiResponse<SearchResultListDTO> localVarResp = searchGetWithHttpInfo(limit, offset, query, ifNoneMatch);
+    public SearchResultListDTO search(Integer limit, Integer offset, String query, String ifNoneMatch) throws ApiException {
+        ApiResponse<SearchResultListDTO> localVarResp = searchWithHttpInfo(limit, offset, query, ifNoneMatch);
         return localVarResp.getData();
     }
 
@@ -165,8 +165,8 @@ public class UnifiedSearchApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<SearchResultListDTO> searchGetWithHttpInfo(Integer limit, Integer offset, String query, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = searchGetValidateBeforeCall(limit, offset, query, ifNoneMatch, null);
+    public ApiResponse<SearchResultListDTO> searchWithHttpInfo(Integer limit, Integer offset, String query, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = searchValidateBeforeCall(limit, offset, query, ifNoneMatch, null);
         Type localVarReturnType = new TypeToken<SearchResultListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -189,9 +189,9 @@ public class UnifiedSearchApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call searchGetAsync(Integer limit, Integer offset, String query, String ifNoneMatch, final ApiCallback<SearchResultListDTO> _callback) throws ApiException {
+    public okhttp3.Call searchAsync(Integer limit, Integer offset, String query, String ifNoneMatch, final ApiCallback<SearchResultListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = searchGetValidateBeforeCall(limit, offset, query, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = searchValidateBeforeCall(limit, offset, query, ifNoneMatch, _callback);
         Type localVarReturnType = new TypeToken<SearchResultListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

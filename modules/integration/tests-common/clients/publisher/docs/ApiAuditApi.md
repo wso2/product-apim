@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apisApiIdAuditapiGet**](ApiAuditApi.md#apisApiIdAuditapiGet) | **GET** /apis/{apiId}/auditapi | Retrieve the Security Audit Report of the Audit API
+[**getAuditReportOfAPI**](ApiAuditApi.md#getAuditReportOfAPI) | **GET** /apis/{apiId}/auditapi | Retrieve the Security Audit Report of the Audit API
 
 
-<a name="apisApiIdAuditapiGet"></a>
-# **apisApiIdAuditapiGet**
-> AuditReportDTO apisApiIdAuditapiGet(apiId, accept)
+<a name="getAuditReportOfAPI"></a>
+# **getAuditReportOfAPI**
+> AuditReportDTO getAuditReportOfAPI(apiId, accept)
 
 Retrieve the Security Audit Report of the Audit API
 
@@ -38,10 +38,10 @@ public class Example {
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
     try {
-      AuditReportDTO result = apiInstance.apisApiIdAuditapiGet(apiId, accept);
+      AuditReportDTO result = apiInstance.getAuditReportOfAPI(apiId, accept);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiAuditApi#apisApiIdAuditapiGet");
+      System.err.println("Exception when calling ApiAuditApi#getAuditReportOfAPI");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

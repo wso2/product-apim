@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**keyManagersGet**](KeyManagersCollectionApi.md#keyManagersGet) | **GET** /key-managers | Get All Key Managers
+[**getAllKeyManagers**](KeyManagersCollectionApi.md#getAllKeyManagers) | **GET** /key-managers | Get All Key Managers
 
 
-<a name="keyManagersGet"></a>
-# **keyManagersGet**
-> KeyManagerListDTO keyManagersGet()
+<a name="getAllKeyManagers"></a>
+# **getAllKeyManagers**
+> KeyManagerListDTO getAllKeyManagers()
 
 Get All Key Managers
 
@@ -36,10 +36,10 @@ public class Example {
 
     KeyManagersCollectionApi apiInstance = new KeyManagersCollectionApi(defaultClient);
     try {
-      KeyManagerListDTO result = apiInstance.keyManagersGet();
+      KeyManagerListDTO result = apiInstance.getAllKeyManagers();
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling KeyManagersCollectionApi#keyManagersGet");
+      System.err.println("Exception when calling KeyManagersCollectionApi#getAllKeyManagers");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

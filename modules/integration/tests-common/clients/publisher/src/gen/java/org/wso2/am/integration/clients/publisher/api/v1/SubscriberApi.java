@@ -56,7 +56,7 @@ public class SubscriberApi {
     }
 
     /**
-     * Build call for subscriptionsSubscriptionIdSubscriberInfoGet
+     * Build call for getSubscriberInfoBySubscriptionId
      * @param subscriptionId Subscription Id  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -68,7 +68,7 @@ public class SubscriberApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call subscriptionsSubscriptionIdSubscriberInfoGetCall(String subscriptionId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getSubscriberInfoBySubscriptionIdCall(String subscriptionId, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -99,15 +99,15 @@ public class SubscriberApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call subscriptionsSubscriptionIdSubscriberInfoGetValidateBeforeCall(String subscriptionId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getSubscriberInfoBySubscriptionIdValidateBeforeCall(String subscriptionId, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'subscriptionId' is set
         if (subscriptionId == null) {
-            throw new ApiException("Missing the required parameter 'subscriptionId' when calling subscriptionsSubscriptionIdSubscriberInfoGet(Async)");
+            throw new ApiException("Missing the required parameter 'subscriptionId' when calling getSubscriberInfoBySubscriptionId(Async)");
         }
         
 
-        okhttp3.Call localVarCall = subscriptionsSubscriptionIdSubscriberInfoGetCall(subscriptionId, _callback);
+        okhttp3.Call localVarCall = getSubscriberInfoBySubscriptionIdCall(subscriptionId, _callback);
         return localVarCall;
 
     }
@@ -125,8 +125,8 @@ public class SubscriberApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public SubscriberInfoDTO subscriptionsSubscriptionIdSubscriberInfoGet(String subscriptionId) throws ApiException {
-        ApiResponse<SubscriberInfoDTO> localVarResp = subscriptionsSubscriptionIdSubscriberInfoGetWithHttpInfo(subscriptionId);
+    public SubscriberInfoDTO getSubscriberInfoBySubscriptionId(String subscriptionId) throws ApiException {
+        ApiResponse<SubscriberInfoDTO> localVarResp = getSubscriberInfoBySubscriptionIdWithHttpInfo(subscriptionId);
         return localVarResp.getData();
     }
 
@@ -143,8 +143,8 @@ public class SubscriberApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<SubscriberInfoDTO> subscriptionsSubscriptionIdSubscriberInfoGetWithHttpInfo(String subscriptionId) throws ApiException {
-        okhttp3.Call localVarCall = subscriptionsSubscriptionIdSubscriberInfoGetValidateBeforeCall(subscriptionId, null);
+    public ApiResponse<SubscriberInfoDTO> getSubscriberInfoBySubscriptionIdWithHttpInfo(String subscriptionId) throws ApiException {
+        okhttp3.Call localVarCall = getSubscriberInfoBySubscriptionIdValidateBeforeCall(subscriptionId, null);
         Type localVarReturnType = new TypeToken<SubscriberInfoDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -163,9 +163,9 @@ public class SubscriberApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call subscriptionsSubscriptionIdSubscriberInfoGetAsync(String subscriptionId, final ApiCallback<SubscriberInfoDTO> _callback) throws ApiException {
+    public okhttp3.Call getSubscriberInfoBySubscriptionIdAsync(String subscriptionId, final ApiCallback<SubscriberInfoDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = subscriptionsSubscriptionIdSubscriberInfoGetValidateBeforeCall(subscriptionId, _callback);
+        okhttp3.Call localVarCall = getSubscriberInfoBySubscriptionIdValidateBeforeCall(subscriptionId, _callback);
         Type localVarReturnType = new TypeToken<SubscriberInfoDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

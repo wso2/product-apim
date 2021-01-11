@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apisApiIdAmznResourceNamesGet**](AwsLambdaIndividualApi.md#apisApiIdAmznResourceNamesGet) | **GET** /apis/{apiId}/amznResourceNames | Retrieve the ARNs of AWS Lambda Functions
+[**getAmazonResourceNamesOfAPI**](AwsLambdaIndividualApi.md#getAmazonResourceNamesOfAPI) | **GET** /apis/{apiId}/amznResourceNames | Retrieve the ARNs of AWS Lambda Functions
 
 
-<a name="apisApiIdAmznResourceNamesGet"></a>
-# **apisApiIdAmznResourceNamesGet**
-> String apisApiIdAmznResourceNamesGet(apiId)
+<a name="getAmazonResourceNamesOfAPI"></a>
+# **getAmazonResourceNamesOfAPI**
+> String getAmazonResourceNamesOfAPI(apiId)
 
 Retrieve the ARNs of AWS Lambda Functions
 
@@ -37,10 +37,10 @@ public class Example {
     AwsLambdaIndividualApi apiInstance = new AwsLambdaIndividualApi(defaultClient);
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     try {
-      String result = apiInstance.apisApiIdAmznResourceNamesGet(apiId);
+      String result = apiInstance.getAmazonResourceNamesOfAPI(apiId);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling AwsLambdaIndividualApi#apisApiIdAmznResourceNamesGet");
+      System.err.println("Exception when calling AwsLambdaIndividualApi#getAmazonResourceNamesOfAPI");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

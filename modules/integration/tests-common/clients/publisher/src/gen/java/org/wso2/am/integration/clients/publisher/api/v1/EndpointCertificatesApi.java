@@ -59,32 +59,44 @@ public class EndpointCertificatesApi {
     }
 
     /**
-     * Build call for endpointCertificatesAliasContentGet
-     * @param alias  (required)
+     * Build call for addEndpointCertificate
+     * @param certificate The certificate that needs to be uploaded. (required)
+     * @param alias Alias for the certificate (required)
+     * @param endpoint Endpoint to which the certificate should be applied. (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate added successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesAliasContentGetCall(String alias, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call addEndpointCertificateCall(File certificate, String alias, String endpoint, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/endpoint-certificates/{alias}/content"
-            .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()));
+        String localVarPath = "/endpoint-certificates";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (certificate != null) {
+            localVarFormParams.put("certificate", certificate);
+        }
+
+        if (alias != null) {
+            localVarFormParams.put("alias", alias);
+        }
+
+        if (endpoint != null) {
+            localVarFormParams.put("endpoint", endpoint);
+        }
+
         final String[] localVarAccepts = {
             "application/json"
         };
@@ -94,91 +106,108 @@ public class EndpointCertificatesApi {
         }
 
         final String[] localVarContentTypes = {
-            
+            "multipart/form-data"
         };
         final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call endpointCertificatesAliasContentGetValidateBeforeCall(String alias, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call addEndpointCertificateValidateBeforeCall(File certificate, String alias, String endpoint, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'certificate' is set
+        if (certificate == null) {
+            throw new ApiException("Missing the required parameter 'certificate' when calling addEndpointCertificate(Async)");
+        }
         
         // verify the required parameter 'alias' is set
         if (alias == null) {
-            throw new ApiException("Missing the required parameter 'alias' when calling endpointCertificatesAliasContentGet(Async)");
+            throw new ApiException("Missing the required parameter 'alias' when calling addEndpointCertificate(Async)");
+        }
+        
+        // verify the required parameter 'endpoint' is set
+        if (endpoint == null) {
+            throw new ApiException("Missing the required parameter 'endpoint' when calling addEndpointCertificate(Async)");
         }
         
 
-        okhttp3.Call localVarCall = endpointCertificatesAliasContentGetCall(alias, _callback);
+        okhttp3.Call localVarCall = addEndpointCertificateCall(certificate, alias, endpoint, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Download a Certificate
-     * This operation can be used to download a certificate which matches the given alias. 
-     * @param alias  (required)
+     * Upload a new Certificate.
+     * This operation can be used to upload a new certificate for an endpoint. 
+     * @param certificate The certificate that needs to be uploaded. (required)
+     * @param alias Alias for the certificate (required)
+     * @param endpoint Endpoint to which the certificate should be applied. (required)
+     * @return CertMetadataDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate added successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public void endpointCertificatesAliasContentGet(String alias) throws ApiException {
-        endpointCertificatesAliasContentGetWithHttpInfo(alias);
+    public CertMetadataDTO addEndpointCertificate(File certificate, String alias, String endpoint) throws ApiException {
+        ApiResponse<CertMetadataDTO> localVarResp = addEndpointCertificateWithHttpInfo(certificate, alias, endpoint);
+        return localVarResp.getData();
     }
 
     /**
-     * Download a Certificate
-     * This operation can be used to download a certificate which matches the given alias. 
-     * @param alias  (required)
-     * @return ApiResponse&lt;Void&gt;
+     * Upload a new Certificate.
+     * This operation can be used to upload a new certificate for an endpoint. 
+     * @param certificate The certificate that needs to be uploaded. (required)
+     * @param alias Alias for the certificate (required)
+     * @param endpoint Endpoint to which the certificate should be applied. (required)
+     * @return ApiResponse&lt;CertMetadataDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate added successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> endpointCertificatesAliasContentGetWithHttpInfo(String alias) throws ApiException {
-        okhttp3.Call localVarCall = endpointCertificatesAliasContentGetValidateBeforeCall(alias, null);
-        return localVarApiClient.execute(localVarCall);
+    public ApiResponse<CertMetadataDTO> addEndpointCertificateWithHttpInfo(File certificate, String alias, String endpoint) throws ApiException {
+        okhttp3.Call localVarCall = addEndpointCertificateValidateBeforeCall(certificate, alias, endpoint, null);
+        Type localVarReturnType = new TypeToken<CertMetadataDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Download a Certificate (asynchronously)
-     * This operation can be used to download a certificate which matches the given alias. 
-     * @param alias  (required)
+     * Upload a new Certificate. (asynchronously)
+     * This operation can be used to upload a new certificate for an endpoint. 
+     * @param certificate The certificate that needs to be uploaded. (required)
+     * @param alias Alias for the certificate (required)
+     * @param endpoint Endpoint to which the certificate should be applied. (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate added successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesAliasContentGetAsync(String alias, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call addEndpointCertificateAsync(File certificate, String alias, String endpoint, final ApiCallback<CertMetadataDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = endpointCertificatesAliasContentGetValidateBeforeCall(alias, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
+        okhttp3.Call localVarCall = addEndpointCertificateValidateBeforeCall(certificate, alias, endpoint, _callback);
+        Type localVarReturnType = new TypeToken<CertMetadataDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for endpointCertificatesAliasDelete
+     * Build call for deleteEndpointCertificateByAlias
      * @param alias The alias of the certificate that should be deleted.  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -192,7 +221,7 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesAliasDeleteCall(String alias, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call deleteEndpointCertificateByAliasCall(String alias, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -223,15 +252,15 @@ public class EndpointCertificatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call endpointCertificatesAliasDeleteValidateBeforeCall(String alias, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call deleteEndpointCertificateByAliasValidateBeforeCall(String alias, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'alias' is set
         if (alias == null) {
-            throw new ApiException("Missing the required parameter 'alias' when calling endpointCertificatesAliasDelete(Async)");
+            throw new ApiException("Missing the required parameter 'alias' when calling deleteEndpointCertificateByAlias(Async)");
         }
         
 
-        okhttp3.Call localVarCall = endpointCertificatesAliasDeleteCall(alias, _callback);
+        okhttp3.Call localVarCall = deleteEndpointCertificateByAliasCall(alias, _callback);
         return localVarCall;
 
     }
@@ -250,8 +279,8 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public void endpointCertificatesAliasDelete(String alias) throws ApiException {
-        endpointCertificatesAliasDeleteWithHttpInfo(alias);
+    public void deleteEndpointCertificateByAlias(String alias) throws ApiException {
+        deleteEndpointCertificateByAliasWithHttpInfo(alias);
     }
 
     /**
@@ -269,8 +298,8 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> endpointCertificatesAliasDeleteWithHttpInfo(String alias) throws ApiException {
-        okhttp3.Call localVarCall = endpointCertificatesAliasDeleteValidateBeforeCall(alias, null);
+    public ApiResponse<Void> deleteEndpointCertificateByAliasWithHttpInfo(String alias) throws ApiException {
+        okhttp3.Call localVarCall = deleteEndpointCertificateByAliasValidateBeforeCall(alias, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -290,14 +319,14 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesAliasDeleteAsync(String alias, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call deleteEndpointCertificateByAliasAsync(String alias, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = endpointCertificatesAliasDeleteValidateBeforeCall(alias, _callback);
+        okhttp3.Call localVarCall = deleteEndpointCertificateByAliasValidateBeforeCall(alias, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
-     * Build call for endpointCertificatesAliasGet
+     * Build call for getEndpointCertificateByAlias
      * @param alias  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -311,7 +340,7 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesAliasGetCall(String alias, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getEndpointCertificateByAliasCall(String alias, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -342,15 +371,15 @@ public class EndpointCertificatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call endpointCertificatesAliasGetValidateBeforeCall(String alias, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getEndpointCertificateByAliasValidateBeforeCall(String alias, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'alias' is set
         if (alias == null) {
-            throw new ApiException("Missing the required parameter 'alias' when calling endpointCertificatesAliasGet(Async)");
+            throw new ApiException("Missing the required parameter 'alias' when calling getEndpointCertificateByAlias(Async)");
         }
         
 
-        okhttp3.Call localVarCall = endpointCertificatesAliasGetCall(alias, _callback);
+        okhttp3.Call localVarCall = getEndpointCertificateByAliasCall(alias, _callback);
         return localVarCall;
 
     }
@@ -370,8 +399,8 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public CertificateInfoDTO endpointCertificatesAliasGet(String alias) throws ApiException {
-        ApiResponse<CertificateInfoDTO> localVarResp = endpointCertificatesAliasGetWithHttpInfo(alias);
+    public CertificateInfoDTO getEndpointCertificateByAlias(String alias) throws ApiException {
+        ApiResponse<CertificateInfoDTO> localVarResp = getEndpointCertificateByAliasWithHttpInfo(alias);
         return localVarResp.getData();
     }
 
@@ -390,8 +419,8 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<CertificateInfoDTO> endpointCertificatesAliasGetWithHttpInfo(String alias) throws ApiException {
-        okhttp3.Call localVarCall = endpointCertificatesAliasGetValidateBeforeCall(alias, null);
+    public ApiResponse<CertificateInfoDTO> getEndpointCertificateByAliasWithHttpInfo(String alias) throws ApiException {
+        okhttp3.Call localVarCall = getEndpointCertificateByAliasValidateBeforeCall(alias, null);
         Type localVarReturnType = new TypeToken<CertificateInfoDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -412,34 +441,33 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesAliasGetAsync(String alias, final ApiCallback<CertificateInfoDTO> _callback) throws ApiException {
+    public okhttp3.Call getEndpointCertificateByAliasAsync(String alias, final ApiCallback<CertificateInfoDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = endpointCertificatesAliasGetValidateBeforeCall(alias, _callback);
+        okhttp3.Call localVarCall = getEndpointCertificateByAliasValidateBeforeCall(alias, _callback);
         Type localVarReturnType = new TypeToken<CertificateInfoDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for endpointCertificatesAliasPut
-     * @param alias Alias for the certificate (required)
-     * @param certificate The certificate that needs to be uploaded. (required)
+     * Build call for getEndpointCertificateContentByAlias
+     * @param alias  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesAliasPutCall(String alias, File certificate, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getEndpointCertificateContentByAliasCall(String alias, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/endpoint-certificates/{alias}"
+        String localVarPath = "/endpoint-certificates/{alias}/content"
             .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -447,10 +475,6 @@ public class EndpointCertificatesApi {
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        if (certificate != null) {
-            localVarFormParams.put("certificate", certificate);
-        }
-
         final String[] localVarAccepts = {
             "application/json"
         };
@@ -460,103 +484,91 @@ public class EndpointCertificatesApi {
         }
 
         final String[] localVarContentTypes = {
-            "multipart/form-data"
+            
         };
         final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call endpointCertificatesAliasPutValidateBeforeCall(String alias, File certificate, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getEndpointCertificateContentByAliasValidateBeforeCall(String alias, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'alias' is set
         if (alias == null) {
-            throw new ApiException("Missing the required parameter 'alias' when calling endpointCertificatesAliasPut(Async)");
-        }
-        
-        // verify the required parameter 'certificate' is set
-        if (certificate == null) {
-            throw new ApiException("Missing the required parameter 'certificate' when calling endpointCertificatesAliasPut(Async)");
+            throw new ApiException("Missing the required parameter 'alias' when calling getEndpointCertificateContentByAlias(Async)");
         }
         
 
-        okhttp3.Call localVarCall = endpointCertificatesAliasPutCall(alias, certificate, _callback);
+        okhttp3.Call localVarCall = getEndpointCertificateContentByAliasCall(alias, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Update a certificate.
-     * This operation can be used to update an uploaded certificate. 
-     * @param alias Alias for the certificate (required)
-     * @param certificate The certificate that needs to be uploaded. (required)
-     * @return CertMetadataDTO
+     * Download a Certificate
+     * This operation can be used to download a certificate which matches the given alias. 
+     * @param alias  (required)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public CertMetadataDTO endpointCertificatesAliasPut(String alias, File certificate) throws ApiException {
-        ApiResponse<CertMetadataDTO> localVarResp = endpointCertificatesAliasPutWithHttpInfo(alias, certificate);
-        return localVarResp.getData();
+    public void getEndpointCertificateContentByAlias(String alias) throws ApiException {
+        getEndpointCertificateContentByAliasWithHttpInfo(alias);
     }
 
     /**
-     * Update a certificate.
-     * This operation can be used to update an uploaded certificate. 
-     * @param alias Alias for the certificate (required)
-     * @param certificate The certificate that needs to be uploaded. (required)
-     * @return ApiResponse&lt;CertMetadataDTO&gt;
+     * Download a Certificate
+     * This operation can be used to download a certificate which matches the given alias. 
+     * @param alias  (required)
+     * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<CertMetadataDTO> endpointCertificatesAliasPutWithHttpInfo(String alias, File certificate) throws ApiException {
-        okhttp3.Call localVarCall = endpointCertificatesAliasPutValidateBeforeCall(alias, certificate, null);
-        Type localVarReturnType = new TypeToken<CertMetadataDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    public ApiResponse<Void> getEndpointCertificateContentByAliasWithHttpInfo(String alias) throws ApiException {
+        okhttp3.Call localVarCall = getEndpointCertificateContentByAliasValidateBeforeCall(alias, null);
+        return localVarApiClient.execute(localVarCall);
     }
 
     /**
-     * Update a certificate. (asynchronously)
-     * This operation can be used to update an uploaded certificate. 
-     * @param alias Alias for the certificate (required)
-     * @param certificate The certificate that needs to be uploaded. (required)
+     * Download a Certificate (asynchronously)
+     * This operation can be used to download a certificate which matches the given alias. 
+     * @param alias  (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesAliasPutAsync(String alias, File certificate, final ApiCallback<CertMetadataDTO> _callback) throws ApiException {
+    public okhttp3.Call getEndpointCertificateContentByAliasAsync(String alias, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = endpointCertificatesAliasPutValidateBeforeCall(alias, certificate, _callback);
-        Type localVarReturnType = new TypeToken<CertMetadataDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        okhttp3.Call localVarCall = getEndpointCertificateContentByAliasValidateBeforeCall(alias, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
-     * Build call for endpointCertificatesGet
+     * Build call for getEndpointCertificates
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param alias Alias for the certificate (optional)
@@ -573,7 +585,7 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesGetCall(Integer limit, Integer offset, String alias, String endpoint, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getEndpointCertificatesCall(Integer limit, Integer offset, String alias, String endpoint, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -619,10 +631,10 @@ public class EndpointCertificatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call endpointCertificatesGetValidateBeforeCall(Integer limit, Integer offset, String alias, String endpoint, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getEndpointCertificatesValidateBeforeCall(Integer limit, Integer offset, String alias, String endpoint, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = endpointCertificatesGetCall(limit, offset, alias, endpoint, _callback);
+        okhttp3.Call localVarCall = getEndpointCertificatesCall(limit, offset, alias, endpoint, _callback);
         return localVarCall;
 
     }
@@ -645,8 +657,8 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public CertificatesDTO endpointCertificatesGet(Integer limit, Integer offset, String alias, String endpoint) throws ApiException {
-        ApiResponse<CertificatesDTO> localVarResp = endpointCertificatesGetWithHttpInfo(limit, offset, alias, endpoint);
+    public CertificatesDTO getEndpointCertificates(Integer limit, Integer offset, String alias, String endpoint) throws ApiException {
+        ApiResponse<CertificatesDTO> localVarResp = getEndpointCertificatesWithHttpInfo(limit, offset, alias, endpoint);
         return localVarResp.getData();
     }
 
@@ -668,8 +680,8 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<CertificatesDTO> endpointCertificatesGetWithHttpInfo(Integer limit, Integer offset, String alias, String endpoint) throws ApiException {
-        okhttp3.Call localVarCall = endpointCertificatesGetValidateBeforeCall(limit, offset, alias, endpoint, null);
+    public ApiResponse<CertificatesDTO> getEndpointCertificatesWithHttpInfo(Integer limit, Integer offset, String alias, String endpoint) throws ApiException {
+        okhttp3.Call localVarCall = getEndpointCertificatesValidateBeforeCall(limit, offset, alias, endpoint, null);
         Type localVarReturnType = new TypeToken<CertificatesDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -693,34 +705,35 @@ public class EndpointCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesGetAsync(Integer limit, Integer offset, String alias, String endpoint, final ApiCallback<CertificatesDTO> _callback) throws ApiException {
+    public okhttp3.Call getEndpointCertificatesAsync(Integer limit, Integer offset, String alias, String endpoint, final ApiCallback<CertificatesDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = endpointCertificatesGetValidateBeforeCall(limit, offset, alias, endpoint, _callback);
+        okhttp3.Call localVarCall = getEndpointCertificatesValidateBeforeCall(limit, offset, alias, endpoint, _callback);
         Type localVarReturnType = new TypeToken<CertificatesDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for endpointCertificatesPost
-     * @param certificate The certificate that needs to be uploaded. (required)
+     * Build call for updateEndpointCertificateByAlias
      * @param alias Alias for the certificate (required)
-     * @param endpoint Endpoint to which the certificate should be applied. (required)
+     * @param certificate The certificate that needs to be uploaded. (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate added successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesPostCall(File certificate, String alias, String endpoint, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call updateEndpointCertificateByAliasCall(String alias, File certificate, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/endpoint-certificates";
+        String localVarPath = "/endpoint-certificates/{alias}"
+            .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
@@ -729,14 +742,6 @@ public class EndpointCertificatesApi {
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         if (certificate != null) {
             localVarFormParams.put("certificate", certificate);
-        }
-
-        if (alias != null) {
-            localVarFormParams.put("alias", alias);
-        }
-
-        if (endpoint != null) {
-            localVarFormParams.put("endpoint", endpoint);
         }
 
         final String[] localVarAccepts = {
@@ -754,96 +759,91 @@ public class EndpointCertificatesApi {
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call endpointCertificatesPostValidateBeforeCall(File certificate, String alias, String endpoint, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'certificate' is set
-        if (certificate == null) {
-            throw new ApiException("Missing the required parameter 'certificate' when calling endpointCertificatesPost(Async)");
-        }
+    private okhttp3.Call updateEndpointCertificateByAliasValidateBeforeCall(String alias, File certificate, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'alias' is set
         if (alias == null) {
-            throw new ApiException("Missing the required parameter 'alias' when calling endpointCertificatesPost(Async)");
+            throw new ApiException("Missing the required parameter 'alias' when calling updateEndpointCertificateByAlias(Async)");
         }
         
-        // verify the required parameter 'endpoint' is set
-        if (endpoint == null) {
-            throw new ApiException("Missing the required parameter 'endpoint' when calling endpointCertificatesPost(Async)");
+        // verify the required parameter 'certificate' is set
+        if (certificate == null) {
+            throw new ApiException("Missing the required parameter 'certificate' when calling updateEndpointCertificateByAlias(Async)");
         }
         
 
-        okhttp3.Call localVarCall = endpointCertificatesPostCall(certificate, alias, endpoint, _callback);
+        okhttp3.Call localVarCall = updateEndpointCertificateByAliasCall(alias, certificate, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Upload a new Certificate.
-     * This operation can be used to upload a new certificate for an endpoint. 
-     * @param certificate The certificate that needs to be uploaded. (required)
+     * Update a certificate.
+     * This operation can be used to update an uploaded certificate. 
      * @param alias Alias for the certificate (required)
-     * @param endpoint Endpoint to which the certificate should be applied. (required)
+     * @param certificate The certificate that needs to be uploaded. (required)
      * @return CertMetadataDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate added successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public CertMetadataDTO endpointCertificatesPost(File certificate, String alias, String endpoint) throws ApiException {
-        ApiResponse<CertMetadataDTO> localVarResp = endpointCertificatesPostWithHttpInfo(certificate, alias, endpoint);
+    public CertMetadataDTO updateEndpointCertificateByAlias(String alias, File certificate) throws ApiException {
+        ApiResponse<CertMetadataDTO> localVarResp = updateEndpointCertificateByAliasWithHttpInfo(alias, certificate);
         return localVarResp.getData();
     }
 
     /**
-     * Upload a new Certificate.
-     * This operation can be used to upload a new certificate for an endpoint. 
-     * @param certificate The certificate that needs to be uploaded. (required)
+     * Update a certificate.
+     * This operation can be used to update an uploaded certificate. 
      * @param alias Alias for the certificate (required)
-     * @param endpoint Endpoint to which the certificate should be applied. (required)
+     * @param certificate The certificate that needs to be uploaded. (required)
      * @return ApiResponse&lt;CertMetadataDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate added successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<CertMetadataDTO> endpointCertificatesPostWithHttpInfo(File certificate, String alias, String endpoint) throws ApiException {
-        okhttp3.Call localVarCall = endpointCertificatesPostValidateBeforeCall(certificate, alias, endpoint, null);
+    public ApiResponse<CertMetadataDTO> updateEndpointCertificateByAliasWithHttpInfo(String alias, File certificate) throws ApiException {
+        okhttp3.Call localVarCall = updateEndpointCertificateByAliasValidateBeforeCall(alias, certificate, null);
         Type localVarReturnType = new TypeToken<CertMetadataDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Upload a new Certificate. (asynchronously)
-     * This operation can be used to upload a new certificate for an endpoint. 
-     * @param certificate The certificate that needs to be uploaded. (required)
+     * Update a certificate. (asynchronously)
+     * This operation can be used to update an uploaded certificate. 
      * @param alias Alias for the certificate (required)
-     * @param endpoint Endpoint to which the certificate should be applied. (required)
+     * @param certificate The certificate that needs to be uploaded. (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate added successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call endpointCertificatesPostAsync(File certificate, String alias, String endpoint, final ApiCallback<CertMetadataDTO> _callback) throws ApiException {
+    public okhttp3.Call updateEndpointCertificateByAliasAsync(String alias, File certificate, final ApiCallback<CertMetadataDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = endpointCertificatesPostValidateBeforeCall(certificate, alias, endpoint, _callback);
+        okhttp3.Call localVarCall = updateEndpointCertificateByAliasValidateBeforeCall(alias, certificate, _callback);
         Type localVarReturnType = new TypeToken<CertMetadataDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

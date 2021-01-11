@@ -57,7 +57,285 @@ public class ApiMediationPolicyApi {
     }
 
     /**
-     * Build call for apisApiIdMediationPoliciesMediationPolicyIdContentGet
+     * Build call for deleteAPIMediationPolicyByPolicyId
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param mediationPolicyId Mediation policy Id  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteAPIMediationPolicyByPolicyIdCall(String apiId, String mediationPolicyId, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/mediation-policies/{mediationPolicyId}"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()))
+            .replaceAll("\\{" + "mediationPolicyId" + "\\}", localVarApiClient.escapeString(mediationPolicyId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call deleteAPIMediationPolicyByPolicyIdValidateBeforeCall(String apiId, String mediationPolicyId, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling deleteAPIMediationPolicyByPolicyId(Async)");
+        }
+        
+        // verify the required parameter 'mediationPolicyId' is set
+        if (mediationPolicyId == null) {
+            throw new ApiException("Missing the required parameter 'mediationPolicyId' when calling deleteAPIMediationPolicyByPolicyId(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = deleteAPIMediationPolicyByPolicyIdCall(apiId, mediationPolicyId, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Delete an API Specific Mediation Policy
+     * This operation can be used to delete an existing API specific mediation policy providing the Id of the API and the Id of the mediation policy. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param mediationPolicyId Mediation policy Id  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void deleteAPIMediationPolicyByPolicyId(String apiId, String mediationPolicyId, String ifMatch) throws ApiException {
+        deleteAPIMediationPolicyByPolicyIdWithHttpInfo(apiId, mediationPolicyId, ifMatch);
+    }
+
+    /**
+     * Delete an API Specific Mediation Policy
+     * This operation can be used to delete an existing API specific mediation policy providing the Id of the API and the Id of the mediation policy. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param mediationPolicyId Mediation policy Id  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> deleteAPIMediationPolicyByPolicyIdWithHttpInfo(String apiId, String mediationPolicyId, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = deleteAPIMediationPolicyByPolicyIdValidateBeforeCall(apiId, mediationPolicyId, ifMatch, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Delete an API Specific Mediation Policy (asynchronously)
+     * This operation can be used to delete an existing API specific mediation policy providing the Id of the API and the Id of the mediation policy. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param mediationPolicyId Mediation policy Id  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteAPIMediationPolicyByPolicyIdAsync(String apiId, String mediationPolicyId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = deleteAPIMediationPolicyByPolicyIdValidateBeforeCall(apiId, mediationPolicyId, ifMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPIMediationPolicyByPolicyId
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param mediationPolicyId Mediation policy Id  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Mediation policy returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIMediationPolicyByPolicyIdCall(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/mediation-policies/{mediationPolicyId}"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()))
+            .replaceAll("\\{" + "mediationPolicyId" + "\\}", localVarApiClient.escapeString(mediationPolicyId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPIMediationPolicyByPolicyIdValidateBeforeCall(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIMediationPolicyByPolicyId(Async)");
+        }
+        
+        // verify the required parameter 'mediationPolicyId' is set
+        if (mediationPolicyId == null) {
+            throw new ApiException("Missing the required parameter 'mediationPolicyId' when calling getAPIMediationPolicyByPolicyId(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPIMediationPolicyByPolicyIdCall(apiId, mediationPolicyId, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get an API Specific Mediation Policy
+     * This operation can be used to retrieve a particular API specific mediation policy. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param mediationPolicyId Mediation policy Id  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return MediationDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Mediation policy returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public MediationDTO getAPIMediationPolicyByPolicyId(String apiId, String mediationPolicyId, String ifNoneMatch) throws ApiException {
+        ApiResponse<MediationDTO> localVarResp = getAPIMediationPolicyByPolicyIdWithHttpInfo(apiId, mediationPolicyId, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get an API Specific Mediation Policy
+     * This operation can be used to retrieve a particular API specific mediation policy. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param mediationPolicyId Mediation policy Id  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;MediationDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Mediation policy returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<MediationDTO> getAPIMediationPolicyByPolicyIdWithHttpInfo(String apiId, String mediationPolicyId, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIMediationPolicyByPolicyIdValidateBeforeCall(apiId, mediationPolicyId, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<MediationDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get an API Specific Mediation Policy (asynchronously)
+     * This operation can be used to retrieve a particular API specific mediation policy. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param mediationPolicyId Mediation policy Id  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Mediation policy returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIMediationPolicyByPolicyIdAsync(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback<MediationDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPIMediationPolicyByPolicyIdValidateBeforeCall(apiId, mediationPolicyId, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<MediationDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPIMediationPolicyContentByPolicyId
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param mediationPolicyId Mediation policy Id  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -72,7 +350,7 @@ public class ApiMediationPolicyApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdContentGetCall(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAPIMediationPolicyContentByPolicyIdCall(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -108,20 +386,20 @@ public class ApiMediationPolicyApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdContentGetValidateBeforeCall(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIMediationPolicyContentByPolicyIdValidateBeforeCall(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdMediationPoliciesMediationPolicyIdContentGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIMediationPolicyContentByPolicyId(Async)");
         }
         
         // verify the required parameter 'mediationPolicyId' is set
         if (mediationPolicyId == null) {
-            throw new ApiException("Missing the required parameter 'mediationPolicyId' when calling apisApiIdMediationPoliciesMediationPolicyIdContentGet(Async)");
+            throw new ApiException("Missing the required parameter 'mediationPolicyId' when calling getAPIMediationPolicyContentByPolicyId(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdContentGetCall(apiId, mediationPolicyId, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIMediationPolicyContentByPolicyIdCall(apiId, mediationPolicyId, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -141,8 +419,8 @@ public class ApiMediationPolicyApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public void apisApiIdMediationPoliciesMediationPolicyIdContentGet(String apiId, String mediationPolicyId, String ifNoneMatch) throws ApiException {
-        apisApiIdMediationPoliciesMediationPolicyIdContentGetWithHttpInfo(apiId, mediationPolicyId, ifNoneMatch);
+    public void getAPIMediationPolicyContentByPolicyId(String apiId, String mediationPolicyId, String ifNoneMatch) throws ApiException {
+        getAPIMediationPolicyContentByPolicyIdWithHttpInfo(apiId, mediationPolicyId, ifNoneMatch);
     }
 
     /**
@@ -161,8 +439,8 @@ public class ApiMediationPolicyApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> apisApiIdMediationPoliciesMediationPolicyIdContentGetWithHttpInfo(String apiId, String mediationPolicyId, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdContentGetValidateBeforeCall(apiId, mediationPolicyId, ifNoneMatch, null);
+    public ApiResponse<Void> getAPIMediationPolicyContentByPolicyIdWithHttpInfo(String apiId, String mediationPolicyId, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIMediationPolicyContentByPolicyIdValidateBeforeCall(apiId, mediationPolicyId, ifNoneMatch, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -183,14 +461,14 @@ public class ApiMediationPolicyApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdContentGetAsync(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call getAPIMediationPolicyContentByPolicyIdAsync(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdContentGetValidateBeforeCall(apiId, mediationPolicyId, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIMediationPolicyContentByPolicyIdValidateBeforeCall(apiId, mediationPolicyId, ifNoneMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apisApiIdMediationPoliciesMediationPolicyIdContentPut
+     * Build call for updateAPIMediationPolicyContentByPolicyId
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param mediationPolicyId Mediation policy Id  (required)
      * @param type Type of the mediation sequence(in/out/fault) (required)
@@ -210,7 +488,7 @@ public class ApiMediationPolicyApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdContentPutCall(String apiId, String mediationPolicyId, String type, String ifMatch, File file, String inlineContent, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call updateAPIMediationPolicyContentByPolicyIdCall(String apiId, String mediationPolicyId, String type, String ifMatch, File file, String inlineContent, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -258,25 +536,25 @@ public class ApiMediationPolicyApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdContentPutValidateBeforeCall(String apiId, String mediationPolicyId, String type, String ifMatch, File file, String inlineContent, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call updateAPIMediationPolicyContentByPolicyIdValidateBeforeCall(String apiId, String mediationPolicyId, String type, String ifMatch, File file, String inlineContent, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdMediationPoliciesMediationPolicyIdContentPut(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling updateAPIMediationPolicyContentByPolicyId(Async)");
         }
         
         // verify the required parameter 'mediationPolicyId' is set
         if (mediationPolicyId == null) {
-            throw new ApiException("Missing the required parameter 'mediationPolicyId' when calling apisApiIdMediationPoliciesMediationPolicyIdContentPut(Async)");
+            throw new ApiException("Missing the required parameter 'mediationPolicyId' when calling updateAPIMediationPolicyContentByPolicyId(Async)");
         }
         
         // verify the required parameter 'type' is set
         if (type == null) {
-            throw new ApiException("Missing the required parameter 'type' when calling apisApiIdMediationPoliciesMediationPolicyIdContentPut(Async)");
+            throw new ApiException("Missing the required parameter 'type' when calling updateAPIMediationPolicyContentByPolicyId(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdContentPutCall(apiId, mediationPolicyId, type, ifMatch, file, inlineContent, _callback);
+        okhttp3.Call localVarCall = updateAPIMediationPolicyContentByPolicyIdCall(apiId, mediationPolicyId, type, ifMatch, file, inlineContent, _callback);
         return localVarCall;
 
     }
@@ -302,8 +580,8 @@ public class ApiMediationPolicyApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public MediationDTO apisApiIdMediationPoliciesMediationPolicyIdContentPut(String apiId, String mediationPolicyId, String type, String ifMatch, File file, String inlineContent) throws ApiException {
-        ApiResponse<MediationDTO> localVarResp = apisApiIdMediationPoliciesMediationPolicyIdContentPutWithHttpInfo(apiId, mediationPolicyId, type, ifMatch, file, inlineContent);
+    public MediationDTO updateAPIMediationPolicyContentByPolicyId(String apiId, String mediationPolicyId, String type, String ifMatch, File file, String inlineContent) throws ApiException {
+        ApiResponse<MediationDTO> localVarResp = updateAPIMediationPolicyContentByPolicyIdWithHttpInfo(apiId, mediationPolicyId, type, ifMatch, file, inlineContent);
         return localVarResp.getData();
     }
 
@@ -328,8 +606,8 @@ public class ApiMediationPolicyApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<MediationDTO> apisApiIdMediationPoliciesMediationPolicyIdContentPutWithHttpInfo(String apiId, String mediationPolicyId, String type, String ifMatch, File file, String inlineContent) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdContentPutValidateBeforeCall(apiId, mediationPolicyId, type, ifMatch, file, inlineContent, null);
+    public ApiResponse<MediationDTO> updateAPIMediationPolicyContentByPolicyIdWithHttpInfo(String apiId, String mediationPolicyId, String type, String ifMatch, File file, String inlineContent) throws ApiException {
+        okhttp3.Call localVarCall = updateAPIMediationPolicyContentByPolicyIdValidateBeforeCall(apiId, mediationPolicyId, type, ifMatch, file, inlineContent, null);
         Type localVarReturnType = new TypeToken<MediationDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -356,287 +634,9 @@ public class ApiMediationPolicyApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdContentPutAsync(String apiId, String mediationPolicyId, String type, String ifMatch, File file, String inlineContent, final ApiCallback<MediationDTO> _callback) throws ApiException {
+    public okhttp3.Call updateAPIMediationPolicyContentByPolicyIdAsync(String apiId, String mediationPolicyId, String type, String ifMatch, File file, String inlineContent, final ApiCallback<MediationDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdContentPutValidateBeforeCall(apiId, mediationPolicyId, type, ifMatch, file, inlineContent, _callback);
-        Type localVarReturnType = new TypeToken<MediationDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdMediationPoliciesMediationPolicyIdDelete
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param mediationPolicyId Mediation policy Id  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdDeleteCall(String apiId, String mediationPolicyId, String ifMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/mediation-policies/{mediationPolicyId}"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()))
-            .replaceAll("\\{" + "mediationPolicyId" + "\\}", localVarApiClient.escapeString(mediationPolicyId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifMatch != null) {
-            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdDeleteValidateBeforeCall(String apiId, String mediationPolicyId, String ifMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdMediationPoliciesMediationPolicyIdDelete(Async)");
-        }
-        
-        // verify the required parameter 'mediationPolicyId' is set
-        if (mediationPolicyId == null) {
-            throw new ApiException("Missing the required parameter 'mediationPolicyId' when calling apisApiIdMediationPoliciesMediationPolicyIdDelete(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdDeleteCall(apiId, mediationPolicyId, ifMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Delete an API Specific Mediation Policy
-     * This operation can be used to delete an existing API specific mediation policy providing the Id of the API and the Id of the mediation policy. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param mediationPolicyId Mediation policy Id  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public void apisApiIdMediationPoliciesMediationPolicyIdDelete(String apiId, String mediationPolicyId, String ifMatch) throws ApiException {
-        apisApiIdMediationPoliciesMediationPolicyIdDeleteWithHttpInfo(apiId, mediationPolicyId, ifMatch);
-    }
-
-    /**
-     * Delete an API Specific Mediation Policy
-     * This operation can be used to delete an existing API specific mediation policy providing the Id of the API and the Id of the mediation policy. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param mediationPolicyId Mediation policy Id  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Void> apisApiIdMediationPoliciesMediationPolicyIdDeleteWithHttpInfo(String apiId, String mediationPolicyId, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdDeleteValidateBeforeCall(apiId, mediationPolicyId, ifMatch, null);
-        return localVarApiClient.execute(localVarCall);
-    }
-
-    /**
-     * Delete an API Specific Mediation Policy (asynchronously)
-     * This operation can be used to delete an existing API specific mediation policy providing the Id of the API and the Id of the mediation policy. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param mediationPolicyId Mediation policy Id  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdDeleteAsync(String apiId, String mediationPolicyId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdDeleteValidateBeforeCall(apiId, mediationPolicyId, ifMatch, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdMediationPoliciesMediationPolicyIdGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param mediationPolicyId Mediation policy Id  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Mediation policy returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdGetCall(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/mediation-policies/{mediationPolicyId}"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()))
-            .replaceAll("\\{" + "mediationPolicyId" + "\\}", localVarApiClient.escapeString(mediationPolicyId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdGetValidateBeforeCall(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdMediationPoliciesMediationPolicyIdGet(Async)");
-        }
-        
-        // verify the required parameter 'mediationPolicyId' is set
-        if (mediationPolicyId == null) {
-            throw new ApiException("Missing the required parameter 'mediationPolicyId' when calling apisApiIdMediationPoliciesMediationPolicyIdGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdGetCall(apiId, mediationPolicyId, ifNoneMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get an API Specific Mediation Policy
-     * This operation can be used to retrieve a particular API specific mediation policy. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param mediationPolicyId Mediation policy Id  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return MediationDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Mediation policy returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public MediationDTO apisApiIdMediationPoliciesMediationPolicyIdGet(String apiId, String mediationPolicyId, String ifNoneMatch) throws ApiException {
-        ApiResponse<MediationDTO> localVarResp = apisApiIdMediationPoliciesMediationPolicyIdGetWithHttpInfo(apiId, mediationPolicyId, ifNoneMatch);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get an API Specific Mediation Policy
-     * This operation can be used to retrieve a particular API specific mediation policy. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param mediationPolicyId Mediation policy Id  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;MediationDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Mediation policy returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<MediationDTO> apisApiIdMediationPoliciesMediationPolicyIdGetWithHttpInfo(String apiId, String mediationPolicyId, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdGetValidateBeforeCall(apiId, mediationPolicyId, ifNoneMatch, null);
-        Type localVarReturnType = new TypeToken<MediationDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get an API Specific Mediation Policy (asynchronously)
-     * This operation can be used to retrieve a particular API specific mediation policy. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param mediationPolicyId Mediation policy Id  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Mediation policy returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdMediationPoliciesMediationPolicyIdGetAsync(String apiId, String mediationPolicyId, String ifNoneMatch, final ApiCallback<MediationDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdMediationPoliciesMediationPolicyIdGetValidateBeforeCall(apiId, mediationPolicyId, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = updateAPIMediationPolicyContentByPolicyIdValidateBeforeCall(apiId, mediationPolicyId, type, ifMatch, file, inlineContent, _callback);
         Type localVarReturnType = new TypeToken<MediationDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

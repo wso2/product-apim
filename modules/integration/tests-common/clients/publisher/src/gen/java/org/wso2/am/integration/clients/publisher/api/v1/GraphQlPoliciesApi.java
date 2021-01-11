@@ -57,7 +57,7 @@ public class GraphQlPoliciesApi {
     }
 
     /**
-     * Build call for apisApiIdGraphqlPoliciesComplexityGet
+     * Build call for getGraphQLPolicyComplexityOfAPI
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -69,7 +69,7 @@ public class GraphQlPoliciesApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdGraphqlPoliciesComplexityGetCall(String apiId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getGraphQLPolicyComplexityOfAPICall(String apiId, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -100,15 +100,15 @@ public class GraphQlPoliciesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdGraphqlPoliciesComplexityGetValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getGraphQLPolicyComplexityOfAPIValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdGraphqlPoliciesComplexityGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling getGraphQLPolicyComplexityOfAPI(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityGetCall(apiId, _callback);
+        okhttp3.Call localVarCall = getGraphQLPolicyComplexityOfAPICall(apiId, _callback);
         return localVarCall;
 
     }
@@ -126,8 +126,8 @@ public class GraphQlPoliciesApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public GraphQLQueryComplexityInfoDTO apisApiIdGraphqlPoliciesComplexityGet(String apiId) throws ApiException {
-        ApiResponse<GraphQLQueryComplexityInfoDTO> localVarResp = apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
+    public GraphQLQueryComplexityInfoDTO getGraphQLPolicyComplexityOfAPI(String apiId) throws ApiException {
+        ApiResponse<GraphQLQueryComplexityInfoDTO> localVarResp = getGraphQLPolicyComplexityOfAPIWithHttpInfo(apiId);
         return localVarResp.getData();
     }
 
@@ -144,8 +144,8 @@ public class GraphQlPoliciesApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<GraphQLQueryComplexityInfoDTO> apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(String apiId) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityGetValidateBeforeCall(apiId, null);
+    public ApiResponse<GraphQLQueryComplexityInfoDTO> getGraphQLPolicyComplexityOfAPIWithHttpInfo(String apiId) throws ApiException {
+        okhttp3.Call localVarCall = getGraphQLPolicyComplexityOfAPIValidateBeforeCall(apiId, null);
         Type localVarReturnType = new TypeToken<GraphQLQueryComplexityInfoDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -164,130 +164,15 @@ public class GraphQlPoliciesApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdGraphqlPoliciesComplexityGetAsync(String apiId, final ApiCallback<GraphQLQueryComplexityInfoDTO> _callback) throws ApiException {
+    public okhttp3.Call getGraphQLPolicyComplexityOfAPIAsync(String apiId, final ApiCallback<GraphQLQueryComplexityInfoDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityGetValidateBeforeCall(apiId, _callback);
+        okhttp3.Call localVarCall = getGraphQLPolicyComplexityOfAPIValidateBeforeCall(apiId, _callback);
         Type localVarReturnType = new TypeToken<GraphQLQueryComplexityInfoDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apisApiIdGraphqlPoliciesComplexityPut
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param graphQLQueryComplexityInfoDTO Role-depth mapping that needs to be added (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Created. Complexity details created successfully.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdGraphqlPoliciesComplexityPutCall(String apiId, GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = graphQLQueryComplexityInfoDTO;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/graphql-policies/complexity"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdGraphqlPoliciesComplexityPutValidateBeforeCall(String apiId, GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdGraphqlPoliciesComplexityPut(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityPutCall(apiId, graphQLQueryComplexityInfoDTO, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Update Complexity Related Details of an API
-     * This operation can be used to update complexity details belonging to an API by providing the id of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param graphQLQueryComplexityInfoDTO Role-depth mapping that needs to be added (optional)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Created. Complexity details created successfully.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public void apisApiIdGraphqlPoliciesComplexityPut(String apiId, GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO) throws ApiException {
-        apisApiIdGraphqlPoliciesComplexityPutWithHttpInfo(apiId, graphQLQueryComplexityInfoDTO);
-    }
-
-    /**
-     * Update Complexity Related Details of an API
-     * This operation can be used to update complexity details belonging to an API by providing the id of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param graphQLQueryComplexityInfoDTO Role-depth mapping that needs to be added (optional)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Created. Complexity details created successfully.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Void> apisApiIdGraphqlPoliciesComplexityPutWithHttpInfo(String apiId, GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityPutValidateBeforeCall(apiId, graphQLQueryComplexityInfoDTO, null);
-        return localVarApiClient.execute(localVarCall);
-    }
-
-    /**
-     * Update Complexity Related Details of an API (asynchronously)
-     * This operation can be used to update complexity details belonging to an API by providing the id of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param graphQLQueryComplexityInfoDTO Role-depth mapping that needs to be added (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Created. Complexity details created successfully.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdGraphqlPoliciesComplexityPutAsync(String apiId, GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, final ApiCallback<Void> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityPutValidateBeforeCall(apiId, graphQLQueryComplexityInfoDTO, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdGraphqlPoliciesComplexityTypesGet
+     * Build call for getGraphQLPolicyComplexityTypesOfAPI
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -299,7 +184,7 @@ public class GraphQlPoliciesApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdGraphqlPoliciesComplexityTypesGetCall(String apiId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getGraphQLPolicyComplexityTypesOfAPICall(String apiId, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -330,15 +215,15 @@ public class GraphQlPoliciesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdGraphqlPoliciesComplexityTypesGetValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getGraphQLPolicyComplexityTypesOfAPIValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdGraphqlPoliciesComplexityTypesGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling getGraphQLPolicyComplexityTypesOfAPI(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityTypesGetCall(apiId, _callback);
+        okhttp3.Call localVarCall = getGraphQLPolicyComplexityTypesOfAPICall(apiId, _callback);
         return localVarCall;
 
     }
@@ -356,8 +241,8 @@ public class GraphQlPoliciesApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public GraphQLSchemaTypeListDTO apisApiIdGraphqlPoliciesComplexityTypesGet(String apiId) throws ApiException {
-        ApiResponse<GraphQLSchemaTypeListDTO> localVarResp = apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+    public GraphQLSchemaTypeListDTO getGraphQLPolicyComplexityTypesOfAPI(String apiId) throws ApiException {
+        ApiResponse<GraphQLSchemaTypeListDTO> localVarResp = getGraphQLPolicyComplexityTypesOfAPIWithHttpInfo(apiId);
         return localVarResp.getData();
     }
 
@@ -374,8 +259,8 @@ public class GraphQlPoliciesApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<GraphQLSchemaTypeListDTO> apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(String apiId) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityTypesGetValidateBeforeCall(apiId, null);
+    public ApiResponse<GraphQLSchemaTypeListDTO> getGraphQLPolicyComplexityTypesOfAPIWithHttpInfo(String apiId) throws ApiException {
+        okhttp3.Call localVarCall = getGraphQLPolicyComplexityTypesOfAPIValidateBeforeCall(apiId, null);
         Type localVarReturnType = new TypeToken<GraphQLSchemaTypeListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -394,11 +279,126 @@ public class GraphQlPoliciesApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdGraphqlPoliciesComplexityTypesGetAsync(String apiId, final ApiCallback<GraphQLSchemaTypeListDTO> _callback) throws ApiException {
+    public okhttp3.Call getGraphQLPolicyComplexityTypesOfAPIAsync(String apiId, final ApiCallback<GraphQLSchemaTypeListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdGraphqlPoliciesComplexityTypesGetValidateBeforeCall(apiId, _callback);
+        okhttp3.Call localVarCall = getGraphQLPolicyComplexityTypesOfAPIValidateBeforeCall(apiId, _callback);
         Type localVarReturnType = new TypeToken<GraphQLSchemaTypeListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for updateGraphQLPolicyComplexityOfAPI
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param graphQLQueryComplexityInfoDTO Role-depth mapping that needs to be added (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Complexity details created successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateGraphQLPolicyComplexityOfAPICall(String apiId, GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = graphQLQueryComplexityInfoDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/graphql-policies/complexity"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call updateGraphQLPolicyComplexityOfAPIValidateBeforeCall(String apiId, GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling updateGraphQLPolicyComplexityOfAPI(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = updateGraphQLPolicyComplexityOfAPICall(apiId, graphQLQueryComplexityInfoDTO, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Update Complexity Related Details of an API
+     * This operation can be used to update complexity details belonging to an API by providing the id of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param graphQLQueryComplexityInfoDTO Role-depth mapping that needs to be added (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Complexity details created successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void updateGraphQLPolicyComplexityOfAPI(String apiId, GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO) throws ApiException {
+        updateGraphQLPolicyComplexityOfAPIWithHttpInfo(apiId, graphQLQueryComplexityInfoDTO);
+    }
+
+    /**
+     * Update Complexity Related Details of an API
+     * This operation can be used to update complexity details belonging to an API by providing the id of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param graphQLQueryComplexityInfoDTO Role-depth mapping that needs to be added (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Complexity details created successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> updateGraphQLPolicyComplexityOfAPIWithHttpInfo(String apiId, GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO) throws ApiException {
+        okhttp3.Call localVarCall = updateGraphQLPolicyComplexityOfAPIValidateBeforeCall(apiId, graphQLQueryComplexityInfoDTO, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Update Complexity Related Details of an API (asynchronously)
+     * This operation can be used to update complexity details belonging to an API by providing the id of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param graphQLQueryComplexityInfoDTO Role-depth mapping that needs to be added (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Complexity details created successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateGraphQLPolicyComplexityOfAPIAsync(String apiId, GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = updateGraphQLPolicyComplexityOfAPIValidateBeforeCall(apiId, graphQLQueryComplexityInfoDTO, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
 }

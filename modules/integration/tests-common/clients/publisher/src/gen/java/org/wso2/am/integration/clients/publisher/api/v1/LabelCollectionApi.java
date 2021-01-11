@@ -55,7 +55,7 @@ public class LabelCollectionApi {
     }
 
     /**
-     * Build call for labelsGet
+     * Build call for getLabels
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -65,7 +65,7 @@ public class LabelCollectionApi {
         <tr><td> 200 </td><td> OK. Labels returned  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call labelsGetCall(final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getLabelsCall(final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -95,10 +95,10 @@ public class LabelCollectionApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call labelsGetValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getLabelsValidateBeforeCall(final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = labelsGetCall(_callback);
+        okhttp3.Call localVarCall = getLabelsCall(_callback);
         return localVarCall;
 
     }
@@ -114,8 +114,8 @@ public class LabelCollectionApi {
         <tr><td> 200 </td><td> OK. Labels returned  </td><td>  -  </td></tr>
      </table>
      */
-    public LabelListDTO labelsGet() throws ApiException {
-        ApiResponse<LabelListDTO> localVarResp = labelsGetWithHttpInfo();
+    public LabelListDTO getLabels() throws ApiException {
+        ApiResponse<LabelListDTO> localVarResp = getLabelsWithHttpInfo();
         return localVarResp.getData();
     }
 
@@ -130,8 +130,8 @@ public class LabelCollectionApi {
         <tr><td> 200 </td><td> OK. Labels returned  </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<LabelListDTO> labelsGetWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = labelsGetValidateBeforeCall(null);
+    public ApiResponse<LabelListDTO> getLabelsWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = getLabelsValidateBeforeCall(null);
         Type localVarReturnType = new TypeToken<LabelListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -148,9 +148,9 @@ public class LabelCollectionApi {
         <tr><td> 200 </td><td> OK. Labels returned  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call labelsGetAsync(final ApiCallback<LabelListDTO> _callback) throws ApiException {
+    public okhttp3.Call getLabelsAsync(final ApiCallback<LabelListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = labelsGetValidateBeforeCall(_callback);
+        okhttp3.Call localVarCall = getLabelsValidateBeforeCall(_callback);
         Type localVarReturnType = new TypeToken<LabelListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

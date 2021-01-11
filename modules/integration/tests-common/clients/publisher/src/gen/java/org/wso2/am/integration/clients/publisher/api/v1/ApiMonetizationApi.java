@@ -58,126 +58,7 @@ public class ApiMonetizationApi {
     }
 
     /**
-     * Build call for apisApiIdMonetizationGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Monetization status for each tier returned successfully.  </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdMonetizationGetCall(String apiId, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/monetization"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdMonetizationGetValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdMonetizationGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdMonetizationGetCall(apiId, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get Monetization Status for each Tier in a Given API
-     * This operation can be used to get monetization status for each tier in a given API 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Monetization status for each tier returned successfully.  </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public void apisApiIdMonetizationGet(String apiId) throws ApiException {
-        apisApiIdMonetizationGetWithHttpInfo(apiId);
-    }
-
-    /**
-     * Get Monetization Status for each Tier in a Given API
-     * This operation can be used to get monetization status for each tier in a given API 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Monetization status for each tier returned successfully.  </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Void> apisApiIdMonetizationGetWithHttpInfo(String apiId) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdMonetizationGetValidateBeforeCall(apiId, null);
-        return localVarApiClient.execute(localVarCall);
-    }
-
-    /**
-     * Get Monetization Status for each Tier in a Given API (asynchronously)
-     * This operation can be used to get monetization status for each tier in a given API 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Monetization status for each tier returned successfully.  </td><td>  -  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdMonetizationGetAsync(String apiId, final ApiCallback<Void> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdMonetizationGetValidateBeforeCall(apiId, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdMonetizePost
+     * Build call for addAPIMonetization
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param apIMonetizationInfoDTO Monetization data object (required)
      * @param _callback Callback for upload/download progress
@@ -192,7 +73,7 @@ public class ApiMonetizationApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdMonetizePostCall(String apiId, APIMonetizationInfoDTO apIMonetizationInfoDTO, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call addAPIMonetizationCall(String apiId, APIMonetizationInfoDTO apIMonetizationInfoDTO, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = apIMonetizationInfoDTO;
 
         // create path and map variables
@@ -223,20 +104,20 @@ public class ApiMonetizationApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdMonetizePostValidateBeforeCall(String apiId, APIMonetizationInfoDTO apIMonetizationInfoDTO, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call addAPIMonetizationValidateBeforeCall(String apiId, APIMonetizationInfoDTO apIMonetizationInfoDTO, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdMonetizePost(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling addAPIMonetization(Async)");
         }
         
         // verify the required parameter 'apIMonetizationInfoDTO' is set
         if (apIMonetizationInfoDTO == null) {
-            throw new ApiException("Missing the required parameter 'apIMonetizationInfoDTO' when calling apisApiIdMonetizePost(Async)");
+            throw new ApiException("Missing the required parameter 'apIMonetizationInfoDTO' when calling addAPIMonetization(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdMonetizePostCall(apiId, apIMonetizationInfoDTO, _callback);
+        okhttp3.Call localVarCall = addAPIMonetizationCall(apiId, apIMonetizationInfoDTO, _callback);
         return localVarCall;
 
     }
@@ -256,8 +137,8 @@ public class ApiMonetizationApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public void apisApiIdMonetizePost(String apiId, APIMonetizationInfoDTO apIMonetizationInfoDTO) throws ApiException {
-        apisApiIdMonetizePostWithHttpInfo(apiId, apIMonetizationInfoDTO);
+    public void addAPIMonetization(String apiId, APIMonetizationInfoDTO apIMonetizationInfoDTO) throws ApiException {
+        addAPIMonetizationWithHttpInfo(apiId, apIMonetizationInfoDTO);
     }
 
     /**
@@ -276,8 +157,8 @@ public class ApiMonetizationApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> apisApiIdMonetizePostWithHttpInfo(String apiId, APIMonetizationInfoDTO apIMonetizationInfoDTO) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdMonetizePostValidateBeforeCall(apiId, apIMonetizationInfoDTO, null);
+    public ApiResponse<Void> addAPIMonetizationWithHttpInfo(String apiId, APIMonetizationInfoDTO apIMonetizationInfoDTO) throws ApiException {
+        okhttp3.Call localVarCall = addAPIMonetizationValidateBeforeCall(apiId, apIMonetizationInfoDTO, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -298,14 +179,133 @@ public class ApiMonetizationApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdMonetizePostAsync(String apiId, APIMonetizationInfoDTO apIMonetizationInfoDTO, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call addAPIMonetizationAsync(String apiId, APIMonetizationInfoDTO apIMonetizationInfoDTO, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdMonetizePostValidateBeforeCall(apiId, apIMonetizationInfoDTO, _callback);
+        okhttp3.Call localVarCall = addAPIMonetizationValidateBeforeCall(apiId, apIMonetizationInfoDTO, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apisApiIdRevenueGet
+     * Build call for getAPIMonetization
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Monetization status for each tier returned successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIMonetizationCall(String apiId, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/monetization"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPIMonetizationValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIMonetization(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPIMonetizationCall(apiId, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Monetization Status for each Tier in a Given API
+     * This operation can be used to get monetization status for each tier in a given API 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Monetization status for each tier returned successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void getAPIMonetization(String apiId) throws ApiException {
+        getAPIMonetizationWithHttpInfo(apiId);
+    }
+
+    /**
+     * Get Monetization Status for each Tier in a Given API
+     * This operation can be used to get monetization status for each tier in a given API 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Monetization status for each tier returned successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> getAPIMonetizationWithHttpInfo(String apiId) throws ApiException {
+        okhttp3.Call localVarCall = getAPIMonetizationValidateBeforeCall(apiId, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Get Monetization Status for each Tier in a Given API (asynchronously)
+     * This operation can be used to get monetization status for each tier in a given API 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Monetization status for each tier returned successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIMonetizationAsync(String apiId, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPIMonetizationValidateBeforeCall(apiId, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPIRevenue
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -318,7 +318,7 @@ public class ApiMonetizationApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdRevenueGetCall(String apiId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAPIRevenueCall(String apiId, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -349,15 +349,15 @@ public class ApiMonetizationApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdRevenueGetValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIRevenueValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdRevenueGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIRevenue(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdRevenueGetCall(apiId, _callback);
+        okhttp3.Call localVarCall = getAPIRevenueCall(apiId, _callback);
         return localVarCall;
 
     }
@@ -376,8 +376,8 @@ public class ApiMonetizationApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public APIRevenueDTO apisApiIdRevenueGet(String apiId) throws ApiException {
-        ApiResponse<APIRevenueDTO> localVarResp = apisApiIdRevenueGetWithHttpInfo(apiId);
+    public APIRevenueDTO getAPIRevenue(String apiId) throws ApiException {
+        ApiResponse<APIRevenueDTO> localVarResp = getAPIRevenueWithHttpInfo(apiId);
         return localVarResp.getData();
     }
 
@@ -395,8 +395,8 @@ public class ApiMonetizationApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIRevenueDTO> apisApiIdRevenueGetWithHttpInfo(String apiId) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdRevenueGetValidateBeforeCall(apiId, null);
+    public ApiResponse<APIRevenueDTO> getAPIRevenueWithHttpInfo(String apiId) throws ApiException {
+        okhttp3.Call localVarCall = getAPIRevenueValidateBeforeCall(apiId, null);
         Type localVarReturnType = new TypeToken<APIRevenueDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -416,15 +416,15 @@ public class ApiMonetizationApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdRevenueGetAsync(String apiId, final ApiCallback<APIRevenueDTO> _callback) throws ApiException {
+    public okhttp3.Call getAPIRevenueAsync(String apiId, final ApiCallback<APIRevenueDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdRevenueGetValidateBeforeCall(apiId, _callback);
+        okhttp3.Call localVarCall = getAPIRevenueValidateBeforeCall(apiId, _callback);
         Type localVarReturnType = new TypeToken<APIRevenueDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for subscriptionsSubscriptionIdUsageGet
+     * Build call for getSubscriptionUsage
      * @param subscriptionId Subscription Id  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -437,7 +437,7 @@ public class ApiMonetizationApi {
         <tr><td> 404 </td><td> Not Found. Requested Subscription does not exist.  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call subscriptionsSubscriptionIdUsageGetCall(String subscriptionId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getSubscriptionUsageCall(String subscriptionId, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -468,15 +468,15 @@ public class ApiMonetizationApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call subscriptionsSubscriptionIdUsageGetValidateBeforeCall(String subscriptionId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getSubscriptionUsageValidateBeforeCall(String subscriptionId, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'subscriptionId' is set
         if (subscriptionId == null) {
-            throw new ApiException("Missing the required parameter 'subscriptionId' when calling subscriptionsSubscriptionIdUsageGet(Async)");
+            throw new ApiException("Missing the required parameter 'subscriptionId' when calling getSubscriptionUsage(Async)");
         }
         
 
-        okhttp3.Call localVarCall = subscriptionsSubscriptionIdUsageGetCall(subscriptionId, _callback);
+        okhttp3.Call localVarCall = getSubscriptionUsageCall(subscriptionId, _callback);
         return localVarCall;
 
     }
@@ -495,8 +495,8 @@ public class ApiMonetizationApi {
         <tr><td> 404 </td><td> Not Found. Requested Subscription does not exist.  </td><td>  -  </td></tr>
      </table>
      */
-    public APIMonetizationUsageDTO subscriptionsSubscriptionIdUsageGet(String subscriptionId) throws ApiException {
-        ApiResponse<APIMonetizationUsageDTO> localVarResp = subscriptionsSubscriptionIdUsageGetWithHttpInfo(subscriptionId);
+    public APIMonetizationUsageDTO getSubscriptionUsage(String subscriptionId) throws ApiException {
+        ApiResponse<APIMonetizationUsageDTO> localVarResp = getSubscriptionUsageWithHttpInfo(subscriptionId);
         return localVarResp.getData();
     }
 
@@ -514,8 +514,8 @@ public class ApiMonetizationApi {
         <tr><td> 404 </td><td> Not Found. Requested Subscription does not exist.  </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIMonetizationUsageDTO> subscriptionsSubscriptionIdUsageGetWithHttpInfo(String subscriptionId) throws ApiException {
-        okhttp3.Call localVarCall = subscriptionsSubscriptionIdUsageGetValidateBeforeCall(subscriptionId, null);
+    public ApiResponse<APIMonetizationUsageDTO> getSubscriptionUsageWithHttpInfo(String subscriptionId) throws ApiException {
+        okhttp3.Call localVarCall = getSubscriptionUsageValidateBeforeCall(subscriptionId, null);
         Type localVarReturnType = new TypeToken<APIMonetizationUsageDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -535,9 +535,9 @@ public class ApiMonetizationApi {
         <tr><td> 404 </td><td> Not Found. Requested Subscription does not exist.  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call subscriptionsSubscriptionIdUsageGetAsync(String subscriptionId, final ApiCallback<APIMonetizationUsageDTO> _callback) throws ApiException {
+    public okhttp3.Call getSubscriptionUsageAsync(String subscriptionId, final ApiCallback<APIMonetizationUsageDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = subscriptionsSubscriptionIdUsageGetValidateBeforeCall(subscriptionId, _callback);
+        okhttp3.Call localVarCall = getSubscriptionUsageValidateBeforeCall(subscriptionId, _callback);
         Type localVarReturnType = new TypeToken<APIMonetizationUsageDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

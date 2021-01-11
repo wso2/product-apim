@@ -56,314 +56,7 @@ public class ImportExportApi {
     }
 
     /**
-     * Build call for apiProductsExportGet
-     * @param name API Product Name  (optional)
-     * @param version Version of the API Product  (optional)
-     * @param providerName Provider name of the API Product  (optional)
-     * @param format Format of output documents. Can be YAML or JSON.  (optional)
-     * @param preserveStatus Preserve API Product Status on export  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiProductsExportGetCall(String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/api-products/export";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (name != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("name", name));
-        }
-
-        if (version != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("version", version));
-        }
-
-        if (providerName != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("providerName", providerName));
-        }
-
-        if (format != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("format", format));
-        }
-
-        if (preserveStatus != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveStatus", preserveStatus));
-        }
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/zip", "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsExportGetValidateBeforeCall(String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
-        
-
-        okhttp3.Call localVarCall = apiProductsExportGetCall(name, version, providerName, format, preserveStatus, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Export an API Product
-     * This operation can be used to export the details of a particular API Product as a zip file. 
-     * @param name API Product Name  (optional)
-     * @param version Version of the API Product  (optional)
-     * @param providerName Provider name of the API Product  (optional)
-     * @param format Format of output documents. Can be YAML or JSON.  (optional)
-     * @param preserveStatus Preserve API Product Status on export  (optional)
-     * @return File
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public File apiProductsExportGet(String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
-        ApiResponse<File> localVarResp = apiProductsExportGetWithHttpInfo(name, version, providerName, format, preserveStatus);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Export an API Product
-     * This operation can be used to export the details of a particular API Product as a zip file. 
-     * @param name API Product Name  (optional)
-     * @param version Version of the API Product  (optional)
-     * @param providerName Provider name of the API Product  (optional)
-     * @param format Format of output documents. Can be YAML or JSON.  (optional)
-     * @param preserveStatus Preserve API Product Status on export  (optional)
-     * @return ApiResponse&lt;File&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<File> apiProductsExportGetWithHttpInfo(String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsExportGetValidateBeforeCall(name, version, providerName, format, preserveStatus, null);
-        Type localVarReturnType = new TypeToken<File>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Export an API Product (asynchronously)
-     * This operation can be used to export the details of a particular API Product as a zip file. 
-     * @param name API Product Name  (optional)
-     * @param version Version of the API Product  (optional)
-     * @param providerName Provider name of the API Product  (optional)
-     * @param format Format of output documents. Can be YAML or JSON.  (optional)
-     * @param preserveStatus Preserve API Product Status on export  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiProductsExportGetAsync(String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback<File> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apiProductsExportGetValidateBeforeCall(name, version, providerName, format, preserveStatus, _callback);
-        Type localVarReturnType = new TypeToken<File>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apiProductsImportPost
-     * @param file Zip archive consisting on exported API Product configuration  (required)
-     * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
-     * @param importAPIs Whether to import the dependent APIs or not.  (optional)
-     * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
-     * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Created. API Product Imported Successfully.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiProductsImportPostCall(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/api-products/import";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (preserveProvider != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveProvider", preserveProvider));
-        }
-
-        if (importAPIs != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("importAPIs", importAPIs));
-        }
-
-        if (overwriteAPIProduct != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("overwriteAPIProduct", overwriteAPIProduct));
-        }
-
-        if (overwriteAPIs != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("overwriteAPIs", overwriteAPIs));
-        }
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        if (file != null) {
-            localVarFormParams.put("file", file);
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "multipart/form-data"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsImportPostValidateBeforeCall(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'file' is set
-        if (file == null) {
-            throw new ApiException("Missing the required parameter 'file' when calling apiProductsImportPost(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apiProductsImportPostCall(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Import an API Product
-     * This operation can be used to import an API Product. 
-     * @param file Zip archive consisting on exported API Product configuration  (required)
-     * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
-     * @param importAPIs Whether to import the dependent APIs or not.  (optional)
-     * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
-     * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Created. API Product Imported Successfully.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public void apiProductsImportPost(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs) throws ApiException {
-        apiProductsImportPostWithHttpInfo(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs);
-    }
-
-    /**
-     * Import an API Product
-     * This operation can be used to import an API Product. 
-     * @param file Zip archive consisting on exported API Product configuration  (required)
-     * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
-     * @param importAPIs Whether to import the dependent APIs or not.  (optional)
-     * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
-     * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Created. API Product Imported Successfully.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Void> apiProductsImportPostWithHttpInfo(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsImportPostValidateBeforeCall(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs, null);
-        return localVarApiClient.execute(localVarCall);
-    }
-
-    /**
-     * Import an API Product (asynchronously)
-     * This operation can be used to import an API Product. 
-     * @param file Zip archive consisting on exported API Product configuration  (required)
-     * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
-     * @param importAPIs Whether to import the dependent APIs or not.  (optional)
-     * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
-     * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> Created. API Product Imported Successfully.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiProductsImportPostAsync(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback<Void> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apiProductsImportPostValidateBeforeCall(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisExportGet
+     * Build call for exportAPI
      * @param apiId UUID of the API (optional)
      * @param name API Name  (optional)
      * @param version Version of the API  (optional)
@@ -381,7 +74,7 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisExportGetCall(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call exportAPICall(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -435,10 +128,10 @@ public class ImportExportApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisExportGetValidateBeforeCall(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call exportAPIValidateBeforeCall(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = apisExportGetCall(apiId, name, version, providerName, format, preserveStatus, _callback);
+        okhttp3.Call localVarCall = exportAPICall(apiId, name, version, providerName, format, preserveStatus, _callback);
         return localVarCall;
 
     }
@@ -462,8 +155,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public File apisExportGet(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
-        ApiResponse<File> localVarResp = apisExportGetWithHttpInfo(apiId, name, version, providerName, format, preserveStatus);
+    public File exportAPI(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
+        ApiResponse<File> localVarResp = exportAPIWithHttpInfo(apiId, name, version, providerName, format, preserveStatus);
         return localVarResp.getData();
     }
 
@@ -486,8 +179,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<File> apisExportGetWithHttpInfo(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
-        okhttp3.Call localVarCall = apisExportGetValidateBeforeCall(apiId, name, version, providerName, format, preserveStatus, null);
+    public ApiResponse<File> exportAPIWithHttpInfo(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
+        okhttp3.Call localVarCall = exportAPIValidateBeforeCall(apiId, name, version, providerName, format, preserveStatus, null);
         Type localVarReturnType = new TypeToken<File>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -512,15 +205,164 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisExportGetAsync(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback<File> _callback) throws ApiException {
+    public okhttp3.Call exportAPIAsync(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback<File> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisExportGetValidateBeforeCall(apiId, name, version, providerName, format, preserveStatus, _callback);
+        okhttp3.Call localVarCall = exportAPIValidateBeforeCall(apiId, name, version, providerName, format, preserveStatus, _callback);
         Type localVarReturnType = new TypeToken<File>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apisImportPost
+     * Build call for exportAPIProduct
+     * @param name API Product Name  (optional)
+     * @param version Version of the API Product  (optional)
+     * @param providerName Provider name of the API Product  (optional)
+     * @param format Format of output documents. Can be YAML or JSON.  (optional)
+     * @param preserveStatus Preserve API Product Status on export  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call exportAPIProductCall(String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/api-products/export";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (name != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("name", name));
+        }
+
+        if (version != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("version", version));
+        }
+
+        if (providerName != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("providerName", providerName));
+        }
+
+        if (format != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("format", format));
+        }
+
+        if (preserveStatus != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveStatus", preserveStatus));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/zip", "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call exportAPIProductValidateBeforeCall(String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
+        
+
+        okhttp3.Call localVarCall = exportAPIProductCall(name, version, providerName, format, preserveStatus, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Export an API Product
+     * This operation can be used to export the details of a particular API Product as a zip file. 
+     * @param name API Product Name  (optional)
+     * @param version Version of the API Product  (optional)
+     * @param providerName Provider name of the API Product  (optional)
+     * @param format Format of output documents. Can be YAML or JSON.  (optional)
+     * @param preserveStatus Preserve API Product Status on export  (optional)
+     * @return File
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public File exportAPIProduct(String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
+        ApiResponse<File> localVarResp = exportAPIProductWithHttpInfo(name, version, providerName, format, preserveStatus);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Export an API Product
+     * This operation can be used to export the details of a particular API Product as a zip file. 
+     * @param name API Product Name  (optional)
+     * @param version Version of the API Product  (optional)
+     * @param providerName Provider name of the API Product  (optional)
+     * @param format Format of output documents. Can be YAML or JSON.  (optional)
+     * @param preserveStatus Preserve API Product Status on export  (optional)
+     * @return ApiResponse&lt;File&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<File> exportAPIProductWithHttpInfo(String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
+        okhttp3.Call localVarCall = exportAPIProductValidateBeforeCall(name, version, providerName, format, preserveStatus, null);
+        Type localVarReturnType = new TypeToken<File>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Export an API Product (asynchronously)
+     * This operation can be used to export the details of a particular API Product as a zip file. 
+     * @param name API Product Name  (optional)
+     * @param version Version of the API Product  (optional)
+     * @param providerName Provider name of the API Product  (optional)
+     * @param format Format of output documents. Can be YAML or JSON.  (optional)
+     * @param preserveStatus Preserve API Product Status on export  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call exportAPIProductAsync(String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback<File> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = exportAPIProductValidateBeforeCall(name, version, providerName, format, preserveStatus, _callback);
+        Type localVarReturnType = new TypeToken<File>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for importAPI
      * @param file Zip archive consisting on exported api configuration (required)
      * @param preserveProvider Preserve Original Provider of the API. This is the user choice to keep or replace the API provider  (optional)
      * @param overwrite Whether to update the API or not. This is used when updating already existing APIs  (optional)
@@ -537,7 +379,7 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisImportPostCall(File file, Boolean preserveProvider, Boolean overwrite, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call importAPICall(File file, Boolean preserveProvider, Boolean overwrite, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -579,15 +421,15 @@ public class ImportExportApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisImportPostValidateBeforeCall(File file, Boolean preserveProvider, Boolean overwrite, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call importAPIValidateBeforeCall(File file, Boolean preserveProvider, Boolean overwrite, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'file' is set
         if (file == null) {
-            throw new ApiException("Missing the required parameter 'file' when calling apisImportPost(Async)");
+            throw new ApiException("Missing the required parameter 'file' when calling importAPI(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisImportPostCall(file, preserveProvider, overwrite, _callback);
+        okhttp3.Call localVarCall = importAPICall(file, preserveProvider, overwrite, _callback);
         return localVarCall;
 
     }
@@ -609,8 +451,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public void apisImportPost(File file, Boolean preserveProvider, Boolean overwrite) throws ApiException {
-        apisImportPostWithHttpInfo(file, preserveProvider, overwrite);
+    public void importAPI(File file, Boolean preserveProvider, Boolean overwrite) throws ApiException {
+        importAPIWithHttpInfo(file, preserveProvider, overwrite);
     }
 
     /**
@@ -631,8 +473,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> apisImportPostWithHttpInfo(File file, Boolean preserveProvider, Boolean overwrite) throws ApiException {
-        okhttp3.Call localVarCall = apisImportPostValidateBeforeCall(file, preserveProvider, overwrite, null);
+    public ApiResponse<Void> importAPIWithHttpInfo(File file, Boolean preserveProvider, Boolean overwrite) throws ApiException {
+        okhttp3.Call localVarCall = importAPIValidateBeforeCall(file, preserveProvider, overwrite, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -655,9 +497,167 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisImportPostAsync(File file, Boolean preserveProvider, Boolean overwrite, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call importAPIAsync(File file, Boolean preserveProvider, Boolean overwrite, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisImportPostValidateBeforeCall(file, preserveProvider, overwrite, _callback);
+        okhttp3.Call localVarCall = importAPIValidateBeforeCall(file, preserveProvider, overwrite, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for importAPIProduct
+     * @param file Zip archive consisting on exported API Product configuration  (required)
+     * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
+     * @param importAPIs Whether to import the dependent APIs or not.  (optional)
+     * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
+     * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. API Product Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importAPIProductCall(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/api-products/import";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (preserveProvider != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveProvider", preserveProvider));
+        }
+
+        if (importAPIs != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("importAPIs", importAPIs));
+        }
+
+        if (overwriteAPIProduct != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("overwriteAPIProduct", overwriteAPIProduct));
+        }
+
+        if (overwriteAPIs != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("overwriteAPIs", overwriteAPIs));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call importAPIProductValidateBeforeCall(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'file' is set
+        if (file == null) {
+            throw new ApiException("Missing the required parameter 'file' when calling importAPIProduct(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = importAPIProductCall(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Import an API Product
+     * This operation can be used to import an API Product. 
+     * @param file Zip archive consisting on exported API Product configuration  (required)
+     * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
+     * @param importAPIs Whether to import the dependent APIs or not.  (optional)
+     * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
+     * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. API Product Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void importAPIProduct(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs) throws ApiException {
+        importAPIProductWithHttpInfo(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs);
+    }
+
+    /**
+     * Import an API Product
+     * This operation can be used to import an API Product. 
+     * @param file Zip archive consisting on exported API Product configuration  (required)
+     * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
+     * @param importAPIs Whether to import the dependent APIs or not.  (optional)
+     * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
+     * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. API Product Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> importAPIProductWithHttpInfo(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs) throws ApiException {
+        okhttp3.Call localVarCall = importAPIProductValidateBeforeCall(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Import an API Product (asynchronously)
+     * This operation can be used to import an API Product. 
+     * @param file Zip archive consisting on exported API Product configuration  (required)
+     * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
+     * @param importAPIs Whether to import the dependent APIs or not.  (optional)
+     * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
+     * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. API Product Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importAPIProductAsync(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = importAPIProductValidateBeforeCall(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }

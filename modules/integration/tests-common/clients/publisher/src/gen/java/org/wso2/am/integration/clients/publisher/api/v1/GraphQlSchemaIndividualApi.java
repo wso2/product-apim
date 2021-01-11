@@ -56,7 +56,7 @@ public class GraphQlSchemaIndividualApi {
     }
 
     /**
-     * Build call for apisApiIdGraphqlSchemaGet
+     * Build call for getAPIGraphQLSchema
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -72,7 +72,7 @@ public class GraphQlSchemaIndividualApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdGraphqlSchemaGetCall(String apiId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAPIGraphQLSchemaCall(String apiId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -111,15 +111,15 @@ public class GraphQlSchemaIndividualApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdGraphqlSchemaGetValidateBeforeCall(String apiId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIGraphQLSchemaValidateBeforeCall(String apiId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdGraphqlSchemaGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIGraphQLSchema(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdGraphqlSchemaGetCall(apiId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIGraphQLSchemaCall(apiId, accept, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -141,8 +141,8 @@ public class GraphQlSchemaIndividualApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public GraphQLSchemaDTO apisApiIdGraphqlSchemaGet(String apiId, String accept, String ifNoneMatch) throws ApiException {
-        ApiResponse<GraphQLSchemaDTO> localVarResp = apisApiIdGraphqlSchemaGetWithHttpInfo(apiId, accept, ifNoneMatch);
+    public GraphQLSchemaDTO getAPIGraphQLSchema(String apiId, String accept, String ifNoneMatch) throws ApiException {
+        ApiResponse<GraphQLSchemaDTO> localVarResp = getAPIGraphQLSchemaWithHttpInfo(apiId, accept, ifNoneMatch);
         return localVarResp.getData();
     }
 
@@ -163,8 +163,8 @@ public class GraphQlSchemaIndividualApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<GraphQLSchemaDTO> apisApiIdGraphqlSchemaGetWithHttpInfo(String apiId, String accept, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdGraphqlSchemaGetValidateBeforeCall(apiId, accept, ifNoneMatch, null);
+    public ApiResponse<GraphQLSchemaDTO> getAPIGraphQLSchemaWithHttpInfo(String apiId, String accept, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIGraphQLSchemaValidateBeforeCall(apiId, accept, ifNoneMatch, null);
         Type localVarReturnType = new TypeToken<GraphQLSchemaDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -187,9 +187,9 @@ public class GraphQlSchemaIndividualApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdGraphqlSchemaGetAsync(String apiId, String accept, String ifNoneMatch, final ApiCallback<GraphQLSchemaDTO> _callback) throws ApiException {
+    public okhttp3.Call getAPIGraphQLSchemaAsync(String apiId, String accept, String ifNoneMatch, final ApiCallback<GraphQLSchemaDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdGraphqlSchemaGetValidateBeforeCall(apiId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIGraphQLSchemaValidateBeforeCall(apiId, accept, ifNoneMatch, _callback);
         Type localVarReturnType = new TypeToken<GraphQLSchemaDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

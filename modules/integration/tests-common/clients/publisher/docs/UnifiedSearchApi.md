@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**searchGet**](UnifiedSearchApi.md#searchGet) | **GET** /search | Retrieve/Search APIs and API Documents by Content 
+[**search**](UnifiedSearchApi.md#search) | **GET** /search | Retrieve/Search APIs and API Documents by Content 
 
 
-<a name="searchGet"></a>
-# **searchGet**
-> SearchResultListDTO searchGet(limit, offset, query, ifNoneMatch)
+<a name="search"></a>
+# **search**
+> SearchResultListDTO search(limit, offset, query, ifNoneMatch)
 
 Retrieve/Search APIs and API Documents by Content 
 
@@ -40,10 +40,10 @@ public class Example {
     String query = "query_example"; // String | **Search**.  You can search by proving a keyword. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      SearchResultListDTO result = apiInstance.searchGet(limit, offset, query, ifNoneMatch);
+      SearchResultListDTO result = apiInstance.search(limit, offset, query, ifNoneMatch);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling UnifiedSearchApi#searchGet");
+      System.err.println("Exception when calling UnifiedSearchApi#search");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

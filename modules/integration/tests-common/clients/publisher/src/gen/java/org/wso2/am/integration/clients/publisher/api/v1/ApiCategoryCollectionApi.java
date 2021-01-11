@@ -55,7 +55,7 @@ public class ApiCategoryCollectionApi {
     }
 
     /**
-     * Build call for apiCategoriesGet
+     * Build call for getAllAPICategories
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -65,7 +65,7 @@ public class ApiCategoryCollectionApi {
         <tr><td> 200 </td><td> OK. Categories returned  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiCategoriesGetCall(final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAllAPICategoriesCall(final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -95,10 +95,10 @@ public class ApiCategoryCollectionApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiCategoriesGetValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAllAPICategoriesValidateBeforeCall(final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = apiCategoriesGetCall(_callback);
+        okhttp3.Call localVarCall = getAllAPICategoriesCall(_callback);
         return localVarCall;
 
     }
@@ -114,8 +114,8 @@ public class ApiCategoryCollectionApi {
         <tr><td> 200 </td><td> OK. Categories returned  </td><td>  -  </td></tr>
      </table>
      */
-    public APICategoryListDTO apiCategoriesGet() throws ApiException {
-        ApiResponse<APICategoryListDTO> localVarResp = apiCategoriesGetWithHttpInfo();
+    public APICategoryListDTO getAllAPICategories() throws ApiException {
+        ApiResponse<APICategoryListDTO> localVarResp = getAllAPICategoriesWithHttpInfo();
         return localVarResp.getData();
     }
 
@@ -130,8 +130,8 @@ public class ApiCategoryCollectionApi {
         <tr><td> 200 </td><td> OK. Categories returned  </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APICategoryListDTO> apiCategoriesGetWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = apiCategoriesGetValidateBeforeCall(null);
+    public ApiResponse<APICategoryListDTO> getAllAPICategoriesWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = getAllAPICategoriesValidateBeforeCall(null);
         Type localVarReturnType = new TypeToken<APICategoryListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -148,9 +148,9 @@ public class ApiCategoryCollectionApi {
         <tr><td> 200 </td><td> OK. Categories returned  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiCategoriesGetAsync(final ApiCallback<APICategoryListDTO> _callback) throws ApiException {
+    public okhttp3.Call getAllAPICategoriesAsync(final ApiCallback<APICategoryListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiCategoriesGetValidateBeforeCall(_callback);
+        okhttp3.Call localVarCall = getAllAPICategoriesValidateBeforeCall(_callback);
         Type localVarReturnType = new TypeToken<APICategoryListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

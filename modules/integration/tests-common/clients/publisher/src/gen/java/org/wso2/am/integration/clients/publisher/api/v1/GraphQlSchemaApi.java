@@ -55,7 +55,7 @@ public class GraphQlSchemaApi {
     }
 
     /**
-     * Build call for apisApiIdGraphqlSchemaPut
+     * Build call for updateAPIGraphQLSchema
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param schemaDefinition schema definition of the GraphQL API (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -72,7 +72,7 @@ public class GraphQlSchemaApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdGraphqlSchemaPutCall(String apiId, String schemaDefinition, String ifMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call updateAPIGraphQLSchemaCall(String apiId, String schemaDefinition, String ifMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -111,20 +111,20 @@ public class GraphQlSchemaApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdGraphqlSchemaPutValidateBeforeCall(String apiId, String schemaDefinition, String ifMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call updateAPIGraphQLSchemaValidateBeforeCall(String apiId, String schemaDefinition, String ifMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdGraphqlSchemaPut(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling updateAPIGraphQLSchema(Async)");
         }
         
         // verify the required parameter 'schemaDefinition' is set
         if (schemaDefinition == null) {
-            throw new ApiException("Missing the required parameter 'schemaDefinition' when calling apisApiIdGraphqlSchemaPut(Async)");
+            throw new ApiException("Missing the required parameter 'schemaDefinition' when calling updateAPIGraphQLSchema(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdGraphqlSchemaPutCall(apiId, schemaDefinition, ifMatch, _callback);
+        okhttp3.Call localVarCall = updateAPIGraphQLSchemaCall(apiId, schemaDefinition, ifMatch, _callback);
         return localVarCall;
 
     }
@@ -146,8 +146,8 @@ public class GraphQlSchemaApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public void apisApiIdGraphqlSchemaPut(String apiId, String schemaDefinition, String ifMatch) throws ApiException {
-        apisApiIdGraphqlSchemaPutWithHttpInfo(apiId, schemaDefinition, ifMatch);
+    public void updateAPIGraphQLSchema(String apiId, String schemaDefinition, String ifMatch) throws ApiException {
+        updateAPIGraphQLSchemaWithHttpInfo(apiId, schemaDefinition, ifMatch);
     }
 
     /**
@@ -168,8 +168,8 @@ public class GraphQlSchemaApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> apisApiIdGraphqlSchemaPutWithHttpInfo(String apiId, String schemaDefinition, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdGraphqlSchemaPutValidateBeforeCall(apiId, schemaDefinition, ifMatch, null);
+    public ApiResponse<Void> updateAPIGraphQLSchemaWithHttpInfo(String apiId, String schemaDefinition, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = updateAPIGraphQLSchemaValidateBeforeCall(apiId, schemaDefinition, ifMatch, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -192,9 +192,9 @@ public class GraphQlSchemaApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdGraphqlSchemaPutAsync(String apiId, String schemaDefinition, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call updateAPIGraphQLSchemaAsync(String apiId, String schemaDefinition, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdGraphqlSchemaPutValidateBeforeCall(apiId, schemaDefinition, ifMatch, _callback);
+        okhttp3.Call localVarCall = updateAPIGraphQLSchemaValidateBeforeCall(apiId, schemaDefinition, ifMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }

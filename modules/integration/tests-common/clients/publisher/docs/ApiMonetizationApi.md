@@ -4,84 +4,15 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apisApiIdMonetizationGet**](ApiMonetizationApi.md#apisApiIdMonetizationGet) | **GET** /apis/{apiId}/monetization | Get Monetization Status for each Tier in a Given API
-[**apisApiIdMonetizePost**](ApiMonetizationApi.md#apisApiIdMonetizePost) | **POST** /apis/{apiId}/monetize | Configure Monetization for a Given API
-[**apisApiIdRevenueGet**](ApiMonetizationApi.md#apisApiIdRevenueGet) | **GET** /apis/{apiId}/revenue | Get Total Revenue Details of a Given Monetized API with Meterd Billing
-[**subscriptionsSubscriptionIdUsageGet**](ApiMonetizationApi.md#subscriptionsSubscriptionIdUsageGet) | **GET** /subscriptions/{subscriptionId}/usage | Get Details of a Pending Invoice for a Monetized Subscription with Metered Billing.
+[**addAPIMonetization**](ApiMonetizationApi.md#addAPIMonetization) | **POST** /apis/{apiId}/monetize | Configure Monetization for a Given API
+[**getAPIMonetization**](ApiMonetizationApi.md#getAPIMonetization) | **GET** /apis/{apiId}/monetization | Get Monetization Status for each Tier in a Given API
+[**getAPIRevenue**](ApiMonetizationApi.md#getAPIRevenue) | **GET** /apis/{apiId}/revenue | Get Total Revenue Details of a Given Monetized API with Meterd Billing
+[**getSubscriptionUsage**](ApiMonetizationApi.md#getSubscriptionUsage) | **GET** /subscriptions/{subscriptionId}/usage | Get Details of a Pending Invoice for a Monetized Subscription with Metered Billing.
 
 
-<a name="apisApiIdMonetizationGet"></a>
-# **apisApiIdMonetizationGet**
-> apisApiIdMonetizationGet(apiId)
-
-Get Monetization Status for each Tier in a Given API
-
-This operation can be used to get monetization status for each tier in a given API 
-
-### Example
-```java
-// Import classes:
-import org.wso2.am.integration.clients.publisher.api.ApiClient;
-import org.wso2.am.integration.clients.publisher.api.ApiException;
-import org.wso2.am.integration.clients.publisher.api.Configuration;
-import org.wso2.am.integration.clients.publisher.api.auth.*;
-import org.wso2.am.integration.clients.publisher.api.models.*;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiMonetizationApi;
-
-public class Example {
-  public static void main(String[] args) {
-    ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v1");
-    
-    // Configure OAuth2 access token for authorization: OAuth2Security
-    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
-    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
-
-    ApiMonetizationApi apiInstance = new ApiMonetizationApi(defaultClient);
-    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
-    try {
-      apiInstance.apisApiIdMonetizationGet(apiId);
-    } catch (ApiException e) {
-      System.err.println("Exception when calling ApiMonetizationApi#apisApiIdMonetizationGet");
-      System.err.println("Status code: " + e.getCode());
-      System.err.println("Reason: " + e.getResponseBody());
-      System.err.println("Response headers: " + e.getResponseHeaders());
-      e.printStackTrace();
-    }
-  }
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[OAuth2Security](../README.md#OAuth2Security)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**200** | OK. Monetization status for each tier returned successfully.  |  -  |
-**400** | Bad Request. Invalid request or validation error. |  -  |
-**404** | Not Found. The specified resource does not exist. |  -  |
-**406** | Not Acceptable. The requested media type is not supported. |  -  |
-
-<a name="apisApiIdMonetizePost"></a>
-# **apisApiIdMonetizePost**
-> apisApiIdMonetizePost(apiId, apIMonetizationInfoDTO)
+<a name="addAPIMonetization"></a>
+# **addAPIMonetization**
+> addAPIMonetization(apiId, apIMonetizationInfoDTO)
 
 Configure Monetization for a Given API
 
@@ -110,9 +41,9 @@ public class Example {
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     APIMonetizationInfoDTO apIMonetizationInfoDTO = new APIMonetizationInfoDTO(); // APIMonetizationInfoDTO | Monetization data object
     try {
-      apiInstance.apisApiIdMonetizePost(apiId, apIMonetizationInfoDTO);
+      apiInstance.addAPIMonetization(apiId, apIMonetizationInfoDTO);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiMonetizationApi#apisApiIdMonetizePost");
+      System.err.println("Exception when calling ApiMonetizationApi#addAPIMonetization");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -150,9 +81,78 @@ null (empty response body)
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
 
-<a name="apisApiIdRevenueGet"></a>
-# **apisApiIdRevenueGet**
-> APIRevenueDTO apisApiIdRevenueGet(apiId)
+<a name="getAPIMonetization"></a>
+# **getAPIMonetization**
+> getAPIMonetization(apiId)
+
+Get Monetization Status for each Tier in a Given API
+
+This operation can be used to get monetization status for each tier in a given API 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiMonetizationApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v1");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApiMonetizationApi apiInstance = new ApiMonetizationApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    try {
+      apiInstance.getAPIMonetization(apiId);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApiMonetizationApi#getAPIMonetization");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Monetization status for each tier returned successfully.  |  -  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**406** | Not Acceptable. The requested media type is not supported. |  -  |
+
+<a name="getAPIRevenue"></a>
+# **getAPIRevenue**
+> APIRevenueDTO getAPIRevenue(apiId)
 
 Get Total Revenue Details of a Given Monetized API with Meterd Billing
 
@@ -180,10 +180,10 @@ public class Example {
     ApiMonetizationApi apiInstance = new ApiMonetizationApi(defaultClient);
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     try {
-      APIRevenueDTO result = apiInstance.apisApiIdRevenueGet(apiId);
+      APIRevenueDTO result = apiInstance.getAPIRevenue(apiId);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiMonetizationApi#apisApiIdRevenueGet");
+      System.err.println("Exception when calling ApiMonetizationApi#getAPIRevenue");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -219,9 +219,9 @@ Name | Type | Description  | Notes
 **304** | Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 
-<a name="subscriptionsSubscriptionIdUsageGet"></a>
-# **subscriptionsSubscriptionIdUsageGet**
-> APIMonetizationUsageDTO subscriptionsSubscriptionIdUsageGet(subscriptionId)
+<a name="getSubscriptionUsage"></a>
+# **getSubscriptionUsage**
+> APIMonetizationUsageDTO getSubscriptionUsage(subscriptionId)
 
 Get Details of a Pending Invoice for a Monetized Subscription with Metered Billing.
 
@@ -249,10 +249,10 @@ public class Example {
     ApiMonetizationApi apiInstance = new ApiMonetizationApi(defaultClient);
     String subscriptionId = "subscriptionId_example"; // String | Subscription Id 
     try {
-      APIMonetizationUsageDTO result = apiInstance.subscriptionsSubscriptionIdUsageGet(subscriptionId);
+      APIMonetizationUsageDTO result = apiInstance.getSubscriptionUsage(subscriptionId);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiMonetizationApi#subscriptionsSubscriptionIdUsageGet");
+      System.err.println("Exception when calling ApiMonetizationApi#getSubscriptionUsage");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

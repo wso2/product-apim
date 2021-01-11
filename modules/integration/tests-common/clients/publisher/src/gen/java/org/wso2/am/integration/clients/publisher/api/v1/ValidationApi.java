@@ -60,128 +60,6 @@ public class ValidationApi {
     }
 
     /**
-     * Build call for apisValidateGraphqlSchemaPost
-     * @param file Definition to upload as a file (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisValidateGraphqlSchemaPostCall(File file, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/validate-graphql-schema";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        if (file != null) {
-            localVarFormParams.put("file", file);
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "multipart/form-data"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisValidateGraphqlSchemaPostValidateBeforeCall(File file, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'file' is set
-        if (file == null) {
-            throw new ApiException("Missing the required parameter 'file' when calling apisValidateGraphqlSchemaPost(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisValidateGraphqlSchemaPostCall(file, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Validate GraphQL API Definition and Retrieve a Summary
-     * This operation can be used to validate a graphQL definition and retrieve a summary. 
-     * @param file Definition to upload as a file (required)
-     * @return GraphQLValidationResponseDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public GraphQLValidationResponseDTO apisValidateGraphqlSchemaPost(File file) throws ApiException {
-        ApiResponse<GraphQLValidationResponseDTO> localVarResp = apisValidateGraphqlSchemaPostWithHttpInfo(file);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Validate GraphQL API Definition and Retrieve a Summary
-     * This operation can be used to validate a graphQL definition and retrieve a summary. 
-     * @param file Definition to upload as a file (required)
-     * @return ApiResponse&lt;GraphQLValidationResponseDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<GraphQLValidationResponseDTO> apisValidateGraphqlSchemaPostWithHttpInfo(File file) throws ApiException {
-        okhttp3.Call localVarCall = apisValidateGraphqlSchemaPostValidateBeforeCall(file, null);
-        Type localVarReturnType = new TypeToken<GraphQLValidationResponseDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Validate GraphQL API Definition and Retrieve a Summary (asynchronously)
-     * This operation can be used to validate a graphQL definition and retrieve a summary. 
-     * @param file Definition to upload as a file (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisValidateGraphqlSchemaPostAsync(File file, final ApiCallback<GraphQLValidationResponseDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisValidateGraphqlSchemaPostValidateBeforeCall(file, _callback);
-        Type localVarReturnType = new TypeToken<GraphQLValidationResponseDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
      * Build call for validateAPI
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Supported attribute modifiers are [** version, context, name **]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -434,6 +312,128 @@ public class ValidationApi {
 
         okhttp3.Call localVarCall = validateEndpointValidateBeforeCall(endpointUrl, apiId, _callback);
         Type localVarReturnType = new TypeToken<ApiEndpointValidationResponseDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for validateGraphQLSchema
+     * @param file Definition to upload as a file (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateGraphQLSchemaCall(File file, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/validate-graphql-schema";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call validateGraphQLSchemaValidateBeforeCall(File file, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'file' is set
+        if (file == null) {
+            throw new ApiException("Missing the required parameter 'file' when calling validateGraphQLSchema(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = validateGraphQLSchemaCall(file, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Validate GraphQL API Definition and Retrieve a Summary
+     * This operation can be used to validate a graphQL definition and retrieve a summary. 
+     * @param file Definition to upload as a file (required)
+     * @return GraphQLValidationResponseDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public GraphQLValidationResponseDTO validateGraphQLSchema(File file) throws ApiException {
+        ApiResponse<GraphQLValidationResponseDTO> localVarResp = validateGraphQLSchemaWithHttpInfo(file);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Validate GraphQL API Definition and Retrieve a Summary
+     * This operation can be used to validate a graphQL definition and retrieve a summary. 
+     * @param file Definition to upload as a file (required)
+     * @return ApiResponse&lt;GraphQLValidationResponseDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<GraphQLValidationResponseDTO> validateGraphQLSchemaWithHttpInfo(File file) throws ApiException {
+        okhttp3.Call localVarCall = validateGraphQLSchemaValidateBeforeCall(file, null);
+        Type localVarReturnType = new TypeToken<GraphQLValidationResponseDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Validate GraphQL API Definition and Retrieve a Summary (asynchronously)
+     * This operation can be used to validate a graphQL definition and retrieve a summary. 
+     * @param file Definition to upload as a file (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateGraphQLSchemaAsync(File file, final ApiCallback<GraphQLValidationResponseDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = validateGraphQLSchemaValidateBeforeCall(file, _callback);
+        Type localVarReturnType = new TypeToken<GraphQLValidationResponseDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

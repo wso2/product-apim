@@ -4,14 +4,14 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apisApiIdResourcePoliciesGet**](ApiResourcePoliciesApi.md#apisApiIdResourcePoliciesGet) | **GET** /apis/{apiId}/resource-policies | Get the Resource Policy(inflow/outflow) Definitions
-[**apisApiIdResourcePoliciesResourcePolicyIdGet**](ApiResourcePoliciesApi.md#apisApiIdResourcePoliciesResourcePolicyIdGet) | **GET** /apis/{apiId}/resource-policies/{resourcePolicyId} | Get the Resource Policy(inflow/outflow) Definition for a Given Resource Identifier.
-[**apisApiIdResourcePoliciesResourcePolicyIdPut**](ApiResourcePoliciesApi.md#apisApiIdResourcePoliciesResourcePolicyIdPut) | **PUT** /apis/{apiId}/resource-policies/{resourcePolicyId} | Update the Resource Policy(inflow/outflow) Definition for the Given Resource Identifier
+[**getAPIResourcePolicies**](ApiResourcePoliciesApi.md#getAPIResourcePolicies) | **GET** /apis/{apiId}/resource-policies | Get the Resource Policy(inflow/outflow) Definitions
+[**getAPIResourcePoliciesByPolicyId**](ApiResourcePoliciesApi.md#getAPIResourcePoliciesByPolicyId) | **GET** /apis/{apiId}/resource-policies/{resourcePolicyId} | Get the Resource Policy(inflow/outflow) Definition for a Given Resource Identifier.
+[**updateAPIResourcePoliciesByPolicyId**](ApiResourcePoliciesApi.md#updateAPIResourcePoliciesByPolicyId) | **PUT** /apis/{apiId}/resource-policies/{resourcePolicyId} | Update the Resource Policy(inflow/outflow) Definition for the Given Resource Identifier
 
 
-<a name="apisApiIdResourcePoliciesGet"></a>
-# **apisApiIdResourcePoliciesGet**
-> ResourcePolicyListDTO apisApiIdResourcePoliciesGet(apiId, sequenceType, resourcePath, verb, ifNoneMatch)
+<a name="getAPIResourcePolicies"></a>
+# **getAPIResourcePolicies**
+> ResourcePolicyListDTO getAPIResourcePolicies(apiId, sequenceType, resourcePath, verb, ifNoneMatch)
 
 Get the Resource Policy(inflow/outflow) Definitions
 
@@ -43,10 +43,10 @@ public class Example {
     String verb = "verb_example"; // String | HTTP verb of the resource path of the resource policy definition
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      ResourcePolicyListDTO result = apiInstance.apisApiIdResourcePoliciesGet(apiId, sequenceType, resourcePath, verb, ifNoneMatch);
+      ResourcePolicyListDTO result = apiInstance.getAPIResourcePolicies(apiId, sequenceType, resourcePath, verb, ifNoneMatch);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiResourcePoliciesApi#apisApiIdResourcePoliciesGet");
+      System.err.println("Exception when calling ApiResourcePoliciesApi#getAPIResourcePolicies");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -87,9 +87,9 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
 
-<a name="apisApiIdResourcePoliciesResourcePolicyIdGet"></a>
-# **apisApiIdResourcePoliciesResourcePolicyIdGet**
-> ResourcePolicyInfoDTO apisApiIdResourcePoliciesResourcePolicyIdGet(apiId, resourcePolicyId, ifNoneMatch)
+<a name="getAPIResourcePoliciesByPolicyId"></a>
+# **getAPIResourcePoliciesByPolicyId**
+> ResourcePolicyInfoDTO getAPIResourcePoliciesByPolicyId(apiId, resourcePolicyId, ifNoneMatch)
 
 Get the Resource Policy(inflow/outflow) Definition for a Given Resource Identifier.
 
@@ -119,10 +119,10 @@ public class Example {
     String resourcePolicyId = "resourcePolicyId_example"; // String | registry resource Id 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      ResourcePolicyInfoDTO result = apiInstance.apisApiIdResourcePoliciesResourcePolicyIdGet(apiId, resourcePolicyId, ifNoneMatch);
+      ResourcePolicyInfoDTO result = apiInstance.getAPIResourcePoliciesByPolicyId(apiId, resourcePolicyId, ifNoneMatch);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiResourcePoliciesApi#apisApiIdResourcePoliciesResourcePolicyIdGet");
+      System.err.println("Exception when calling ApiResourcePoliciesApi#getAPIResourcePoliciesByPolicyId");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -162,9 +162,9 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
 
-<a name="apisApiIdResourcePoliciesResourcePolicyIdPut"></a>
-# **apisApiIdResourcePoliciesResourcePolicyIdPut**
-> ResourcePolicyInfoDTO apisApiIdResourcePoliciesResourcePolicyIdPut(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch)
+<a name="updateAPIResourcePoliciesByPolicyId"></a>
+# **updateAPIResourcePoliciesByPolicyId**
+> ResourcePolicyInfoDTO updateAPIResourcePoliciesByPolicyId(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch)
 
 Update the Resource Policy(inflow/outflow) Definition for the Given Resource Identifier
 
@@ -195,10 +195,10 @@ public class Example {
     ResourcePolicyInfoDTO resourcePolicyInfoDTO = new ResourcePolicyInfoDTO(); // ResourcePolicyInfoDTO | Content of the resource policy definition that needs to be updated
     String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
     try {
-      ResourcePolicyInfoDTO result = apiInstance.apisApiIdResourcePoliciesResourcePolicyIdPut(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch);
+      ResourcePolicyInfoDTO result = apiInstance.updateAPIResourcePoliciesByPolicyId(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiResourcePoliciesApi#apisApiIdResourcePoliciesResourcePolicyIdPut");
+      System.err.println("Exception when calling ApiResourcePoliciesApi#updateAPIResourcePoliciesByPolicyId");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

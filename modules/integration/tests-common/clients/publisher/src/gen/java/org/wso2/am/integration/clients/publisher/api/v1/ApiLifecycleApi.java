@@ -58,380 +58,7 @@ public class ApiLifecycleApi {
     }
 
     /**
-     * Build call for apisApiIdLifecycleHistoryGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state change history returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdLifecycleHistoryGetCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/lifecycle-history"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdLifecycleHistoryGetValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdLifecycleHistoryGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdLifecycleHistoryGetCall(apiId, ifNoneMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get Lifecycle State Change History of the API.
-     * This operation can be used to retrieve Lifecycle state change history of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return LifecycleHistoryDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state change history returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public LifecycleHistoryDTO apisApiIdLifecycleHistoryGet(String apiId, String ifNoneMatch) throws ApiException {
-        ApiResponse<LifecycleHistoryDTO> localVarResp = apisApiIdLifecycleHistoryGetWithHttpInfo(apiId, ifNoneMatch);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get Lifecycle State Change History of the API.
-     * This operation can be used to retrieve Lifecycle state change history of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;LifecycleHistoryDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state change history returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<LifecycleHistoryDTO> apisApiIdLifecycleHistoryGetWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdLifecycleHistoryGetValidateBeforeCall(apiId, ifNoneMatch, null);
-        Type localVarReturnType = new TypeToken<LifecycleHistoryDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get Lifecycle State Change History of the API. (asynchronously)
-     * This operation can be used to retrieve Lifecycle state change history of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state change history returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdLifecycleHistoryGetAsync(String apiId, String ifNoneMatch, final ApiCallback<LifecycleHistoryDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdLifecycleHistoryGetValidateBeforeCall(apiId, ifNoneMatch, _callback);
-        Type localVarReturnType = new TypeToken<LifecycleHistoryDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdLifecycleStateGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state data returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdLifecycleStateGetCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/lifecycle-state"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdLifecycleStateGetValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdLifecycleStateGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdLifecycleStateGetCall(apiId, ifNoneMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get Lifecycle State Data of the API.
-     * This operation can be used to retrieve Lifecycle state data of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return LifecycleStateDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state data returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public LifecycleStateDTO apisApiIdLifecycleStateGet(String apiId, String ifNoneMatch) throws ApiException {
-        ApiResponse<LifecycleStateDTO> localVarResp = apisApiIdLifecycleStateGetWithHttpInfo(apiId, ifNoneMatch);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get Lifecycle State Data of the API.
-     * This operation can be used to retrieve Lifecycle state data of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;LifecycleStateDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state data returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<LifecycleStateDTO> apisApiIdLifecycleStateGetWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdLifecycleStateGetValidateBeforeCall(apiId, ifNoneMatch, null);
-        Type localVarReturnType = new TypeToken<LifecycleStateDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get Lifecycle State Data of the API. (asynchronously)
-     * This operation can be used to retrieve Lifecycle state data of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state data returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdLifecycleStateGetAsync(String apiId, String ifNoneMatch, final ApiCallback<LifecycleStateDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdLifecycleStateGetValidateBeforeCall(apiId, ifNoneMatch, _callback);
-        Type localVarReturnType = new TypeToken<LifecycleStateDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdLifecycleStatePendingTasksDelete
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state change pending task removed successfully.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdLifecycleStatePendingTasksDeleteCall(String apiId, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/lifecycle-state/pending-tasks"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdLifecycleStatePendingTasksDeleteValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdLifecycleStatePendingTasksDelete(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdLifecycleStatePendingTasksDeleteCall(apiId, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Delete Pending Lifecycle State Change Tasks
-     * This operation can be used to remove pending lifecycle state change requests that are in pending state 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state change pending task removed successfully.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public void apisApiIdLifecycleStatePendingTasksDelete(String apiId) throws ApiException {
-        apisApiIdLifecycleStatePendingTasksDeleteWithHttpInfo(apiId);
-    }
-
-    /**
-     * Delete Pending Lifecycle State Change Tasks
-     * This operation can be used to remove pending lifecycle state change requests that are in pending state 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state change pending task removed successfully.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Void> apisApiIdLifecycleStatePendingTasksDeleteWithHttpInfo(String apiId) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdLifecycleStatePendingTasksDeleteValidateBeforeCall(apiId, null);
-        return localVarApiClient.execute(localVarCall);
-    }
-
-    /**
-     * Delete Pending Lifecycle State Change Tasks (asynchronously)
-     * This operation can be used to remove pending lifecycle state change requests that are in pending state 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Lifecycle state change pending task removed successfully.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdLifecycleStatePendingTasksDeleteAsync(String apiId, final ApiCallback<Void> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdLifecycleStatePendingTasksDeleteValidateBeforeCall(apiId, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisChangeLifecyclePost
+     * Build call for changeAPILifecycle
      * @param action The action to demote or promote the state of the API.  Supported actions are [ **Publish**, **Deploy as a Prototype**, **Demote to Created**, **Block**, **Deprecate**, **Re-Publish**, **Retire** ]  (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param lifecycleChecklist  Supported checklist items are as follows. 1. **Deprecate old versions after publishing the API**: Setting this to true will deprecate older versions of a particular API when it is promoted to Published state from Created state. 2. **Requires re-subscription when publishing the API**: If you set this to true, users need to re subscribe to the API although they may have subscribed to an older version. You can specify additional checklist items by using an **\&quot;attribute:\&quot;** modifier. Eg: \&quot;Deprecate old versions after publishing the API:true\&quot; will deprecate older versions of a particular API when it is promoted to Published state from Created state. Multiple checklist items can be given in \&quot;attribute1:true, attribute2:false\&quot; format. **Sample CURL :**  curl -k -H \&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v1/apis/change-lifecycle?apiId&#x3D;890a4f4d-09eb-4877-a323-57f6ce2ed79b&amp;action&#x3D;Publish&amp;lifecycleChecklist&#x3D;Deprecate%20old%20versions%20after%20publishing%20the%20API%3Atrue,Requires%20re-subscription%20when%20publishing%20the%20API%3Afalse\&quot;  (optional)
@@ -450,7 +77,7 @@ public class ApiLifecycleApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisChangeLifecyclePostCall(String action, String apiId, String lifecycleChecklist, String ifMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call changeAPILifecycleCall(String action, String apiId, String lifecycleChecklist, String ifMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -496,20 +123,20 @@ public class ApiLifecycleApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisChangeLifecyclePostValidateBeforeCall(String action, String apiId, String lifecycleChecklist, String ifMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call changeAPILifecycleValidateBeforeCall(String action, String apiId, String lifecycleChecklist, String ifMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'action' is set
         if (action == null) {
-            throw new ApiException("Missing the required parameter 'action' when calling apisChangeLifecyclePost(Async)");
+            throw new ApiException("Missing the required parameter 'action' when calling changeAPILifecycle(Async)");
         }
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisChangeLifecyclePost(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling changeAPILifecycle(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisChangeLifecyclePostCall(action, apiId, lifecycleChecklist, ifMatch, _callback);
+        okhttp3.Call localVarCall = changeAPILifecycleCall(action, apiId, lifecycleChecklist, ifMatch, _callback);
         return localVarCall;
 
     }
@@ -534,8 +161,8 @@ public class ApiLifecycleApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public WorkflowResponseDTO apisChangeLifecyclePost(String action, String apiId, String lifecycleChecklist, String ifMatch) throws ApiException {
-        ApiResponse<WorkflowResponseDTO> localVarResp = apisChangeLifecyclePostWithHttpInfo(action, apiId, lifecycleChecklist, ifMatch);
+    public WorkflowResponseDTO changeAPILifecycle(String action, String apiId, String lifecycleChecklist, String ifMatch) throws ApiException {
+        ApiResponse<WorkflowResponseDTO> localVarResp = changeAPILifecycleWithHttpInfo(action, apiId, lifecycleChecklist, ifMatch);
         return localVarResp.getData();
     }
 
@@ -559,8 +186,8 @@ public class ApiLifecycleApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<WorkflowResponseDTO> apisChangeLifecyclePostWithHttpInfo(String action, String apiId, String lifecycleChecklist, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisChangeLifecyclePostValidateBeforeCall(action, apiId, lifecycleChecklist, ifMatch, null);
+    public ApiResponse<WorkflowResponseDTO> changeAPILifecycleWithHttpInfo(String action, String apiId, String lifecycleChecklist, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = changeAPILifecycleValidateBeforeCall(action, apiId, lifecycleChecklist, ifMatch, null);
         Type localVarReturnType = new TypeToken<WorkflowResponseDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -586,10 +213,383 @@ public class ApiLifecycleApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisChangeLifecyclePostAsync(String action, String apiId, String lifecycleChecklist, String ifMatch, final ApiCallback<WorkflowResponseDTO> _callback) throws ApiException {
+    public okhttp3.Call changeAPILifecycleAsync(String action, String apiId, String lifecycleChecklist, String ifMatch, final ApiCallback<WorkflowResponseDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisChangeLifecyclePostValidateBeforeCall(action, apiId, lifecycleChecklist, ifMatch, _callback);
+        okhttp3.Call localVarCall = changeAPILifecycleValidateBeforeCall(action, apiId, lifecycleChecklist, ifMatch, _callback);
         Type localVarReturnType = new TypeToken<WorkflowResponseDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for deleteAPILifecycleStatePendingTasks
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state change pending task removed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteAPILifecycleStatePendingTasksCall(String apiId, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/lifecycle-state/pending-tasks"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call deleteAPILifecycleStatePendingTasksValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling deleteAPILifecycleStatePendingTasks(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = deleteAPILifecycleStatePendingTasksCall(apiId, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Delete Pending Lifecycle State Change Tasks
+     * This operation can be used to remove pending lifecycle state change requests that are in pending state 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state change pending task removed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void deleteAPILifecycleStatePendingTasks(String apiId) throws ApiException {
+        deleteAPILifecycleStatePendingTasksWithHttpInfo(apiId);
+    }
+
+    /**
+     * Delete Pending Lifecycle State Change Tasks
+     * This operation can be used to remove pending lifecycle state change requests that are in pending state 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state change pending task removed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> deleteAPILifecycleStatePendingTasksWithHttpInfo(String apiId) throws ApiException {
+        okhttp3.Call localVarCall = deleteAPILifecycleStatePendingTasksValidateBeforeCall(apiId, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Delete Pending Lifecycle State Change Tasks (asynchronously)
+     * This operation can be used to remove pending lifecycle state change requests that are in pending state 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state change pending task removed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteAPILifecycleStatePendingTasksAsync(String apiId, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = deleteAPILifecycleStatePendingTasksValidateBeforeCall(apiId, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPILifecycleHistory
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state change history returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPILifecycleHistoryCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/lifecycle-history"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPILifecycleHistoryValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPILifecycleHistory(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPILifecycleHistoryCall(apiId, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Lifecycle State Change History of the API.
+     * This operation can be used to retrieve Lifecycle state change history of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return LifecycleHistoryDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state change history returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public LifecycleHistoryDTO getAPILifecycleHistory(String apiId, String ifNoneMatch) throws ApiException {
+        ApiResponse<LifecycleHistoryDTO> localVarResp = getAPILifecycleHistoryWithHttpInfo(apiId, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get Lifecycle State Change History of the API.
+     * This operation can be used to retrieve Lifecycle state change history of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;LifecycleHistoryDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state change history returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<LifecycleHistoryDTO> getAPILifecycleHistoryWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPILifecycleHistoryValidateBeforeCall(apiId, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<LifecycleHistoryDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get Lifecycle State Change History of the API. (asynchronously)
+     * This operation can be used to retrieve Lifecycle state change history of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state change history returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPILifecycleHistoryAsync(String apiId, String ifNoneMatch, final ApiCallback<LifecycleHistoryDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPILifecycleHistoryValidateBeforeCall(apiId, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<LifecycleHistoryDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPILifecycleState
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state data returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPILifecycleStateCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/lifecycle-state"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPILifecycleStateValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPILifecycleState(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPILifecycleStateCall(apiId, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Lifecycle State Data of the API.
+     * This operation can be used to retrieve Lifecycle state data of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return LifecycleStateDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state data returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public LifecycleStateDTO getAPILifecycleState(String apiId, String ifNoneMatch) throws ApiException {
+        ApiResponse<LifecycleStateDTO> localVarResp = getAPILifecycleStateWithHttpInfo(apiId, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get Lifecycle State Data of the API.
+     * This operation can be used to retrieve Lifecycle state data of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;LifecycleStateDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state data returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<LifecycleStateDTO> getAPILifecycleStateWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPILifecycleStateValidateBeforeCall(apiId, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<LifecycleStateDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get Lifecycle State Data of the API. (asynchronously)
+     * This operation can be used to retrieve Lifecycle state data of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Lifecycle state data returned successfully.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPILifecycleStateAsync(String apiId, String ifNoneMatch, final ApiCallback<LifecycleStateDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPILifecycleStateValidateBeforeCall(apiId, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<LifecycleStateDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

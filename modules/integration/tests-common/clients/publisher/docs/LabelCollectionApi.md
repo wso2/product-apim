@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**labelsGet**](LabelCollectionApi.md#labelsGet) | **GET** /labels | Get all Registered Labels
+[**getLabels**](LabelCollectionApi.md#getLabels) | **GET** /labels | Get all Registered Labels
 
 
-<a name="labelsGet"></a>
-# **labelsGet**
-> LabelListDTO labelsGet()
+<a name="getLabels"></a>
+# **getLabels**
+> LabelListDTO getLabels()
 
 Get all Registered Labels
 
@@ -36,10 +36,10 @@ public class Example {
 
     LabelCollectionApi apiInstance = new LabelCollectionApi(defaultClient);
     try {
-      LabelListDTO result = apiInstance.labelsGet();
+      LabelListDTO result = apiInstance.getLabels();
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling LabelCollectionApi#labelsGet");
+      System.err.println("Exception when calling LabelCollectionApi#getLabels");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

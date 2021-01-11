@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**subscriptionsSubscriptionIdSubscriberInfoGet**](SubscriberApi.md#subscriptionsSubscriptionIdSubscriberInfoGet) | **GET** /subscriptions/{subscriptionId}/subscriber-info | Get Details of a Subscriber
+[**getSubscriberInfoBySubscriptionId**](SubscriberApi.md#getSubscriberInfoBySubscriptionId) | **GET** /subscriptions/{subscriptionId}/subscriber-info | Get Details of a Subscriber
 
 
-<a name="subscriptionsSubscriptionIdSubscriberInfoGet"></a>
-# **subscriptionsSubscriptionIdSubscriberInfoGet**
-> SubscriberInfoDTO subscriptionsSubscriptionIdSubscriberInfoGet(subscriptionId)
+<a name="getSubscriberInfoBySubscriptionId"></a>
+# **getSubscriberInfoBySubscriptionId**
+> SubscriberInfoDTO getSubscriberInfoBySubscriptionId(subscriptionId)
 
 Get Details of a Subscriber
 
@@ -37,10 +37,10 @@ public class Example {
     SubscriberApi apiInstance = new SubscriberApi(defaultClient);
     String subscriptionId = "subscriptionId_example"; // String | Subscription Id 
     try {
-      SubscriberInfoDTO result = apiInstance.subscriptionsSubscriptionIdSubscriberInfoGet(subscriptionId);
+      SubscriberInfoDTO result = apiInstance.getSubscriberInfoBySubscriptionId(subscriptionId);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling SubscriberApi#subscriptionsSubscriptionIdSubscriberInfoGet");
+      System.err.println("Exception when calling SubscriberApi#getSubscriberInfoBySubscriptionId");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

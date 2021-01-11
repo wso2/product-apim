@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apisApiIdGraphqlSchemaPut**](GraphQlSchemaApi.md#apisApiIdGraphqlSchemaPut) | **PUT** /apis/{apiId}/graphql-schema | Add a Schema to a GraphQL API
+[**updateAPIGraphQLSchema**](GraphQlSchemaApi.md#updateAPIGraphQLSchema) | **PUT** /apis/{apiId}/graphql-schema | Add a Schema to a GraphQL API
 
 
-<a name="apisApiIdGraphqlSchemaPut"></a>
-# **apisApiIdGraphqlSchemaPut**
-> apisApiIdGraphqlSchemaPut(apiId, schemaDefinition, ifMatch)
+<a name="updateAPIGraphQLSchema"></a>
+# **updateAPIGraphQLSchema**
+> updateAPIGraphQLSchema(apiId, schemaDefinition, ifMatch)
 
 Add a Schema to a GraphQL API
 
@@ -39,9 +39,9 @@ public class Example {
     String schemaDefinition = "schemaDefinition_example"; // String | schema definition of the GraphQL API
     String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
     try {
-      apiInstance.apisApiIdGraphqlSchemaPut(apiId, schemaDefinition, ifMatch);
+      apiInstance.updateAPIGraphQLSchema(apiId, schemaDefinition, ifMatch);
     } catch (ApiException e) {
-      System.err.println("Exception when calling GraphQlSchemaApi#apisApiIdGraphqlSchemaPut");
+      System.err.println("Exception when calling GraphQlSchemaApi#updateAPIGraphQLSchema");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

@@ -60,7 +60,125 @@ public class ApiProductsApi {
     }
 
     /**
-     * Build call for apiProductsApiProductIdDelete
+     * Build call for createAPIProduct
+     * @param apIProductDTO API object that needs to be added (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> &#39;Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.&#39;  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call createAPIProductCall(APIProductDTO apIProductDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = apIProductDTO;
+
+        // create path and map variables
+        String localVarPath = "/api-products";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call createAPIProductValidateBeforeCall(APIProductDTO apIProductDTO, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apIProductDTO' is set
+        if (apIProductDTO == null) {
+            throw new ApiException("Missing the required parameter 'apIProductDTO' when calling createAPIProduct(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = createAPIProductCall(apIProductDTO, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Create a New API Product
+     * This operation can be used to create a new API Product specifying the details of the API Product in the payload. 
+     * @param apIProductDTO API object that needs to be added (required)
+     * @return APIProductDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> &#39;Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.&#39;  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIProductDTO createAPIProduct(APIProductDTO apIProductDTO) throws ApiException {
+        ApiResponse<APIProductDTO> localVarResp = createAPIProductWithHttpInfo(apIProductDTO);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Create a New API Product
+     * This operation can be used to create a new API Product specifying the details of the API Product in the payload. 
+     * @param apIProductDTO API object that needs to be added (required)
+     * @return ApiResponse&lt;APIProductDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> &#39;Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.&#39;  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIProductDTO> createAPIProductWithHttpInfo(APIProductDTO apIProductDTO) throws ApiException {
+        okhttp3.Call localVarCall = createAPIProductValidateBeforeCall(apIProductDTO, null);
+        Type localVarReturnType = new TypeToken<APIProductDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Create a New API Product (asynchronously)
+     * This operation can be used to create a new API Product specifying the details of the API Product in the payload. 
+     * @param apIProductDTO API object that needs to be added (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> &#39;Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.&#39;  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call createAPIProductAsync(APIProductDTO apIProductDTO, final ApiCallback<APIProductDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = createAPIProductValidateBeforeCall(apIProductDTO, _callback);
+        Type localVarReturnType = new TypeToken<APIProductDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for deleteAPIProduct
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param _callback Callback for upload/download progress
@@ -75,7 +193,7 @@ public class ApiProductsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDeleteCall(String apiProductId, String ifMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call deleteAPIProductCall(String apiProductId, String ifMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -110,15 +228,15 @@ public class ApiProductsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdDeleteValidateBeforeCall(String apiProductId, String ifMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call deleteAPIProductValidateBeforeCall(String apiProductId, String ifMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDelete(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling deleteAPIProduct(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDeleteCall(apiProductId, ifMatch, _callback);
+        okhttp3.Call localVarCall = deleteAPIProductCall(apiProductId, ifMatch, _callback);
         return localVarCall;
 
     }
@@ -138,8 +256,8 @@ public class ApiProductsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public void apiProductsApiProductIdDelete(String apiProductId, String ifMatch) throws ApiException {
-        apiProductsApiProductIdDeleteWithHttpInfo(apiProductId, ifMatch);
+    public void deleteAPIProduct(String apiProductId, String ifMatch) throws ApiException {
+        deleteAPIProductWithHttpInfo(apiProductId, ifMatch);
     }
 
     /**
@@ -158,8 +276,8 @@ public class ApiProductsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> apiProductsApiProductIdDeleteWithHttpInfo(String apiProductId, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdDeleteValidateBeforeCall(apiProductId, ifMatch, null);
+    public ApiResponse<Void> deleteAPIProductWithHttpInfo(String apiProductId, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = deleteAPIProductValidateBeforeCall(apiProductId, ifMatch, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -180,14 +298,14 @@ public class ApiProductsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDeleteAsync(String apiProductId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call deleteAPIProductAsync(String apiProductId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDeleteValidateBeforeCall(apiProductId, ifMatch, _callback);
+        okhttp3.Call localVarCall = deleteAPIProductValidateBeforeCall(apiProductId, ifMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsApiProductIdGet
+     * Build call for getAPIProduct
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -203,7 +321,7 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdGetCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAPIProductCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -242,15 +360,15 @@ public class ApiProductsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdGetValidateBeforeCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIProductValidateBeforeCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling getAPIProduct(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdGetCall(apiProductId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductCall(apiProductId, accept, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -272,8 +390,8 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public APIProductDTO apiProductsApiProductIdGet(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
-        ApiResponse<APIProductDTO> localVarResp = apiProductsApiProductIdGetWithHttpInfo(apiProductId, accept, ifNoneMatch);
+    public APIProductDTO getAPIProduct(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        ApiResponse<APIProductDTO> localVarResp = getAPIProductWithHttpInfo(apiProductId, accept, ifNoneMatch);
         return localVarResp.getData();
     }
 
@@ -294,8 +412,8 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIProductDTO> apiProductsApiProductIdGetWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, null);
+    public ApiResponse<APIProductDTO> getAPIProductWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIProductValidateBeforeCall(apiProductId, accept, ifNoneMatch, null);
         Type localVarReturnType = new TypeToken<APIProductDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -318,15 +436,15 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdGetAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<APIProductDTO> _callback) throws ApiException {
+    public okhttp3.Call getAPIProductAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<APIProductDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductValidateBeforeCall(apiProductId, accept, ifNoneMatch, _callback);
         Type localVarReturnType = new TypeToken<APIProductDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsApiProductIdIsOutdatedGet
+     * Build call for getAPIProductSwagger
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -342,290 +460,7 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdIsOutdatedGetCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/api-products/{apiProductId}/is-outdated"
-            .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (accept != null) {
-            localVarHeaderParams.put("Accept", localVarApiClient.parameterToString(accept));
-        }
-
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdIsOutdatedGetValidateBeforeCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiProductId' is set
-        if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdIsOutdatedGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apiProductsApiProductIdIsOutdatedGetCall(apiProductId, accept, ifNoneMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Check Whether API Product is Outdated
-     * This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs (This resource is not supported at the moment) 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return APIProductOutdatedStatusDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public APIProductOutdatedStatusDTO apiProductsApiProductIdIsOutdatedGet(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
-        ApiResponse<APIProductOutdatedStatusDTO> localVarResp = apiProductsApiProductIdIsOutdatedGetWithHttpInfo(apiProductId, accept, ifNoneMatch);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Check Whether API Product is Outdated
-     * This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs (This resource is not supported at the moment) 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;APIProductOutdatedStatusDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<APIProductOutdatedStatusDTO> apiProductsApiProductIdIsOutdatedGetWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdIsOutdatedGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, null);
-        Type localVarReturnType = new TypeToken<APIProductOutdatedStatusDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Check Whether API Product is Outdated (asynchronously)
-     * This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs (This resource is not supported at the moment) 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiProductsApiProductIdIsOutdatedGetAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<APIProductOutdatedStatusDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apiProductsApiProductIdIsOutdatedGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, _callback);
-        Type localVarReturnType = new TypeToken<APIProductOutdatedStatusDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apiProductsApiProductIdPut
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param apIProductDTO API object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated API product object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiProductsApiProductIdPutCall(String apiProductId, APIProductDTO apIProductDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = apIProductDTO;
-
-        // create path and map variables
-        String localVarPath = "/api-products/{apiProductId}"
-            .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifMatch != null) {
-            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdPutValidateBeforeCall(String apiProductId, APIProductDTO apIProductDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiProductId' is set
-        if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdPut(Async)");
-        }
-        
-        // verify the required parameter 'apIProductDTO' is set
-        if (apIProductDTO == null) {
-            throw new ApiException("Missing the required parameter 'apIProductDTO' when calling apiProductsApiProductIdPut(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apiProductsApiProductIdPutCall(apiProductId, apIProductDTO, ifMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Update an API Product
-     * This operation can be used to update an existing API product. But the properties &#x60;name&#x60;, &#x60;provider&#x60; and &#x60;version&#x60; cannot be changed. 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param apIProductDTO API object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @return APIProductDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated API product object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public APIProductDTO apiProductsApiProductIdPut(String apiProductId, APIProductDTO apIProductDTO, String ifMatch) throws ApiException {
-        ApiResponse<APIProductDTO> localVarResp = apiProductsApiProductIdPutWithHttpInfo(apiProductId, apIProductDTO, ifMatch);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Update an API Product
-     * This operation can be used to update an existing API product. But the properties &#x60;name&#x60;, &#x60;provider&#x60; and &#x60;version&#x60; cannot be changed. 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param apIProductDTO API object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @return ApiResponse&lt;APIProductDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated API product object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<APIProductDTO> apiProductsApiProductIdPutWithHttpInfo(String apiProductId, APIProductDTO apIProductDTO, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdPutValidateBeforeCall(apiProductId, apIProductDTO, ifMatch, null);
-        Type localVarReturnType = new TypeToken<APIProductDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Update an API Product (asynchronously)
-     * This operation can be used to update an existing API product. But the properties &#x60;name&#x60;, &#x60;provider&#x60; and &#x60;version&#x60; cannot be changed. 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param apIProductDTO API object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated API product object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiProductsApiProductIdPutAsync(String apiProductId, APIProductDTO apIProductDTO, String ifMatch, final ApiCallback<APIProductDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apiProductsApiProductIdPutValidateBeforeCall(apiProductId, apIProductDTO, ifMatch, _callback);
-        Type localVarReturnType = new TypeToken<APIProductDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apiProductsApiProductIdSwaggerGet
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiProductsApiProductIdSwaggerGetCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAPIProductSwaggerCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -664,15 +499,15 @@ public class ApiProductsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdSwaggerGetValidateBeforeCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIProductSwaggerValidateBeforeCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdSwaggerGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling getAPIProductSwagger(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdSwaggerGetCall(apiProductId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductSwaggerCall(apiProductId, accept, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -693,8 +528,8 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public void apiProductsApiProductIdSwaggerGet(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
-        apiProductsApiProductIdSwaggerGetWithHttpInfo(apiProductId, accept, ifNoneMatch);
+    public void getAPIProductSwagger(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        getAPIProductSwaggerWithHttpInfo(apiProductId, accept, ifNoneMatch);
     }
 
     /**
@@ -714,8 +549,8 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> apiProductsApiProductIdSwaggerGetWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdSwaggerGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, null);
+    public ApiResponse<Void> getAPIProductSwaggerWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIProductSwaggerValidateBeforeCall(apiProductId, accept, ifNoneMatch, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -737,14 +572,14 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdSwaggerGetAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call getAPIProductSwaggerAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdSwaggerGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductSwaggerValidateBeforeCall(apiProductId, accept, ifNoneMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsApiProductIdThumbnailGet
+     * Build call for getAPIProductThumbnail
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -760,7 +595,7 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdThumbnailGetCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAPIProductThumbnailCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -799,15 +634,15 @@ public class ApiProductsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdThumbnailGetValidateBeforeCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIProductThumbnailValidateBeforeCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdThumbnailGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling getAPIProductThumbnail(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdThumbnailGetCall(apiProductId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductThumbnailCall(apiProductId, accept, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -828,8 +663,8 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public void apiProductsApiProductIdThumbnailGet(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
-        apiProductsApiProductIdThumbnailGetWithHttpInfo(apiProductId, accept, ifNoneMatch);
+    public void getAPIProductThumbnail(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        getAPIProductThumbnailWithHttpInfo(apiProductId, accept, ifNoneMatch);
     }
 
     /**
@@ -849,8 +684,8 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> apiProductsApiProductIdThumbnailGetWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdThumbnailGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, null);
+    public ApiResponse<Void> getAPIProductThumbnailWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIProductThumbnailValidateBeforeCall(apiProductId, accept, ifNoneMatch, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -872,158 +707,14 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdThumbnailGetAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call getAPIProductThumbnailAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdThumbnailGetValidateBeforeCall(apiProductId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductThumbnailValidateBeforeCall(apiProductId, accept, ifNoneMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsApiProductIdThumbnailPut
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param file Image to upload (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Image updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the uploaded thumbnail image of the API Product.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiProductsApiProductIdThumbnailPutCall(String apiProductId, File file, String ifMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/api-products/{apiProductId}/thumbnail"
-            .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifMatch != null) {
-            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        if (file != null) {
-            localVarFormParams.put("file", file);
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "multipart/form-data"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdThumbnailPutValidateBeforeCall(String apiProductId, File file, String ifMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiProductId' is set
-        if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdThumbnailPut(Async)");
-        }
-        
-        // verify the required parameter 'file' is set
-        if (file == null) {
-            throw new ApiException("Missing the required parameter 'file' when calling apiProductsApiProductIdThumbnailPut(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apiProductsApiProductIdThumbnailPutCall(apiProductId, file, ifMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Upload a Thumbnail Image
-     * This operation can be used to upload a thumbnail image of an API Product. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;. 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param file Image to upload (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @return FileInfoDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Image updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the uploaded thumbnail image of the API Product.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public FileInfoDTO apiProductsApiProductIdThumbnailPut(String apiProductId, File file, String ifMatch) throws ApiException {
-        ApiResponse<FileInfoDTO> localVarResp = apiProductsApiProductIdThumbnailPutWithHttpInfo(apiProductId, file, ifMatch);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Upload a Thumbnail Image
-     * This operation can be used to upload a thumbnail image of an API Product. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;. 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param file Image to upload (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @return ApiResponse&lt;FileInfoDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Image updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the uploaded thumbnail image of the API Product.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<FileInfoDTO> apiProductsApiProductIdThumbnailPutWithHttpInfo(String apiProductId, File file, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdThumbnailPutValidateBeforeCall(apiProductId, file, ifMatch, null);
-        Type localVarReturnType = new TypeToken<FileInfoDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Upload a Thumbnail Image (asynchronously)
-     * This operation can be used to upload a thumbnail image of an API Product. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;. 
-     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param file Image to upload (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Image updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the uploaded thumbnail image of the API Product.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apiProductsApiProductIdThumbnailPutAsync(String apiProductId, File file, String ifMatch, final ApiCallback<FileInfoDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apiProductsApiProductIdThumbnailPutValidateBeforeCall(apiProductId, file, ifMatch, _callback);
-        Type localVarReturnType = new TypeToken<FileInfoDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apiProductsGet
+     * Build call for getAllAPIProducts
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query  (optional)
@@ -1040,7 +731,7 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsGetCall(Integer limit, Integer offset, String query, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAllAPIProductsCall(Integer limit, Integer offset, String query, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -1090,10 +781,10 @@ public class ApiProductsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsGetValidateBeforeCall(Integer limit, Integer offset, String query, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAllAPIProductsValidateBeforeCall(Integer limit, Integer offset, String query, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = apiProductsGetCall(limit, offset, query, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAllAPIProductsCall(limit, offset, query, accept, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -1116,8 +807,8 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public APIProductListDTO apiProductsGet(Integer limit, Integer offset, String query, String accept, String ifNoneMatch) throws ApiException {
-        ApiResponse<APIProductListDTO> localVarResp = apiProductsGetWithHttpInfo(limit, offset, query, accept, ifNoneMatch);
+    public APIProductListDTO getAllAPIProducts(Integer limit, Integer offset, String query, String accept, String ifNoneMatch) throws ApiException {
+        ApiResponse<APIProductListDTO> localVarResp = getAllAPIProductsWithHttpInfo(limit, offset, query, accept, ifNoneMatch);
         return localVarResp.getData();
     }
 
@@ -1139,8 +830,8 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIProductListDTO> apiProductsGetWithHttpInfo(Integer limit, Integer offset, String query, String accept, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsGetValidateBeforeCall(limit, offset, query, accept, ifNoneMatch, null);
+    public ApiResponse<APIProductListDTO> getAllAPIProductsWithHttpInfo(Integer limit, Integer offset, String query, String accept, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAllAPIProductsValidateBeforeCall(limit, offset, query, accept, ifNoneMatch, null);
         Type localVarReturnType = new TypeToken<APIProductListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -1164,36 +855,184 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsGetAsync(Integer limit, Integer offset, String query, String accept, String ifNoneMatch, final ApiCallback<APIProductListDTO> _callback) throws ApiException {
+    public okhttp3.Call getAllAPIProductsAsync(Integer limit, Integer offset, String query, String accept, String ifNoneMatch, final ApiCallback<APIProductListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsGetValidateBeforeCall(limit, offset, query, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAllAPIProductsValidateBeforeCall(limit, offset, query, accept, ifNoneMatch, _callback);
         Type localVarReturnType = new TypeToken<APIProductListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsPost
-     * @param apIProductDTO API object that needs to be added (required)
+     * Build call for getIsAPIProductOutdated
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> &#39;Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.&#39;  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsPostCall(APIProductDTO apIProductDTO, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = apIProductDTO;
+    public okhttp3.Call getIsAPIProductOutdatedCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/api-products";
+        String localVarPath = "/api-products/{apiProductId}/is-outdated"
+            .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (accept != null) {
+            localVarHeaderParams.put("Accept", localVarApiClient.parameterToString(accept));
+        }
+
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getIsAPIProductOutdatedValidateBeforeCall(String apiProductId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiProductId' is set
+        if (apiProductId == null) {
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling getIsAPIProductOutdated(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getIsAPIProductOutdatedCall(apiProductId, accept, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Check Whether API Product is Outdated
+     * This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs (This resource is not supported at the moment) 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return APIProductOutdatedStatusDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIProductOutdatedStatusDTO getIsAPIProductOutdated(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        ApiResponse<APIProductOutdatedStatusDTO> localVarResp = getIsAPIProductOutdatedWithHttpInfo(apiProductId, accept, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Check Whether API Product is Outdated
+     * This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs (This resource is not supported at the moment) 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;APIProductOutdatedStatusDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIProductOutdatedStatusDTO> getIsAPIProductOutdatedWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getIsAPIProductOutdatedValidateBeforeCall(apiProductId, accept, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<APIProductOutdatedStatusDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Check Whether API Product is Outdated (asynchronously)
+     * This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs (This resource is not supported at the moment) 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getIsAPIProductOutdatedAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<APIProductOutdatedStatusDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getIsAPIProductOutdatedValidateBeforeCall(apiProductId, accept, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIProductOutdatedStatusDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for updateAPIProduct
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param apIProductDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API product object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPIProductCall(String apiProductId, APIProductDTO apIProductDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = apIProductDTO;
+
+        // create path and map variables
+        String localVarPath = "/api-products/{apiProductId}"
+            .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         final String[] localVarAccepts = {
@@ -1211,81 +1050,242 @@ public class ApiProductsApi {
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsPostValidateBeforeCall(APIProductDTO apIProductDTO, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call updateAPIProductValidateBeforeCall(String apiProductId, APIProductDTO apIProductDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiProductId' is set
+        if (apiProductId == null) {
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling updateAPIProduct(Async)");
+        }
         
         // verify the required parameter 'apIProductDTO' is set
         if (apIProductDTO == null) {
-            throw new ApiException("Missing the required parameter 'apIProductDTO' when calling apiProductsPost(Async)");
+            throw new ApiException("Missing the required parameter 'apIProductDTO' when calling updateAPIProduct(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsPostCall(apIProductDTO, _callback);
+        okhttp3.Call localVarCall = updateAPIProductCall(apiProductId, apIProductDTO, ifMatch, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Create a New API Product
-     * This operation can be used to create a new API Product specifying the details of the API Product in the payload. 
+     * Update an API Product
+     * This operation can be used to update an existing API product. But the properties &#x60;name&#x60;, &#x60;provider&#x60; and &#x60;version&#x60; cannot be changed. 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param apIProductDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @return APIProductDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> &#39;Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.&#39;  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API product object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public APIProductDTO apiProductsPost(APIProductDTO apIProductDTO) throws ApiException {
-        ApiResponse<APIProductDTO> localVarResp = apiProductsPostWithHttpInfo(apIProductDTO);
+    public APIProductDTO updateAPIProduct(String apiProductId, APIProductDTO apIProductDTO, String ifMatch) throws ApiException {
+        ApiResponse<APIProductDTO> localVarResp = updateAPIProductWithHttpInfo(apiProductId, apIProductDTO, ifMatch);
         return localVarResp.getData();
     }
 
     /**
-     * Create a New API Product
-     * This operation can be used to create a new API Product specifying the details of the API Product in the payload. 
+     * Update an API Product
+     * This operation can be used to update an existing API product. But the properties &#x60;name&#x60;, &#x60;provider&#x60; and &#x60;version&#x60; cannot be changed. 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param apIProductDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @return ApiResponse&lt;APIProductDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> &#39;Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.&#39;  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API product object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIProductDTO> apiProductsPostWithHttpInfo(APIProductDTO apIProductDTO) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsPostValidateBeforeCall(apIProductDTO, null);
+    public ApiResponse<APIProductDTO> updateAPIProductWithHttpInfo(String apiProductId, APIProductDTO apIProductDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = updateAPIProductValidateBeforeCall(apiProductId, apIProductDTO, ifMatch, null);
         Type localVarReturnType = new TypeToken<APIProductDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Create a New API Product (asynchronously)
-     * This operation can be used to create a new API Product specifying the details of the API Product in the payload. 
+     * Update an API Product (asynchronously)
+     * This operation can be used to update an existing API product. But the properties &#x60;name&#x60;, &#x60;provider&#x60; and &#x60;version&#x60; cannot be changed. 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param apIProductDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> &#39;Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.&#39;  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API product object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsPostAsync(APIProductDTO apIProductDTO, final ApiCallback<APIProductDTO> _callback) throws ApiException {
+    public okhttp3.Call updateAPIProductAsync(String apiProductId, APIProductDTO apIProductDTO, String ifMatch, final ApiCallback<APIProductDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsPostValidateBeforeCall(apIProductDTO, _callback);
+        okhttp3.Call localVarCall = updateAPIProductValidateBeforeCall(apiProductId, apIProductDTO, ifMatch, _callback);
         Type localVarReturnType = new TypeToken<APIProductDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for updateAPIProductThumbnail
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param file Image to upload (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Image updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the uploaded thumbnail image of the API Product.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPIProductThumbnailCall(String apiProductId, File file, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/api-products/{apiProductId}/thumbnail"
+            .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call updateAPIProductThumbnailValidateBeforeCall(String apiProductId, File file, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiProductId' is set
+        if (apiProductId == null) {
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling updateAPIProductThumbnail(Async)");
+        }
+        
+        // verify the required parameter 'file' is set
+        if (file == null) {
+            throw new ApiException("Missing the required parameter 'file' when calling updateAPIProductThumbnail(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = updateAPIProductThumbnailCall(apiProductId, file, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Upload a Thumbnail Image
+     * This operation can be used to upload a thumbnail image of an API Product. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;. 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param file Image to upload (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return FileInfoDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Image updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the uploaded thumbnail image of the API Product.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public FileInfoDTO updateAPIProductThumbnail(String apiProductId, File file, String ifMatch) throws ApiException {
+        ApiResponse<FileInfoDTO> localVarResp = updateAPIProductThumbnailWithHttpInfo(apiProductId, file, ifMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Upload a Thumbnail Image
+     * This operation can be used to upload a thumbnail image of an API Product. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;. 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param file Image to upload (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;FileInfoDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Image updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the uploaded thumbnail image of the API Product.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<FileInfoDTO> updateAPIProductThumbnailWithHttpInfo(String apiProductId, File file, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = updateAPIProductThumbnailValidateBeforeCall(apiProductId, file, ifMatch, null);
+        Type localVarReturnType = new TypeToken<FileInfoDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Upload a Thumbnail Image (asynchronously)
+     * This operation can be used to upload a thumbnail image of an API Product. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;. 
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param file Image to upload (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Image updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the uploaded thumbnail image of the API Product.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPIProductThumbnailAsync(String apiProductId, File file, String ifMatch, final ApiCallback<FileInfoDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = updateAPIProductThumbnailValidateBeforeCall(apiProductId, file, ifMatch, _callback);
+        Type localVarReturnType = new TypeToken<FileInfoDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

@@ -254,13 +254,13 @@ public static AccessControlEnum fromValue(String value) {
             private List<String> gatewayEnvironments = null;
 
             /**
-* The API type to be used. Accepted values are API, APIProduct
+* The API type to be used. Accepted values are API, APIPRODUCT
 */
     @JsonAdapter(ApiTypeEnum.Adapter.class)
 public enum ApiTypeEnum {
         API("API"),
         
-        APIPRODUCT("APIProduct");
+        APIPRODUCT("APIPRODUCT");
 
 private String value;
 
@@ -842,11 +842,11 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
         }
 
     /**
-        * The API type to be used. Accepted values are API, APIProduct
+        * The API type to be used. Accepted values are API, APIPRODUCT
     * @return apiType
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "APIProduct", value = "The API type to be used. Accepted values are API, APIProduct")
+      @ApiModelProperty(example = "APIPRODUCT", value = "The API type to be used. Accepted values are API, APIPRODUCT")
     
     public ApiTypeEnum getApiType() {
         return apiType;

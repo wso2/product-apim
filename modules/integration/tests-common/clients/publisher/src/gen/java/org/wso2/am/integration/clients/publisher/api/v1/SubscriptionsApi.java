@@ -56,7 +56,7 @@ public class SubscriptionsApi {
     }
 
     /**
-     * Build call for subscriptionsBlockSubscriptionPost
+     * Build call for blockSubscription
      * @param subscriptionId Subscription Id  (required)
      * @param blockState Subscription block state.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -72,7 +72,7 @@ public class SubscriptionsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call subscriptionsBlockSubscriptionPostCall(String subscriptionId, String blockState, String ifMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call blockSubscriptionCall(String subscriptionId, String blockState, String ifMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -114,20 +114,20 @@ public class SubscriptionsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call subscriptionsBlockSubscriptionPostValidateBeforeCall(String subscriptionId, String blockState, String ifMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call blockSubscriptionValidateBeforeCall(String subscriptionId, String blockState, String ifMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'subscriptionId' is set
         if (subscriptionId == null) {
-            throw new ApiException("Missing the required parameter 'subscriptionId' when calling subscriptionsBlockSubscriptionPost(Async)");
+            throw new ApiException("Missing the required parameter 'subscriptionId' when calling blockSubscription(Async)");
         }
         
         // verify the required parameter 'blockState' is set
         if (blockState == null) {
-            throw new ApiException("Missing the required parameter 'blockState' when calling subscriptionsBlockSubscriptionPost(Async)");
+            throw new ApiException("Missing the required parameter 'blockState' when calling blockSubscription(Async)");
         }
         
 
-        okhttp3.Call localVarCall = subscriptionsBlockSubscriptionPostCall(subscriptionId, blockState, ifMatch, _callback);
+        okhttp3.Call localVarCall = blockSubscriptionCall(subscriptionId, blockState, ifMatch, _callback);
         return localVarCall;
 
     }
@@ -148,8 +148,8 @@ public class SubscriptionsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public void subscriptionsBlockSubscriptionPost(String subscriptionId, String blockState, String ifMatch) throws ApiException {
-        subscriptionsBlockSubscriptionPostWithHttpInfo(subscriptionId, blockState, ifMatch);
+    public void blockSubscription(String subscriptionId, String blockState, String ifMatch) throws ApiException {
+        blockSubscriptionWithHttpInfo(subscriptionId, blockState, ifMatch);
     }
 
     /**
@@ -169,8 +169,8 @@ public class SubscriptionsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> subscriptionsBlockSubscriptionPostWithHttpInfo(String subscriptionId, String blockState, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = subscriptionsBlockSubscriptionPostValidateBeforeCall(subscriptionId, blockState, ifMatch, null);
+    public ApiResponse<Void> blockSubscriptionWithHttpInfo(String subscriptionId, String blockState, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = blockSubscriptionValidateBeforeCall(subscriptionId, blockState, ifMatch, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -192,14 +192,14 @@ public class SubscriptionsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call subscriptionsBlockSubscriptionPostAsync(String subscriptionId, String blockState, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call blockSubscriptionAsync(String subscriptionId, String blockState, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = subscriptionsBlockSubscriptionPostValidateBeforeCall(subscriptionId, blockState, ifMatch, _callback);
+        okhttp3.Call localVarCall = blockSubscriptionValidateBeforeCall(subscriptionId, blockState, ifMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
-     * Build call for subscriptionsGet
+     * Build call for getSubscriptions
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (optional)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -216,7 +216,7 @@ public class SubscriptionsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call subscriptionsGetCall(String apiId, Integer limit, Integer offset, String ifNoneMatch, String query, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getSubscriptionsCall(String apiId, Integer limit, Integer offset, String ifNoneMatch, String query, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -266,10 +266,10 @@ public class SubscriptionsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call subscriptionsGetValidateBeforeCall(String apiId, Integer limit, Integer offset, String ifNoneMatch, String query, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getSubscriptionsValidateBeforeCall(String apiId, Integer limit, Integer offset, String ifNoneMatch, String query, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = subscriptionsGetCall(apiId, limit, offset, ifNoneMatch, query, _callback);
+        okhttp3.Call localVarCall = getSubscriptionsCall(apiId, limit, offset, ifNoneMatch, query, _callback);
         return localVarCall;
 
     }
@@ -292,8 +292,8 @@ public class SubscriptionsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public SubscriptionListDTO subscriptionsGet(String apiId, Integer limit, Integer offset, String ifNoneMatch, String query) throws ApiException {
-        ApiResponse<SubscriptionListDTO> localVarResp = subscriptionsGetWithHttpInfo(apiId, limit, offset, ifNoneMatch, query);
+    public SubscriptionListDTO getSubscriptions(String apiId, Integer limit, Integer offset, String ifNoneMatch, String query) throws ApiException {
+        ApiResponse<SubscriptionListDTO> localVarResp = getSubscriptionsWithHttpInfo(apiId, limit, offset, ifNoneMatch, query);
         return localVarResp.getData();
     }
 
@@ -315,8 +315,8 @@ public class SubscriptionsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<SubscriptionListDTO> subscriptionsGetWithHttpInfo(String apiId, Integer limit, Integer offset, String ifNoneMatch, String query) throws ApiException {
-        okhttp3.Call localVarCall = subscriptionsGetValidateBeforeCall(apiId, limit, offset, ifNoneMatch, query, null);
+    public ApiResponse<SubscriptionListDTO> getSubscriptionsWithHttpInfo(String apiId, Integer limit, Integer offset, String ifNoneMatch, String query) throws ApiException {
+        okhttp3.Call localVarCall = getSubscriptionsValidateBeforeCall(apiId, limit, offset, ifNoneMatch, query, null);
         Type localVarReturnType = new TypeToken<SubscriptionListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -340,15 +340,15 @@ public class SubscriptionsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call subscriptionsGetAsync(String apiId, Integer limit, Integer offset, String ifNoneMatch, String query, final ApiCallback<SubscriptionListDTO> _callback) throws ApiException {
+    public okhttp3.Call getSubscriptionsAsync(String apiId, Integer limit, Integer offset, String ifNoneMatch, String query, final ApiCallback<SubscriptionListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = subscriptionsGetValidateBeforeCall(apiId, limit, offset, ifNoneMatch, query, _callback);
+        okhttp3.Call localVarCall = getSubscriptionsValidateBeforeCall(apiId, limit, offset, ifNoneMatch, query, _callback);
         Type localVarReturnType = new TypeToken<SubscriptionListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for subscriptionsUnblockSubscriptionPost
+     * Build call for unBlockSubscription
      * @param subscriptionId Subscription Id  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param _callback Callback for upload/download progress
@@ -363,7 +363,7 @@ public class SubscriptionsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call subscriptionsUnblockSubscriptionPostCall(String subscriptionId, String ifMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call unBlockSubscriptionCall(String subscriptionId, String ifMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -401,15 +401,15 @@ public class SubscriptionsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call subscriptionsUnblockSubscriptionPostValidateBeforeCall(String subscriptionId, String ifMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call unBlockSubscriptionValidateBeforeCall(String subscriptionId, String ifMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'subscriptionId' is set
         if (subscriptionId == null) {
-            throw new ApiException("Missing the required parameter 'subscriptionId' when calling subscriptionsUnblockSubscriptionPost(Async)");
+            throw new ApiException("Missing the required parameter 'subscriptionId' when calling unBlockSubscription(Async)");
         }
         
 
-        okhttp3.Call localVarCall = subscriptionsUnblockSubscriptionPostCall(subscriptionId, ifMatch, _callback);
+        okhttp3.Call localVarCall = unBlockSubscriptionCall(subscriptionId, ifMatch, _callback);
         return localVarCall;
 
     }
@@ -429,8 +429,8 @@ public class SubscriptionsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public void subscriptionsUnblockSubscriptionPost(String subscriptionId, String ifMatch) throws ApiException {
-        subscriptionsUnblockSubscriptionPostWithHttpInfo(subscriptionId, ifMatch);
+    public void unBlockSubscription(String subscriptionId, String ifMatch) throws ApiException {
+        unBlockSubscriptionWithHttpInfo(subscriptionId, ifMatch);
     }
 
     /**
@@ -449,8 +449,8 @@ public class SubscriptionsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> subscriptionsUnblockSubscriptionPostWithHttpInfo(String subscriptionId, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = subscriptionsUnblockSubscriptionPostValidateBeforeCall(subscriptionId, ifMatch, null);
+    public ApiResponse<Void> unBlockSubscriptionWithHttpInfo(String subscriptionId, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = unBlockSubscriptionValidateBeforeCall(subscriptionId, ifMatch, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -471,9 +471,9 @@ public class SubscriptionsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call subscriptionsUnblockSubscriptionPostAsync(String subscriptionId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call unBlockSubscriptionAsync(String subscriptionId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = subscriptionsUnblockSubscriptionPostValidateBeforeCall(subscriptionId, ifMatch, _callback);
+        okhttp3.Call localVarCall = unBlockSubscriptionValidateBeforeCall(subscriptionId, ifMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }

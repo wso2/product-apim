@@ -58,43 +58,30 @@ public class ApiProductDocumentsApi {
     }
 
     /**
-     * Build call for apiProductsApiProductIdDocumentsDocumentIdContentGet
+     * Build call for addAPIProductDocument
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param documentId Document Identifier  (required)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param documentDTO Document object that needs to be added (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. File or inline content returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 303 </td><td> See Other. Source can be retrived from the URL specified at the Location header.  </td><td>  * Location - The Source URL of the document.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created Document object as entity in the body. Location header contains URL of newly added document.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - Location to the newly created Document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdContentGetCall(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
+    public okhttp3.Call addAPIProductDocumentCall(String apiProductId, DocumentDTO documentDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = documentDTO;
 
         // create path and map variables
-        String localVarPath = "/api-products/{apiProductId}/documents/{documentId}/content"
-            .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()))
-            .replaceAll("\\{" + "documentId" + "\\}", localVarApiClient.escapeString(documentId.toString()));
+        String localVarPath = "/api-products/{apiProductId}/documents"
+            .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (accept != null) {
-            localVarHeaderParams.put("Accept", localVarApiClient.parameterToString(accept));
-        }
-
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         final String[] localVarAccepts = {
@@ -106,108 +93,100 @@ public class ApiProductDocumentsApi {
         }
 
         final String[] localVarContentTypes = {
-            
+            "application/json"
         };
         final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdContentGetValidateBeforeCall(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call addAPIProductDocumentValidateBeforeCall(String apiProductId, DocumentDTO documentDTO, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsDocumentIdContentGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling addAPIProductDocument(Async)");
         }
         
-        // verify the required parameter 'documentId' is set
-        if (documentId == null) {
-            throw new ApiException("Missing the required parameter 'documentId' when calling apiProductsApiProductIdDocumentsDocumentIdContentGet(Async)");
+        // verify the required parameter 'documentDTO' is set
+        if (documentDTO == null) {
+            throw new ApiException("Missing the required parameter 'documentDTO' when calling addAPIProductDocument(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdContentGetCall(apiProductId, documentId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = addAPIProductDocumentCall(apiProductId, documentDTO, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Get the Content of an API Product Document
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v1/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
+     * Add a New Document to an API Product
+     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param documentId Document Identifier  (required)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param documentDTO Document object that needs to be added (required)
+     * @return DocumentDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. File or inline content returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 303 </td><td> See Other. Source can be retrived from the URL specified at the Location header.  </td><td>  * Location - The Source URL of the document.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created Document object as entity in the body. Location header contains URL of newly added document.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - Location to the newly created Document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public void apiProductsApiProductIdDocumentsDocumentIdContentGet(String apiProductId, String documentId, String accept, String ifNoneMatch) throws ApiException {
-        apiProductsApiProductIdDocumentsDocumentIdContentGetWithHttpInfo(apiProductId, documentId, accept, ifNoneMatch);
+    public DocumentDTO addAPIProductDocument(String apiProductId, DocumentDTO documentDTO) throws ApiException {
+        ApiResponse<DocumentDTO> localVarResp = addAPIProductDocumentWithHttpInfo(apiProductId, documentDTO);
+        return localVarResp.getData();
     }
 
     /**
-     * Get the Content of an API Product Document
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v1/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
+     * Add a New Document to an API Product
+     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param documentId Document Identifier  (required)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;Void&gt;
+     * @param documentDTO Document object that needs to be added (required)
+     * @return ApiResponse&lt;DocumentDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. File or inline content returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 303 </td><td> See Other. Source can be retrived from the URL specified at the Location header.  </td><td>  * Location - The Source URL of the document.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created Document object as entity in the body. Location header contains URL of newly added document.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - Location to the newly created Document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> apiProductsApiProductIdDocumentsDocumentIdContentGetWithHttpInfo(String apiProductId, String documentId, String accept, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdContentGetValidateBeforeCall(apiProductId, documentId, accept, ifNoneMatch, null);
-        return localVarApiClient.execute(localVarCall);
+    public ApiResponse<DocumentDTO> addAPIProductDocumentWithHttpInfo(String apiProductId, DocumentDTO documentDTO) throws ApiException {
+        okhttp3.Call localVarCall = addAPIProductDocumentValidateBeforeCall(apiProductId, documentDTO, null);
+        Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get the Content of an API Product Document (asynchronously)
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v1/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
+     * Add a New Document to an API Product (asynchronously)
+     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param documentId Document Identifier  (required)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param documentDTO Document object that needs to be added (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. File or inline content returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 303 </td><td> See Other. Source can be retrived from the URL specified at the Location header.  </td><td>  * Location - The Source URL of the document.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created Document object as entity in the body. Location header contains URL of newly added document.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - Location to the newly created Document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdContentGetAsync(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call addAPIProductDocumentAsync(String apiProductId, DocumentDTO documentDTO, final ApiCallback<DocumentDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdContentGetValidateBeforeCall(apiProductId, documentId, accept, ifNoneMatch, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
+        okhttp3.Call localVarCall = addAPIProductDocumentValidateBeforeCall(apiProductId, documentDTO, _callback);
+        Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsApiProductIdDocumentsDocumentIdContentPost
+     * Build call for addAPIProductDocumentContent
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -225,7 +204,7 @@ public class ApiProductDocumentsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdContentPostCall(String apiProductId, String documentId, String ifMatch, File file, String inlineContent, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call addAPIProductDocumentContentCall(String apiProductId, String documentId, String ifMatch, File file, String inlineContent, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -269,20 +248,20 @@ public class ApiProductDocumentsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdContentPostValidateBeforeCall(String apiProductId, String documentId, String ifMatch, File file, String inlineContent, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call addAPIProductDocumentContentValidateBeforeCall(String apiProductId, String documentId, String ifMatch, File file, String inlineContent, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsDocumentIdContentPost(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling addAPIProductDocumentContent(Async)");
         }
         
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
-            throw new ApiException("Missing the required parameter 'documentId' when calling apiProductsApiProductIdDocumentsDocumentIdContentPost(Async)");
+            throw new ApiException("Missing the required parameter 'documentId' when calling addAPIProductDocumentContent(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdContentPostCall(apiProductId, documentId, ifMatch, file, inlineContent, _callback);
+        okhttp3.Call localVarCall = addAPIProductDocumentContentCall(apiProductId, documentId, ifMatch, file, inlineContent, _callback);
         return localVarCall;
 
     }
@@ -306,8 +285,8 @@ public class ApiProductDocumentsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public DocumentDTO apiProductsApiProductIdDocumentsDocumentIdContentPost(String apiProductId, String documentId, String ifMatch, File file, String inlineContent) throws ApiException {
-        ApiResponse<DocumentDTO> localVarResp = apiProductsApiProductIdDocumentsDocumentIdContentPostWithHttpInfo(apiProductId, documentId, ifMatch, file, inlineContent);
+    public DocumentDTO addAPIProductDocumentContent(String apiProductId, String documentId, String ifMatch, File file, String inlineContent) throws ApiException {
+        ApiResponse<DocumentDTO> localVarResp = addAPIProductDocumentContentWithHttpInfo(apiProductId, documentId, ifMatch, file, inlineContent);
         return localVarResp.getData();
     }
 
@@ -330,8 +309,8 @@ public class ApiProductDocumentsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<DocumentDTO> apiProductsApiProductIdDocumentsDocumentIdContentPostWithHttpInfo(String apiProductId, String documentId, String ifMatch, File file, String inlineContent) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdContentPostValidateBeforeCall(apiProductId, documentId, ifMatch, file, inlineContent, null);
+    public ApiResponse<DocumentDTO> addAPIProductDocumentContentWithHttpInfo(String apiProductId, String documentId, String ifMatch, File file, String inlineContent) throws ApiException {
+        okhttp3.Call localVarCall = addAPIProductDocumentContentValidateBeforeCall(apiProductId, documentId, ifMatch, file, inlineContent, null);
         Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -356,15 +335,15 @@ public class ApiProductDocumentsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdContentPostAsync(String apiProductId, String documentId, String ifMatch, File file, String inlineContent, final ApiCallback<DocumentDTO> _callback) throws ApiException {
+    public okhttp3.Call addAPIProductDocumentContentAsync(String apiProductId, String documentId, String ifMatch, File file, String inlineContent, final ApiCallback<DocumentDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdContentPostValidateBeforeCall(apiProductId, documentId, ifMatch, file, inlineContent, _callback);
+        okhttp3.Call localVarCall = addAPIProductDocumentContentValidateBeforeCall(apiProductId, documentId, ifMatch, file, inlineContent, _callback);
         Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsApiProductIdDocumentsDocumentIdDelete
+     * Build call for deleteAPIProductDocument
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -379,7 +358,7 @@ public class ApiProductDocumentsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdDeleteCall(String apiProductId, String documentId, String ifMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call deleteAPIProductDocumentCall(String apiProductId, String documentId, String ifMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -415,20 +394,20 @@ public class ApiProductDocumentsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdDeleteValidateBeforeCall(String apiProductId, String documentId, String ifMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call deleteAPIProductDocumentValidateBeforeCall(String apiProductId, String documentId, String ifMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsDocumentIdDelete(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling deleteAPIProductDocument(Async)");
         }
         
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
-            throw new ApiException("Missing the required parameter 'documentId' when calling apiProductsApiProductIdDocumentsDocumentIdDelete(Async)");
+            throw new ApiException("Missing the required parameter 'documentId' when calling deleteAPIProductDocument(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdDeleteCall(apiProductId, documentId, ifMatch, _callback);
+        okhttp3.Call localVarCall = deleteAPIProductDocumentCall(apiProductId, documentId, ifMatch, _callback);
         return localVarCall;
 
     }
@@ -448,8 +427,8 @@ public class ApiProductDocumentsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public void apiProductsApiProductIdDocumentsDocumentIdDelete(String apiProductId, String documentId, String ifMatch) throws ApiException {
-        apiProductsApiProductIdDocumentsDocumentIdDeleteWithHttpInfo(apiProductId, documentId, ifMatch);
+    public void deleteAPIProductDocument(String apiProductId, String documentId, String ifMatch) throws ApiException {
+        deleteAPIProductDocumentWithHttpInfo(apiProductId, documentId, ifMatch);
     }
 
     /**
@@ -468,8 +447,8 @@ public class ApiProductDocumentsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> apiProductsApiProductIdDocumentsDocumentIdDeleteWithHttpInfo(String apiProductId, String documentId, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdDeleteValidateBeforeCall(apiProductId, documentId, ifMatch, null);
+    public ApiResponse<Void> deleteAPIProductDocumentWithHttpInfo(String apiProductId, String documentId, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = deleteAPIProductDocumentValidateBeforeCall(apiProductId, documentId, ifMatch, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -490,14 +469,14 @@ public class ApiProductDocumentsApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdDeleteAsync(String apiProductId, String documentId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call deleteAPIProductDocumentAsync(String apiProductId, String documentId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdDeleteValidateBeforeCall(apiProductId, documentId, ifMatch, _callback);
+        okhttp3.Call localVarCall = deleteAPIProductDocumentValidateBeforeCall(apiProductId, documentId, ifMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsApiProductIdDocumentsDocumentIdGet
+     * Build call for getAPIProductDocument
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
@@ -514,7 +493,7 @@ public class ApiProductDocumentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdGetCall(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAPIProductDocumentCall(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -554,20 +533,20 @@ public class ApiProductDocumentsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdGetValidateBeforeCall(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIProductDocumentValidateBeforeCall(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsDocumentIdGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling getAPIProductDocument(Async)");
         }
         
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
-            throw new ApiException("Missing the required parameter 'documentId' when calling apiProductsApiProductIdDocumentsDocumentIdGet(Async)");
+            throw new ApiException("Missing the required parameter 'documentId' when calling getAPIProductDocument(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdGetCall(apiProductId, documentId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductDocumentCall(apiProductId, documentId, accept, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -590,8 +569,8 @@ public class ApiProductDocumentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public DocumentDTO apiProductsApiProductIdDocumentsDocumentIdGet(String apiProductId, String documentId, String accept, String ifNoneMatch) throws ApiException {
-        ApiResponse<DocumentDTO> localVarResp = apiProductsApiProductIdDocumentsDocumentIdGetWithHttpInfo(apiProductId, documentId, accept, ifNoneMatch);
+    public DocumentDTO getAPIProductDocument(String apiProductId, String documentId, String accept, String ifNoneMatch) throws ApiException {
+        ApiResponse<DocumentDTO> localVarResp = getAPIProductDocumentWithHttpInfo(apiProductId, documentId, accept, ifNoneMatch);
         return localVarResp.getData();
     }
 
@@ -613,8 +592,8 @@ public class ApiProductDocumentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<DocumentDTO> apiProductsApiProductIdDocumentsDocumentIdGetWithHttpInfo(String apiProductId, String documentId, String accept, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdGetValidateBeforeCall(apiProductId, documentId, accept, ifNoneMatch, null);
+    public ApiResponse<DocumentDTO> getAPIProductDocumentWithHttpInfo(String apiProductId, String documentId, String accept, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIProductDocumentValidateBeforeCall(apiProductId, documentId, accept, ifNoneMatch, null);
         Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -638,44 +617,49 @@ public class ApiProductDocumentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdGetAsync(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback<DocumentDTO> _callback) throws ApiException {
+    public okhttp3.Call getAPIProductDocumentAsync(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback<DocumentDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdGetValidateBeforeCall(apiProductId, documentId, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductDocumentValidateBeforeCall(apiProductId, documentId, accept, ifNoneMatch, _callback);
         Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsApiProductIdDocumentsDocumentIdPut
+     * Build call for getAPIProductDocumentContent
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
-     * @param documentDTO Document object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Document updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the updated document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. File or inline content returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 303 </td><td> See Other. Source can be retrived from the URL specified at the Location header.  </td><td>  * Location - The Source URL of the document.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdPutCall(String apiProductId, String documentId, DocumentDTO documentDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = documentDTO;
+    public okhttp3.Call getAPIProductDocumentContentCall(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/api-products/{apiProductId}/documents/{documentId}"
+        String localVarPath = "/api-products/{apiProductId}/documents/{documentId}/content"
             .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()))
             .replaceAll("\\{" + "documentId" + "\\}", localVarApiClient.escapeString(documentId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifMatch != null) {
-            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        if (accept != null) {
+            localVarHeaderParams.put("Accept", localVarApiClient.parameterToString(accept));
+        }
+
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
         }
 
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
@@ -689,114 +673,108 @@ public class ApiProductDocumentsApi {
         }
 
         final String[] localVarContentTypes = {
-            "application/json"
+            
         };
         final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdPutValidateBeforeCall(String apiProductId, String documentId, DocumentDTO documentDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIProductDocumentContentValidateBeforeCall(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsDocumentIdPut(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling getAPIProductDocumentContent(Async)");
         }
         
         // verify the required parameter 'documentId' is set
         if (documentId == null) {
-            throw new ApiException("Missing the required parameter 'documentId' when calling apiProductsApiProductIdDocumentsDocumentIdPut(Async)");
-        }
-        
-        // verify the required parameter 'documentDTO' is set
-        if (documentDTO == null) {
-            throw new ApiException("Missing the required parameter 'documentDTO' when calling apiProductsApiProductIdDocumentsDocumentIdPut(Async)");
+            throw new ApiException("Missing the required parameter 'documentId' when calling getAPIProductDocumentContent(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdPutCall(apiProductId, documentId, documentDTO, ifMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductDocumentContentCall(apiProductId, documentId, accept, ifNoneMatch, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Update a Document of an API Product
-     * This operation can be used to update metadata of an API&#39;s document. 
+     * Get the Content of an API Product Document
+     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v1/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
-     * @param documentDTO Document object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @return DocumentDTO
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Document updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the updated document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. File or inline content returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 303 </td><td> See Other. Source can be retrived from the URL specified at the Location header.  </td><td>  * Location - The Source URL of the document.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public DocumentDTO apiProductsApiProductIdDocumentsDocumentIdPut(String apiProductId, String documentId, DocumentDTO documentDTO, String ifMatch) throws ApiException {
-        ApiResponse<DocumentDTO> localVarResp = apiProductsApiProductIdDocumentsDocumentIdPutWithHttpInfo(apiProductId, documentId, documentDTO, ifMatch);
-        return localVarResp.getData();
+    public void getAPIProductDocumentContent(String apiProductId, String documentId, String accept, String ifNoneMatch) throws ApiException {
+        getAPIProductDocumentContentWithHttpInfo(apiProductId, documentId, accept, ifNoneMatch);
     }
 
     /**
-     * Update a Document of an API Product
-     * This operation can be used to update metadata of an API&#39;s document. 
+     * Get the Content of an API Product Document
+     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v1/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
-     * @param documentDTO Document object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @return ApiResponse&lt;DocumentDTO&gt;
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Document updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the updated document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. File or inline content returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 303 </td><td> See Other. Source can be retrived from the URL specified at the Location header.  </td><td>  * Location - The Source URL of the document.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<DocumentDTO> apiProductsApiProductIdDocumentsDocumentIdPutWithHttpInfo(String apiProductId, String documentId, DocumentDTO documentDTO, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdPutValidateBeforeCall(apiProductId, documentId, documentDTO, ifMatch, null);
-        Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    public ApiResponse<Void> getAPIProductDocumentContentWithHttpInfo(String apiProductId, String documentId, String accept, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIProductDocumentContentValidateBeforeCall(apiProductId, documentId, accept, ifNoneMatch, null);
+        return localVarApiClient.execute(localVarCall);
     }
 
     /**
-     * Update a Document of an API Product (asynchronously)
-     * This operation can be used to update metadata of an API&#39;s document. 
+     * Get the Content of an API Product Document (asynchronously)
+     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v1/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param documentId Document Identifier  (required)
-     * @param documentDTO Document object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Document updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the updated document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. File or inline content returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 303 </td><td> See Other. Source can be retrived from the URL specified at the Location header.  </td><td>  * Location - The Source URL of the document.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsDocumentIdPutAsync(String apiProductId, String documentId, DocumentDTO documentDTO, String ifMatch, final ApiCallback<DocumentDTO> _callback) throws ApiException {
+    public okhttp3.Call getAPIProductDocumentContentAsync(String apiProductId, String documentId, String accept, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsDocumentIdPutValidateBeforeCall(apiProductId, documentId, documentDTO, ifMatch, _callback);
-        Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        okhttp3.Call localVarCall = getAPIProductDocumentContentValidateBeforeCall(apiProductId, documentId, accept, ifNoneMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsApiProductIdDocumentsGet
+     * Build call for getAPIProductDocuments
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -814,7 +792,7 @@ public class ApiProductDocumentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsGetCall(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAPIProductDocumentsCall(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -861,15 +839,15 @@ public class ApiProductDocumentsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdDocumentsGetValidateBeforeCall(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIProductDocumentsValidateBeforeCall(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling getAPIProductDocuments(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsGetCall(apiProductId, limit, offset, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductDocumentsCall(apiProductId, limit, offset, accept, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -893,8 +871,8 @@ public class ApiProductDocumentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public DocumentListDTO apiProductsApiProductIdDocumentsGet(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch) throws ApiException {
-        ApiResponse<DocumentListDTO> localVarResp = apiProductsApiProductIdDocumentsGetWithHttpInfo(apiProductId, limit, offset, accept, ifNoneMatch);
+    public DocumentListDTO getAPIProductDocuments(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch) throws ApiException {
+        ApiResponse<DocumentListDTO> localVarResp = getAPIProductDocumentsWithHttpInfo(apiProductId, limit, offset, accept, ifNoneMatch);
         return localVarResp.getData();
     }
 
@@ -917,8 +895,8 @@ public class ApiProductDocumentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<DocumentListDTO> apiProductsApiProductIdDocumentsGetWithHttpInfo(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsGetValidateBeforeCall(apiProductId, limit, offset, accept, ifNoneMatch, null);
+    public ApiResponse<DocumentListDTO> getAPIProductDocumentsWithHttpInfo(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIProductDocumentsValidateBeforeCall(apiProductId, limit, offset, accept, ifNoneMatch, null);
         Type localVarReturnType = new TypeToken<DocumentListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -943,38 +921,46 @@ public class ApiProductDocumentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsGetAsync(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch, final ApiCallback<DocumentListDTO> _callback) throws ApiException {
+    public okhttp3.Call getAPIProductDocumentsAsync(String apiProductId, Integer limit, Integer offset, String accept, String ifNoneMatch, final ApiCallback<DocumentListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsGetValidateBeforeCall(apiProductId, limit, offset, accept, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIProductDocumentsValidateBeforeCall(apiProductId, limit, offset, accept, ifNoneMatch, _callback);
         Type localVarReturnType = new TypeToken<DocumentListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apiProductsApiProductIdDocumentsPost
+     * Build call for updateAPIProductDocument
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param documentId Document Identifier  (required)
      * @param documentDTO Document object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created Document object as entity in the body. Location header contains URL of newly added document.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - Location to the newly created Document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. Document updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the updated document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsPostCall(String apiProductId, DocumentDTO documentDTO, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call updateAPIProductDocumentCall(String apiProductId, String documentId, DocumentDTO documentDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = documentDTO;
 
         // create path and map variables
-        String localVarPath = "/api-products/{apiProductId}/documents"
-            .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()));
+        String localVarPath = "/api-products/{apiProductId}/documents/{documentId}"
+            .replaceAll("\\{" + "apiProductId" + "\\}", localVarApiClient.escapeString(apiProductId.toString()))
+            .replaceAll("\\{" + "documentId" + "\\}", localVarApiClient.escapeString(documentId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         final String[] localVarAccepts = {
@@ -992,88 +978,102 @@ public class ApiProductDocumentsApi {
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apiProductsApiProductIdDocumentsPostValidateBeforeCall(String apiProductId, DocumentDTO documentDTO, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call updateAPIProductDocumentValidateBeforeCall(String apiProductId, String documentId, DocumentDTO documentDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
-            throw new ApiException("Missing the required parameter 'apiProductId' when calling apiProductsApiProductIdDocumentsPost(Async)");
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling updateAPIProductDocument(Async)");
+        }
+        
+        // verify the required parameter 'documentId' is set
+        if (documentId == null) {
+            throw new ApiException("Missing the required parameter 'documentId' when calling updateAPIProductDocument(Async)");
         }
         
         // verify the required parameter 'documentDTO' is set
         if (documentDTO == null) {
-            throw new ApiException("Missing the required parameter 'documentDTO' when calling apiProductsApiProductIdDocumentsPost(Async)");
+            throw new ApiException("Missing the required parameter 'documentDTO' when calling updateAPIProductDocument(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsPostCall(apiProductId, documentDTO, _callback);
+        okhttp3.Call localVarCall = updateAPIProductDocumentCall(apiProductId, documentId, documentDTO, ifMatch, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Add a New Document to an API Product
-     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
+     * Update a Document of an API Product
+     * This operation can be used to update metadata of an API&#39;s document. 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param documentId Document Identifier  (required)
      * @param documentDTO Document object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @return DocumentDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created Document object as entity in the body. Location header contains URL of newly added document.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - Location to the newly created Document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. Document updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the updated document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public DocumentDTO apiProductsApiProductIdDocumentsPost(String apiProductId, DocumentDTO documentDTO) throws ApiException {
-        ApiResponse<DocumentDTO> localVarResp = apiProductsApiProductIdDocumentsPostWithHttpInfo(apiProductId, documentDTO);
+    public DocumentDTO updateAPIProductDocument(String apiProductId, String documentId, DocumentDTO documentDTO, String ifMatch) throws ApiException {
+        ApiResponse<DocumentDTO> localVarResp = updateAPIProductDocumentWithHttpInfo(apiProductId, documentId, documentDTO, ifMatch);
         return localVarResp.getData();
     }
 
     /**
-     * Add a New Document to an API Product
-     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
+     * Update a Document of an API Product
+     * This operation can be used to update metadata of an API&#39;s document. 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param documentId Document Identifier  (required)
      * @param documentDTO Document object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @return ApiResponse&lt;DocumentDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created Document object as entity in the body. Location header contains URL of newly added document.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - Location to the newly created Document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. Document updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the updated document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<DocumentDTO> apiProductsApiProductIdDocumentsPostWithHttpInfo(String apiProductId, DocumentDTO documentDTO) throws ApiException {
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsPostValidateBeforeCall(apiProductId, documentDTO, null);
+    public ApiResponse<DocumentDTO> updateAPIProductDocumentWithHttpInfo(String apiProductId, String documentId, DocumentDTO documentDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = updateAPIProductDocumentValidateBeforeCall(apiProductId, documentId, documentDTO, ifMatch, null);
         Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Add a New Document to an API Product (asynchronously)
-     * This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
+     * Update a Document of an API Product (asynchronously)
+     * This operation can be used to update metadata of an API&#39;s document. 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
+     * @param documentId Document Identifier  (required)
      * @param documentDTO Document object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created Document object as entity in the body. Location header contains URL of newly added document.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - Location to the newly created Document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. Document updated  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the updated document.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apiProductsApiProductIdDocumentsPostAsync(String apiProductId, DocumentDTO documentDTO, final ApiCallback<DocumentDTO> _callback) throws ApiException {
+    public okhttp3.Call updateAPIProductDocumentAsync(String apiProductId, String documentId, DocumentDTO documentDTO, String ifMatch, final ApiCallback<DocumentDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apiProductsApiProductIdDocumentsPostValidateBeforeCall(apiProductId, documentDTO, _callback);
+        okhttp3.Call localVarCall = updateAPIProductDocumentValidateBeforeCall(apiProductId, documentId, documentDTO, ifMatch, _callback);
         Type localVarReturnType = new TypeToken<DocumentDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

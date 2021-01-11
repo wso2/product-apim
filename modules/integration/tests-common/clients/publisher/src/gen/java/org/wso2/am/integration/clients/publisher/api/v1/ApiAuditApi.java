@@ -56,7 +56,7 @@ public class ApiAuditApi {
     }
 
     /**
-     * Build call for apisApiIdAuditapiGet
+     * Build call for getAuditReportOfAPI
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param _callback Callback for upload/download progress
@@ -69,7 +69,7 @@ public class ApiAuditApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdAuditapiGetCall(String apiId, String accept, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAuditReportOfAPICall(String apiId, String accept, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -104,15 +104,15 @@ public class ApiAuditApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdAuditapiGetValidateBeforeCall(String apiId, String accept, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAuditReportOfAPIValidateBeforeCall(String apiId, String accept, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdAuditapiGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAuditReportOfAPI(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdAuditapiGetCall(apiId, accept, _callback);
+        okhttp3.Call localVarCall = getAuditReportOfAPICall(apiId, accept, _callback);
         return localVarCall;
 
     }
@@ -131,8 +131,8 @@ public class ApiAuditApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public AuditReportDTO apisApiIdAuditapiGet(String apiId, String accept) throws ApiException {
-        ApiResponse<AuditReportDTO> localVarResp = apisApiIdAuditapiGetWithHttpInfo(apiId, accept);
+    public AuditReportDTO getAuditReportOfAPI(String apiId, String accept) throws ApiException {
+        ApiResponse<AuditReportDTO> localVarResp = getAuditReportOfAPIWithHttpInfo(apiId, accept);
         return localVarResp.getData();
     }
 
@@ -150,8 +150,8 @@ public class ApiAuditApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<AuditReportDTO> apisApiIdAuditapiGetWithHttpInfo(String apiId, String accept) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdAuditapiGetValidateBeforeCall(apiId, accept, null);
+    public ApiResponse<AuditReportDTO> getAuditReportOfAPIWithHttpInfo(String apiId, String accept) throws ApiException {
+        okhttp3.Call localVarCall = getAuditReportOfAPIValidateBeforeCall(apiId, accept, null);
         Type localVarReturnType = new TypeToken<AuditReportDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -171,9 +171,9 @@ public class ApiAuditApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdAuditapiGetAsync(String apiId, String accept, final ApiCallback<AuditReportDTO> _callback) throws ApiException {
+    public okhttp3.Call getAuditReportOfAPIAsync(String apiId, String accept, final ApiCallback<AuditReportDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdAuditapiGetValidateBeforeCall(apiId, accept, _callback);
+        okhttp3.Call localVarCall = getAuditReportOfAPIValidateBeforeCall(apiId, accept, _callback);
         Type localVarReturnType = new TypeToken<AuditReportDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apiCategoriesGet**](ApiCategoryCollectionApi.md#apiCategoriesGet) | **GET** /api-categories | Get all API categories
+[**getAllAPICategories**](ApiCategoryCollectionApi.md#getAllAPICategories) | **GET** /api-categories | Get all API categories
 
 
-<a name="apiCategoriesGet"></a>
-# **apiCategoriesGet**
-> APICategoryListDTO apiCategoriesGet()
+<a name="getAllAPICategories"></a>
+# **getAllAPICategories**
+> APICategoryListDTO getAllAPICategories()
 
 Get all API categories
 
@@ -36,10 +36,10 @@ public class Example {
 
     ApiCategoryCollectionApi apiInstance = new ApiCategoryCollectionApi(defaultClient);
     try {
-      APICategoryListDTO result = apiInstance.apiCategoriesGet();
+      APICategoryListDTO result = apiInstance.getAllAPICategories();
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiCategoryCollectionApi#apiCategoriesGet");
+      System.err.println("Exception when calling ApiCategoryCollectionApi#getAllAPICategories");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

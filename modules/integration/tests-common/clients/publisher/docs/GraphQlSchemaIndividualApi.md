@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apisApiIdGraphqlSchemaGet**](GraphQlSchemaIndividualApi.md#apisApiIdGraphqlSchemaGet) | **GET** /apis/{apiId}/graphql-schema | Get the Schema of a GraphQL API
+[**getAPIGraphQLSchema**](GraphQlSchemaIndividualApi.md#getAPIGraphQLSchema) | **GET** /apis/{apiId}/graphql-schema | Get the Schema of a GraphQL API
 
 
-<a name="apisApiIdGraphqlSchemaGet"></a>
-# **apisApiIdGraphqlSchemaGet**
-> GraphQLSchemaDTO apisApiIdGraphqlSchemaGet(apiId, accept, ifNoneMatch)
+<a name="getAPIGraphQLSchema"></a>
+# **getAPIGraphQLSchema**
+> GraphQLSchemaDTO getAPIGraphQLSchema(apiId, accept, ifNoneMatch)
 
 Get the Schema of a GraphQL API
 
@@ -39,10 +39,10 @@ public class Example {
     String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      GraphQLSchemaDTO result = apiInstance.apisApiIdGraphqlSchemaGet(apiId, accept, ifNoneMatch);
+      GraphQLSchemaDTO result = apiInstance.getAPIGraphQLSchema(apiId, accept, ifNoneMatch);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling GraphQlSchemaIndividualApi#apisApiIdGraphqlSchemaGet");
+      System.err.println("Exception when calling GraphQlSchemaIndividualApi#getAPIGraphQLSchema");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

@@ -55,7 +55,7 @@ public class KeyManagersCollectionApi {
     }
 
     /**
-     * Build call for keyManagersGet
+     * Build call for getAllKeyManagers
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -65,7 +65,7 @@ public class KeyManagersCollectionApi {
         <tr><td> 200 </td><td> OK. Categories returned  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call keyManagersGetCall(final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAllKeyManagersCall(final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -95,10 +95,10 @@ public class KeyManagersCollectionApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call keyManagersGetValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAllKeyManagersValidateBeforeCall(final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = keyManagersGetCall(_callback);
+        okhttp3.Call localVarCall = getAllKeyManagersCall(_callback);
         return localVarCall;
 
     }
@@ -114,8 +114,8 @@ public class KeyManagersCollectionApi {
         <tr><td> 200 </td><td> OK. Categories returned  </td><td>  -  </td></tr>
      </table>
      */
-    public KeyManagerListDTO keyManagersGet() throws ApiException {
-        ApiResponse<KeyManagerListDTO> localVarResp = keyManagersGetWithHttpInfo();
+    public KeyManagerListDTO getAllKeyManagers() throws ApiException {
+        ApiResponse<KeyManagerListDTO> localVarResp = getAllKeyManagersWithHttpInfo();
         return localVarResp.getData();
     }
 
@@ -130,8 +130,8 @@ public class KeyManagersCollectionApi {
         <tr><td> 200 </td><td> OK. Categories returned  </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<KeyManagerListDTO> keyManagersGetWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = keyManagersGetValidateBeforeCall(null);
+    public ApiResponse<KeyManagerListDTO> getAllKeyManagersWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = getAllKeyManagersValidateBeforeCall(null);
         Type localVarReturnType = new TypeToken<KeyManagerListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -148,9 +148,9 @@ public class KeyManagersCollectionApi {
         <tr><td> 200 </td><td> OK. Categories returned  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call keyManagersGetAsync(final ApiCallback<KeyManagerListDTO> _callback) throws ApiException {
+    public okhttp3.Call getAllKeyManagersAsync(final ApiCallback<KeyManagerListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = keyManagersGetValidateBeforeCall(_callback);
+        okhttp3.Call localVarCall = getAllKeyManagersValidateBeforeCall(_callback);
         Type localVarReturnType = new TypeToken<KeyManagerListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

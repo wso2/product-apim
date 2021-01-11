@@ -24,7 +24,7 @@ Name | Type | Description | Notes
 **accessControl** | [**AccessControlEnum**](#AccessControlEnum) | Defines whether the API Product is restricted to certain set of publishers or creators or is it visible to all the publishers and creators. If the accessControl restriction is none, this API Product can be modified by all the publishers and creators, if not it can only be viewable/modifiable by certain set of publishers and creators, based on the restriction.  |  [optional]
 **accessControlRoles** | **List&lt;String&gt;** | The user roles that are able to view/modify as API Product publisher or creator. |  [optional]
 **gatewayEnvironments** | **List&lt;String&gt;** | List of gateway environments the API Product is available  |  [optional]
-**apiType** | [**ApiTypeEnum**](#ApiTypeEnum) | The API type to be used. Accepted values are API, APIProduct |  [optional]
+**apiType** | [**ApiTypeEnum**](#ApiTypeEnum) | The API type to be used. Accepted values are API, APIPRODUCT |  [optional]
 **transport** | **List&lt;String&gt;** | Supported transports for the API (http and/or https).  |  [optional]
 **tags** | **List&lt;String&gt;** |  |  [optional]
 **policies** | **List&lt;String&gt;** |  |  [optional]
@@ -78,7 +78,7 @@ RESTRICTED | &quot;RESTRICTED&quot;
 Name | Value
 ---- | -----
 API | &quot;API&quot;
-APIPRODUCT | &quot;APIProduct&quot;
+APIPRODUCT | &quot;APIPRODUCT&quot;
 
 
 

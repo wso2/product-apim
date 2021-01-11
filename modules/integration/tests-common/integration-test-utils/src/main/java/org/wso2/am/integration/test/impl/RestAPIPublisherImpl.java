@@ -261,7 +261,7 @@ public class RestAPIPublisherImpl {
         body.isDefaultVersion(Boolean.valueOf(apiRequest.getDefault_version_checked()));
         APIDTO apidto;
         try {
-            ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(body, osVersion);
+            ApiResponse<APIDTO> httpInfo = apIsApi.createAPIWithHttpInfo(body, osVersion);
             Assert.assertEquals(201, httpInfo.getStatusCode());
             apidto = httpInfo.getData();
         } catch (ApiException e) {
@@ -274,7 +274,7 @@ public class RestAPIPublisherImpl {
     }
 
     public APIDTO addAPI(APIDTO apidto, String osVersion) throws ApiException {
-        ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(apidto, osVersion);
+        ApiResponse<APIDTO> httpInfo = apIsApi.createAPIWithHttpInfo(apidto, osVersion);
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
     }
@@ -289,7 +289,8 @@ public class RestAPIPublisherImpl {
      * @throws ApiException Throws if an error occurs when creating the new API version.
      */
     public String createNewAPIVersion(String newVersion, String apiId, boolean defaultVersion) throws ApiException {
-        String apiLocation = apIsApi.apisCopyApiPostWithHttpInfo(newVersion, apiId, defaultVersion).getHeaders().get("Location").get(0);
+        String apiLocation = apIsApi.createNewAPIVersionWithHttpInfo(newVersion, apiId, defaultVersion).getHeaders()
+                .get("Location").get(0);
         String[] splitValues = apiLocation.split("/");
         return splitValues[splitValues.length - 1];
     }
@@ -318,7 +319,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse changeAPILifeCycleStatus(String apiId, String action, String lifecycleChecklist) throws ApiException {
         WorkflowResponseDTO workflowResponseDTO = this.apiLifecycleApi
-                .apisChangeLifecyclePost(action, apiId, lifecycleChecklist, null);
+                .changeAPILifecycle(action, apiId, lifecycleChecklist, null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(workflowResponseDTO.getLifecycleState().getState())) {
             response = new HttpResponse(workflowResponseDTO.getLifecycleState().getState(), 200);
@@ -328,7 +329,7 @@ public class RestAPIPublisherImpl {
 
     public WorkflowResponseDTO changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
         ApiResponse<WorkflowResponseDTO> workflowResponseDTOApiResponse =
-                this.apiLifecycleApi.apisChangeLifecyclePostWithHttpInfo(action, apiId, null, null);
+                this.apiLifecycleApi.changeAPILifecycleWithHttpInfo(action, apiId, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, workflowResponseDTOApiResponse.getStatusCode());
         return workflowResponseDTOApiResponse.getData();
     }
@@ -341,7 +342,7 @@ public class RestAPIPublisherImpl {
      */
     public void deprecateAPI(String apiId) throws ApiException {
 
-        apiLifecycleApi.apisChangeLifecyclePost(Constants.DEPRECATE, apiId, null, null);
+        apiLifecycleApi.changeAPILifecycle(Constants.DEPRECATE, apiId, null, null);
     }
 
     /**
@@ -351,7 +352,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws if an error occurred when publishing the API.
      */
     public void deployPrototypeAPI(String apiId) throws ApiException {
-        apiLifecycleApi.apisChangeLifecyclePost(Constants.DEPLOY_AS_PROTOTYPE, apiId, null, null);
+        apiLifecycleApi.changeAPILifecycle(Constants.DEPLOY_AS_PROTOTYPE, apiId, null, null);
     }
 
     /**
@@ -361,11 +362,11 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws if an error occurred when publishing the API.
      */
     public void blockAPI(String apiId) throws ApiException {
-        apiLifecycleApi.apisChangeLifecyclePost(Constants.BLOCK, apiId, null, null);
+        apiLifecycleApi.changeAPILifecycle(Constants.BLOCK, apiId, null, null);
     }
 
     public HttpResponse getLifecycleStatus(String apiId) throws ApiException {
-        LifecycleStateDTO lifecycleStateDTO = this.apiLifecycleApi.apisApiIdLifecycleStateGet(apiId, null);
+        LifecycleStateDTO lifecycleStateDTO = this.apiLifecycleApi.getAPILifecycleState(apiId, null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(lifecycleStateDTO.getState())) {
             response = new HttpResponse(lifecycleStateDTO.getState(), 200);
@@ -376,14 +377,14 @@ public class RestAPIPublisherImpl {
 
     public LifecycleStateDTO getLifecycleStatusDTO(String apiId) throws ApiException {
         ApiResponse<LifecycleStateDTO> apiResponse =
-                this.apiLifecycleApi.apisApiIdLifecycleStateGetWithHttpInfo(apiId, null);
+                this.apiLifecycleApi.getAPILifecycleStateWithHttpInfo(apiId, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         return apiResponse.getData();
     }
 
     public LifecycleHistoryDTO getLifecycleHistory(String apiId) throws ApiException {
         ApiResponse<LifecycleHistoryDTO> apiResponse =
-                this.apiLifecycleApi.apisApiIdLifecycleHistoryGetWithHttpInfo(apiId, null);
+                this.apiLifecycleApi.getAPILifecycleHistoryWithHttpInfo(apiId, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         return apiResponse.getData();
     }
@@ -398,7 +399,7 @@ public class RestAPIPublisherImpl {
      * @throws APIManagerIntegrationTestException - Throws if error occurred at API copy operation
      */
     public HttpResponse copyAPI(String newVersion, String apiId, Boolean isDefault) throws ApiException {
-        APIDTO apiDto = apIsApi.apisCopyApiPost(newVersion, apiId, isDefault);
+        APIDTO apiDto = apIsApi.createNewAPIVersion(newVersion, apiId, isDefault);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(apiDto.getId())) {
             response = new HttpResponse(apiDto.getId(), 200);
@@ -415,7 +416,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException
      */
     public APIDTO copyAPIWithReturnDTO(String newVersion, String apiId, Boolean isDefault) throws ApiException {
-        ApiResponse<APIDTO> response = apIsApi.apisCopyApiPostWithHttpInfo(newVersion, apiId, isDefault);
+        ApiResponse<APIDTO> response = apIsApi.createNewAPIVersionWithHttpInfo(newVersion, apiId, isDefault);
         Assert.assertEquals(HttpStatus.SC_CREATED, response.getStatusCode());
         return response.getData();
     }
@@ -495,7 +496,7 @@ public class RestAPIPublisherImpl {
         body.setCategories(apiRequest.getApiCategories());
         APIDTO apidto;
         try {
-            apidto = apIsApi.apisApiIdPut(apiId, body, null);
+            apidto = apIsApi.updateAPI(apiId, body, null);
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
@@ -511,7 +512,7 @@ public class RestAPIPublisherImpl {
     }
 
     public APIDTO updateAPI(APIDTO apidto, String apiId) throws ApiException {
-        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.apisApiIdPutWithHttpInfo(apiId, apidto, null);
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.updateAPIWithHttpInfo(apiId, apidto, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
@@ -528,7 +529,7 @@ public class RestAPIPublisherImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-             apidto = apIsApi.apisApiIdGet(apiId, null, null);
+             apidto = apIsApi.getAPI(apiId, null, null);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
@@ -546,7 +547,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException - Throws if API delete fails
      */
     public HttpResponse deleteAPI(String apiId) throws ApiException {
-        ApiResponse<Void> deleteResponse = apIsApi.apisApiIdDeleteWithHttpInfo(apiId, null);
+        ApiResponse<Void> deleteResponse = apIsApi.deleteAPIWithHttpInfo(apiId, null);
         HttpResponse response = null;
         if (deleteResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully deleted the API", 200);
@@ -563,7 +564,7 @@ public class RestAPIPublisherImpl {
         if (apiId == null) {
             return;
         }
-        ApiResponse<Void> deleteResponse = apIsApi.apisApiIdDeleteWithHttpInfo(apiId, null);
+        ApiResponse<Void> deleteResponse = apIsApi.deleteAPIWithHttpInfo(apiId, null);
         Assert.assertEquals(HttpStatus.SC_OK, deleteResponse.getStatusCode());
     }
 
@@ -577,7 +578,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse removeDocumentation(String apiId, String docId) throws ApiException {
 
-        ApiResponse<Void> deleteResponse = apiDocumentsApi.apisApiIdDocumentsDocumentIdDeleteWithHttpInfo(apiId, docId, null);
+        ApiResponse<Void> deleteResponse = apiDocumentsApi.deleteAPIDocumentWithHttpInfo(apiId, docId, null);
         HttpResponse response = null;
         if (deleteResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully removed the documentation", 200);
@@ -634,9 +635,9 @@ public class RestAPIPublisherImpl {
      * @param endpointUrl url of the endpoint
      * @param apiId id of the api which the endpoint to be validated
      * @return HttpResponse -  Response of the getAPI request
-     * @throws APIManagerIntegrationTestException - Check for valid endpoint fails.
+     * @throws ApiException - Check for valid endpoint fails.
      */
-    public HttpResponse checkValidEndpoint(String endpointUrl, String apiId) throws APIManagerIntegrationTestException, ApiException {
+    public HttpResponse checkValidEndpoint(String endpointUrl, String apiId) throws ApiException {
 
         ApiEndpointValidationResponseDTO validationResponseDTO = validationApi.validateEndpoint(endpointUrl, apiId);
         HttpResponse response = null;
@@ -657,8 +658,8 @@ public class RestAPIPublisherImpl {
      *                                            service calls to do the lifecycle change.
      */
     public HttpResponse changeAPILifeCycleStatusToPublish(String apiId, boolean isRequireReSubscription) throws ApiException {
-        ApiResponse<WorkflowResponseDTO> responseDTOApiResponse = this.apiLifecycleApi
-                .apisChangeLifecyclePostWithHttpInfo(Constants.PUBLISHED, apiId, "Re-Subscription:" + isRequireReSubscription, null);
+        ApiResponse<WorkflowResponseDTO> responseDTOApiResponse = this.apiLifecycleApi.changeAPILifecycleWithHttpInfo(
+                Constants.PUBLISHED, apiId, "Re-Subscription:" + isRequireReSubscription, null);
         HttpResponse response = null;
         if (responseDTOApiResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully changed the lifecycle of the API", 200);
@@ -688,7 +689,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException - Exception throws if error occurred when adding document.
      */
     public HttpResponse addDocument(String apiId, DocumentDTO body) throws ApiException {
-        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsPost(apiId, body, null);
+        DocumentDTO doc = apiDocumentsApi.addAPIDocument(apiId, body, null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
             response = new HttpResponse(doc.getDocumentId(), 200);
@@ -707,7 +708,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException - Exception throws if error occurred when adding document.
      */
     public HttpResponse addContentDocument(String apiId, String docId, String docContent) throws ApiException {
-        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, null, null,
+        DocumentDTO doc = apiDocumentsApi.addAPIDocumentContent(apiId, docId, null, null,
                 docContent);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
@@ -726,7 +727,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException - Exception throws if error occurred when adding document.
      */
     public HttpResponse updateContentDocument(String apiId, String docId, File docContent) throws ApiException {
-        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentPost(apiId, docId, null, docContent,
+        DocumentDTO doc = apiDocumentsApi.addAPIDocumentContent(apiId, docId, null, docContent,
                 null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
@@ -746,7 +747,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse updateDocument(String apiId, String docId, DocumentDTO documentDTO) throws ApiException {
 
-        DocumentDTO doc = apiDocumentsApi.apisApiIdDocumentsDocumentIdPut(apiId, docId, documentDTO, null);
+        DocumentDTO doc = apiDocumentsApi.updateAPIDocument(apiId, docId, documentDTO, null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(doc.getDocumentId())) {
             response = new HttpResponse("Successfully created the documentation", 200);
@@ -762,7 +763,7 @@ public class RestAPIPublisherImpl {
      * @return Documents for the given limit and offset values
      */
     public DocumentListDTO getDocuments(String apiId) throws ApiException {
-        ApiResponse<DocumentListDTO> apiResponse = apiDocumentsApi.apisApiIdDocumentsGetWithHttpInfo(apiId,
+        ApiResponse<DocumentListDTO> apiResponse = apiDocumentsApi.getAPIDocumentsWithHttpInfo(apiId,
                 null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
@@ -778,7 +779,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse getDocumentContent(String apiId, String documentId) throws ApiException {
 
-        ApiResponse<String> apiResponse = apiDocumentsApi.apisApiIdDocumentsDocumentIdContentGetWithHttpInfo(apiId,
+        ApiResponse<String> apiResponse = apiDocumentsApi.getAPIDocumentContentByDocumentIdWithHttpInfo(apiId,
                 documentId, null);
         HttpResponse response = null;
         if (apiResponse.getStatusCode() == 200) {
@@ -797,8 +798,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse deleteDocument(String apiId, String documentId) throws ApiException {
 
-        ApiResponse<Void> deleteResponse  = apiDocumentsApi.apisApiIdDocumentsDocumentIdDeleteWithHttpInfo
-                (apiId, documentId, null);
+        ApiResponse<Void> deleteResponse  = apiDocumentsApi.deleteAPIDocumentWithHttpInfo(apiId, documentId, null);
         HttpResponse response = null;
         if (deleteResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully deleted the Document", 200);
@@ -881,7 +881,7 @@ public class RestAPIPublisherImpl {
      */
     public APIListDTO getAllAPIs() throws APIManagerIntegrationTestException, ApiException {
 
-        APIListDTO apis = apIsApi.apisGet(null, null, null, null, null, null, null);
+        APIListDTO apis = apIsApi.getAllAPIs(null, null, null, null, null, null, null);
         if (apis.getCount() > 0) {
             return apis;
         }
@@ -896,8 +896,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException
      */
     public SearchResultListDTO searchAPIs(String query) throws ApiException {
-        ApiResponse<SearchResultListDTO> searchResponse = unifiedSearchApi
-                .searchGetWithHttpInfo(null, null, query, null);
+        ApiResponse<SearchResultListDTO> searchResponse = unifiedSearchApi.searchWithHttpInfo(null, null, query, null);
         Assert.assertEquals(HttpStatus.SC_OK, searchResponse.getStatusCode());
         return searchResponse.getData();
     }
@@ -912,7 +911,7 @@ public class RestAPIPublisherImpl {
      * @return APIs for the given limit and offset values
      */
     public APIListDTO getAPIs(int offset, int limit) throws ApiException {
-        ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(limit, offset, this.tenantDomain, null,
+        ApiResponse<APIListDTO> apiResponse = apIsApi.getAllAPIsWithHttpInfo(limit, offset, this.tenantDomain, null,
                 null, false, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
@@ -929,7 +928,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse uploadEndpointCertificate(File certificate, String alias, String endpoint) throws ApiException {
 
-        CertMetadataDTO certificateDTO = endpointCertificatesApi.endpointCertificatesPost(certificate, alias, endpoint);
+        CertMetadataDTO certificateDTO = endpointCertificatesApi.addEndpointCertificate(certificate, alias, endpoint);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
             response = new HttpResponse("Successfully uploaded the certificate", 200);
@@ -969,13 +968,13 @@ public class RestAPIPublisherImpl {
     }
 
     public String getSwaggerByID(String apiId) throws ApiException {
-        ApiResponse<String> response = apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null);
+        ApiResponse<String> response = apIsApi.getAPISwaggerWithHttpInfo(apiId, null);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
     }
 
     public String updateSwagger(String apiId, String definition) throws ApiException {
-        ApiResponse<String> apiResponse = apIsApi.apisApiIdSwaggerPutWithHttpInfo(apiId, null, definition, null, null);
+        ApiResponse<String> apiResponse = apIsApi.updateAPISwaggerWithHttpInfo(apiId, null, definition, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
@@ -988,12 +987,12 @@ public class RestAPIPublisherImpl {
     }
 
     public APIDTO getAPIByID(String apiId, String tenantDomain) throws ApiException {
-        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.apisApiIdGetWithHttpInfo(apiId, tenantDomain, null);
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.getAPIWithHttpInfo(apiId, tenantDomain, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
     public APIDTO getAPIByID(String apiId) throws ApiException {
-        return  apIsApi.apisApiIdGet(apiId, tenantDomain, null);
+        return  apIsApi.getAPI(apiId, tenantDomain, null);
     }
 
     public APIDTO importOASDefinition(File file, String properties) throws ApiException {
@@ -1004,13 +1003,13 @@ public class RestAPIPublisherImpl {
 
     public GraphQLValidationResponseDTO validateGraphqlSchemaDefinition(File schemaDefinition) throws ApiException {
         ApiResponse<GraphQLValidationResponseDTO> response =
-                validationApi.apisValidateGraphqlSchemaPostWithHttpInfo(schemaDefinition);
+                validationApi.validateGraphQLSchemaWithHttpInfo(schemaDefinition);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
     }
 
     public APIDTO importGraphqlSchemaDefinition(File file, String properties) throws ApiException {
-        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.apisImportGraphqlSchemaPostWithHttpInfo(null, "GRAPHQL",
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importGraphQLSchemaWithHttpInfo(null, "GRAPHQL",
                 file, properties);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
@@ -1018,13 +1017,13 @@ public class RestAPIPublisherImpl {
 
     public GraphQLSchemaDTO getGraphqlSchemaDefinition(String apiId) throws ApiException {
         ApiResponse<GraphQLSchemaDTO> schemaDefinitionDTO = graphQlSchemaIndividualApi.
-                apisApiIdGraphqlSchemaGetWithHttpInfo(apiId, "application/json", null);
+                getAPIGraphQLSchemaWithHttpInfo(apiId, "application/json", null);
         Assert.assertEquals(HttpStatus.SC_OK, schemaDefinitionDTO.getStatusCode());
         return schemaDefinitionDTO.getData();
     }
 
     public void updateGraphqlSchemaDefinition(String apiId, String schemaDefinition) throws ApiException {
-        ApiResponse<Void> schemaDefinitionDTO = graphQlSchemaApi.apisApiIdGraphqlSchemaPutWithHttpInfo
+        ApiResponse<Void> schemaDefinitionDTO = graphQlSchemaApi.updateAPIGraphQLSchemaWithHttpInfo
                 (apiId, schemaDefinition, null);
         Assert.assertEquals(HttpStatus.SC_OK, schemaDefinitionDTO.getStatusCode());
     }
@@ -1095,7 +1094,7 @@ public class RestAPIPublisherImpl {
             dto.setType(APIEndpointSecurityDTO.TypeEnum.BASIC);
             body.setEndpointSecurity(dto);
         }
-        ApiResponse<APIDTO> httpInfo = apIsApi.apisPostWithHttpInfo(body, "v3");
+        ApiResponse<APIDTO> httpInfo = apIsApi.createAPIWithHttpInfo(body, "v3");
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
     }
@@ -1110,7 +1109,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse uploadCertificate(File certificate, String alias, String apiId, String tier)
             throws ApiException {
-        ClientCertMetadataDTO certificateDTO = clientCertificatesApi.apisApiIdClientCertificatesPost(apiId, certificate,
+        ClientCertMetadataDTO certificateDTO = clientCertificatesApi.addAPIClientCertificate(apiId, certificate,
                 alias, tier);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
@@ -1128,7 +1127,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException
      */
     public APIDTO updateAPI(APIDTO apidto) throws ApiException {
-        ApiResponse<APIDTO> response = apIsApi.apisApiIdPutWithHttpInfo(apidto.getId(), apidto, null);
+        ApiResponse<APIDTO> response = apIsApi.updateAPIWithHttpInfo(apidto.getId(), apidto, null);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
     }
@@ -1142,33 +1141,33 @@ public class RestAPIPublisherImpl {
      */
     public SubscriptionListDTO getSubscriptionByAPIID(String apiID) throws ApiException {
         ApiResponse<SubscriptionListDTO> apiResponse =
-                subscriptionsApi.subscriptionsGetWithHttpInfo(apiID, 10, 0, null, null);
+                subscriptionsApi.getSubscriptionsWithHttpInfo(apiID, 10, 0, null, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         return apiResponse.getData();
     }
 
     public APIProductListDTO getAllApiProducts() throws ApiException {
         ApiResponse<APIProductListDTO> apiResponse =
-                apiProductsApi.apiProductsGetWithHttpInfo(null, null, null, null, null);
+                apiProductsApi.getAllAPIProductsWithHttpInfo(null, null, null, null, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         return apiResponse.getData();
     }
 
     public APIProductDTO getApiProduct(String apiProductId) throws ApiException {
         ApiResponse<APIProductDTO> apiResponse =
-                apiProductsApi.apiProductsApiProductIdGetWithHttpInfo(apiProductId, null, null);
+                apiProductsApi.getAPIProductWithHttpInfo(apiProductId, null, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         return apiResponse.getData();
     }
 
     public APIProductDTO addApiProduct(APIProductDTO apiProductDTO) throws ApiException {
-        ApiResponse<APIProductDTO> apiResponse = apiProductsApi.apiProductsPostWithHttpInfo(apiProductDTO);
+        ApiResponse<APIProductDTO> apiResponse = apiProductsApi.createAPIProductWithHttpInfo(apiProductDTO);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_CREATED);
         return apiResponse.getData();
     }
 
     public void deleteApiProduct(String apiProductId) throws ApiException {
-        ApiResponse<Void> apiResponse = apiProductsApi.apiProductsApiProductIdDeleteWithHttpInfo(apiProductId, null);
+        ApiResponse<Void> apiResponse = apiProductsApi.deleteAPIProductWithHttpInfo(apiProductId, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
@@ -1181,7 +1180,7 @@ public class RestAPIPublisherImpl {
     public HttpResponse getAuditApi(String apiId) throws ApiException {
         HttpResponse response = null;
         ApiResponse<AuditReportDTO> auditReportResponse = apiAuditApi
-                .apisApiIdAuditapiGetWithHttpInfo(apiId, "application/json");
+                .getAuditReportOfAPIWithHttpInfo(apiId, "application/json");
         if (auditReportResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully audited the report", 200);
         }
@@ -1197,7 +1196,7 @@ public class RestAPIPublisherImpl {
     public HttpResponse getGraphQLSchemaTypeListResponse(String apiId) throws ApiException {
         HttpResponse response = null;
         ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi
-                .apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+                .getGraphQLPolicyComplexityTypesOfAPIWithHttpInfo(apiId);
         if(graphQLSchemaTypeListDTOApiResponse.getStatusCode() == 200){
             response = new HttpResponse("Successfully get the GraphQL Schema Type List", 200);
         }
@@ -1212,7 +1211,7 @@ public class RestAPIPublisherImpl {
      */
     public GraphQLSchemaTypeListDTO getGraphQLSchemaTypeList(String apiId) throws ApiException {
         ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi
-                .apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
+                .getGraphQLPolicyComplexityTypesOfAPIWithHttpInfo(apiId);
         Assert.assertEquals(graphQLSchemaTypeListDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
         return graphQLSchemaTypeListDTOApiResponse.getData();
     }
@@ -1225,8 +1224,10 @@ public class RestAPIPublisherImpl {
      * @return
      * @throws ApiException
      */
-    public void addGraphQLComplexityDetails(GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, String apiID ) throws ApiException {
-        ApiResponse<Void> apiResponse =  graphQlPoliciesApi.apisApiIdGraphqlPoliciesComplexityPutWithHttpInfo(apiID, graphQLQueryComplexityInfoDTO);
+    public void addGraphQLComplexityDetails(GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO, String apiID)
+            throws ApiException {
+        ApiResponse<Void> apiResponse =  graphQlPoliciesApi.updateGraphQLPolicyComplexityOfAPIWithHttpInfo(apiID,
+                graphQLQueryComplexityInfoDTO);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
@@ -1239,7 +1240,7 @@ public class RestAPIPublisherImpl {
     public HttpResponse getGraphQLComplexityResponse(String apiId) throws ApiException {
         HttpResponse response = null;
         ApiResponse<GraphQLQueryComplexityInfoDTO> complexityResponse = graphQlPoliciesApi
-                .apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
+                .getGraphQLPolicyComplexityOfAPIWithHttpInfo(apiId);
         if(complexityResponse.getStatusCode() == 200){
             response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);
         }

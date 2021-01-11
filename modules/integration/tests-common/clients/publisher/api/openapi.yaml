@@ -102,6 +102,7 @@ paths:
         This operation provides you a list of available APIs qualifying under a given search condition.
 
         Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
+      operationId: getAllAPIs
       parameters:
       - description: |
           Maximum size of resource array to return.
@@ -251,6 +252,7 @@ paths:
         This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in `CREATED` state.
 
         There is a special capability for a user who has `APIM Admin` permission such that he can create APIs on behalf of other users. For that he can to specify `"provider" : "some_other_user"` in the payload so that the API's creator will be shown as `some_other_user` in the UI.
+      operationId: createAPI
       parameters:
       - description: Open api version
         explode: true
@@ -346,6 +348,7 @@ paths:
     delete:
       description: |
         This operation can be used to delete an existing API proving the Id of the API.
+      operationId: deleteAPI
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -438,6 +441,7 @@ paths:
     get:
       description: |
         Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.
+      operationId: getAPI
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -548,6 +552,7 @@ paths:
       description: |
         This operation can be used to update an existing API.
         But the properties `name`, `version`, `context`, `provider`, `state` will not be changed by this operation.
+      operationId: updateAPI
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -694,6 +699,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve the swagger definition of an API.
+      operationId: getAPISwagger
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -789,6 +795,7 @@ paths:
     put:
       description: |
         This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter `apiDefinition`.
+      operationId: updateAPISwagger
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -1124,6 +1131,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve conversion policy resource definitions of an API.
+      operationId: getAPIResourcePolicies
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -1244,6 +1252,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve conversion policy resource definitions of an API given the resource identifier.
+      operationId: getAPIResourcePoliciesByPolicyId
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -1361,6 +1370,7 @@ paths:
     put:
       description: |
         This operation can be used to update the resource policy(inflow/outflow) definition for the given resource identifier of an existing API. resource policy definition to be updated is passed as a body parameter `content`.
+      operationId: updateAPIResourcePoliciesByPolicyId
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -1504,6 +1514,7 @@ paths:
     get:
       description: |
         This operation can be used to download a thumbnail image of an API.
+      operationId: getAPIThumbnail
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -1726,6 +1737,7 @@ paths:
         This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.
 
         `X-WSO2-Tenant` header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
+      operationId: getAPISubscriptionPolicies
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -1827,6 +1839,7 @@ paths:
     post:
       description: |
         This operation can be used to create a new version of an existing API. The new version is specified as `newVersion` query parameter. New API will be in `CREATED` state.
+      operationId: createNewAPIVersion
       parameters:
       - description: Version of the new API.
         explode: true
@@ -1919,6 +1932,7 @@ paths:
         For example, to Publish an API, `action` should be `Publish`. Note that the `Re-publish` action is available only after calling `Block`.
 
         Some actions supports providing additional paramters which should be provided as `lifecycleChecklist` parameter. Please see parameters table for more information.
+      operationId: changeAPILifecycle
       parameters:
       - description: |
           The action to demote or promote the state of the API.
@@ -2073,6 +2087,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve Lifecycle state change history of the API.
+      operationId: getAPILifecycleHistory
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -2150,6 +2165,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve Lifecycle state data of the API.
+      operationId: getAPILifecycleState
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -2249,6 +2265,7 @@ paths:
     delete:
       description: |
         This operation can be used to remove pending lifecycle state change requests that are in pending state
+      operationId: deleteAPILifecycleStatePendingTasks
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -2412,7 +2429,16 @@ paths:
             schema:
               properties:
                 file:
-                  description: WSDL definition as a file
+                  description: |
+                    WSDL definition as a file or archive
+
+                    **Sample cURL to Upload WSDL File**
+
+                    curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -F file=@api.wsdl -F additionalProperties=@data.json "https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl"
+
+                    **Sample cURL to Upload WSDL Archive**
+
+                    curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -F file="@wsdl.zip;type=application/zip" -F additionalProperties=@data.json "https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl"
                   format: binary
                   type: string
                 url:
@@ -2511,6 +2537,7 @@ paths:
         This operation can be used to create api from api definition.APIMgtDAOTest
 
         API definition is GraphQL Schema
+      operationId: importGraphQLSchema
       parameters:
       - description: |
           Validator for conditional requests; based on ETag.
@@ -2927,6 +2954,7 @@ paths:
     post:
       description: |
         This operation can be used to validate a graphQL definition and retrieve a summary.
+      operationId: validateGraphQLSchema
       requestBody:
         content:
           multipart/form-data:
@@ -2996,6 +3024,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve the Schema definition of a GraphQL API.
+      operationId: getAPIGraphQLSchema
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -3101,6 +3130,7 @@ paths:
     put:
       description: |
         This operation can be used to add a GraphQL Schema definition to an existing GraphQL API.
+      operationId: updateAPIGraphQLSchema
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -3235,6 +3265,7 @@ paths:
     get:
       description: |
         This operation can be use to retrieve ARNs of AWS Lambda function for a given AWS credentials.
+      operationId: getAmazonResourceNamesOfAPI
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -3299,6 +3330,7 @@ paths:
     post:
       description: |
         This operation can be used to configure monetization for a given API.
+      operationId: addAPIMonetization
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -3374,6 +3406,7 @@ paths:
     get:
       description: |
         This operation can be used to get monetization status for each tier in a given API
+      operationId: getAPIMonetization
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -3441,6 +3474,7 @@ paths:
     get:
       description: |
         This operation can be used to get details of total revenue details of a given monetized API with meterd billing.
+      operationId: getAPIRevenue
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -3513,6 +3547,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve a list of documents belonging to an API by providing the id of the API.
+      operationId: getAPIDocuments
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -3620,6 +3655,7 @@ paths:
     post:
       description: |
         This operation can be used to add a new documentation to an API. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API document ** API once we obtain a document Id by this operation.
+      operationId: addAPIDocument
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -3721,6 +3757,7 @@ paths:
     delete:
       description: |
         This operation can be used to delete a document associated with an API.
+      operationId: deleteAPIDocument
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -3796,6 +3833,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve a particular document's metadata associated with an API.
+      operationId: getAPIDocumentByDocumentId
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -3901,6 +3939,7 @@ paths:
     put:
       description: |
         This operation can be used to update metadata of an API's document.
+      operationId: updateAPIDocument
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -4042,6 +4081,7 @@ paths:
            The file will be downloaded with the related content type (eg. `application/pdf`)
         3. **URL type**:
             The client will recieve the URL of the document as the Location header with the response with - `303 See Other`
+      operationId: getAPIDocumentContentByDocumentId
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -4165,6 +4205,7 @@ paths:
         * Either **file** or **inlineContent** form data parameters should be specified at one time.
         * Document's source type should be **FILE** in order to upload a file to the document using **file** parameter.
         * Document's source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter.
+      operationId: addAPIDocumentContent
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -4331,29 +4372,9 @@ paths:
         style: simple
       responses:
         "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Document'
           description: |
             OK.
-            Successful response if the api name exist.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
+            Successful response if the document name exists.
         "400":
           content:
             application/json:
@@ -4367,17 +4388,9 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Bad Request. Invalid request or validation error.
         "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
+          description: |
+            Not Found.
+            The specified resource does not exist.
       security:
       - OAuth2Security:
         - apim:api_create
@@ -4396,7 +4409,7 @@ paths:
     get:
       description: |
         This operation provides you a list of available mediation policies of an API.
-      operationId: apisApiIdMediationPoliciesGet
+      operationId: getAllAPIMediationPolicies
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -4503,7 +4516,7 @@ paths:
     post:
       description: |
         This operation can be used to add an API specifc mediation policy.
-      operationId: apisApiIdMediationPoliciesPost
+      operationId: addAPIMediationPolicy
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -4639,7 +4652,7 @@ paths:
     delete:
       description: |
         This operation can be used to delete an existing API specific mediation policy providing the Id of the API and the Id of the mediation policy.
-      operationId: apisApiIdMediationPoliciesMediationPolicyIdDelete
+      operationId: deleteAPIMediationPolicyByPolicyId
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -4731,7 +4744,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve a particular API specific mediation policy.
-      operationId: apisApiIdMediationPoliciesMediationPolicyIdGet
+      operationId: getAPIMediationPolicyByPolicyId
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -4841,7 +4854,7 @@ paths:
     get:
       description: |
         This operation can be used to download a particular API specific mediation policy.
-      operationId: apisApiIdMediationPoliciesMediationPolicyIdContentGet
+      operationId: getAPIMediationPolicyContentByPolicyId
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -4935,7 +4948,7 @@ paths:
     put:
       description: |
         This operation can be used to update an existing mediation policy of an API.
-      operationId: apisApiIdMediationPoliciesMediationPolicyIdContentPut
+      operationId: updateAPIMediationPolicyContentByPolicyId
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -5384,6 +5397,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve complexity related details belonging to an API by providing the API id.
+      operationId: getGraphQLPolicyComplexityOfAPI
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -5439,6 +5453,7 @@ paths:
     put:
       description: |
         This operation can be used to update complexity details belonging to an API by providing the id of the API.
+      operationId: updateGraphQLPolicyComplexityOfAPI
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -5489,6 +5504,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve all types and fields of the GraphQL Schema by providing the API id.
+      operationId: getGraphQLPolicyComplexityTypesOfAPI
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -5545,6 +5561,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve resource paths defined for a specific api.
+      operationId: getAPIResourcePaths
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -5662,6 +5679,7 @@ paths:
     get:
       description: |
         Retrieve the Security Audit Report of the Audit API
+      operationId: getAuditReportOfAPI
       parameters:
       - description: |
           Media types acceptable for the response. Default is application/json.
@@ -5913,6 +5931,7 @@ paths:
     get:
       description: |
         This operation can be used to export the details of a particular API as a zip file.
+      operationId: exportAPI
       parameters:
       - description: UUID of the API
         explode: true
@@ -6031,6 +6050,7 @@ paths:
     post:
       description: |
         This operation can be used to import an API.
+      operationId: importAPI
       parameters:
       - description: |
           Preserve Original Provider of the API. This is the user choice to keep or replace the API provider
@@ -6139,6 +6159,7 @@ paths:
 
         2. Retrieving subscriptions for a specific API.
         `GET https://127.0.0.1:9443/api/am/publisher/v1/subscriptions?apiId=c43a325c-260b-4302-81cb-768eafaa3aed`
+      operationId: getSubscriptions
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -6247,6 +6268,7 @@ paths:
     get:
       description: |
         This operation can be used to get details of a pending invoice for a monetized subscription with meterd billing.
+      operationId: getSubscriptionUsage
       parameters:
       - description: |
           Subscription Id
@@ -6316,6 +6338,7 @@ paths:
     get:
       description: |
         This operation can be used to get details of a user who subscribed to the API.
+      operationId: getSubscriberInfoBySubscriptionId
       parameters:
       - description: |
           Subscription Id
@@ -6365,6 +6388,7 @@ paths:
 
         1. `BLOCKED` : Subscription is completely blocked for both Production and Sandbox environments.
         2. `PROD_ONLY_BLOCKED` : Subscription is blocked for Production environment only.
+      operationId: blockSubscription
       parameters:
       - description: |
           Subscription Id
@@ -6472,6 +6496,7 @@ paths:
     post:
       description: |
         This operation can be used to unblock a subscription specifying the subscription Id. The subscription will be fully unblocked after performing this operation.
+      operationId: unBlockSubscription
       parameters:
       - description: |
           Subscription Id
@@ -6962,6 +6987,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve and search the uploaded client certificates.
+      operationId: getAPIClientCertificates
       parameters:
       - description: |
           Maximum size of resource array to return.
@@ -7056,6 +7082,7 @@ paths:
     post:
       description: |
         This operation can be used to upload a new certificate for an endpoint.
+      operationId: addAPIClientCertificate
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -7155,6 +7182,7 @@ paths:
     delete:
       description: |
         This operation can be used to delete an uploaded certificate.
+      operationId: deleteAPIClientCertificateByAlias
       parameters:
       - description: |
           The alias of the certificate that should be deleted.
@@ -7240,6 +7268,7 @@ paths:
     get:
       description: |
         This operation can be used to get the information about a certificate.
+      operationId: getAPIClientCertificateByAlias
       parameters:
       - explode: false
         in: path
@@ -7325,6 +7354,7 @@ paths:
     put:
       description: |
         This operation can be used to update an uploaded certificate.
+      operationId: updateAPIClientCertificateByAlias
       parameters:
       - description: Alias for the certificate
         explode: false
@@ -7436,6 +7466,7 @@ paths:
     get:
       description: |
         This operation can be used to download a certificate which matches the given alias.
+      operationId: getAPIClientCertificateContentByAlias
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -7519,6 +7550,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve and search the uploaded certificates.
+      operationId: getEndpointCertificates
       parameters:
       - description: |
           Maximum size of resource array to return.
@@ -7625,6 +7657,7 @@ paths:
     post:
       description: |
         This operation can be used to upload a new certificate for an endpoint.
+      operationId: addEndpointCertificate
       requestBody:
         content:
           multipart/form-data:
@@ -7714,6 +7747,7 @@ paths:
     delete:
       description: |
         This operation can be used to delete an uploaded certificate.
+      operationId: deleteEndpointCertificateByAlias
       parameters:
       - description: |
           The alias of the certificate that should be deleted.
@@ -7790,6 +7824,7 @@ paths:
     get:
       description: |
         This operation can be used to get the information about a certificate.
+      operationId: getEndpointCertificateByAlias
       parameters:
       - explode: false
         in: path
@@ -7866,6 +7901,7 @@ paths:
     put:
       description: |
         This operation can be used to update an uploaded certificate.
+      operationId: updateEndpointCertificateByAlias
       parameters:
       - description: Alias for the certificate
         explode: false
@@ -7967,6 +8003,7 @@ paths:
     get:
       description: |
         This operation can be used to download a certificate which matches the given alias.
+      operationId: getEndpointCertificateContentByAlias
       parameters:
       - explode: false
         in: path
@@ -8041,6 +8078,7 @@ paths:
     get:
       description: |
         This operation provides you a list of available APIs and API Documents qualifying the given keyword match.
+      operationId: search
       parameters:
       - description: |
           Maximum size of resource array to return.
@@ -8145,6 +8183,7 @@ paths:
         This operation provides you a list of available API Products qualifying under a given search condition.
 
         Each retrieved API Product is represented with a minimal amount of attributes. If you want to get complete details of an API Product, you need to use **Get details of an API Product** operation.
+      operationId: getAllAPIProducts
       parameters:
       - description: |
           Maximum size of resource array to return.
@@ -8248,6 +8287,7 @@ paths:
     post:
       description: |
         This operation can be used to create a new API Product specifying the details of the API Product in the payload.
+      operationId: createAPIProduct
       requestBody:
         content:
           application/json:
@@ -8328,6 +8368,7 @@ paths:
     delete:
       description: |
         This operation can be used to delete an existing API Product proving the Id of the API Product.
+      operationId: deleteAPIProduct
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -8410,6 +8451,7 @@ paths:
     get:
       description: |
         Using this operation, you can retrieve complete details of a single API Product. You need to provide the Id of the API to retrive it.
+      operationId: getAPIProduct
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -8518,6 +8560,7 @@ paths:
       description: |
         This operation can be used to update an existing API product.
         But the properties `name`, `provider` and `version` cannot be changed.
+      operationId: updateAPIProduct
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -8653,6 +8696,7 @@ paths:
     get:
       description: |
         This operation can be used to download a thumbnail image of an API product.
+      operationId: getAPIProductThumbnail
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -8759,6 +8803,7 @@ paths:
     put:
       description: |
         This operation can be used to upload a thumbnail image of an API Product. The thumbnail to be uploaded should be given as a form data parameter `file`.
+      operationId: updateAPIProductThumbnail
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -8886,6 +8931,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve the swagger definition of an API.
+      operationId: getAPIProductSwagger
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -8991,6 +9037,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve the status indicating if an API Product is outdated due to updating of dependent APIs (This resource is not supported at the moment)
+      operationId: getIsAPIProductOutdated
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -9095,6 +9142,7 @@ paths:
     get:
       description: |
         This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product.
+      operationId: getAPIProductDocuments
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -9214,6 +9262,7 @@ paths:
     post:
       description: |
         This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation.
+      operationId: addAPIProductDocument
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -9307,6 +9356,7 @@ paths:
     delete:
       description: |
         This operation can be used to delete a document associated with an API Product.
+      operationId: deleteAPIProductDocument
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -9383,6 +9433,7 @@ paths:
     get:
       description: |
         This operation can be used to retrieve a particular document's metadata associated with an API.
+      operationId: getAPIProductDocument
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -9500,6 +9551,7 @@ paths:
     put:
       description: |
         This operation can be used to update metadata of an API's document.
+      operationId: updateAPIProductDocument
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -9642,6 +9694,7 @@ paths:
            The file will be downloaded with the related content type (eg. `application/pdf`)
         3. **URL type**:
             The client will recieve the URL of the document as the Location header with the response with - `303 See Other`
+      operationId: getAPIProductDocumentContent
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -9774,6 +9827,7 @@ paths:
         * Either **file** or **inlineContent** form data parameters should be specified at one time.
         * Document's source type should be **FILE** in order to upload a file to the document using **file** parameter.
         * Document's source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter.
+      operationId: addAPIProductDocumentContent
       parameters:
       - description: |
           **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
@@ -9910,6 +9964,7 @@ paths:
     get:
       description: |
         This operation can be used to export the details of a particular API Product as a zip file.
+      operationId: exportAPIProduct
       parameters:
       - description: |
           API Product Name
@@ -10018,6 +10073,7 @@ paths:
     post:
       description: |
         This operation can be used to import an API Product.
+      operationId: importAPIProduct
       parameters:
       - description: |
           Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider
@@ -10267,6 +10323,7 @@ paths:
     get:
       description: |
         Retreive publisher settings
+      operationId: getSettings
       responses:
         "200":
           content:
@@ -10298,75 +10355,6 @@ paths:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v1/settings"'
-      x-accepts: application/json
-  /settings/gateway-environments:
-    get:
-      description: |
-        This operation can be used to retrieve the list of gateway environments available.
-      parameters:
-      - description: |
-          **API ID** consisting of the **UUID** of the API.
-          The combination of the provider of the API, name of the API and the version is also accepted as a valid API I.
-          Should be formatted as **provider-name-version**.
-        explode: true
-        in: query
-        name: apiId
-        required: true
-        schema:
-          type: string
-        style: form
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EnvironmentList'
-          description: |
-            OK.
-            Environment list is returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-      security:
-      - OAuth2Security:
-        - apim:api_view
-      summary: Get All Gateway Environments
-      tags:
-      - Settings
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v1/settings/gateway-environments"'
       x-accepts: application/json
   /tenants:
     get:
@@ -10936,6 +10924,7 @@ paths:
     get:
       description: |
         Get all registered Labels
+      operationId: getLabels
       responses:
         "200":
           content:
@@ -10960,6 +10949,7 @@ paths:
     get:
       description: |
         Get all API categories
+      operationId: getAllAPICategories
       responses:
         "200":
           content:
@@ -11385,6 +11375,7 @@ paths:
     get:
       description: |
         Get all Key managers
+      operationId: getAllKeyManagers
       responses:
         "200":
           content:
@@ -12881,7 +12872,7 @@ components:
         additionalProperties:
           key: additionalProperties
         scopes: []
-        apiType: APIProduct
+        apiType: APIPRODUCT
         subscriptionAvailableTenants: []
       properties:
         id:
@@ -12985,11 +12976,11 @@ components:
             type: string
           type: array
         apiType:
-          description: The API type to be used. Accepted values are API, APIProduct
+          description: The API type to be used. Accepted values are API, APIPRODUCT
           enum:
           - API
-          - APIProduct
-          example: APIProduct
+          - APIPRODUCT
+          example: APIPRODUCT
           type: string
         transport:
           description: |
@@ -13932,27 +13923,6 @@ components:
       title: Environment
       type: object
     EnvironmentList:
-      example:
-        count: 1
-        list:
-        - endpoints:
-            wss: https://localhost:8099
-            http: http://localhost:8280
-            https: https://localhost:8243
-            ws: http://localhost:9099
-          showInApiConsole: true
-          serverUrl: https://localhost:9443/services/
-          name: Production and Sandbox
-          type: hybrid
-        - endpoints:
-            wss: https://localhost:8099
-            http: http://localhost:8280
-            https: https://localhost:8243
-            ws: http://localhost:9099
-          showInApiConsole: true
-          serverUrl: https://localhost:9443/services/
-          name: Production and Sandbox
-          type: hybrid
       properties:
         count:
           description: |

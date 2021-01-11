@@ -4,21 +4,21 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**endpointCertificatesAliasContentGet**](EndpointCertificatesApi.md#endpointCertificatesAliasContentGet) | **GET** /endpoint-certificates/{alias}/content | Download a Certificate
-[**endpointCertificatesAliasDelete**](EndpointCertificatesApi.md#endpointCertificatesAliasDelete) | **DELETE** /endpoint-certificates/{alias} | Delete a certificate.
-[**endpointCertificatesAliasGet**](EndpointCertificatesApi.md#endpointCertificatesAliasGet) | **GET** /endpoint-certificates/{alias} | Get the Certificate Information
-[**endpointCertificatesAliasPut**](EndpointCertificatesApi.md#endpointCertificatesAliasPut) | **PUT** /endpoint-certificates/{alias} | Update a certificate.
-[**endpointCertificatesGet**](EndpointCertificatesApi.md#endpointCertificatesGet) | **GET** /endpoint-certificates | Retrieve/Search Uploaded Certificates
-[**endpointCertificatesPost**](EndpointCertificatesApi.md#endpointCertificatesPost) | **POST** /endpoint-certificates | Upload a new Certificate.
+[**addEndpointCertificate**](EndpointCertificatesApi.md#addEndpointCertificate) | **POST** /endpoint-certificates | Upload a new Certificate.
+[**deleteEndpointCertificateByAlias**](EndpointCertificatesApi.md#deleteEndpointCertificateByAlias) | **DELETE** /endpoint-certificates/{alias} | Delete a certificate.
+[**getEndpointCertificateByAlias**](EndpointCertificatesApi.md#getEndpointCertificateByAlias) | **GET** /endpoint-certificates/{alias} | Get the Certificate Information
+[**getEndpointCertificateContentByAlias**](EndpointCertificatesApi.md#getEndpointCertificateContentByAlias) | **GET** /endpoint-certificates/{alias}/content | Download a Certificate
+[**getEndpointCertificates**](EndpointCertificatesApi.md#getEndpointCertificates) | **GET** /endpoint-certificates | Retrieve/Search Uploaded Certificates
+[**updateEndpointCertificateByAlias**](EndpointCertificatesApi.md#updateEndpointCertificateByAlias) | **PUT** /endpoint-certificates/{alias} | Update a certificate.
 
 
-<a name="endpointCertificatesAliasContentGet"></a>
-# **endpointCertificatesAliasContentGet**
-> endpointCertificatesAliasContentGet(alias)
+<a name="addEndpointCertificate"></a>
+# **addEndpointCertificate**
+> CertMetadataDTO addEndpointCertificate(certificate, alias, endpoint)
 
-Download a Certificate
+Upload a new Certificate.
 
-This operation can be used to download a certificate which matches the given alias. 
+This operation can be used to upload a new certificate for an endpoint. 
 
 ### Example
 ```java
@@ -40,11 +40,14 @@ public class Example {
     OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
     EndpointCertificatesApi apiInstance = new EndpointCertificatesApi(defaultClient);
-    String alias = "alias_example"; // String | 
+    File certificate = new File("/path/to/file"); // File | The certificate that needs to be uploaded.
+    String alias = "alias_example"; // String | Alias for the certificate
+    String endpoint = "endpoint_example"; // String | Endpoint to which the certificate should be applied.
     try {
-      apiInstance.endpointCertificatesAliasContentGet(alias);
+      CertMetadataDTO result = apiInstance.addEndpointCertificate(certificate, alias, endpoint);
+      System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling EndpointCertificatesApi#endpointCertificatesAliasContentGet");
+      System.err.println("Exception when calling EndpointCertificatesApi#addEndpointCertificate");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -58,11 +61,13 @@ public class Example {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **alias** | **String**|  |
+ **certificate** | **File**| The certificate that needs to be uploaded. |
+ **alias** | **String**| Alias for the certificate |
+ **endpoint** | **String**| Endpoint to which the certificate should be applied. |
 
 ### Return type
 
-null (empty response body)
+[**CertMetadataDTO**](CertMetadataDTO.md)
 
 ### Authorization
 
@@ -70,20 +75,19 @@ null (empty response body)
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: multipart/form-data
  - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK.  |  * Content-Type - The content type of the body.  <br>  |
+**200** | OK. The Certificate added successfully.  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
-**404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
-<a name="endpointCertificatesAliasDelete"></a>
-# **endpointCertificatesAliasDelete**
-> endpointCertificatesAliasDelete(alias)
+<a name="deleteEndpointCertificateByAlias"></a>
+# **deleteEndpointCertificateByAlias**
+> deleteEndpointCertificateByAlias(alias)
 
 Delete a certificate.
 
@@ -111,9 +115,9 @@ public class Example {
     EndpointCertificatesApi apiInstance = new EndpointCertificatesApi(defaultClient);
     String alias = "alias_example"; // String | The alias of the certificate that should be deleted. 
     try {
-      apiInstance.endpointCertificatesAliasDelete(alias);
+      apiInstance.deleteEndpointCertificateByAlias(alias);
     } catch (ApiException e) {
-      System.err.println("Exception when calling EndpointCertificatesApi#endpointCertificatesAliasDelete");
+      System.err.println("Exception when calling EndpointCertificatesApi#deleteEndpointCertificateByAlias");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -150,9 +154,9 @@ null (empty response body)
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
-<a name="endpointCertificatesAliasGet"></a>
-# **endpointCertificatesAliasGet**
-> CertificateInfoDTO endpointCertificatesAliasGet(alias)
+<a name="getEndpointCertificateByAlias"></a>
+# **getEndpointCertificateByAlias**
+> CertificateInfoDTO getEndpointCertificateByAlias(alias)
 
 Get the Certificate Information
 
@@ -180,10 +184,10 @@ public class Example {
     EndpointCertificatesApi apiInstance = new EndpointCertificatesApi(defaultClient);
     String alias = "alias_example"; // String | 
     try {
-      CertificateInfoDTO result = apiInstance.endpointCertificatesAliasGet(alias);
+      CertificateInfoDTO result = apiInstance.getEndpointCertificateByAlias(alias);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling EndpointCertificatesApi#endpointCertificatesAliasGet");
+      System.err.println("Exception when calling EndpointCertificatesApi#getEndpointCertificateByAlias");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -220,13 +224,13 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
-<a name="endpointCertificatesAliasPut"></a>
-# **endpointCertificatesAliasPut**
-> CertMetadataDTO endpointCertificatesAliasPut(alias, certificate)
+<a name="getEndpointCertificateContentByAlias"></a>
+# **getEndpointCertificateContentByAlias**
+> getEndpointCertificateContentByAlias(alias)
 
-Update a certificate.
+Download a Certificate
 
-This operation can be used to update an uploaded certificate. 
+This operation can be used to download a certificate which matches the given alias. 
 
 ### Example
 ```java
@@ -248,13 +252,11 @@ public class Example {
     OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
     EndpointCertificatesApi apiInstance = new EndpointCertificatesApi(defaultClient);
-    String alias = "alias_example"; // String | Alias for the certificate
-    File certificate = new File("/path/to/file"); // File | The certificate that needs to be uploaded.
+    String alias = "alias_example"; // String | 
     try {
-      CertMetadataDTO result = apiInstance.endpointCertificatesAliasPut(alias, certificate);
-      System.out.println(result);
+      apiInstance.getEndpointCertificateContentByAlias(alias);
     } catch (ApiException e) {
-      System.err.println("Exception when calling EndpointCertificatesApi#endpointCertificatesAliasPut");
+      System.err.println("Exception when calling EndpointCertificatesApi#getEndpointCertificateContentByAlias");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -268,12 +270,11 @@ public class Example {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **alias** | **String**| Alias for the certificate |
- **certificate** | **File**| The certificate that needs to be uploaded. |
+ **alias** | **String**|  |
 
 ### Return type
 
-[**CertMetadataDTO**](CertMetadataDTO.md)
+null (empty response body)
 
 ### Authorization
 
@@ -281,20 +282,20 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: multipart/form-data
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. The Certificate updated successfully.  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
+**200** | OK.  |  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
-<a name="endpointCertificatesGet"></a>
-# **endpointCertificatesGet**
-> CertificatesDTO endpointCertificatesGet(limit, offset, alias, endpoint)
+<a name="getEndpointCertificates"></a>
+# **getEndpointCertificates**
+> CertificatesDTO getEndpointCertificates(limit, offset, alias, endpoint)
 
 Retrieve/Search Uploaded Certificates
 
@@ -325,10 +326,10 @@ public class Example {
     String alias = "alias_example"; // String | Alias for the certificate
     String endpoint = "endpoint_example"; // String | Endpoint of which the certificate is uploaded
     try {
-      CertificatesDTO result = apiInstance.endpointCertificatesGet(limit, offset, alias, endpoint);
+      CertificatesDTO result = apiInstance.getEndpointCertificates(limit, offset, alias, endpoint);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling EndpointCertificatesApi#endpointCertificatesGet");
+      System.err.println("Exception when calling EndpointCertificatesApi#getEndpointCertificates");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -368,13 +369,13 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
-<a name="endpointCertificatesPost"></a>
-# **endpointCertificatesPost**
-> CertMetadataDTO endpointCertificatesPost(certificate, alias, endpoint)
+<a name="updateEndpointCertificateByAlias"></a>
+# **updateEndpointCertificateByAlias**
+> CertMetadataDTO updateEndpointCertificateByAlias(alias, certificate)
 
-Upload a new Certificate.
+Update a certificate.
 
-This operation can be used to upload a new certificate for an endpoint. 
+This operation can be used to update an uploaded certificate. 
 
 ### Example
 ```java
@@ -396,14 +397,13 @@ public class Example {
     OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
     EndpointCertificatesApi apiInstance = new EndpointCertificatesApi(defaultClient);
-    File certificate = new File("/path/to/file"); // File | The certificate that needs to be uploaded.
     String alias = "alias_example"; // String | Alias for the certificate
-    String endpoint = "endpoint_example"; // String | Endpoint to which the certificate should be applied.
+    File certificate = new File("/path/to/file"); // File | The certificate that needs to be uploaded.
     try {
-      CertMetadataDTO result = apiInstance.endpointCertificatesPost(certificate, alias, endpoint);
+      CertMetadataDTO result = apiInstance.updateEndpointCertificateByAlias(alias, certificate);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling EndpointCertificatesApi#endpointCertificatesPost");
+      System.err.println("Exception when calling EndpointCertificatesApi#updateEndpointCertificateByAlias");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -417,9 +417,8 @@ public class Example {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **certificate** | **File**| The certificate that needs to be uploaded. |
  **alias** | **String**| Alias for the certificate |
- **endpoint** | **String**| Endpoint to which the certificate should be applied. |
+ **certificate** | **File**| The certificate that needs to be uploaded. |
 
 ### Return type
 
@@ -437,7 +436,8 @@ Name | Type | Description  | Notes
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. The Certificate added successfully.  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
+**200** | OK. The Certificate updated successfully.  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 

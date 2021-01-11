@@ -4,81 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apisValidateGraphqlSchemaPost**](ValidationApi.md#apisValidateGraphqlSchemaPost) | **POST** /apis/validate-graphql-schema | Validate GraphQL API Definition and Retrieve a Summary
 [**validateAPI**](ValidationApi.md#validateAPI) | **POST** /apis/validate | Check Given API Context Name already Exists
 [**validateEndpoint**](ValidationApi.md#validateEndpoint) | **POST** /apis/validate-endpoint | Check Whether Given Endpoint URL is Valid
+[**validateGraphQLSchema**](ValidationApi.md#validateGraphQLSchema) | **POST** /apis/validate-graphql-schema | Validate GraphQL API Definition and Retrieve a Summary
 [**validateOpenAPIDefinition**](ValidationApi.md#validateOpenAPIDefinition) | **POST** /apis/validate-openapi | Validate an OpenAPI Definition
 [**validateWSDLDefinition**](ValidationApi.md#validateWSDLDefinition) | **POST** /apis/validate-wsdl | Validate a WSDL Definition
 
-
-<a name="apisValidateGraphqlSchemaPost"></a>
-# **apisValidateGraphqlSchemaPost**
-> GraphQLValidationResponseDTO apisValidateGraphqlSchemaPost(file)
-
-Validate GraphQL API Definition and Retrieve a Summary
-
-This operation can be used to validate a graphQL definition and retrieve a summary. 
-
-### Example
-```java
-// Import classes:
-import org.wso2.am.integration.clients.publisher.api.ApiClient;
-import org.wso2.am.integration.clients.publisher.api.ApiException;
-import org.wso2.am.integration.clients.publisher.api.Configuration;
-import org.wso2.am.integration.clients.publisher.api.auth.*;
-import org.wso2.am.integration.clients.publisher.api.models.*;
-import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
-
-public class Example {
-  public static void main(String[] args) {
-    ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v1");
-    
-    // Configure OAuth2 access token for authorization: OAuth2Security
-    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
-    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
-
-    ValidationApi apiInstance = new ValidationApi(defaultClient);
-    File file = new File("/path/to/file"); // File | Definition to upload as a file
-    try {
-      GraphQLValidationResponseDTO result = apiInstance.apisValidateGraphqlSchemaPost(file);
-      System.out.println(result);
-    } catch (ApiException e) {
-      System.err.println("Exception when calling ValidationApi#apisValidateGraphqlSchemaPost");
-      System.err.println("Status code: " + e.getCode());
-      System.err.println("Reason: " + e.getResponseBody());
-      System.err.println("Response headers: " + e.getResponseHeaders());
-      e.printStackTrace();
-    }
-  }
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **file** | **File**| Definition to upload as a file |
-
-### Return type
-
-[**GraphQLValidationResponseDTO**](GraphQLValidationResponseDTO.md)
-
-### Authorization
-
-[OAuth2Security](../README.md#OAuth2Security)
-
-### HTTP request headers
-
- - **Content-Type**: multipart/form-data
- - **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**200** | OK. API definition validation information is returned  |  * Content-Type - The content type of the body.  <br>  |
-**400** | Bad Request. Invalid request or validation error. |  -  |
-**404** | Not Found. The specified resource does not exist. |  -  |
 
 <a name="validateAPI"></a>
 # **validateAPI**
@@ -212,6 +143,75 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. API definition validation information is returned  |  * Content-Type - The content type of the body.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+
+<a name="validateGraphQLSchema"></a>
+# **validateGraphQLSchema**
+> GraphQLValidationResponseDTO validateGraphQLSchema(file)
+
+Validate GraphQL API Definition and Retrieve a Summary
+
+This operation can be used to validate a graphQL definition and retrieve a summary. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v1");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ValidationApi apiInstance = new ValidationApi(defaultClient);
+    File file = new File("/path/to/file"); // File | Definition to upload as a file
+    try {
+      GraphQLValidationResponseDTO result = apiInstance.validateGraphQLSchema(file);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ValidationApi#validateGraphQLSchema");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **file** | **File**| Definition to upload as a file |
+
+### Return type
+
+[**GraphQLValidationResponseDTO**](GraphQLValidationResponseDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
  - **Accept**: application/json
 
 ### HTTP response details

@@ -4,14 +4,14 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**subscriptionsBlockSubscriptionPost**](SubscriptionsApi.md#subscriptionsBlockSubscriptionPost) | **POST** /subscriptions/block-subscription | Block a Subscription
-[**subscriptionsGet**](SubscriptionsApi.md#subscriptionsGet) | **GET** /subscriptions | Get all Subscriptions
-[**subscriptionsUnblockSubscriptionPost**](SubscriptionsApi.md#subscriptionsUnblockSubscriptionPost) | **POST** /subscriptions/unblock-subscription | Unblock a Subscription
+[**blockSubscription**](SubscriptionsApi.md#blockSubscription) | **POST** /subscriptions/block-subscription | Block a Subscription
+[**getSubscriptions**](SubscriptionsApi.md#getSubscriptions) | **GET** /subscriptions | Get all Subscriptions
+[**unBlockSubscription**](SubscriptionsApi.md#unBlockSubscription) | **POST** /subscriptions/unblock-subscription | Unblock a Subscription
 
 
-<a name="subscriptionsBlockSubscriptionPost"></a>
-# **subscriptionsBlockSubscriptionPost**
-> subscriptionsBlockSubscriptionPost(subscriptionId, blockState, ifMatch)
+<a name="blockSubscription"></a>
+# **blockSubscription**
+> blockSubscription(subscriptionId, blockState, ifMatch)
 
 Block a Subscription
 
@@ -41,9 +41,9 @@ public class Example {
     String blockState = "blockState_example"; // String | Subscription block state. 
     String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
     try {
-      apiInstance.subscriptionsBlockSubscriptionPost(subscriptionId, blockState, ifMatch);
+      apiInstance.blockSubscription(subscriptionId, blockState, ifMatch);
     } catch (ApiException e) {
-      System.err.println("Exception when calling SubscriptionsApi#subscriptionsBlockSubscriptionPost");
+      System.err.println("Exception when calling SubscriptionsApi#blockSubscription");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -82,9 +82,9 @@ null (empty response body)
 **404** | Not Found. The specified resource does not exist. |  -  |
 **412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
 
-<a name="subscriptionsGet"></a>
-# **subscriptionsGet**
-> SubscriptionListDTO subscriptionsGet(apiId, limit, offset, ifNoneMatch, query)
+<a name="getSubscriptions"></a>
+# **getSubscriptions**
+> SubscriptionListDTO getSubscriptions(apiId, limit, offset, ifNoneMatch, query)
 
 Get all Subscriptions
 
@@ -116,10 +116,10 @@ public class Example {
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     String query = "query_example"; // String | Keywords to filter subscriptions 
     try {
-      SubscriptionListDTO result = apiInstance.subscriptionsGet(apiId, limit, offset, ifNoneMatch, query);
+      SubscriptionListDTO result = apiInstance.getSubscriptions(apiId, limit, offset, ifNoneMatch, query);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling SubscriptionsApi#subscriptionsGet");
+      System.err.println("Exception when calling SubscriptionsApi#getSubscriptions");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -159,9 +159,9 @@ Name | Type | Description  | Notes
 **304** | Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
 
-<a name="subscriptionsUnblockSubscriptionPost"></a>
-# **subscriptionsUnblockSubscriptionPost**
-> subscriptionsUnblockSubscriptionPost(subscriptionId, ifMatch)
+<a name="unBlockSubscription"></a>
+# **unBlockSubscription**
+> unBlockSubscription(subscriptionId, ifMatch)
 
 Unblock a Subscription
 
@@ -190,9 +190,9 @@ public class Example {
     String subscriptionId = "subscriptionId_example"; // String | Subscription Id 
     String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
     try {
-      apiInstance.subscriptionsUnblockSubscriptionPost(subscriptionId, ifMatch);
+      apiInstance.unBlockSubscription(subscriptionId, ifMatch);
     } catch (ApiException e) {
-      System.err.println("Exception when calling SubscriptionsApi#subscriptionsUnblockSubscriptionPost");
+      System.err.println("Exception when calling SubscriptionsApi#unBlockSubscription");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

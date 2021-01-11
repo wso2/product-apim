@@ -55,7 +55,7 @@ public class AwsLambdaIndividualApi {
     }
 
     /**
-     * Build call for apisApiIdAmznResourceNamesGet
+     * Build call for getAmazonResourceNamesOfAPI
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -67,7 +67,7 @@ public class AwsLambdaIndividualApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdAmznResourceNamesGetCall(String apiId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAmazonResourceNamesOfAPICall(String apiId, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -98,15 +98,15 @@ public class AwsLambdaIndividualApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdAmznResourceNamesGetValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAmazonResourceNamesOfAPIValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdAmznResourceNamesGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAmazonResourceNamesOfAPI(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdAmznResourceNamesGetCall(apiId, _callback);
+        okhttp3.Call localVarCall = getAmazonResourceNamesOfAPICall(apiId, _callback);
         return localVarCall;
 
     }
@@ -124,8 +124,8 @@ public class AwsLambdaIndividualApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public String apisApiIdAmznResourceNamesGet(String apiId) throws ApiException {
-        ApiResponse<String> localVarResp = apisApiIdAmznResourceNamesGetWithHttpInfo(apiId);
+    public String getAmazonResourceNamesOfAPI(String apiId) throws ApiException {
+        ApiResponse<String> localVarResp = getAmazonResourceNamesOfAPIWithHttpInfo(apiId);
         return localVarResp.getData();
     }
 
@@ -142,8 +142,8 @@ public class AwsLambdaIndividualApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<String> apisApiIdAmznResourceNamesGetWithHttpInfo(String apiId) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdAmznResourceNamesGetValidateBeforeCall(apiId, null);
+    public ApiResponse<String> getAmazonResourceNamesOfAPIWithHttpInfo(String apiId) throws ApiException {
+        okhttp3.Call localVarCall = getAmazonResourceNamesOfAPIValidateBeforeCall(apiId, null);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -162,9 +162,9 @@ public class AwsLambdaIndividualApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdAmznResourceNamesGetAsync(String apiId, final ApiCallback<String> _callback) throws ApiException {
+    public okhttp3.Call getAmazonResourceNamesOfAPIAsync(String apiId, final ApiCallback<String> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdAmznResourceNamesGetValidateBeforeCall(apiId, _callback);
+        okhttp3.Call localVarCall = getAmazonResourceNamesOfAPIValidateBeforeCall(apiId, _callback);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

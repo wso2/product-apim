@@ -57,7 +57,7 @@ public class ApiResourcePoliciesApi {
     }
 
     /**
-     * Build call for apisApiIdResourcePoliciesGet
+     * Build call for getAPIResourcePolicies
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param sequenceType sequence type of the resource policy resource definition (required)
      * @param resourcePath Resource path of the resource policy definition (optional)
@@ -75,7 +75,7 @@ public class ApiResourcePoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdResourcePoliciesGetCall(String apiId, String sequenceType, String resourcePath, String verb, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAPIResourcePoliciesCall(String apiId, String sequenceType, String resourcePath, String verb, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -122,20 +122,20 @@ public class ApiResourcePoliciesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdResourcePoliciesGetValidateBeforeCall(String apiId, String sequenceType, String resourcePath, String verb, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIResourcePoliciesValidateBeforeCall(String apiId, String sequenceType, String resourcePath, String verb, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdResourcePoliciesGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIResourcePolicies(Async)");
         }
         
         // verify the required parameter 'sequenceType' is set
         if (sequenceType == null) {
-            throw new ApiException("Missing the required parameter 'sequenceType' when calling apisApiIdResourcePoliciesGet(Async)");
+            throw new ApiException("Missing the required parameter 'sequenceType' when calling getAPIResourcePolicies(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdResourcePoliciesGetCall(apiId, sequenceType, resourcePath, verb, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIResourcePoliciesCall(apiId, sequenceType, resourcePath, verb, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -159,8 +159,8 @@ public class ApiResourcePoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ResourcePolicyListDTO apisApiIdResourcePoliciesGet(String apiId, String sequenceType, String resourcePath, String verb, String ifNoneMatch) throws ApiException {
-        ApiResponse<ResourcePolicyListDTO> localVarResp = apisApiIdResourcePoliciesGetWithHttpInfo(apiId, sequenceType, resourcePath, verb, ifNoneMatch);
+    public ResourcePolicyListDTO getAPIResourcePolicies(String apiId, String sequenceType, String resourcePath, String verb, String ifNoneMatch) throws ApiException {
+        ApiResponse<ResourcePolicyListDTO> localVarResp = getAPIResourcePoliciesWithHttpInfo(apiId, sequenceType, resourcePath, verb, ifNoneMatch);
         return localVarResp.getData();
     }
 
@@ -183,8 +183,8 @@ public class ApiResourcePoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<ResourcePolicyListDTO> apisApiIdResourcePoliciesGetWithHttpInfo(String apiId, String sequenceType, String resourcePath, String verb, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdResourcePoliciesGetValidateBeforeCall(apiId, sequenceType, resourcePath, verb, ifNoneMatch, null);
+    public ApiResponse<ResourcePolicyListDTO> getAPIResourcePoliciesWithHttpInfo(String apiId, String sequenceType, String resourcePath, String verb, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIResourcePoliciesValidateBeforeCall(apiId, sequenceType, resourcePath, verb, ifNoneMatch, null);
         Type localVarReturnType = new TypeToken<ResourcePolicyListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -209,15 +209,15 @@ public class ApiResourcePoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdResourcePoliciesGetAsync(String apiId, String sequenceType, String resourcePath, String verb, String ifNoneMatch, final ApiCallback<ResourcePolicyListDTO> _callback) throws ApiException {
+    public okhttp3.Call getAPIResourcePoliciesAsync(String apiId, String sequenceType, String resourcePath, String verb, String ifNoneMatch, final ApiCallback<ResourcePolicyListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdResourcePoliciesGetValidateBeforeCall(apiId, sequenceType, resourcePath, verb, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIResourcePoliciesValidateBeforeCall(apiId, sequenceType, resourcePath, verb, ifNoneMatch, _callback);
         Type localVarReturnType = new TypeToken<ResourcePolicyListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apisApiIdResourcePoliciesResourcePolicyIdGet
+     * Build call for getAPIResourcePoliciesByPolicyId
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param resourcePolicyId registry resource Id  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -234,7 +234,7 @@ public class ApiResourcePoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdResourcePoliciesResourcePolicyIdGetCall(String apiId, String resourcePolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAPIResourcePoliciesByPolicyIdCall(String apiId, String resourcePolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -270,20 +270,20 @@ public class ApiResourcePoliciesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdResourcePoliciesResourcePolicyIdGetValidateBeforeCall(String apiId, String resourcePolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAPIResourcePoliciesByPolicyIdValidateBeforeCall(String apiId, String resourcePolicyId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdResourcePoliciesResourcePolicyIdGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIResourcePoliciesByPolicyId(Async)");
         }
         
         // verify the required parameter 'resourcePolicyId' is set
         if (resourcePolicyId == null) {
-            throw new ApiException("Missing the required parameter 'resourcePolicyId' when calling apisApiIdResourcePoliciesResourcePolicyIdGet(Async)");
+            throw new ApiException("Missing the required parameter 'resourcePolicyId' when calling getAPIResourcePoliciesByPolicyId(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdResourcePoliciesResourcePolicyIdGetCall(apiId, resourcePolicyId, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIResourcePoliciesByPolicyIdCall(apiId, resourcePolicyId, ifNoneMatch, _callback);
         return localVarCall;
 
     }
@@ -306,8 +306,8 @@ public class ApiResourcePoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ResourcePolicyInfoDTO apisApiIdResourcePoliciesResourcePolicyIdGet(String apiId, String resourcePolicyId, String ifNoneMatch) throws ApiException {
-        ApiResponse<ResourcePolicyInfoDTO> localVarResp = apisApiIdResourcePoliciesResourcePolicyIdGetWithHttpInfo(apiId, resourcePolicyId, ifNoneMatch);
+    public ResourcePolicyInfoDTO getAPIResourcePoliciesByPolicyId(String apiId, String resourcePolicyId, String ifNoneMatch) throws ApiException {
+        ApiResponse<ResourcePolicyInfoDTO> localVarResp = getAPIResourcePoliciesByPolicyIdWithHttpInfo(apiId, resourcePolicyId, ifNoneMatch);
         return localVarResp.getData();
     }
 
@@ -329,8 +329,8 @@ public class ApiResourcePoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<ResourcePolicyInfoDTO> apisApiIdResourcePoliciesResourcePolicyIdGetWithHttpInfo(String apiId, String resourcePolicyId, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdResourcePoliciesResourcePolicyIdGetValidateBeforeCall(apiId, resourcePolicyId, ifNoneMatch, null);
+    public ApiResponse<ResourcePolicyInfoDTO> getAPIResourcePoliciesByPolicyIdWithHttpInfo(String apiId, String resourcePolicyId, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIResourcePoliciesByPolicyIdValidateBeforeCall(apiId, resourcePolicyId, ifNoneMatch, null);
         Type localVarReturnType = new TypeToken<ResourcePolicyInfoDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -354,15 +354,15 @@ public class ApiResourcePoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdResourcePoliciesResourcePolicyIdGetAsync(String apiId, String resourcePolicyId, String ifNoneMatch, final ApiCallback<ResourcePolicyInfoDTO> _callback) throws ApiException {
+    public okhttp3.Call getAPIResourcePoliciesByPolicyIdAsync(String apiId, String resourcePolicyId, String ifNoneMatch, final ApiCallback<ResourcePolicyInfoDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdResourcePoliciesResourcePolicyIdGetValidateBeforeCall(apiId, resourcePolicyId, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getAPIResourcePoliciesByPolicyIdValidateBeforeCall(apiId, resourcePolicyId, ifNoneMatch, _callback);
         Type localVarReturnType = new TypeToken<ResourcePolicyInfoDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apisApiIdResourcePoliciesResourcePolicyIdPut
+     * Build call for updateAPIResourcePoliciesByPolicyId
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param resourcePolicyId registry resource Id  (required)
      * @param resourcePolicyInfoDTO Content of the resource policy definition that needs to be updated (required)
@@ -380,7 +380,7 @@ public class ApiResourcePoliciesApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdResourcePoliciesResourcePolicyIdPutCall(String apiId, String resourcePolicyId, ResourcePolicyInfoDTO resourcePolicyInfoDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call updateAPIResourcePoliciesByPolicyIdCall(String apiId, String resourcePolicyId, ResourcePolicyInfoDTO resourcePolicyInfoDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = resourcePolicyInfoDTO;
 
         // create path and map variables
@@ -416,25 +416,25 @@ public class ApiResourcePoliciesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdResourcePoliciesResourcePolicyIdPutValidateBeforeCall(String apiId, String resourcePolicyId, ResourcePolicyInfoDTO resourcePolicyInfoDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call updateAPIResourcePoliciesByPolicyIdValidateBeforeCall(String apiId, String resourcePolicyId, ResourcePolicyInfoDTO resourcePolicyInfoDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdResourcePoliciesResourcePolicyIdPut(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling updateAPIResourcePoliciesByPolicyId(Async)");
         }
         
         // verify the required parameter 'resourcePolicyId' is set
         if (resourcePolicyId == null) {
-            throw new ApiException("Missing the required parameter 'resourcePolicyId' when calling apisApiIdResourcePoliciesResourcePolicyIdPut(Async)");
+            throw new ApiException("Missing the required parameter 'resourcePolicyId' when calling updateAPIResourcePoliciesByPolicyId(Async)");
         }
         
         // verify the required parameter 'resourcePolicyInfoDTO' is set
         if (resourcePolicyInfoDTO == null) {
-            throw new ApiException("Missing the required parameter 'resourcePolicyInfoDTO' when calling apisApiIdResourcePoliciesResourcePolicyIdPut(Async)");
+            throw new ApiException("Missing the required parameter 'resourcePolicyInfoDTO' when calling updateAPIResourcePoliciesByPolicyId(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdResourcePoliciesResourcePolicyIdPutCall(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch, _callback);
+        okhttp3.Call localVarCall = updateAPIResourcePoliciesByPolicyIdCall(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch, _callback);
         return localVarCall;
 
     }
@@ -458,8 +458,8 @@ public class ApiResourcePoliciesApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ResourcePolicyInfoDTO apisApiIdResourcePoliciesResourcePolicyIdPut(String apiId, String resourcePolicyId, ResourcePolicyInfoDTO resourcePolicyInfoDTO, String ifMatch) throws ApiException {
-        ApiResponse<ResourcePolicyInfoDTO> localVarResp = apisApiIdResourcePoliciesResourcePolicyIdPutWithHttpInfo(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch);
+    public ResourcePolicyInfoDTO updateAPIResourcePoliciesByPolicyId(String apiId, String resourcePolicyId, ResourcePolicyInfoDTO resourcePolicyInfoDTO, String ifMatch) throws ApiException {
+        ApiResponse<ResourcePolicyInfoDTO> localVarResp = updateAPIResourcePoliciesByPolicyIdWithHttpInfo(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch);
         return localVarResp.getData();
     }
 
@@ -482,8 +482,8 @@ public class ApiResourcePoliciesApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<ResourcePolicyInfoDTO> apisApiIdResourcePoliciesResourcePolicyIdPutWithHttpInfo(String apiId, String resourcePolicyId, ResourcePolicyInfoDTO resourcePolicyInfoDTO, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdResourcePoliciesResourcePolicyIdPutValidateBeforeCall(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch, null);
+    public ApiResponse<ResourcePolicyInfoDTO> updateAPIResourcePoliciesByPolicyIdWithHttpInfo(String apiId, String resourcePolicyId, ResourcePolicyInfoDTO resourcePolicyInfoDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = updateAPIResourcePoliciesByPolicyIdValidateBeforeCall(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch, null);
         Type localVarReturnType = new TypeToken<ResourcePolicyInfoDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -508,9 +508,9 @@ public class ApiResourcePoliciesApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdResourcePoliciesResourcePolicyIdPutAsync(String apiId, String resourcePolicyId, ResourcePolicyInfoDTO resourcePolicyInfoDTO, String ifMatch, final ApiCallback<ResourcePolicyInfoDTO> _callback) throws ApiException {
+    public okhttp3.Call updateAPIResourcePoliciesByPolicyIdAsync(String apiId, String resourcePolicyId, ResourcePolicyInfoDTO resourcePolicyInfoDTO, String ifMatch, final ApiCallback<ResourcePolicyInfoDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdResourcePoliciesResourcePolicyIdPutValidateBeforeCall(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch, _callback);
+        okhttp3.Call localVarCall = updateAPIResourcePoliciesByPolicyIdValidateBeforeCall(apiId, resourcePolicyId, resourcePolicyInfoDTO, ifMatch, _callback);
         Type localVarReturnType = new TypeToken<ResourcePolicyInfoDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

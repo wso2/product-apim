@@ -4,21 +4,21 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apisApiIdClientCertificatesAliasContentGet**](ClientCertificatesApi.md#apisApiIdClientCertificatesAliasContentGet) | **GET** /apis/{apiId}/client-certificates/{alias}/content | Download a Certificate
-[**apisApiIdClientCertificatesAliasDelete**](ClientCertificatesApi.md#apisApiIdClientCertificatesAliasDelete) | **DELETE** /apis/{apiId}/client-certificates/{alias} | Delete a Certificate
-[**apisApiIdClientCertificatesAliasGet**](ClientCertificatesApi.md#apisApiIdClientCertificatesAliasGet) | **GET** /apis/{apiId}/client-certificates/{alias} | Get the Certificate Information
-[**apisApiIdClientCertificatesAliasPut**](ClientCertificatesApi.md#apisApiIdClientCertificatesAliasPut) | **PUT** /apis/{apiId}/client-certificates/{alias} | Update a Certificate
-[**apisApiIdClientCertificatesGet**](ClientCertificatesApi.md#apisApiIdClientCertificatesGet) | **GET** /apis/{apiId}/client-certificates | Retrieve/ Search Uploaded Client Certificates
-[**apisApiIdClientCertificatesPost**](ClientCertificatesApi.md#apisApiIdClientCertificatesPost) | **POST** /apis/{apiId}/client-certificates | Upload a New Certificate
+[**addAPIClientCertificate**](ClientCertificatesApi.md#addAPIClientCertificate) | **POST** /apis/{apiId}/client-certificates | Upload a New Certificate
+[**deleteAPIClientCertificateByAlias**](ClientCertificatesApi.md#deleteAPIClientCertificateByAlias) | **DELETE** /apis/{apiId}/client-certificates/{alias} | Delete a Certificate
+[**getAPIClientCertificateByAlias**](ClientCertificatesApi.md#getAPIClientCertificateByAlias) | **GET** /apis/{apiId}/client-certificates/{alias} | Get the Certificate Information
+[**getAPIClientCertificateContentByAlias**](ClientCertificatesApi.md#getAPIClientCertificateContentByAlias) | **GET** /apis/{apiId}/client-certificates/{alias}/content | Download a Certificate
+[**getAPIClientCertificates**](ClientCertificatesApi.md#getAPIClientCertificates) | **GET** /apis/{apiId}/client-certificates | Retrieve/ Search Uploaded Client Certificates
+[**updateAPIClientCertificateByAlias**](ClientCertificatesApi.md#updateAPIClientCertificateByAlias) | **PUT** /apis/{apiId}/client-certificates/{alias} | Update a Certificate
 
 
-<a name="apisApiIdClientCertificatesAliasContentGet"></a>
-# **apisApiIdClientCertificatesAliasContentGet**
-> apisApiIdClientCertificatesAliasContentGet(apiId, alias)
+<a name="addAPIClientCertificate"></a>
+# **addAPIClientCertificate**
+> ClientCertMetadataDTO addAPIClientCertificate(apiId, certificate, alias, tier)
 
-Download a Certificate
+Upload a New Certificate
 
-This operation can be used to download a certificate which matches the given alias. 
+This operation can be used to upload a new certificate for an endpoint. 
 
 ### Example
 ```java
@@ -41,11 +41,14 @@ public class Example {
 
     ClientCertificatesApi apiInstance = new ClientCertificatesApi(defaultClient);
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
-    String alias = "alias_example"; // String | 
+    File certificate = new File("/path/to/file"); // File | The certificate that needs to be uploaded.
+    String alias = "alias_example"; // String | Alias for the certificate
+    String tier = "tier_example"; // String | api tier to which the certificate should be applied.
     try {
-      apiInstance.apisApiIdClientCertificatesAliasContentGet(apiId, alias);
+      ClientCertMetadataDTO result = apiInstance.addAPIClientCertificate(apiId, certificate, alias, tier);
+      System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ClientCertificatesApi#apisApiIdClientCertificatesAliasContentGet");
+      System.err.println("Exception when calling ClientCertificatesApi#addAPIClientCertificate");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -60,11 +63,13 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **alias** | **String**|  |
+ **certificate** | **File**| The certificate that needs to be uploaded. |
+ **alias** | **String**| Alias for the certificate |
+ **tier** | **String**| api tier to which the certificate should be applied. |
 
 ### Return type
 
-null (empty response body)
+[**ClientCertMetadataDTO**](ClientCertMetadataDTO.md)
 
 ### Authorization
 
@@ -72,20 +77,19 @@ null (empty response body)
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: multipart/form-data
  - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK.  |  * Content-Type - The content type of the body.  <br>  |
+**200** | OK. The Certificate added successfully.  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
-**404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
-<a name="apisApiIdClientCertificatesAliasDelete"></a>
-# **apisApiIdClientCertificatesAliasDelete**
-> apisApiIdClientCertificatesAliasDelete(alias, apiId)
+<a name="deleteAPIClientCertificateByAlias"></a>
+# **deleteAPIClientCertificateByAlias**
+> deleteAPIClientCertificateByAlias(alias, apiId)
 
 Delete a Certificate
 
@@ -114,9 +118,9 @@ public class Example {
     String alias = "alias_example"; // String | The alias of the certificate that should be deleted. 
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     try {
-      apiInstance.apisApiIdClientCertificatesAliasDelete(alias, apiId);
+      apiInstance.deleteAPIClientCertificateByAlias(alias, apiId);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ClientCertificatesApi#apisApiIdClientCertificatesAliasDelete");
+      System.err.println("Exception when calling ClientCertificatesApi#deleteAPIClientCertificateByAlias");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -154,9 +158,9 @@ null (empty response body)
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
-<a name="apisApiIdClientCertificatesAliasGet"></a>
-# **apisApiIdClientCertificatesAliasGet**
-> CertificateInfoDTO apisApiIdClientCertificatesAliasGet(alias, apiId)
+<a name="getAPIClientCertificateByAlias"></a>
+# **getAPIClientCertificateByAlias**
+> CertificateInfoDTO getAPIClientCertificateByAlias(alias, apiId)
 
 Get the Certificate Information
 
@@ -185,10 +189,10 @@ public class Example {
     String alias = "alias_example"; // String | 
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     try {
-      CertificateInfoDTO result = apiInstance.apisApiIdClientCertificatesAliasGet(alias, apiId);
+      CertificateInfoDTO result = apiInstance.getAPIClientCertificateByAlias(alias, apiId);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ClientCertificatesApi#apisApiIdClientCertificatesAliasGet");
+      System.err.println("Exception when calling ClientCertificatesApi#getAPIClientCertificateByAlias");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -226,13 +230,13 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
-<a name="apisApiIdClientCertificatesAliasPut"></a>
-# **apisApiIdClientCertificatesAliasPut**
-> ClientCertMetadataDTO apisApiIdClientCertificatesAliasPut(alias, apiId, certificate, tier)
+<a name="getAPIClientCertificateContentByAlias"></a>
+# **getAPIClientCertificateContentByAlias**
+> getAPIClientCertificateContentByAlias(apiId, alias)
 
-Update a Certificate
+Download a Certificate
 
-This operation can be used to update an uploaded certificate. 
+This operation can be used to download a certificate which matches the given alias. 
 
 ### Example
 ```java
@@ -254,15 +258,12 @@ public class Example {
     OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
     ClientCertificatesApi apiInstance = new ClientCertificatesApi(defaultClient);
-    String alias = "alias_example"; // String | Alias for the certificate
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
-    File certificate = new File("/path/to/file"); // File | The certificate that needs to be uploaded.
-    String tier = "tier_example"; // String | The tier of the certificate
+    String alias = "alias_example"; // String | 
     try {
-      ClientCertMetadataDTO result = apiInstance.apisApiIdClientCertificatesAliasPut(alias, apiId, certificate, tier);
-      System.out.println(result);
+      apiInstance.getAPIClientCertificateContentByAlias(apiId, alias);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ClientCertificatesApi#apisApiIdClientCertificatesAliasPut");
+      System.err.println("Exception when calling ClientCertificatesApi#getAPIClientCertificateContentByAlias");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -276,14 +277,12 @@ public class Example {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **alias** | **String**| Alias for the certificate |
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **certificate** | **File**| The certificate that needs to be uploaded. | [optional]
- **tier** | **String**| The tier of the certificate | [optional]
+ **alias** | **String**|  |
 
 ### Return type
 
-[**ClientCertMetadataDTO**](ClientCertMetadataDTO.md)
+null (empty response body)
 
 ### Authorization
 
@@ -291,20 +290,20 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: multipart/form-data
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. The Certificate updated successfully.  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
+**200** | OK.  |  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
-<a name="apisApiIdClientCertificatesGet"></a>
-# **apisApiIdClientCertificatesGet**
-> ClientCertificatesDTO apisApiIdClientCertificatesGet(apiId, limit, offset, alias)
+<a name="getAPIClientCertificates"></a>
+# **getAPIClientCertificates**
+> ClientCertificatesDTO getAPIClientCertificates(apiId, limit, offset, alias)
 
 Retrieve/ Search Uploaded Client Certificates
 
@@ -335,10 +334,10 @@ public class Example {
     Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
     String alias = "alias_example"; // String | Alias for the client certificate
     try {
-      ClientCertificatesDTO result = apiInstance.apisApiIdClientCertificatesGet(apiId, limit, offset, alias);
+      ClientCertificatesDTO result = apiInstance.getAPIClientCertificates(apiId, limit, offset, alias);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ClientCertificatesApi#apisApiIdClientCertificatesGet");
+      System.err.println("Exception when calling ClientCertificatesApi#getAPIClientCertificates");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -377,13 +376,13 @@ Name | Type | Description  | Notes
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **500** | Internal Server Error. |  -  |
 
-<a name="apisApiIdClientCertificatesPost"></a>
-# **apisApiIdClientCertificatesPost**
-> ClientCertMetadataDTO apisApiIdClientCertificatesPost(apiId, certificate, alias, tier)
+<a name="updateAPIClientCertificateByAlias"></a>
+# **updateAPIClientCertificateByAlias**
+> ClientCertMetadataDTO updateAPIClientCertificateByAlias(alias, apiId, certificate, tier)
 
-Upload a New Certificate
+Update a Certificate
 
-This operation can be used to upload a new certificate for an endpoint. 
+This operation can be used to update an uploaded certificate. 
 
 ### Example
 ```java
@@ -405,15 +404,15 @@ public class Example {
     OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
     ClientCertificatesApi apiInstance = new ClientCertificatesApi(defaultClient);
+    String alias = "alias_example"; // String | Alias for the certificate
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     File certificate = new File("/path/to/file"); // File | The certificate that needs to be uploaded.
-    String alias = "alias_example"; // String | Alias for the certificate
-    String tier = "tier_example"; // String | api tier to which the certificate should be applied.
+    String tier = "tier_example"; // String | The tier of the certificate
     try {
-      ClientCertMetadataDTO result = apiInstance.apisApiIdClientCertificatesPost(apiId, certificate, alias, tier);
+      ClientCertMetadataDTO result = apiInstance.updateAPIClientCertificateByAlias(alias, apiId, certificate, tier);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ClientCertificatesApi#apisApiIdClientCertificatesPost");
+      System.err.println("Exception when calling ClientCertificatesApi#updateAPIClientCertificateByAlias");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -427,10 +426,10 @@ public class Example {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **certificate** | **File**| The certificate that needs to be uploaded. |
  **alias** | **String**| Alias for the certificate |
- **tier** | **String**| api tier to which the certificate should be applied. |
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **certificate** | **File**| The certificate that needs to be uploaded. | [optional]
+ **tier** | **String**| The tier of the certificate | [optional]
 
 ### Return type
 
@@ -448,7 +447,8 @@ Name | Type | Description  | Notes
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. The Certificate added successfully.  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
+**200** | OK. The Certificate updated successfully.  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 

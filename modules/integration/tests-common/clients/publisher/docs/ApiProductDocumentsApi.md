@@ -4,22 +4,22 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**apiProductsApiProductIdDocumentsDocumentIdContentGet**](ApiProductDocumentsApi.md#apiProductsApiProductIdDocumentsDocumentIdContentGet) | **GET** /api-products/{apiProductId}/documents/{documentId}/content | Get the Content of an API Product Document
-[**apiProductsApiProductIdDocumentsDocumentIdContentPost**](ApiProductDocumentsApi.md#apiProductsApiProductIdDocumentsDocumentIdContentPost) | **POST** /api-products/{apiProductId}/documents/{documentId}/content | Upload the Content of an API Product Document
-[**apiProductsApiProductIdDocumentsDocumentIdDelete**](ApiProductDocumentsApi.md#apiProductsApiProductIdDocumentsDocumentIdDelete) | **DELETE** /api-products/{apiProductId}/documents/{documentId} | Delete a Document of an API Product
-[**apiProductsApiProductIdDocumentsDocumentIdGet**](ApiProductDocumentsApi.md#apiProductsApiProductIdDocumentsDocumentIdGet) | **GET** /api-products/{apiProductId}/documents/{documentId} | Get a Document of an API Product
-[**apiProductsApiProductIdDocumentsDocumentIdPut**](ApiProductDocumentsApi.md#apiProductsApiProductIdDocumentsDocumentIdPut) | **PUT** /api-products/{apiProductId}/documents/{documentId} | Update a Document of an API Product
-[**apiProductsApiProductIdDocumentsGet**](ApiProductDocumentsApi.md#apiProductsApiProductIdDocumentsGet) | **GET** /api-products/{apiProductId}/documents | Get a List of Documents of an API Product
-[**apiProductsApiProductIdDocumentsPost**](ApiProductDocumentsApi.md#apiProductsApiProductIdDocumentsPost) | **POST** /api-products/{apiProductId}/documents | Add a New Document to an API Product
+[**addAPIProductDocument**](ApiProductDocumentsApi.md#addAPIProductDocument) | **POST** /api-products/{apiProductId}/documents | Add a New Document to an API Product
+[**addAPIProductDocumentContent**](ApiProductDocumentsApi.md#addAPIProductDocumentContent) | **POST** /api-products/{apiProductId}/documents/{documentId}/content | Upload the Content of an API Product Document
+[**deleteAPIProductDocument**](ApiProductDocumentsApi.md#deleteAPIProductDocument) | **DELETE** /api-products/{apiProductId}/documents/{documentId} | Delete a Document of an API Product
+[**getAPIProductDocument**](ApiProductDocumentsApi.md#getAPIProductDocument) | **GET** /api-products/{apiProductId}/documents/{documentId} | Get a Document of an API Product
+[**getAPIProductDocumentContent**](ApiProductDocumentsApi.md#getAPIProductDocumentContent) | **GET** /api-products/{apiProductId}/documents/{documentId}/content | Get the Content of an API Product Document
+[**getAPIProductDocuments**](ApiProductDocumentsApi.md#getAPIProductDocuments) | **GET** /api-products/{apiProductId}/documents | Get a List of Documents of an API Product
+[**updateAPIProductDocument**](ApiProductDocumentsApi.md#updateAPIProductDocument) | **PUT** /api-products/{apiProductId}/documents/{documentId} | Update a Document of an API Product
 
 
-<a name="apiProductsApiProductIdDocumentsDocumentIdContentGet"></a>
-# **apiProductsApiProductIdDocumentsDocumentIdContentGet**
-> apiProductsApiProductIdDocumentsDocumentIdContentGet(apiProductId, documentId, accept, ifNoneMatch)
+<a name="addAPIProductDocument"></a>
+# **addAPIProductDocument**
+> DocumentDTO addAPIProductDocument(apiProductId, documentDTO)
 
-Get the Content of an API Product Document
+Add a New Document to an API Product
 
-This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v1/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
+This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
 
 ### Example
 ```java
@@ -42,13 +42,12 @@ public class Example {
 
     ApiProductDocumentsApi apiInstance = new ApiProductDocumentsApi(defaultClient);
     String apiProductId = "apiProductId_example"; // String | **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended. 
-    String documentId = "documentId_example"; // String | Document Identifier 
-    String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
-    String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
+    DocumentDTO documentDTO = new DocumentDTO(); // DocumentDTO | Document object that needs to be added
     try {
-      apiInstance.apiProductsApiProductIdDocumentsDocumentIdContentGet(apiProductId, documentId, accept, ifNoneMatch);
+      DocumentDTO result = apiInstance.addAPIProductDocument(apiProductId, documentDTO);
+      System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiProductDocumentsApi#apiProductsApiProductIdDocumentsDocumentIdContentGet");
+      System.err.println("Exception when calling ApiProductDocumentsApi#addAPIProductDocument");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -63,13 +62,11 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  |
- **documentId** | **String**| Document Identifier  |
- **accept** | **String**| Media types acceptable for the response. Default is application/json.  | [optional] [default to &quot;application/json&quot;]
- **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
+ **documentDTO** | [**DocumentDTO**](DocumentDTO.md)| Document object that needs to be added |
 
 ### Return type
 
-null (empty response body)
+[**DocumentDTO**](DocumentDTO.md)
 
 ### Authorization
 
@@ -77,21 +74,19 @@ null (empty response body)
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. File or inline content returned.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  |
-**303** | See Other. Source can be retrived from the URL specified at the Location header.  |  * Location - The Source URL of the document.  <br>  |
-**304** | Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  |  -  |
-**404** | Not Found. The specified resource does not exist. |  -  |
-**406** | Not Acceptable. The requested media type is not supported. |  -  |
+**201** | Created. Successful response with the newly created Document object as entity in the body. Location header contains URL of newly added document.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - Location to the newly created Document.  <br>  * Content-Type - The content type of the body.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**415** | Unsupported Media Type. The entity of the request was not in a supported format. |  -  |
 
-<a name="apiProductsApiProductIdDocumentsDocumentIdContentPost"></a>
-# **apiProductsApiProductIdDocumentsDocumentIdContentPost**
-> DocumentDTO apiProductsApiProductIdDocumentsDocumentIdContentPost(apiProductId, documentId, ifMatch, file, inlineContent)
+<a name="addAPIProductDocumentContent"></a>
+# **addAPIProductDocumentContent**
+> DocumentDTO addAPIProductDocumentContent(apiProductId, documentId, ifMatch, file, inlineContent)
 
 Upload the Content of an API Product Document
 
@@ -123,10 +118,10 @@ public class Example {
     File file = new File("/path/to/file"); // File | Document to upload
     String inlineContent = "inlineContent_example"; // String | Inline content of the document
     try {
-      DocumentDTO result = apiInstance.apiProductsApiProductIdDocumentsDocumentIdContentPost(apiProductId, documentId, ifMatch, file, inlineContent);
+      DocumentDTO result = apiInstance.addAPIProductDocumentContent(apiProductId, documentId, ifMatch, file, inlineContent);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiProductDocumentsApi#apiProductsApiProductIdDocumentsDocumentIdContentPost");
+      System.err.println("Exception when calling ApiProductDocumentsApi#addAPIProductDocumentContent");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -167,9 +162,9 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
 
-<a name="apiProductsApiProductIdDocumentsDocumentIdDelete"></a>
-# **apiProductsApiProductIdDocumentsDocumentIdDelete**
-> apiProductsApiProductIdDocumentsDocumentIdDelete(apiProductId, documentId, ifMatch)
+<a name="deleteAPIProductDocument"></a>
+# **deleteAPIProductDocument**
+> deleteAPIProductDocument(apiProductId, documentId, ifMatch)
 
 Delete a Document of an API Product
 
@@ -199,9 +194,9 @@ public class Example {
     String documentId = "documentId_example"; // String | Document Identifier 
     String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
     try {
-      apiInstance.apiProductsApiProductIdDocumentsDocumentIdDelete(apiProductId, documentId, ifMatch);
+      apiInstance.deleteAPIProductDocument(apiProductId, documentId, ifMatch);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiProductDocumentsApi#apiProductsApiProductIdDocumentsDocumentIdDelete");
+      System.err.println("Exception when calling ApiProductDocumentsApi#deleteAPIProductDocument");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -239,9 +234,9 @@ null (empty response body)
 **404** | Not Found. The specified resource does not exist. |  -  |
 **412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
 
-<a name="apiProductsApiProductIdDocumentsDocumentIdGet"></a>
-# **apiProductsApiProductIdDocumentsDocumentIdGet**
-> DocumentDTO apiProductsApiProductIdDocumentsDocumentIdGet(apiProductId, documentId, accept, ifNoneMatch)
+<a name="getAPIProductDocument"></a>
+# **getAPIProductDocument**
+> DocumentDTO getAPIProductDocument(apiProductId, documentId, accept, ifNoneMatch)
 
 Get a Document of an API Product
 
@@ -272,10 +267,10 @@ public class Example {
     String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      DocumentDTO result = apiInstance.apiProductsApiProductIdDocumentsDocumentIdGet(apiProductId, documentId, accept, ifNoneMatch);
+      DocumentDTO result = apiInstance.getAPIProductDocument(apiProductId, documentId, accept, ifNoneMatch);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiProductDocumentsApi#apiProductsApiProductIdDocumentsDocumentIdGet");
+      System.err.println("Exception when calling ApiProductDocumentsApi#getAPIProductDocument");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -315,13 +310,13 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
 
-<a name="apiProductsApiProductIdDocumentsDocumentIdPut"></a>
-# **apiProductsApiProductIdDocumentsDocumentIdPut**
-> DocumentDTO apiProductsApiProductIdDocumentsDocumentIdPut(apiProductId, documentId, documentDTO, ifMatch)
+<a name="getAPIProductDocumentContent"></a>
+# **getAPIProductDocumentContent**
+> getAPIProductDocumentContent(apiProductId, documentId, accept, ifNoneMatch)
 
-Update a Document of an API Product
+Get the Content of an API Product Document
 
-This operation can be used to update metadata of an API&#39;s document. 
+This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type     _Sample cURL_ : &#x60;curl -k -H \&quot;Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51\&quot; -F inlineContent&#x3D;@\&quot;docs.txt\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v1/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content&#x60; 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
 
 ### Example
 ```java
@@ -345,13 +340,12 @@ public class Example {
     ApiProductDocumentsApi apiInstance = new ApiProductDocumentsApi(defaultClient);
     String apiProductId = "apiProductId_example"; // String | **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended. 
     String documentId = "documentId_example"; // String | Document Identifier 
-    DocumentDTO documentDTO = new DocumentDTO(); // DocumentDTO | Document object that needs to be added
-    String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
+    String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
+    String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      DocumentDTO result = apiInstance.apiProductsApiProductIdDocumentsDocumentIdPut(apiProductId, documentId, documentDTO, ifMatch);
-      System.out.println(result);
+      apiInstance.getAPIProductDocumentContent(apiProductId, documentId, accept, ifNoneMatch);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiProductDocumentsApi#apiProductsApiProductIdDocumentsDocumentIdPut");
+      System.err.println("Exception when calling ApiProductDocumentsApi#getAPIProductDocumentContent");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -367,12 +361,12 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  |
  **documentId** | **String**| Document Identifier  |
- **documentDTO** | [**DocumentDTO**](DocumentDTO.md)| Document object that needs to be added |
- **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
+ **accept** | **String**| Media types acceptable for the response. Default is application/json.  | [optional] [default to &quot;application/json&quot;]
+ **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
 
 ### Return type
 
-[**DocumentDTO**](DocumentDTO.md)
+null (empty response body)
 
 ### Authorization
 
@@ -380,20 +374,21 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. Document updated  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the updated document.  <br>  * Content-Type - The content type of the body.  <br>  |
-**400** | Bad Request. Invalid request or validation error. |  -  |
+**200** | OK. File or inline content returned.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  |
+**303** | See Other. Source can be retrived from the URL specified at the Location header.  |  * Location - The Source URL of the document.  <br>  |
+**304** | Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
-**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
+**406** | Not Acceptable. The requested media type is not supported. |  -  |
 
-<a name="apiProductsApiProductIdDocumentsGet"></a>
-# **apiProductsApiProductIdDocumentsGet**
-> DocumentListDTO apiProductsApiProductIdDocumentsGet(apiProductId, limit, offset, accept, ifNoneMatch)
+<a name="getAPIProductDocuments"></a>
+# **getAPIProductDocuments**
+> DocumentListDTO getAPIProductDocuments(apiProductId, limit, offset, accept, ifNoneMatch)
 
 Get a List of Documents of an API Product
 
@@ -425,10 +420,10 @@ public class Example {
     String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      DocumentListDTO result = apiInstance.apiProductsApiProductIdDocumentsGet(apiProductId, limit, offset, accept, ifNoneMatch);
+      DocumentListDTO result = apiInstance.getAPIProductDocuments(apiProductId, limit, offset, accept, ifNoneMatch);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiProductDocumentsApi#apiProductsApiProductIdDocumentsGet");
+      System.err.println("Exception when calling ApiProductDocumentsApi#getAPIProductDocuments");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -469,13 +464,13 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
 
-<a name="apiProductsApiProductIdDocumentsPost"></a>
-# **apiProductsApiProductIdDocumentsPost**
-> DocumentDTO apiProductsApiProductIdDocumentsPost(apiProductId, documentDTO)
+<a name="updateAPIProductDocument"></a>
+# **updateAPIProductDocument**
+> DocumentDTO updateAPIProductDocument(apiProductId, documentId, documentDTO, ifMatch)
 
-Add a New Document to an API Product
+Update a Document of an API Product
 
-This operation can be used to add a new documentation to an API Product. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API Product document ** API once we obtain a document Id by this operation. 
+This operation can be used to update metadata of an API&#39;s document. 
 
 ### Example
 ```java
@@ -498,12 +493,14 @@ public class Example {
 
     ApiProductDocumentsApi apiInstance = new ApiProductDocumentsApi(defaultClient);
     String apiProductId = "apiProductId_example"; // String | **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended. 
+    String documentId = "documentId_example"; // String | Document Identifier 
     DocumentDTO documentDTO = new DocumentDTO(); // DocumentDTO | Document object that needs to be added
+    String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
     try {
-      DocumentDTO result = apiInstance.apiProductsApiProductIdDocumentsPost(apiProductId, documentDTO);
+      DocumentDTO result = apiInstance.updateAPIProductDocument(apiProductId, documentId, documentDTO, ifMatch);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling ApiProductDocumentsApi#apiProductsApiProductIdDocumentsPost");
+      System.err.println("Exception when calling ApiProductDocumentsApi#updateAPIProductDocument");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
@@ -518,7 +515,9 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  |
+ **documentId** | **String**| Document Identifier  |
  **documentDTO** | [**DocumentDTO**](DocumentDTO.md)| Document object that needs to be added |
+ **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
 
 ### Return type
 
@@ -536,7 +535,8 @@ Name | Type | Description  | Notes
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**201** | Created. Successful response with the newly created Document object as entity in the body. Location header contains URL of newly added document.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - Location to the newly created Document.  <br>  * Content-Type - The content type of the body.  <br>  |
+**200** | OK. Document updated  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the updated document.  <br>  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
-**415** | Unsupported Media Type. The entity of the request was not in a supported format. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
 

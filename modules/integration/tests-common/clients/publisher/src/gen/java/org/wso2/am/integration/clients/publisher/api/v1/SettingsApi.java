@@ -27,7 +27,6 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
-import org.wso2.am.integration.clients.publisher.api.v1.dto.EnvironmentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
 
@@ -57,129 +56,7 @@ public class SettingsApi {
     }
 
     /**
-     * Build call for settingsGatewayEnvironmentsGet
-     * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Environment list is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call settingsGatewayEnvironmentsGetCall(String apiId, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/settings/gateway-environments";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (apiId != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("apiId", apiId));
-        }
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call settingsGatewayEnvironmentsGetValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling settingsGatewayEnvironmentsGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = settingsGatewayEnvironmentsGetCall(apiId, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get All Gateway Environments
-     * This operation can be used to retrieve the list of gateway environments available. 
-     * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
-     * @return EnvironmentListDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Environment list is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public EnvironmentListDTO settingsGatewayEnvironmentsGet(String apiId) throws ApiException {
-        ApiResponse<EnvironmentListDTO> localVarResp = settingsGatewayEnvironmentsGetWithHttpInfo(apiId);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get All Gateway Environments
-     * This operation can be used to retrieve the list of gateway environments available. 
-     * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
-     * @return ApiResponse&lt;EnvironmentListDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Environment list is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<EnvironmentListDTO> settingsGatewayEnvironmentsGetWithHttpInfo(String apiId) throws ApiException {
-        okhttp3.Call localVarCall = settingsGatewayEnvironmentsGetValidateBeforeCall(apiId, null);
-        Type localVarReturnType = new TypeToken<EnvironmentListDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get All Gateway Environments (asynchronously)
-     * This operation can be used to retrieve the list of gateway environments available. 
-     * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Environment list is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call settingsGatewayEnvironmentsGetAsync(String apiId, final ApiCallback<EnvironmentListDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = settingsGatewayEnvironmentsGetValidateBeforeCall(apiId, _callback);
-        Type localVarReturnType = new TypeToken<EnvironmentListDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for settingsGet
+     * Build call for getSettings
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -190,7 +67,7 @@ public class SettingsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call settingsGetCall(final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getSettingsCall(final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -220,10 +97,10 @@ public class SettingsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call settingsGetValidateBeforeCall(final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getSettingsValidateBeforeCall(final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = settingsGetCall(_callback);
+        okhttp3.Call localVarCall = getSettingsCall(_callback);
         return localVarCall;
 
     }
@@ -240,8 +117,8 @@ public class SettingsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public SettingsDTO settingsGet() throws ApiException {
-        ApiResponse<SettingsDTO> localVarResp = settingsGetWithHttpInfo();
+    public SettingsDTO getSettings() throws ApiException {
+        ApiResponse<SettingsDTO> localVarResp = getSettingsWithHttpInfo();
         return localVarResp.getData();
     }
 
@@ -257,8 +134,8 @@ public class SettingsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<SettingsDTO> settingsGetWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = settingsGetValidateBeforeCall(null);
+    public ApiResponse<SettingsDTO> getSettingsWithHttpInfo() throws ApiException {
+        okhttp3.Call localVarCall = getSettingsValidateBeforeCall(null);
         Type localVarReturnType = new TypeToken<SettingsDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -276,9 +153,9 @@ public class SettingsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call settingsGetAsync(final ApiCallback<SettingsDTO> _callback) throws ApiException {
+    public okhttp3.Call getSettingsAsync(final ApiCallback<SettingsDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = settingsGetValidateBeforeCall(_callback);
+        okhttp3.Call localVarCall = getSettingsValidateBeforeCall(_callback);
         Type localVarReturnType = new TypeToken<SettingsDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

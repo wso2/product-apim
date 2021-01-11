@@ -59,690 +59,7 @@ public class ClientCertificatesApi {
     }
 
     /**
-     * Build call for apisApiIdClientCertificatesAliasContentGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param alias  (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdClientCertificatesAliasContentGetCall(String apiId, String alias, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/client-certificates/{alias}/content"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()))
-            .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdClientCertificatesAliasContentGetValidateBeforeCall(String apiId, String alias, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdClientCertificatesAliasContentGet(Async)");
-        }
-        
-        // verify the required parameter 'alias' is set
-        if (alias == null) {
-            throw new ApiException("Missing the required parameter 'alias' when calling apisApiIdClientCertificatesAliasContentGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasContentGetCall(apiId, alias, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Download a Certificate
-     * This operation can be used to download a certificate which matches the given alias. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param alias  (required)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public void apisApiIdClientCertificatesAliasContentGet(String apiId, String alias) throws ApiException {
-        apisApiIdClientCertificatesAliasContentGetWithHttpInfo(apiId, alias);
-    }
-
-    /**
-     * Download a Certificate
-     * This operation can be used to download a certificate which matches the given alias. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param alias  (required)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Void> apisApiIdClientCertificatesAliasContentGetWithHttpInfo(String apiId, String alias) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasContentGetValidateBeforeCall(apiId, alias, null);
-        return localVarApiClient.execute(localVarCall);
-    }
-
-    /**
-     * Download a Certificate (asynchronously)
-     * This operation can be used to download a certificate which matches the given alias. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param alias  (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdClientCertificatesAliasContentGetAsync(String apiId, String alias, final ApiCallback<Void> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasContentGetValidateBeforeCall(apiId, alias, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdClientCertificatesAliasDelete
-     * @param alias The alias of the certificate that should be deleted.  (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdClientCertificatesAliasDeleteCall(String alias, String apiId, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/client-certificates/{alias}"
-            .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()))
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdClientCertificatesAliasDeleteValidateBeforeCall(String alias, String apiId, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'alias' is set
-        if (alias == null) {
-            throw new ApiException("Missing the required parameter 'alias' when calling apisApiIdClientCertificatesAliasDelete(Async)");
-        }
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdClientCertificatesAliasDelete(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasDeleteCall(alias, apiId, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Delete a Certificate
-     * This operation can be used to delete an uploaded certificate. 
-     * @param alias The alias of the certificate that should be deleted.  (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public void apisApiIdClientCertificatesAliasDelete(String alias, String apiId) throws ApiException {
-        apisApiIdClientCertificatesAliasDeleteWithHttpInfo(alias, apiId);
-    }
-
-    /**
-     * Delete a Certificate
-     * This operation can be used to delete an uploaded certificate. 
-     * @param alias The alias of the certificate that should be deleted.  (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Void> apisApiIdClientCertificatesAliasDeleteWithHttpInfo(String alias, String apiId) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasDeleteValidateBeforeCall(alias, apiId, null);
-        return localVarApiClient.execute(localVarCall);
-    }
-
-    /**
-     * Delete a Certificate (asynchronously)
-     * This operation can be used to delete an uploaded certificate. 
-     * @param alias The alias of the certificate that should be deleted.  (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdClientCertificatesAliasDeleteAsync(String alias, String apiId, final ApiCallback<Void> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasDeleteValidateBeforeCall(alias, apiId, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdClientCertificatesAliasGet
-     * @param alias  (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdClientCertificatesAliasGetCall(String alias, String apiId, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/client-certificates/{alias}"
-            .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()))
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdClientCertificatesAliasGetValidateBeforeCall(String alias, String apiId, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'alias' is set
-        if (alias == null) {
-            throw new ApiException("Missing the required parameter 'alias' when calling apisApiIdClientCertificatesAliasGet(Async)");
-        }
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdClientCertificatesAliasGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasGetCall(alias, apiId, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get the Certificate Information
-     * This operation can be used to get the information about a certificate. 
-     * @param alias  (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @return CertificateInfoDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public CertificateInfoDTO apisApiIdClientCertificatesAliasGet(String alias, String apiId) throws ApiException {
-        ApiResponse<CertificateInfoDTO> localVarResp = apisApiIdClientCertificatesAliasGetWithHttpInfo(alias, apiId);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get the Certificate Information
-     * This operation can be used to get the information about a certificate. 
-     * @param alias  (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @return ApiResponse&lt;CertificateInfoDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<CertificateInfoDTO> apisApiIdClientCertificatesAliasGetWithHttpInfo(String alias, String apiId) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasGetValidateBeforeCall(alias, apiId, null);
-        Type localVarReturnType = new TypeToken<CertificateInfoDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get the Certificate Information (asynchronously)
-     * This operation can be used to get the information about a certificate. 
-     * @param alias  (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdClientCertificatesAliasGetAsync(String alias, String apiId, final ApiCallback<CertificateInfoDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasGetValidateBeforeCall(alias, apiId, _callback);
-        Type localVarReturnType = new TypeToken<CertificateInfoDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdClientCertificatesAliasPut
-     * @param alias Alias for the certificate (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param certificate The certificate that needs to be uploaded. (optional)
-     * @param tier The tier of the certificate (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdClientCertificatesAliasPutCall(String alias, String apiId, File certificate, String tier, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/client-certificates/{alias}"
-            .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()))
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        if (certificate != null) {
-            localVarFormParams.put("certificate", certificate);
-        }
-
-        if (tier != null) {
-            localVarFormParams.put("tier", tier);
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "multipart/form-data"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdClientCertificatesAliasPutValidateBeforeCall(String alias, String apiId, File certificate, String tier, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'alias' is set
-        if (alias == null) {
-            throw new ApiException("Missing the required parameter 'alias' when calling apisApiIdClientCertificatesAliasPut(Async)");
-        }
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdClientCertificatesAliasPut(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasPutCall(alias, apiId, certificate, tier, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Update a Certificate
-     * This operation can be used to update an uploaded certificate. 
-     * @param alias Alias for the certificate (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param certificate The certificate that needs to be uploaded. (optional)
-     * @param tier The tier of the certificate (optional)
-     * @return ClientCertMetadataDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ClientCertMetadataDTO apisApiIdClientCertificatesAliasPut(String alias, String apiId, File certificate, String tier) throws ApiException {
-        ApiResponse<ClientCertMetadataDTO> localVarResp = apisApiIdClientCertificatesAliasPutWithHttpInfo(alias, apiId, certificate, tier);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Update a Certificate
-     * This operation can be used to update an uploaded certificate. 
-     * @param alias Alias for the certificate (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param certificate The certificate that needs to be uploaded. (optional)
-     * @param tier The tier of the certificate (optional)
-     * @return ApiResponse&lt;ClientCertMetadataDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<ClientCertMetadataDTO> apisApiIdClientCertificatesAliasPutWithHttpInfo(String alias, String apiId, File certificate, String tier) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasPutValidateBeforeCall(alias, apiId, certificate, tier, null);
-        Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Update a Certificate (asynchronously)
-     * This operation can be used to update an uploaded certificate. 
-     * @param alias Alias for the certificate (required)
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param certificate The certificate that needs to be uploaded. (optional)
-     * @param tier The tier of the certificate (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdClientCertificatesAliasPutAsync(String alias, String apiId, File certificate, String tier, final ApiCallback<ClientCertMetadataDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesAliasPutValidateBeforeCall(alias, apiId, certificate, tier, _callback);
-        Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdClientCertificatesGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param alias Alias for the client certificate (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with the list of matching certificate information in the body.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdClientCertificatesGetCall(String apiId, Integer limit, Integer offset, String alias, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/client-certificates"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (limit != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
-        }
-
-        if (offset != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
-        }
-
-        if (alias != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("alias", alias));
-        }
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdClientCertificatesGetValidateBeforeCall(String apiId, Integer limit, Integer offset, String alias, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdClientCertificatesGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesGetCall(apiId, limit, offset, alias, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Retrieve/ Search Uploaded Client Certificates
-     * This operation can be used to retrieve and search the uploaded client certificates. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param alias Alias for the client certificate (optional)
-     * @return ClientCertificatesDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with the list of matching certificate information in the body.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ClientCertificatesDTO apisApiIdClientCertificatesGet(String apiId, Integer limit, Integer offset, String alias) throws ApiException {
-        ApiResponse<ClientCertificatesDTO> localVarResp = apisApiIdClientCertificatesGetWithHttpInfo(apiId, limit, offset, alias);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Retrieve/ Search Uploaded Client Certificates
-     * This operation can be used to retrieve and search the uploaded client certificates. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param alias Alias for the client certificate (optional)
-     * @return ApiResponse&lt;ClientCertificatesDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with the list of matching certificate information in the body.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<ClientCertificatesDTO> apisApiIdClientCertificatesGetWithHttpInfo(String apiId, Integer limit, Integer offset, String alias) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesGetValidateBeforeCall(apiId, limit, offset, alias, null);
-        Type localVarReturnType = new TypeToken<ClientCertificatesDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Retrieve/ Search Uploaded Client Certificates (asynchronously)
-     * This operation can be used to retrieve and search the uploaded client certificates. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param alias Alias for the client certificate (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with the list of matching certificate information in the body.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdClientCertificatesGetAsync(String apiId, Integer limit, Integer offset, String alias, final ApiCallback<ClientCertificatesDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesGetValidateBeforeCall(apiId, limit, offset, alias, _callback);
-        Type localVarReturnType = new TypeToken<ClientCertificatesDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdClientCertificatesPost
+     * Build call for addAPIClientCertificate
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param certificate The certificate that needs to be uploaded. (required)
      * @param alias Alias for the certificate (required)
@@ -758,7 +75,7 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdClientCertificatesPostCall(String apiId, File certificate, String alias, String tier, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call addAPIClientCertificateCall(String apiId, File certificate, String alias, String tier, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -801,30 +118,30 @@ public class ClientCertificatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdClientCertificatesPostValidateBeforeCall(String apiId, File certificate, String alias, String tier, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call addAPIClientCertificateValidateBeforeCall(String apiId, File certificate, String alias, String tier, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdClientCertificatesPost(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling addAPIClientCertificate(Async)");
         }
         
         // verify the required parameter 'certificate' is set
         if (certificate == null) {
-            throw new ApiException("Missing the required parameter 'certificate' when calling apisApiIdClientCertificatesPost(Async)");
+            throw new ApiException("Missing the required parameter 'certificate' when calling addAPIClientCertificate(Async)");
         }
         
         // verify the required parameter 'alias' is set
         if (alias == null) {
-            throw new ApiException("Missing the required parameter 'alias' when calling apisApiIdClientCertificatesPost(Async)");
+            throw new ApiException("Missing the required parameter 'alias' when calling addAPIClientCertificate(Async)");
         }
         
         // verify the required parameter 'tier' is set
         if (tier == null) {
-            throw new ApiException("Missing the required parameter 'tier' when calling apisApiIdClientCertificatesPost(Async)");
+            throw new ApiException("Missing the required parameter 'tier' when calling addAPIClientCertificate(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesPostCall(apiId, certificate, alias, tier, _callback);
+        okhttp3.Call localVarCall = addAPIClientCertificateCall(apiId, certificate, alias, tier, _callback);
         return localVarCall;
 
     }
@@ -846,8 +163,8 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ClientCertMetadataDTO apisApiIdClientCertificatesPost(String apiId, File certificate, String alias, String tier) throws ApiException {
-        ApiResponse<ClientCertMetadataDTO> localVarResp = apisApiIdClientCertificatesPostWithHttpInfo(apiId, certificate, alias, tier);
+    public ClientCertMetadataDTO addAPIClientCertificate(String apiId, File certificate, String alias, String tier) throws ApiException {
+        ApiResponse<ClientCertMetadataDTO> localVarResp = addAPIClientCertificateWithHttpInfo(apiId, certificate, alias, tier);
         return localVarResp.getData();
     }
 
@@ -868,8 +185,8 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<ClientCertMetadataDTO> apisApiIdClientCertificatesPostWithHttpInfo(String apiId, File certificate, String alias, String tier) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesPostValidateBeforeCall(apiId, certificate, alias, tier, null);
+    public ApiResponse<ClientCertMetadataDTO> addAPIClientCertificateWithHttpInfo(String apiId, File certificate, String alias, String tier) throws ApiException {
+        okhttp3.Call localVarCall = addAPIClientCertificateValidateBeforeCall(apiId, certificate, alias, tier, null);
         Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -892,9 +209,692 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdClientCertificatesPostAsync(String apiId, File certificate, String alias, String tier, final ApiCallback<ClientCertMetadataDTO> _callback) throws ApiException {
+    public okhttp3.Call addAPIClientCertificateAsync(String apiId, File certificate, String alias, String tier, final ApiCallback<ClientCertMetadataDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdClientCertificatesPostValidateBeforeCall(apiId, certificate, alias, tier, _callback);
+        okhttp3.Call localVarCall = addAPIClientCertificateValidateBeforeCall(apiId, certificate, alias, tier, _callback);
+        Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for deleteAPIClientCertificateByAlias
+     * @param alias The alias of the certificate that should be deleted.  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteAPIClientCertificateByAliasCall(String alias, String apiId, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/client-certificates/{alias}"
+            .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()))
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call deleteAPIClientCertificateByAliasValidateBeforeCall(String alias, String apiId, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'alias' is set
+        if (alias == null) {
+            throw new ApiException("Missing the required parameter 'alias' when calling deleteAPIClientCertificateByAlias(Async)");
+        }
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling deleteAPIClientCertificateByAlias(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = deleteAPIClientCertificateByAliasCall(alias, apiId, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Delete a Certificate
+     * This operation can be used to delete an uploaded certificate. 
+     * @param alias The alias of the certificate that should be deleted.  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void deleteAPIClientCertificateByAlias(String alias, String apiId) throws ApiException {
+        deleteAPIClientCertificateByAliasWithHttpInfo(alias, apiId);
+    }
+
+    /**
+     * Delete a Certificate
+     * This operation can be used to delete an uploaded certificate. 
+     * @param alias The alias of the certificate that should be deleted.  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> deleteAPIClientCertificateByAliasWithHttpInfo(String alias, String apiId) throws ApiException {
+        okhttp3.Call localVarCall = deleteAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Delete a Certificate (asynchronously)
+     * This operation can be used to delete an uploaded certificate. 
+     * @param alias The alias of the certificate that should be deleted.  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteAPIClientCertificateByAliasAsync(String alias, String apiId, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = deleteAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPIClientCertificateByAlias
+     * @param alias  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIClientCertificateByAliasCall(String alias, String apiId, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/client-certificates/{alias}"
+            .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()))
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPIClientCertificateByAliasValidateBeforeCall(String alias, String apiId, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'alias' is set
+        if (alias == null) {
+            throw new ApiException("Missing the required parameter 'alias' when calling getAPIClientCertificateByAlias(Async)");
+        }
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIClientCertificateByAlias(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPIClientCertificateByAliasCall(alias, apiId, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get the Certificate Information
+     * This operation can be used to get the information about a certificate. 
+     * @param alias  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return CertificateInfoDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public CertificateInfoDTO getAPIClientCertificateByAlias(String alias, String apiId) throws ApiException {
+        ApiResponse<CertificateInfoDTO> localVarResp = getAPIClientCertificateByAliasWithHttpInfo(alias, apiId);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get the Certificate Information
+     * This operation can be used to get the information about a certificate. 
+     * @param alias  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return ApiResponse&lt;CertificateInfoDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<CertificateInfoDTO> getAPIClientCertificateByAliasWithHttpInfo(String alias, String apiId) throws ApiException {
+        okhttp3.Call localVarCall = getAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, null);
+        Type localVarReturnType = new TypeToken<CertificateInfoDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get the Certificate Information (asynchronously)
+     * This operation can be used to get the information about a certificate. 
+     * @param alias  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIClientCertificateByAliasAsync(String alias, String apiId, final ApiCallback<CertificateInfoDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, _callback);
+        Type localVarReturnType = new TypeToken<CertificateInfoDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPIClientCertificateContentByAlias
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param alias  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIClientCertificateContentByAliasCall(String apiId, String alias, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/client-certificates/{alias}/content"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()))
+            .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPIClientCertificateContentByAliasValidateBeforeCall(String apiId, String alias, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIClientCertificateContentByAlias(Async)");
+        }
+        
+        // verify the required parameter 'alias' is set
+        if (alias == null) {
+            throw new ApiException("Missing the required parameter 'alias' when calling getAPIClientCertificateContentByAlias(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPIClientCertificateContentByAliasCall(apiId, alias, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Download a Certificate
+     * This operation can be used to download a certificate which matches the given alias. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param alias  (required)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void getAPIClientCertificateContentByAlias(String apiId, String alias) throws ApiException {
+        getAPIClientCertificateContentByAliasWithHttpInfo(apiId, alias);
+    }
+
+    /**
+     * Download a Certificate
+     * This operation can be used to download a certificate which matches the given alias. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param alias  (required)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> getAPIClientCertificateContentByAliasWithHttpInfo(String apiId, String alias) throws ApiException {
+        okhttp3.Call localVarCall = getAPIClientCertificateContentByAliasValidateBeforeCall(apiId, alias, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Download a Certificate (asynchronously)
+     * This operation can be used to download a certificate which matches the given alias. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param alias  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIClientCertificateContentByAliasAsync(String apiId, String alias, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPIClientCertificateContentByAliasValidateBeforeCall(apiId, alias, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPIClientCertificates
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param alias Alias for the client certificate (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with the list of matching certificate information in the body.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIClientCertificatesCall(String apiId, Integer limit, Integer offset, String alias, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/client-certificates"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (limit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
+        }
+
+        if (offset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
+        }
+
+        if (alias != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("alias", alias));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPIClientCertificatesValidateBeforeCall(String apiId, Integer limit, Integer offset, String alias, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIClientCertificates(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPIClientCertificatesCall(apiId, limit, offset, alias, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Retrieve/ Search Uploaded Client Certificates
+     * This operation can be used to retrieve and search the uploaded client certificates. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param alias Alias for the client certificate (optional)
+     * @return ClientCertificatesDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with the list of matching certificate information in the body.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ClientCertificatesDTO getAPIClientCertificates(String apiId, Integer limit, Integer offset, String alias) throws ApiException {
+        ApiResponse<ClientCertificatesDTO> localVarResp = getAPIClientCertificatesWithHttpInfo(apiId, limit, offset, alias);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Retrieve/ Search Uploaded Client Certificates
+     * This operation can be used to retrieve and search the uploaded client certificates. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param alias Alias for the client certificate (optional)
+     * @return ApiResponse&lt;ClientCertificatesDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with the list of matching certificate information in the body.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<ClientCertificatesDTO> getAPIClientCertificatesWithHttpInfo(String apiId, Integer limit, Integer offset, String alias) throws ApiException {
+        okhttp3.Call localVarCall = getAPIClientCertificatesValidateBeforeCall(apiId, limit, offset, alias, null);
+        Type localVarReturnType = new TypeToken<ClientCertificatesDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Retrieve/ Search Uploaded Client Certificates (asynchronously)
+     * This operation can be used to retrieve and search the uploaded client certificates. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param alias Alias for the client certificate (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with the list of matching certificate information in the body.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIClientCertificatesAsync(String apiId, Integer limit, Integer offset, String alias, final ApiCallback<ClientCertificatesDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPIClientCertificatesValidateBeforeCall(apiId, limit, offset, alias, _callback);
+        Type localVarReturnType = new TypeToken<ClientCertificatesDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for updateAPIClientCertificateByAlias
+     * @param alias Alias for the certificate (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param certificate The certificate that needs to be uploaded. (optional)
+     * @param tier The tier of the certificate (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPIClientCertificateByAliasCall(String alias, String apiId, File certificate, String tier, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/client-certificates/{alias}"
+            .replaceAll("\\{" + "alias" + "\\}", localVarApiClient.escapeString(alias.toString()))
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (certificate != null) {
+            localVarFormParams.put("certificate", certificate);
+        }
+
+        if (tier != null) {
+            localVarFormParams.put("tier", tier);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call updateAPIClientCertificateByAliasValidateBeforeCall(String alias, String apiId, File certificate, String tier, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'alias' is set
+        if (alias == null) {
+            throw new ApiException("Missing the required parameter 'alias' when calling updateAPIClientCertificateByAlias(Async)");
+        }
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling updateAPIClientCertificateByAlias(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasCall(alias, apiId, certificate, tier, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Update a Certificate
+     * This operation can be used to update an uploaded certificate. 
+     * @param alias Alias for the certificate (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param certificate The certificate that needs to be uploaded. (optional)
+     * @param tier The tier of the certificate (optional)
+     * @return ClientCertMetadataDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ClientCertMetadataDTO updateAPIClientCertificateByAlias(String alias, String apiId, File certificate, String tier) throws ApiException {
+        ApiResponse<ClientCertMetadataDTO> localVarResp = updateAPIClientCertificateByAliasWithHttpInfo(alias, apiId, certificate, tier);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Update a Certificate
+     * This operation can be used to update an uploaded certificate. 
+     * @param alias Alias for the certificate (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param certificate The certificate that needs to be uploaded. (optional)
+     * @param tier The tier of the certificate (optional)
+     * @return ApiResponse&lt;ClientCertMetadataDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<ClientCertMetadataDTO> updateAPIClientCertificateByAliasWithHttpInfo(String alias, String apiId, File certificate, String tier) throws ApiException {
+        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, certificate, tier, null);
+        Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Update a Certificate (asynchronously)
+     * This operation can be used to update an uploaded certificate. 
+     * @param alias Alias for the certificate (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param certificate The certificate that needs to be uploaded. (optional)
+     * @param tier The tier of the certificate (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The Certificate updated successfully.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPIClientCertificateByAliasAsync(String alias, String apiId, File certificate, String tier, final ApiCallback<ClientCertMetadataDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, certificate, tier, _callback);
         Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

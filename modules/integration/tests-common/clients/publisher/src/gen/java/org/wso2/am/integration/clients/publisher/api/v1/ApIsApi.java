@@ -63,308 +63,33 @@ public class ApIsApi {
     }
 
     /**
-     * Build call for apisApiIdDelete
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdDeleteCall(String apiId, String ifMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifMatch != null) {
-            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdDeleteValidateBeforeCall(String apiId, String ifMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdDelete(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdDeleteCall(apiId, ifMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Delete an API
-     * This operation can be used to delete an existing API proving the Id of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public void apisApiIdDelete(String apiId, String ifMatch) throws ApiException {
-        apisApiIdDeleteWithHttpInfo(apiId, ifMatch);
-    }
-
-    /**
-     * Delete an API
-     * This operation can be used to delete an existing API proving the Id of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Void> apisApiIdDeleteWithHttpInfo(String apiId, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdDeleteValidateBeforeCall(apiId, ifMatch, null);
-        return localVarApiClient.execute(localVarCall);
-    }
-
-    /**
-     * Delete an API (asynchronously)
-     * This operation can be used to delete an existing API proving the Id of the API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdDeleteAsync(String apiId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdDeleteValidateBeforeCall(apiId, ifMatch, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdGetCall(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (xWSO2Tenant != null) {
-            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
-        }
-
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdGetValidateBeforeCall(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdGetCall(apiId, xWSO2Tenant, ifNoneMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get Details of an API
-     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return APIDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public APIDTO apisApiIdGet(String apiId, String xWSO2Tenant, String ifNoneMatch) throws ApiException {
-        ApiResponse<APIDTO> localVarResp = apisApiIdGetWithHttpInfo(apiId, xWSO2Tenant, ifNoneMatch);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get Details of an API
-     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;APIDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<APIDTO> apisApiIdGetWithHttpInfo(String apiId, String xWSO2Tenant, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdGetValidateBeforeCall(apiId, xWSO2Tenant, ifNoneMatch, null);
-        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get Details of an API (asynchronously)
-     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdGetAsync(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback<APIDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdGetValidateBeforeCall(apiId, xWSO2Tenant, ifNoneMatch, _callback);
-        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdPut
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * Build call for createAPI
      * @param APIDTO API object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param openAPIVersion Open api version (optional, default to v3)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdPutCall(String apiId, APIDTO APIDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call createAPICall(APIDTO APIDTO, String openAPIVersion, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = APIDTO;
 
         // create path and map variables
-        String localVarPath = "/apis/{apiId}"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+        String localVarPath = "/apis";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifMatch != null) {
-            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        if (openAPIVersion != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("openAPIVersion", openAPIVersion));
         }
 
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         final String[] localVarAccepts = {
@@ -382,809 +107,89 @@ public class ApIsApi {
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdPutValidateBeforeCall(String apiId, APIDTO APIDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdPut(Async)");
-        }
+    private okhttp3.Call createAPIValidateBeforeCall(APIDTO APIDTO, String openAPIVersion, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'APIDTO' is set
         if (APIDTO == null) {
-            throw new ApiException("Missing the required parameter 'APIDTO' when calling apisApiIdPut(Async)");
+            throw new ApiException("Missing the required parameter 'APIDTO' when calling createAPI(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdPutCall(apiId, APIDTO, ifMatch, _callback);
+        okhttp3.Call localVarCall = createAPICall(APIDTO, openAPIVersion, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Update an API
-     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * Create a New API
+     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI. 
      * @param APIDTO API object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param openAPIVersion Open api version (optional, default to v3)
      * @return APIDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public APIDTO apisApiIdPut(String apiId, APIDTO APIDTO, String ifMatch) throws ApiException {
-        ApiResponse<APIDTO> localVarResp = apisApiIdPutWithHttpInfo(apiId, APIDTO, ifMatch);
+    public APIDTO createAPI(APIDTO APIDTO, String openAPIVersion) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = createAPIWithHttpInfo(APIDTO, openAPIVersion);
         return localVarResp.getData();
     }
 
     /**
-     * Update an API
-     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * Create a New API
+     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI. 
      * @param APIDTO API object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param openAPIVersion Open api version (optional, default to v3)
      * @return ApiResponse&lt;APIDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIDTO> apisApiIdPutWithHttpInfo(String apiId, APIDTO APIDTO, String ifMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdPutValidateBeforeCall(apiId, APIDTO, ifMatch, null);
+    public ApiResponse<APIDTO> createAPIWithHttpInfo(APIDTO APIDTO, String openAPIVersion) throws ApiException {
+        okhttp3.Call localVarCall = createAPIValidateBeforeCall(APIDTO, openAPIVersion, null);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Update an API (asynchronously)
-     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * Create a New API (asynchronously)
+     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI. 
      * @param APIDTO API object that needs to be added (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param openAPIVersion Open api version (optional, default to v3)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdPutAsync(String apiId, APIDTO APIDTO, String ifMatch, final ApiCallback<APIDTO> _callback) throws ApiException {
+    public okhttp3.Call createAPIAsync(APIDTO APIDTO, String openAPIVersion, final ApiCallback<APIDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdPutValidateBeforeCall(apiId, APIDTO, ifMatch, _callback);
+        okhttp3.Call localVarCall = createAPIValidateBeforeCall(APIDTO, openAPIVersion, _callback);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apisApiIdResourcePathsGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. ResourcePaths returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdResourcePathsGetCall(String apiId, Integer limit, Integer offset, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/resource-paths"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (limit != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
-        }
-
-        if (offset != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
-        }
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdResourcePathsGetValidateBeforeCall(String apiId, Integer limit, Integer offset, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdResourcePathsGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdResourcePathsGetCall(apiId, limit, offset, ifNoneMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get Resource Paths of an API
-     * This operation can be used to retrieve resource paths defined for a specific api. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ResourcePathListDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. ResourcePaths returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ResourcePathListDTO apisApiIdResourcePathsGet(String apiId, Integer limit, Integer offset, String ifNoneMatch) throws ApiException {
-        ApiResponse<ResourcePathListDTO> localVarResp = apisApiIdResourcePathsGetWithHttpInfo(apiId, limit, offset, ifNoneMatch);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get Resource Paths of an API
-     * This operation can be used to retrieve resource paths defined for a specific api. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;ResourcePathListDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. ResourcePaths returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<ResourcePathListDTO> apisApiIdResourcePathsGetWithHttpInfo(String apiId, Integer limit, Integer offset, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdResourcePathsGetValidateBeforeCall(apiId, limit, offset, ifNoneMatch, null);
-        Type localVarReturnType = new TypeToken<ResourcePathListDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get Resource Paths of an API (asynchronously)
-     * This operation can be used to retrieve resource paths defined for a specific api. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. ResourcePaths returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdResourcePathsGetAsync(String apiId, Integer limit, Integer offset, String ifNoneMatch, final ApiCallback<ResourcePathListDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdResourcePathsGetValidateBeforeCall(apiId, limit, offset, ifNoneMatch, _callback);
-        Type localVarReturnType = new TypeToken<ResourcePathListDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdSubscriptionPoliciesGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Throttling Policy returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdSubscriptionPoliciesGetCall(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/subscription-policies"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (xWSO2Tenant != null) {
-            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
-        }
-
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdSubscriptionPoliciesGetValidateBeforeCall(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdSubscriptionPoliciesGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdSubscriptionPoliciesGetCall(apiId, xWSO2Tenant, ifNoneMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get Details of the Subscription Throttling Policies of an API 
-     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ThrottlingPolicyDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Throttling Policy returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ThrottlingPolicyDTO apisApiIdSubscriptionPoliciesGet(String apiId, String xWSO2Tenant, String ifNoneMatch) throws ApiException {
-        ApiResponse<ThrottlingPolicyDTO> localVarResp = apisApiIdSubscriptionPoliciesGetWithHttpInfo(apiId, xWSO2Tenant, ifNoneMatch);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get Details of the Subscription Throttling Policies of an API 
-     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;ThrottlingPolicyDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Throttling Policy returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<ThrottlingPolicyDTO> apisApiIdSubscriptionPoliciesGetWithHttpInfo(String apiId, String xWSO2Tenant, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdSubscriptionPoliciesGetValidateBeforeCall(apiId, xWSO2Tenant, ifNoneMatch, null);
-        Type localVarReturnType = new TypeToken<ThrottlingPolicyDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get Details of the Subscription Throttling Policies of an API  (asynchronously)
-     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Throttling Policy returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdSubscriptionPoliciesGetAsync(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback<ThrottlingPolicyDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdSubscriptionPoliciesGetValidateBeforeCall(apiId, xWSO2Tenant, ifNoneMatch, _callback);
-        Type localVarReturnType = new TypeToken<ThrottlingPolicyDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdSwaggerGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdSwaggerGetCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/swagger"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdSwaggerGetValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdSwaggerGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdSwaggerGetCall(apiId, ifNoneMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get Swagger Definition
-     * This operation can be used to retrieve the swagger definition of an API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return String
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public String apisApiIdSwaggerGet(String apiId, String ifNoneMatch) throws ApiException {
-        ApiResponse<String> localVarResp = apisApiIdSwaggerGetWithHttpInfo(apiId, ifNoneMatch);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Get Swagger Definition
-     * This operation can be used to retrieve the swagger definition of an API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;String&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<String> apisApiIdSwaggerGetWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdSwaggerGetValidateBeforeCall(apiId, ifNoneMatch, null);
-        Type localVarReturnType = new TypeToken<String>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Get Swagger Definition (asynchronously)
-     * This operation can be used to retrieve the swagger definition of an API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdSwaggerGetAsync(String apiId, String ifNoneMatch, final ApiCallback<String> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdSwaggerGetValidateBeforeCall(apiId, ifNoneMatch, _callback);
-        Type localVarReturnType = new TypeToken<String>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdSwaggerPut
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param apiDefinition Swagger definition of the API (optional)
-     * @param url Swagger definition URL of the API (optional)
-     * @param file Swagger definitio as a file (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated Swagger definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdSwaggerPutCall(String apiId, String ifMatch, String apiDefinition, String url, File file, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/swagger"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifMatch != null) {
-            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        if (apiDefinition != null) {
-            localVarFormParams.put("apiDefinition", apiDefinition);
-        }
-
-        if (url != null) {
-            localVarFormParams.put("url", url);
-        }
-
-        if (file != null) {
-            localVarFormParams.put("file", file);
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "multipart/form-data"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdSwaggerPutValidateBeforeCall(String apiId, String ifMatch, String apiDefinition, String url, File file, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdSwaggerPut(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdSwaggerPutCall(apiId, ifMatch, apiDefinition, url, file, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Update Swagger Definition
-     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param apiDefinition Swagger definition of the API (optional)
-     * @param url Swagger definition URL of the API (optional)
-     * @param file Swagger definitio as a file (optional)
-     * @return String
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated Swagger definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public String apisApiIdSwaggerPut(String apiId, String ifMatch, String apiDefinition, String url, File file) throws ApiException {
-        ApiResponse<String> localVarResp = apisApiIdSwaggerPutWithHttpInfo(apiId, ifMatch, apiDefinition, url, file);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Update Swagger Definition
-     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param apiDefinition Swagger definition of the API (optional)
-     * @param url Swagger definition URL of the API (optional)
-     * @param file Swagger definitio as a file (optional)
-     * @return ApiResponse&lt;String&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated Swagger definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<String> apisApiIdSwaggerPutWithHttpInfo(String apiId, String ifMatch, String apiDefinition, String url, File file) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdSwaggerPutValidateBeforeCall(apiId, ifMatch, apiDefinition, url, file, null);
-        Type localVarReturnType = new TypeToken<String>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Update Swagger Definition (asynchronously)
-     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param apiDefinition Swagger definition of the API (optional)
-     * @param url Swagger definition URL of the API (optional)
-     * @param file Swagger definitio as a file (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Successful response with updated Swagger definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdSwaggerPutAsync(String apiId, String ifMatch, String apiDefinition, String url, File file, final ApiCallback<String> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdSwaggerPutValidateBeforeCall(apiId, ifMatch, apiDefinition, url, file, _callback);
-        Type localVarReturnType = new TypeToken<String>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisApiIdThumbnailGet
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Thumbnail image returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdThumbnailGetCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/{apiId}/thumbnail"
-            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdThumbnailGetValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'apiId' is set
-        if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdThumbnailGet(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisApiIdThumbnailGetCall(apiId, ifNoneMatch, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Get Thumbnail Image
-     * This operation can be used to download a thumbnail image of an API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Thumbnail image returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public void apisApiIdThumbnailGet(String apiId, String ifNoneMatch) throws ApiException {
-        apisApiIdThumbnailGetWithHttpInfo(apiId, ifNoneMatch);
-    }
-
-    /**
-     * Get Thumbnail Image
-     * This operation can be used to download a thumbnail image of an API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;Void&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Thumbnail image returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<Void> apisApiIdThumbnailGetWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdThumbnailGetValidateBeforeCall(apiId, ifNoneMatch, null);
-        return localVarApiClient.execute(localVarCall);
-    }
-
-    /**
-     * Get Thumbnail Image (asynchronously)
-     * This operation can be used to download a thumbnail image of an API. 
-     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Thumbnail image returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisApiIdThumbnailGetAsync(String apiId, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisApiIdThumbnailGetValidateBeforeCall(apiId, ifNoneMatch, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisCopyApiPost
+     * Build call for createNewAPIVersion
      * @param newVersion Version of the new API. (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param defaultVersion Specifies whether new API should be added as default version. (optional, default to false)
@@ -1199,7 +204,7 @@ public class ApIsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisCopyApiPostCall(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call createNewAPIVersionCall(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -1241,20 +246,20 @@ public class ApIsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisCopyApiPostValidateBeforeCall(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call createNewAPIVersionValidateBeforeCall(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'newVersion' is set
         if (newVersion == null) {
-            throw new ApiException("Missing the required parameter 'newVersion' when calling apisCopyApiPost(Async)");
+            throw new ApiException("Missing the required parameter 'newVersion' when calling createNewAPIVersion(Async)");
         }
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling apisCopyApiPost(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling createNewAPIVersion(Async)");
         }
         
 
-        okhttp3.Call localVarCall = apisCopyApiPostCall(newVersion, apiId, defaultVersion, _callback);
+        okhttp3.Call localVarCall = createNewAPIVersionCall(newVersion, apiId, defaultVersion, _callback);
         return localVarCall;
 
     }
@@ -1275,8 +280,8 @@ public class ApIsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public APIDTO apisCopyApiPost(String newVersion, String apiId, Boolean defaultVersion) throws ApiException {
-        ApiResponse<APIDTO> localVarResp = apisCopyApiPostWithHttpInfo(newVersion, apiId, defaultVersion);
+    public APIDTO createNewAPIVersion(String newVersion, String apiId, Boolean defaultVersion) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = createNewAPIVersionWithHttpInfo(newVersion, apiId, defaultVersion);
         return localVarResp.getData();
     }
 
@@ -1296,8 +301,8 @@ public class ApIsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIDTO> apisCopyApiPostWithHttpInfo(String newVersion, String apiId, Boolean defaultVersion) throws ApiException {
-        okhttp3.Call localVarCall = apisCopyApiPostValidateBeforeCall(newVersion, apiId, defaultVersion, null);
+    public ApiResponse<APIDTO> createNewAPIVersionWithHttpInfo(String newVersion, String apiId, Boolean defaultVersion) throws ApiException {
+        okhttp3.Call localVarCall = createNewAPIVersionValidateBeforeCall(newVersion, apiId, defaultVersion, null);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -1319,68 +324,42 @@ public class ApIsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisCopyApiPostAsync(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback<APIDTO> _callback) throws ApiException {
+    public okhttp3.Call createNewAPIVersionAsync(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback<APIDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisCopyApiPostValidateBeforeCall(newVersion, apiId, defaultVersion, _callback);
+        okhttp3.Call localVarCall = createNewAPIVersionValidateBeforeCall(newVersion, apiId, defaultVersion, _callback);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
-     * Build call for apisGet
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param expand Defines whether the returned response should contain full details of API  (optional)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * Build call for deleteAPI
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of qualifying APIs is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body. <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisGetCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call deleteAPICall(String apiId, String ifMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/apis";
+        String localVarPath = "/apis/{apiId}"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (limit != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
-        }
-
-        if (offset != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
-        }
-
-        if (query != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("query", query));
-        }
-
-        if (expand != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("expand", expand));
-        }
-
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (xWSO2Tenant != null) {
-            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
-        }
-
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
-        if (accept != null) {
-            localVarHeaderParams.put("Accept", localVarApiClient.parameterToString(accept));
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
         }
 
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
@@ -1400,362 +379,87 @@ public class ApIsApi {
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisGetValidateBeforeCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call deleteAPIValidateBeforeCall(String apiId, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling deleteAPI(Async)");
+        }
         
 
-        okhttp3.Call localVarCall = apisGetCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, _callback);
+        okhttp3.Call localVarCall = deleteAPICall(apiId, ifMatch, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Retrieve/Search APIs 
-     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param expand Defines whether the returned response should contain full details of API  (optional)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
-     * @return APIListDTO
+     * Delete an API
+     * This operation can be used to delete an existing API proving the Id of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of qualifying APIs is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body. <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public APIListDTO apisGet(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept) throws ApiException {
-        ApiResponse<APIListDTO> localVarResp = apisGetWithHttpInfo(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept);
-        return localVarResp.getData();
+    public void deleteAPI(String apiId, String ifMatch) throws ApiException {
+        deleteAPIWithHttpInfo(apiId, ifMatch);
     }
 
     /**
-     * Retrieve/Search APIs 
-     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param expand Defines whether the returned response should contain full details of API  (optional)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
-     * @return ApiResponse&lt;APIListDTO&gt;
+     * Delete an API
+     * This operation can be used to delete an existing API proving the Id of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of qualifying APIs is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body. <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIListDTO> apisGetWithHttpInfo(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept) throws ApiException {
-        okhttp3.Call localVarCall = apisGetValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, null);
-        Type localVarReturnType = new TypeToken<APIListDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    public ApiResponse<Void> deleteAPIWithHttpInfo(String apiId, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = deleteAPIValidateBeforeCall(apiId, ifMatch, null);
+        return localVarApiClient.execute(localVarCall);
     }
 
     /**
-     * Retrieve/Search APIs  (asynchronously)
-     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
-     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
-     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @param expand Defines whether the returned response should contain full details of API  (optional)
-     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * Delete an API (asynchronously)
+     * This operation can be used to delete an existing API proving the Id of the API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. List of qualifying APIs is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body. <br>  </td></tr>
-        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
-        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisGetAsync(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ApiCallback<APIListDTO> _callback) throws ApiException {
+    public okhttp3.Call deleteAPIAsync(String apiId, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisGetValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, _callback);
-        Type localVarReturnType = new TypeToken<APIListDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisImportGraphqlSchemaPost
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param type Definition type to upload (optional)
-     * @param file Definition to uploads a file (optional)
-     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisImportGraphqlSchemaPostCall(String ifMatch, String type, File file, String additionalProperties, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/apis/import-graphql-schema";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifMatch != null) {
-            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
-        }
-
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        if (type != null) {
-            localVarFormParams.put("type", type);
-        }
-
-        if (file != null) {
-            localVarFormParams.put("file", file);
-        }
-
-        if (additionalProperties != null) {
-            localVarFormParams.put("additionalProperties", additionalProperties);
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "multipart/form-data"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisImportGraphqlSchemaPostValidateBeforeCall(String ifMatch, String type, File file, String additionalProperties, final ApiCallback _callback) throws ApiException {
-        
-
-        okhttp3.Call localVarCall = apisImportGraphqlSchemaPostCall(ifMatch, type, file, additionalProperties, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Import API Definition
-     * This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param type Definition type to upload (optional)
-     * @param file Definition to uploads a file (optional)
-     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
-     * @return APIDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
-     </table>
-     */
-    public APIDTO apisImportGraphqlSchemaPost(String ifMatch, String type, File file, String additionalProperties) throws ApiException {
-        ApiResponse<APIDTO> localVarResp = apisImportGraphqlSchemaPostWithHttpInfo(ifMatch, type, file, additionalProperties);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Import API Definition
-     * This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param type Definition type to upload (optional)
-     * @param file Definition to uploads a file (optional)
-     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
-     * @return ApiResponse&lt;APIDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<APIDTO> apisImportGraphqlSchemaPostWithHttpInfo(String ifMatch, String type, File file, String additionalProperties) throws ApiException {
-        okhttp3.Call localVarCall = apisImportGraphqlSchemaPostValidateBeforeCall(ifMatch, type, file, additionalProperties, null);
-        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Import API Definition (asynchronously)
-     * This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
-     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
-     * @param type Definition type to upload (optional)
-     * @param file Definition to uploads a file (optional)
-     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisImportGraphqlSchemaPostAsync(String ifMatch, String type, File file, String additionalProperties, final ApiCallback<APIDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisImportGraphqlSchemaPostValidateBeforeCall(ifMatch, type, file, additionalProperties, _callback);
-        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for apisPost
-     * @param APIDTO API object that needs to be added (required)
-     * @param openAPIVersion Open api version (optional, default to v3)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisPostCall(APIDTO APIDTO, String openAPIVersion, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = APIDTO;
-
-        // create path and map variables
-        String localVarPath = "/apis";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (openAPIVersion != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("openAPIVersion", openAPIVersion));
-        }
-
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisPostValidateBeforeCall(APIDTO APIDTO, String openAPIVersion, final ApiCallback _callback) throws ApiException {
-        
-        // verify the required parameter 'APIDTO' is set
-        if (APIDTO == null) {
-            throw new ApiException("Missing the required parameter 'APIDTO' when calling apisPost(Async)");
-        }
-        
-
-        okhttp3.Call localVarCall = apisPostCall(APIDTO, openAPIVersion, _callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Create a New API
-     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI. 
-     * @param APIDTO API object that needs to be added (required)
-     * @param openAPIVersion Open api version (optional, default to v3)
-     * @return APIDTO
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
-     </table>
-     */
-    public APIDTO apisPost(APIDTO APIDTO, String openAPIVersion) throws ApiException {
-        ApiResponse<APIDTO> localVarResp = apisPostWithHttpInfo(APIDTO, openAPIVersion);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Create a New API
-     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI. 
-     * @param APIDTO API object that needs to be added (required)
-     * @param openAPIVersion Open api version (optional, default to v3)
-     * @return ApiResponse&lt;APIDTO&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<APIDTO> apisPostWithHttpInfo(APIDTO APIDTO, String openAPIVersion) throws ApiException {
-        okhttp3.Call localVarCall = apisPostValidateBeforeCall(APIDTO, openAPIVersion, null);
-        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Create a New API (asynchronously)
-     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI. 
-     * @param APIDTO API object that needs to be added (required)
-     * @param openAPIVersion Open api version (optional, default to v3)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
-        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call apisPostAsync(APIDTO APIDTO, String openAPIVersion, final ApiCallback<APIDTO> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = apisPostValidateBeforeCall(APIDTO, openAPIVersion, _callback);
-        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        okhttp3.Call localVarCall = deleteAPIValidateBeforeCall(apiId, ifMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
@@ -1886,6 +590,854 @@ public class ApIsApi {
 
         okhttp3.Call localVarCall = generateMockScriptsValidateBeforeCall(apiId, ifNoneMatch, _callback);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPI
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPICall(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPIValidateBeforeCall(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPI(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPICall(apiId, xWSO2Tenant, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Details of an API
+     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return APIDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIDTO getAPI(String apiId, String xWSO2Tenant, String ifNoneMatch) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = getAPIWithHttpInfo(apiId, xWSO2Tenant, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get Details of an API
+     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;APIDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIDTO> getAPIWithHttpInfo(String apiId, String xWSO2Tenant, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIValidateBeforeCall(apiId, xWSO2Tenant, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get Details of an API (asynchronously)
+     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIAsync(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback<APIDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPIValidateBeforeCall(apiId, xWSO2Tenant, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPIResourcePaths
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. ResourcePaths returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIResourcePathsCall(String apiId, Integer limit, Integer offset, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/resource-paths"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (limit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
+        }
+
+        if (offset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPIResourcePathsValidateBeforeCall(String apiId, Integer limit, Integer offset, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIResourcePaths(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPIResourcePathsCall(apiId, limit, offset, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Resource Paths of an API
+     * This operation can be used to retrieve resource paths defined for a specific api. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ResourcePathListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. ResourcePaths returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ResourcePathListDTO getAPIResourcePaths(String apiId, Integer limit, Integer offset, String ifNoneMatch) throws ApiException {
+        ApiResponse<ResourcePathListDTO> localVarResp = getAPIResourcePathsWithHttpInfo(apiId, limit, offset, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get Resource Paths of an API
+     * This operation can be used to retrieve resource paths defined for a specific api. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;ResourcePathListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. ResourcePaths returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<ResourcePathListDTO> getAPIResourcePathsWithHttpInfo(String apiId, Integer limit, Integer offset, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIResourcePathsValidateBeforeCall(apiId, limit, offset, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<ResourcePathListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get Resource Paths of an API (asynchronously)
+     * This operation can be used to retrieve resource paths defined for a specific api. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. ResourcePaths returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modified the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIResourcePathsAsync(String apiId, Integer limit, Integer offset, String ifNoneMatch, final ApiCallback<ResourcePathListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPIResourcePathsValidateBeforeCall(apiId, limit, offset, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<ResourcePathListDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPISubscriptionPolicies
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Throttling Policy returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPISubscriptionPoliciesCall(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/subscription-policies"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPISubscriptionPoliciesValidateBeforeCall(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPISubscriptionPolicies(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPISubscriptionPoliciesCall(apiId, xWSO2Tenant, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Details of the Subscription Throttling Policies of an API 
+     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ThrottlingPolicyDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Throttling Policy returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ThrottlingPolicyDTO getAPISubscriptionPolicies(String apiId, String xWSO2Tenant, String ifNoneMatch) throws ApiException {
+        ApiResponse<ThrottlingPolicyDTO> localVarResp = getAPISubscriptionPoliciesWithHttpInfo(apiId, xWSO2Tenant, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get Details of the Subscription Throttling Policies of an API 
+     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;ThrottlingPolicyDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Throttling Policy returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<ThrottlingPolicyDTO> getAPISubscriptionPoliciesWithHttpInfo(String apiId, String xWSO2Tenant, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPISubscriptionPoliciesValidateBeforeCall(apiId, xWSO2Tenant, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<ThrottlingPolicyDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get Details of the Subscription Throttling Policies of an API  (asynchronously)
+     * This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.  &#x60;X-WSO2-Tenant&#x60; header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Throttling Policy returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPISubscriptionPoliciesAsync(String apiId, String xWSO2Tenant, String ifNoneMatch, final ApiCallback<ThrottlingPolicyDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPISubscriptionPoliciesValidateBeforeCall(apiId, xWSO2Tenant, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<ThrottlingPolicyDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPISwagger
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPISwaggerCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/swagger"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPISwaggerValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPISwagger(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPISwaggerCall(apiId, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Swagger Definition
+     * This operation can be used to retrieve the swagger definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return String
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public String getAPISwagger(String apiId, String ifNoneMatch) throws ApiException {
+        ApiResponse<String> localVarResp = getAPISwaggerWithHttpInfo(apiId, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get Swagger Definition
+     * This operation can be used to retrieve the swagger definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;String&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<String> getAPISwaggerWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPISwaggerValidateBeforeCall(apiId, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get Swagger Definition (asynchronously)
+     * This operation can be used to retrieve the swagger definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested swagger document of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPISwaggerAsync(String apiId, String ifNoneMatch, final ApiCallback<String> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPISwaggerValidateBeforeCall(apiId, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAPIThumbnail
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Thumbnail image returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIThumbnailCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/thumbnail"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAPIThumbnailValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAPIThumbnail(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAPIThumbnailCall(apiId, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Thumbnail Image
+     * This operation can be used to download a thumbnail image of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Thumbnail image returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void getAPIThumbnail(String apiId, String ifNoneMatch) throws ApiException {
+        getAPIThumbnailWithHttpInfo(apiId, ifNoneMatch);
+    }
+
+    /**
+     * Get Thumbnail Image
+     * This operation can be used to download a thumbnail image of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Thumbnail image returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> getAPIThumbnailWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAPIThumbnailValidateBeforeCall(apiId, ifNoneMatch, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Get Thumbnail Image (asynchronously)
+     * This operation can be used to download a thumbnail image of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Thumbnail image returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAPIThumbnailAsync(String apiId, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAPIThumbnailValidateBeforeCall(apiId, ifNoneMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getAllAPIs
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param expand Defines whether the returned response should contain full details of API  (optional)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. List of qualifying APIs is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAllAPIsCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (limit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
+        }
+
+        if (offset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
+        }
+
+        if (query != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("query", query));
+        }
+
+        if (expand != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("expand", expand));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        if (accept != null) {
+            localVarHeaderParams.put("Accept", localVarApiClient.parameterToString(accept));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAllAPIsValidateBeforeCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ApiCallback _callback) throws ApiException {
+        
+
+        okhttp3.Call localVarCall = getAllAPIsCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Retrieve/Search APIs 
+     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param expand Defines whether the returned response should contain full details of API  (optional)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @return APIListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. List of qualifying APIs is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIListDTO getAllAPIs(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept) throws ApiException {
+        ApiResponse<APIListDTO> localVarResp = getAllAPIsWithHttpInfo(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Retrieve/Search APIs 
+     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param expand Defines whether the returned response should contain full details of API  (optional)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @return ApiResponse&lt;APIListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. List of qualifying APIs is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIListDTO> getAllAPIsWithHttpInfo(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept) throws ApiException {
+        okhttp3.Call localVarCall = getAllAPIsValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, null);
+        Type localVarReturnType = new TypeToken<APIListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Retrieve/Search APIs  (asynchronously)
+     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param expand Defines whether the returned response should contain full details of API  (optional)
+     * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. List of qualifying APIs is returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAllAPIsAsync(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ApiCallback<APIListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAllAPIsValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, _callback);
+        Type localVarReturnType = new TypeToken<APIListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
@@ -2267,6 +1819,147 @@ public class ApIsApi {
         return localVarCall;
     }
     /**
+     * Build call for importGraphQLSchema
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param type Definition type to upload (optional)
+     * @param file Definition to uploads a file (optional)
+     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importGraphQLSchemaCall(String ifMatch, String type, File file, String additionalProperties, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/import-graphql-schema";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (type != null) {
+            localVarFormParams.put("type", type);
+        }
+
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        if (additionalProperties != null) {
+            localVarFormParams.put("additionalProperties", additionalProperties);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call importGraphQLSchemaValidateBeforeCall(String ifMatch, String type, File file, String additionalProperties, final ApiCallback _callback) throws ApiException {
+        
+
+        okhttp3.Call localVarCall = importGraphQLSchemaCall(ifMatch, type, file, additionalProperties, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Import API Definition
+     * This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param type Definition type to upload (optional)
+     * @param file Definition to uploads a file (optional)
+     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
+     * @return APIDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIDTO importGraphQLSchema(String ifMatch, String type, File file, String additionalProperties) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = importGraphQLSchemaWithHttpInfo(ifMatch, type, file, additionalProperties);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Import API Definition
+     * This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param type Definition type to upload (optional)
+     * @param file Definition to uploads a file (optional)
+     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
+     * @return ApiResponse&lt;APIDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIDTO> importGraphQLSchemaWithHttpInfo(String ifMatch, String type, File file, String additionalProperties) throws ApiException {
+        okhttp3.Call localVarCall = importGraphQLSchemaValidateBeforeCall(ifMatch, type, file, additionalProperties, null);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Import API Definition (asynchronously)
+     * This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param type Definition type to upload (optional)
+     * @param file Definition to uploads a file (optional)
+     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importGraphQLSchemaAsync(String ifMatch, String type, File file, String additionalProperties, final ApiCallback<APIDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = importGraphQLSchemaValidateBeforeCall(ifMatch, type, file, additionalProperties, _callback);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for importOpenAPIDefinition
      * @param file Definition to upload as a file (optional)
      * @param url Definition url (optional)
@@ -2401,7 +2094,7 @@ public class ApIsApi {
     }
     /**
      * Build call for importWSDLDefinition
-     * @param file WSDL definition as a file (optional)
+     * @param file WSDL definition as a file or archive  **Sample cURL to Upload WSDL File**  curl -k -H \\\&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\\\&quot; -F file&#x3D;@api.wsdl -F additionalProperties&#x3D;@data.json \\\&quot;https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl\\\&quot;  **Sample cURL to Upload WSDL Archive**  curl -k -H \\\&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\\\&quot; -F file&#x3D;\\\&quot;@wsdl.zip;type&#x3D;application/zip\\\&quot; -F additionalProperties&#x3D;@data.json \\\&quot;https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl\\\&quot;  (optional)
      * @param url WSDL Definition url (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
      * @param implementationType If &#39;SOAP&#39; is specified, the API will be created with only one resource &#39;POST /_*&#39; which is to be used for SOAP operations.  If &#39;HTTP_BINDING&#39; is specified, the API will be created with resources using HTTP binding operations which are extracted from the WSDL.  (optional, default to SOAP)
@@ -2473,7 +2166,7 @@ public class ApIsApi {
     /**
      * Import a WSDL Definition
      * This operation can be used to create an API using a WSDL definition. Provide either &#x60;url&#x60; or &#x60;file&#x60; to specify the definition.  WSDL can be speficied as a single file or a ZIP archive with WSDLs and reference XSDs etc. Specify additionalProperties with **at least** API&#39;s name, version, context and endpointConfig. 
-     * @param file WSDL definition as a file (optional)
+     * @param file WSDL definition as a file or archive  **Sample cURL to Upload WSDL File**  curl -k -H \\\&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\\\&quot; -F file&#x3D;@api.wsdl -F additionalProperties&#x3D;@data.json \\\&quot;https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl\\\&quot;  **Sample cURL to Upload WSDL Archive**  curl -k -H \\\&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\\\&quot; -F file&#x3D;\\\&quot;@wsdl.zip;type&#x3D;application/zip\\\&quot; -F additionalProperties&#x3D;@data.json \\\&quot;https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl\\\&quot;  (optional)
      * @param url WSDL Definition url (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
      * @param implementationType If &#39;SOAP&#39; is specified, the API will be created with only one resource &#39;POST /_*&#39; which is to be used for SOAP operations.  If &#39;HTTP_BINDING&#39; is specified, the API will be created with resources using HTTP binding operations which are extracted from the WSDL.  (optional, default to SOAP)
@@ -2495,7 +2188,7 @@ public class ApIsApi {
     /**
      * Import a WSDL Definition
      * This operation can be used to create an API using a WSDL definition. Provide either &#x60;url&#x60; or &#x60;file&#x60; to specify the definition.  WSDL can be speficied as a single file or a ZIP archive with WSDLs and reference XSDs etc. Specify additionalProperties with **at least** API&#39;s name, version, context and endpointConfig. 
-     * @param file WSDL definition as a file (optional)
+     * @param file WSDL definition as a file or archive  **Sample cURL to Upload WSDL File**  curl -k -H \\\&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\\\&quot; -F file&#x3D;@api.wsdl -F additionalProperties&#x3D;@data.json \\\&quot;https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl\\\&quot;  **Sample cURL to Upload WSDL Archive**  curl -k -H \\\&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\\\&quot; -F file&#x3D;\\\&quot;@wsdl.zip;type&#x3D;application/zip\\\&quot; -F additionalProperties&#x3D;@data.json \\\&quot;https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl\\\&quot;  (optional)
      * @param url WSDL Definition url (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
      * @param implementationType If &#39;SOAP&#39; is specified, the API will be created with only one resource &#39;POST /_*&#39; which is to be used for SOAP operations.  If &#39;HTTP_BINDING&#39; is specified, the API will be created with resources using HTTP binding operations which are extracted from the WSDL.  (optional, default to SOAP)
@@ -2518,7 +2211,7 @@ public class ApIsApi {
     /**
      * Import a WSDL Definition (asynchronously)
      * This operation can be used to create an API using a WSDL definition. Provide either &#x60;url&#x60; or &#x60;file&#x60; to specify the definition.  WSDL can be speficied as a single file or a ZIP archive with WSDLs and reference XSDs etc. Specify additionalProperties with **at least** API&#39;s name, version, context and endpointConfig. 
-     * @param file WSDL definition as a file (optional)
+     * @param file WSDL definition as a file or archive  **Sample cURL to Upload WSDL File**  curl -k -H \\\&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\\\&quot; -F file&#x3D;@api.wsdl -F additionalProperties&#x3D;@data.json \\\&quot;https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl\\\&quot;  **Sample cURL to Upload WSDL Archive**  curl -k -H \\\&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\\\&quot; -F file&#x3D;\\\&quot;@wsdl.zip;type&#x3D;application/zip\\\&quot; -F additionalProperties&#x3D;@data.json \\\&quot;https://127.0.0.1:9443/api/am/publisher/v1/apis/import-wsdl\\\&quot;  (optional)
      * @param url WSDL Definition url (optional)
      * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
      * @param implementationType If &#39;SOAP&#39; is specified, the API will be created with only one resource &#39;POST /_*&#39; which is to be used for SOAP operations.  If &#39;HTTP_BINDING&#39; is specified, the API will be created with resources using HTTP binding operations which are extracted from the WSDL.  (optional, default to SOAP)
@@ -2537,6 +2230,313 @@ public class ApIsApi {
 
         okhttp3.Call localVarCall = importWSDLDefinitionValidateBeforeCall(file, url, additionalProperties, implementationType, _callback);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for updateAPI
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param APIDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPICall(String apiId, APIDTO APIDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = APIDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call updateAPIValidateBeforeCall(String apiId, APIDTO APIDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling updateAPI(Async)");
+        }
+        
+        // verify the required parameter 'APIDTO' is set
+        if (APIDTO == null) {
+            throw new ApiException("Missing the required parameter 'APIDTO' when calling updateAPI(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = updateAPICall(apiId, APIDTO, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Update an API
+     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param APIDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return APIDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIDTO updateAPI(String apiId, APIDTO APIDTO, String ifMatch) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = updateAPIWithHttpInfo(apiId, APIDTO, ifMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Update an API
+     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param APIDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;APIDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIDTO> updateAPIWithHttpInfo(String apiId, APIDTO APIDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = updateAPIValidateBeforeCall(apiId, APIDTO, ifMatch, null);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Update an API (asynchronously)
+     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param APIDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPIAsync(String apiId, APIDTO APIDTO, String ifMatch, final ApiCallback<APIDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = updateAPIValidateBeforeCall(apiId, APIDTO, ifMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for updateAPISwagger
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param apiDefinition Swagger definition of the API (optional)
+     * @param url Swagger definition URL of the API (optional)
+     * @param file Swagger definitio as a file (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated Swagger definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPISwaggerCall(String apiId, String ifMatch, String apiDefinition, String url, File file, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/swagger"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (apiDefinition != null) {
+            localVarFormParams.put("apiDefinition", apiDefinition);
+        }
+
+        if (url != null) {
+            localVarFormParams.put("url", url);
+        }
+
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call updateAPISwaggerValidateBeforeCall(String apiId, String ifMatch, String apiDefinition, String url, File file, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling updateAPISwagger(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = updateAPISwaggerCall(apiId, ifMatch, apiDefinition, url, file, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Update Swagger Definition
+     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param apiDefinition Swagger definition of the API (optional)
+     * @param url Swagger definition URL of the API (optional)
+     * @param file Swagger definitio as a file (optional)
+     * @return String
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated Swagger definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public String updateAPISwagger(String apiId, String ifMatch, String apiDefinition, String url, File file) throws ApiException {
+        ApiResponse<String> localVarResp = updateAPISwaggerWithHttpInfo(apiId, ifMatch, apiDefinition, url, file);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Update Swagger Definition
+     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param apiDefinition Swagger definition of the API (optional)
+     * @param url Swagger definition URL of the API (optional)
+     * @param file Swagger definitio as a file (optional)
+     * @return ApiResponse&lt;String&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated Swagger definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<String> updateAPISwaggerWithHttpInfo(String apiId, String ifMatch, String apiDefinition, String url, File file) throws ApiException {
+        okhttp3.Call localVarCall = updateAPISwaggerValidateBeforeCall(apiId, ifMatch, apiDefinition, url, file, null);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Update Swagger Definition (asynchronously)
+     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param apiDefinition Swagger definition of the API (optional)
+     * @param url Swagger definition URL of the API (optional)
+     * @param file Swagger definitio as a file (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated Swagger definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPISwaggerAsync(String apiId, String ifMatch, String apiDefinition, String url, File file, final ApiCallback<String> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = updateAPISwaggerValidateBeforeCall(apiId, ifMatch, apiDefinition, url, file, _callback);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

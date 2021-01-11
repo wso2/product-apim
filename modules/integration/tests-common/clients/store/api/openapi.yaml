@@ -4060,6 +4060,240 @@ paths:
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/revoke"'
       x-contentType: application/json
       x-accepts: application/json
+  /applications/export:
+    get:
+      description: |
+        This operation can be used to export the details of a particular application as a zip file.
+      parameters:
+      - description: |
+          Application Name
+        explode: true
+        in: query
+        name: appName
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: |
+          Owner of the Application
+        explode: true
+        in: query
+        name: appOwner
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: |
+          Export application keys
+        explode: true
+        in: query
+        name: withKeys
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: |
+          Format of output documents. Can be YAML or JSON.
+        explode: true
+        in: query
+        name: format
+        required: false
+        schema:
+          enum:
+          - JSON
+          - YAML
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: |
+            OK.
+            Export Successful.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:app_import_export
+      summary: Export an Application
+      tags:
+      - Import Export
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/store/v1/applications/import?appName=sampleApp&appOwner=admin&withKeys=true"
+          > exportedApplication.zip'
+      x-accepts: application/json
+  /applications/import:
+    post:
+      description: |
+        This operation can be used to import an application.
+      parameters:
+      - description: |
+          Preserve Original Creator of the Application
+        explode: true
+        in: query
+        name: preserveOwner
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: |
+          Skip importing Subscriptions of the Application
+        explode: true
+        in: query
+        name: skipSubscriptions
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: |
+          Expected Owner of the Application in the Import Environment
+        explode: true
+        in: query
+        name: appOwner
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          Skip importing Keys of the Application
+        explode: true
+        in: query
+        name: skipApplicationKeys
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: |
+          Update if application exists
+        explode: true
+        in: query
+        name: update
+        required: false
+        schema:
+          type: boolean
+        style: form
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file:
+                  description: |
+                    Zip archive consisting of exported Application Configuration.
+                  format: binary
+                  type: string
+              required:
+              - file
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationInfo'
+          description: |
+            OK.
+            Successful response with the updated object information as entity in the body.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "207":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIInfoList'
+          description: |
+            Multi Status.
+            Partially successful response with skipped APIs information object as entity in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:app_import_export
+      summary: Import an Application
+      tags:
+      - Application (Individual)
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -F file=@exportedApplication.zip "https://127.0.0.1:9443/api/am/store/v1/applications/import?preserveOwner=true&skipSubscriptions=false&appOwner=admin&skipApplicationKeys=false&update=true"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
   /subscriptions:
     get:
       description: |
@@ -6615,6 +6849,19 @@ components:
           type: string
       title: API Info object with basic API details.
       type: object
+    APIInfoList:
+      properties:
+        count:
+          description: |
+            Number of API Info objects returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/APIInfo'
+          type: array
+      title: API Info List
+      type: object
     API:
       example:
         ingressURLs:
@@ -7019,7 +7266,6 @@ components:
           example: CalculatorApp
           maxLength: 70
           minLength: 1
-          pattern: ^[a-zA-Z0-9 ._-]*$
           type: string
         throttlingPolicy:
           example: Unlimited
