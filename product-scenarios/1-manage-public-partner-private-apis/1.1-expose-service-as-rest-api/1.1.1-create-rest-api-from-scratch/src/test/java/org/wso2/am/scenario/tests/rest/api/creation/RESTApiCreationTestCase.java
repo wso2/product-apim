@@ -68,7 +68,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private String endpointAuthType = "BASIC";
     private String epUsername = "wso2";
     private String epPassword = "wso2123";
-    private boolean default_version_checked = true;
+    private boolean defaultVersionChecked = true;
     private boolean responseCache = true;
     private String cacheTimeout = "300";
     private String subscriptions = "all_tenants";
@@ -187,7 +187,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiCreationDTO.setEndpointSecurity(securityDTO);
         apiCreationDTO.setBusinessInformation(businessDTO);
         apiCreationDTO.setSubscriptionAvailableTenants(subscriptionTenants);
-        apiCreationDTO.setIsDefaultVersion(default_version_checked);
+        apiCreationDTO.setIsDefaultVersion(defaultVersionChecked);
         apiCreationDTO.setTransport(transports);
 
         //Design API with name,context,version,visibility,apiResource and with all optional values
@@ -234,7 +234,7 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         assertEquals(responseJson.getJSONObject("endpointSecurity").get("username").toString(), epUsername, "Expected epUsername value not match with the actual value");
         assertEquals(responseJson.getJSONArray("subscriptionAvailableTenants").get(0).toString(), subscriptions, "Expected subscriptions value not match");
         assertEquals(responseJson.getJSONArray("transport").get(0).toString(), http_checked, "Expected http_checked value not match");
-        assertEquals(responseJson.get("isDefaultVersion"), default_version_checked, "Expected default_version_checked value not match");
+        assertEquals(responseJson.get("isDefaultVersion"), defaultVersionChecked, "Expected defaultVersionChecked value not match");
         assertEquals(responseJson.get("cacheTimeout").toString(), cacheTimeout, "Expected cacheTimeout value not match");
     }
 
