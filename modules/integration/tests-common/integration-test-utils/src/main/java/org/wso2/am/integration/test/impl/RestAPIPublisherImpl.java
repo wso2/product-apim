@@ -29,6 +29,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
@@ -50,6 +51,11 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionAPIInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
@@ -75,6 +81,8 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
+import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.am.integration.test.ClientAuthenticator;
 
@@ -94,6 +102,7 @@ public class RestAPIPublisherImpl {
     public ApIsApi apIsApi = new ApIsApi();
     private ApiProductsApi apiProductsApi = new ApiProductsApi();
     public ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
+    public ApiRevisionsApi apiRevisionsApi = new ApiRevisionsApi();
     public ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
     public ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
     public EndpointCertificatesApi endpointCertificatesApi = new EndpointCertificatesApi();
@@ -146,6 +155,7 @@ public class RestAPIPublisherImpl {
         apiPublisherClient.setWriteTimeout(600000);
         apIsApi.setApiClient(apiPublisherClient);
 	    apiProductsApi.setApiClient(apiPublisherClient);
+	    apiRevisionsApi.setApiClient(apiPublisherClient);
         graphQlSchemaApi.setApiClient(apiPublisherClient);
         graphQlSchemaIndividualApi.setApiClient(apiPublisherClient);
         apiDocumentsApi.setApiClient(apiPublisherClient);
@@ -1233,4 +1243,190 @@ public class RestAPIPublisherImpl {
         }
         return response;
     }
+
+    /**
+     * This method is used to create an API Revision.
+     *
+     * @param apiRevisionRequest API Revision create object body
+     * @return HttpResponse
+     * @throws ApiException throws of an error occurred when creating the API Revision.
+     */
+    public HttpResponse addAPIRevision(APIRevisionRequest apiRevisionRequest) throws ApiException {
+        APIRevisionDTO apiRevisionDTO = new APIRevisionDTO();
+        apiRevisionDTO.setDescription(apiRevisionRequest.getDescription());
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIRevisionDTO> httpInfo = apiRevisionsApi.
+                    createAPIRevisionWithHttpInfo(apiRevisionRequest.getApiUUID(), apiRevisionDTO);
+            Assert.assertEquals(201, httpInfo.getStatusCode());
+            apiRevisionDTO = httpInfo.getData();
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        if (apiRevisionDTO != null && StringUtils.isNotEmpty(apiRevisionDTO.getId())) {
+            response = new HttpResponse(gson.toJson(apiRevisionDTO), 201);
+        }
+        return response;
+    }
+
+    /**
+     * Method to get API Revisions per API
+     *
+     * @param apiUUID - API uuid
+     * @param query   - Search query
+     * @return http response object
+     * @throws ApiException - Throws if api information cannot be retrieved.
+     */
+    public HttpResponse getAPIRevisions(String apiUUID, String query) throws ApiException {
+        APIRevisionListDTO apiRevisionListDTO = null;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            apiRevisionListDTO = apiRevisionsApi.getAPIRevisions(apiUUID, query);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (StringUtils.isNotEmpty(apiRevisionListDTO.getList().toString())) {
+            response = new HttpResponse(gson.toJson(apiRevisionListDTO), 200);
+        }
+        return response;
+    }
+
+
+    /**
+     * This method is used to deploy API Revision to Gateways.
+     *
+     * @param apiRevisionDeployRequestList API Revision deploy object body
+     * @return HttpResponse
+     * @throws ApiException throws of an error occurred when creating the API Revision.
+     */
+    public HttpResponse deployAPIRevision(String apiUUID, String revisionUUID,
+                                          List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList)
+            throws ApiException {
+        Gson gson = new Gson();
+        List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOList = new ArrayList<>();
+        List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOResponseList = new ArrayList<>();
+        for (APIRevisionDeployUndeployRequest apiRevisionDeployRequest : apiRevisionDeployRequestList) {
+            APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
+            apiRevisionDeploymentDTO.setName(apiRevisionDeployRequest.getName());
+            apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionDeployRequest.isDisplayOnDevportal());
+            apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
+        }
+        try {
+            ApiResponse<Void> httpInfo = apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionDeploymentDTOList);
+            Assert.assertEquals(201, httpInfo.getStatusCode());
+            //apiRevisionDeploymentDTOResponseList = httpInfo.getData();
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
+//        if (StringUtils.isNotEmpty(apiRevisionDeploymentDTOResponseList.toString())) {
+//            response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
+//        }
+        return response;
+    }
+
+    /**
+     * This method is used to undeploy API Revision to Gateways.
+     *
+     * @param apiUUID                        API UUID
+     * @param revisionUUID                   API Revision UUID
+     * @param apiRevisionUndeployRequestList API Revision undeploy object body
+     * @return HttpResponse
+     * @throws ApiException throws of an error occurred when undeploying the API Revision.
+     */
+    public HttpResponse undeployAPIRevision(String apiUUID, String revisionUUID,
+                                            List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList)
+            throws ApiException {
+        Gson gson = new Gson();
+        List<APIRevisionDeploymentDTO> apiRevisionUnDeploymentDTOList = new ArrayList<>();
+        List<APIRevisionDeploymentDTO> apiRevisionUnDeploymentDTOResponseList = new ArrayList<>();
+        for (APIRevisionDeployUndeployRequest apiRevisionUndeployRequest : apiRevisionUndeployRequestList) {
+            APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
+            apiRevisionDeploymentDTO.setName(apiRevisionUndeployRequest.getName());
+            apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionUndeployRequest.isDisplayOnDevportal());
+            apiRevisionUnDeploymentDTOList.add(apiRevisionDeploymentDTO);
+        }
+        try {
+            ApiResponse<Void> httpInfo = apiRevisionsApi.undeployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionUnDeploymentDTOList);
+            Assert.assertEquals(201, httpInfo.getStatusCode());
+            //apiRevisionUnDeploymentDTOResponseList = httpInfo.getData();
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
+//        if (StringUtils.isNotEmpty(apiRevisionUnDeploymentDTOResponseList.toString())) {
+//            response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
+//        }
+        return response;
+    }
+
+    /**
+     * This method is used to restore an API Revision.
+     *
+     * @param apiUUID      API UUID
+     * @param revisionUUID API Revision UUID
+     * @return HttpResponse
+     * @throws ApiException throws of an error occurred when creating the API Revision.
+     */
+    public HttpResponse restoreAPIRevision(String apiUUID, String revisionUUID) throws ApiException {
+        Gson gson = new Gson();
+        APIDTO apidto = null;
+        try {
+            ApiResponse<APIDTO> httpInfo = apiRevisionsApi.restoreAPIRevisionWithHttpInfo(apiUUID, revisionUUID);
+            Assert.assertEquals(201, httpInfo.getStatusCode());
+            apidto = httpInfo.getData();
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(apidto.toString())) {
+            response = new HttpResponse(gson.toJson(apidto), 201);
+        }
+        return response;
+    }
+
+    /**
+     * This method is used to delete an API Revision.
+     *
+     * @param apiUUID      API UUID
+     * @param revisionUUID API Revision UUID
+     * @return HttpResponse
+     * @throws ApiException throws of an error occurred when creating the API Revision.
+     */
+    public HttpResponse deleteAPIRevision(String apiUUID, String revisionUUID) throws ApiException {
+        Gson gson = new Gson();
+        APIRevisionListDTO apiRevisionListDTO = null;
+        try {
+            ApiResponse<APIRevisionListDTO> httpInfo = apiRevisionsApi.deleteAPIRevisionWithHttpInfo(apiUUID, revisionUUID);
+            Assert.assertEquals(200, httpInfo.getStatusCode());
+            apiRevisionListDTO = httpInfo.getData();
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(apiRevisionListDTO.toString())) {
+            response = new HttpResponse(gson.toJson(apiRevisionListDTO), 200);
+        }
+        return response;
+    }
+
 }

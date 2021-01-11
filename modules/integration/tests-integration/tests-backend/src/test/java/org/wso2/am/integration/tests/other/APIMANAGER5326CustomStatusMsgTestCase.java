@@ -126,6 +126,7 @@ public class APIMANAGER5326CustomStatusMsgTestCase extends APIManagerLifecycleBa
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(appId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
 }

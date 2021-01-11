@@ -109,6 +109,8 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
                 createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher, restAPIStore,
                         applicationID, TIER_UNLIMITED);
         apiID = apidto.getId();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
@@ -156,6 +158,13 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
             //Update API with Edited information
             restAPIPublisher.updateAPI(apidto);
 
+            // Undeploy and Delete existing API Revisions Since it has reached 5 max revision limit
+            undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
+            waitForAPIDeployment();
+
+            // Create Revision and Deploy to Gateway
+            createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
+
             //Send GET request
             waitForAPIDeployment();
 
@@ -191,6 +200,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.removeApplicationById(applicationID);
+        undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiID);
         super.cleanUp();
     }

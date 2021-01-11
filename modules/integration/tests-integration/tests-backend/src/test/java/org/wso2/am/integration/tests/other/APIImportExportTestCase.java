@@ -224,6 +224,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         //add test api
         APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
         apiId = apiDto.getId();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
     }
 
@@ -245,6 +247,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "Importing exported API", dependsOnMethods = "testAPIExport")
     public void testAPIImport() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         //delete exported API before import
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(apiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
@@ -326,6 +329,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         //Update imported API information
         apiObj.setDescription(UPDATED_DESCRIPTION);
         restAPIPublisher.updateAPI(apiObj);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
     }
 
     @Test(groups = {
@@ -418,7 +423,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         //add test api and publish
         APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
         newApiId = apiDto.getId();
-
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(newApiId, restAPIPublisher);
     }
 
     @Test(groups = { "wso2.am" }, description = "Invoke the API before export", dependsOnMethods = "testNewAPICreation")
@@ -476,6 +482,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     public void testNewAPIImport() throws Exception {
         //remove existing application and api
         allowedStoreUser.removeApplicationById(applicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(newApiId, restAPIPublisher);
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(newApiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
         //deploy exported API
@@ -489,6 +496,10 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         //get the imported API information
         APIDTO apiObj = getAPI(NEW_API_NAME, API_VERSION, user.getUserName());
         newApiId = apiObj.getId();
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(newApiId, restAPIPublisher);
+        waitForAPIDeployment();
 
         String state = apiObj.getLifeCycleStatus();
         assertEquals(state, APILifeCycleState.PUBLISHED.getState().toUpperCase(),
@@ -558,6 +569,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         //add test api and publish
         APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
         preservePublisherApiId = apiDto.getId();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(preservePublisherApiId, restAPIPublisher);
     }
 
     @Test(groups = {
@@ -572,6 +585,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         preservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
         exportAPI(exportRequest, preservePublisherApiZip);
+        undeployAndDeleteAPIRevisionsUsingRest(preservePublisherApiId, restAPIPublisher);
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(preservePublisherApiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
     }
@@ -588,11 +602,14 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         log.info("API ID before import: " + preservePublisherApiId);
         APIDTO apiObj = getAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
         preservePublisherApiId = apiObj.getId();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(preservePublisherApiId, restAPIPublisher);
 
         String provider = apiObj.getProvider();
         assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=true");
 
         //delete the existing API to import it again
+        undeployAndDeleteAPIRevisionsUsingRest(preservePublisherApiId, restAPIPublisher);
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(preservePublisherApiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
 
@@ -627,6 +644,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         //add test api and publish
         APIDTO apiDto = createAndPublishAPI(apiCreationRequestBean, restAPIPublisher, false);
         notPreservePublisherApiId = apiDto.getId();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(notPreservePublisherApiId, restAPIPublisher);
     }
 
     @Test(groups = { "wso2.am" }, description = "Exported Sample API",
@@ -641,6 +660,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         notPreservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
         exportAPI(exportRequest, notPreservePublisherApiZip);
+        undeployAndDeleteAPIRevisionsUsingRest(notPreservePublisherApiId, restAPIPublisher);
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(notPreservePublisherApiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
     }
@@ -658,7 +678,6 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         notPreservePublisherApiId = apiObj.getId();
         String provider = apiObj.getProvider();
         assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=false");
-
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(notPreservePublisherApiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
 

@@ -165,6 +165,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         APIDTO updateAPIHTTPResponse = restAPIPublisher.updateAPI(apiDto, apiId);
         assertTrue(StringUtils.isNotEmpty(updateAPIHTTPResponse.getId()),
                 "Update API end point URL Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
         //Send GET request
         HttpResponse httpResponseGet =
@@ -202,6 +204,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         APIDTO updateAPIHTTPResponse = restAPIPublisher.updateAPI(apiDto, apiId);
         assertTrue(StringUtils.isNotEmpty(updateAPIHTTPResponse.getId()),
                 "Update API end point URL Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
         //Generate User Access Key
         String requestBody = "grant_type=password&username=admin&password=admin&scope=PRODUCTION";
@@ -250,6 +254,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         APIDTO updateAPIHTTPResponse = restAPIPublisher.updateAPI(apiDto, apiId);
         assertTrue(StringUtils.isNotEmpty(updateAPIHTTPResponse.getId()),
                 "Update API end point URL Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
 
         //Send GET request
@@ -267,6 +273,7 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }

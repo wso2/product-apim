@@ -20,6 +20,8 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.apache.http.HttpStatus;
 import org.codehaus.plexus.util.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -29,10 +31,14 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
+import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -105,6 +111,8 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
             "Response HTTP message should contains API status change from  CREATED to PUBLISHED",
             dependsOnMethods = "testVisibilityOfAPIInStoreBeforePublishing")
     public void testAPIPublishing() throws Exception {
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         //Publish the API
         HttpResponse response = restAPIPublisher
                 .changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
@@ -121,6 +129,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }
