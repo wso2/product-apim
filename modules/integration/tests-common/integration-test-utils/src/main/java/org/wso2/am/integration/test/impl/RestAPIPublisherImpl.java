@@ -556,19 +556,6 @@ public class RestAPIPublisherImpl {
     }
 
     /**
-     *
-     * @param apiId
-     * @throws ApiException
-     */
-    public void deleteAPIByID(String apiId) throws ApiException {
-        if (apiId == null) {
-            return;
-        }
-        ApiResponse<Void> deleteResponse = apIsApi.deleteAPIWithHttpInfo(apiId, null);
-        Assert.assertEquals(HttpStatus.SC_OK, deleteResponse.getStatusCode());
-    }
-
-    /**
      * Remove document
      *
      * @param apiId - API id
