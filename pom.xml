@@ -1239,11 +1239,11 @@
         <carbon.analytics.common.version>5.2.27</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.8.139</carbon.apimgt.version>
+        <carbon.apimgt.version>6.8.140</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.7.35</carbon.registry.version>
+        <carbon.registry.version>4.7.37</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
