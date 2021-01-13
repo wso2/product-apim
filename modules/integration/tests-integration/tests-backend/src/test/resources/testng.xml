@@ -42,11 +42,11 @@
         </classes>
     </test>
 
-    <!--<test name="apim-integration-tests-api-product" preserve-order="true" parallel="false" group-by-instances="true">-->
-        <!--<classes>-->
-            <!--<class name="org.wso2.am.integration.tests.apiproduct.APIProductCreationTestCase"/>-->
-        <!--</classes>-->
-    <!--</test>-->
+    <test name="apim-integration-tests-api-product" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.apiproduct.APIProductCreationTestCase"/>
+        </classes>
+    </test>
 
 
     <!--<test name="apim-ui-tests" parallel="false" group-by-instances="true">
@@ -110,9 +110,9 @@
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
         </classes>
     </test>
 
@@ -258,12 +258,12 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
         </classes>
     </test>
-    <!--<test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">-->
-        <!--<classes>-->
-            <!--<class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>-->
-        <!--</classes>-->
-    <!--</test>-->
+    <test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
+            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>-->
+        </classes>
+    </test>
 
     <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
