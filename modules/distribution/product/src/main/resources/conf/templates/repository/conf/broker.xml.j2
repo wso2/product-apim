@@ -106,9 +106,9 @@ This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/c
         <mqtt enabled="false">
             <bindAddress>0.0.0.0</bindAddress>
 
-            <defaultConnection enabled="true" port="1883"/>
+            <defaultConnection enabled="{{broker.transport.mqtt.default_connection.enabled}}" port="{{broker.transport.mqtt.default_connection.port}}"/>
 
-            <sslConnection enabled="true" port="8883">
+            <sslConnection enabled="{{broker.transport.mqtt.ssl_connection.enabled}}" port="{{broker.transport.mqtt.ssl_connection.port}}">
                 <keyStore>
                     <location>{{broker.transport.mqtt.ssl_connection.keystore.location}}</location>
                     <password>{{broker.transport.mqtt.ssl_connection.keystore.password}}</password>
