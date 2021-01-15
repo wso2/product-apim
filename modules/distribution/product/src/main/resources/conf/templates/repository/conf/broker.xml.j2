@@ -110,14 +110,14 @@ This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/c
 
             <sslConnection enabled="true" port="8883">
                 <keyStore>
-                    <location>repository/resources/security/wso2carbon.jks</location>
-                    <password>wso2carbon</password>
-                    <certType>SunX509</certType>
+                    <location>{{broker.transport.mqtt.ssl_connection.keystore.location}}</location>
+                    <password>{{broker.transport.mqtt.ssl_connection.keystore.password}}</password>
+                    <certType>{{broker.transport.mqtt.ssl_connection.keystore.cert_type}}</certType>
                 </keyStore>
                 <trustStore>
-                    <location>repository/resources/security/client-truststore.jks</location>
-                    <password>wso2carbon</password>
-                    <certType>SunX509</certType>
+                    <location>{{broker.transport.mqqt.ssl_connection.truststore.location}}</location>
+                    <password>{{broker.transport.mqtt.ssl_connection.truststore.password}}</password>
+                    <certType>{{broker.transport.mqtt.ssl_connection.truststore.cert_type}}</certType>
                 </trustStore>
             </sslConnection>
 
