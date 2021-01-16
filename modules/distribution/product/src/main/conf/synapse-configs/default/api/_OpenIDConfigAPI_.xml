@@ -21,5 +21,6 @@
     </resource>
     <handlers>
         <handler class="org.wso2.carbon.apimgt.gateway.handlers.common.SynapsePropertiesHandler"/>
+        <handler class="org.wso2.carbon.apimgt.gateway.handlers.common.LocationHeaderHandler"/>
     </handlers>
 </api>
