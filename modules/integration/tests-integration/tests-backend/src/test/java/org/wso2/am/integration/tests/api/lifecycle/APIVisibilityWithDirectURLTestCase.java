@@ -164,7 +164,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (apiID != null) {
-            restAPIPublisher.deleteAPIByID(apiID);
+            restAPIPublisher.deleteAPI(apiID);
         }
         userManagementClient.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
         userManagementClient.deleteRole(INTERNAL_ROLE_SUBSCRIBER_1);

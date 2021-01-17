@@ -1,7 +1,9 @@
 
+
 # GraphQLValidationResponseDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **isValid** | **Boolean** | This attribute declares whether this definition is valid or not.  | 

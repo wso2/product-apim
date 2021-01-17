@@ -1,7 +1,9 @@
 
+
 # SubscriptionDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **subscriptionId** | **String** |  | 
@@ -10,8 +12,9 @@ Name | Type | Description | Notes
 **subscriptionStatus** | [**SubscriptionStatusEnum**](#SubscriptionStatusEnum) |  | 
 
 
-<a name="SubscriptionStatusEnum"></a>
+
 ## Enum: SubscriptionStatusEnum
+
 Name | Value
 ---- | -----
 BLOCKED | &quot;BLOCKED&quot;
@@ -19,6 +22,7 @@ PROD_ONLY_BLOCKED | &quot;PROD_ONLY_BLOCKED&quot;
 UNBLOCKED | &quot;UNBLOCKED&quot;
 ON_HOLD | &quot;ON_HOLD&quot;
 REJECTED | &quot;REJECTED&quot;
+TIER_UPDATE_PENDING | &quot;TIER_UPDATE_PENDING&quot;
 
 
 

@@ -1,7 +1,9 @@
 
+
 # ThrottlingPolicyDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **name** | **String** |  | 
@@ -16,16 +18,18 @@ Name | Type | Description | Notes
 **throttlingPolicyPermissions** | [**ThrottlingPolicyPermissionInfoDTO**](ThrottlingPolicyPermissionInfoDTO.md) |  |  [optional]
 
 
-<a name="PolicyLevelEnum"></a>
+
 ## Enum: PolicyLevelEnum
+
 Name | Value
 ---- | -----
 APPLICATION | &quot;application&quot;
 SUBSCRIPTION | &quot;subscription&quot;
 
 
-<a name="TierPlanEnum"></a>
+
 ## Enum: TierPlanEnum
+
 Name | Value
 ---- | -----
 FREE | &quot;FREE&quot;

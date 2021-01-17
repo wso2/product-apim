@@ -103,7 +103,7 @@ public class APIMANAGER3226APINameWithDifferentCaseTestCase extends APIMIntegrat
 
     @AfterClass (alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIPublisher.deleteAPIByID(apiID);
+        restAPIPublisher.deleteAPI(apiID);
         super.cleanUp();
     }
 }

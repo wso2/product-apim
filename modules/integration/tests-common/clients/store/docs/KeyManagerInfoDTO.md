@@ -1,7 +1,9 @@
 
+
 # KeyManagerInfoDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** |  |  [optional]
@@ -20,7 +22,7 @@ Name | Type | Description | Notes
 **enableOAuthAppCreation** | **Boolean** |  |  [optional]
 **enableMapOAuthConsumerApps** | **Boolean** |  |  [optional]
 **applicationConfiguration** | [**List&lt;KeyManagerApplicationConfigurationDTO&gt;**](KeyManagerApplicationConfigurationDTO.md) |  |  [optional]
-**additionalProperties** | **Object** |  |  [optional]
+**additionalProperties** | [**Object**](.md) |  |  [optional]
 
 
 

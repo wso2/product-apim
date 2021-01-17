@@ -1,7 +1,9 @@
 
+
 # ApplicationTokenDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **accessToken** | **String** | Access token |  [optional]

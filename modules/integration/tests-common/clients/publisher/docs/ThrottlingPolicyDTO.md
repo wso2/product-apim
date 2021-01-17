@@ -1,7 +1,9 @@
 
+
 # ThrottlingPolicyDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **name** | **String** |  | 
@@ -17,16 +19,18 @@ Name | Type | Description | Notes
 **monetizationProperties** | **Map&lt;String, String&gt;** | Properties of a tier plan which are related to monetization |  [optional]
 
 
-<a name="PolicyLevelEnum"></a>
+
 ## Enum: PolicyLevelEnum
+
 Name | Value
 ---- | -----
 SUBSCRIPTION | &quot;subscription&quot;
 API | &quot;api&quot;
 
 
-<a name="TierPlanEnum"></a>
+
 ## Enum: TierPlanEnum
+
 Name | Value
 ---- | -----
 FREE | &quot;FREE&quot;
