@@ -20,8 +20,6 @@
 
 package org.wso2.am.integration.tests.publisher;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -29,7 +27,6 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
 import static org.testng.Assert.assertEquals;

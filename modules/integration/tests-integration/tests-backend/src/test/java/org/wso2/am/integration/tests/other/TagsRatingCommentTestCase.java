@@ -117,7 +117,7 @@ import static org.testng.Assert.assertTrue;
 
         // Verify added comment
         HttpResponse getCommentResponse = restAPIStore
-                .getComment(commentId, apiId, gatewayContextWrk.getContextTenant().getDomain());
+                .getComment(commentId, apiId, gatewayContextWrk.getContextTenant().getDomain(), false);
         assertEquals(getCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson g = new Gson();

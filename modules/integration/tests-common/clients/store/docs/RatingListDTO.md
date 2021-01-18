@@ -1,7 +1,9 @@
 
+
 # RatingListDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **avgRating** | **String** | Average Rating of the API  |  [optional]

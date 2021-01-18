@@ -1,7 +1,9 @@
 
+
 # ResourcePolicyListDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **list** | [**List&lt;ResourcePolicyInfoDTO&gt;**](ResourcePolicyInfoDTO.md) |  |  [optional]

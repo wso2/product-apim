@@ -1,7 +1,9 @@
 
+
 # AlertTypeDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **Integer** | The alert Id |  [optional]
