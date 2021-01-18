@@ -1,10 +1,12 @@
 
+
 # APIDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **String** | UUID of the api registry artifact  |  [optional]
+**id** | **String** | UUID of the api registry artifact  |  [optional] [readonly]
 **name** | **String** |  | 
 **description** | **String** |  |  [optional]
 **context** | **String** |  | 
@@ -12,7 +14,8 @@ Name | Type | Description | Notes
 **provider** | **String** | If the provider value is not given user invoking the api will be used as the provider.  |  [optional]
 **lifeCycleStatus** | **String** |  |  [optional]
 **wsdlInfo** | [**WSDLInfoDTO**](WSDLInfoDTO.md) |  |  [optional]
-**wsdlUrl** | **String** |  |  [optional]
+**wsdlUrl** | **String** |  |  [optional] [readonly]
+**testKey** | **String** |  |  [optional] [readonly]
 **responseCachingEnabled** | **Boolean** |  |  [optional]
 **cacheTimeout** | **Integer** |  |  [optional]
 **destinationStatsEnabled** | **String** |  |  [optional]
@@ -33,6 +36,7 @@ Name | Type | Description | Notes
 **visibleTenants** | **List&lt;String&gt;** |  |  [optional]
 **endpointSecurity** | [**APIEndpointSecurityDTO**](APIEndpointSecurityDTO.md) |  |  [optional]
 **gatewayEnvironments** | **List&lt;String&gt;** | List of gateway environments the API is available  |  [optional]
+**deploymentEnvironments** | [**List&lt;DeploymentEnvironmentsDTO&gt;**](DeploymentEnvironmentsDTO.md) | List of selected deployment environments and clusters  |  [optional]
 **labels** | **List&lt;String&gt;** | Labels of micro-gateway environments attached to the API.  |  [optional]
 **mediationPolicies** | [**List&lt;MediationPolicyDTO&gt;**](MediationPolicyDTO.md) |  |  [optional]
 **subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS. |  [optional]
@@ -41,22 +45,23 @@ Name | Type | Description | Notes
 **monetization** | [**APIMonetizationInfoDTO**](APIMonetizationInfoDTO.md) |  |  [optional]
 **accessControl** | [**AccessControlEnum**](#AccessControlEnum) | Is the API is restricted to certain set of publishers or creators or is it visible to all the publishers and creators. If the accessControl restriction is none, this API can be modified by all the publishers and creators, if not it can only be viewable/modifiable by certain set of publishers and creators,  based on the restriction.  |  [optional]
 **accessControlRoles** | **List&lt;String&gt;** | The user roles that are able to view/modify as API publisher or creator. |  [optional]
-**businessInformation** | **Object** |  |  [optional]
+**businessInformation** | [**APIBusinessInformationDTO**](APIBusinessInformationDTO.md) |  |  [optional]
 **corsConfiguration** | [**APICorsConfigurationDTO**](APICorsConfigurationDTO.md) |  |  [optional]
 **workflowStatus** | **String** |  |  [optional]
 **createdTime** | **String** |  |  [optional]
 **lastUpdatedTime** | **String** |  |  [optional]
-**endpointConfig** | **Object** | Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.  &#x60;Simple REST Endpoint&#x60;   {     \&quot;endpoint_type\&quot;: \&quot;http\&quot;,     \&quot;sandbox_endpoints\&quot;:       {        \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/\&quot;     },     \&quot;production_endpoints\&quot;:       {        \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/\&quot;     }   }  &#x60;Loadbalanced Endpoint&#x60;    {     \&quot;endpoint_type\&quot;: \&quot;load_balance\&quot;,     \&quot;algoCombo\&quot;: \&quot;org.apache.synapse.endpoints.algorithms.RoundRobin\&quot;,     \&quot;sessionManagement\&quot;: \&quot;\&quot;,     \&quot;sandbox_endpoints\&quot;:       [                 {           \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/1\&quot;        },                 {           \&quot;endpoint_type\&quot;: \&quot;http\&quot;,           \&quot;template_not_supported\&quot;: false,           \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/2\&quot;        }     ],     \&quot;production_endpoints\&quot;:       [                 {           \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/3\&quot;        },                 {           \&quot;endpoint_type\&quot;: \&quot;http\&quot;,           \&quot;template_not_supported\&quot;: false,           \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/4\&quot;        }     ],     \&quot;sessionTimeOut\&quot;: \&quot;\&quot;,     \&quot;algoClassName\&quot;: \&quot;org.apache.synapse.endpoints.algorithms.RoundRobin\&quot;   }  &#x60;Failover Endpoint&#x60;    {     \&quot;production_failovers\&quot;:[        {           \&quot;endpoint_type\&quot;:\&quot;http\&quot;,           \&quot;template_not_supported\&quot;:false,           \&quot;url\&quot;:\&quot;https://localhost:9443/am/sample/pizzashack/v1/api/1\&quot;        }     ],     \&quot;endpoint_type\&quot;:\&quot;failover\&quot;,     \&quot;sandbox_endpoints\&quot;:{        \&quot;url\&quot;:\&quot;https://localhost:9443/am/sample/pizzashack/v1/api/2\&quot;     },     \&quot;production_endpoints\&quot;:{        \&quot;url\&quot;:\&quot;https://localhost:9443/am/sample/pizzashack/v1/api/3\&quot;     },     \&quot;sandbox_failovers\&quot;:[        {           \&quot;endpoint_type\&quot;:\&quot;http\&quot;,           \&quot;template_not_supported\&quot;:false,           \&quot;url\&quot;:\&quot;https://localhost:9443/am/sample/pizzashack/v1/api/4\&quot;        }     ]   }  &#x60;Default Endpoint&#x60;    {     \&quot;endpoint_type\&quot;:\&quot;default\&quot;,     \&quot;sandbox_endpoints\&quot;:{        \&quot;url\&quot;:\&quot;default\&quot;     },     \&quot;production_endpoints\&quot;:{        \&quot;url\&quot;:\&quot;default\&quot;     }   }  &#x60;Endpoint from Endpoint Registry&#x60;   {     \&quot;endpoint_type\&quot;: \&quot;Registry\&quot;,     \&quot;endpoint_id\&quot;: \&quot;{registry-name:entry-name:version}\&quot;,   }  |  [optional]
+**endpointConfig** | [**Object**](.md) | Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.  &#x60;Simple REST Endpoint&#x60;   {     \&quot;endpoint_type\&quot;: \&quot;http\&quot;,     \&quot;sandbox_endpoints\&quot;:       {        \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/\&quot;     },     \&quot;production_endpoints\&quot;:       {        \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/\&quot;     }   }  &#x60;Loadbalanced Endpoint&#x60;    {     \&quot;endpoint_type\&quot;: \&quot;load_balance\&quot;,     \&quot;algoCombo\&quot;: \&quot;org.apache.synapse.endpoints.algorithms.RoundRobin\&quot;,     \&quot;sessionManagement\&quot;: \&quot;\&quot;,     \&quot;sandbox_endpoints\&quot;:       [                 {           \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/1\&quot;        },                 {           \&quot;endpoint_type\&quot;: \&quot;http\&quot;,           \&quot;template_not_supported\&quot;: false,           \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/2\&quot;        }     ],     \&quot;production_endpoints\&quot;:       [                 {           \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/3\&quot;        },                 {           \&quot;endpoint_type\&quot;: \&quot;http\&quot;,           \&quot;template_not_supported\&quot;: false,           \&quot;url\&quot;: \&quot;https://localhost:9443/am/sample/pizzashack/v1/api/4\&quot;        }     ],     \&quot;sessionTimeOut\&quot;: \&quot;\&quot;,     \&quot;algoClassName\&quot;: \&quot;org.apache.synapse.endpoints.algorithms.RoundRobin\&quot;   }  &#x60;Failover Endpoint&#x60;    {     \&quot;production_failovers\&quot;:[        {           \&quot;endpoint_type\&quot;:\&quot;http\&quot;,           \&quot;template_not_supported\&quot;:false,           \&quot;url\&quot;:\&quot;https://localhost:9443/am/sample/pizzashack/v1/api/1\&quot;        }     ],     \&quot;endpoint_type\&quot;:\&quot;failover\&quot;,     \&quot;sandbox_endpoints\&quot;:{        \&quot;url\&quot;:\&quot;https://localhost:9443/am/sample/pizzashack/v1/api/2\&quot;     },     \&quot;production_endpoints\&quot;:{        \&quot;url\&quot;:\&quot;https://localhost:9443/am/sample/pizzashack/v1/api/3\&quot;     },     \&quot;sandbox_failovers\&quot;:[        {           \&quot;endpoint_type\&quot;:\&quot;http\&quot;,           \&quot;template_not_supported\&quot;:false,           \&quot;url\&quot;:\&quot;https://localhost:9443/am/sample/pizzashack/v1/api/4\&quot;        }     ]   }  &#x60;Default Endpoint&#x60;    {     \&quot;endpoint_type\&quot;:\&quot;default\&quot;,     \&quot;sandbox_endpoints\&quot;:{        \&quot;url\&quot;:\&quot;default\&quot;     },     \&quot;production_endpoints\&quot;:{        \&quot;url\&quot;:\&quot;default\&quot;     }   }  &#x60;Endpoint from Endpoint Registry&#x60;   {     \&quot;endpoint_type\&quot;: \&quot;Registry\&quot;,     \&quot;endpoint_id\&quot;: \&quot;{registry-name:entry-name:version}\&quot;,   }  |  [optional]
 **endpointImplementationType** | [**EndpointImplementationTypeEnum**](#EndpointImplementationTypeEnum) |  |  [optional]
 **scopes** | [**List&lt;APIScopeDTO&gt;**](APIScopeDTO.md) |  |  [optional]
 **operations** | [**List&lt;APIOperationsDTO&gt;**](APIOperationsDTO.md) |  |  [optional]
 **threatProtectionPolicies** | [**APIThreatProtectionPoliciesDTO**](APIThreatProtectionPoliciesDTO.md) |  |  [optional]
 **categories** | **List&lt;String&gt;** | API categories  |  [optional]
-**keyManagers** | **Object** | API Key Managers  |  [optional]
+**keyManagers** | [**Object**](.md) | API Key Managers  |  [optional] [readonly]
 
 
-<a name="TypeEnum"></a>
+
 ## Enum: TypeEnum
+
 Name | Value
 ---- | -----
 HTTP | &quot;HTTP&quot;
@@ -66,8 +71,9 @@ SOAP | &quot;SOAP&quot;
 GRAPHQL | &quot;GRAPHQL&quot;
 
 
-<a name="VisibilityEnum"></a>
+
 ## Enum: VisibilityEnum
+
 Name | Value
 ---- | -----
 PUBLIC | &quot;PUBLIC&quot;
@@ -75,8 +81,9 @@ PRIVATE | &quot;PRIVATE&quot;
 RESTRICTED | &quot;RESTRICTED&quot;
 
 
-<a name="SubscriptionAvailabilityEnum"></a>
+
 ## Enum: SubscriptionAvailabilityEnum
+
 Name | Value
 ---- | -----
 CURRENT_TENANT | &quot;CURRENT_TENANT&quot;
@@ -84,16 +91,18 @@ ALL_TENANTS | &quot;ALL_TENANTS&quot;
 SPECIFIC_TENANTS | &quot;SPECIFIC_TENANTS&quot;
 
 
-<a name="AccessControlEnum"></a>
+
 ## Enum: AccessControlEnum
+
 Name | Value
 ---- | -----
 NONE | &quot;NONE&quot;
 RESTRICTED | &quot;RESTRICTED&quot;
 
 
-<a name="EndpointImplementationTypeEnum"></a>
+
 ## Enum: EndpointImplementationTypeEnum
+
 Name | Value
 ---- | -----
 INLINE | &quot;INLINE&quot;

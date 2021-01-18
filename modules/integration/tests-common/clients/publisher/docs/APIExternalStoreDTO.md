@@ -1,7 +1,9 @@
 
+
 # APIExternalStoreDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | The external store identifier, which is a unique value.  |  [optional]

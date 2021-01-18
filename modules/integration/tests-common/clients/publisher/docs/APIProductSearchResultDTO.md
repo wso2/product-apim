@@ -1,7 +1,9 @@
 
+
 # APIProductSearchResultDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **description** | **String** | A brief description about the API |  [optional]
