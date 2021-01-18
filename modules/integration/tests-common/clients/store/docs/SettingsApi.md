@@ -1,11 +1,11 @@
 # SettingsApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/store/v1*
+All URIs are relative to *https://apis.wso2.com/api/am/devportal/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**settingsApplicationAttributesGet**](SettingsApi.md#settingsApplicationAttributesGet) | **GET** /settings/application-attributes | Get All Application Attributes from Configuration 
-[**settingsGet**](SettingsApi.md#settingsGet) | **GET** /settings | Retreive store settings
+[**settingsGet**](SettingsApi.md#settingsGet) | **GET** /settings | Retreive Devportal settings
 
 
 <a name="settingsApplicationAttributesGet"></a>
@@ -29,7 +29,7 @@ import org.wso2.am.integration.clients.store.api.v1.SettingsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/store/v1");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -81,9 +81,9 @@ Name | Type | Description  | Notes
 # **settingsGet**
 > SettingsDTO settingsGet(xWSO2Tenant)
 
-Retreive store settings
+Retreive Devportal settings
 
-Retreive Store Settings 
+Retreive Devportal Settings 
 
 ### Example
 ```java
@@ -98,7 +98,7 @@ import org.wso2.am.integration.clients.store.api.v1.SettingsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/store/v1");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");

@@ -32,7 +32,7 @@ Name | Type | Description | Notes
 **securityScheme** | **List&lt;String&gt;** | Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If it is not set OAuth2 will be set as the security for the current API.  |  [optional]
 **maxTps** | [**APIMaxTpsDTO**](APIMaxTpsDTO.md) |  |  [optional]
 **visibility** | [**VisibilityEnum**](#VisibilityEnum) | The visibility level of the API. Accepts one of the following. PUBLIC, PRIVATE, RESTRICTED. |  [optional]
-**visibleRoles** | **List&lt;String&gt;** | The user roles that are able to access the API in Store |  [optional]
+**visibleRoles** | **List&lt;String&gt;** | The user roles that are able to access the API in Devportal |  [optional]
 **visibleTenants** | **List&lt;String&gt;** |  |  [optional]
 **endpointSecurity** | [**APIEndpointSecurityDTO**](APIEndpointSecurityDTO.md) |  |  [optional]
 **gatewayEnvironments** | **List&lt;String&gt;** | List of gateway environments the API is available  |  [optional]
