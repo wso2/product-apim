@@ -181,8 +181,8 @@ public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIPublisher.deleteAPIByID(publicApiId);
-        restAPIPublisher.deleteAPIByID(restrictedApiId);
+        restAPIPublisher.deleteAPI(publicApiId);
+        restAPIPublisher.deleteAPI(restrictedApiId);
         userManagementClient.deleteRole(ROLE);
         userManagementClient.deleteUser(ALLOWED_USER);
     }

@@ -155,7 +155,7 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
         if (apiStoreClientUser2 != null) {
             apiStoreClientUser2.removeApplicationById(app2ID);
         }
-        restAPIPublisher.deleteAPIByID(apiID);
+        restAPIPublisher.deleteAPI(apiID);
     }
 
     @DataProvider

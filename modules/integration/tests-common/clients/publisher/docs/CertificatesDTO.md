@@ -1,7 +1,10 @@
 
+
 # CertificatesDTO
 
+Representation of a list of certificates
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **count** | **Integer** |  |  [optional]

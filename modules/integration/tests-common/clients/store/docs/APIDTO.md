@@ -1,7 +1,9 @@
 
+
 # APIDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | UUID of the api  |  [optional]
@@ -31,10 +33,12 @@ Name | Type | Description | Notes
 **environmentList** | **List&lt;String&gt;** | The environment list configured with non empty endpoint URLs for the particular API. |  [optional]
 **scopes** | [**List&lt;ScopeInfoDTO&gt;**](ScopeInfoDTO.md) |  |  [optional]
 **avgRating** | **String** | The average rating of the API |  [optional]
-**advertiseInfo** | [**AdvertiseInfoDTO**](AdvertiseInfoDTO.md) | The advertise info of the API |  [optional]
+**advertiseInfo** | [**AdvertiseInfoDTO**](AdvertiseInfoDTO.md) |  |  [optional]
 **isSubscriptionAvailable** | **Boolean** |  |  [optional]
 **categories** | **List&lt;String&gt;** | API categories  |  [optional]
-**keyManagers** | **Object** | API Key Managers  |  [optional]
+**keyManagers** | [**Object**](.md) | API Key Managers  |  [optional]
+**createdTime** | **String** |  |  [optional]
+**lastUpdatedTime** | **String** |  |  [optional]
 
 
 

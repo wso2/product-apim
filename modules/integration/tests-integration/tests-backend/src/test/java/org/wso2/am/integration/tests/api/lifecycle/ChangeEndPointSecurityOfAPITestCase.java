@@ -191,7 +191,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.removeApplicationById(applicationID);
-        restAPIPublisher.deleteAPIByID(apiID);
+        restAPIPublisher.deleteAPI(apiID);
         super.cleanUp();
     }
 

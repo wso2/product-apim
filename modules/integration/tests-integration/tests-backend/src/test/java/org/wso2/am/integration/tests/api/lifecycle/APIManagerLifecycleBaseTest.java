@@ -228,7 +228,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @throws ApiException
      */
     protected void deleteAPI(String apiID, RestAPIPublisherImpl publisherRestClient) throws ApiException {
-        publisherRestClient.deleteAPIByID(apiID);
+        publisherRestClient.deleteAPI(apiID);
     }
 
     /**
