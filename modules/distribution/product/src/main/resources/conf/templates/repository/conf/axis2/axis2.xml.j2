@@ -331,6 +331,26 @@
             <filePath>{{transport.passthru_https.sender.ssl_profile.file_path}}</filePath>
             <fileReadInterval>{{transport.passthru_https.sender.ssl_profile.interval}}</fileReadInterval>
         </parameter>
+        {% if transport.http.secured_proxy_profile is defined %}
+        <parameter name="proxyProfiles">
+            {% for profile in transport.http.secured_proxy_profile %}
+            <profile>
+                <targetHosts>{% for hostitem in profile.target_hosts.toList() %}{{hostitem}}{% if loop.index < profile.target_hosts.toList()|length %},{% endif %}{% endfor %}</targetHosts>
+                <proxyHost>{{profile.proxy_host}}</proxyHost>
+                <proxyPort>{{profile.proxy_port}}</proxyPort>
+                {% if profile.proxy_username is defined %}
+                <proxyUserName>{{profile.proxy_username}}</proxyUserName>
+                {% endif %}
+                {% if profile.proxy_password is defined %}
+                <proxyPassword>{{profile.proxy_password}}</proxyPassword>
+                {% endif %}
+                {% if profile.bypass_hosts is defined %}
+                <bypass>{% for bypassitem in profile.bypass_hosts.toList() %}{{bypassitem}}{% if loop.index < profile.bypass_hosts.toList()|length %},{% endif %}{% endfor %}</bypass>
+                {% endif %}
+            </profile>
+            {% endfor %}
+        </parameter>
+        {% endif %}
     </transportSender>
     {% endif %}
 
