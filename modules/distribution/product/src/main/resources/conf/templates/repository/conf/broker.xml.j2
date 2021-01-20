@@ -106,18 +106,18 @@ This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/c
         <mqtt enabled="false">
             <bindAddress>0.0.0.0</bindAddress>
 
-            <defaultConnection enabled="true" port="1883"/>
+            <defaultConnection enabled="{{broker.transport.mqtt.default_connection.enabled}}" port="{{broker.transport.mqtt.default_connection.port}}"/>
 
-            <sslConnection enabled="true" port="8883">
+            <sslConnection enabled="{{broker.transport.mqtt.ssl_connection.enabled}}" port="{{broker.transport.mqtt.ssl_connection.port}}">
                 <keyStore>
-                    <location>repository/resources/security/wso2carbon.jks</location>
-                    <password>wso2carbon</password>
-                    <certType>SunX509</certType>
+                    <location>{{broker.transport.mqtt.ssl_connection.keystore.location}}</location>
+                    <password>{{broker.transport.mqtt.ssl_connection.keystore.password}}</password>
+                    <certType>{{broker.transport.mqtt.ssl_connection.keystore.cert_type}}</certType>
                 </keyStore>
                 <trustStore>
-                    <location>repository/resources/security/client-truststore.jks</location>
-                    <password>wso2carbon</password>
-                    <certType>SunX509</certType>
+                    <location>{{broker.transport.mqqt.ssl_connection.truststore.location}}</location>
+                    <password>{{broker.transport.mqtt.ssl_connection.truststore.password}}</password>
+                    <certType>{{broker.transport.mqtt.ssl_connection.truststore.cert_type}}</certType>
                 </trustStore>
             </sslConnection>
 
