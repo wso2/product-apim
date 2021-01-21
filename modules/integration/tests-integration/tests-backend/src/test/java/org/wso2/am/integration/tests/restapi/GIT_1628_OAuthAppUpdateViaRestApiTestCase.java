@@ -70,7 +70,7 @@ public class GIT_1628_OAuthAppUpdateViaRestApiTestCase extends APIMIntegrationBa
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        storeRestApiBaseUrl = getStoreURLHttps() + "api/am/store/" + APIMIntegrationConstants.REST_API_VERSION + "/";
+        storeRestApiBaseUrl = getStoreURLHttps() + "api/am/devportal/" + APIMIntegrationConstants.REST_API_VERSION + "/";
         tokenApiUrl = new URL(getKeyManagerURLHttps() + "oauth2/token");
         Map<String, String> dataMap = RESTAPITestUtil.registerOAuthApplication(getKeyManagerURLHttps());
         String accessToken = generateOAuthAccessToken(user.getUserName(), user.getPassword(),

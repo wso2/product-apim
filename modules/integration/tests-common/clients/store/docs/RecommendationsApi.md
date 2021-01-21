@@ -1,6 +1,6 @@
 # RecommendationsApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/store/v1*
+All URIs are relative to *https://apis.wso2.com/api/am/devportal/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 Give API Recommendations for a User
 
-This API can be used to get recommended APIs for a user who logs into the API store
+This API can be used to get recommended APIs for a user who logs into the API Developer Portal
 
 ### Example
 ```java
@@ -28,7 +28,7 @@ import org.wso2.am.integration.clients.store.api.v1.RecommendationsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/store/v1");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
