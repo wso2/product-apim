@@ -1239,7 +1239,7 @@
         <carbon.analytics.common.version>5.2.27</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.8.146</carbon.apimgt.version>
+        <carbon.apimgt.version>6.8.149</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
