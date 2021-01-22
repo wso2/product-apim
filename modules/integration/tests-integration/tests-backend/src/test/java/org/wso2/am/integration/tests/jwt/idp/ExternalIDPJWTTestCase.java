@@ -117,6 +117,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         waitForKeyManagerDeployment(user.getUserDomain(), KEY_MANAGER_2);
         restAPIStore.mapConsumerKeyWithApplication(consumerKey1, jwtApplicationId, KEY_MANAGER_1);
         restAPIStore.mapConsumerKeyWithApplication(consumerKey2, jwtApplicationId, KEY_MANAGER_2);
+        waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     private String createAPI(String apiName, String apiContext, List<String> keyManagers)
