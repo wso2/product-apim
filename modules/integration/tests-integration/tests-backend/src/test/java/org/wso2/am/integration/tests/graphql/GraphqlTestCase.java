@@ -247,7 +247,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         apidto.operations(operations);
         restAPIPublisher.updateAPI(apidto, graphqlAPIId);
 
-        createGraphqlAppAndSubscribeToAPI("CountriesOauthAPPForOAuthScopeCheck","OAUTH");
+        createGraphqlAppAndSubscribeToAPI("testOperationalLevelOAuthScopesForGraphql","OAUTH");
         // Keep sufficient time to update map
         Thread.sleep(10000);
         // generate token

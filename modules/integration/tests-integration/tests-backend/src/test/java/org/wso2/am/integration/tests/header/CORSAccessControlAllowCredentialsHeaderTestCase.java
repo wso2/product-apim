@@ -25,9 +25,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONException;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
@@ -43,22 +41,18 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
-import javax.xml.xpath.XPathExpressionException;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.testng.Assert.assertEquals;
+import javax.xml.xpath.XPathExpressionException;
+
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -95,7 +89,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
     public void CheckAccessControlAllowCredentialsHeadersWithSpecificOrigin() throws Exception {
         //Enable CORS Access Control Allow Credentials with Origin 'http://localhost'
         accessToken = createPublishAndSubscribeToApi(user, API_NAME_2, API_CONTEXT_2, API_VERSION, APPLICATION_NAME_2);
-
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME_2, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttps(API_CONTEXT_2, API_VERSION) + "/customers/123");
         get.addHeader("Origin", ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST);

@@ -165,6 +165,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.updateSwagger(apiId, modifiedResource);
 
         waitForAPIDeployment();
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         // For Admin user
         // create new application and subscribing
@@ -292,6 +293,8 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse newVersionResponse = restAPIPublisher.copyAPI(API_VERSION_WITH_SCOPE_COPY, apiIdWithScope, null);
         assertEquals(newVersionResponse.getResponseCode(), HttpStatus.SC_OK, "Response Code Mismatch");
         copyApiId = newVersionResponse.getData();
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+
     }
 
     @Test(groups = { "wso2.am" }, description = "Testing Update api with scopes assigned",

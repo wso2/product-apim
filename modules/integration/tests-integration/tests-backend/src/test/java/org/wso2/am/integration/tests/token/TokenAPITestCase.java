@@ -27,6 +27,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
@@ -40,15 +41,16 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 
-import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.testng.Assert.*;
+import javax.ws.rs.core.Response;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class TokenAPITestCase extends APIMIntegrationBaseTest {
@@ -100,7 +102,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = serviceResponse.getData();
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
-
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         String gatewayUrl = getAPIInvocationURLHttp("tokenTestAPI/1.0.0/customers/123");
         // Create application
         ApplicationDTO applicationDTO = restAPIStore.addApplication("TokenTestAPI-Application",
@@ -210,7 +213,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         apiIdForOauth = serviceResponse.getData();
         restAPIPublisher.changeAPILifeCycleStatus(apiIdForOauth, Constants.PUBLISHED);
         String gatewayUrl = getAPIInvocationURLHttp("oauthTokenTestAPI/1.0.0/customers/123");
-
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         //Time to index the published api in store.
         Thread.sleep(3000);
         ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("oauthTokenTestAPI-Application",

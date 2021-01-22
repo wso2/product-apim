@@ -29,12 +29,15 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -88,7 +91,8 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Test changing of the API end point URL",
             dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL")
-    public void testEditEndPointURL(ITestContext ctx) throws ApiException, ParseException {
+    public void testEditEndPointURL(ITestContext ctx)
+            throws ApiException, ParseException, XPathExpressionException, APIManagerIntegrationTestException {
 
         String apiId = (String) ctx.getAttribute("apiId");
         HttpResponse response = restAPIPublisher.getAPI(apiId);
@@ -120,6 +124,8 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         assertTrue(StringUtils.isNotEmpty(updateAPIHTTPResponse.getId()),
                 "Update API end point URL Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
         waitForAPIDeployment();
+        waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
 

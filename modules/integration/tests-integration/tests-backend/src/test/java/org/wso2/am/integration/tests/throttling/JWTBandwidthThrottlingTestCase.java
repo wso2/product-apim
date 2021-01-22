@@ -247,7 +247,8 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         apidto.setApiThrottlingPolicy(apiPolicyName);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), apiPolicyName, "API tier not updated.");
-        
+        waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         ApplicationDTO applicationDTO = restAPIStore.addApplication("NormalAPP",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
         app3Id = applicationDTO.getApplicationId();
