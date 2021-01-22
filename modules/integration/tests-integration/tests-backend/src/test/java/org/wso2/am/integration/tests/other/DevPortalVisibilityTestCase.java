@@ -34,6 +34,9 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO.VisibilityEnum;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO.SourceTypeEnum;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO.TypeEnum;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -93,6 +96,7 @@ public class DevPortalVisibilityTestCase extends APIManagerLifecycleBaseTest {
     private String VERSION = "1";
     private String apiId;
     
+    private final String STORE_BASE_PATH = "api/am/store/v2/apis/";
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
@@ -190,14 +194,15 @@ public class DevPortalVisibilityTestCase extends APIManagerLifecycleBaseTest {
         // check anonymous access
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("X-WSO2-Tenant", MultitenantUtils.getTenantDomain(contextUsername));
-        HttpResponse resp = HTTPSClientUtils.doGet(storeURLHttps + "api/am/store/v1/apis/" + apiId, headers);
+        HttpResponse resp = HTTPSClientUtils.doGet(storeURLHttps + STORE_BASE_PATH + apiId, headers);
+        log.info("Response " + resp.getData());
         Assert.assertEquals(resp.getResponseCode(), 200, "Public API cannot be accessed by anonymous user");
         
     }
     
     @Test(groups = "wso2.am", description = "This test case tests the retrieval of API which was added with "
             + "dev portal visibility.", dependsOnMethods = "testAnonymousUserAccessDevPortalAPI")
-    public void testRestrictedDevPortalAPIAcess()
+    public void testRestrictedDevPortalAPIAccess()
             throws Exception {
         HttpResponse response = pubSubUserPublisher.getAPI(apiId);
         Gson g = new Gson();
@@ -216,7 +221,8 @@ public class DevPortalVisibilityTestCase extends APIManagerLifecycleBaseTest {
         // check anonymous access
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("X-WSO2-Tenant", MultitenantUtils.getTenantDomain(contextUsername));
-        HttpResponse resp = HTTPSClientUtils.doGet(storeURLHttps + "api/am/store/v1/apis/" + apiId, headers);
+        HttpResponse resp = HTTPSClientUtils.doGet(storeURLHttps + STORE_BASE_PATH + apiId, headers);
+        log.info("Response " + resp.getData());
         Assert.assertEquals(resp.getResponseCode(), 404, "Restricted API can be accessed by anonymous user");
         
         // dev portal user with role DEV_USER_A_ROLE
@@ -228,17 +234,129 @@ public class DevPortalVisibilityTestCase extends APIManagerLifecycleBaseTest {
         headers = new HashMap<String, String>();
         //headers.put("X-WSO2-Tenant", MultitenantUtils.getTenantDomain(contextUsername));
         headers.put("Authorization", "Bearer " + devUser2.getAccessToken());
-        resp = HTTPSClientUtils.doGet(storeURLHttps + "api/am/store/v1/apis/" + apiId, headers);
+        resp = HTTPSClientUtils.doGet(storeURLHttps + STORE_BASE_PATH + apiId, headers);
+        log.info("Response " + resp.getData());
         Assert.assertEquals(resp.getResponseCode(), 404,
                 "Restricted API can be accessed by user with " + DEV_USER_B_ROLE + " role");
         
         // publisher portal user without role DEV_USER_A_ROLE should be able to view the api in dev portal
         headers = new HashMap<String, String>();
         headers.put("Authorization", "Bearer " + pubSubUserStore.getAccessToken());
-        resp = HTTPSClientUtils.doGet(storeURLHttps + "api/am/store/v1/apis/" + apiId, headers);
+        resp = HTTPSClientUtils.doGet(storeURLHttps + STORE_BASE_PATH + apiId, headers);
+        log.info("Response " + resp.getData());
         Assert.assertEquals(resp.getResponseCode(), 200, "Restricted API not visible for publisher user");
     }
     
+    @Test(groups = "wso2.am", description = "This test case tests the accessibility of documents on dev portal for "
+            + "restricted APIs", dependsOnMethods = "testRestrictedDevPortalAPIAccess")
+    public void testRestrictedDevPortalDocumentAccess()
+            throws Exception {
+        
+        DocumentDTO body = new DocumentDTO();
+        body.setName("DocName");
+        body.setSourceType(SourceTypeEnum.INLINE);
+        body.setType(TypeEnum.HOWTO);
+        body.setSummary("this is doc summary");
+        body.setVisibility(org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO.VisibilityEnum.API_LEVEL);
+        HttpResponse docResp = pubSubUserPublisher.addDocument(apiId, body);
+
+        String docId = docResp.getData();
+        Assert.assertEquals(docResp.getResponseCode(), 200, "Document creation faild for publisher");
+
+        String docContent = "Sample content";
+        pubSubUserPublisher.addContentDocument(apiId, docId, docContent);
+
+        // check anonymous access
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("X-WSO2-Tenant", MultitenantUtils.getTenantDomain(contextUsername));
+        HttpResponse resp = HTTPSClientUtils
+                .doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/documents/" + docId, headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 404, "Restricted API doc can be accessed by anonymous user");
+        resp = HTTPSClientUtils
+                .doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/documents/" + docId + "/content", headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 404, "Restricted API doc content can be accessed by anonymous user");
+        
+        // dev portal user with role DEV_USER_A_ROLE
+        headers = new HashMap<String, String>();
+        headers.put("Authorization", "Bearer " + devUser1.getAccessToken());
+        resp = HTTPSClientUtils
+                .doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/documents/" + docId, headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 200,
+                "Restricted API doc cannot be accessed by user with role " + DEV_USER_A_ROLE);
+        resp = HTTPSClientUtils
+                .doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/documents/" + docId + "/content", headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 200,
+                "Restricted API doc content cannot be accessed by user with role " + DEV_USER_A_ROLE);
+
+        // dev portal user with role DEV_USER_B_ROLE. user should not be able to view api
+        headers = new HashMap<String, String>();
+        headers.put("Authorization", "Bearer " + devUser2.getAccessToken());
+        resp = HTTPSClientUtils.doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/documents/" + docId, headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 404,
+                "Restricted API doc can be accessed by user with role " + DEV_USER_B_ROLE);
+        resp = HTTPSClientUtils
+                .doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/documents/" + docId + "/content", headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 404,
+                "Restricted API doc content can be accessed by user with role " + DEV_USER_B_ROLE);
+        
+        // publisher portal user without role DEV_USER_A_ROLE should be able to view the api in dev portal
+        headers = new HashMap<String, String>();
+        headers.put("Authorization", "Bearer " + pubSubUserStore.getAccessToken());
+        resp = HTTPSClientUtils.doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/documents/" + docId, headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 200,
+                "Restricted API doc not visible for publisher user");
+        resp = HTTPSClientUtils
+                .doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/documents/" + docId + "/content", headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 200,
+                "Restricted API doc content not visible for publisher user");
+
+    }
+    
+    @Test(groups = "wso2.am", description = "This test case tests the accessibility of openapi spec on dev portal for "
+            + "restricted APIs", dependsOnMethods = "testRestrictedDevPortalAPIAccess")
+    public void testRestrictedDevPortalOpenAPISpecAccess()
+            throws Exception {
+        // check anonymous access
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("X-WSO2-Tenant", MultitenantUtils.getTenantDomain(contextUsername));
+        HttpResponse resp = HTTPSClientUtils.doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/swagger", headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 404, "Restricted API definition can be accessed by anonymous user");
+        
+        // dev portal user with role DEV_USER_A_ROLE
+        headers = new HashMap<String, String>();
+        headers.put("Authorization", "Bearer " + devUser1.getAccessToken());
+        resp = HTTPSClientUtils
+                .doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/swagger", headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 200,
+                "Restricted API definition cannot be accessed by user with role " + DEV_USER_A_ROLE);
+        
+        // dev portal user with role DEV_USER_B_ROLE. user should not be able to view api
+        headers = new HashMap<String, String>();
+        //headers.put("X-WSO2-Tenant", MultitenantUtils.getTenantDomain(contextUsername));
+        headers.put("Authorization", "Bearer " + devUser2.getAccessToken());
+        resp = HTTPSClientUtils.doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/swagger", headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 404,
+                "Restricted API definition can be accessed by user with " + DEV_USER_B_ROLE + " role");
+        
+        // publisher portal user without role DEV_USER_A_ROLE should be able to view the api in dev portal
+        headers = new HashMap<String, String>();
+        headers.put("Authorization", "Bearer " + pubSubUserStore.getAccessToken());
+        resp = HTTPSClientUtils.doGet(storeURLHttps + STORE_BASE_PATH + apiId + "/swagger", headers);
+        log.info("Response " + resp.getData());
+        Assert.assertEquals(resp.getResponseCode(), 200, "Restricted API definition not visible for publisher user");
+
+    }
     @AfterClass (alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
