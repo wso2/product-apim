@@ -95,8 +95,8 @@ public class DevPortalVisibilityTestCase extends APIManagerLifecycleBaseTest {
     private String CONTEXT = "ctx9";
     private String VERSION = "1";
     private String apiId;
-    
-    private final String STORE_BASE_PATH = "api/am/store/v2/apis/";
+
+    private final String STORE_BASE_PATH = "api/am/devportal/v2/apis/";
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
