@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
@@ -257,9 +258,11 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(graphqlAPIId, restAPIPublisher);
 
-        testAppId3 = createGraphqlAppAndSubscribeToAPI("CountriesOauthAPPForOAuthScopeCheck","OAUTH");
+        testAppId3 = createGraphqlAppAndSubscribeToAPI("testOperationalLevelOAuthScopesForGraphql","OAUTH");
         // Keep sufficient time to update map
         Thread.sleep(10000);
+        waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         // generate token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
@@ -336,6 +339,8 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         testAppId4 = createGraphqlAppAndSubscribeToAPI(  "CountriesOauthAPPForSecurityCheck","OAUTH");
         // Keep sufficient time to update map
         Thread.sleep(10000);
+        waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         // generate token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);

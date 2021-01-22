@@ -107,7 +107,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
 
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
-
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
 
@@ -168,6 +169,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
+        waitForAPIDeploymentSync(apiDto.getProvider(), apiDto.getName(), apiDto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         //Send GET request
         HttpResponse httpResponseGet =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +  API_GET_ENDPOINT_METHOD,
@@ -207,6 +210,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
+        waitForAPIDeploymentSync(apiDto.getProvider(), apiDto.getName(), apiDto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         //Generate User Access Key
         String requestBody = "grant_type=password&username=admin&password=admin&scope=PRODUCTION";
         URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
@@ -257,7 +262,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
-
+        waitForAPIDeploymentSync(apiDto.getProvider(), apiDto.getName(), apiDto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         //Send GET request
         HttpResponse httpResponseGet =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" + API_GET_ENDPOINT_METHOD,
