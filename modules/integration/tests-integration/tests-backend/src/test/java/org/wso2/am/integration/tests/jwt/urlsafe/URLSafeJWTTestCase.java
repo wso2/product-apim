@@ -113,6 +113,8 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.generateKeys(jwtApplicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         createUser();
+        waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for Oauth Based App")
