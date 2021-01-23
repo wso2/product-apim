@@ -49,6 +49,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyMappingReq
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLQueryComplexityInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.KeyManagerListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
@@ -119,7 +120,7 @@ public class RestAPIStoreImpl {
 
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
+        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
         apiStoreClient.setReadTimeout(600000);
         apiStoreClient.setConnectTimeout(600000);
         apiStoreClient.setWriteTimeout(600000);
@@ -143,7 +144,7 @@ public class RestAPIStoreImpl {
 
     public RestAPIStoreImpl(String tenantDomain, String storeURL) {
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
-        apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
+        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
         apiStoreClient.setDebugging(true);
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
@@ -360,8 +361,8 @@ public class RestAPIStoreImpl {
         keyGenerateRequestDTO.setAdditionalProperties(additionalProperties);
 
         ApiResponse<APIKeyDTO> response = apiKeysApi
-                .applicationsApplicationIdApiKeysKeyTypeGeneratePostWithHttpInfo(applicationId, keyType,
-                        keyGenerateRequestDTO, null);
+                .applicationsApplicationIdApiKeysKeyTypeGeneratePostWithHttpInfo(applicationId, keyType, null,
+                        keyGenerateRequestDTO);
 
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
@@ -1216,12 +1217,13 @@ public class RestAPIStoreImpl {
      * @return - http response get comment
      * @throws ApiException - throws if get comment fails
      */
-    public HttpResponse getComment(String commentId, String apiId, String tenantDomain) throws ApiException {
+    public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo)
+            throws ApiException {
         CommentDTO commentDTO;
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null);
+            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null, includeCommentorInfo);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
@@ -1397,7 +1399,7 @@ public class RestAPIStoreImpl {
     public APIListDTO getAPIListFromStoreAsAnonymousUser(String tenantDomain) throws ApiException {
         ApIsApi apIsApi = new ApIsApi();
         ApiClient apiStoreClient = new ApiClient();
-        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
+        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
         apIsApi.setApiClient(apiStoreClient);
 
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);
@@ -1500,11 +1502,13 @@ public class RestAPIStoreImpl {
         try {
             APIListDTO prototypedAPIs = new APIListDTO();
             APIListDTO apiListDTO = apIsApi.apisGet(null, null, tenant, null, null);
+            List<APIInfoDTO> apiInfoDTOList = new ArrayList<>();
             for (APIInfoDTO apidto : apiListDTO.getList()) {
                 if (apidto.getLifeCycleStatus().equals("PROTOTYPED")) {
-                    prototypedAPIs.addListItem(apidto);
+                    apiInfoDTOList.add(apidto);
                 }
             }
+            prototypedAPIs.setList(apiInfoDTOList);
             return prototypedAPIs;
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get prototype APIs. Error: " + e.getMessage(), e);
@@ -1710,7 +1714,8 @@ public class RestAPIStoreImpl {
 
     public String getSwaggerByID(String apiId, String tenantDomain) throws ApiException {
         ApiResponse<String> response =
-                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, "Production and Sandbox", null, tenantDomain);
+                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, "Production and Sandbox",
+                        null, null, tenantDomain);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
     }
@@ -1785,7 +1790,7 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getGraphQLComplexityResponse(String apiId) throws ApiException {
         HttpResponse response = null;
-        ApiResponse<Void> complexityResponse = graphQlPoliciesApi
+        ApiResponse<GraphQLQueryComplexityInfoDTO> complexityResponse = graphQlPoliciesApi
                 .apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
         if(complexityResponse.getStatusCode() == 200){
             response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);

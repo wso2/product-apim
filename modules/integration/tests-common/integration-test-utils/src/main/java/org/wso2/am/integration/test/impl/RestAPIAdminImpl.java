@@ -128,7 +128,7 @@ public class RestAPIAdminImpl {
                         tokenURL);
 
         apiAdminClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiAdminClient.setBasePath(adminURl + "api/am/admin/v1");
+        apiAdminClient.setBasePath(adminURl + "api/am/admin/v2");
         apiAdminClient.setDebugging(true);
         apiAdminClient.setReadTimeout(600000);
         apiAdminClient.setConnectTimeout(600000);
@@ -194,8 +194,8 @@ public class RestAPIAdminImpl {
             ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO) throws ApiException {
 
         return applicationPolicyCollectionApi
-                .throttlingPoliciesApplicationPostWithHttpInfo(applicationThrottlePolicyDTO,
-                        Constants.APPLICATION_JSON_CONTENT_TYPE);
+                .throttlingPoliciesApplicationPostWithHttpInfo(Constants.APPLICATION_JSON_CONTENT_TYPE,
+                        applicationThrottlePolicyDTO);
     }
 
     /**
@@ -223,8 +223,8 @@ public class RestAPIAdminImpl {
             ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO) throws ApiException {
 
         return applicationPolicyIndividualApi
-                .throttlingPoliciesApplicationPolicyIdPutWithHttpInfo(policyId, applicationThrottlePolicyDTO,
-                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
+                .throttlingPoliciesApplicationPolicyIdPutWithHttpInfo(policyId, Constants.APPLICATION_JSON_CONTENT_TYPE,
+                        applicationThrottlePolicyDTO, null, null);
     }
 
     /**
@@ -251,8 +251,8 @@ public class RestAPIAdminImpl {
             SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO) throws ApiException {
 
         return subscriptionPolicyCollectionApi
-                .throttlingPoliciesSubscriptionPostWithHttpInfo(subscriptionThrottlePolicyDTO,
-                        Constants.APPLICATION_JSON_CONTENT_TYPE);
+                .throttlingPoliciesSubscriptionPostWithHttpInfo(Constants.APPLICATION_JSON_CONTENT_TYPE,
+                        subscriptionThrottlePolicyDTO);
 
     }
 
@@ -281,8 +281,8 @@ public class RestAPIAdminImpl {
             SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO) throws ApiException {
 
         return subscriptionPolicyIndividualApi
-                .throttlingPoliciesSubscriptionPolicyIdPutWithHttpInfo(policyId, subscriptionThrottlePolicyDTO,
-                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
+                .throttlingPoliciesSubscriptionPolicyIdPutWithHttpInfo(policyId,
+                        Constants.APPLICATION_JSON_CONTENT_TYPE, subscriptionThrottlePolicyDTO, null, null);
     }
 
     /**
@@ -308,7 +308,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<CustomRuleDTO> addCustomThrottlingPolicy(CustomRuleDTO customRuleDTO) throws ApiException {
 
         return customRulesCollectionApi
-                .throttlingPoliciesCustomPostWithHttpInfo(customRuleDTO, Constants.APPLICATION_JSON_CONTENT_TYPE);
+                .throttlingPoliciesCustomPostWithHttpInfo(Constants.APPLICATION_JSON_CONTENT_TYPE, customRuleDTO);
     }
 
     /**
@@ -334,8 +334,8 @@ public class RestAPIAdminImpl {
     public ApiResponse<CustomRuleDTO> updateCustomThrottlingPolicy(String policyId, CustomRuleDTO customRuleDTO)
             throws ApiException {
 
-        return customRulesIndividualApi.throttlingPoliciesCustomRuleIdPutWithHttpInfo(policyId, customRuleDTO,
-                Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
+        return customRulesIndividualApi.throttlingPoliciesCustomRuleIdPutWithHttpInfo(policyId,
+                Constants.APPLICATION_JSON_CONTENT_TYPE, customRuleDTO, null, null);
     }
 
     /**
@@ -360,8 +360,8 @@ public class RestAPIAdminImpl {
     public ApiResponse<AdvancedThrottlePolicyDTO> addAdvancedThrottlingPolicy(
             AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO) throws ApiException {
 
-        return advancedPolicyCollectionApi.throttlingPoliciesAdvancedPostWithHttpInfo(advancedThrottlePolicyDTO,
-                Constants.APPLICATION_JSON_CONTENT_TYPE);
+        return advancedPolicyCollectionApi.throttlingPoliciesAdvancedPostWithHttpInfo(
+                Constants.APPLICATION_JSON_CONTENT_TYPE, advancedThrottlePolicyDTO);
 
     }
 
@@ -388,8 +388,8 @@ public class RestAPIAdminImpl {
             AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO) throws ApiException {
 
         return advancedPolicyIndividualApi
-                .throttlingPoliciesAdvancedPolicyIdPutWithHttpInfo(policyId, advancedThrottlePolicyDTO,
-                        Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
+                .throttlingPoliciesAdvancedPolicyIdPutWithHttpInfo(policyId, Constants.APPLICATION_JSON_CONTENT_TYPE,
+                        advancedThrottlePolicyDTO, null, null);
     }
 
     /**
@@ -465,7 +465,8 @@ public class RestAPIAdminImpl {
     public ApiResponse<ApplicationListDTO> getApplications(String user, Integer limit, Integer offset,
             String appTenantDomain) throws ApiException {
 
-        return applicationCollectionApi.applicationsGetWithHttpInfo(user, limit, offset, null, null, appTenantDomain);
+        return applicationCollectionApi.applicationsGetWithHttpInfo(user, limit, offset, null,
+                null, null, appTenantDomain);
     }
 
     /**

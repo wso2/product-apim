@@ -1,47 +1,56 @@
 # ThrottlingPoliciesApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1*
+All URIs are relative to *https://apis.wso2.com/api/am/publisher/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getAllThrottlingPolicies**](ThrottlingPoliciesApi.md#getAllThrottlingPolicies) | **GET** /throttling-policies/{policyLevel} | Get all throttling policies for the given type
-[**getThrottlingPolicyByName**](ThrottlingPoliciesApi.md#getThrottlingPolicyByName) | **GET** /throttling-policies/{policyLevel}/{policyName} | Get details of a policy
+[**getAllThrottlingPolicies**](ThrottlingPoliciesApi.md#getAllThrottlingPolicies) | **GET** /throttling-policies/{policyLevel} | Get All Throttling Policies for the Given Type
+[**getThrottlingPolicyByName**](ThrottlingPoliciesApi.md#getThrottlingPolicyByName) | **GET** /throttling-policies/{policyLevel}/{policyName} | Get Details of a Policy
 
 
 <a name="getAllThrottlingPolicies"></a>
 # **getAllThrottlingPolicies**
 > ThrottlingPolicyListDTO getAllThrottlingPolicies(policyLevel, limit, offset, ifNoneMatch)
 
-Get all throttling policies for the given type
+Get All Throttling Policies for the Given Type
 
 This operation can be used to list the available policies for a given policy level. Tier level should be specified as a path parameter and should be one of &#x60;subscription&#x60; and &#x60;api&#x60;. &#x60;subscription&#x60; is for Subscription Level policies and &#x60;api&#x60; is for Resource Level policies 
 
 ### Example
 ```java
 // Import classes:
-//import org.wso2.am.integration.clients.publisher.api.ApiClient;
-//import org.wso2.am.integration.clients.publisher.api.ApiException;
-//import org.wso2.am.integration.clients.publisher.api.Configuration;
-//import org.wso2.am.integration.clients.publisher.api.auth.*;
-//import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: OAuth2Security
-OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
-OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
-
-ThrottlingPoliciesApi apiInstance = new ThrottlingPoliciesApi();
-String policyLevel = "policyLevel_example"; // String | List API or Application or Resource type policies. 
-Integer limit = 25; // Integer | Maximum size of resource array to return. 
-Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
-String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
-try {
-    ThrottlingPolicyListDTO result = apiInstance.getAllThrottlingPolicies(policyLevel, limit, offset, ifNoneMatch);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling ThrottlingPoliciesApi#getAllThrottlingPolicies");
-    e.printStackTrace();
+    ThrottlingPoliciesApi apiInstance = new ThrottlingPoliciesApi(defaultClient);
+    String policyLevel = "policyLevel_example"; // String | List API or Application or Resource type policies. 
+    Integer limit = 25; // Integer | Maximum size of resource array to return. 
+    Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
+    String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
+    try {
+      ThrottlingPolicyListDTO result = apiInstance.getAllThrottlingPolicies(policyLevel, limit, offset, ifNoneMatch);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ThrottlingPoliciesApi#getAllThrottlingPolicies");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -64,42 +73,58 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. List of policies returned.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body. <br>  |
+**304** | Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  |  -  |
+**406** | Not Acceptable. The requested media type is not supported. |  -  |
 
 <a name="getThrottlingPolicyByName"></a>
 # **getThrottlingPolicyByName**
 > ThrottlingPolicyDTO getThrottlingPolicyByName(policyName, policyLevel, ifNoneMatch)
 
-Get details of a policy
+Get Details of a Policy
 
 This operation can be used to retrieve details of a single policy by specifying the policy level and policy name. 
 
 ### Example
 ```java
 // Import classes:
-//import org.wso2.am.integration.clients.publisher.api.ApiClient;
-//import org.wso2.am.integration.clients.publisher.api.ApiException;
-//import org.wso2.am.integration.clients.publisher.api.Configuration;
-//import org.wso2.am.integration.clients.publisher.api.auth.*;
-//import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: OAuth2Security
-OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
-OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
-
-ThrottlingPoliciesApi apiInstance = new ThrottlingPoliciesApi();
-String policyName = "policyName_example"; // String | Tier name 
-String policyLevel = "policyLevel_example"; // String | List API or Application or Resource type policies. 
-String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
-try {
-    ThrottlingPolicyDTO result = apiInstance.getThrottlingPolicyByName(policyName, policyLevel, ifNoneMatch);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling ThrottlingPoliciesApi#getThrottlingPolicyByName");
-    e.printStackTrace();
+    ThrottlingPoliciesApi apiInstance = new ThrottlingPoliciesApi(defaultClient);
+    String policyName = "policyName_example"; // String | Tier name 
+    String policyLevel = "policyLevel_example"; // String | List API or Application or Resource type policies. 
+    String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
+    try {
+      ThrottlingPolicyDTO result = apiInstance.getThrottlingPolicyByName(policyName, policyLevel, ifNoneMatch);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ThrottlingPoliciesApi#getThrottlingPolicyByName");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -121,6 +146,14 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Tier returned  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  |
+**304** | Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**406** | Not Acceptable. The requested media type is not supported. |  -  |
 
