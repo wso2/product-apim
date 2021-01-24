@@ -99,6 +99,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setProvider(user.getUserName());
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = serviceResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
 
         String gatewayUrl = getAPIInvocationURLHttp("tokenTestAPI/1.0.0/customers/123");
@@ -208,6 +210,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setProvider(user.getUserName());
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiIdForOauth = serviceResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiIdForOauth, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(apiIdForOauth, Constants.PUBLISHED);
         String gatewayUrl = getAPIInvocationURLHttp("oauthTokenTestAPI/1.0.0/customers/123");
 
@@ -271,7 +275,9 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(tokenTestApiAppId);
         restAPIStore.deleteApplication(oauthTokenTestApiId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiIdForOauth, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiIdForOauth);
     }
 }

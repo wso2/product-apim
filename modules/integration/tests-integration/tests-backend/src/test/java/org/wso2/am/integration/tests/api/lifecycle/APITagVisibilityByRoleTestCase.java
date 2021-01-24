@@ -112,9 +112,12 @@ public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest 
         apiCreationReqBeanPublicAPI.setDescription(DESCRIPTION);
         apiCreationReqBeanPublicAPI.setVersion(API_VERSION_1_0_0);
         apiCreationReqBeanPublicAPI.setProvider(providerName);
-        //add and publish public API
+        //add API
         APIDTO apiDtoPublicAPI = restAPIPublisher.addAPI(apiCreationReqBeanPublicAPI);
         publicApiId = apiDtoPublicAPI.getId();
+        //create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(publicApiId, restAPIPublisher);
+        //publish API
         publishAPI(publicApiId, restAPIPublisher, false);
         waitForAPIDeployment();
 
@@ -128,6 +131,9 @@ public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest 
         //add and publish Restricted API
         APIDTO apiDtoRestrictedAPI = restAPIPublisher.addAPI(apiCreationRequestBeanRestrictedAPI);
         restrictedApiId = apiDtoRestrictedAPI.getId();
+        //create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(restrictedApiId, restAPIPublisher);
+        //publish API
         publishAPI(restrictedApiId, restAPIPublisher, false);
         waitForAPIDeployment();
     }
@@ -181,6 +187,8 @@ public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(publicApiId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(restrictedApiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(publicApiId);
         restAPIPublisher.deleteAPI(restrictedApiId);
         userManagementClient.deleteRole(ROLE);

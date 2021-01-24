@@ -110,6 +110,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
                 createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher, restAPIStore,
                         applicationID, TIER_UNLIMITED);
         apiID = apidto.getId();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
         ArrayList<String> grantTypes = new ArrayList<>();
@@ -154,6 +156,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
         APIEndpointSecurityDTO updatedEndpointSecurity = updatedAPI.getEndpointSecurity();
         Assert.assertEquals(updatedEndpointSecurity.getPassword(), "");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
         String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
@@ -186,6 +190,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
         APIEndpointSecurityDTO updatedEndpointSecurity = updatedAPI.getEndpointSecurity();
         Assert.assertEquals(updatedEndpointSecurity.getPassword(), "");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
         String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
         requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
@@ -226,6 +232,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         endpointConfigJson.put("endpoint_security", new JSONParser().parse(productionEndpointSecurity));
         apidto.setEndpointConfig(endpointConfigJson);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
         Assert.assertNotNull(updatedEndpointConfig.get("endpoint_security"));
         Map endpointSecurity = (Map) updatedEndpointConfig.get("endpoint_security");
@@ -273,6 +281,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         endpointConfigJson.put("endpoint_security", new JSONParser().parse(sandboxEndpointSecurity));
         apidto.setEndpointConfig(endpointConfigJson);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
         Assert.assertNotNull(updatedEndpointConfig.get("endpoint_security"));
         Map endpointSecurity = (Map) updatedEndpointConfig.get("endpoint_security");
@@ -326,6 +336,11 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         endpointConfigJson.put("endpoint_security", new JSONParser().parse(sandboxEndpointSecurity));
         apidto.setEndpointConfig(endpointConfigJson);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
+        // Undeploy and Delete existing API Revisions Since it has reached 5 max revision limit
+        undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
+        waitForAPIDeployment();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
         Assert.assertNotNull(updatedEndpointConfig.get("endpoint_security"));
         Map endpointSecurity = (Map) updatedEndpointConfig.get("endpoint_security");
@@ -364,6 +379,7 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
     public void cleanUpArtifacts() throws Exception {
 
         restAPIStore.removeApplicationById(applicationID);
+        undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiID);
         super.cleanUp();
     }

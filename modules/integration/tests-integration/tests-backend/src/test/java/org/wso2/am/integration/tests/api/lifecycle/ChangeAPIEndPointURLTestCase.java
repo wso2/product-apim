@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
+import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -88,7 +89,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Test changing of the API end point URL",
             dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL")
-    public void testEditEndPointURL(ITestContext ctx) throws ApiException, ParseException {
+    public void testEditEndPointURL(ITestContext ctx) throws ApiException, ParseException, JSONException {
 
         String apiId = (String) ctx.getAttribute("apiId");
         HttpResponse response = restAPIPublisher.getAPI(apiId);
@@ -116,6 +117,8 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
         //Update API with Edited information
         APIDTO updateAPIHTTPResponse = restAPIPublisher.updateAPI(apidto, apiId);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
         assertTrue(StringUtils.isNotEmpty(updateAPIHTTPResponse.getId()),
                 "Update API end point URL Response Code is invalid." + getAPIIdentifierString(apiIdentifier));

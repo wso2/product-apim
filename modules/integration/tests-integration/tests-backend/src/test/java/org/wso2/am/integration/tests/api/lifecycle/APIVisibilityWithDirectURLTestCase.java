@@ -116,6 +116,10 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         //add test api
         APIDTO apidto = restAPIPublisher.addAPI(apiRequest, "v3");
         apiID = apidto.getId();
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
+
         //publish the api
         restAPIPublisher.changeAPILifeCycleStatus(apidto.getId(), Constants.PUBLISHED);
         int retry = 0;
@@ -164,6 +168,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (apiID != null) {
+            undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
             restAPIPublisher.deleteAPI(apiID);
         }
         userManagementClient.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
