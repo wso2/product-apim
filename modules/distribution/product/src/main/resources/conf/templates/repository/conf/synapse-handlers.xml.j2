@@ -1,7 +1,10 @@
 <handlers xmlns:svns="http://org.wso2.securevault/configuration">
-{% for handler_key in enabled_global_handlers %}
-    <handler name="{{synapse_handlers[handler_key].name}}" class="{{synapse_handlers[handler_key].class}}"/>
+{% for item in synapse_handlers %}
+    {% if item.enabled %}
+    <handler name="{{item.name}}" class="{{item.class}}"/>
+    {% endif %}
 {% endfor %}
+
 {% if apim.transport_headers is defined %}
 {% if apim.transport_headers.enable %}
     <handler name="TransportHeaderHandler" class="org.wso2.carbon.apimgt.gateway.handlers.common.TransportHeaderHandler">
