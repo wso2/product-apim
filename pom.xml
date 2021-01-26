@@ -1229,6 +1229,13 @@
                 <artifactId>opensaml</artifactId>
                 <version>${opensaml2.wso2.version}</version>
             </dependency>
+
+            <!-- analytics features -->
+            <dependency>
+                <groupId>org.wso2.am.analytics.publisher</groupId>
+                <artifactId>org.wso2.am.analytics.publisher.client.feature</artifactId>
+                <version>${apim.analytics.publisher.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1438,6 +1445,7 @@
         <keycloak.keymanager.feature.version>2.0.4</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.0</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.2</pingfederate.keymanager.feature.version>
+        <apim.analytics.publisher.version>0.1.2</apim.analytics.publisher.version>
     </properties>
 
 </project>
