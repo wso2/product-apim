@@ -324,6 +324,8 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
         createAPIRequest.setVisibility(RESTRICTED_ACCESS_CONTROL);
         createAPIRequest.setRoles(SUBSCRIBER_ROLE);
         restAPIPublisher.updateAPI(createAPIRequest, restrictedAccessRestrictedVisibilityAPIId);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(restrictedAccessRestrictedVisibilityAPIId, restAPIPublisher);
         // Waiting to index after api update operation
         Thread.sleep(10000);
 
@@ -337,6 +339,11 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
 
     @AfterClass (alwaysRun = true)
     public void destroy() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(publisherAccessControlAPIId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(publicAccessRestrictedVisibilityAPIId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(publisherAccessControlAPI2Id, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(restrictedAccessRestrictedVisibilityAPIId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(accessControlledPublicVisibilityAPIId, restAPIPublisher);
         restAPIPublisher.deleteAPI(publisherAccessControlAPIId);
         restAPIPublisher.deleteAPI(publicAccessRestrictedVisibilityAPIId);
         restAPIPublisher.deleteAPI(publisherAccessControlAPI2Id);

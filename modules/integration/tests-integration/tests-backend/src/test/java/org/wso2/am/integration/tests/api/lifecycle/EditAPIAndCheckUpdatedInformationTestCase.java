@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.json.JSONException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -88,10 +89,13 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
 
     @Test(groups = { "wso2.am" }, description = "Edit the API Information")
     public void testEditAPIInformation()
-            throws APIManagerIntegrationTestException, ApiException, XPathExpressionException {
+            throws APIManagerIntegrationTestException, ApiException, XPathExpressionException, JSONException {
         //add api
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = serviceResponse.getData();
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
         //publish the api
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
@@ -105,6 +109,9 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
 
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = restAPIPublisher.updateAPI(apiRequest, apiId);
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
         waitForAPIDeploymentSync(providerName, API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
 
@@ -125,6 +132,7 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
 

@@ -175,6 +175,8 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
 
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = serviceResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
         waitForAPIDeploymentSync(user.getUserName(), APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
         gatewayUrl = getAPIInvocationURLHttps(APIContext + "/" + APIVersion + "/");
@@ -250,6 +252,9 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), apiPolicyName1, "API tier not updated.");
 
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+
         ApplicationDTO applicationDTO = restAPIStore.addApplication("NormalAPP",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
         appId3 = applicationDTO.getApplicationId();
@@ -282,6 +287,8 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), APIMIntegrationConstants.API_TIER.UNLIMITED,
                 "API tier not updated.");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
         ApplicationDTO applicationDTO = restAPIStore.addApplication("NormalAPP2",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
@@ -311,6 +318,8 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
                 "API tier not updated.");
         Assert.assertTrue(isThrottled(requestHeaders, null),
                 "Request not throttled by request count IP condition in API tier");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
     }
 
     @Test(groups = {"wso2.am"}, description = "", dependsOnMethods = {"testAPILevelThrottlingWithIpCondition"})
@@ -322,6 +331,9 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), APIMIntegrationConstants.API_TIER.UNLIMITED,
                 "API tier not updated.");
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
         ApplicationDTO applicationDTO = restAPIStore.addApplication("NormalAPP3",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
@@ -351,6 +363,10 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
                 "API tier not updated.");
         Assert.assertTrue(isThrottled(requestHeaders, null),
                 "Request not throttled by request count header condition in API tier");
+        // Undeploy and Delete existing API Revisions Since it has reached 5 max revision limit
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
     }
 
     @Test(groups = {"wso2.am"}, description = "", dependsOnMethods = {"testAPILevelThrottlingWithHeaderCondition"})
@@ -362,6 +378,8 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), APIMIntegrationConstants.API_TIER.UNLIMITED,
                 "API tier not updated.");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
         ApplicationDTO applicationDTO = restAPIStore.addApplication("NormalAPP4",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
@@ -393,6 +411,8 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
                 "API tier not updated.");
         Assert.assertTrue(isThrottled(requestHeaders, queryParams),
                 "Request not throttled by request count query parameter condition in API tier");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
     }
 
     @Test(groups = {"wso2.am"}, description = "", dependsOnMethods = {"testAPILevelThrottlingWithQueryCondition"})
@@ -404,6 +424,8 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), APIMIntegrationConstants.API_TIER.UNLIMITED,
                 "API tier not updated.");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
         ApplicationDTO applicationDTO = restAPIStore.addApplication("NormalAPP5",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
@@ -432,6 +454,8 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
                 "API tier not updated.");
         Assert.assertTrue(isThrottled(requestHeaders, null),
                 "Request not throttled by request count jwt claim condition in API tier");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
     }
 
     private boolean isThrottled(Map<String, String> requestHeaders, Map<String, String> queryParams) throws InterruptedException, IOException {
@@ -536,6 +560,7 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(appId5);
         restAPIStore.deleteApplication(appId6);
         restAPIStore.deleteApplication(appId7);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         restAPIAdmin.deleteAdvancedThrottlingPolicy(apiPolicyId1);
         restAPIAdmin.deleteAdvancedThrottlingPolicy(apiPolicyId2);

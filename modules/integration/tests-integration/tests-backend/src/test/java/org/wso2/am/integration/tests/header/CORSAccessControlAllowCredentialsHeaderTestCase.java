@@ -148,6 +148,10 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = apiResponse.getData();
 
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
+
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
         //Create application
@@ -176,6 +180,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }

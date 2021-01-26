@@ -104,6 +104,18 @@ public class APIDTO {
         @SerializedName(SERIALIZED_NAME_IS_DEFAULT_VERSION)
             private Boolean isDefaultVersion;
 
+        public static final String SERIALIZED_NAME_IS_REVISION = "isRevision";
+        @SerializedName(SERIALIZED_NAME_IS_REVISION)
+            private Boolean isRevision;
+
+        public static final String SERIALIZED_NAME_REVISIONED_API_ID = "revisionedApiId";
+        @SerializedName(SERIALIZED_NAME_REVISIONED_API_ID)
+            private String revisionedApiId;
+
+        public static final String SERIALIZED_NAME_REVISION_ID = "revisionId";
+        @SerializedName(SERIALIZED_NAME_REVISION_ID)
+            private Integer revisionId;
+
         public static final String SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION = "enableSchemaValidation";
         @SerializedName(SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION)
             private Boolean enableSchemaValidation;
@@ -833,6 +845,75 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     public void setIsDefaultVersion(Boolean isDefaultVersion) {
         this.isDefaultVersion = isDefaultVersion;
+    }
+
+
+        public APIDTO isRevision(Boolean isRevision) {
+        
+        this.isRevision = isRevision;
+        return this;
+        }
+
+    /**
+        * Get isRevision
+    * @return isRevision
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "")
+    
+    public Boolean isIsRevision() {
+        return isRevision;
+    }
+
+
+    public void setIsRevision(Boolean isRevision) {
+        this.isRevision = isRevision;
+    }
+
+
+        public APIDTO revisionedApiId(String revisionedApiId) {
+        
+        this.revisionedApiId = revisionedApiId;
+        return this;
+        }
+
+    /**
+        * UUID of the api registry artifact 
+    * @return revisionedApiId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "UUID of the api registry artifact ")
+    
+    public String getRevisionedApiId() {
+        return revisionedApiId;
+    }
+
+
+    public void setRevisionedApiId(String revisionedApiId) {
+        this.revisionedApiId = revisionedApiId;
+    }
+
+
+        public APIDTO revisionId(Integer revisionId) {
+        
+        this.revisionId = revisionId;
+        return this;
+        }
+
+    /**
+        * Get revisionId
+    * @return revisionId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "")
+    
+    public Integer getRevisionId() {
+        return revisionId;
+    }
+
+
+    public void setRevisionId(Integer revisionId) {
+        this.revisionId = revisionId;
     }
 
 
@@ -1688,6 +1769,9 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.destinationStatsEnabled, API.destinationStatsEnabled) &&
             Objects.equals(this.hasThumbnail, API.hasThumbnail) &&
             Objects.equals(this.isDefaultVersion, API.isDefaultVersion) &&
+            Objects.equals(this.isRevision, API.isRevision) &&
+            Objects.equals(this.revisionedApiId, API.revisionedApiId) &&
+            Objects.equals(this.revisionId, API.revisionId) &&
             Objects.equals(this.enableSchemaValidation, API.enableSchemaValidation) &&
             Objects.equals(this.enableStore, API.enableStore) &&
             Objects.equals(this.type, API.type) &&
@@ -1728,7 +1812,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, testKey, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, enableSchemaValidation, enableStore, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, deploymentEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, testKey, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableStore, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, deploymentEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers);
     }
 
 
@@ -1751,6 +1835,9 @@ sb.append("class APIDTO {\n");
     sb.append("    destinationStatsEnabled: ").append(toIndentedString(destinationStatsEnabled)).append("\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    isDefaultVersion: ").append(toIndentedString(isDefaultVersion)).append("\n");
+    sb.append("    isRevision: ").append(toIndentedString(isRevision)).append("\n");
+    sb.append("    revisionedApiId: ").append(toIndentedString(revisionedApiId)).append("\n");
+    sb.append("    revisionId: ").append(toIndentedString(revisionId)).append("\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
     sb.append("    enableStore: ").append(toIndentedString(enableStore)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");

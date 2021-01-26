@@ -144,6 +144,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         apiRequest.setProvider(USER_SMITH);
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = apiResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         //request to publish the API
         HttpResponse lifeCycleChangeResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
@@ -514,8 +516,10 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setProvider(USER_SMITH);
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-        //request to publish the API
         String apiIdNew = apiResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiIdNew, restAPIPublisher);
+        //request to publish the API
         HttpResponse lifeCycleChangeResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(apiIdNew, APILifeCycleAction.PUBLISH.getAction(), null);
 
@@ -561,6 +565,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(applicationCreationExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 200,
                 "Get Workflow Pending request failed for User Admin");
+        undeployAndDeleteAPIRevisionsUsingRest(apiIdNew, restAPIPublisher);
         //clean up process for API and application
         restAPIPublisher.deleteAPI(apiIdNew);
         restAPIStore.deleteApplication(applicationIDNew);
@@ -580,6 +585,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         //create API and request for publish the API
         HttpResponse apiResponseNew = restAPIPublisher.addAPI(apiRequest);
         String apiIdSecond = apiResponseNew.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiIdSecond, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(apiIdSecond, APILifeCycleAction.PUBLISH.getAction(),
                 null);
         //get workflow requests of API state change
@@ -676,6 +683,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending request failed for User Admin");
         //clean up process for all pending requests
         restAPIStore.deleteApplication(applicationIDSecond);
+        undeployAndDeleteAPIRevisionsUsingRest(apiIdSecond, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiIdSecond);
         //check the clean up process is successful (Application key generation, API subscription)
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(subscriptionCreationExternalWorkflowRef);
@@ -728,6 +736,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         apiRequest.setProvider(USER_SMITH);
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
         String apiIdFirst = apiResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiIdFirst, restAPIPublisher);
         HttpResponse lifeCycleChangeResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(apiIdFirst, APILifeCycleAction.PUBLISH.getAction(), null);
 
@@ -794,6 +804,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
         //delete application and delete API clean up pending task process
         restAPIStore.deleteApplication(applicationIDNew);
+        undeployAndDeleteAPIRevisionsUsingRest(apiIdFirst, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiIdFirst);
         //get workflow pending requests by admin
         response = restAPIAdmin.getWorkflows(workflowType);
@@ -810,6 +821,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationID);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         userManagementClient.deleteUser(USER_SMITH);
         userManagementClient.deleteUser(USER_ADMIN);

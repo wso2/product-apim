@@ -123,6 +123,8 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
         HttpResponse newVersionResponse = restAPIPublisher.copyAPI(API_VERSION_2_0_0, apiId, null);
         assertEquals(newVersionResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response Code Mismatch");
         newApiId = newVersionResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(newApiId, restAPIPublisher);
         //Publish  version 2.0.0 without re-subscription required
         HttpResponse publishAPIResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(newApiId, APILifeCycleAction.PUBLISH.getAction(), null);
@@ -168,6 +170,8 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
             restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
         restAPIStore.deleteApplication(applicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(newApiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newApiId);
 

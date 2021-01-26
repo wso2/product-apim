@@ -147,6 +147,8 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
 
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = serviceResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
         waitForAPIDeploymentSync(user.getUserName(), APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
         gatewayUrl = getAPIInvocationURLHttps(APIContext + "/" + APIVersion + "/");
@@ -247,6 +249,9 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         apidto.setApiThrottlingPolicy(apiPolicyName);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), apiPolicyName, "API tier not updated.");
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         
         ApplicationDTO applicationDTO = restAPIStore.addApplication("NormalAPP",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
@@ -286,6 +291,7 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(app1Id);
         restAPIStore.deleteApplication(app2Id);
         restAPIStore.deleteApplication(app3Id);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         restAPIAdmin.deleteAdvancedThrottlingPolicy(apiPolicyId);
         restAPIAdmin.deleteApplicationThrottlingPolicy(appPolicyId);

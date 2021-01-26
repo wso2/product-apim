@@ -25,6 +25,7 @@ import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jaxen.JaxenException;
+import org.json.JSONException;
 import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -90,7 +91,7 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = "wso2.am", description = "Check functionality of API access with invalid token")
     public void testAPIAccessWithInvalidToken()
-            throws XPathExpressionException, APIManagerIntegrationTestException, ApiException {
+            throws XPathExpressionException, APIManagerIntegrationTestException, ApiException, JSONException {
 
         // Adding API
         String apiContext = "invalidtokenapi";
@@ -113,6 +114,8 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
         HttpResponse response = restAPIPublisher.addAPI(apiRequest);
         assertNotNull("API Creation failed", response.getData());
         id = response.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(id, restAPIPublisher);
         //publishing API
         restAPIPublisher.changeAPILifeCycleStatus(id, APILifeCycleAction.PUBLISH.getAction(), null);
 
@@ -156,6 +159,7 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(id, restAPIPublisher);
         restAPIPublisher.deleteAPI(id);
         super.cleanUp();
     }

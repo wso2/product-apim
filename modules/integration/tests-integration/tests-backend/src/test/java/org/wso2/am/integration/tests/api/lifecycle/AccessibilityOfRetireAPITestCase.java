@@ -135,6 +135,9 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
                 "API status Change is invalid when retire an API :" + API_NAME + " with API ID ("
                         + apiId + ")" + " Response Code:" + blockAPIActionResponse.getResponseCode());
 
+        // Undeploy and Delete existing API Revisions Since API has been retired
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+
     }
 
 

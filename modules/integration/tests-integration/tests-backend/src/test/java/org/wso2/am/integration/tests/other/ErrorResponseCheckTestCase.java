@@ -101,6 +101,9 @@ public class ErrorResponseCheckTestCase extends APIMIntegrationBaseTest {
             HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
             apiId = serviceResponse.getData();
 
+            // Create Revision and Deploy to Gateway
+            createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+
             //publish the api
             restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 

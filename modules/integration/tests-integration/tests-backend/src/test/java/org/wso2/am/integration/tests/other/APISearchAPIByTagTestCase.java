@@ -70,6 +70,12 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
     private String tags;
     private String tierCollection;
     private String endpointUrl;
+    private String api1;
+    private String api2;
+    private String api3;
+    private String api4;
+    private String api5;
+    private String api6;
     String providerName = "";
     @Factory(dataProvider = "userModeDataProvider")
     public APISearchAPIByTagTestCase(TestUserMode userMode) {
@@ -104,7 +110,7 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
         operationsDTOS.add(apiOperationsDTO1);
         apiRequest.setOperationsDTOS(operationsDTOS);
         //create and publish test api 1
-        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+        api1 =  createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         //implement API 2
         tags = TAG_API + "," + TAG_API_2;
@@ -124,7 +130,7 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
         operationsDTOS.add(apiOperationsDTO1);
         apiRequest.setOperationsDTOS(operationsDTOS);
         //create and publish test api 2
-        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+        api2 = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         //publish the api 2
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_2, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
@@ -132,6 +138,12 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(api1, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(api2, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(api3, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(api4, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(api5, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(api6, restAPIPublisher);
         super.cleanUp();
     }
 
@@ -190,7 +202,7 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
         apiRequest.setOperationsDTOS(operationsDTOS);
 
         //add test api 1
-        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+        api3 = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_UPPER_CASE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -214,7 +226,7 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
         operationsDTOS.add(apiOperationsDTO1);
         apiRequest.setOperationsDTOS(operationsDTOS);
         //add test api 2
-        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+        api4 = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_LOWER_CASE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -238,7 +250,7 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
         operationsDTOS.add(apiOperationsDTO1);
         apiRequest.setOperationsDTOS(operationsDTOS);
         //add test api 3
-        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+        api5 =createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_WITH_SPACE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -263,7 +275,7 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
         apiRequest.setOperationsDTOS(operationsDTOS);
 
         //create and publish test api 4
-        createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+        api6 =createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_WITHOUT_SPACE, API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
