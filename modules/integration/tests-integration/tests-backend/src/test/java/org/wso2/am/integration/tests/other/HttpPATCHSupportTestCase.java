@@ -104,6 +104,9 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = serviceResponse.getData();
 
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+
         //publish the api
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
@@ -146,6 +149,7 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }

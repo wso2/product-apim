@@ -20,9 +20,11 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
+import org.json.JSONException;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -67,7 +69,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     private ITestContext ctx;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize(ITestContext ctx) throws APIManagerIntegrationTestException, XPathExpressionException {
+    public void initialize(ITestContext ctx) throws APIManagerIntegrationTestException, XPathExpressionException, JSONException, ApiException {
         super.init();
         postEndPointURL = getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_POST_ENDPOINT_METHOD;
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
@@ -79,6 +81,10 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         requestHeadersPost.put("accept", "text/plain");
         requestHeadersPost.put("Content-Type", "text/plain");
         this.ctx = ctx;
+        String apiId = (String) ctx.getAttribute("apiId");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
     }
 
 
@@ -139,6 +145,12 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         operation.add(apiOperationsDTO2);
 
         APIDTO updateReponse = restAPIPublisher.updateAPI(apidto, apiId);
+//        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+//        waitForAPIDeployment();
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
 
 
         assertTrue(StringUtils.isNotEmpty(updateReponse.getId()), "Update APi with new Resource information fail");

@@ -23,6 +23,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -30,6 +31,7 @@ import org.wso2.am.admin.clients.application.ApplicationManagementClient;
 import org.wso2.am.admin.clients.claim.ClaimMetaDataMgtAdminClient;
 import org.wso2.am.admin.clients.oauth.OAuthAdminServiceClient;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductInfoDTO;
@@ -43,6 +45,8 @@ import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
+import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
+import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
@@ -67,14 +71,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 
+import javax.ws.rs.core.Response;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
+
+import static org.testng.Assert.assertEquals;
 
 /**
  * Base class for all API Manager integration tests
@@ -754,5 +758,113 @@ public class APIMIntegrationBaseTest {
                 }
             }
         }
+    }
+
+    /**
+     * Create API Revision and Deploy to gateway using REST API.
+     *
+     * @param apiId          - API UUID
+     * @param restAPIPublisher -  Instance of APIPublisherRestClient
+     */
+    protected String createAPIRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
+            throws ApiException, JSONException {
+        int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
+        int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
+        String revisionUUID = null;
+        //Add the API Revision using the API publisher.
+        APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
+        apiRevisionRequest.setApiUUID(apiId);
+        apiRevisionRequest.setDescription("Test Revision 1");
+
+        HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
+
+        assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Create API Response Code is invalid." + apiRevisionResponse.getData());
+
+        // Retrieve Revision Info
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
+        List<JSONObject> revisionList = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject(apiRevisionsGetResponse.getData());
+
+        JSONArray arrayList = jsonObject.getJSONArray("list");
+        for (int i = 0, l = arrayList.length(); i < l; i++) {
+            revisionList.add(arrayList.getJSONObject(i));
+        }
+        for (JSONObject revision :revisionList) {
+            revisionUUID = revision.getString("id");
+        }
+
+        // Deploy Revision to gateway
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList);
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
+        return  revisionUUID;
+    }
+
+
+    /**
+     * Undeploy and Delete API Revisions using REST API.
+     *
+     * @param apiId          - API UUID
+     * @param restAPIPublisher -  Instance of APIPublisherRestClient
+     */
+    protected String undeployAndDeleteAPIRevisionsUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
+            throws ApiException, JSONException {
+        int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
+        int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
+        String revisionUUID = null;
+
+        // Get Deployed Revisions
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,"deployed:true");
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
+        List<JSONObject> revisionList = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject(apiRevisionsGetResponse.getData());
+
+        JSONArray arrayList = jsonObject.getJSONArray("list");
+        for (int i = 0, l = arrayList.length(); i < l; i++) {
+            revisionList.add(arrayList.getJSONObject(i));
+        }
+        for (JSONObject revision :revisionList) {
+            revisionUUID = revision.getString("id");
+        }
+
+        // Undeploy Revisions
+        List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionUnDeployRequest.setName("Production and Sandbox");
+        apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
+        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, revisionUUID,
+                apiRevisionUndeployRequestList);
+        assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to Undeploy API Revisions:" + apiRevisionsUnDeployResponse.getData());
+
+        // Get Revisions
+        HttpResponse apiRevisionsFullGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
+        assertEquals(apiRevisionsFullGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve revisions" + apiRevisionsFullGetResponse.getData());
+        List<JSONObject> revisionFullList = new ArrayList<>();
+        JSONObject jsonFullObject = new JSONObject(apiRevisionsFullGetResponse.getData());
+
+        JSONArray arrayFullList = jsonFullObject.getJSONArray("list");
+        for (int i = 0, l = arrayFullList.length(); i < l; i++) {
+            revisionFullList.add(arrayFullList.getJSONObject(i));
+        }
+        for (JSONObject revision :revisionFullList) {
+            revisionUUID = revision.getString("id");
+            HttpResponse apiRevisionsDeleteResponse = restAPIPublisher.deleteAPIRevision(apiId, revisionUUID);
+            assertEquals(apiRevisionsDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                    "Unable to delete API Revisions:" + apiRevisionsDeleteResponse.getData());
+        }
+        return  revisionUUID;
     }
 }

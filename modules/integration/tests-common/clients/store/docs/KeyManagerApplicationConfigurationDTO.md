@@ -1,7 +1,9 @@
 
+
 # KeyManagerApplicationConfigurationDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **name** | **String** |  |  [optional]
@@ -11,7 +13,7 @@ Name | Type | Description | Notes
 **mask** | **Boolean** |  |  [optional]
 **multiple** | **Boolean** |  |  [optional]
 **tooltip** | **String** |  |  [optional]
-**_default** | **Object** |  |  [optional]
+**_default** | [**Object**](.md) |  |  [optional]
 **values** | **List&lt;Object&gt;** |  |  [optional]
 
 

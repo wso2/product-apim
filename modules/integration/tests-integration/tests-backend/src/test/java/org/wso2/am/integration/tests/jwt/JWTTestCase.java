@@ -334,6 +334,11 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             userManagementClient.deleteUser(user);
         }
         removeClaimMapping();
+        restAPIStore.deleteApplication(oauthApplicationId);
+        restAPIStore.deleteApplication(jwtApplicationId);
+        restAPIStore.deleteApplication(apiKeyApplicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
 
     }

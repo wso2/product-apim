@@ -31,6 +31,7 @@
             <class name="org.wso2.am.integration.tests.jwt.MicroGWJWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.revision.APIRevisionTestCase"/>
         </classes>
     </test>
 
@@ -152,7 +153,7 @@
             <class name="org.wso2.am.integration.tests.header.APIMANAGER3614DuplicateTransferEncodingHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.header.ESBJAVA3447PreserveCharsetInContentTypeTestCase"/>
             <!--class name="org.wso2.am.integration.tests.header.ESBJAVA5121CheckAuthHeaderOrderTestCase"/-->
-            <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
             <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
@@ -202,7 +203,7 @@
             <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
-            <class name="org.wso2.am.integration.tests.other.ErrorResponseCheckTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.other.ErrorResponseCheckTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5326CustomStatusMsgTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/-->
             <class name="org.wso2.am.integration.tests.admin.OAuthApplicationOwnerUpdateTestCase"/>

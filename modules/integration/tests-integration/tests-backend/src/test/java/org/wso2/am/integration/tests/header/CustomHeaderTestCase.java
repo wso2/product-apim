@@ -145,6 +145,7 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
             restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
         restAPIStore.deleteApplication(applicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager.restoreToLastConfiguration();

@@ -1,7 +1,10 @@
 
+
 # APICorsConfigurationDTO
 
+CORS configuration for the API 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **corsConfigurationEnabled** | **Boolean** |  |  [optional]

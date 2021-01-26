@@ -136,6 +136,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }

@@ -100,8 +100,10 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         apiRequest.setSandbox(backEndEndpointUrl);
         apiRequest.setProvider(user.getUserName());
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
-        //Publish API.
         apiId = serviceResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        //Publish API.
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
         String gatewayUrl = getAPIInvocationURLHttp("tokenTestAPI/1.0.0/customers/123");
         // Add application
@@ -182,6 +184,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(tokenTestApiAppId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
 }

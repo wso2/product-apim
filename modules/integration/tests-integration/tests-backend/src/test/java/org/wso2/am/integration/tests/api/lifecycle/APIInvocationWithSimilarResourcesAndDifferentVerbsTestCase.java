@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.json.JSONException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -146,8 +147,9 @@ import static org.testng.Assert.assertTrue;
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, ApiException {
+    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, ApiException, JSONException {
         restAPIStore.deleteApplication(applicarionId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
 

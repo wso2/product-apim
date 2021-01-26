@@ -168,6 +168,8 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIManagerLifecycleB
         }
 
         apiStoreSubUser.deleteApplication(appId);
+        undeployAndDeleteAPIRevisionsUsingRest(brokenApiId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(healthyApiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(brokenApiId);
         restAPIPublisher.deleteAPI(healthyApiId);
 

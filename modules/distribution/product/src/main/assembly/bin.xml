@@ -643,7 +643,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#store.war</include>
+                <include>api#am#devportal.war</include>
             </includes>
         </fileSet>
         <!--copy jaxrs web app for consent management feature-->
@@ -673,6 +673,16 @@
             </outputDirectory>
             <includes>
                 <include>api#am#publisher.war</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>api#am#service-catalog.war</include>
             </includes>
         </fileSet>
         <fileSet>

@@ -221,6 +221,10 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
     public void destroy() throws Exception {
 
         userManagementClient.deleteUser(enduserName);
+        restAPIStore.deleteApplication(oauthApplicationId);
+        restAPIStore.deleteApplication(jwtApplicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
 
     }
