@@ -1,7 +1,7 @@
 <handlers xmlns:svns="http://org.wso2.securevault/configuration">
-{% for item in synapse_handlers %}
-    {% if item.enabled %}
-    <handler name="{{item.name}}" class="{{item.class}}"/>
+{% for key,value in synapse_handlers.items() %}
+    {% if value.enabled %}
+    <handler name="{{key}}" class="{{value.class}}"/>
     {% endif %}
 {% endfor %}
 
