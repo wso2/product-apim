@@ -661,6 +661,10 @@
                                 <featureArtifactDef>
                                     org.wso2.km.ext.pingfederate:pingfederate.key.manager.feature:${pingfederate.keymanager.feature.version}
                                 </featureArtifactDef>
+                                <!-- ForgeRock KeyManager Feature -->
+                                <featureArtifactDef>
+                                    org.wso2.km.ext.forgerock:forgerock.key.manager.feature:${forgerock.keymanager.feature.version}
+                                </featureArtifactDef>
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.inbound.auth.sts:org.wso2.carbon.sts.connector.feature:${carbon.identity-inbound-auth-sts.version}
@@ -1447,6 +1451,10 @@
                                     <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>forgerock.key.manager.feature.group</id>
+                                    <version>${forgerock.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -1882,6 +1890,10 @@
                                 <feature>
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>forgerock.key.manager.feature.group</id>
+                                    <version>${forgerock.keymanager.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
@@ -2406,6 +2418,10 @@
                                     <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>forgerock.key.manager.feature.group</id>
+                                    <version>${forgerock.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -2896,6 +2912,10 @@
                                 <feature>
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>forgerock.key.manager.feature.group</id>
+                                    <version>${forgerock.keymanager.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
