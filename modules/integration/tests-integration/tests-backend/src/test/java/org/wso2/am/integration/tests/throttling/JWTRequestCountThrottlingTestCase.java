@@ -265,13 +265,11 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         apidto.setApiThrottlingPolicy(apiPolicyName1);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), apiPolicyName1, "API tier not updated.");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
         waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
-
-        // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-
         ApplicationDTO applicationDTO = restAPIStore.addApplication("NormalAPP",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
         appId3 = applicationDTO.getApplicationId();

@@ -93,7 +93,8 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test changing of the API end point URL",
             dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL")
     public void testEditEndPointURL(ITestContext ctx)
-            throws ApiException, ParseException, XPathExpressionException, APIManagerIntegrationTestException {
+            throws ApiException, ParseException, XPathExpressionException, APIManagerIntegrationTestException,
+            JSONException {
 
         String apiId = (String) ctx.getAttribute("apiId");
         HttpResponse response = restAPIPublisher.getAPI(apiId);
