@@ -692,7 +692,6 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#admin#v0.17.war</include>
                 <include>api#am#admin.war</include>
             </includes>
         </fileSet>
