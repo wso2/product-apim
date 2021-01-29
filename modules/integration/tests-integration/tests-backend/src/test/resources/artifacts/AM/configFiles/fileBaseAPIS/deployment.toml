@@ -13,8 +13,6 @@ create_admin_account = true
 
 [user_store]
 type = "database_unique_id"
-user_store.properties.IsEmailUserName = true
-
 
 [database.apim_db]
 driver = "$env{API_MANAGER_DATABASE_DRIVER}"
@@ -126,7 +124,7 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #enable_token_hashing = false
 
 #[apim.devportal]
-#url = "https://localhost:${mgt.transport.https.port}/store"
+#url = "https://localhost:${mgt.transport.https.port}/devportal"
 #enable_application_sharing = false
 #if application_sharing_type, application_sharing_impl both defined priority goes to application_sharing_impl
 #application_sharing_type = "default" #changed type, saml, default #todo: check the new config for rest api
@@ -226,10 +224,18 @@ allow_credentials = false
 #persistent_notifier.username = "root"
 #persistent_notifier.password = "root"
 
-[tenant_mgt]
-enable_email_domain = true
+[[event_handler]]
+name="userPostSelfRegistration"
+subscriptions=["POST_ADD_USER"]
+
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
+
+[security_audit]
+api_token="b57973cf-b74c-4ade-921d-ece83251eceb"
+collection_id="f73b8171-4f71-499b-891a-d34aa71f2d45"
+base_url="https://localhost:9943/am-auditApi-sample/api/auditapi"
+global=true
 
 [apim.certificate_reloader]
 period = "1m"
@@ -237,6 +243,19 @@ period = "1m"
 [database.local]
 url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
 
+[[event_listener]]
+id = "token_revocation"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.is.notification.ApimOauthEventInterceptor"
+order = 1
+[event_listener.properties]
+notification_endpoint = "https://localhost:${mgt.transport.https.port}/internal/data/v1/notify"
+username = "${admin.username}"
+password = "${admin.password}"
+'header.X-WSO2-KEY-MANAGER' = "default"
+
 [apim.sync_runtime_artifacts.gateway.skip_list]
 apis = ["admin--git2231head_v1.0.0.xml","admin--PizzaShackAPI_v1.0.0.xml","admin--ScriptMediatorAPI_v1.0.xml",
 "APIThrottleBackendAPI.xml","BackEndSecurity.xml","DigestAuth_API.xml","git2231.xml","HttpPATCHSupport_API.xml","JWKS-Backend.xml","JWTBackendAPI.xml","multiVSR_v1.0.0.xml","Response_API_1.xml","Response_API_2.xml","Response_Custom_API.xml","Response_Error_API.xml","Response_Loc_API.xml","SpecialCRN_v1.0.0.xml","status_code_204_API.xml","stockquote.xml","XML_API.xml"]
+[synapse_properties]
+'synapse.artifacts.file.storage.enabled' = true
