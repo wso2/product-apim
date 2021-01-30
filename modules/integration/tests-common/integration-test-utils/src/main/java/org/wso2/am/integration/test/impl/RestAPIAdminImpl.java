@@ -179,7 +179,8 @@ public class RestAPIAdminImpl {
      * @return API response returned by the API call.
      * @throws ApiException  Throws if an error occurred while updating the new API category.
      */
-    public ApiResponse<APICategoryDTO> updateApiCategory(String uuid, APICategoryDTO apiCategoryDTO) throws ApiException {
+    public ApiResponse<APICategoryDTO> updateApiCategory(String uuid, APICategoryDTO apiCategoryDTO)
+            throws ApiException {
 
         return apiCategoryIndividualApi.apiCategoriesApiCategoryIdPutWithHttpInfo(uuid, apiCategoryDTO);
     }
