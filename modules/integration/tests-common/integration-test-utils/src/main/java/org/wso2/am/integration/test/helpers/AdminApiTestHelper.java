@@ -19,6 +19,7 @@ package org.wso2.am.integration.test.helpers;
 
 import org.testng.Assert;
 import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.APICategoryDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
@@ -146,5 +147,21 @@ public class AdminApiTestHelper {
                 "Label description does not match with the expected description");
         boolean isAccessUrlsEqual = actualLabel.getAccessUrls().equals(expectedLabel.getAccessUrls());
         Assert.assertTrue(isAccessUrlsEqual, "Access URLs does not match with the expected access URLs");
+    }
+
+    /**
+     * Verify whether the field values of the api category DTO contains the expected values.
+     *
+     * @param expectedApiCategory Expected api category which contains the expected field values.
+     * @param actualApiCategory   Api category object of which the field values should be verified.
+     */
+    public void verifyApiCategoryDTO(APICategoryDTO expectedApiCategory, APICategoryDTO actualApiCategory) {
+
+        Assert.assertEquals(actualApiCategory.getId(), expectedApiCategory.getId(),
+                "Api category ID does not match with the expected api category ID");
+        Assert.assertEquals(actualApiCategory.getName(), expectedApiCategory.getName(),
+                "Api category name does not match with the expected api category name");
+        Assert.assertEquals(actualApiCategory.getDescription(), expectedApiCategory.getDescription(),
+                "Api category description does not match with the expected api category description");
     }
 }
