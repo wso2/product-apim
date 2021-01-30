@@ -23,6 +23,8 @@ import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.AdvancedPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.AdvancedPolicyIndividualApi;
+import org.wso2.am.integration.clients.admin.api.ApiCategoryIndividualApi;
+import org.wso2.am.integration.clients.admin.api.ApiCategoryCollectionApi;
 import org.wso2.am.integration.clients.admin.api.ApplicationApi;
 import org.wso2.am.integration.clients.admin.api.ApplicationCollectionApi;
 import org.wso2.am.integration.clients.admin.api.ApplicationPolicyCollectionApi;
@@ -34,10 +36,14 @@ import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
 import org.wso2.am.integration.clients.admin.api.LabelApi;
 import org.wso2.am.integration.clients.admin.api.LabelCollectionApi;
 import org.wso2.am.integration.clients.admin.api.SettingsApi;
+import org.wso2.am.integration.clients.admin.api.WorkflowCollectionApi;
+import org.wso2.am.integration.clients.admin.api.WorkflowsIndividualApi;
 
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyIndividualApi;
 import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.APICategoryDTO;
+import org.wso2.am.integration.clients.admin.api.dto.APICategoryListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
@@ -47,16 +53,12 @@ import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LabelListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
-import org.wso2.am.integration.test.ClientAuthenticator;
-import org.wso2.am.integration.test.Constants;
-import org.wso2.am.integration.test.HttpResponse;
-
-import org.wso2.am.integration.clients.admin.api.WorkflowCollectionApi;
-import org.wso2.am.integration.clients.admin.api.WorkflowsIndividualApi;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowDTO;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowInfoDTO;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowListDTO;
-
+import org.wso2.am.integration.test.ClientAuthenticator;
+import org.wso2.am.integration.test.Constants;
+import org.wso2.am.integration.test.HttpResponse;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -69,6 +71,8 @@ public class RestAPIAdminImpl {
     public WorkflowCollectionApi workflowCollectionApi = new WorkflowCollectionApi();
     public WorkflowsIndividualApi workflowsIndividualApi = new WorkflowsIndividualApi();
     private SettingsApi settingsApi = new SettingsApi();
+    private ApiCategoryIndividualApi apiCategoryIndividualApi = new ApiCategoryIndividualApi();
+    private ApiCategoryCollectionApi apiCategoryCollectionApi = new ApiCategoryCollectionApi();
     private ApplicationPolicyIndividualApi applicationPolicyIndividualApi = new ApplicationPolicyIndividualApi();
     public ApplicationPolicyCollectionApi applicationPolicyCollectionApi = new ApplicationPolicyCollectionApi();
     private SubscriptionPolicyIndividualApi subscriptionPolicyIndividualApi = new SubscriptionPolicyIndividualApi();
@@ -150,7 +154,57 @@ public class RestAPIAdminImpl {
         labelCollectionApi.setApiClient(apiAdminClient);
         workflowCollectionApi.setApiClient(apiAdminClient);
         workflowsIndividualApi.setApiClient(apiAdminClient);
+        apiCategoryCollectionApi.setApiClient(apiAdminClient);
+        apiCategoryIndividualApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
+    }
+
+    /***
+     * This method is used to add an API category.
+     *
+     * @param apiCategoryDTO API category DTO to be added
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while adding the new API category.
+     */
+    public ApiResponse<APICategoryDTO> addApiCategory(APICategoryDTO apiCategoryDTO) throws ApiException {
+
+        return apiCategoryIndividualApi.apiCategoriesPostWithHttpInfo(apiCategoryDTO);
+    }
+
+    /***
+     * This method is used to update an API category
+     *
+     * @param uuid           UUID of the API category to be updated
+     * @param apiCategoryDTO API category DTO to be updated
+     * @return API response returned by the API call.
+     * @throws ApiException  Throws if an error occurred while updating the new API category.
+     */
+    public ApiResponse<APICategoryDTO> updateApiCategory(String uuid, APICategoryDTO apiCategoryDTO) throws ApiException {
+
+        return apiCategoryIndividualApi.apiCategoriesApiCategoryIdPutWithHttpInfo(uuid, apiCategoryDTO);
+    }
+
+    /**
+     * This method is used to retrieve all API categories.
+     *
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while retrieving all API categories.
+     */
+    public ApiResponse<APICategoryListDTO> getApiCategories() throws ApiException {
+
+        return apiCategoryCollectionApi.apiCategoriesGetWithHttpInfo();
+    }
+
+    /**
+     * This method is used to delete an API category.
+     *
+     * @param uuid uuid of the API category to be deleted.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while deleting the API category.
+     */
+    public ApiResponse<Void> deleteApiCategory(String uuid) throws ApiException {
+
+        return apiCategoryIndividualApi.apiCategoriesApiCategoryIdDeleteWithHttpInfo(uuid, null, null);
     }
 
     public ApiResponse<KeyManagerDTO> addKeyManager(KeyManagerDTO keyManagerDTO) throws ApiException {
