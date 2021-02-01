@@ -1,6 +1,6 @@
 name: API Manager Pull Request builder
 
-on: [pull_request]
+on: [push, pull_request]
 
 jobs:
   build:
