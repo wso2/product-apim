@@ -344,6 +344,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         restAPIStore.deleteApplication(applicationIdWithoutCallback);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
 

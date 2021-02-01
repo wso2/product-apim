@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -159,7 +160,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
     @Test(groups = {"wso2.am"}, description = "Test changing of the API context",
             dependsOnMethods = "testInvokeAPIBeforeChangeAPIContext")
     public void testEditAPIContext() throws APIManagerIntegrationTestException, MalformedURLException,
-            org.wso2.am.integration.clients.publisher.api.ApiException {
+            org.wso2.am.integration.clients.publisher.api.ApiException, JSONException {
         //Create the API Request with new context
         newContext = "new" + API_CONTEXT;
         APIRequest apiBean = new APIRequest(API_NAME, newContext, new URL(apiEndPointUrl));
@@ -169,6 +170,9 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         HttpResponse updateAPIHTTPResponse = restAPIPublisher.updateAPI(apiBean , apiId);
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Update API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
     }
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new context after Context change",
@@ -206,6 +210,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }

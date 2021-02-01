@@ -59,11 +59,12 @@ import org.wso2.carbon.um.ws.api.stub.ClaimValue;
 import org.wso2.carbon.um.ws.api.stub.RemoteUserStoreManagerServiceUserStoreExceptionException;
 import org.wso2.carbon.user.core.UserStoreException;
 
-import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertTrue;
@@ -143,6 +144,8 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
         createUser();
         createClaimMapping();
+        waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for Oauth Based App")
@@ -334,6 +337,11 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             userManagementClient.deleteUser(user);
         }
         removeClaimMapping();
+        restAPIStore.deleteApplication(oauthApplicationId);
+        restAPIStore.deleteApplication(jwtApplicationId);
+        restAPIStore.deleteApplication(apiKeyApplicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
 
     }

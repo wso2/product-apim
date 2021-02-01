@@ -17,7 +17,7 @@ info:
   title: WSO2 API Manager - Developer Portal
   description: |
     This document specifies a **RESTful API** for WSO2 **API Manager** - **Developer Portal**.
-    Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.7.206/components/apimgt/org.wso2.carbon.apimgt.rest.api.store.v1/src/main/resources/store-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.
+    Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.7.206/components/apimgt/org.wso2.carbon.apimgt.rest.api.store.v1/src/main/resources/devportal-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.
 
     # Authentication
     Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking
@@ -50,7 +50,7 @@ info:
     ```
     {
     "clientId": "fOCi4vNJ59PpHucC2CAYfYuADdMa",
-    "clientName": "rest_api_store",
+    "clientName": "rest_api_devportal",
     "callBackURL": "www.google.lk",
     "clientSecret": "a4FwHlq0iCIKVs2MPIIDnepZnYMa",
     "isSaasApplication": true,
@@ -104,9 +104,9 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: v1.1
+  version: v2
 servers:
-- url: https://apis.wso2.com/api/am/store/v1
+- url: https://apis.wso2.com/api/am/devportal/v2
 ######################################################
 # The "API Collection" resource APIs
 ######################################################
@@ -169,7 +169,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis"
       x-examples:
         $ref: docs/examples/apis/apis.yaml#/get
 
@@ -224,7 +224,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
 
   /apis/{apiId}/swagger:
     get:
@@ -294,7 +294,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/c43a325c-260b-4302-81cb-768eafaa3aed/swagger"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/swagger"
 
   /apis/{apiId}/graphql-schema:
     get:
@@ -344,7 +344,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/c43a325c-260b-4302-81cb-768eafaa3aed/graphql-schema"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/graphql-schema"
 
   /apis/{apiId}/sdks/{language}:
     get:
@@ -386,7 +386,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
+          "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
           > Swagger Petstore_java_1.0.0.zip
 
   /apis/{apiId}/wsdl:
@@ -434,7 +434,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/c43a325c-260b-4302-81cb-768eafaa3aed/wsdl"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/wsdl"
       x-examples:
         $ref: docs/examples/apis/wsdl/apiId_wsdl_get.yaml
 
@@ -488,7 +488,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
 
   ######################################################
   # The "Individual Document" resource APIs
@@ -540,7 +540,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
 
   /apis/{apiId}/documents/{documentId}/content:
     get:
@@ -612,7 +612,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
 
   /apis/{apiId}/thumbnail:
     get:
@@ -667,7 +667,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail"
 
   /apis/{apiId}/ratings:
     get:
@@ -698,7 +698,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
       x-examples:
         $ref: docs/examples/apis/apis_id_ratings_get.yaml
 
@@ -752,7 +752,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+          "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/get
 
@@ -800,7 +800,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"'
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/put
 
@@ -828,7 +828,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+          "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/delete
 
@@ -863,7 +863,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
       x-examples:
         $ref: docs/examples/apis/comments.yaml#/get
 
@@ -915,7 +915,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
       x-examples:
         $ref: docs/examples/apis/comments.yaml#/post
 
@@ -970,7 +970,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
       x-examples:
         $ref: docs/examples/apis/comment_id-comments.yaml#/get
 
@@ -1001,7 +1001,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+          "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
       x-examples:
         $ref: docs/examples/apis/comment_id-comments.yaml#/delete
 
@@ -1054,7 +1054,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/268c9e55-3dc1-4f47-82e7-977e5343d077/subscription-policies"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/268c9e55-3dc1-4f47-82e7-977e5343d077/subscription-policies"
 
   ######################################################
   # The "Application Collection" resource APIs
@@ -1133,7 +1133,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/applications"'
+          "https://localhost:9443/api/am/devportal/v2/applications"'
 
     post:
       tags:
@@ -1198,7 +1198,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/applications"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications"'
 
   ######################################################
   # The "Individual Application" resource APIs
@@ -1251,7 +1251,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
+          "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
     put:
       tags:
@@ -1310,7 +1310,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
+          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
     delete:
       tags:
@@ -1354,7 +1354,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -X DELETE "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
+          -X DELETE "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
   /applications/{applicationId}/generate-keys:
     post:
@@ -1395,7 +1395,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015/generate-keys"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/generate-keys"'
 
   /applications/{applicationId}/map-keys:
     post:
@@ -1436,7 +1436,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015/map-keys"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/map-keys"'
 
   /applications/{applicationId}/keys:
     get:
@@ -1470,7 +1470,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys"'
+          "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys"'
 
   /applications/{applicationId}/keys/{keyType}:
     get:
@@ -1507,7 +1507,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
+          "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
 
     put:
       tags:
@@ -1550,7 +1550,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
+          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
 
   /applications/{applicationId}/keys/{keyType}/regenerate-secret:
     post:
@@ -1604,7 +1604,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/regenerate-secret"'
+          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/regenerate-secret"'
 
   /applications/{applicationId}/keys/{keyType}/clean-up:
     post:
@@ -1637,7 +1637,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/clean-up"'
+          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/clean-up"'
 
   /applications/{applicationId}/keys/{keyType}/generate-token:
     post:
@@ -1681,7 +1681,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/applications/16cd2684-9657-4a01-a956-4efd89e96077/keys/PRODUCTION/generate-token"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/keys/PRODUCTION/generate-token"'
 
   /applications/{applicationId}/oauth-keys:
     get:
@@ -1714,7 +1714,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys"'
+          "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}:
     get:
@@ -1750,7 +1750,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
+          "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
 
     put:
       tags:
@@ -1792,7 +1792,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/regenerate-secret:
     post:
@@ -1845,7 +1845,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/store/v1//applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/regenerate-secret"'
+          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/regenerate-secret"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/clean-up:
     post:
@@ -1877,7 +1877,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/store/v1/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/clean-up"'
+          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/clean-up"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/generate-token:
     post:
@@ -1920,7 +1920,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/{keyMappingId}/generate-token"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/{keyMappingId}/generate-token"'
 
   /applications/{applicationId}/api-keys/{keyType}/generate:
     post:
@@ -1964,7 +1964,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/generate"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/generate"'
 
   /applications/{applicationId}/api-keys/{keyType}/revoke:
     post:
@@ -2003,7 +2003,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/revoke"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/revoke"'
 
   /applications/export:
     get:
@@ -2070,7 +2070,7 @@ paths:
       x-code-samples:
         - lang: Shell
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/store/v1/applications/import?appName=sampleApp&appOwner=admin&withKeys=true"
+          "https://127.0.0.1:9443/api/am/devportal/v2/applications/import?appName=sampleApp&appOwner=admin&withKeys=true"
           > exportedApplication.zip'
 
   /applications/import:
@@ -2157,7 +2157,7 @@ paths:
       x-code-samples:
         - lang: Shell
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@exportedApplication.zip "https://127.0.0.1:9443/api/am/store/v1/applications/import?preserveOwner=true&skipSubscriptions=false&appOwner=admin&skipApplicationKeys=false&update=true"'
+          -F file=@exportedApplication.zip "https://127.0.0.1:9443/api/am/devportal/v2/applications/import?preserveOwner=true&skipSubscriptions=false&appOwner=admin&skipApplicationKeys=false&update=true"'
 
   ######################################################
   # The "Subscription Collection" resource APIs
@@ -2172,10 +2172,10 @@ paths:
         This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of
 
         1. Retrieving applications which are subscibed to a specific API.
-        `GET https://localhost:9443/api/am/store/v1/subscriptions?apiId=c43a325c-260b-4302-81cb-768eafaa3aed`
+        `GET https://localhost:9443/api/am/devportal/v2/subscriptions?apiId=c43a325c-260b-4302-81cb-768eafaa3aed`
 
         2. Retrieving APIs which are subscribed by a specific application.
-        `GET https://localhost:9443/api/am/store/v1/subscriptions?applicationId=c43a325c-260b-4302-81cb-768eafaa3aed`
+        `GET https://localhost:9443/api/am/devportal/v2/subscriptions?applicationId=c43a325c-260b-4302-81cb-768eafaa3aed`
 
         **IMPORTANT:**
         * It is mandatory to provide either **apiId** or **applicationId**.
@@ -2217,7 +2217,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/subscriptions?apiId=02e658e7-71c7-4b1d-a623-be145b789340"'
+          "https://localhost:9443/api/am/devportal/v2/subscriptions?apiId=02e658e7-71c7-4b1d-a623-be145b789340"'
 
     post:
       tags:
@@ -2282,7 +2282,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/subscriptions"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions"'
 
   /subscriptions/multiple:
     post:
@@ -2337,7 +2337,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/subscriptions/multiple"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions/multiple"'
 
   ######################################################
   # The "Individual Subscription" resource APIs
@@ -2387,7 +2387,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"'
+          "https://localhost:9443/api/am/devportal/v2/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"'
 
     put:
       tags:
@@ -2466,7 +2466,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/store/v1/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
+          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
 
     delete:
       tags:
@@ -2509,11 +2509,11 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X DELETE "https://localhost:9443/api/am/store/v1/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
+          -H "Content-Type: application/json" -X DELETE "https://localhost:9443/api/am/devportal/v2/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
       x-wso2-curl: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-        -X DELETE "https://localhost:9443/api/am/store/v1/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"'
+        -X DELETE "https://localhost:9443/api/am/devportal/v2/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"'
       x-wso2-request: |
-        DELETE https://localhost:9443/api/am/store/v1/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9
+        DELETE https://localhost:9443/api/am/devportal/v2/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9
       x-wso2-response: HTTP/1.1 200 OK
 
   /subscriptions/{subscriptionId}/usage:
@@ -2564,7 +2564,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9/usage"'
+          "https://localhost:9443/api/am/devportal/v2/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9/usage"'
 
   ######################################################
   # The "Throttling Policy Collection" resource APIs
@@ -2611,7 +2611,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/throttling-policies/application"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/throttling-policies/application"
 
   ######################################################
   # The "Individual Throttling Policy" resource APIs
@@ -2666,7 +2666,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/throttling-policies/application/10PerMin"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/throttling-policies/application/10PerMin"
 
   ######################################################
   # The "Tag Collection" resource API
@@ -2718,7 +2718,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/tags"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/tags"
 
   ######################################################
   # The "Content Search Results" resource APIs
@@ -2774,7 +2774,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/search?query=PizzaShackAPI"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/search?query=PizzaShackAPI"
 
   ######################################################
   # The "SDK Generation Languages" list resource APIs
@@ -2803,7 +2803,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/sdk-gen/languages"
+          "https://localhost:9443/api/am/devportal/v2/sdk-gen/languages"
 
   ######################################################
   # The Developer Portal settings List
@@ -2812,9 +2812,9 @@ paths:
     get:
       tags:
       - Settings
-      summary: Retreive store settings
+      summary: Retreive Devportal settings
       description: |
-        Retreive Store Settings
+        Retreive Devportal Settings
       parameters:
       - $ref: '#/components/parameters/requestedTenant'
       responses:
@@ -2834,7 +2834,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/settings"'
+          "https://localhost:9443/api/am/devportal/v2/settings"'
 
   /settings/application-attributes:
     get:
@@ -2871,7 +2871,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/settings/application-attributes"'
+          "https://localhost:9443/api/am/devportal/v2/settings/application-attributes"'
 
   ######################################################
   # The tenant resource APIs
@@ -2922,7 +2922,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/tenants"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/tenants"
       x-examples:
         $ref: docs/examples/tenants/tenants.yam
 
@@ -2935,7 +2935,7 @@ paths:
       - Recommendations
       summary: Give API Recommendations for a User
       description: This API can be used to get recommended APIs for a user who logs
-        into the API store
+        into the API Developer Portal
       responses:
         200:
           description: |
@@ -2959,7 +2959,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/recommendations"'
+          "https://localhost:9443/api/am/devportal/v2/recommendations"'
 
   ####################################################
   # Developer Portal Alerts management REST API
@@ -2972,7 +2972,7 @@ paths:
         Get the List of API Developer Portal Alert Types.
       description: |
         This operation is used to get the list of supportd alert types for the 'subscriber' agent.
-      operationId: getStoreAlertTypes
+      operationId: getDevportalAlertTypes
       responses:
         200:
           description: |
@@ -2996,7 +2996,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/alert-types"'
+          "https://localhost:9443/api/am/devportal/v2/alert-types"'
       x-examples:
         $ref: docs/examples/alerts/alerts.yaml#/get
 
@@ -3032,7 +3032,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/alert-subscriptions"'
+          "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
       x-examples:
         $ref: docs/examples/alerts/alerts_subscriptions.yaml#/get
 
@@ -3079,7 +3079,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/store/v1/alert-subscriptions"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
       x-examples:
         $ref: docs/examples/alerts/alerts_subscriptions.yaml#/put
 
@@ -3111,7 +3111,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/alert-subscriptions"'
+          "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
       x-examples:
         $ref: docs/examples/alerts/alerts_subscriptions.yaml#/delete
 
@@ -3130,7 +3130,7 @@ paths:
         200:
           description: |
             OK.
-            The store alert configuration.
+            The Developer Portal alert configuration.
           headers:
             Content-Type:
               description: |
@@ -3149,7 +3149,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/alerts/AbnormalRequestsPerMin/configurations"'
+          "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations"'
       x-examples:
         $ref: docs/examples/alerts/alerts_config.yaml#/get
 
@@ -3198,7 +3198,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/store/v1/alerts/AbnormalRequestsPerMin/configurations/UGV0c3RvcmUjMS4wI0FwcDE"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations/UGV0c3RvcmUjMS4wI0FwcDE"'
       x-examples:
         $ref: docs/examples/alerts/alerts_config.yaml#/put
 
@@ -3231,7 +3231,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/alerts/AbnormalRequestsPerMin/configurations/UGV0c3RvcmUjMS4wI0FwcDE"'
+          "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations/UGV0c3RvcmUjMS4wI0FwcDE"'
       x-examples:
         $ref: docs/examples/alerts/alerts_config.yaml#/delete
 
@@ -3260,7 +3260,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/api-categories"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/api-categories"
 
   ######################################################
   # The "Key Manager Collection" resource API
@@ -3289,7 +3289,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/store/v1/key-managers"'
+          "https://localhost:9443/api/am/devportal/v2/key-managers"'
 
   ######################################################
   # GraphQL "Query Complexity" resource APIs
@@ -3328,7 +3328,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity"
 
   /apis/{apiId}/graphql-policies/complexity/types:
     get:
@@ -3364,7 +3364,7 @@ paths:
       - OAuth2Security: []
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity/types"
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity/types"
 
   ######################################################
   # User resource APIs
@@ -3397,7 +3397,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/store/v1/me/change-password"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/me/change-password"'
 
 components:
   schemas:
@@ -4948,9 +4948,9 @@ components:
         advertised:
           type: boolean
           example: true
-        originalStoreUrl:
+        originalDevportalUrl:
           type: string
-          example: https://localhost:9443/store
+          example: https://localhost:9443/devportal
         apiOwner:
           type: string
           example: admin
@@ -5665,6 +5665,6 @@ components:
             apim:api_key: Generate API Keys
             apim:app_manage: Retrieve, Manage applications
             apim:sub_manage: Retrieve, Manage subscriptions
-            apim:store_settings: Retrieve store settings
-            apim:sub_alert_manage: Retrieve, subscribe and configure store alert types
+            apim:store_settings: Retrieve Developer Portal settings
+            apim:sub_alert_manage: Retrieve, subscribe and configure Developer Portal alert types
             apim:app_import_export: Import and export applications related operations

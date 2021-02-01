@@ -357,6 +357,7 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
             userManagementClient1.deleteRole(role1);

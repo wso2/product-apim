@@ -34,21 +34,19 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
-import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.testng.Assert.assertTrue;
+import javax.ws.rs.core.Response;
+
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
@@ -100,9 +98,12 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         apiRequest.setSandbox(backEndEndpointUrl);
         apiRequest.setProvider(user.getUserName());
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
-        //Publish API.
         apiId = serviceResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        //Publish API.
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
         String gatewayUrl = getAPIInvocationURLHttp("tokenTestAPI/1.0.0/customers/123");
         // Add application
         ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType(APPLICATION_NAME,
@@ -182,6 +183,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(tokenTestApiAppId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
 }

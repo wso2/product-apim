@@ -90,7 +90,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     public void initialize()
             throws APIManagerIntegrationTestException, IOException, ApiException,
             org.wso2.am.integration.clients.store.api.ApiException, XPathExpressionException, AutomationUtilException,
-            InterruptedException {
+            InterruptedException, JSONException {
         super.init();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
 
@@ -151,6 +151,10 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 + File.separator + "example.crt";
         restAPIPublisher.uploadCertificate(new File(certTwo), "abcde", apiId2, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId1, restAPIPublisher);
+        createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
+
         restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction());
         restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction());
 
@@ -180,6 +184,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 + File.separator + "example.crt";
         restAPIPublisher
                 .uploadCertificate(new File(certThree), "abcdef", apiId3, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId3, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction());
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
@@ -564,8 +570,11 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws IOException, AutomationUtilException, ApiException {
+    public void cleanUpArtifacts() throws IOException, AutomationUtilException, ApiException, JSONException {
         restAPIStore.deleteApplication(applicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId1, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId2, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId3, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId1);
         restAPIPublisher.deleteAPI(apiId2);
         restAPIPublisher.deleteAPI(apiId3);

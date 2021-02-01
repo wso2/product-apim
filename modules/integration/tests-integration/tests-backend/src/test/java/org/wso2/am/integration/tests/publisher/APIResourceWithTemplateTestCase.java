@@ -59,7 +59,10 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
     private APICreationRequestBean apiCreationRequestBean;
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
-    private String apiId;
+    private String apiId1;
+    private String apiId2;
+    private String apiId3;
+    private String appId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIResourceWithTemplateTestCase(TestUserMode userMode) {
@@ -100,11 +103,13 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
         apiCreationRequestBean.setTiersCollection("Gold,Bronze");
         apiCreationRequestBean.setDefaultVersion("default_version");
         APIDTO apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId = apiCreationResponse.getId();
+        apiId1 = apiCreationResponse.getId();
 
-        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId);
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId1);
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
                 API_NAME_DEFAULT + " API creation is failed");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId1, restAPIPublisher);
 
         HttpResponse publishAPIResponse = publishAPI(apiCreationResponse.getId(), restAPIPublisher, false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -123,14 +128,17 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
         apiCreationRequestBean.setResourceBeanList(resourceBeanList);
 
         APIDTO createAPIResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId = createAPIResponse.getId();
+        apiId2 = createAPIResponse.getId();
 
-        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId);
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId2);
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
                 API_NAME_DEFAULT + " API creation is failed");
 
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
+
         // publish the api
-        HttpResponse publishAPIResponse = publishAPI(apiId, restAPIPublisher,
+        HttpResponse publishAPIResponse = publishAPI(apiId2, restAPIPublisher,
                 false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API APIResourceWithTemplateDef publish failed");
@@ -158,16 +166,19 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
 
         //add test api
         APIDTO createAPIResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId = createAPIResponse.getId();
+        apiId3 = createAPIResponse.getId();
 
         //add a application
         ApplicationDTO createApplication = restAPIStore
                 .addApplication(TEMPLATE_APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
                         "this-is-test");
-        String appId = createApplication.getApplicationId();
+        appId = createApplication.getApplicationId();
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId3, restAPIPublisher);
 
         // publish api
-        HttpResponse publishAPIResponse = publishAPI(apiId, restAPIPublisher, false);
+        HttpResponse publishAPIResponse = publishAPI(apiId3, restAPIPublisher, false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API " + TEMPLATE_API_NAME + " publish failed");
 
@@ -175,7 +186,7 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         // subscribe to api
-        restAPIStore.subscribeToAPI(apiId, appId, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        restAPIStore.subscribeToAPI(apiId3, appId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         // generate token
         ArrayList<String> grantTypes = new ArrayList<>();
@@ -213,6 +224,8 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
         Object jsonObject = parser.parse(endPointString);
         createAPIResponse.setEndpointConfig(jsonObject);
         restAPIPublisher.updateAPI(createAPIResponse);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId3, restAPIPublisher);
         waitForAPIDeployment();
         //expected to hit backend "S2222-0496(15)27436-0" of decoded context "S2222-0496%2815%2927436-0"
         serviceResponse = HTTPSClientUtils.doGet(invokeURL, requestHeaders);
@@ -221,6 +234,13 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+        restAPIStore.deleteApplication(appId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId1, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId2, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId3, restAPIPublisher);
+        restAPIPublisher.deleteAPI(apiId1);
+        restAPIPublisher.deleteAPI(apiId2);
+        restAPIPublisher.deleteAPI(apiId3);
         super.cleanUp();
     }
 }

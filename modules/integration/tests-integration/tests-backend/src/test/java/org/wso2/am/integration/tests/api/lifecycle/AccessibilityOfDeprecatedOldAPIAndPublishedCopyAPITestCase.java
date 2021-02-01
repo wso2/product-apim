@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 
 import org.apache.commons.lang.StringUtils;
+import org.json.JSONException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -88,7 +89,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
 
     @Test(groups = {"wso2.am"}, description = "Test subscribe of old API version before deprecate the old version")
-    public void testSubscribeOldVersionBeforeDeprecate() throws APIManagerIntegrationTestException, MalformedURLException, ApiException {
+    public void testSubscribeOldVersionBeforeDeprecate() throws APIManagerIntegrationTestException, MalformedURLException, ApiException, JSONException {
 
 
         APIRequest apiRequest;
@@ -121,6 +122,10 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
         HttpResponse apiResponse2 = restAPIPublisher.addAPI(apiRequest2);
         apiId2 = apiResponse2.getData();
+
+        //create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
 
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
         restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction(), null);
@@ -242,9 +247,11 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws ApiException, InterruptedException {
+    public void cleanUpArtifacts() throws ApiException, InterruptedException, JSONException {
         restAPIStore.deleteApplication(applicationID);
         Thread.sleep(2000);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId2, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(apiId2);
     }

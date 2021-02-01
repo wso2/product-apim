@@ -208,6 +208,7 @@ public class DefaultVersionWithScopesTestCase extends APIManagerLifecycleBaseTes
             restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
         }
         restAPIStore.deleteApplication(applicationID);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
 
         if (userManagementClient != null) {

@@ -1,15 +1,15 @@
 # AlertsApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/store/v1*
+All URIs are relative to *https://apis.wso2.com/api/am/devportal/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getStoreAlertTypes**](AlertsApi.md#getStoreAlertTypes) | **GET** /alert-types | Get the List of API Developer Portal Alert Types. 
+[**getDevportalAlertTypes**](AlertsApi.md#getDevportalAlertTypes) | **GET** /alert-types | Get the List of API Developer Portal Alert Types. 
 
 
-<a name="getStoreAlertTypes"></a>
-# **getStoreAlertTypes**
-> AlertTypesListDTO getStoreAlertTypes()
+<a name="getDevportalAlertTypes"></a>
+# **getDevportalAlertTypes**
+> AlertTypesListDTO getDevportalAlertTypes()
 
 Get the List of API Developer Portal Alert Types. 
 
@@ -28,7 +28,7 @@ import org.wso2.am.integration.clients.store.api.v1.AlertsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/store/v1");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -36,10 +36,10 @@ public class Example {
 
     AlertsApi apiInstance = new AlertsApi(defaultClient);
     try {
-      AlertTypesListDTO result = apiInstance.getStoreAlertTypes();
+      AlertTypesListDTO result = apiInstance.getDevportalAlertTypes();
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling AlertsApi#getStoreAlertTypes");
+      System.err.println("Exception when calling AlertsApi#getDevportalAlertTypes");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

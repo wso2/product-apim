@@ -102,6 +102,8 @@ public class RestAPIStoreImpl {
     public String storeURL;
     public String tenantDomain;
 
+    private String accessToken;
+
     @Deprecated
     public RestAPIStoreImpl() {
         this(username, password, "", "https://localhost:9943");
@@ -114,13 +116,13 @@ public class RestAPIStoreImpl {
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
                 + "apim:self-signup apim:dedicated_gateway apim:store_settings apim:api_key";
 
-        String accessToken = ClientAuthenticator
+        accessToken = ClientAuthenticator
                 .getAccessToken(scopes, appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username,
                         password, tenantDomain, tokenURL);
 
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
+        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
         apiStoreClient.setReadTimeout(600000);
         apiStoreClient.setConnectTimeout(600000);
         apiStoreClient.setWriteTimeout(600000);
@@ -144,7 +146,7 @@ public class RestAPIStoreImpl {
 
     public RestAPIStoreImpl(String tenantDomain, String storeURL) {
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
-        apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
+        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
         apiStoreClient.setDebugging(true);
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
@@ -155,6 +157,14 @@ public class RestAPIStoreImpl {
         usersApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
     public HttpResponse createApplication(String appName, String description, String throttleTier,
@@ -1399,7 +1409,7 @@ public class RestAPIStoreImpl {
     public APIListDTO getAPIListFromStoreAsAnonymousUser(String tenantDomain) throws ApiException {
         ApIsApi apIsApi = new ApIsApi();
         ApiClient apiStoreClient = new ApiClient();
-        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/store/v1");
+        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
         apIsApi.setApiClient(apiStoreClient);
 
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);

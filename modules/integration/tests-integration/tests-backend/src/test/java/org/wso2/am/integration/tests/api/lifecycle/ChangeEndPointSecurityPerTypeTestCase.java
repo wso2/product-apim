@@ -39,8 +39,6 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.apimgt.api.model.Endpoint;
-import org.wso2.carbon.apimgt.api.model.EndpointSecurity;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import waffle.util.Base64;
@@ -49,9 +47,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 /**
  * Change the endpoint security of APi and invoke. Endpoint application was developed to return thr security token in
@@ -110,6 +105,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
                 createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher, restAPIStore,
                         applicationID, TIER_UNLIMITED);
         apiID = apidto.getId();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
         ArrayList<String> grantTypes = new ArrayList<>();
@@ -123,91 +120,99 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
 
     }
 
+//    @Test(groups = {"wso2.am"}, description = "Test Set Endpoint Security")
+//    public void testEndpointSecurityInGlobal() throws Exception {
+//        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
+//        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+//        HttpResponse productionResponse =
+//                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
+//        Assert.assertEquals(productionResponse.getResponseCode(), 200);
+//        Map<String, String> headers = productionResponse.getHeaders();
+//        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
+//                .concat(Base64.encode(endpointUsername.concat(":").concat(endpointPassword).getBytes())));
+//        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
+//        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+//        HttpResponse sandboxResponse =
+//                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
+//        Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
+//        headers = sandboxResponse.getHeaders();
+//        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
+//                .concat(Base64.encode(endpointUsername.concat(":").concat(endpointPassword).getBytes())));
+//    }
+//
+//    @Test(groups = {
+//            "wso2.am"}, description = "Test Set Endpoint Security", dependsOnMethods = "testEndpointSecurityInGlobal")
+//    public void testEndpointSecurityInGlobalUpdatingAPI() throws Exception {
+//        HttpResponse response = restAPIPublisher.getAPI(apiID);
+//        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
+//        Assert.assertNotNull(apidto.getEndpointSecurity());
+//        APIEndpointSecurityDTO endpointSecurity = apidto.getEndpointSecurity();
+//        Assert.assertEquals(endpointSecurity.getPassword(), "");
+//        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
+//        APIEndpointSecurityDTO updatedEndpointSecurity = updatedAPI.getEndpointSecurity();
+//        Assert.assertEquals(updatedEndpointSecurity.getPassword(), "");
+//        // Create Revision and Deploy to Gateway
+//        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
+//        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+//                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+//        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+//                APIMIntegrationConstants.IS_API_EXISTS);
+//        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
+//        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+//        HttpResponse productionResponse =
+//                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
+//        Assert.assertEquals(productionResponse.getResponseCode(), 200);
+//        Map<String, String> headers = productionResponse.getHeaders();
+//        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
+//                .concat(Base64.encode(endpointUsername.concat(":").concat(endpointPassword).getBytes())));
+//        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
+//        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+//        HttpResponse sandboxResponse =
+//                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
+//        Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
+//        headers = sandboxResponse.getHeaders();
+//        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
+//                .concat(Base64.encode(endpointUsername.concat(":").concat(endpointPassword).getBytes())));
+//    }
+//    @Test(groups = {
+//            "wso2.am"}, description = "Test Set Endpoint Security", dependsOnMethods = "testEndpointSecurityInGlobalUpdatingAPI")
+//    public void testUpdateEndpointSecurityForGlobal() throws Exception {
+//        HttpResponse response = restAPIPublisher.getAPI(apiID);
+//        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
+//        Assert.assertNotNull(apidto.getEndpointSecurity());
+//        APIEndpointSecurityDTO endpointSecurity = apidto.getEndpointSecurity();
+//        Assert.assertEquals(endpointSecurity.getPassword(), "");
+//        endpointSecurity.setPassword("wso2carbon");
+//        apidto.setEndpointSecurity(endpointSecurity);
+//        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
+//        APIEndpointSecurityDTO updatedEndpointSecurity = updatedAPI.getEndpointSecurity();
+//        Assert.assertEquals(updatedEndpointSecurity.getPassword(), "");
+//        // Create Revision and Deploy to Gateway
+//        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
+//        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+//                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+//        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+//                APIMIntegrationConstants.IS_API_EXISTS);
+//        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
+//        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+//        HttpResponse productionResponse =
+//                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
+//        Assert.assertEquals(productionResponse.getResponseCode(), 200);
+//        Map<String, String> headers = productionResponse.getHeaders();
+//        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
+//                .concat(Base64.encode(endpointUsername.concat(":").concat("wso2carbon").getBytes())));
+//        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
+//        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+//        HttpResponse sandboxResponse =
+//                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
+//        Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
+//        headers = sandboxResponse.getHeaders();
+//        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
+//                .concat(Base64.encode(endpointUsername.concat(":").concat("wso2carbon").getBytes())));
+//    }
+
+
     @Test(groups = {"wso2.am"}, description = "Test Set Endpoint Security")
-    public void testEndpointSecurityInGlobal() throws Exception {
-        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
-        HttpResponse productionResponse =
-                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
-        Assert.assertEquals(productionResponse.getResponseCode(), 200);
-        Map<String, String> headers = productionResponse.getHeaders();
-        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
-                .concat(Base64.encode(endpointUsername.concat(":").concat(endpointPassword).getBytes())));
-        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
-        HttpResponse sandboxResponse =
-                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
-        Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
-        headers = sandboxResponse.getHeaders();
-        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
-                .concat(Base64.encode(endpointUsername.concat(":").concat(endpointPassword).getBytes())));
-    }
-
-    @Test(groups = {
-            "wso2.am"}, description = "Test Set Endpoint Security", dependsOnMethods = "testEndpointSecurityInGlobal")
-    public void testEndpointSecurityInGlobalUpdatingAPI() throws Exception {
-        HttpResponse response = restAPIPublisher.getAPI(apiID);
-        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
-        Assert.assertNotNull(apidto.getEndpointSecurity());
-        APIEndpointSecurityDTO endpointSecurity = apidto.getEndpointSecurity();
-        Assert.assertEquals(endpointSecurity.getPassword(), "");
-        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
-        APIEndpointSecurityDTO updatedEndpointSecurity = updatedAPI.getEndpointSecurity();
-        Assert.assertEquals(updatedEndpointSecurity.getPassword(), "");
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_EXISTS);
-        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
-        HttpResponse productionResponse =
-                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
-        Assert.assertEquals(productionResponse.getResponseCode(), 200);
-        Map<String, String> headers = productionResponse.getHeaders();
-        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
-                .concat(Base64.encode(endpointUsername.concat(":").concat(endpointPassword).getBytes())));
-        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
-        HttpResponse sandboxResponse =
-                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
-        Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
-        headers = sandboxResponse.getHeaders();
-        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
-                .concat(Base64.encode(endpointUsername.concat(":").concat(endpointPassword).getBytes())));
-    }
-    @Test(groups = {
-            "wso2.am"}, description = "Test Set Endpoint Security", dependsOnMethods = "testEndpointSecurityInGlobalUpdatingAPI")
-    public void testUpdateEndpointSecurityForGlobal() throws Exception {
-        HttpResponse response = restAPIPublisher.getAPI(apiID);
-        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
-        Assert.assertNotNull(apidto.getEndpointSecurity());
-        APIEndpointSecurityDTO endpointSecurity = apidto.getEndpointSecurity();
-        Assert.assertEquals(endpointSecurity.getPassword(), "");
-        endpointSecurity.setPassword("wso2carbon");
-        apidto.setEndpointSecurity(endpointSecurity);
-        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
-        APIEndpointSecurityDTO updatedEndpointSecurity = updatedAPI.getEndpointSecurity();
-        Assert.assertEquals(updatedEndpointSecurity.getPassword(), "");
-        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_EXISTS);
-        HttpResponse productionResponse =
-                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
-        Assert.assertEquals(productionResponse.getResponseCode(), 200);
-        Map<String, String> headers = productionResponse.getHeaders();
-        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
-                .concat(Base64.encode(endpointUsername.concat(":").concat("wso2carbon").getBytes())));
-        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
-        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
-        HttpResponse sandboxResponse =
-                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
-        Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
-        headers = sandboxResponse.getHeaders();
-        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
-                .concat(Base64.encode(endpointUsername.concat(":").concat("wso2carbon").getBytes())));
-    }
-
-    @Test(groups = {
-            "wso2.am"}, description = "Test Set Endpoint Security", dependsOnMethods = "testEndpointSecurityInGlobalUpdatingAPI")
     public void testUpdateEndpointSecurityForProduction() throws Exception {
         String productionEndpointSecurity = "{\n" +
                 "  \"production\":{\n" +
@@ -226,6 +231,12 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         endpointConfigJson.put("endpoint_security", new JSONParser().parse(productionEndpointSecurity));
         apidto.setEndpointConfig(endpointConfigJson);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_EXISTS);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
         Assert.assertNotNull(updatedEndpointConfig.get("endpoint_security"));
         Map endpointSecurity = (Map) updatedEndpointConfig.get("endpoint_security");
@@ -235,8 +246,6 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         Assert.assertTrue("admin1234".equals(endpointSecurityModel.get("username")));
         Assert.assertTrue("".equals(endpointSecurityModel.get("password")));
         Assert.assertTrue("basic".equalsIgnoreCase((String) endpointSecurityModel.get("type")));
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_EXISTS);
         String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
         requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
         HttpResponse productionResponse =
@@ -273,6 +282,12 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         endpointConfigJson.put("endpoint_security", new JSONParser().parse(sandboxEndpointSecurity));
         apidto.setEndpointConfig(endpointConfigJson);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_EXISTS);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
         Assert.assertNotNull(updatedEndpointConfig.get("endpoint_security"));
         Map endpointSecurity = (Map) updatedEndpointConfig.get("endpoint_security");
@@ -282,8 +297,6 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         Assert.assertTrue("sandboxusername".equals(endpointSecurityModel.get("username")));
         Assert.assertTrue("".equals(endpointSecurityModel.get("password")));
         Assert.assertTrue("basic".equalsIgnoreCase((String) endpointSecurityModel.get("type")));
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_EXISTS);
         String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
         requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
         HttpResponse productionResponse =
@@ -326,6 +339,16 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         endpointConfigJson.put("endpoint_security", new JSONParser().parse(sandboxEndpointSecurity));
         apidto.setEndpointConfig(endpointConfigJson);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
+        // Undeploy and Delete existing API Revisions Since it has reached 5 max revision limit
+        undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_EXISTS);
         Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
         Assert.assertNotNull(updatedEndpointConfig.get("endpoint_security"));
         Map endpointSecurity = (Map) updatedEndpointConfig.get("endpoint_security");
@@ -341,8 +364,6 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         Assert.assertTrue("production1234".equals(productionMap.get("username")));
         Assert.assertTrue("".equals(productionMap.get("password")));
         Assert.assertTrue("basic".equalsIgnoreCase((String) productionMap.get("type")));
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_EXISTS);
         String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
         requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
         HttpResponse productionResponse =
@@ -364,6 +385,7 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
     public void cleanUpArtifacts() throws Exception {
 
         restAPIStore.removeApplicationById(applicationID);
+        undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiID);
         super.cleanUp();
     }
