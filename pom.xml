@@ -1446,7 +1446,7 @@
         <auth0.keymanager.feature.version>1.0.0</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.2</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.0.0</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>0.1.2</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>0.2.0</apim.analytics.publisher.version>
     </properties>
 
 </project>

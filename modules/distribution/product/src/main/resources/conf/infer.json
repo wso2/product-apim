@@ -134,5 +134,12 @@
     "true": {
       "server.cache.invalidation_impl": "org.wso2.carbon.apimgt.cache.invalidation.APIMgtCacheInvalidationRequestSender"
     }
+  },
+  "apim.analytics.enable": {
+    "true": {
+      "synapse_handlers.analytics_handler.enabled": true,
+      "synapse_handlers.analytics_handler.name": "analytics_handler",
+      "synapse_handlers.analytics_handler.class": "$ref{apim.analytics.handler_impl}"
+    }
   }
 }
