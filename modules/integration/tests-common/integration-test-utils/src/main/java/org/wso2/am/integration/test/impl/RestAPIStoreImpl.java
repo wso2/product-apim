@@ -102,6 +102,8 @@ public class RestAPIStoreImpl {
     public String storeURL;
     public String tenantDomain;
 
+    private String accessToken;
+
     @Deprecated
     public RestAPIStoreImpl() {
         this(username, password, "", "https://localhost:9943");
@@ -114,7 +116,7 @@ public class RestAPIStoreImpl {
         String scopes = "openid apim:subscribe apim:app_update apim:app_manage apim:sub_manage "
                 + "apim:self-signup apim:dedicated_gateway apim:store_settings apim:api_key";
 
-        String accessToken = ClientAuthenticator
+        accessToken = ClientAuthenticator
                 .getAccessToken(scopes, appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username,
                         password, tenantDomain, tokenURL);
 
@@ -155,6 +157,14 @@ public class RestAPIStoreImpl {
         usersApi.setApiClient(apiStoreClient);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
     public HttpResponse createApplication(String appName, String description, String throttleTier,

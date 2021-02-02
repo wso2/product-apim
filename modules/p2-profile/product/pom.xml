@@ -514,6 +514,9 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.publisher.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.service.catalog.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.store.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
@@ -657,6 +660,10 @@
                                 <!-- PingFederate KeyManager Feature -->
                                 <featureArtifactDef>
                                     org.wso2.km.ext.pingfederate:pingfederate.key.manager.feature:${pingfederate.keymanager.feature.version}
+                                </featureArtifactDef>
+                                <!-- ForgeRock KeyManager Feature -->
+                                <featureArtifactDef>
+                                    org.wso2.km.ext.forgerock:forgerock.key.manager.feature:${forgerock.keymanager.feature.version}
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
@@ -1260,6 +1267,10 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.service.catalog.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.store.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -1438,6 +1449,10 @@
                                 <feature>
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>forgerock.key.manager.feature.group</id>
+                                    <version>${forgerock.keymanager.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
@@ -1875,6 +1890,10 @@
                                 <feature>
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>forgerock.key.manager.feature.group</id>
+                                    <version>${forgerock.keymanager.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
@@ -2399,6 +2418,10 @@
                                     <version>${pingfederate.keymanager.feature.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>forgerock.key.manager.feature.group</id>
+                                    <version>${forgerock.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -2709,6 +2732,10 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.service.catalog.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.data.publisher.application.authentication.server.feature.group</id>
                                     <version>${carbon.identity-data-publisher-application-authentication.version}</version>
                                 </feature>
@@ -2885,6 +2912,10 @@
                                 <feature>
                                     <id>pingfederate.key.manager.feature.group</id>
                                     <version>${pingfederate.keymanager.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>forgerock.key.manager.feature.group</id>
+                                    <version>${forgerock.keymanager.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>

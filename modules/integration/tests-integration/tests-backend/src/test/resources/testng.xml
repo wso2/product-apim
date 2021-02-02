@@ -31,6 +31,7 @@
             <class name="org.wso2.am.integration.tests.jwt.MicroGWJWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.revision.APIRevisionTestCase"/>
         </classes>
     </test>
 
@@ -100,12 +101,12 @@
         <classes>
             <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
             <class name="org.wso2.am.integration.tests.other.PublisherAccessControlTestCase"/>
+            <!-- <class name="org.wso2.am.integration.tests.other.DevPortalVisibilityTestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
-            <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
@@ -153,7 +154,8 @@
             <class name="org.wso2.am.integration.tests.header.ESBJAVA3447PreserveCharsetInContentTypeTestCase"/>
             <!--class name="org.wso2.am.integration.tests.header.ESBJAVA5121CheckAuthHeaderOrderTestCase"/-->
             <!--<class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>-->
-            <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
+            <!--Need to rewrite using the latest REST API-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>

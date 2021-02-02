@@ -17,6 +17,7 @@
 package org.wso2.am.integration.test.impl;
 
 import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.APICategoryDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ConditionalGroupDTO;
@@ -329,5 +330,19 @@ public class DtoFactory {
                 name(name).
                 description(description).
                 accessUrls(accessUrls);
+    }
+
+    /**
+     * Creates an api category DTO using the given parameters.
+     *
+     * @param name        Name of the label.
+     * @param description Description of the label.
+     * @return Created api category DTO.
+     */
+    public static APICategoryDTO createApiCategoryDTO(String name, String description) {
+
+        return new APICategoryDTO().
+                name(name).
+                description(description);
     }
 }

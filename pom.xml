@@ -1246,7 +1246,7 @@
         <carbon.analytics.common.version>5.2.27</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.8.153</carbon.apimgt.version>
+        <carbon.apimgt.version>6.8.172</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1445,6 +1445,7 @@
         <keycloak.keymanager.feature.version>2.0.4</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.0</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.2</pingfederate.keymanager.feature.version>
+        <forgerock.keymanager.feature.version>1.0.0</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>0.2.0</apim.analytics.publisher.version>
     </properties>
 

@@ -23,6 +23,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -121,7 +122,8 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
         mediationPolicyDTOList.add(mediationPolicyDTO);
         apidto.setMediationPolicies(mediationPolicyDTOList);
         restAPIPublisher.updateAPI(apidto);
-
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
@@ -144,7 +146,8 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
         List<MediationPolicyDTO> mediationPolicyDTOList = new ArrayList<>();
         apidto.setMediationPolicies(mediationPolicyDTOList);
         restAPIPublisher.updateAPI(apidto);
-
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
         //Send GET Request
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
@@ -159,8 +162,9 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, ApiException {
+    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, ApiException, JSONException {
         restAPIStore.deleteApplication(applicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
 
     }

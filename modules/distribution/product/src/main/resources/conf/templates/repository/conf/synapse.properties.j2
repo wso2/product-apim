@@ -18,6 +18,8 @@
 {{key}}={{value}}
 {% endfor %}
 {% if apim.sync_runtime_artifacts.gateway is defined %}
+{% if synapse_properties['synapse.artifacts.file.storage.enabled'] is not defined %}
 synapse.artifacts.file.storage.enabled=false
+{% endif %}
 {% endif %}
 

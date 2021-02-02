@@ -145,6 +145,8 @@ public class APIMANAGER3965TestCase extends APIManagerLifecycleBaseTest {
         apiCorsConfigurationDTO.setAccessControlAllowMethods(accessControlAllowMethodsList);
         apiDto.setCorsConfiguration(apiCorsConfigurationDTO);
         restAPIPublisher.updateAPI(apiDto);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                                  APIMIntegrationConstants.IS_API_EXISTS);
@@ -179,6 +181,7 @@ public class APIMANAGER3965TestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
 
