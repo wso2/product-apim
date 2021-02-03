@@ -32,14 +32,7 @@ import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
+import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -52,6 +45,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.testng.Assert.assertEquals;
 
 /**
  * Base test class for all API Manager lifecycle test cases. This class contents the all the
@@ -64,6 +61,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected static final int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_UNAUTHORIZED = Response.Status.UNAUTHORIZED.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_NOT_FOUND = Response.Status.NOT_FOUND.getStatusCode();
+    protected static final int HTTP_RESPONSE_CODE_BAD_REQUEST = Response.Status.BAD_REQUEST.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE =
             Response.Status.SERVICE_UNAVAILABLE.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_TOO_MANY_REQUESTS = 429; // Define manually since value is not available in enum
@@ -227,7 +225,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @throws ApiException
      */
     protected void deleteAPI(String apiID, RestAPIPublisherImpl publisherRestClient) throws ApiException {
-        publisherRestClient.deleteAPIByID(apiID);
+        publisherRestClient.deleteAPI(apiID);
     }
 
     /**
@@ -366,6 +364,12 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(createAPIResponse, "error").equals("false")) {
             log.info("API Created :" + getAPIIdentifierString(apiIdentifier));
+            // Create Revision and Deploy to Gateway
+            try {
+                createAPIRevisionAndDeployUsingRest(createAPIResponse.getData(), restAPIPublisher);
+            } catch (JSONException | ApiException e) {
+                throw new APIManagerIntegrationTestException("Error in creating and deploying API Revision", e);
+            }
             //Publish the API
             HttpResponse publishAPIResponse = publishAPI(apiIdentifier, publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
@@ -399,6 +403,12 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         APIDTO apidto = publisherRestClient.addAPI(apiCreationRequestBean);
         if (apidto != null) {
             log.info("API Created :" + apiCreationRequestBean.getName());
+//            // Create Revision and Deploy to Gateway
+//            try {
+//                createAPIRevisionAndDeployUsingRest(apidto.getId(), publisherRestClient);
+//            } catch (JSONException e) {
+//                throw new APIManagerIntegrationTestException("Error in creating and deploying API Revision", e);
+//            }
             //Publish the API
             HttpResponse publishAPIResponse = publishAPI(apidto.getId(), publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK)) {
@@ -429,6 +439,12 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         HttpResponse createAPIResponse = publisherRestClient.addAPI(apiRequest);
         if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_CREATED && !StringUtils.isEmpty(createAPIResponse.getData())) {
             log.info("API Created :" + getAPIIdentifierStringFromAPIRequest(apiRequest));
+            // Create Revision and Deploy to Gateway
+            try {
+                createAPIRevisionAndDeployUsingRest(createAPIResponse.getData(), publisherRestClient);
+            } catch (JSONException e) {
+                throw new APIManagerIntegrationTestException("Error in creating and deploying API Revision", e);
+            }
             //Publish the API
             HttpResponse publishAPIResponse = publishAPIUsingRest(createAPIResponse.getData(), publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&

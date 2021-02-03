@@ -1,7 +1,9 @@
 
+
 # ResourcePathListDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **count** | **Integer** | Number of API Resource Paths returned.  |  [optional]

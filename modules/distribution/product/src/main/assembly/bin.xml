@@ -643,8 +643,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#store#v0.16.war</include>
-                <include>api#am#store.war</include>
+                <include>api#am#devportal.war</include>
             </includes>
         </fileSet>
         <!--copy jaxrs web app for consent management feature-->
@@ -673,7 +672,6 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#publisher#v0.16.war</include>
                 <include>api#am#publisher.war</include>
             </includes>
         </fileSet>
@@ -684,7 +682,16 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#admin#v0.16.war</include>
+                <include>api#am#service-catalog.war</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
                 <include>api#am#admin.war</include>
             </includes>
         </fileSet>
@@ -715,7 +722,17 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>client-registration#v0.16.war</include>
+                <include>keymanager-operations.war</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>client-registration#v0.17.war</include>
             </includes>
         </fileSet>
 
@@ -1656,6 +1673,17 @@
         <file>
             <source>src/main/resources/client-truststore.jks</source>
             <outputDirectory>wso2am-${pom.version}/repository/resources/security/</outputDirectory>
+        </file>
+        <!-- Coping lerna related files -->
+        <file>
+            <source>src/main/conf/lerna/lerna.json</source>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps</outputDirectory>
+            <destName>lerna.json</destName>
+        </file>
+        <file>
+            <source>src/main/conf/lerna/package.json</source>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps</outputDirectory>
+            <destName>package.json</destName>
         </file>
     </files>
 

@@ -153,6 +153,8 @@ public class APIEndpointTypeUpdateTestCase extends APIManagerLifecycleBaseTest {
             HttpResponse apiUpdateResponse = restAPIPublisher.updateAPI(apiRequest, apiId);
             assertEquals(apiUpdateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response Code miss matched when creating the API");
+            // Create Revision and Deploy to Gateway
+            createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
             waitForAPIDeployment();
 
             //invoke HTTP transport
@@ -181,6 +183,8 @@ public class APIEndpointTypeUpdateTestCase extends APIManagerLifecycleBaseTest {
             HttpResponse apiUpdateResponse = restAPIPublisher.updateAPI(apiRequest, apiId);
             assertEquals(apiUpdateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response Code miss matched when creating the API");
+            // Create Revision and Deploy to Gateway
+            createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
             waitForAPIDeployment();
 
             //invoke HTTP transport

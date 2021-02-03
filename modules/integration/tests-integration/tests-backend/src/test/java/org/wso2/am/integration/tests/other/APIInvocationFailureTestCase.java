@@ -81,6 +81,9 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
                 "Response Code miss matched when creating the API");
         apiID = serviceResponse.getData();
 
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
+
         String updateRequest;
         //publish the api
 
@@ -103,6 +106,7 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiID);
         super.cleanUp();
     }

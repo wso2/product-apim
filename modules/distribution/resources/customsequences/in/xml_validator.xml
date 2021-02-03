@@ -10,6 +10,7 @@
     <property name="maxAttributeCount" value="100"/>
     <property name="maxAttributeLength" value="100"/>
     <property name="maxChildrenPerElement" value="100"/>
+    <property name="entityExpansionLimit" value="100"/>
     <property name="schemaValidation" value="false"/>
     <switch source="get-property('To')">
         <!--<case regex=".*/addResource.*">-->

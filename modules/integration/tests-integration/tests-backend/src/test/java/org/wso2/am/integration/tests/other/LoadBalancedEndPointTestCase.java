@@ -296,6 +296,8 @@ public class LoadBalancedEndPointTestCase extends APIManagerLifecycleBaseTest {
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(appId);
         restAPIStore.deleteApplication(sandboxAppId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(sandboxApiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(sandboxApiId);
     }

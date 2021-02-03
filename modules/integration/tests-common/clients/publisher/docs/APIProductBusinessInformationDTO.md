@@ -1,7 +1,9 @@
 
+
 # APIProductBusinessInformationDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **businessOwner** | **String** |  |  [optional]

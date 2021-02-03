@@ -50,24 +50,31 @@ password= "${admin.password}"
 http_endpoint = "http://api.gw.wso2.com:8280/"
 https_endpoint = "https://api.gw.wso2.com:8243/"
 
+# key manager implementation
+[apim.key_manager]
+service_url = "https://km.wso2.com:443/services/"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+
 [apim.analytics]
 store_api_url = "https://analytics.wso2.com:7444"
 username= "$ref{super_admin.username}"
 password= "$ref{super_admin.password}"
 
-[[apim.analytics.analytics_node]]
-analytics_url="tcp://analytic1.local:7612"
-analytics_auth_url="ssl://analytic1.local:7712"
+[[apim.analytics.url_group]]
+analytics_url=["tcp://analytic1.local:7612"]
+analytics_auth_url=["ssl://analytic1.local:7712"]
 
-[[apim.analytics.analytics_node]]
-analytics_url="tcp://analytic2.local:7612"
-analytics_auth_url="ssl://analytic2.local:7712"
+[[apim.analytics.url_group]]
+analytics_url=["tcp://analytic2.local:7612"]
+analytics_auth_url=["ssl://analytic2.local:7712"]
 
 # Traffic Manager configurations
 [apim.throttling]
-service_url = "https://tm.wso2.com:443/services/"
 username= "$ref{super_admin.username}"
 password= "$ref{super_admin.password}"
+service_url = "https://tm.wso2.com:443/services/"
+throttle_decision_endpoints = ["tcp://tm1.local:5672","tcp://tm2.local:5672"]
 
 [[apim.throttling.url_group]]
 traffic_manager_urls=["tcp://tm1.local:9611"]

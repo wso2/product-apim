@@ -26,6 +26,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -98,11 +99,12 @@ public class APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITes
     }
 
     @Test(groups = {"wso2.am"}, description = "Validate the Role of an non-existing user through" +
-            " the publisher rest API ", dependsOnMethods = {"testValidateTheRoleOfAnExistingUser"})
+            " the publisher rest API ", dependsOnMethods = "testValidateTheRoleOfAnExistingUser")
     public void testValidateTheRoleOfAnNonExistingUser() throws Exception {
         //Validate the publisher role
         try {
             restAPIPublisher.validateRoles(publisherRole);
+            Assert.fail("Exception was not thrown when validating role for non existing user");
         } catch (ApiException e) {
             assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND,
                     "User already exists for " + publisherRole);

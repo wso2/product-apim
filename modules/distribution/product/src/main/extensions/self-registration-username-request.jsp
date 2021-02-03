@@ -68,7 +68,7 @@
     <jsp:directive.include file="includes/header.jsp"/>
     <% } %>
 </head>
-<body>
+<body class="login-portal layout recovery-layout">
     <main class="center-segment">
         <div class="ui container medium center aligned middle aligned">
             <!-- product-title -->
@@ -81,7 +81,6 @@
             <jsp:directive.include file="includes/product-title.jsp"/>
             <% } %>
             <div class="ui segment">
-                <div class="ui divider hidden"></div>
                 <h2>
                     <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Start.signing.up")%>
                 </h2>

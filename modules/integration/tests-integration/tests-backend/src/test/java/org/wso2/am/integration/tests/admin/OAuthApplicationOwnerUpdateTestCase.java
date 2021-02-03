@@ -19,27 +19,28 @@ package org.wso2.am.integration.tests.admin;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.admin.ApiException;
+import org.wso2.am.integration.clients.admin.ApiResponse;
+import org.wso2.am.integration.clients.admin.api.dto.ApplicationInfoDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
 import static org.wso2.am.integration.test.utils.base.APIMIntegrationConstants.SUPER_TENANT_DOMAIN;
 
 /**
@@ -83,11 +84,11 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
     private RestAPIStoreImpl restAPIStoreClient4;
     private RestAPIStoreImpl restAPIStoreClient5;
     private RestAPIStoreImpl restAPIStoreClient6;
+    private RestAPIAdminImpl restAPIAdminClient;
 
-    private  AdminDashboardRestClient adminDashboardRestClient;
-    private JSONObject ownerJsonObject;
     private String appIdOfJohnApp;
     private String appIdOfMaryApp;
+    private String appIdOfJohnMaryApp;
     private String appIdOfTenantAdminApp;
     private String appIdOfTenantUser1App;
     private String appIdOfTenantUser2App;
@@ -96,7 +97,6 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
-        adminDashboardRestClient = new AdminDashboardRestClient(getPublisherURLHttps());
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 createSession(keyManagerContext));
         // add users John and Mary as subscribers
@@ -129,6 +129,14 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "App of user Mary");
         appIdOfMaryApp = appOfMaryDTO.getApplicationId();
         restAPIStoreClient2.generateKeys(appIdOfMaryApp,
+                APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
+
+        // create another application in the store using super tenant user mary1's credentials
+        ApplicationDTO appOfJohnMaryDTO = restAPIStoreClient2.addApplication(JOHN_APP,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "App of user Mary");
+        appIdOfJohnMaryApp = appOfJohnMaryDTO.getApplicationId();
+        restAPIStoreClient2.generateKeys(appIdOfJohnMaryApp,
                 APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
 
@@ -170,40 +178,49 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
     }
 
     @Test(groups = {"wso2.am"}, description = "Check whether the new owner is a valid subscriber")
-    public void checkSubscriberValidity() throws Exception {
-        adminDashboardRestClient.login(TENANT_ADMIN_WITH_DOMAIN, TENANT_ADMIN_PWD);
-        updateOwner(TENANT_USER3_APP, TENANT_USER4_WITH_DOMAIN, TENANT_USER3_WITH_DOMAIN);
-        assertTrue(ownerJsonObject.getBoolean("error"), TENANT_USER4_WITH_DOMAIN +" is not a subscriber");
+    public void checkSubscriberValidity() {
+
+        restAPIAdminClient = new RestAPIAdminImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, publisherURLHttps);
+        try {
+            updateOwner(appIdOfTenantUser3App, TENANT_USER4_WITH_DOMAIN, TENANT_DOMAIN);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Update application ownership to a user from another tenant domain")
-    public void updateApplicationOwnerAcrossTenant() throws Exception {
-        adminDashboardRestClient.login(TENANT_ADMIN_WITH_DOMAIN, TENANT_ADMIN_PWD);
-        updateOwner(TENANT_USER1_APP,USER_MARY, TENANT_USER1_WITH_DOMAIN);
-        assertTrue(ownerJsonObject.getBoolean("error"), "Unable to update application owner to the user "
-                + USER_MARY + " as this user does not belong to this domain");
+    public void updateApplicationOwnerAcrossTenant() {
+
+        restAPIAdminClient = new RestAPIAdminImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, publisherURLHttps);
+        try {
+            updateOwner(appIdOfTenantUser1App, USER_MARY, TENANT_DOMAIN);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Check whether the new owner already has an application with that name")
-    public void checkApplicationExist() throws Exception {
-        adminDashboardRestClient.login(user.getUserName(), user.getPassword());
-        updateOwner("DefaultApplication",USER_JOHN,USER_MARY);
-        assertTrue(ownerJsonObject.getBoolean("error"), "Unable to update application owner to the user " +
-                USER_JOHN +" as this user already have a application with this name");
+    public void checkApplicationExist() {
+
+        restAPIAdminClient = new RestAPIAdminImpl(user.getUserName(), user.getPassword(), SUPER_TENANT_DOMAIN,
+                publisherURLHttps);
+        try {
+            updateOwner(appIdOfJohnMaryApp, USER_JOHN, user.getUserDomain());
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Update application ownership to another user within the same domain")
     public void updateApplicationOwner() throws Exception {
         //Update application owner for carbon super
-        adminDashboardRestClient.login(user.getUserName(), user.getPassword());
-        updateOwner(MARY_APP,USER_JOHN,USER_MARY);
-        assertFalse(ownerJsonObject.getBoolean("error"), "Successfully update owner of the application "
-                + MARY_APP + ".");
+        restAPIAdminClient = new RestAPIAdminImpl(user.getUserName(), user.getPassword(), SUPER_TENANT_DOMAIN,
+                publisherURLHttps);
+        updateOwner(appIdOfMaryApp, USER_JOHN, user.getUserDomain());
+
         //Update application Owner for tenant domain
-        adminDashboardRestClient.login(TENANT_ADMIN_WITH_DOMAIN, TENANT_ADMIN_PWD);
-        updateOwner(TENANT_USER2_APP, TENANT_USER1_WITH_DOMAIN, TENANT_USER2_WITH_DOMAIN);
-        assertFalse(ownerJsonObject.getBoolean("error"), "Successfully update owner of the application "
-                + TENANT_USER2_APP + ".");
+        restAPIAdminClient = new RestAPIAdminImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, publisherURLHttps);
+        updateOwner(appIdOfTenantUser2App, TENANT_USER1_WITH_DOMAIN, TENANT_DOMAIN);
     }
 
     @AfterClass(alwaysRun = true)
@@ -229,39 +246,29 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
     }
 
     /**
-     * Update Application Owner with the new userId
+     * Update Owner of an application
      *
-     * @param application Application name
-     * @param userId new application owner
-     * @param owner current application owner
-     * @return return response of updating application owner
+     * @param applicationId   Application ID of the application
+     * @param newOwner        New owner of the application
+     * @param appTenantDomain Tenant domain of the application
      */
-    private void updateOwner(String application, String userId, String owner) throws Exception {
-        HttpResponse tenantApplications = adminDashboardRestClient.getapplicationsByTenantId(application,
-                "0", "0", "20", "1", "asc");
-        log.info("Application: " + application);
-        log.info("Old User: " + owner);
-        log.info("New User: " + userId);
-        log.info("Data for getapplicationsByTenantId: " + tenantApplications.getData());
-        JSONObject jsonObject = new JSONObject(tenantApplications.getData());
-        JSONArray jsonArray = jsonObject.getJSONArray("response");
-        int i;
-        for (i = 0; i < jsonArray.length(); i++) {
-            if (owner.equals(jsonArray.getJSONObject(i).getString("owner"))) {
-                String uuid = jsonArray.getJSONObject(i).getString("uuid");
-                HttpResponse response = adminDashboardRestClient.updateApplicationOwner(userId, owner, uuid, application);
-                ownerJsonObject = new JSONObject(response.getData());
+    private void updateOwner(String applicationId, String newOwner, String appTenantDomain) throws ApiException {
+        //Update owner of the application
+        ApiResponse<Void> changeOwnerResponse = restAPIAdminClient.changeApplicationOwner(newOwner, applicationId);
+        Assert.assertEquals(changeOwnerResponse.getStatusCode(), HttpStatus.SC_OK);
+
+        //Verify the owner of the updated application
+        ApiResponse<ApplicationListDTO> getApplicationsResponse =
+                restAPIAdminClient.getApplications(newOwner, null, null, appTenantDomain);
+        Assert.assertEquals(getApplicationsResponse.getStatusCode(), HttpStatus.SC_OK);
+        ApplicationListDTO applicationList = getApplicationsResponse.getData();
+        List<ApplicationInfoDTO> applicationInfoList = applicationList.getList();
+        for (ApplicationInfoDTO applicationInfo : applicationInfoList) {
+            if (applicationInfo.getApplicationId().equals(applicationId)) {
+                String owner = applicationInfo.getOwner();
+                Assert.assertEquals(owner, newOwner);
                 break;
             }
-        }
-        log.info("Owner JSON Object before IF: " + ownerJsonObject);
-        if (!ownerJsonObject.getBoolean("error")) {
-            HttpResponse updatedApplications = adminDashboardRestClient.getapplicationsByTenantId(application,
-                    "0", "0", "10", "1", "asc");
-            JSONObject jsonObject1 = new JSONObject(updatedApplications.getData());
-            JSONArray jsonArray1 = jsonObject1.getJSONArray("response");
-            String ownerApp = jsonArray1.getJSONObject(i).getString("owner");
-            Assert.assertEquals(ownerApp, userId);
         }
     }
 }

@@ -133,6 +133,7 @@ public class APIM714GetAllDocumentationTestCase extends APIManagerLifecycleBaseT
         //Remove documentation
         HttpResponse deleteResponse = restAPIPublisher.deleteDocument(apiId, documentId);
         assertEquals(deleteResponse.getResponseCode(), 200, "Error while delete the document");
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
 }

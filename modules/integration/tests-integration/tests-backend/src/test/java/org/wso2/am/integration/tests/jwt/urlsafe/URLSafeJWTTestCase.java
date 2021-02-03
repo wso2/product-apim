@@ -41,6 +41,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.um.ws.api.stub.ClaimValue;
@@ -50,6 +51,7 @@ import org.wso2.carbon.user.core.UserStoreException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+
 import javax.ws.rs.core.Response;
 
 import static org.testng.AssertJUnit.assertTrue;
@@ -111,6 +113,8 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.generateKeys(jwtApplicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         createUser();
+        waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for Oauth Based App")
@@ -122,11 +126,12 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
         String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
                 applicationKeyDTO.getConsumerSecret(), enduserName, enduserPassword);
-        log.info("Acess Token Generated in oauth ==" + accessToken);
+        log.info("Access Token Generated in oauth ==" + accessToken);
+        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
 
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
-        get.addHeader("Authorization", "Bearer " + accessToken);
+        get.addHeader("Authorization", "Bearer " + tokenJti);
         HttpResponse response = httpclient.execute(get);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
@@ -141,14 +146,12 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(jwtheader.getValue());
         log.debug("Decoded JWTString = " + decodedJWTString);
 
-        if ("carbon.super".equalsIgnoreCase(user.getUserDomain())) {
-            //Do the signature verification for super tenant as tenant key store not there accessible
-            String jwtHeader = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedURLSafeJWTSignature(jwtheader.getValue());
-            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-            assertTrue("JWT signature verification failed", isSignatureValid);
-        }
+        //Do the signature verification for super tenant as tenant key store not there accessible
+        String jwtHeader = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
+        byte[] jwtSignature = APIMTestCaseUtils.getDecodedURLSafeJWTSignature(jwtheader.getValue());
+        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+        assertTrue("JWT signature verification failed", isSignatureValid);
         log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
         JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
         Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
@@ -198,14 +201,12 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(jwtheader.getValue());
         log.debug("Decoded JWTString = " + decodedJWTString);
 
-        if ("carbon.super".equalsIgnoreCase(user.getUserDomain())) {
-            //Do the signature verification for super tenant as tenant key store not there accessible
-            String jwtHeader = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedURLSafeJWTSignature(jwtheader.getValue());
-            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-            assertTrue("JWT signature verification failed", isSignatureValid);
-        }
+        //Do the signature verification for super tenant as tenant key store not there accessible
+        String jwtHeader = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(jwtheader.getValue());
+        byte[] jwtSignature = APIMTestCaseUtils.getDecodedURLSafeJWTSignature(jwtheader.getValue());
+        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+        assertTrue("JWT signature verification failed", isSignatureValid);
         log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
         JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
         Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
@@ -222,6 +223,10 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
     public void destroy() throws Exception {
 
         userManagementClient.deleteUser(enduserName);
+        restAPIStore.deleteApplication(oauthApplicationId);
+        restAPIStore.deleteApplication(jwtApplicationId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+        restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
 
     }
@@ -256,6 +261,7 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
 
     @Factory(dataProvider = "userModeDataProvider")
     public URLSafeJWTTestCase(TestUserMode userMode) {
+
         this.userMode = userMode;
     }
 
