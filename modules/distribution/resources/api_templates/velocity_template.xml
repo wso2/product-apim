@@ -200,7 +200,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 <loopback />
 ## AWS Lambda: end
 #else
-#if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
+#if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
@@ -209,7 +209,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         #else
         #draw_endpoint( "production" $endpoint_config )
         #end
-        #if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
+        #if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
     </then>
     <else>
         #if($environmentType !='hybrid')
