@@ -570,7 +570,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws IOException, AutomationUtilException, ApiException, JSONException {
+    public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId1, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(apiId2, restAPIPublisher);

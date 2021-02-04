@@ -104,6 +104,18 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                             serverManager.getCarbonHome() + File.separator + "repository" + File.separator +
                                     "components" + File.separator + "dropins";
 
+                    String synapseApiPath =
+                            serverManager.getCarbonHome() + File.separator + "repository" + File.separator
+                                    + "deployment" + File.separator + "server" + File.separator + "synapse-configs"
+                                    + File.separator + "default" + File.separator + "api";
+
+                    FileManager.copyFile(new File(
+                            resourcePath + File.separator + "synapseconfigs" + File.separator + "rest" + File.separator
+                                    + "BackEndSecurity.xml"), synapseApiPath + File.separator + "BackEndSecurity.xml");
+                    FileManager.copyFile(new File(
+                            resourcePath + File.separator + "synapseconfigs" + File.separator + "rest" + File.separator
+                                    + "JWKS-Backend.xml"), synapseApiPath + File.separator + "JWKS-Backend.xml");
+
                     String userStorePath = serverManager.getCarbonHome() + File.separator + "repository" + File.separator
                             + "deployment" + File.separator + "server" + File.separator + "userstores";
                     String databasePath = serverManager.getCarbonHome() + File.separator + "repository" + File.separator
