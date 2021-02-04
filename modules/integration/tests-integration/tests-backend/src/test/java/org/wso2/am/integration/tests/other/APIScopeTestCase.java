@@ -166,7 +166,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
-        waitForAPIDeployment();
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_NOT_EXISTS);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         // For Admin user
@@ -292,12 +292,17 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.updateSwagger(apiIdWithScope, swagger);
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiIdWithScope, restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME_WITH_SCOPE, API_VERSION_WITH_SCOPE,
+                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME_WITH_SCOPE, API_VERSION_WITH_SCOPE,
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         //copy published api
         HttpResponse newVersionResponse = restAPIPublisher.copyAPI(API_VERSION_WITH_SCOPE_COPY, apiIdWithScope, null);
         assertEquals(newVersionResponse.getResponseCode(), HttpStatus.SC_OK, "Response Code Mismatch");
         copyApiId = newVersionResponse.getData();
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME_WITH_SCOPE, API_VERSION_WITH_SCOPE_COPY,
+                APIMIntegrationConstants.IS_API_EXISTS);
 
     }
 
