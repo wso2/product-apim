@@ -400,7 +400,7 @@
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/swagger.json</URI>
+                <URI>/api/am/devportal/{version}/swagger.json</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
@@ -408,85 +408,85 @@
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/apis</URI>
+                <URI>/api/am/devportal/{version}/apis</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/apis/{apiId}</URI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/apis/{apiId}/swagger</URI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/swagger</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/apis/{apiId}/documents</URI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/documents</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/apis/{apiId}/documents/{documentId}</URI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/documents/{documentId}</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/apis/{apiId}/documents/{documentId}/content</URI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/documents/{documentId}/content</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/apis/{apiId}/thumbnail</URI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/thumbnail</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/tags</URI>
+                <URI>/api/am/devportal/{version}/tags</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/tiers/{tierLevel}</URI>
+                <URI>/api/am/devportal/{version}/tiers/{tierLevel}</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/tiers/{tierLevel}/{tierName}</URI>
+                <URI>/api/am/devportal/{version}/tiers/{tierLevel}/{tierName}</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
             </WhiteListedURI>
             <WhiteListedURI>
-                <URI>/api/am/store/{version}/search</URI>
+                <URI>/api/am/devportal/{version}/search</URI>
                 <HTTPMethods>GET</HTTPMethods>
             </WhiteListedURI>
         </WhiteListedURIs>
         <ETagSkipList>
             <ETagSkipURI>
-                <URI>/api/am/store/{version}/apis</URI>
+                <URI>/api/am/devportal/{version}/apis</URI>
                 <HTTPMethods>GET</HTTPMethods>
             </ETagSkipURI>
             <ETagSkipURI>
-                <URI>/api/am/store/{version}/apis/generate-sdk</URI>
+                <URI>/api/am/devportal/{version}/apis/generate-sdk</URI>
                 <HTTPMethods>POST</HTTPMethods>
             </ETagSkipURI>
             <ETagSkipURI>
-                <URI>/api/am/store/{version}/apis/{apiId}/documents</URI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/documents</URI>
                 <HTTPMethods>GET</HTTPMethods>
             </ETagSkipURI>
             <ETagSkipURI>
-                <URI>/api/am/store/{version}/applications</URI>
+                <URI>/api/am/devportal/{version}/applications</URI>
                 <HTTPMethods>GET</HTTPMethods>
             </ETagSkipURI>
             <ETagSkipURI>
-                <URI>/api/am/store/{version}/applications/generate-keys</URI>
+                <URI>/api/am/devportal/{version}/applications/generate-keys</URI>
                 <HTTPMethods>POST</HTTPMethods>
             </ETagSkipURI>
             <ETagSkipURI>
-                <URI>/api/am/store/{version}/subscriptions</URI>
+                <URI>/api/am/devportal/{version}/subscriptions</URI>
                 <HTTPMethods>GET,POST</HTTPMethods>
             </ETagSkipURI>
             <ETagSkipURI>
-                <URI>/api/am/store/{version}/tags</URI>
+                <URI>/api/am/devportal/{version}/tags</URI>
                 <HTTPMethods>GET</HTTPMethods>
             </ETagSkipURI>
             <ETagSkipURI>
-                <URI>/api/am/store/{version}/tiers/{tierLevel}</URI>
+                <URI>/api/am/devportal/{version}/tiers/{tierLevel}</URI>
                 <HTTPMethods>GET</HTTPMethods>
             </ETagSkipURI>
             <ETagSkipURI>
-                <URI>/api/am/store/{version}/tiers/{tierLevel}/{tierName}</URI>
+                <URI>/api/am/devportal/{version}/tiers/{tierLevel}/{tierName}</URI>
                 <HTTPMethods>GET</HTTPMethods>
             </ETagSkipURI>
             <ETagSkipURI>

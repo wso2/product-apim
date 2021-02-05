@@ -58,7 +58,7 @@ public class APIRequest extends AbstractRequest {
     private String tier = "Silver";
     private String thumbUrl = "";
     private String tiersCollection = "Gold";
-    private String type = "http";
+    private String type = "HTTP";
     private String resourceCount = "0";
     private String resourceMethod = "GET,POST,PUT,PATCH,DELETE,HEAD";
     private String resourceMethodAuthType = "Application & Application User,Application & Application User";

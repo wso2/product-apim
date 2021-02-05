@@ -1,7 +1,0 @@
-<module name="tenantmanager" namespace="ns" expose="true" xmlns="http://wso2.org/projects/jaggery/module.xml">    
-        <hostObject>
-            <className>org.wso2.carbon.apimgt.hostobjects.TenantManagerHostObject</className>
-            <name>TenantManager</name>
-        </hostObject>
-</module>
-

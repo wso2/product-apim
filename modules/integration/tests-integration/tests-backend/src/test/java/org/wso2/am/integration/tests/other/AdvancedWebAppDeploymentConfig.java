@@ -60,6 +60,7 @@ public class AdvancedWebAppDeploymentConfig extends APIManagerLifecycleBaseTest 
     @AfterTest(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationID);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
 

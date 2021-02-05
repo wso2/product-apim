@@ -20,8 +20,7 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
@@ -36,8 +35,6 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Deploy jaxrs_basic webApp and monitoring webApp required to run tests
@@ -46,11 +43,13 @@ import java.util.List;
  * APIStatusMonitor - Can be used to retrieve API deployment status in worker and manager nodes
  */
 public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTest {
+
     private static final Log log = LogFactory.getLog(APIManagerConfigurationChangeTest.class);
     WebAppAdminClient webAppAdminClient;
 
-    @BeforeTest(alwaysRun = true)
+    @Test(alwaysRun = true)
     public void configureEnvironment() throws Exception {
+
         gatewayContextMgt =
                 new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                         APIMIntegrationConstants.AM_GATEWAY_MGT_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
@@ -58,16 +57,19 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         String dcrURL = gatewayUrlsMgt.getWebAppURLHttps() + "client-registration/v0.17/register";
 
         //DCR call for publisher app
-        DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
-                RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
-                RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
-                APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+        DCRParamRequest publisherParamRequest =
+                new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
+                        RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType,
+                        dcrURL,
+                        RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
+                        APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
         ClientAuthenticator.makeDCRRequest(publisherParamRequest);
         //DCR call for dev portal app
-        DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
-                RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
-                RestAPIStoreImpl.username, RestAPIStoreImpl.password,
-                APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
+        DCRParamRequest devPortalParamRequest =
+                new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
+                        RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
+                        RestAPIStoreImpl.username, RestAPIStoreImpl.password,
+                        APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
         ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
         DCRParamRequest adminPortalParamRequest = new DCRParamRequest(RestAPIAdminImpl.appName,
                 RestAPIAdminImpl.callBackURL,
@@ -78,12 +80,12 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
 
         super.init();
         String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-                                  File.separator + "AM" + File.separator;
+                File.separator + "AM" + File.separator;
 
         String testArtifactWarFilePath = testArtifactPath + "lifecycletest" + File.separator;
 
         String APIStatusMonitorWebAppSourcePath = testArtifactPath + "war" + File.separator +
-                                                  APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
+                APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
 
         String GraphqlAPIWebAppSourcePath = testArtifactPath + "war" + File.separator +
                 APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME + ".war";
@@ -96,14 +98,22 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppAdminClient = new WebAppAdminClient(
                 gatewayContextMgt.getContextUrls().getBackEndUrl(), gatewayMgtSessionId);
 
-        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war");
-        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME + ".war");
-        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME + ".war");
-        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME + ".war");
-        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
-        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war");
-        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
-        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.WILDCARD_WEB_APP_NAME + ".war");
+        webAppAdminClient
+                .uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war");
+        webAppAdminClient
+                .uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME + ".war");
+        webAppAdminClient
+                .uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME + ".war");
+        webAppAdminClient
+                .uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME + ".war");
+        webAppAdminClient
+                .uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
+        webAppAdminClient
+                .uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war");
+        webAppAdminClient
+                .uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
+        webAppAdminClient
+                .uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.WILDCARD_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
         webAppAdminClient.uploadWarFile(GraphqlAPIWebAppSourcePath);
         webAppAdminClient.uploadWarFile(AuditAPIWebAppSourcePath);
@@ -150,6 +160,10 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                     "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
                             + File.separator + "dummy-api-multiResourceSameVerb.xml", gatewayContextMgt,
                     gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy-api-resourceWithSpecialCharacters.xml", gatewayContextMgt,
+                    gatewaySessionCookie);
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
                     + "synapseconfigs" + File.separator + "rest" + File.separator
                     + "jwt_backend.xml", gatewayContextMgt, gatewaySessionCookie);
@@ -194,8 +208,8 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                     + File.separator + "synapseconfigs" + File.separator + "scriptmediator"
                     + File.separator + "script_mediator_api.xml", gatewayContextMgt, gatewaySessionCookie);
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                    + File.separator + "synapseconfigs" + File.separator + "rest"
-                    + File.separator + "dummy_api_relative_url_loc_header.xml", gatewayContextMgt,
+                            + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy_api_relative_url_loc_header.xml", gatewayContextMgt,
                     gatewaySessionCookie);
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                     + File.separator + "synapseconfigs" + File.separator + "rest"

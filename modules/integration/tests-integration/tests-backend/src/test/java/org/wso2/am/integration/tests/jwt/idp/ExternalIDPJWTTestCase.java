@@ -57,6 +57,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -107,7 +108,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManager1Id = createKeyManager1(restAPIAdmin);
         keyManager2Id = createKeyManager2(restAPIAdmin);
         tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
-        apiId = createAPI(apiName, apiContext,Arrays.asList(ALL_KEY_MANAGER));
+        apiId = createAPI(apiName, apiContext, Arrays.asList(ALL_KEY_MANAGER));
         apiIdOnlyKm1 = createAPI(apiNameOnlyKM1, apiContextOnlyKM1, Arrays.asList(KEY_MANAGER_1));
 
         restAPIStore.subscribeToAPI(apiId, jwtApplicationId, TIER_GOLD);
@@ -116,11 +117,13 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         waitForKeyManagerDeployment(user.getUserDomain(), KEY_MANAGER_2);
         restAPIStore.mapConsumerKeyWithApplication(consumerKey1, jwtApplicationId, KEY_MANAGER_1);
         restAPIStore.mapConsumerKeyWithApplication(consumerKey2, jwtApplicationId, KEY_MANAGER_2);
+        waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     private String createAPI(String apiName, String apiContext, List<String> keyManagers)
             throws XPathExpressionException, APIManagerIntegrationTestException, MalformedURLException,
             org.wso2.am.integration.clients.publisher.api.ApiException {
+
         providerName = user.getUserName();
         endpointURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointURL));
@@ -163,15 +166,12 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
         log.debug("Decoded JWTString = " + decodedJWTString);
 
-        if (userMode == TestUserMode.SUPER_TENANT_ADMIN || userMode == TestUserMode.SUPER_TENANT_USER ||
-                userMode == TestUserMode.SUPER_TENANT_EMAIL_USER) {
-            //Do the signature verification for super tenant as tenant key store not there accessible
-            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
-            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-            assertTrue("JWT signature verification failed", isSignatureValid);
-        }
+        //Do the signature verification for super tenant as tenant key store not there accessible
+        String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+        byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
+        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+        assertTrue("JWT signature verification failed", isSignatureValid);
         log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
         JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
         Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
@@ -268,16 +268,12 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
         String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
         log.debug("Decoded JWTString = " + decodedJWTString);
-
-        if (userMode == TestUserMode.SUPER_TENANT_ADMIN || userMode == TestUserMode.SUPER_TENANT_USER ||
-                userMode == TestUserMode.SUPER_TENANT_EMAIL_USER) {
-            //Do the signature verification for super tenant as tenant key store not there accessible
-            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
-            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-            assertTrue("JWT signature verification failed", isSignatureValid);
-        }
+        //Do the signature verification for super tenant as tenant key store not there accessible
+        String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+        byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
+        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+        assertTrue("JWT signature verification failed", isSignatureValid);
         log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
         JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
         Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
@@ -307,7 +303,10 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(jwtApplicationId);
         restAPIAdmin.deleteKeyManager(keyManager1Id);
         restAPIAdmin.deleteKeyManager(keyManager2Id);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiIdOnlyKm1, restAPIPublisher);
+        restAPIPublisher.deleteAPI(apiIdOnlyKm1);
         super.cleanUp();
     }
 
@@ -339,14 +338,18 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));
         TokenValidationDTO tokenValidationDTO = new TokenValidationDTO();
         tokenValidationDTO.setEnable(false);
-        keyManagerDTO.addTokenValidationItem(tokenValidationDTO);
+        List<TokenValidationDTO> tokenValidationDTOList = new ArrayList<>();
+        tokenValidationDTOList.add(tokenValidationDTO);
+        keyManagerDTO.setTokenValidation(tokenValidationDTOList);
         keyManagerDTO.setEnableSelfValidationJWT(true);
-        keyManagerDTO.addClaimMappingItem(new ClaimMappingEntryDTO().remoteClaim("http://idp.org/claims/givenname")
+        List<ClaimMappingEntryDTO> claimMappingEntryDTOS = new ArrayList<>();
+        claimMappingEntryDTOS.add(new ClaimMappingEntryDTO().remoteClaim("http://idp.org/claims/givenname")
                 .localClaim("http://wso2.org/claims/givenname"));
-        keyManagerDTO.addClaimMappingItem(new ClaimMappingEntryDTO().remoteClaim("http://idp.org/claims/firstname")
+        claimMappingEntryDTOS.add(new ClaimMappingEntryDTO().remoteClaim("http://idp.org/claims/firstname")
                 .localClaim("http://wso2.org/claims/firstname"));
-        keyManagerDTO.addClaimMappingItem(new ClaimMappingEntryDTO().remoteClaim("http://idp.org/claims/email")
+        claimMappingEntryDTOS.add(new ClaimMappingEntryDTO().remoteClaim("http://idp.org/claims/email")
                 .localClaim("http://wso2.org/claims/email"));
+        keyManagerDTO.setClaimMapping(claimMappingEntryDTOS);
         org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
                 keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
         KeyManagerDTO retrievedData = keyManagerDTOApiResponse.getData();
@@ -372,14 +375,18 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 .setAvailableGrantTypes(Arrays.asList("client_credentials", "password", "implicit", "refresh_token"));
         TokenValidationDTO tokenValidationDTO = new TokenValidationDTO();
         tokenValidationDTO.setEnable(false);
-        keyManagerDTO.addTokenValidationItem(tokenValidationDTO);
+        List<TokenValidationDTO> tokenValidationDTOList = new ArrayList<>();
+        tokenValidationDTOList.add(tokenValidationDTO);
+        keyManagerDTO.setTokenValidation(tokenValidationDTOList);
         keyManagerDTO.setEnableSelfValidationJWT(true);
-        keyManagerDTO.addClaimMappingItem(new ClaimMappingEntryDTO().remoteClaim("http://idp2.org/claims/givenname")
+        List<ClaimMappingEntryDTO> claimMappingEntryDTOS = new ArrayList<>();
+        claimMappingEntryDTOS.add(new ClaimMappingEntryDTO().remoteClaim("http://idp2.org/claims/givenname")
                 .localClaim("http://wso2.org/claims/givenname"));
-        keyManagerDTO.addClaimMappingItem(new ClaimMappingEntryDTO().remoteClaim("http://idp2.org/claims/firstname")
+        claimMappingEntryDTOS.add(new ClaimMappingEntryDTO().remoteClaim("http://idp2.org/claims/firstname")
                 .localClaim("http://wso2.org/claims/firstname"));
-        keyManagerDTO.addClaimMappingItem(new ClaimMappingEntryDTO().remoteClaim("http://idp2.org/claims/email")
+        claimMappingEntryDTOS.add(new ClaimMappingEntryDTO().remoteClaim("http://idp2.org/claims/email")
                 .localClaim("http://wso2.org/claims/email"));
+        keyManagerDTO.setClaimMapping(claimMappingEntryDTOS);
         org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
                 keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
         KeyManagerDTO retrievedData = keyManagerDTOApiResponse.getData();

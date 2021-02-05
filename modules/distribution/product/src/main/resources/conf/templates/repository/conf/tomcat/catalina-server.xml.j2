@@ -63,7 +63,7 @@
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.RequestCorrelationIdValve"
                        headerToCorrelationIdMapping="{'activityid':'Correlation-ID'}" queryToCorrelationIdMapping="{'RelayState':'Correlation-ID'}"/>
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.CarbonContextCreatorValve"/>
-                <Valve className="org.apache.catalina.valves.AccessLogValve" directory="${carbon.home}/repository/logs"
+                <Valve className="org.apache.catalina.valves.AccessLogValve" directory="{{http_access_log.directory}}"
                        prefix="{{http_access_log.prefix}}" suffix="{{http_access_log.suffix}}" pattern="{{http_access_log.pattern}}"/>
 
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.CarbonStuckThreadDetectionValve" threshold="600"/>
@@ -75,6 +75,13 @@
                 <Valve className="org.wso2.carbon.identity.context.rewrite.valve.TenantContextRewriteValve"/>
                 <!--Error pages -->
                 <Valve className="org.apache.catalina.valves.ErrorReportValve" showServerInfo="false" showReport="false"/>
+                {% for valve in catalina.valves %}
+                <Valve
+                    {% for property,value in valve.properties.items() %}
+                        {{property}}="{{value}}"
+                    {% endfor %}
+                />
+                {% endfor %}
             </Host>
         </Engine>
     </Service>

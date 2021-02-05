@@ -1,6 +1,6 @@
 # CustomRulesIndividualApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/admin/v0.16*
+All URIs are relative to *https://apis.wso2.com/api/am/admin/v0.17*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

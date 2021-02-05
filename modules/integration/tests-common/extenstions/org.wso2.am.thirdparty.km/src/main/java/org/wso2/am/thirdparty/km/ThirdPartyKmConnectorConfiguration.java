@@ -1,19 +1,13 @@
 package org.wso2.am.thirdparty.km;
 
 import org.osgi.service.component.annotations.Component;
-import org.wso2.carbon.apimgt.api.model.ConfigurationDto;
 import org.wso2.carbon.apimgt.api.model.KeyManagerConnectorConfiguration;
 import org.wso2.carbon.apimgt.impl.keymgt.AbstractKeyManagerConnectorConfiguration;
 
-import java.util.ArrayList;
-import java.util.List;
-
-
 @Component(
-        name ="thirdpary.km.component",
+        name = "thirdpary.km.component",
         immediate = true,
-        service = KeyManagerConnectorConfiguration.class,
-        property = {"type=" + ThirdPartyKMConstants.KEY_MANAGER_TYPE})
+        service = KeyManagerConnectorConfiguration.class)
 public class ThirdPartyKmConnectorConfiguration extends AbstractKeyManagerConnectorConfiguration {
 
     @Override
@@ -26,5 +20,11 @@ public class ThirdPartyKmConnectorConfiguration extends AbstractKeyManagerConnec
     public String getJWTValidator() {
 
         return null;
+    }
+
+    @Override
+    public String getType() {
+
+        return ThirdPartyKMConstants.KEY_MANAGER_TYPE;
     }
 }

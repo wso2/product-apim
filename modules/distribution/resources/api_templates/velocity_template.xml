@@ -257,6 +257,9 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="true"/>
 #end
+#if($endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH")
+<class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
+#end
 <send/>
 </outSequence>
         </resource>
@@ -280,9 +283,8 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
 <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.SchemaValidator"/>
 #end
 #if(!$enableStore)
-<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.APIAuthenticationHandler">
-    <property name="AuthorizationHeader" value="Authorization"/>
-    <property name="APISecurity" value="oauth_basic_auth_api_key_mandatory,basic_auth"/>
+<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.TestKeyAuthenticator">
+    <property name="testKey" value="$!testKey"/>
 </handler>
 #end
 </handlers>

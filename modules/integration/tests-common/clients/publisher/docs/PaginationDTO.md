@@ -1,7 +1,9 @@
 
+
 # PaginationDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **offset** | **Integer** |  |  [optional]

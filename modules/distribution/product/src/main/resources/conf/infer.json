@@ -7,14 +7,9 @@
       "apim.throttling.enable_blacklist_condition": true,
       "indexing.enable": false,
       "system.parameter.profile": "gateway-worker",
-      "enabled_global_handlers": [
-        "external_call_logger",
-        "open_tracing"
-      ],
-      "synapse_handlers.external_call_logger.name": "externalCallLogger",
-      "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler",
-      "synapse_handlers.open_tracing.name": "open_tracing",
-      "synapse_handlers.open_tracing.class": "org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencySynapseHandler"
+      "synapse_handlers.external_call_logger.enabled": true,
+      "synapse_handlers.open_tracing.enabled": true,
+      "apim.key_manager.enable_registration": false
     },
     "api-key-manager": {
       "apim.throttling.enable_policy_deploy": false,
@@ -24,8 +19,10 @@
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
       "indexing.enable": false,
-      "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.tokenmgt.issuers.APIMTokenIssuer",
-      "system.parameter.profile": "api-key-manager"
+      "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl",
+      "system.parameter.profile": "api-key-manager",
+      "apim.key_manager.enable_registration": false,
+      "apim.key_manager.enable_retriever": false
     },
     "api-publisher": {
       "apim.throttling.enable_policy_deploy": true,
@@ -34,7 +31,9 @@
       "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
-      "system.parameter.profile": "api-publisher"
+      "system.parameter.profile": "api-publisher",
+      "apim.key_manager.enable_registration": false,
+      "apim.key_manager.enable_retriever": true
     },
     "api-devportal": {
       "apim.throttling.enable_policy_deploy": false,
@@ -43,21 +42,23 @@
       "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
-      "system.parameter.profile": "api-devportal"
+      "system.parameter.profile": "api-devportal",
+      "apim.key_manager.enable_registration": false,
+      "apim.key_manager.enable_retriever": true
     },
     "traffic-manager": {
-      "system.parameter.profile": "traffic-manager"
+      "system.parameter.profile": "traffic-manager",
+      "apim.key_manager.enable_registration": true,
+      "apim.key_manager.enable_retriever": false,
+      "apim.throttling.enable_policy_deploy": false,
+      "apim.throttling.enable_data_publishing": false,
+      "apim.throttling.enable_decision_connection": false,
+      "apim.throttling.enable_blacklist_condition": false
     },
     "default": {
-      "oauth.extensions.token_generator": "org.wso2.carbon.apimgt.tokenmgt.issuers.APIMTokenIssuer",
-      "enabled_global_handlers": [
-        "external_call_logger",
-        "open_tracing"
-      ],
-      "synapse_handlers.external_call_logger.name": "externalCallLogger",
-      "synapse_handlers.external_call_logger.class": "org.wso2.carbon.apimgt.gateway.handlers.LogsHandler",
-      "synapse_handlers.open_tracing.name": "open_tracing",
-      "synapse_handlers.open_tracing.class": "org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencySynapseHandler"
+      "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl",
+      "synapse_handlers.external_call_logger.enabled": true,
+      "synapse_handlers.open_tracing.enabled": true
     }
   },
   "apim.jwt.encoding": {
@@ -72,7 +73,7 @@
   },
   "apim.jwt.enable_user_claims": {
     "true": {
-      "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+      "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever"
     }
   },
   "apim.devportal.application_sharing_type": {
@@ -127,6 +128,18 @@
     "true": {
       "oauth.extensions.token_persistence_processor": "org.wso2.carbon.identity.oauth.tokenprocessor.HashingPersistenceProcessor",
       "oauth.hash_tokens_and_secrets": true
+    }
+  },
+  "apim.cache_invalidation.enabled": {
+    "true": {
+      "server.cache.invalidation_impl": "org.wso2.carbon.apimgt.cache.invalidation.APIMgtCacheInvalidationRequestSender"
+    }
+  },
+  "apim.analytics.enable": {
+    "true": {
+      "synapse_handlers.analytics_handler.enabled": true,
+      "synapse_handlers.analytics_handler.name": "analytics_handler",
+      "synapse_handlers.analytics_handler.class": "$ref{apim.analytics.handler_impl}"
     }
   }
 }

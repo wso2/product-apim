@@ -1,7 +1,9 @@
 
+
 # LifecycleHistoryItemDTO
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **previousState** | **String** |  |  [optional]

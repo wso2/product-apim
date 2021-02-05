@@ -1,12 +1,12 @@
 /*
  * WSO2 API Manager - Admin
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Admin Portal. Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.5.176/components/apimgt/org.wso2.carbon.apimgt.rest.api.admin/src/main/resources/admin-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - **Admin Portal**. Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.7.206/components/apimgt/org.wso2.carbon.apimgt.rest.api.admin.v1/src/main/resources/admin-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.  # Authentication Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking the the API you need to obtain an access token with the required scopes. This guide will walk you through the steps that you will need to follow to obtain an access token. First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types in the payload. A sample payload is shown below. ```   {   \"callbackUrl\":\"www.google.lk\",   \"clientName\":\"rest_api_admin\",   \"owner\":\"admin\",   \"grantType\":\"client_credentials password refresh_token\",   \"saasApp\":true   } ``` Create a file (payload.json) with the above sample payload, and use the cURL shown bellow to invoke the DCR endpoint. Authorization header of this should contain the base64 encoded admin username and password. **Format of the request** ```   curl -X POST -H \"Authorization: Basic Base64(admin_username:admin_password)\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://<host>:<servlet_port>/client-registration/v0.17/register ``` **Sample request** ```   curl -X POST -H \"Authorization: Basic YWRtaW46YWRtaW4=\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://localhost:9443/client-registration/v0.17/register ``` Following is a sample response after invoking the above curl. ``` { \"clientId\": \"fOCi4vNJ59PpHucC2CAYfYuADdMa\", \"clientName\": \"rest_api_admin\", \"callBackURL\": \"www.google.lk\", \"clientSecret\": \"a4FwHlq0iCIKVs2MPIIDnepZnYMa\", \"isSaasApplication\": true, \"appOwner\": \"admin\", \"jsonString\": \"{\\\"grant_types\\\":\\\"client_credentials password refresh_token\\\",\\\"redirect_uris\\\":\\\"www.google.lk\\\",\\\"client_name\\\":\\\"rest_api_admin\\\"}\", \"jsonAppAttribute\": \"{}\", \"tokenType\": null } ``` Next you must use the above client id and secret to obtain the access token. We will be using the password grant type for this, you can use any grant type you desire. You also need to add the proper **scope** when getting the access token. All possible scopes for Admin REST API can be viewed in **OAuth2 Security** section of this document and scope for each resource is given in **authorizations** section of resource documentation. Following is the format of the request if you are using the password grant type. ``` curl -k -d \"grant_type=password&username=<admin_username>&password=<admin_passowrd>&scope=<scopes seperated by space>\" \\ -H \"Authorization: Basic base64(cliet_id:client_secret)\" \\ https://<host>:<gateway_port>/token ``` **Sample request** ``` curl https://localhost:8243/token -k \\ -H \"Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h\" \\ -d \"grant_type=password&username=admin&password=admin&scope=apim:admin apim:tier_view\" ``` Shown below is a sample response to the above request. ``` { \"access_token\": \"e79bda48-3406-3178-acce-f6e4dbdcbb12\", \"refresh_token\": \"a757795d-e69f-38b8-bd85-9aded677a97c\", \"scope\": \"apim:admin apim:tier_view\", \"token_type\": \"Bearer\", \"expires_in\": 3600 } ``` Now you have a valid access token, which you can use to invoke an API. Navigate through the API descriptions to find the required API, obtain an access token as described above and invoke the API with the authentication header. If you use a different authentication mechanism, this process may change.  # Try out in Postman If you want to try-out the embedded postman collection with \"Run in Postman\" option, please follow the guidelines listed below. * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes. * Make sure you have an API Manager instance up and running. * Update the `basepath` parameter to match the hostname and port of the APIM instance.  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/f5ac2ca9fb22afef6ed6) 
  *
- * OpenAPI spec version: v1.2
+ * The version of the OpenAPI document: v2
  * Contact: architecture@wso2.com
  *
- * NOTE: This class is auto generated by the swagger code generator program.
- * https://github.com/swagger-api/swagger-codegen.git
+ * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
+ * https://openapi-generator.tech
  * Do not edit the class manually.
  */
 
@@ -38,32 +38,37 @@ import java.util.List;
 import java.util.Map;
 
 public class BotDetectionAlertSubscriptionsApi {
-    private ApiClient apiClient;
+    private ApiClient localVarApiClient;
 
     public BotDetectionAlertSubscriptionsApi() {
         this(Configuration.getDefaultApiClient());
     }
 
     public BotDetectionAlertSubscriptionsApi(ApiClient apiClient) {
-        this.apiClient = apiClient;
+        this.localVarApiClient = apiClient;
     }
 
     public ApiClient getApiClient() {
-        return apiClient;
+        return localVarApiClient;
     }
 
     public void setApiClient(ApiClient apiClient) {
-        this.apiClient = apiClient;
+        this.localVarApiClient = apiClient;
     }
 
     /**
      * Build call for getBotDetectionAlertSubscriptions
-     * @param progressListener Progress listener
-     * @param progressRequestListener Progress request listener
+     * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The list of bot detection alert subscriptions are returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
-    public com.squareup.okhttp.Call getBotDetectionAlertSubscriptionsCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public okhttp3.Call getBotDetectionAlertSubscriptionsCall(final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -71,278 +76,255 @@ public class BotDetectionAlertSubscriptionsApi {
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
         final String[] localVarAccepts = {
             "application/json"
         };
-        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
-            });
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
         }
 
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call getBotDetectionAlertSubscriptionsValidateBeforeCall(final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private okhttp3.Call getBotDetectionAlertSubscriptionsValidateBeforeCall(final ApiCallback _callback) throws ApiException {
         
 
-        com.squareup.okhttp.Call call = getBotDetectionAlertSubscriptionsCall(progressListener, progressRequestListener);
-        return call;
+        okhttp3.Call localVarCall = getBotDetectionAlertSubscriptionsCall(_callback);
+        return localVarCall;
 
     }
 
     /**
-     * Get the list of subscriptions for bot detection 
+     * Get Subscriptions for Bot Detection 
      * Get the list of subscriptions which are subscribed to receive email alerts for bot detection 
      * @return BotDetectionAlertSubscriptionListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The list of bot detection alert subscriptions are returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
     public BotDetectionAlertSubscriptionListDTO getBotDetectionAlertSubscriptions() throws ApiException {
-        ApiResponse<BotDetectionAlertSubscriptionListDTO> resp = getBotDetectionAlertSubscriptionsWithHttpInfo();
-        return resp.getData();
+        ApiResponse<BotDetectionAlertSubscriptionListDTO> localVarResp = getBotDetectionAlertSubscriptionsWithHttpInfo();
+        return localVarResp.getData();
     }
 
     /**
-     * Get the list of subscriptions for bot detection 
+     * Get Subscriptions for Bot Detection 
      * Get the list of subscriptions which are subscribed to receive email alerts for bot detection 
      * @return ApiResponse&lt;BotDetectionAlertSubscriptionListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The list of bot detection alert subscriptions are returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
     public ApiResponse<BotDetectionAlertSubscriptionListDTO> getBotDetectionAlertSubscriptionsWithHttpInfo() throws ApiException {
-        com.squareup.okhttp.Call call = getBotDetectionAlertSubscriptionsValidateBeforeCall(null, null);
+        okhttp3.Call localVarCall = getBotDetectionAlertSubscriptionsValidateBeforeCall(null);
         Type localVarReturnType = new TypeToken<BotDetectionAlertSubscriptionListDTO>(){}.getType();
-        return apiClient.execute(call, localVarReturnType);
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get the list of subscriptions for bot detection  (asynchronously)
+     * Get Subscriptions for Bot Detection  (asynchronously)
      * Get the list of subscriptions which are subscribed to receive email alerts for bot detection 
-     * @param callback The callback to be executed when the API call finishes
+     * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. The list of bot detection alert subscriptions are returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
-    public com.squareup.okhttp.Call getBotDetectionAlertSubscriptionsAsync(final ApiCallback<BotDetectionAlertSubscriptionListDTO> callback) throws ApiException {
+    public okhttp3.Call getBotDetectionAlertSubscriptionsAsync(final ApiCallback<BotDetectionAlertSubscriptionListDTO> _callback) throws ApiException {
 
-        ProgressResponseBody.ProgressListener progressListener = null;
-        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
-
-        if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
-
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
-        }
-
-        com.squareup.okhttp.Call call = getBotDetectionAlertSubscriptionsValidateBeforeCall(progressListener, progressRequestListener);
+        okhttp3.Call localVarCall = getBotDetectionAlertSubscriptionsValidateBeforeCall(_callback);
         Type localVarReturnType = new TypeToken<BotDetectionAlertSubscriptionListDTO>(){}.getType();
-        apiClient.executeAsync(call, localVarReturnType, callback);
-        return call;
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
     }
     /**
      * Build call for subscribeForBotDetectionAlerts
-     * @param body The email to register to receive bot detection alerts  (required)
-     * @param progressListener Progress listener
-     * @param progressRequestListener Progress request listener
+     * @param botDetectionAlertSubscriptionDTO The email to register to receive bot detection alerts  (required)
+     * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Bot detection alert subscription is registered successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
-    public com.squareup.okhttp.Call subscribeForBotDetectionAlertsCall(BotDetectionAlertSubscriptionDTO body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        Object localVarPostBody = body;
+    public okhttp3.Call subscribeForBotDetectionAlertsCall(BotDetectionAlertSubscriptionDTO botDetectionAlertSubscriptionDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = botDetectionAlertSubscriptionDTO;
 
         // create path and map variables
         String localVarPath = "/alert-subscriptions/bot-detection";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
         final String[] localVarAccepts = {
             "application/json"
         };
-        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
 
         final String[] localVarContentTypes = {
             "application/json"
         };
-        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
 
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
-            });
-        }
-
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call subscribeForBotDetectionAlertsValidateBeforeCall(BotDetectionAlertSubscriptionDTO body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private okhttp3.Call subscribeForBotDetectionAlertsValidateBeforeCall(BotDetectionAlertSubscriptionDTO botDetectionAlertSubscriptionDTO, final ApiCallback _callback) throws ApiException {
         
-        // verify the required parameter 'body' is set
-        if (body == null) {
-            throw new ApiException("Missing the required parameter 'body' when calling subscribeForBotDetectionAlerts(Async)");
+        // verify the required parameter 'botDetectionAlertSubscriptionDTO' is set
+        if (botDetectionAlertSubscriptionDTO == null) {
+            throw new ApiException("Missing the required parameter 'botDetectionAlertSubscriptionDTO' when calling subscribeForBotDetectionAlerts(Async)");
         }
         
 
-        com.squareup.okhttp.Call call = subscribeForBotDetectionAlertsCall(body, progressListener, progressRequestListener);
-        return call;
+        okhttp3.Call localVarCall = subscribeForBotDetectionAlertsCall(botDetectionAlertSubscriptionDTO, _callback);
+        return localVarCall;
 
     }
 
     /**
-     * Subscribe for bot detection alerts
+     * Subscribe for Bot Detection Alerts
      * Register a subscription for bot detection alerts 
-     * @param body The email to register to receive bot detection alerts  (required)
+     * @param botDetectionAlertSubscriptionDTO The email to register to receive bot detection alerts  (required)
      * @return BotDetectionAlertSubscriptionDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Bot detection alert subscription is registered successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
-    public BotDetectionAlertSubscriptionDTO subscribeForBotDetectionAlerts(BotDetectionAlertSubscriptionDTO body) throws ApiException {
-        ApiResponse<BotDetectionAlertSubscriptionDTO> resp = subscribeForBotDetectionAlertsWithHttpInfo(body);
-        return resp.getData();
+    public BotDetectionAlertSubscriptionDTO subscribeForBotDetectionAlerts(BotDetectionAlertSubscriptionDTO botDetectionAlertSubscriptionDTO) throws ApiException {
+        ApiResponse<BotDetectionAlertSubscriptionDTO> localVarResp = subscribeForBotDetectionAlertsWithHttpInfo(botDetectionAlertSubscriptionDTO);
+        return localVarResp.getData();
     }
 
     /**
-     * Subscribe for bot detection alerts
+     * Subscribe for Bot Detection Alerts
      * Register a subscription for bot detection alerts 
-     * @param body The email to register to receive bot detection alerts  (required)
+     * @param botDetectionAlertSubscriptionDTO The email to register to receive bot detection alerts  (required)
      * @return ApiResponse&lt;BotDetectionAlertSubscriptionDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Bot detection alert subscription is registered successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
-    public ApiResponse<BotDetectionAlertSubscriptionDTO> subscribeForBotDetectionAlertsWithHttpInfo(BotDetectionAlertSubscriptionDTO body) throws ApiException {
-        com.squareup.okhttp.Call call = subscribeForBotDetectionAlertsValidateBeforeCall(body, null, null);
+    public ApiResponse<BotDetectionAlertSubscriptionDTO> subscribeForBotDetectionAlertsWithHttpInfo(BotDetectionAlertSubscriptionDTO botDetectionAlertSubscriptionDTO) throws ApiException {
+        okhttp3.Call localVarCall = subscribeForBotDetectionAlertsValidateBeforeCall(botDetectionAlertSubscriptionDTO, null);
         Type localVarReturnType = new TypeToken<BotDetectionAlertSubscriptionDTO>(){}.getType();
-        return apiClient.execute(call, localVarReturnType);
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Subscribe for bot detection alerts (asynchronously)
+     * Subscribe for Bot Detection Alerts (asynchronously)
      * Register a subscription for bot detection alerts 
-     * @param body The email to register to receive bot detection alerts  (required)
-     * @param callback The callback to be executed when the API call finishes
+     * @param botDetectionAlertSubscriptionDTO The email to register to receive bot detection alerts  (required)
+     * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Bot detection alert subscription is registered successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
-    public com.squareup.okhttp.Call subscribeForBotDetectionAlertsAsync(BotDetectionAlertSubscriptionDTO body, final ApiCallback<BotDetectionAlertSubscriptionDTO> callback) throws ApiException {
+    public okhttp3.Call subscribeForBotDetectionAlertsAsync(BotDetectionAlertSubscriptionDTO botDetectionAlertSubscriptionDTO, final ApiCallback<BotDetectionAlertSubscriptionDTO> _callback) throws ApiException {
 
-        ProgressResponseBody.ProgressListener progressListener = null;
-        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
-
-        if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
-
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
-        }
-
-        com.squareup.okhttp.Call call = subscribeForBotDetectionAlertsValidateBeforeCall(body, progressListener, progressRequestListener);
+        okhttp3.Call localVarCall = subscribeForBotDetectionAlertsValidateBeforeCall(botDetectionAlertSubscriptionDTO, _callback);
         Type localVarReturnType = new TypeToken<BotDetectionAlertSubscriptionDTO>(){}.getType();
-        apiClient.executeAsync(call, localVarReturnType, callback);
-        return call;
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
     }
     /**
      * Build call for unsubscribeFromBotDetectionAlerts
      * @param uuid uuid of the subscription (required)
-     * @param progressListener Progress listener
-     * @param progressRequestListener Progress request listener
+     * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Bot detection alert subscription is deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
-    public com.squareup.okhttp.Call unsubscribeFromBotDetectionAlertsCall(String uuid, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public okhttp3.Call unsubscribeFromBotDetectionAlertsCall(String uuid, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
         String localVarPath = "/alert-subscriptions/bot-detection/{uuid}"
-            .replaceAll("\\{" + "uuid" + "\\}", apiClient.escapeString(uuid.toString()));
+            .replaceAll("\\{" + "uuid" + "\\}", localVarApiClient.escapeString(uuid.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
         final String[] localVarAccepts = {
             "application/json"
         };
-        final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
-
-        final String[] localVarContentTypes = {
-            "application/json"
-        };
-        final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        if(progressListener != null) {
-            apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
-                @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
-                    com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
-                    return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
-                }
-            });
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
         }
 
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return apiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
+        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call unsubscribeFromBotDetectionAlertsValidateBeforeCall(String uuid, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private okhttp3.Call unsubscribeFromBotDetectionAlertsValidateBeforeCall(String uuid, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'uuid' is set
         if (uuid == null) {
@@ -350,16 +332,23 @@ public class BotDetectionAlertSubscriptionsApi {
         }
         
 
-        com.squareup.okhttp.Call call = unsubscribeFromBotDetectionAlertsCall(uuid, progressListener, progressRequestListener);
-        return call;
+        okhttp3.Call localVarCall = unsubscribeFromBotDetectionAlertsCall(uuid, _callback);
+        return localVarCall;
 
     }
 
     /**
      * Unsubscribe from bot detection alerts.
-     * Delete a subscription from bot detection alerts. 
+     * Delete a Bot Detection Alert Subscription 
      * @param uuid uuid of the subscription (required)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Bot detection alert subscription is deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
     public void unsubscribeFromBotDetectionAlerts(String uuid) throws ApiException {
         unsubscribeFromBotDetectionAlertsWithHttpInfo(uuid);
@@ -367,47 +356,42 @@ public class BotDetectionAlertSubscriptionsApi {
 
     /**
      * Unsubscribe from bot detection alerts.
-     * Delete a subscription from bot detection alerts. 
+     * Delete a Bot Detection Alert Subscription 
      * @param uuid uuid of the subscription (required)
      * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Bot detection alert subscription is deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
     public ApiResponse<Void> unsubscribeFromBotDetectionAlertsWithHttpInfo(String uuid) throws ApiException {
-        com.squareup.okhttp.Call call = unsubscribeFromBotDetectionAlertsValidateBeforeCall(uuid, null, null);
-        return apiClient.execute(call);
+        okhttp3.Call localVarCall = unsubscribeFromBotDetectionAlertsValidateBeforeCall(uuid, null);
+        return localVarApiClient.execute(localVarCall);
     }
 
     /**
      * Unsubscribe from bot detection alerts. (asynchronously)
-     * Delete a subscription from bot detection alerts. 
+     * Delete a Bot Detection Alert Subscription 
      * @param uuid uuid of the subscription (required)
-     * @param callback The callback to be executed when the API call finishes
+     * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Bot detection alert subscription is deleted successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
      */
-    public com.squareup.okhttp.Call unsubscribeFromBotDetectionAlertsAsync(String uuid, final ApiCallback<Void> callback) throws ApiException {
+    public okhttp3.Call unsubscribeFromBotDetectionAlertsAsync(String uuid, final ApiCallback<Void> _callback) throws ApiException {
 
-        ProgressResponseBody.ProgressListener progressListener = null;
-        ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
-
-        if (callback != null) {
-            progressListener = new ProgressResponseBody.ProgressListener() {
-                @Override
-                public void update(long bytesRead, long contentLength, boolean done) {
-                    callback.onDownloadProgress(bytesRead, contentLength, done);
-                }
-            };
-
-            progressRequestListener = new ProgressRequestBody.ProgressRequestListener() {
-                @Override
-                public void onRequestProgress(long bytesWritten, long contentLength, boolean done) {
-                    callback.onUploadProgress(bytesWritten, contentLength, done);
-                }
-            };
-        }
-
-        com.squareup.okhttp.Call call = unsubscribeFromBotDetectionAlertsValidateBeforeCall(uuid, progressListener, progressRequestListener);
-        apiClient.executeAsync(call, callback);
-        return call;
+        okhttp3.Call localVarCall = unsubscribeFromBotDetectionAlertsValidateBeforeCall(uuid, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
     }
 }

@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-distribution-parent</artifactId>
-        <version>3.2.0</version>
+        <version>4.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -673,25 +673,6 @@
                                     <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
                                     <token>(jdbc/WSO2CarbonDB)</token>
                                     <value>jdbc/WSO2AM_DB</value>
-                                </replacement>
-                            </replacements>
-                        </configuration>
-                    </execution>
-
-                    <!-- Update Owasp.CsrfGuard.properties file location to fix IBM JDK issue -->
-                    <execution>
-                        <id>replace-for-owasp</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                        <configuration>
-                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/web.xml</file>
-                            <replacements>
-                                <replacement>
-                                    <xpath>/web-app/context-param/param-value</xpath>
-                                    <token>(/repository/conf/security/Owasp.CsrfGuard.Carbon.properties)</token>
-                                    <value>repository/conf/security/Owasp.CsrfGuard.Carbon.properties</value>
                                 </replacement>
                             </replacements>
                         </configuration>

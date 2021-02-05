@@ -4,6 +4,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.simple.parser.JSONParser;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
@@ -21,10 +22,11 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.activation.DataHandler;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.activation.DataHandler;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -78,6 +80,9 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = apiResponse.getData();
 
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
 
         HttpResponse subscription = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
@@ -130,8 +135,11 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         apiRequest.setEndpoint((org.json.simple.JSONObject) parser.parse(endPointString));
 
         restAPIPublisher.updateAPI(apiRequest, apiId);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
-
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
         request.setHeader("Authorization", "Bearer " + accessToken);
@@ -142,5 +150,12 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/xml");
     }
 
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationID);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+        restAPIPublisher.deleteAPI(apiId);
+        super.cleanUp();
+    }
 
 }

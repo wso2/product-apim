@@ -47,8 +47,6 @@
     "accessControlAllowMethods": ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"]
   },
   "workflowStatus": null,
-  "createdTime": "2019-09-17 17:49:55.251",
-  "lastUpdatedTime": "2019-09-17 17:49:55.251",
   "endpointConfig": {
     "endpoint_type": "http",
     "sandbox_endpoints": {

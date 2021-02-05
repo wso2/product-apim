@@ -155,6 +155,7 @@ public class JWTRevocationTestCase extends APIManagerLifecycleBaseTest {
     public void destroy() throws Exception {
 
         restAPIStore.deleteApplication(appId);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
 }

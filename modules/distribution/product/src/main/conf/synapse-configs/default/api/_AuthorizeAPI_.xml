@@ -1,5 +1,5 @@
 <api xmlns="http://ws.apache.org/ns/synapse" name="_WSO2AMAuthorizeAPI_" context="/authorize">
-    <resource methods="GET" url-mapping="/*" faultSequence="_token_fault_">
+    <resource methods="GET POST" url-mapping="/*" faultSequence="_token_fault_">
         <inSequence>
             <property name="uri.var.portnum" expression="get-property('keyManager.port')"/>
 	    <property name="uri.var.hostname" expression="get-property('keyManager.hostname')"/>

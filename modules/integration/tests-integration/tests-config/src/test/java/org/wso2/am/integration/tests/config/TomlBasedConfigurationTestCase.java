@@ -223,7 +223,7 @@ public class TomlBasedConfigurationTestCase {
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/DefaultGroupExtractorClaimUri")
                 .isEqualTo("http://wso2.org/claims/organization");
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/CompareCaseInsensitively").isEqualTo("false");
-        assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/URL").isEqualTo("https://localhost:9443/store");
+        assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/URL").isEqualTo("https://localhost:9443/devportal");
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/DisplayMultipleVersions").isEqualTo("true");
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/DisplayAllAPIs").isEqualTo("true");
         assertThat(apim).valueByXPath(storeConfigXpathPrefix + "/DisplayComments").isEqualTo("false");
