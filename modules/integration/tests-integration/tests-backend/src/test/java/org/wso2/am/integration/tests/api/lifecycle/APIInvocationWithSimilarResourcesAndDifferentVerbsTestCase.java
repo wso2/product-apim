@@ -147,7 +147,7 @@ import static org.testng.Assert.assertTrue;
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, ApiException, JSONException {
+    public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicarionId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);

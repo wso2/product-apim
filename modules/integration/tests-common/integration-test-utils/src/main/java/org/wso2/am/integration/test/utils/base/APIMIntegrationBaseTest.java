@@ -17,6 +17,7 @@
 */
 package org.wso2.am.integration.test.utils.base;
 
+import com.google.gson.Gson;
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
@@ -32,6 +33,7 @@ import org.wso2.am.admin.clients.claim.ClaimMetaDataMgtAdminClient;
 import org.wso2.am.admin.clients.oauth.OAuthAdminServiceClient;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductInfoDTO;
@@ -817,7 +819,7 @@ public class APIMIntegrationBaseTest {
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String undeployAndDeleteAPIRevisionsUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
-            throws ApiException, JSONException {
+            throws ApiException, JSONException, XPathExpressionException, APIManagerIntegrationTestException {
         int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
         int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
         String revisionUUID = null;
@@ -865,6 +867,14 @@ public class APIMIntegrationBaseTest {
             assertEquals(apiRevisionsDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Unable to delete API Revisions:" + apiRevisionsDeleteResponse.getData());
         }
+
+        //Waiting for API un-deployment
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        Gson g = new Gson();
+        APIDTO apiDto = g.fromJson(response.getData(), APIDTO.class);
+        waitForAPIDeploymentSync(user.getUserName(), apiDto.getName(), apiDto.getVersion(),
+                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+
         return  revisionUUID;
     }
 }

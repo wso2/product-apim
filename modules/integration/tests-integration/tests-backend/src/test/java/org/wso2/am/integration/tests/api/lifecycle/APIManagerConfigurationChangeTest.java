@@ -216,10 +216,10 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                     + File.separator + "dummy_api_loc_header.xml", gatewayContextMgt, gatewaySessionCookie);
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                     + File.separator + "synapseconfigs" + File.separator + "rest"
-                    + File.separator + "jwks-backend.xml", gatewayContextMgt, gatewaySessionCookie);
+                    + File.separator + "JWKS-Backend.xml", gatewayContextMgt, gatewaySessionCookie);
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                     + File.separator + "synapseconfigs" + File.separator + "rest"
-                    + File.separator + "backend_security.xml", gatewayContextMgt, gatewaySessionCookie);
+                    + File.separator + "BackEndSecurity.xml", gatewayContextMgt, gatewaySessionCookie);
         }
     }
 }

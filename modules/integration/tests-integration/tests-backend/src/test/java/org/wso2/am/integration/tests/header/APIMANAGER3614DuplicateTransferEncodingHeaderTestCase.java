@@ -63,7 +63,7 @@ public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase extends APIMI
                                   "</HEAD>\n" + "\n" + "<BODY BGCOLOR=\"#FDF5E6\">\n" +
                                   "<H1 ALIGN=\"CENTER\"> Results</H1>\n" +
                                   "Here is the request line and request headers\n" +
-                                  "sent by your browser:\n" + "<PRE>";
+                                  "sent by your browser:\n" + "<PRE>\r\n0\r\n";
         simpleSocketServer = new SimpleSocketServer(port, expectedResponse);
         simpleSocketServer.start();
         Thread.sleep(10000);
