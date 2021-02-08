@@ -516,3 +516,67 @@ java.net.ConnectException: Connection refused (Connection refused)
 2021-02-05 10:19:21,617 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
 2021-02-05 10:19:21,618 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - waiting 90000 millis for Service deployment jaxrs_basic
 2021-02-05 10:19:21,685 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - jaxrs_basic Web Application deployed in 0 millis
+2021-02-05 14:13:47,259 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2021-02-05 14:13:47,263 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - BASE_URL>>>>>https://localhost:9443/
+2021-02-05 14:13:47,263 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - SERVICE URL>>>https://localhost:9443/services/
+2021-02-05 14:13:47,263 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - HOST>>>>>localhost
+2021-02-05 14:13:47,320 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2021-02-05 14:13:47,321 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - BASE_URL>>>>>https://localhost:9443/
+2021-02-05 14:13:47,321 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - SERVICE URL>>>https://localhost:9443/services/
+2021-02-05 14:13:47,321 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - HOST>>>>>localhost
+2021-02-05 14:13:47,321 INFO  [org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase] - /Users/sampath/Documents/Projects/latest/latest/product-apim/product-scenarios/scenarios-common/src/test/resources/
+2021-02-05 14:13:47,321 INFO  [org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase] - Start deploying Web Apps
+2021-02-05 14:13:47,450 WARN  [org.apache.axiom.util.stax.dialect.StAXDialectDetector] - Unable to determine dialect of the StAX implementation at jar:file:/Users/sampath/.m2/repository/org/apache/ws/commons/axiom/wso2/axiom/1.2.11-wso2v16/axiom-1.2.11-wso2v16.jar!/
+2021-02-05 14:13:48,188 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2021-02-05 14:13:48,678 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - WEB_APP :APIStatusMonitor found
+2021-02-05 14:13:48,730 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2021-02-05 14:13:48,730 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - waiting 90000 millis for Service deployment jaxrs_basic
+2021-02-05 14:13:48,825 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - jaxrs_basic Web Application deployed in 0 millis
+2021-02-05 14:24:09,923 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2021-02-05 14:24:09,928 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - BASE_URL>>>>>https://localhost:9443/
+2021-02-05 14:24:09,928 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - SERVICE URL>>>https://localhost:9443/services/
+2021-02-05 14:24:09,928 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - HOST>>>>>localhost
+2021-02-05 14:24:09,980 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2021-02-05 14:24:09,981 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - BASE_URL>>>>>https://localhost:9443/
+2021-02-05 14:24:09,981 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - SERVICE URL>>>https://localhost:9443/services/
+2021-02-05 14:24:09,981 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - HOST>>>>>localhost
+2021-02-05 14:24:09,981 INFO  [org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase] - /Users/sampath/Documents/Projects/latest/latest/product-apim/product-scenarios/scenarios-common/src/test/resources/
+2021-02-05 14:24:09,981 INFO  [org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase] - Start deploying Web Apps
+2021-02-05 14:24:10,099 WARN  [org.apache.axiom.util.stax.dialect.StAXDialectDetector] - Unable to determine dialect of the StAX implementation at jar:file:/Users/sampath/.m2/repository/org/apache/ws/commons/axiom/wso2/axiom/1.2.11-wso2v16/axiom-1.2.11-wso2v16.jar!/
+2021-02-05 14:24:10,759 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2021-02-05 14:24:11,101 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - WEB_APP :APIStatusMonitor found
+2021-02-05 14:24:11,133 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2021-02-05 14:24:11,134 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - waiting 90000 millis for Service deployment jaxrs_basic
+2021-02-05 14:24:11,191 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - jaxrs_basic Web Application deployed in 0 millis
+2021-02-05 15:25:32,474 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2021-02-05 15:25:32,479 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - BASE_URL>>>>>https://localhost:9443/
+2021-02-05 15:25:32,479 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - SERVICE URL>>>https://localhost:9443/services/
+2021-02-05 15:25:32,479 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - HOST>>>>>localhost
+2021-02-05 15:25:32,527 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2021-02-05 15:25:32,527 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - BASE_URL>>>>>https://localhost:9443/
+2021-02-05 15:25:32,527 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - SERVICE URL>>>https://localhost:9443/services/
+2021-02-05 15:25:32,527 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - HOST>>>>>localhost
+2021-02-05 15:25:32,527 INFO  [org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase] - /Users/sampath/Documents/Projects/latest/latest/product-apim/product-scenarios/scenarios-common/src/test/resources/
+2021-02-05 15:25:32,527 INFO  [org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase] - Start deploying Web Apps
+2021-02-05 15:25:32,639 WARN  [org.apache.axiom.util.stax.dialect.StAXDialectDetector] - Unable to determine dialect of the StAX implementation at jar:file:/Users/sampath/.m2/repository/org/apache/ws/commons/axiom/wso2/axiom/1.2.11-wso2v16/axiom-1.2.11-wso2v16.jar!/
+2021-02-05 15:25:33,196 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2021-02-05 15:25:33,673 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - WEB_APP :APIStatusMonitor found
+2021-02-05 15:25:33,725 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2021-02-05 15:25:33,725 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - waiting 90000 millis for Service deployment jaxrs_basic
+2021-02-05 15:25:33,810 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - jaxrs_basic Web Application deployed in 0 millis
+2021-02-05 15:53:12,471 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2021-02-05 15:53:12,476 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - BASE_URL>>>>>https://localhost:9443/
+2021-02-05 15:53:12,476 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - SERVICE URL>>>https://localhost:9443/services/
+2021-02-05 15:53:12,476 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - HOST>>>>>localhost
+2021-02-05 15:53:12,525 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2021-02-05 15:53:12,525 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - BASE_URL>>>>>https://localhost:9443/
+2021-02-05 15:53:12,525 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - SERVICE URL>>>https://localhost:9443/services/
+2021-02-05 15:53:12,525 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - HOST>>>>>localhost
+2021-02-05 15:53:12,526 INFO  [org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase] - /Users/sampath/Documents/Projects/latest/latest/product-apim/product-scenarios/scenarios-common/src/test/resources/
+2021-02-05 15:53:12,526 INFO  [org.wso2.am.scenario.tests.common.DeploymentInitializerTestCase] - Start deploying Web Apps
+2021-02-05 15:53:12,642 WARN  [org.apache.axiom.util.stax.dialect.StAXDialectDetector] - Unable to determine dialect of the StAX implementation at jar:file:/Users/sampath/.m2/repository/org/apache/ws/commons/axiom/wso2/axiom/1.2.11-wso2v16/axiom-1.2.11-wso2v16.jar!/
+2021-02-05 15:53:13,322 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2021-02-05 15:53:13,634 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - WEB_APP :APIStatusMonitor found
+2021-02-05 15:53:13,665 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2021-02-05 15:53:13,665 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - waiting 90000 millis for Service deployment jaxrs_basic
+2021-02-05 15:53:13,725 INFO  [org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil] - jaxrs_basic Web Application deployed in 0 millis
