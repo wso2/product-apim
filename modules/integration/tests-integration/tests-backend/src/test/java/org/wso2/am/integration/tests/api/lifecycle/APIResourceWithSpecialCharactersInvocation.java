@@ -128,7 +128,7 @@ public class APIResourceWithSpecialCharactersInvocation extends APIManagerLifecy
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, ApiException, JSONException {
+    public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);

@@ -43,6 +43,7 @@
     <property name="Authorization" scope="transport" action="remove"/>
     <property name="Host" scope="transport" action="remove"/>
     <property name="Accept" scope="transport" action="remove"/>
+    <property name="X-JWT-Assertion" scope="transport" action="remove"/>
     <property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
     <sequence key="_cors_request_handler_"/>
     <send/>
