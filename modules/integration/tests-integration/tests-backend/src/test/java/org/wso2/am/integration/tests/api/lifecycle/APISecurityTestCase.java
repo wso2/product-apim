@@ -214,7 +214,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId4, restAPIPublisher);
-
+        waitForAPIDeploymentSync(apiRequest4.getProvider(), apiRequest4.getName(), apiRequest4.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction());
 
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
