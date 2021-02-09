@@ -214,8 +214,7 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
                 APIMIntegrationConstants.IS_API_EXISTS);
         //Generate User Access Key
         String requestBody = "grant_type=password&username=admin&password=admin&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
-
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         HttpResponse firstResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
                 tokenEndpointURL);
         JSONObject firstAccessTokenGenerationResponse = new JSONObject(firstResponse.getData());
