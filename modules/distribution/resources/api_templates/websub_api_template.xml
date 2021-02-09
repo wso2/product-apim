@@ -1,7 +1,7 @@
 <api xmlns="http://ws.apache.org/ns/synapse" name="$!apiName" context="$!apiContext" version="$!apiVersion" version-type="context">
     <resource methods="POST" url-mapping="/webhooks_events_receiver_resource">
         <inSequence>
-            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.MessageBuildMediator"/>
+            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.MessageBuilder"/>
             <property name="generated_signature" expression="fn:concat('$signingAlgorithm', hmac-generate($ctx:ORIGINAL_PAYLOAD, wso2:vault-lookup('$secret'), '$hmacSignatureGenerationAlgorithm'))"/>
             <property name="received_signature" expression="$trp:$signatureHeader"/>
             <filter xpath="get-property('received_signature') = get-property('generated_signature')">
@@ -15,21 +15,43 @@
                         </target>
                         <target>
                             <sequence>
-                                <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersCountMediator"/>
+                                <property name="X-Hub-Signature" scope="transport" action="remove"/>
+                                <header name="X-Hub-Signature" scope="transport" action="remove"/>
+                                <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersLoader"/>
                                 <clone iterations="{get-property('SUBSCRIBERS_COUNT')}" continueParent="true">
                                     <target>
-                                        <sequence>
-                                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersListMediator"/>
+                                        <sequence onError="webhooksFaultSequence">
+                                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscriberInfoLoader"/>
                                             <property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
                                             <header name="To" expression="$ctx:SUBSCRIBER_CALLBACK"/>
-                                            <property name="signature" expression="fn:concat('sha1=', hmac-generate($ctx:ORIGINAL_PAYLOAD, $ctx:SUBSCRIBER_SECRET))"/>
-                                            <property name="X-Hub-Signature" expression="$ctx:signature" scope="transport"/>
+                                            <filter source="boolean($ctx:SUBSCRIBER_SECRET)" regex="true">
+                                                <then>
+                                                    <property name="X-Hub-Signature"
+                                                              expression="fn:concat('sha1=', hmac-generate($ctx:ORIGINAL_PAYLOAD, $ctx:SUBSCRIBER_SECRET))"
+                                                              scope="transport"/>
+                                                </then>
+                                                <else/>
+                                            </filter>
                                             <call blocking="true">
                                                 <endpoint>
-                                                    <default />
+                                                    <default>
+                                                        <timeout>
+                                                            <duration>60000</duration>
+                                                        </timeout>
+                                                        <markForSuspension>
+                                                            <errorCodes>101504, 101505, 101500</errorCodes>
+                                                            <retriesBeforeSuspension>3</retriesBeforeSuspension>
+                                                            <retryDelay>1</retryDelay>
+                                                        </markForSuspension>
+                                                        <suspendOnFailure>
+                                                            <initialDuration>1000</initialDuration>
+                                                            <progressionFactor>2</progressionFactor>
+                                                            <maximumDuration>64000</maximumDuration>
+                                                        </suspendOnFailure>
+                                                    </default>
                                                 </endpoint>
                                             </call>
-                                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryDataMediator"/>
+                                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryStatusUpdater"/>
                                         </sequence>
                                     </target>
                                 </clone>
@@ -38,6 +60,9 @@
                     </clone>
                 </then>
                 <else>
+                    <log level="custom">
+                        <property name="ERROR" value="The signature validation failed"/>
+                    </log>
                     <drop/>
                 </else>
             </filter>
@@ -54,17 +79,22 @@
                     </sequence>
                 </target>
                 <target>
-                    <sequence>
-                        <property name="SUBSCRIBER_CALLBACK" expression="$url:hub.callback"/>
-                        <property name="SUBSCRIBER_TOPIC" expression="$url:hub.topic"/>
-                        <property name="SUBSCRIBER_APPLICATION_ID" expression="$ctx:api.ut.application.id"/>
-                        <header name="To" expression="$ctx:SUBSCRIBER_CALLBACK"/>
-                        <call>
-                            <endpoint>
-                                <default />
-                            </endpoint>
-                        </call>
-                        <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryDataMediator"/>
+                    <sequence onError="webhooksFaultSequence">
+                        <filter xpath="$url:hub.mode">
+                            <then>
+                                <property name="SUBSCRIBER_CALLBACK" expression="$url:hub.callback"/>
+                                <property name="SUBSCRIBER_TOPIC" expression="$url:hub.topic"/>
+                                <property name="SUBSCRIBER_APPLICATION_ID" expression="$ctx:api.ut.application.id"/>
+                                <header name="To" expression="$ctx:SUBSCRIBER_CALLBACK"/>
+                                <call>
+                                    <endpoint>
+                                        <default/>
+                                    </endpoint>
+                                </call>
+                                <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryStatusUpdater"/>
+                            </then>
+                            <else/>
+                        </filter>
                         <drop/>
                     </sequence>
                 </target>
@@ -72,8 +102,18 @@
         </inSequence>
     </resource>
     <handlers>
+        #foreach($handler in $handlers)
+        <handler class="$handler.className">
+            #if($handler.hasProperties())
+            #set ($map = $handler.getProperties() )
+            #foreach($property in $map.entrySet())
+            <property name="$!property.key" value="$!property.value"/>
+            #end
+            #end
+        </handler>
+        #end
         <handler class="org.wso2.carbon.apimgt.gateway.handlers.streaming.webhook.WebhookApiHandler">
-            <property name="subscriptionResourcePath" value="/subscription"/>
+            <property name="subscriptionResourcePath" value="/webhooks_events_receiver_resource"/>
             <property name="topicQueryParamName" value="hub.secret"/>
         </handler>
     </handlers>
