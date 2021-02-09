@@ -77,7 +77,6 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
     private String endpointUrl;
     private Map<String, String> requestHeaders = new HashMap<String, String>();
     private String consumerKey, consumerSecret;
-    private String authorizeURL;
     private String tokenURL;
     private String identityLoginURL;
     private String apiId;
@@ -98,8 +97,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         super.init(userMode);
         storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
-        authorizeURL = gatewayUrlsWrk.getWebAppURLNhttps() + "/authorize";
-        tokenURL = gatewayUrlsWrk.getWebAppURLNhttps() + "/token";
+        tokenURL = getKeyManagerURLHttps() + "/oauth2/token";
         identityLoginURL = getKeyManagerURLHttps() + "/oauth2/authorize";
 
         //create Application
@@ -168,7 +166,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         //Sending first request to approve grant authorization to app
         headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
         String url =
-                authorizeURL + "?response_type=code&" + "client_id=" + consumerKey + "&scope=PRODUCTION&redirect_uri="
+                identityLoginURL + "?response_type=code&" + "client_id=" + consumerKey + "&scope=PRODUCTION&redirect_uri="
                         + CALLBACK_URL;
         HttpResponse res = HTTPSClientUtils.doGet(url, headers);
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
@@ -242,7 +240,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         //Sending first request to approve grant authorization to app
         headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
         String url =
-                authorizeURL + "?response_type=token&" + "client_id=" + consumerKey + "&scope=PRODUCTION&redirect_uri="
+                identityLoginURL + "?response_type=token&" + "client_id=" + consumerKey + "&scope=PRODUCTION&redirect_uri="
                         + CALLBACK_URL;
         HttpResponse res = HTTPSClientUtils.doGet(url, headers);
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
@@ -332,7 +330,7 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         //Sending first request to approve grant authorization to app
         headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
         String url =
-                authorizeURL + "?response_type=code&" + "client_id=" + consumerKey + "&scope=PRODUCTION&redirect_uri=";
+                identityLoginURL + "?response_type=code&" + "client_id=" + consumerKey + "&scope=PRODUCTION&redirect_uri=";
         HttpResponse res = HTTPSClientUtils.doGet(url, headers);
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
         String locationHeader = res.getHeaders().get(LOCATION_HEADER);

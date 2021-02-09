@@ -98,8 +98,8 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
         requestHeaders.put("Authorization", "Bearer " + tokenJti);
 
-        HttpResponse userInfoResponse = HTTPSClientUtils.doGet(gatewayUrlsWrk.getWebAppURLNhttp()
-                + "userinfo?schema=openid", requestHeaders);
+        HttpResponse userInfoResponse = HTTPSClientUtils.doGet(keyManagerHTTPSURL
+                + "oauth2/userinfo?schema=openid", requestHeaders);
         Assert.assertEquals(userInfoResponse.getResponseCode(), 200, "Response code mismatched");
     }
 
