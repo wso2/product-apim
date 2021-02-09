@@ -113,7 +113,7 @@ public class JWTRevocationTestCase extends APIManagerLifecycleBaseTest {
         byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes(StandardCharsets.UTF_8));
         revokeRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes, StandardCharsets.UTF_8));
         String input = "token=" + accessToken;
-        URL revokeEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "revoke");
+        URL revokeEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/revoke");
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse revokeResponse;
         try {
             revokeResponse = HTTPSClientUtils.doPost(revokeEndpointURL, input, revokeRequestHeaders);
