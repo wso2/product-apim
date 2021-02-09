@@ -102,10 +102,6 @@
         </inSequence>
     </resource>
     <handlers>
-        <handler class="org.wso2.carbon.apimgt.gateway.handlers.streaming.webhook.WebhookApiHandler">
-            <property name="subscriptionResourcePath" value="/webhooks_events_receiver_resource"/>
-            <property name="topicQueryParamName" value="hub.secret"/>
-        </handler>
         #foreach($handler in $handlers)
         <handler class="$handler.className">
             #if($handler.hasProperties())
@@ -116,5 +112,9 @@
             #end
         </handler>
         #end
+        <handler class="org.wso2.carbon.apimgt.gateway.handlers.streaming.webhook.WebhookApiHandler">
+            <property name="subscriptionResourcePath" value="/webhooks_events_receiver_resource"/>
+            <property name="topicQueryParamName" value="hub.secret"/>
+        </handler>
     </handlers>
 </api>
