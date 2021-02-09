@@ -200,7 +200,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         String consumerKey = applicationKeyDTO.getConsumerKey();
         String consumerSecret = applicationKeyDTO.getConsumerSecret();
 
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         String accessToken;
         Map<String, String> requestHeaders;
         HttpResponse response;

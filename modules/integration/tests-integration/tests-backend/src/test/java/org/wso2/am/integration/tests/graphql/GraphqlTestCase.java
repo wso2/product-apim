@@ -288,7 +288,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
 
         String consumerKey = applicationKeyDTO.getConsumerKey();
         String consumerSecret =  applicationKeyDTO.getConsumerSecret();
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         HttpResponse response;
         String requestBody;
         JSONObject accessTokenGenerationResponse;

@@ -141,7 +141,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=" +
                 user.getPassword() + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         HttpResponse httpAccessTokenGenerationResponse = restAPIStore.generateUserAccessKey(consumerKey,
                 consumerSecret, requestBody, tokenEndpointURL);
         JSONObject accessTokenGenerationResponse = new JSONObject(httpAccessTokenGenerationResponse.getData());
@@ -201,7 +201,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         //Obtain user access token
         String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword()
                 + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
 
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
@@ -281,7 +281,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword() +
                 "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         HttpResponse httpAccessTokenGenerationResponse = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret,
                 requestBody, tokenEndpointURL);
         JSONObject accessTokenGenerationResponse = new JSONObject(httpAccessTokenGenerationResponse.getData());

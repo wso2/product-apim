@@ -128,7 +128,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         //Obtain user access token
         String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword() +
                 "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
 
         JSONObject accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey,
                 consumerSecret, requestBody, tokenEndpointURL).getData());

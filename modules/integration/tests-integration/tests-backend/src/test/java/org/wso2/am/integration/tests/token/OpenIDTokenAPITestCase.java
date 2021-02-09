@@ -81,7 +81,7 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
     public void testGenerateAccessTokenWithOpenIdScope() throws Exception {
         String requestBody = "grant_type=password&username=" + user.getUserName() + "&password="
                 + user.getPassword() + "&scope=openid";
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         JSONObject accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey,
             consumerSecret, requestBody, tokenEndpointURL).getData());
 
