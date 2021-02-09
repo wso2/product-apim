@@ -1,0 +1,80 @@
+<api xmlns="http://ws.apache.org/ns/synapse" name="$!apiName" context="$!apiContext" version="$!apiVersion" version-type="context">
+    <resource methods="POST" url-mapping="/webhooks_events_receiver_resource">
+        <inSequence>
+            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.MessageBuildMediator"/>
+            <property name="generated_signature" expression="fn:concat('$signingAlgorithm', hmac-generate($ctx:ORIGINAL_PAYLOAD, wso2:vault-lookup('$secret'), '$hmacSignatureGenerationAlgorithm'))"/>
+            <property name="received_signature" expression="$trp:$signatureHeader"/>
+            <filter xpath="get-property('received_signature') = get-property('generated_signature')">
+                <then>
+                    <clone>
+                        <target>
+                            <sequence>
+                                <property name="NO_ENTITY_BODY" value="true" scope="axis2" type="BOOLEAN" />
+                                <respond/>
+                            </sequence>
+                        </target>
+                        <target>
+                            <sequence>
+                                <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersCountMediator"/>
+                                <clone iterations="{get-property('SUBSCRIBERS_COUNT')}" continueParent="true">
+                                    <target>
+                                        <sequence>
+                                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersListMediator"/>
+                                            <property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
+                                            <header name="To" expression="$ctx:SUBSCRIBER_CALLBACK"/>
+                                            <property name="signature" expression="fn:concat('sha1=', hmac-generate($ctx:ORIGINAL_PAYLOAD, $ctx:SUBSCRIBER_SECRET))"/>
+                                            <property name="X-Hub-Signature" expression="$ctx:signature" scope="transport"/>
+                                            <call blocking="true">
+                                                <endpoint>
+                                                    <default />
+                                                </endpoint>
+                                            </call>
+                                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryDataMediator"/>
+                                        </sequence>
+                                    </target>
+                                </clone>
+                            </sequence>
+                        </target>
+                    </clone>
+                </then>
+                <else>
+                    <drop/>
+                </else>
+            </filter>
+        </inSequence>
+    </resource>
+    <resource methods="POST" url-mapping="/*">
+        <inSequence>
+            <clone sequential="true">
+                <target>
+                    <sequence>
+                        <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersPersistMediator"/>
+                        <property name="NO_ENTITY_BODY" value="true" scope="axis2" type="BOOLEAN" />
+                        <respond/>
+                    </sequence>
+                </target>
+                <target>
+                    <sequence>
+                        <property name="SUBSCRIBER_CALLBACK" expression="$url:hub.callback"/>
+                        <property name="SUBSCRIBER_TOPIC" expression="$url:hub.topic"/>
+                        <property name="SUBSCRIBER_APPLICATION_ID" expression="$ctx:api.ut.application.id"/>
+                        <header name="To" expression="$ctx:SUBSCRIBER_CALLBACK"/>
+                        <call>
+                            <endpoint>
+                                <default />
+                            </endpoint>
+                        </call>
+                        <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryDataMediator"/>
+                        <drop/>
+                    </sequence>
+                </target>
+            </clone>
+        </inSequence>
+    </resource>
+    <handlers>
+        <handler class="org.wso2.carbon.apimgt.gateway.handlers.streaming.webhook.WebhookApiHandler">
+            <property name="subscriptionResourcePath" value="/subscription"/>
+            <property name="topicQueryParamName" value="hub.secret"/>
+        </handler>
+    </handlers>
+</api>
