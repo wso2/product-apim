@@ -1,0 +1,10 @@
+<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" binds-to="WebSocketInboundEndpoint, SecureWebSocketEP">
+    <resource url-mapping="$defaultVersionUrlMapping" faultSequence="fault">
+        <inSequence>
+            <log level="custom">
+                <property name="STATUS" value="Faulty invoking through default API. Dropping message."/>
+            </log>
+            <drop/>
+        </inSequence>
+    </resource>
+</api>
