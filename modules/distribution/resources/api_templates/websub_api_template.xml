@@ -1,5 +1,5 @@
-<api xmlns="http://ws.apache.org/ns/synapse" name="$!apiName" context="$!apiContext" version="$!apiVersion" version-type="context">
-    <resource methods="POST" url-mapping="/webhooks_events_receiver_resource">
+<api xmlns="http://ws.apache.org/ns/synapse" name="$!apiName" context="$!apiContext" version="$!apiVersion" version-type="context" binds-to="WebhookServer, default">
+    <resource methods="POST" url-mapping="/webhooks_events_receiver_resource" binds-to="WebhookServer">
         <inSequence>
             <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.MessageBuilder"/>
             <property name="generated_signature" expression="fn:concat('$signingAlgorithm', hmac-generate($ctx:ORIGINAL_PAYLOAD, wso2:vault-lookup('$secret'), '$hmacSignatureGenerationAlgorithm'))"/>
@@ -68,7 +68,7 @@
             </filter>
         </inSequence>
     </resource>
-    <resource methods="POST" url-mapping="/*">
+    <resource methods="POST" url-mapping="/*" binds-to="default">
         <inSequence>
             <clone sequential="true">
                 <target>
@@ -102,6 +102,10 @@
         </inSequence>
     </resource>
     <handlers>
+        <handler class="org.wso2.carbon.apimgt.gateway.handlers.streaming.webhook.WebhookApiHandler">
+            <property name="subscriptionResourcePath" value="/webhooks_events_receiver_resource"/>
+            <property name="topicQueryParamName" value="hub.secret"/>
+        </handler>
         #foreach($handler in $handlers)
         <handler class="$handler.className">
             #if($handler.hasProperties())
@@ -112,9 +116,5 @@
             #end
         </handler>
         #end
-        <handler class="org.wso2.carbon.apimgt.gateway.handlers.streaming.webhook.WebhookApiHandler">
-            <property name="subscriptionResourcePath" value="/webhooks_events_receiver_resource"/>
-            <property name="topicQueryParamName" value="hub.secret"/>
-        </handler>
     </handlers>
 </api>
