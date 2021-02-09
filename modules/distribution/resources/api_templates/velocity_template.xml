@@ -125,7 +125,16 @@
         ######################## End of Macros ######################################
 
 
-<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="context">
+<api xmlns="http://ws.apache.org/ns/synapse"
+     name="$!apiName"
+     context="$!apiContext"
+     version="$!apiVersion"
+     transports="$!transport"
+     version-type="context"
+     #if($apiType == 'WS')
+     binds-to="WebSocketInboundEndpoint"
+     #end
+>
 #if($apiIsBlocked)
 ## if API is blocked send the API Block message
 <resource methods="GET POST PUT DELETE PATCH" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
@@ -158,7 +167,16 @@
         #else
         url-mapping="$resource.getUriTemplate()"
         #end
-        methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
+
+        #if($apiType == 'SSE')
+        ## resources are always GET in SSE
+        methods="GET"
+        #elseif($apiType != 'WS')
+        ## methods are not applicable for WS
+        methods="$resource.getMethodsAsString()"
+        #end
+
+        faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
 
 ## check and set response caching
@@ -250,7 +268,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 $out_sequences.get("$resource.getUriTemplate()").get($uri)
 #end
 #end
-#if($apiStatus != 'PROTOTYPED')
+#if($apiStatus != 'PROTOTYPED' && $apiType != 'WS' && $apiType != 'SSE')
 <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtResponseHandler"/>
 #end
 ## check and set response caching
@@ -293,10 +311,12 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
         #if($apiStatus == 'PROTOTYPED')
         #end
         ## end of apiIsBlocked check
+#if($apiType != 'WS')
 <handlers>
 <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler">
     <property name="inline" value="INLINE"/>
 </handler>
 </handlers>
+#end
         </api>
         <!--$endpoint_security-->
