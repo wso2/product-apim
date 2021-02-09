@@ -1,4 +1,4 @@
-<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" binds-to="WebSocketInboundEndpoint">
+<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" binds-to="WebSocketInboundEndpoint, SecureWebSocketEP">
     <resource url-mapping="$defaultVersionUrlMapping" faultSequence="fault">
         <inSequence>
             <log level="custom">
