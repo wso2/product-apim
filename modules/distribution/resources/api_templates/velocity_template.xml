@@ -132,7 +132,7 @@
      transports="$!transport"
      version-type="context"
      #if($apiType == 'WS')
-     binds-to="WebSocketInboundEndpoint"
+     binds-to="WebSocketInboundEndpoint, SecureWebSocketEP"
      #end
 >
 #if($apiIsBlocked)
