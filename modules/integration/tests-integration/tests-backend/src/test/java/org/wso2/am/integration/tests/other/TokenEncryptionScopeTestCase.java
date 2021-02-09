@@ -170,7 +170,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             String consumerKey = applicationKeyDTO.getConsumerKey();
             String consumerSecret = applicationKeyDTO.getConsumerSecret();
 
-            URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
+            URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
             String requestBody;
 
             //Obtain user access token for sam, request scope 'user_scope'

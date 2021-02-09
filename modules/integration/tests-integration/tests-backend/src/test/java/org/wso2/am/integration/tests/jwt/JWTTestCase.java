@@ -96,7 +96,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     public void setEnvironment() throws Exception {
 
         super.init(userMode);
-        tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
+        tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         providerName = user.getUserName();
         endpointURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
         //create Oauth Base App
