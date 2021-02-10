@@ -55,7 +55,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 createSession(keyManagerContext));
         apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation(),
-                keyManagerContext.getContextTenant().getDomain(), gatewayUrlsWrk.getWebAppURLNhttp());
+                keyManagerContext.getContextTenant().getDomain(), keyManagerHTTPSURL);
         apiProductTestHelper = new ApiProductTestHelper(restAPIPublisher, restAPIStore);
 
         userManagementClient.addRole(RESTRICTED_ROLE, null, null);

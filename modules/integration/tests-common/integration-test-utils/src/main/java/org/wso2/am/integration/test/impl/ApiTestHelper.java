@@ -78,15 +78,15 @@ public class ApiTestHelper {
     private RestAPIStoreImpl restAPIStore;
     private final String resourceLocation;
     private final String tenantDomain;
-    private final String nhttpURL;
+    private final String keyManagerUrl;
 
     public ApiTestHelper(RestAPIPublisherImpl restAPIPublisher, RestAPIStoreImpl restAPIStore, String resourceLocation,
-                         String tenantDomain, String nhttpURL) {
+                         String tenantDomain, String keyManagerUrl) {
         this.restAPIPublisher = restAPIPublisher;
         this.restAPIStore = restAPIStore;
         this.resourceLocation = resourceLocation;
         this.tenantDomain = tenantDomain;
-        this.nhttpURL = nhttpURL;
+        this.keyManagerUrl = keyManagerUrl;
     }
 
     public APIDTO createApiOne(String backendUrl) throws ApiException {
@@ -289,12 +289,8 @@ public class ApiTestHelper {
     public String generateTokenPasswordGrant(String consumerKey, String consumerSecret, String userName, String password,
                                             List<String> scopes) throws APIManagerIntegrationTestException,
                                                                             MalformedURLException {
-        String tokenEndpointURL;
-        if (tenantDomain.equals("carbon.super")) {
-            tokenEndpointURL = nhttpURL + "/token";
-        } else {
-            tokenEndpointURL =
-                    nhttpURL + "t/" + tenantDomain + "/token";
+        String tokenEndpointURL = keyManagerUrl + "oauth2/token";
+        if (!"carbon.super".equals(tenantDomain)) {
             userName = userName + "@" + tenantDomain;
         }
 
