@@ -73,9 +73,11 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String mutualSSLOnlyAPIName = "mutualsslOnlyAPI";
     private final String mutualSSLWithOAuthAPI = "mutualSSLWithOAuthAPI";
     private final String mutualSSLandOauthMandatoryAPI = "mutualSSLandOAuthMandatoryAPI";
+    private final String apiKeySecuredAPI = "apiKeySecuredAPI";
     private final String mutualSSLOnlyAPIContext = "mutualsslOnlyAPI";
     private final String mutualSSLWithOAuthAPIContext = "mutualSSLWithOAuthAPI";
     private final String mutualSSLandOAuthMandatoryAPIContext = "mutualSSLandOAuthMandatoryAPI";
+    private final String apiKeySecuredAPIContext = "apiKeySecuredAPI";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
@@ -84,7 +86,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private String apiEndPointUrl;
     private String applicationId;
     private String apiId1, apiId2;
-    private String apiId3;
+    private String apiId3, apiId4;
+    private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
 
     @BeforeClass(alwaysRun = true)
     public void initialize()
@@ -188,6 +191,33 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         createAPIRevisionAndDeployUsingRest(apiId3, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction());
 
+        // Add an API Secured with APIKey only
+        APIRequest apiRequest4 = new APIRequest(apiKeySecuredAPI, apiKeySecuredAPIContext, new URL(apiEndPointUrl));
+        apiRequest4.setVersion(API_VERSION_1_0_0);
+        apiRequest4.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest4.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest4.setTags(API_TAGS);
+        apiRequest4.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest4.setOperationsDTOS(operationsDTOS);
+        apiRequest4.setDefault_version("true");
+        apiRequest4.setHttps_checked("https");
+        apiRequest4.setHttp_checked(null);
+        apiRequest4.setDefault_version_checked("true");
+        List<String> securitySchemes4 = new ArrayList<>();
+        securitySchemes4.add("api_key");
+        securitySchemes4.add("oauth_basic_auth_api_key_mandatory");
+        apiRequest4.setSecurityScheme(securitySchemes4);
+        apiRequest4.setSandbox(apiEndPointUrl);
+
+        HttpResponse response4 = restAPIPublisher.addAPI(apiRequest4);
+        apiId4 = response4.getData();
+
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId4, restAPIPublisher);
+        waitForAPIDeploymentSync(apiRequest4.getProvider(), apiRequest4.getName(), apiRequest4.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction());
+
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
@@ -195,6 +225,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         applicationId = applicationResponse.getData();
         restAPIStore.subscribeToAPI(apiId3, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
         restAPIStore.subscribeToAPI(apiId2, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        restAPIStore.subscribeToAPI(apiId4, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
 
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
@@ -542,7 +573,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response3 = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPI,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders3);
-        Assert.assertEquals(response3.getResponseCode(), HttpStatus.SC_OK);
+        assertEquals(response3.getResponseCode(), HttpStatus.SC_OK);
 
 
         // matches against permitted referer which matches urls of a specific sub domain of any domain
@@ -553,6 +584,39 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 API_VERSION_1_0_0) + API_END_POINT_METHOD,
                 requestHeaders4);
         Assert.assertEquals(response4.getResponseCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(description = "Testing the invocation of API Secured only with API Keys", dependsOnMethods = {
+            "testCreateAndPublishAPIWithOAuth2" }) public void testInvocationWithApiKeysOnly() throws Exception {
+        APIKeyDTO apiKeyDTO1 = restAPIStore
+                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), -1,
+                        null, null);
+
+        assertNotNull(apiKeyDTO1, "API Key generation failed");
+        // matches against a permitted referer which matches an exact referer path
+        Map<String, String> requestHeaders1 = createRequestHeadersForAPIKey(apiKeyDTO1.getApikey(), null, null);
+        HttpResponse response1 = HTTPSClientUtils
+                .doGet(getAPIInvocationURLHttps(apiKeySecuredAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                        requestHeaders1);
+        Assert.assertEquals(response1.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when invoke api with production endpoint");
+
+        APIKeyDTO apiKeyDTO2 = restAPIStore
+                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX.toString(), -1,
+                        null, null);
+
+        assertNotNull(apiKeyDTO2, "API Key generation failed");
+        // matches against a permitted referer which matches an exact referer path
+        Map<String, String> requestHeaders2 = createRequestHeadersForAPIKey(apiKeyDTO1.getApikey(), null, null);
+        HttpResponse response2 = HTTPSClientUtils
+                .doGet(getAPIInvocationURLHttps(apiKeySecuredAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                        requestHeaders2);
+        Assert.assertEquals(response2.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when invoke api with sandbox endpoint");
+        Assert.assertTrue(response2.getData().contains(API_RESPONSE_DATA),
+                "Response data mismatched when invoke with sandbox endpoint" + " Response Data:" + response2.getData()
+                        + ". Expected Response Data: " + API_RESPONSE_DATA);
+
     }
 
     private Map<String, String> createRequestHeadersForAPIKey(String apiKey, String ip, String referer) {
@@ -575,9 +639,11 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         undeployAndDeleteAPIRevisionsUsingRest(apiId1, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(apiId2, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(apiId3, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId4, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId1);
         restAPIPublisher.deleteAPI(apiId2);
         restAPIPublisher.deleteAPI(apiId3);
+        restAPIPublisher.deleteAPI(apiId4);
     }
 
     public String generateBase64EncodedCertificate() throws IOException {
