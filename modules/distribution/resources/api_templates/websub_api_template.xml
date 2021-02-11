@@ -14,8 +14,7 @@
                         </target>
                         <target>
                             <sequence>
-                                <property name="X-Hub-Signature" scope="transport" action="remove"/>
-                                <header name="X-Hub-Signature" scope="transport" action="remove"/>
+                                <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
                                 <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersLoader"/>
                                 <clone iterations="{get-property('SUBSCRIBERS_COUNT')}" continueParent="true">
                                     <target>
