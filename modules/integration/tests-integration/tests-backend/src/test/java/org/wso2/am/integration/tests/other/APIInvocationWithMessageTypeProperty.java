@@ -23,6 +23,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
@@ -47,7 +48,8 @@ public class APIInvocationWithMessageTypeProperty extends APIMIntegrationBaseTes
         super.init();
         wireServer = new WireMonitorServer(8991);
         AuthenticatorClient login = new AuthenticatorClient(gatewayContextMgt.getContextUrls().getBackEndUrl());
-        String session = login.login("admin", "admin", "localhost");
+        String session = login.login(APIMIntegrationConstants.ADMIN_USERNAME, APIMIntegrationConstants.ADMIN_PASSWORD,
+                APIMIntegrationConstants.LOCAL_HOST_NAME);
         // Upload the synapse
         String file = "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator
                 + "property" + File.separator + "dummy_api_with_in_sequence.xml";
