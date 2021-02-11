@@ -54,7 +54,6 @@ public class APIInvocationWithMessageTypeProperty extends APIMIntegrationBaseTes
         OMElement synapseConfig = APIMTestCaseUtils.loadResource(file);
         APIMTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 session);
-        Thread.sleep(5000);
     }
 
     @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
