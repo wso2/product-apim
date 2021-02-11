@@ -29,5 +29,6 @@
         <module>publisher</module>
         <module>store</module>
         <module>admin</module>
+        <module>gateway</module>
     </modules>
 </project>

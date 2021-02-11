@@ -984,6 +984,11 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.carbon.apimgt.clients.gateway.api</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.samples.utils</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
@@ -1269,7 +1274,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.79</carbon.mediation.version>
+        <carbon.mediation.version>4.7.81</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.18.187</carbon.identity.version>
