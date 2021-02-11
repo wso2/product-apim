@@ -70,7 +70,7 @@ public class APIInvocationWithMessageTypeProperty extends APIMIntegrationBaseTes
     }
 
     @AfterClass(alwaysRun = true)
-    public void stop() throws Exception {
-        cleanUp();
+    public void destroy() throws Exception {
+
     }
 }
