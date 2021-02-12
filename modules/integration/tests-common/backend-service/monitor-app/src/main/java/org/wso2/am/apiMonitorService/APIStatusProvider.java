@@ -57,7 +57,7 @@ public class APIStatusProvider {
             apiNameList = this.getRestAPIAdmin(user, password).getApiNames();
             if (apiNameList != null) {
                 for (String currentApi : apiNameList) {
-                    if (currentApi.contains("--") && currentApi.split("--")[1].equals(apiName + ":v" + version)) {
+                    if (currentApi.contains(apiName + ":v" + version)) {
                         APIData apiData = this.getRestAPIAdmin(user, password).getApiByName(currentApi);
                         apistatusData.setIsApiExists(true);
                         apistatusData.setApiName(apiName);
