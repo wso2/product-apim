@@ -32,6 +32,7 @@
             <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
             <class name="org.wso2.am.integration.tests.api.revision.APIRevisionTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
         </classes>
     </test>
 
