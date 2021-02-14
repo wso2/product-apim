@@ -228,7 +228,6 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
-        ##TODO .get("production") or .get("sandbox")
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
         #draw_endpoint( "sandbox" $endpoint_config )
         #else
