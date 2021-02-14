@@ -25,57 +25,8 @@ import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
-import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
-import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SettingsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionAPIInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -115,6 +66,7 @@ public class RestAPIPublisherImpl {
     public ApiAuditApi apiAuditApi = new ApiAuditApi();
     public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
+    public GlobalMediationPoliciesApi globalMediationPoliciesApi  = new GlobalMediationPoliciesApi();
     public ScopesApi sharedScopesApi = new ScopesApi();
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
@@ -169,6 +121,7 @@ public class RestAPIPublisherImpl {
         apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
         sharedScopesApi.setApiClient(apiPublisherClient);
+        globalMediationPoliciesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -1427,6 +1380,9 @@ public class RestAPIPublisherImpl {
             response = new HttpResponse(gson.toJson(apiRevisionListDTO), 200);
         }
         return response;
+    }
+    public MediationListDTO retrieveMediationPolicies() throws ApiException {
+        return globalMediationPoliciesApi.getAllGlobalMediationPolicies(100,0,null,null);
     }
 
 }
