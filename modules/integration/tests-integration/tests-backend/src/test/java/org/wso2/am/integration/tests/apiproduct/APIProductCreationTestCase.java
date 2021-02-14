@@ -95,7 +95,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -157,7 +157,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -218,7 +218,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -280,7 +280,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -346,7 +346,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
