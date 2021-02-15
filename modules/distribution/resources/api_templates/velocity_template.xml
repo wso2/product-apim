@@ -96,6 +96,10 @@
 ## If endpoint is http
 #if ($endpointClass == "http")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
+#elseif ($endpointClass == "ws")
+#set($resourceKey = $topicMappings.get("$topic").get("resourceKey"))
+#set($wsEndpointName = "${ep_key}_${resourceKey}")
+<endpoint xmlns="http://ws.apache.org/ns/synapse" key="$wsEndpointName"/>
 #elseif ($endpointClass == "address")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
 #elseif ($endpointClass == "wsdl")
@@ -164,8 +168,10 @@
         #if($resource.getUriTemplate().contains("{") ||
         ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
         uri-template="$util.escapeXml($resource.getUriTemplate())"
+        #set( $topic= "$util.escapeXml($resource.getUriTemplate())")
         #else
         url-mapping="$resource.getUriTemplate()"
+        #set( $topic= "$resource.getUriTemplate()")
         #end
 
         #if($apiType == 'SSE')
