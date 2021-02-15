@@ -116,6 +116,7 @@
   "passthru_http.'http.headers.preserve'": "Content-Type",
   "passthru_http.'rest_uri_api_regex'": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "passthru_http.'rest_uri_proxy_regex'": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
+  "passthru_http.'allowed_response_properties'": "sse_throttle_dto,artifact_type",
   "n_http.'nhttp.rest.dispatcher.service'": "__MultitenantDispatcherService",
   "n_http.'rest_uri_api_regex'": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "n_http.'rest_uri_proxy_regex'": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
