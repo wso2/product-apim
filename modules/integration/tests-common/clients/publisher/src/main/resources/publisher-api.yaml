@@ -5814,6 +5814,317 @@ paths:
           -H "Content-Type: multipart/form-data" -F file=@sample.pdf "https://127.0.0.1:9443/api/am/publisher/v2/api-products/5bca47e1-8233-46a5-9295-525dca337f33/documents/83312daf-0d8a-427b-8f72-12755b7901d3/content"'
       operationId: addAPIProductDocumentContent
 
+  ######################################################
+  # The "API Product Revisions" resource API
+  ######################################################
+  /api-products/{apiProductId}/revisions:
+
+    #--------------------------------------------
+    # List available revisions of an API Product
+    #--------------------------------------------
+    get:
+      tags:
+        - API Product Revisions
+      summary: List available revisions of an API Product
+      description: |
+        List available revisions of an API Product
+      operationId: getAPIProductRevisions
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - name: query
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+            List of API Product revisions are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevisionList'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions?query=deployed:true"'
+
+    #--------------------------------------------
+    # Create a new API Product revision
+    #--------------------------------------------
+    post:
+      tags:
+        - API Product Revisions
+      summary: Create a new API Product revision
+      description: |
+        Create a new API Product revision
+      operationId: createAPIProductRevision
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+      requestBody:
+        description: API Product object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIRevision'
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created APIRevision object as the entity in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevision'
+        404:
+          $ref: '#/components/responses/NotFound'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            -H "Content-Type: application/json" -d @data.json
+            "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions"'
+
+  ######################################################
+  # The "API Revisions" individual resource API Product
+  ######################################################
+  /api-products/{apiProductId}/revisions/{revisionId}:
+
+    #--------------------------------------------
+    # Get a revision
+    #--------------------------------------------
+    get:
+      tags:
+        - API Product Revisions
+      summary: Retrieve a revision of an API Product
+      description: |
+        Retrieve a revision of an API Product
+      operationId: getAPIProductRevision
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - $ref: '#/components/parameters/revisionId'
+      responses:
+        200:
+          description: |
+            OK.
+            An API revision is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevision'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
+
+    #--------------------------------------------
+    # Delete a revision
+    #--------------------------------------------
+    delete:
+      tags:
+        - API Product Revisions
+      summary: Delete a revision of an API Product
+      description: |
+        Delete a revision of an API Product
+      operationId: deleteAPIProductRevision
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - $ref: '#/components/parameters/revisionId'
+      responses:
+        200:
+          description: |
+            OK.
+            List of remaining API revisions are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevisionList'
+        204:
+          description: |
+            No Content.
+            Successfully deleted the revision
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
+
+  /api-products/{apiProductId}/deploy-revision:
+
+    #--------------------------------------------
+    # List available deployed revision deployment details of an API Product
+    #--------------------------------------------
+    get:
+      tags:
+        - API Product Revisions
+      summary: List available deployed revision deployment details of an API Product
+      description: |
+        List available deployed revision deployment details of an API Product
+      operationId: getAPIProductRevisionDeployments
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+      responses:
+        200:
+          description: |
+            OK.
+            List of deployed revision deployment details are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevisionDeploymentList'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+                "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision"'
+
+    #--------------------------------------------
+    # Deploy a revision
+    #--------------------------------------------
+    post:
+      tags:
+        - API Product Revisions
+      summary: Deploy a revision
+      description: |
+        Deploy a revision
+      operationId: deployAPIProductRevision
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - $ref: '#/components/parameters/revisionId-Q'
+      requestBody:
+        description: Deployment object that needs to be added
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/APIRevisionDeployment'
+      responses:
+        200:
+          description: |
+            OK.
+        201:
+          description: |
+            Created.
+            Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/APIRevisionDeployment'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+
+  /api-products/{apiProductId}/undeploy-revision:
+    #--------------------------------------------
+    # Un-Deploy a revision from deployed gateway
+    #--------------------------------------------
+    post:
+      tags:
+        - API Product Revisions
+      summary: Un-Deploy a revision
+      description: |
+        Un-Deploy a revision
+      operationId: undeployAPIProductRevision
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - $ref: '#/components/parameters/revisionId-Q'
+      requestBody:
+        description: Deployment object that needs to be added
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/APIRevisionDeployment'
+      responses:
+        200:
+          description: |
+            OK.
+        201:
+          description: |
+            Created.
+            Successful response with the newly undeployed APIRevisionDeploymentList object as the entity in the body.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/APIRevisionDeployment'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+                "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/undeploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+
+  /api-products/{apiProductId}/restore-revision:
+
+    #--------------------------------------------------------
+    # Restore a revision to the working copy of the API Product
+    #--------------------------------------------------------
+    post:
+      tags:
+        - API Product Revisions
+      summary: Restore a revision
+      description: |
+        Restore a revision to the working copy of the API Product
+      operationId: restoreAPIProductRevision
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - $ref: '#/components/parameters/revisionId-Q'
+      responses:
+        201:
+          description: |
+            Restored.
+            Successful response with the newly restored API Product object as the entity in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIProduct'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+
   /api-products/export:
     get:
       tags:
@@ -7526,6 +7837,18 @@ components:
           type: string
           readOnly: true
           example: 8swdwj9080edejhj
+        isRevision:
+          type: boolean
+          example: false
+        revisionedApiProductId:
+          type: string
+          description: |
+            UUID of the api product registry artifact
+          readOnly: true
+          example: 01234567-0123-0123-0123-012345678901
+        revisionId:
+          type: integer
+          example: 1
         responseCachingEnabled:
           type: boolean
           example: true

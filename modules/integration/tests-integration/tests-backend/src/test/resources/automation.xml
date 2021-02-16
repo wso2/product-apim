@@ -36,7 +36,7 @@
         <!--
          Change this to true if you want to generate coverage statistics
         -->
-        <coverage>false</coverage>
+        <coverage>true</coverage>
         <!--
          Change this to true if you want to enable framework dashboard
         -->
