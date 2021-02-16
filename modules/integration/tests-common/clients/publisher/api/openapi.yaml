@@ -10438,6 +10438,500 @@ paths:
           -H "Content-Type: multipart/form-data" -F file=@sample.pdf "https://127.0.0.1:9443/api/am/publisher/v2/api-products/5bca47e1-8233-46a5-9295-525dca337f33/documents/83312daf-0d8a-427b-8f72-12755b7901d3/content"'
       x-contentType: multipart/form-data
       x-accepts: application/json
+  /api-products/{apiProductId}/revisions:
+    get:
+      description: |
+        List available revisions of an API Product
+      operationId: getAPIProductRevisions
+      parameters:
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
+        explode: false
+        in: path
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+          x-encoded: true
+        style: simple
+        x-encoded: true
+      - explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevisionList'
+          description: |
+            OK.
+            List of API Product revisions are returned.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+      summary: List available revisions of an API Product
+      tags:
+      - API Product Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions?query=deployed:true"'
+      x-accepts: application/json
+    post:
+      description: |
+        Create a new API Product revision
+      operationId: createAPIProductRevision
+      parameters:
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
+        explode: false
+        in: path
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+          x-encoded: true
+        style: simple
+        x-encoded: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIRevision'
+        description: API Product object that needs to be added
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevision'
+          description: |
+            Created.
+            Successful response with the newly created APIRevision object as the entity in the body.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+      summary: Create a new API Product revision
+      tags:
+      - API Product Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /api-products/{apiProductId}/revisions/{revisionId}:
+    delete:
+      description: |
+        Delete a revision of an API Product
+      operationId: deleteAPIProductRevision
+      parameters:
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
+        explode: false
+        in: path
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+          x-encoded: true
+        style: simple
+        x-encoded: true
+      - description: |
+          Revision ID of an API
+        explode: false
+        in: path
+        name: revisionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevisionList'
+          description: |
+            OK.
+            List of remaining API revisions are returned.
+        "204":
+          description: |
+            No Content.
+            Successfully deleted the revision
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+      summary: Delete a revision of an API Product
+      tags:
+      - API Product Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
+      x-accepts: application/json
+    get:
+      description: |
+        Retrieve a revision of an API Product
+      operationId: getAPIProductRevision
+      parameters:
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
+        explode: false
+        in: path
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+          x-encoded: true
+        style: simple
+        x-encoded: true
+      - description: |
+          Revision ID of an API
+        explode: false
+        in: path
+        name: revisionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevision'
+          description: |
+            OK.
+            An API revision is returned.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+      summary: Retrieve a revision of an API Product
+      tags:
+      - API Product Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
+      x-accepts: application/json
+  /api-products/{apiProductId}/deploy-revision:
+    get:
+      description: |
+        List available deployed revision deployment details of an API Product
+      operationId: getAPIProductRevisionDeployments
+      parameters:
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
+        explode: false
+        in: path
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+          x-encoded: true
+        style: simple
+        x-encoded: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevisionDeploymentList'
+          description: |
+            OK.
+            List of deployed revision deployment details are returned.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+      summary: List available deployed revision deployment details of an API Product
+      tags:
+      - API Product Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision"'
+      x-accepts: application/json
+    post:
+      description: |
+        Deploy a revision
+      operationId: deployAPIProductRevision
+      parameters:
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
+        explode: false
+        in: path
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+          x-encoded: true
+        style: simple
+        x-encoded: true
+      - description: |
+          Revision ID of an API
+        explode: true
+        in: query
+        name: revisionId
+        required: true
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/APIRevisionDeployment'
+              type: array
+        description: Deployment object that needs to be added
+      responses:
+        "200":
+          description: |
+            OK.
+        "201":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/APIRevisionDeployment'
+                type: array
+          description: |
+            Created.
+            Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+      summary: Deploy a revision
+      tags:
+      - API Product Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /api-products/{apiProductId}/undeploy-revision:
+    post:
+      description: |
+        Un-Deploy a revision
+      operationId: undeployAPIProductRevision
+      parameters:
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
+        explode: false
+        in: path
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+          x-encoded: true
+        style: simple
+        x-encoded: true
+      - description: |
+          Revision ID of an API
+        explode: true
+        in: query
+        name: revisionId
+        required: true
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/APIRevisionDeployment'
+              type: array
+        description: Deployment object that needs to be added
+      responses:
+        "200":
+          description: |
+            OK.
+        "201":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/APIRevisionDeployment'
+                type: array
+          description: |
+            Created.
+            Successful response with the newly undeployed APIRevisionDeploymentList object as the entity in the body.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+      summary: Un-Deploy a revision
+      tags:
+      - API Product Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/undeploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /api-products/{apiProductId}/restore-revision:
+    post:
+      description: |
+        Restore a revision to the working copy of the API Product
+      operationId: restoreAPIProductRevision
+      parameters:
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
+        explode: false
+        in: path
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+          x-encoded: true
+        style: simple
+        x-encoded: true
+      - description: |
+          Revision ID of an API
+        explode: true
+        in: query
+        name: revisionId
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIProduct'
+          description: |
+            Restored.
+            Successful response with the newly restored API Product object as the entity in the body.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+      summary: Restore a revision
+      tags:
+      - API Product Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+      x-accepts: application/json
   /api-products/export:
     get:
       description: |
@@ -13447,6 +13941,7 @@ components:
         policies:
         - Unlimited
         description: This is a simple API for Pizza Shack online pizza delivery store
+        isRevision: false
         authorizationHeader: Authorization
         responseCachingEnabled: true
         visibleRoles: []
@@ -13472,6 +13967,7 @@ components:
         state: CREATED
         testKey: 8swdwj9080edejhj
         categories: []
+        revisionedApiProductId: 01234567-0123-0123-0123-012345678901
         accessControlRoles: []
         hasThumbnail: false
         visibility: PUBLIC
@@ -13481,6 +13977,7 @@ components:
         tags:
         - pizza
         - food
+        revisionId: 1
         visibleTenants: []
         enableStore: true
         cacheTimeout: 300
@@ -13561,6 +14058,18 @@ components:
           example: 8swdwj9080edejhj
           readOnly: true
           type: string
+        isRevision:
+          example: false
+          type: boolean
+        revisionedApiProductId:
+          description: |
+            UUID of the api product registry artifact
+          example: 01234567-0123-0123-0123-012345678901
+          readOnly: true
+          type: string
+        revisionId:
+          example: 1
+          type: integer
         responseCachingEnabled:
           example: true
           type: boolean
