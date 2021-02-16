@@ -122,7 +122,7 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         //Create the subscription level policy
         SubscriptionThrottlePolicyDTO requestCountSubscriptionPolicyDTO = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(subPolicyName, "", "", false, defaultLimit,
-                        -1, -1, 100, "min", new ArrayList<>(),
+                        1, 1, 100, "min", new ArrayList<>(),
                         true, "");
         ApiResponse<SubscriptionThrottlePolicyDTO> addedSubscriptionPolicy =
                 restAPIAdmin.addSubscriptionThrottlingPolicy(requestCountSubscriptionPolicyDTO);
