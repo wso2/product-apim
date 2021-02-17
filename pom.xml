@@ -984,6 +984,11 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.carbon.apimgt.clients.gateway.api</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.carbon.apimgt.samples.utils</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
@@ -1243,15 +1248,15 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.2.27</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.2.34</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.8.190</carbon.apimgt.version>
+        <carbon.apimgt.version>6.8.210</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.7.37</carbon.registry.version>
+        <carbon.registry.version>4.7.38</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
@@ -1410,7 +1415,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!--Sample backend dependencies -->
-        <httpclient.version>4.3.6.wso2v2</httpclient.version>
+        <httpclient.version>4.3.6.wso2v3</httpclient.version>
         <com.googlecode.json.version>1.1.1</com.googlecode.json.version>
 
         <!-- Forget-me tool -->
@@ -1446,7 +1451,7 @@
         <auth0.keymanager.feature.version>1.0.0</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.2</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.0.0</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>0.2.0</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>0.4.0</apim.analytics.publisher.version>
     </properties>
 
 </project>

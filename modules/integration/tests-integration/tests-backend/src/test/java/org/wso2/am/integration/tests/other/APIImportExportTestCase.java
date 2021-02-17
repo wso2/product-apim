@@ -241,7 +241,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         String fileName = user.getUserDomain() + "_" + API_NAME;
         apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
-        exportAPI(exportRequest, apiZip);
+        exportArtifact(exportRequest, apiZip);
     }
 
     @Test(groups = { "wso2.am" }, description = "Importing exported API", dependsOnMethods = "testAPIExport")
@@ -251,7 +251,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(apiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
         //upload the exported zip
-        importAPI(importUrl, apiZip, user.getUserName(), user.getPassword().toCharArray());
+        importArtifact(importUrl, apiZip, user.getUserName(), user.getPassword().toCharArray());
         waitForAPIDeployment();
     }
 
@@ -476,7 +476,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         String fileName = user.getUserDomain() + "_" + NEW_API_NAME;
         newApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
-        exportAPI(exportRequest, newApiZip);
+        exportArtifact(exportRequest, newApiZip);
     }
 
     @Test(groups = { "wso2.am" }, description = "Importing new API", dependsOnMethods = "testNewAPIExport")
@@ -487,7 +487,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(newApiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
         //deploy exported API
-        importAPI(importUrl, newApiZip, user.getUserName(), user.getPassword().toCharArray());
+        importArtifact(importUrl, newApiZip, user.getUserName(), user.getPassword().toCharArray());
     }
 
     @Test(groups = {
@@ -584,7 +584,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         String fileName = user.getUserDomain() + "_" + PRESERVE_PUBLISHER_API_NAME;
         preservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
-        exportAPI(exportRequest, preservePublisherApiZip);
+        exportArtifact(exportRequest, preservePublisherApiZip);
         undeployAndDeleteAPIRevisionsUsingRest(preservePublisherApiId, restAPIPublisher);
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(preservePublisherApiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
@@ -594,7 +594,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
             "wso2.am" }, description = "Importing exported API", dependsOnMethods = "testPreserveProviderTrueApiExport")
     public void testPreserveProviderTrueSameProviderApiImport() throws Exception {
         //import the exported zip on same publisher
-        importAPI(importUrl + "?preserveProvider=true", preservePublisherApiZip, user.getUserName(),
+        importArtifact(importUrl + "?preserveProvider=true", preservePublisherApiZip, user.getUserName(),
                 user.getPassword().toCharArray());
         waitForAPIDeployment();
         //get the imported file information
@@ -614,7 +614,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
 
         //import the exported zip on different publisher
-        importAPI(importUrl + "?preserveProvider=true", preservePublisherApiZip, publisherUser, PUBLISHER_USER_PASS);
+        importArtifact(importUrl + "?preserveProvider=true", preservePublisherApiZip, publisherUser, PUBLISHER_USER_PASS);
         waitForAPIDeployment();
         //get the imported file information
         log.info("API ID  different publisher before import: " + preservePublisherApiId);
@@ -659,7 +659,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         String fileName = user.getUserDomain() + "_" + NOT_PRESERVE_PUBLISHER_API_NAME;
         notPreservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
-        exportAPI(exportRequest, notPreservePublisherApiZip);
+        exportArtifact(exportRequest, notPreservePublisherApiZip);
         undeployAndDeleteAPIRevisionsUsingRest(notPreservePublisherApiId, restAPIPublisher);
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(notPreservePublisherApiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
@@ -669,7 +669,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testPreserveProviderFalseApiExport")
     public void testPreserveProviderFalseSameProviderApiImport() throws Exception {
         //import the exported zip on same publisher
-        importAPI(importUrl + "?preserveProvider=false", notPreservePublisherApiZip, user.getUserName(),
+        importArtifact(importUrl + "?preserveProvider=false", notPreservePublisherApiZip, user.getUserName(),
                 user.getPassword().toCharArray());
         waitForAPIDeployment();
         //get the imported file information
@@ -682,7 +682,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
 
         //import the exported zip on different publisher
-        importAPI(importUrl + "?preserveProvider=false", notPreservePublisherApiZip, publisherUser,
+        importArtifact(importUrl + "?preserveProvider=false", notPreservePublisherApiZip, publisherUser,
                 PUBLISHER_USER_PASS);
         waitForAPIDeployment();
         //get the imported file information
@@ -743,7 +743,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
      * @throws URISyntaxException throws if URL is malformed
      * @throws IOException        throws if connection issues occurred
      */
-    private void exportAPI(URL exportRequest, File fileName) throws URISyntaxException, IOException {
+    private void exportArtifact(URL exportRequest, File fileName) throws URISyntaxException, IOException {
         CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();
         HttpGet get = new HttpGet(exportRequest.toURI());
         get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
@@ -770,7 +770,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
      * @param fileName  Name of the file to be upload
      * @throws IOException throws if connection issues occurred
      */
-    private static void importAPI(String importUrl, File fileName, String user, char[] pass) throws IOException {
+    private static void importArtifact(String importUrl, File fileName, String user, char[] pass) throws IOException {
         //open import API url connection and deploy the exported API
         URL url = new URL(importUrl);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();

@@ -92,12 +92,9 @@ https_endpoint = "https://localhost:${https.nio.port}"
 
 [apim.analytics]
 enable = false
-#reporter_impl="class.name"
-#handler_impl="class.name"
-#properties.'auth.api.url'="https://localhost:9443/auth"
-#properties.'token.api.url'="https://localhost:9443/token"
-#properties.'consumer.key'="consumer_key"
-#properties.'consumer.secret'="consumer_secret"
+config_endpoint = "https://localhost:8080/auth/v1"
+auth_token = ""
+properties.'worker.thread.count' = 1
 
 #[apim.key_manager]
 #service_url = "https://localhost:${mgt.transport.https.port}/services/"
