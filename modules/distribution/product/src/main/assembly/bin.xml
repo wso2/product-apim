@@ -244,6 +244,10 @@
             <outputDirectory>wso2am-${pom.version}/repository/resources/apim-synapse-config/</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>src/main/conf/synapse-configs/default/inbound-endpoints</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/apim-synapse-config/</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/advanced/
             </directory>

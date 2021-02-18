@@ -95,6 +95,16 @@
         </endpoint>
         #end
 
+        ##macro for websocket endpoints
+        #macro ( websocket_endpoint $name )
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="${name}_${websocketResourceKey}">
+<http uri-template="$util.escapeXml($endpointUrl)">
+#timeout( $ep.get('config') )
+</http>
+<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpointUrl)"/>
+        </endpoint>
+        #end
+
         ##macro for address endpoints in failover and load balance types
         #macro ( address_endpoint $name $ep )
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$name">
@@ -122,6 +132,8 @@ optimize="$advance_ep.get("optimize")"
 
         #if ( $endpointClass == "http" )
         #http_endpoint( $ep_key $endpoints )
+        #elseif( $endpointClass == "ws")
+        #websocket_endpoint( $ep_key )
         #elseif ( $endpointClass == "address" )
         #address_endpoint($ep_key $endpoints)
         #elseif ( $endpointClass == "failover" )
