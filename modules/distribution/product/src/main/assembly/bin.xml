@@ -1215,6 +1215,13 @@
             <fileMode>644</fileMode>
         </file>
         <file>
+            <source>src/main/conf/stream-interceptors.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <destName>stream-interceptors.xml</destName>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
             <source>src/main/conf/datasources.properties</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>datasources.properties</destName>
