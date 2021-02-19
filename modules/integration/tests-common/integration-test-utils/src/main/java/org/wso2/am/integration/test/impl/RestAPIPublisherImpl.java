@@ -19,6 +19,8 @@ package org.wso2.am.integration.test.impl;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.json.simple.JSONObject;
 import org.testng.Assert;
@@ -26,6 +28,7 @@ import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
@@ -34,12 +37,10 @@ import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SettingsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -49,6 +50,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
@@ -58,19 +60,17 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationRes
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
+import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.am.integration.test.ClientAuthenticator;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,21 +85,23 @@ import java.util.List;
  */
 public class RestAPIPublisherImpl {
 
-    public ApIsApi apIsApi = new ApIsApi();
-    private ApiProductsApi apiProductsApi = new ApiProductsApi();
-    public ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
-    public ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
-    public ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
-    public EndpointCertificatesApi endpointCertificatesApi = new EndpointCertificatesApi();
-    public GraphQlSchemaApi graphQlSchemaApi = new GraphQlSchemaApi();
-    public GraphQlSchemaIndividualApi graphQlSchemaIndividualApi = new GraphQlSchemaIndividualApi();
-    public ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
-    public RolesApi rolesApi = new RolesApi();
-    public ValidationApi validationApi = new ValidationApi();
-    public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
-    public ApiAuditApi apiAuditApi = new ApiAuditApi();
-    public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
-    public ApiClient apiPublisherClient = new ApiClient();
+    private static final Log log = LogFactory.getLog(RestAPIPublisherImpl.class);
+
+    private ApIsApi apIsApi;
+    private ApiProductsApi apiProductsApi;
+    private ApiDocumentsApi apiDocumentsApi;
+    private ThrottlingPoliciesApi throttlingPoliciesApi;
+    private ClientCertificatesApi clientCertificatesApi;
+    private EndpointCertificatesApi endpointCertificatesApi;
+    private GraphQlSchemaApi graphQlSchemaApi;
+    private GraphQlSchemaIndividualApi graphQlSchemaIndividualApi;
+    private ApiLifecycleApi apiLifecycleApi;
+    private RolesApi rolesApi;
+    private ValidationApi validationApi;
+    private SubscriptionsApi subscriptionsApi;
+    private ApiAuditApi apiAuditApi;
+    private UnifiedSearchApi unifiedSearchApi;
+    private ApiClient apiPublisherClient;
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -115,6 +117,27 @@ public class RestAPIPublisherImpl {
     }
 
     public RestAPIPublisherImpl(String username, String password, String tenantDomain, String publisherURL) {
+
+        log.info("Logging java class path " + System.getProperty("java.classpath"));
+
+        apIsApi = new ApIsApi();
+        apiProductsApi = new ApiProductsApi();
+        apiDocumentsApi = new ApiDocumentsApi();
+        throttlingPoliciesApi = new ThrottlingPoliciesApi();
+        clientCertificatesApi = new ClientCertificatesApi();
+        endpointCertificatesApi = new EndpointCertificatesApi();
+        graphQlSchemaApi = new GraphQlSchemaApi();
+        graphQlSchemaIndividualApi = new GraphQlSchemaIndividualApi();
+        apiLifecycleApi = new ApiLifecycleApi();
+        rolesApi = new RolesApi();
+        validationApi = new ValidationApi();
+        subscriptionsApi = new SubscriptionsApi();
+        apiAuditApi = new ApiAuditApi();
+        unifiedSearchApi = new UnifiedSearchApi();
+        apiPublisherClient = new ApiClient();
+
+        log.info("Logging java ApIsApi object in publisher " + apIsApi.getClass().getName());
+
         // token/DCR of Publisher node itself will be used
         String tokenURL = publisherURL + "oauth2/token";
         String dcrURL = publisherURL + "client-registration/v0.17/register";
@@ -137,7 +160,7 @@ public class RestAPIPublisherImpl {
         apiPublisherClient.setConnectTimeout(600000);
         apiPublisherClient.setWriteTimeout(600000);
         apIsApi.setApiClient(apiPublisherClient);
-	    apiProductsApi.setApiClient(apiPublisherClient);
+        apiProductsApi.setApiClient(apiPublisherClient);
         graphQlSchemaApi.setApiClient(apiPublisherClient);
         graphQlSchemaIndividualApi.setApiClient(apiPublisherClient);
         apiDocumentsApi.setApiClient(apiPublisherClient);
@@ -249,7 +272,7 @@ public class RestAPIPublisherImpl {
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
         body.isDefaultVersion(Boolean.valueOf(apiRequest.getDefault_version_checked()));
-        if (apiRequest.getKeyManagers()!= null){
+        if (apiRequest.getKeyManagers() != null) {
             body.setKeyManagers(apiRequest.getKeyManagers());
         }
         APIDTO apidto;
@@ -400,7 +423,6 @@ public class RestAPIPublisherImpl {
     }
 
     /**
-     *
      * @param newVersion
      * @param apiId
      * @param isDefault
@@ -412,6 +434,7 @@ public class RestAPIPublisherImpl {
         Assert.assertEquals(HttpStatus.SC_CREATED, response.getStatusCode());
         return response.getData();
     }
+
     /**
      * Facilitate update API
      *
@@ -521,7 +544,7 @@ public class RestAPIPublisherImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-             apidto = apIsApi.apisApiIdGet(apiId, null, null);
+            apidto = apIsApi.apisApiIdGet(apiId, null, null);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
@@ -548,7 +571,6 @@ public class RestAPIPublisherImpl {
     }
 
     /**
-     *
      * @param apiId
      * @throws ApiException
      */
@@ -625,7 +647,7 @@ public class RestAPIPublisherImpl {
      * Check whether the Endpoint is valid
      *
      * @param endpointUrl url of the endpoint
-     * @param apiId id of the api which the endpoint to be validated
+     * @param apiId       id of the api which the endpoint to be validated
      * @return HttpResponse -  Response of the getAPI request
      * @throws APIManagerIntegrationTestException - Check for valid endpoint fails.
      */
@@ -675,8 +697,8 @@ public class RestAPIPublisherImpl {
     /**
      * Adding a documentation
      *
-     * @param apiId      - Id of the API.
-     * @param body      - document Body.
+     * @param apiId - Id of the API.
+     * @param body  - document Body.
      * @return HttpResponse - Response  with Document adding result.
      * @throws ApiException - Exception throws if error occurred when adding document.
      */
@@ -783,14 +805,14 @@ public class RestAPIPublisherImpl {
     /**
      * delete Document
      *
-     * @param apiId - API id
+     * @param apiId      - API id
      * @param documentId - API id
      * @return http response object
      * @throws ApiException - Throws if API delete fails
      */
     public HttpResponse deleteDocument(String apiId, String documentId) throws ApiException {
 
-        ApiResponse<Void> deleteResponse  = apiDocumentsApi.apisApiIdDocumentsDocumentIdDeleteWithHttpInfo
+        ApiResponse<Void> deleteResponse = apiDocumentsApi.apisApiIdDocumentsDocumentIdDeleteWithHttpInfo
                 (apiId, documentId, null);
         HttpResponse response = null;
         if (deleteResponse.getStatusCode() == 200) {
@@ -798,7 +820,6 @@ public class RestAPIPublisherImpl {
         }
         return response;
     }
-
 
 
     /**
@@ -837,7 +858,7 @@ public class RestAPIPublisherImpl {
      * Get APIs for the given limit and offset values
      *
      * @param offset starting position
-     * @param limit maximum number of APIs to return
+     * @param limit  maximum number of APIs to return
      * @return APIs for the given limit and offset values
      */
     public APIListDTO getAPIs(int offset, int limit) throws ApiException {
@@ -921,8 +942,9 @@ public class RestAPIPublisherImpl {
         Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
+
     public APIDTO getAPIByID(String apiId) throws ApiException {
-        return  apIsApi.apisApiIdGet(apiId, tenantDomain, null);
+        return apIsApi.apisApiIdGet(apiId, tenantDomain, null);
     }
 
     public APIDTO importOASDefinition(File file, String properties) throws ApiException {
@@ -1101,6 +1123,7 @@ public class RestAPIPublisherImpl {
 
     /**
      * Method to retrieve the Audit Report of an API
+     *
      * @param apiId apiId of the API
      * @return HttpResponse response
      * @throws ApiException
