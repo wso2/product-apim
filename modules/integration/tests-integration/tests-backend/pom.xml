@@ -598,6 +598,11 @@ under the License.
             <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.11</version>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
             <exclusions>
