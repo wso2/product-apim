@@ -463,7 +463,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(NEW_API_CONTEXT, API_VERSION);
         HttpResponse serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
-        assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Imported API not in Created state");
+        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,"Imported API not in Created state");
     }
 
     @Test(groups = {
@@ -547,7 +547,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(NEW_API_CONTEXT, API_VERSION);
         HttpResponse serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
-        assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(),
+        assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Imported API not in Created state");
     }
 

@@ -66,7 +66,6 @@
                 <property name="HTTP_SC" value="500" scope="axis2"/>
             </else>
         </filter>
-        <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtFaultHandler"/>
         <property name="RESPONSE" value="true"/>
         <header name="To" action="remove"/>
         <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
@@ -211,7 +210,6 @@
                 <property name="id" value="A"/>
                 <property name="policyKey" value="gov:/apimgt/applicationdata/tiers.xml"/>
             </handler>
-            <handler class="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtUsageHandler"/>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtGoogleAnalyticsTrackingHandler"/>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerExtensionHandler"/>
         </handlers>
@@ -259,7 +257,6 @@
                 <property name="id" value="A"/>
                 <property name="policyKey" value="gov:/apimgt/applicationdata/tiers.xml"/>
             </handler>
-            <handler class="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtUsageHandler"/>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtGoogleAnalyticsTrackingHandler"/>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerExtensionHandler"/>
         </handlers>
