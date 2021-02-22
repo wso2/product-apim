@@ -1,5 +1,6 @@
 package org.wso2.am.integration.tests.listener;
 
+import org.apache.commons.lang.StringUtils;
 import org.testng.IAlterSuiteListener;
 import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlTest;
@@ -11,6 +12,9 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
     @Override
     public void alter(List<XmlSuite> list) {
         String testsToRunCommaSeparated = System.getenv("PRODUCT_APIM_TESTS");
+        if (StringUtils.isBlank(testsToRunCommaSeparated)) {
+            return;
+        }
         String[] enabledTests = testsToRunCommaSeparated.split(",");
         for (XmlSuite suite: list) {
             if ("ApiManager-features-test-suite".equals(suite.getName())) {
