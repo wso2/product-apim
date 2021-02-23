@@ -193,7 +193,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 #else
 #set( $filterRegex = "PRODUCTION" )
 #end
-#if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
+#if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
@@ -202,7 +202,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         #else
         #draw_endpoint( "production" $endpoint_json $endpointSecurity)
         #end
-        #if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
+        #if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
     </then>
     <else>
         #if($environmentType !='hybrid')
@@ -245,7 +245,6 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
 #if(!$aggregate.getOutSequenceName().isEmpty())
 <sequence key="$aggregate.getOutSequenceName()"/>
 #end
-<class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtResponseHandler"/>
 ## check and set response caching
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="true"/>

@@ -37,7 +37,7 @@
         #if($endpointsecurity.enabled)
         #if($isSecureVaultEnabled)
 <property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$endpointsecurity.alias')"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$username',':',get-property('password'))"/>
+<property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$endpointsecurity.username',':',get-property('password'))"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
         #else
         #if($endpointsecurity.type == "digest" || $endpointsecurity.type == "DIGEST")
@@ -96,6 +96,10 @@
 ## If endpoint is http
 #if ($endpointClass == "http")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
+#elseif ($endpointClass == "ws")
+#set($resourceKey = $topicMappings.get("$topic").get("resourceKey"))
+#set($wsEndpointName = "${ep_key}_${resourceKey}")
+<endpoint xmlns="http://ws.apache.org/ns/synapse" key="$wsEndpointName"/>
 #elseif ($endpointClass == "address")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
 #elseif ($endpointClass == "wsdl")
@@ -125,7 +129,16 @@
         ######################## End of Macros ######################################
 
 
-<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="context">
+<api xmlns="http://ws.apache.org/ns/synapse"
+     name="$!apiName"
+     context="$!apiContext"
+     version="$!apiVersion"
+     transports="$!transport"
+     version-type="context"
+     #if($apiType == 'WS')
+     binds-to="WebSocketInboundEndpoint, SecureWebSocketEP"
+     #end
+>
 #if($apiIsBlocked)
 ## if API is blocked send the API Block message
 <resource methods="GET POST PUT DELETE PATCH" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
@@ -155,10 +168,21 @@
         #if($resource.getUriTemplate().contains("{") ||
         ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
         uri-template="$util.escapeXml($resource.getUriTemplate())"
+        #set( $topic= "$util.escapeXml($resource.getUriTemplate())")
         #else
         url-mapping="$resource.getUriTemplate()"
+        #set( $topic= "$resource.getUriTemplate()")
         #end
-        methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
+
+        #if($apiType == 'SSE')
+        ## resources are always GET in SSE
+        methods="GET"
+        #elseif($apiType != 'WS')
+        ## methods are not applicable for WS
+        methods="$resource.getMethodsAsString()"
+        #end
+
+        faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
 
 ## check and set response caching
@@ -200,7 +224,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 <loopback />
 ## AWS Lambda: end
 #else
-#if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
+#if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
@@ -209,7 +233,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         #else
         #draw_endpoint( "production" $endpoint_config )
         #end
-        #if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
+        #if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
     </then>
     <else>
         #if($environmentType !='hybrid')
@@ -249,9 +273,6 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 #foreach($uri in $out_sequences.get("$resource.getUriTemplate()").keySet())
 $out_sequences.get("$resource.getUriTemplate()").get($uri)
 #end
-#end
-#if($apiStatus != 'PROTOTYPED')
-<class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtResponseHandler"/>
 #end
 ## check and set response caching
 #if($responseCacheEnabled)
@@ -293,10 +314,12 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
         #if($apiStatus == 'PROTOTYPED')
         #end
         ## end of apiIsBlocked check
+#if($apiType != 'WS')
 <handlers>
 <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler">
     <property name="inline" value="INLINE"/>
 </handler>
 </handlers>
+#end
         </api>
         <!--$endpoint_security-->

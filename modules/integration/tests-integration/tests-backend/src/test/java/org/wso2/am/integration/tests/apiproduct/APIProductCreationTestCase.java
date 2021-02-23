@@ -55,7 +55,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 createSession(keyManagerContext));
         apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation(),
-                keyManagerContext.getContextTenant().getDomain(), gatewayUrlsWrk.getWebAppURLNhttp());
+                keyManagerContext.getContextTenant().getDomain(), keyManagerHTTPSURL);
         apiProductTestHelper = new ApiProductTestHelper(restAPIPublisher, restAPIStore);
 
         userManagementClient.addRole(RESTRICTED_ROLE, null, null);
@@ -95,7 +95,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -157,7 +157,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -218,7 +218,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -280,7 +280,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -346,7 +346,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher

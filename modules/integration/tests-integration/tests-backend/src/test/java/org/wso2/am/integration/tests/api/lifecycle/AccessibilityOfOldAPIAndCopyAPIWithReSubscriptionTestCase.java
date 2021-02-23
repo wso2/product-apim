@@ -199,13 +199,12 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
         assertTrue(StringUtils.isNotEmpty(newVersionSubscribeResponse.getData()),
                 "Error in subscribe of old API version" + getAPIIdentifierStringFromAPIRequest(apiRequest));
 
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(),
                 user.getPassword());
         JSONObject subsAccessTokenGenerationResponse = new JSONObject(
                 restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, subsAccessTokenPayload,
                         tokenEndpointURL).getData());
-
         requestHeaders.put("Authorization", "Bearer " + subsAccessTokenGenerationResponse.getString("access_token"));
     }
 

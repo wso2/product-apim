@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://ws.apache.org/ns/synapse">
     <api xmlns="http://ws.apache.org/ns/synapse"
          name="JWKS-Backend"
          context="/jwks/1.0">
@@ -30,5 +29,4 @@
             </outSequence>
         </resource>
     </api>
-</definitions>
 

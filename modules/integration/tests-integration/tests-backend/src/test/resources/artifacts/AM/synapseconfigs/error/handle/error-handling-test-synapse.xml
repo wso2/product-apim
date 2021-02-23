@@ -30,7 +30,6 @@
                 <property name="id" value="A"/>
                 <property name="policyKey" value="gov:/apimgt/applicationdata/tiers.xml"/>
             </handler>
-            <handler class="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtUsageHandler"/>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtGoogleAnalyticsTrackingHandler">
                 <property name="configKey" value="gov:/apimgt/statistics/ga-config.xml"/>
             </handler>

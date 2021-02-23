@@ -315,7 +315,7 @@ case $1 in
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Gateway worker profile"
      	replaceDeploymentConfiguration gateway-worker $2
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'am#sample#pizzashack#v*.war' -o -name 'api#am#gateway.war' \)); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'am#sample#pizzashack#v*.war' -o -name 'api#am#gateway#v2.war' \)); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp

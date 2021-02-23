@@ -90,24 +90,11 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #[apim.cache.tags]
 #expiry_time = "2m"
 
-#[apim.analytics]
-#enable = false
-#store_api_url = "https://localhost:7444"
-#username = "$ref{super_admin.username}"
-#password = "$ref{super_admin.password}"
-#event_publisher_type = "default"
-#event_publisher_impl = "org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher"
-#publish_response_size = true
-
-#[[apim.analytics.url_group]]
-#analytics_url =["tcp://analytics1:7611","tcp://analytics2:7611"]
-#analytics_auth_url =["ssl://analytics1:7711","ssl://analytics2:7711"]
-#type = "loadbalance"
-
-#[[apim.analytics.url_group]]
-#analytics_url =["tcp://analytics1:7612","tcp://analytics2:7612"]
-#analytics_auth_url =["ssl://analytics1:7712","ssl://analytics2:7712"]
-#type = "failover"
+[apim.analytics]
+enable = false
+config_endpoint = "https://localhost:8080/auth/v1"
+auth_token = ""
+properties.'worker.thread.count' = 1
 
 #[apim.key_manager]
 #service_url = "https://localhost:${mgt.transport.https.port}/services/"

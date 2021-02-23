@@ -20,8 +20,7 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
@@ -34,7 +33,6 @@ import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 
@@ -48,20 +46,10 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
 
     private static final Log log = LogFactory.getLog(APIManagerConfigurationChangeTest.class);
     WebAppAdminClient webAppAdminClient;
-    private AutomationContext superTenantKeyManagerContext;
-    private ServerConfigurationManager serverConfigurationManager;
 
-    @BeforeTest(alwaysRun = true)
+    @Test(alwaysRun = true)
     public void configureEnvironment() throws Exception {
 
-        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
-                TestUserMode.SUPER_TENANT_ADMIN);
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "fileBaseAPIS" + File.separator +
-                "deployment.toml"));
-        serverConfigurationManager.restartGracefully();
         gatewayContextMgt =
                 new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                         APIMIntegrationConstants.AM_GATEWAY_MGT_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
@@ -228,18 +216,10 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                     + File.separator + "dummy_api_loc_header.xml", gatewayContextMgt, gatewaySessionCookie);
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                     + File.separator + "synapseconfigs" + File.separator + "rest"
-                    + File.separator + "jwks-backend.xml", gatewayContextMgt, gatewaySessionCookie);
+                    + File.separator + "JWKS-Backend.xml", gatewayContextMgt, gatewaySessionCookie);
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                     + File.separator + "synapseconfigs" + File.separator + "rest"
-                    + File.separator + "backend_security.xml", gatewayContextMgt, gatewaySessionCookie);
+                    + File.separator + "BackEndSecurity.xml", gatewayContextMgt, gatewaySessionCookie);
         }
     }
-
-    @AfterTest(alwaysRun = true)
-    public void restoreConfiguration() throws Exception {
-
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContextMgt);
-        serverConfigurationManager.restoreToLastConfiguration();
-    }
-
 }

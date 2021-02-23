@@ -64,11 +64,11 @@
   "apim.jwt.encoding": {
     "base64": {
       "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator",
-      "apim.jwt.gateway_generator.impl":"org.wso2.carbon.apimgt.gateway.handlers.security.jwt.generator.APIMgtGatewayJWTGeneratorImpl"
+      "apim.jwt.gateway_generator.impl":"org.wso2.carbon.apimgt.common.gateway.jwtgenerator.APIMgtGatewayJWTGeneratorImpl"
     },
     "base64url": {
       "apim.jwt.generator_impl": "org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator",
-      "apim.jwt.gateway_generator.impl":"org.wso2.carbon.apimgt.gateway.handlers.security.jwt.generator.APIMgtGatewayUrlSafeJWTGeneratorImpl"
+      "apim.jwt.gateway_generator.impl":"org.wso2.carbon.apimgt.common.gateway.jwtgenerator.APIMgtGatewayUrlSafeJWTGeneratorImpl"
     }
   },
   "apim.jwt.enable_user_claims": {
@@ -133,6 +133,13 @@
   "apim.cache_invalidation.enabled": {
     "true": {
       "server.cache.invalidation_impl": "org.wso2.carbon.apimgt.cache.invalidation.APIMgtCacheInvalidationRequestSender"
+    }
+  },
+  "apim.analytics.enable": {
+    "true": {
+      "synapse_handlers.analytics_handler.enabled": true,
+      "synapse_handlers.analytics_handler.name": "analytics_handler",
+      "synapse_handlers.analytics_handler.class": "$ref{apim.analytics.handler_impl}"
     }
   }
 }
