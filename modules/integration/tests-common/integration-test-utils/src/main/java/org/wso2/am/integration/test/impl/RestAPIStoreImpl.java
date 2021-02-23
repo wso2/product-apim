@@ -383,7 +383,7 @@ public class RestAPIStoreImpl {
         APIKeyRevokeRequestDTO revokeRequestDTO = new APIKeyRevokeRequestDTO();
         revokeRequestDTO.setApikey(apiKey);
         ApiResponse response = apiKeysApi.applicationsApplicationIdApiKeysKeyTypeRevokePostWithHttpInfo
-                (applicationId, "PRODUCTION", revokeRequestDTO, null);
+                (applicationId, "PRODUCTION", null, revokeRequestDTO);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
     }
 
