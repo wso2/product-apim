@@ -17,6 +17,7 @@
  */
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -101,9 +102,9 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationID);
 //            verifyResponse(response);
 
-
-            JSONObject subscriptionJson = new JSONObject(subsDTO);
-            Assert.assertEquals(subscriptionJson.toString().contains("SubscriptionCheckAPI"), true,
+            Gson g = new Gson();
+            String subscriptionJsonString = g.toJson(subsDTO, SubscriptionListDTO.class);
+            Assert.assertEquals(subscriptionJsonString.contains("SubscriptionCheckAPI"), true,
                     "Subscription of the SubscriptionCheckAPI has been removed.");
 
         } catch (APIManagerIntegrationTestException e) {
