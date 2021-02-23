@@ -1251,9 +1251,9 @@
         <carbon.analytics.common.version>5.2.34</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.8.228</carbon.apimgt.version>
+        <carbon.apimgt.version>9.0.0</carbon.apimgt.version>
 
-        <carbon.apimgt.imp.pkg.version>[6.5.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
+        <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
         <carbon.registry.version>4.7.38</carbon.registry.version>
@@ -1446,11 +1446,11 @@
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.2.5</wso2is.km.version>
-        <okta.keymanager.feature.version>3.0.5</okta.keymanager.feature.version>
-        <keycloak.keymanager.feature.version>2.0.4</keycloak.keymanager.feature.version>
-        <auth0.keymanager.feature.version>1.0.0</auth0.keymanager.feature.version>
-        <pingfederate.keymanager.feature.version>1.0.2</pingfederate.keymanager.feature.version>
-        <forgerock.keymanager.feature.version>1.0.0</forgerock.keymanager.feature.version>
+        <okta.keymanager.feature.version>3.0.6</okta.keymanager.feature.version>
+        <keycloak.keymanager.feature.version>2.0.5</keycloak.keymanager.feature.version>
+        <auth0.keymanager.feature.version>1.0.1</auth0.keymanager.feature.version>
+        <pingfederate.keymanager.feature.version>1.0.3</pingfederate.keymanager.feature.version>
+        <forgerock.keymanager.feature.version>1.0.1</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>0.4.0</apim.analytics.publisher.version>
     </properties>
 
