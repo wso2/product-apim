@@ -98,5 +98,7 @@
   "apim.notification.hostname": "output_adapter.email.hostname",
   "apim.notification.port": "output_adapter.email.port",
   "apim.notification.enable_start_tls": "output_adapter.email.enable_start_tls",
-  "apim.notification.enable_authentication": "output_adapter.email.enable_authentication"
+  "apim.notification.enable_authentication": "output_adapter.email.enable_authentication",
+  "apim.analytics.config_endpoint": "apim.analytics.properties.'auth.api.url'",
+  "apim.analytics.auth_token": "apim.analytics.properties.'auth.api.token'"
 }

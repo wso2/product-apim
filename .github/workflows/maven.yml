@@ -16,5 +16,9 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '10.x'
-    - name: Build carbon-apimgt with Test.
+    - name: Build product-apim with Test.
       run: mvn clean install --file pom.xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.2.1
+      with:
+        flags: integration_tests

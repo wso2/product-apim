@@ -99,6 +99,8 @@
                 <!--<exclude>**/repository/components/plugins/poi_3.9.0.wso2v1.jar</exclude>-->
 
                 <!-- Remove jars which are not needed-->
+                <exclude>**/repository/components/plugins/org.wso2.carbon.feature.mgt.stub_${carbon.kernel.version}.jar</exclude>
+                <exclude>**/repository/components/plugins/org.wso2.carbon.feature.mgt.services_${carbon.kernel.version}.jar</exclude>
                 <exclude>**/repository/components/plugins/hadoop-client_2.7.2.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/org.apache.servicemix.bundles.jaxb-api-2.0_4.0.0.m1.jar
                 </exclude>
@@ -686,7 +688,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#service-catalog.war</include>
+                <include>api#am#service-catalog#v0.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -706,7 +708,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#gateway.war</include>
+                <include>api#am#gateway#v2.war</include>
             </includes>
         </fileSet>
         <fileSet>

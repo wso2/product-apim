@@ -34,7 +34,6 @@
                </send>
       </inSequence>
       <outSequence>
-         <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtResponseHandler"/>
          <send/>
       </outSequence>
    </resource>

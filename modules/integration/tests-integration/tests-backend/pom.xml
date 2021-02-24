@@ -759,5 +759,11 @@ under the License.
             <artifactId>nimbus-jose-jwt</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.am.integration.clients.gateway.api</artifactId>
+            <version>4.0.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
