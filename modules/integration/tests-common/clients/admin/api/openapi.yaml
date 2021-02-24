@@ -1369,6 +1369,7 @@ paths:
                 isDeployed: true
                 graphQLMaxComplexity: 0
                 graphQLMaxDepth: 0
+                subscriberCount: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -1567,6 +1568,7 @@ paths:
                 isDeployed: true
                 graphQLMaxComplexity: 0
                 graphQLMaxDepth: 0
+                subscriberCount: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -1708,6 +1710,7 @@ paths:
                 isDeployed: true
                 graphQLMaxComplexity: 0
                 graphQLMaxDepth: 0
+                subscriberCount: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -7183,12 +7186,15 @@ components:
           enum:
           - REQUESTCOUNTLIMIT
           - BANDWIDTHLIMIT
+          - EVENTCOUNTLIMIT
           example: REQUESTCOUNTLIMIT
           type: string
         requestCount:
           $ref: '#/components/schemas/RequestCountLimit'
         bandwidth:
           $ref: '#/components/schemas/BandwidthLimit'
+        eventCount:
+          $ref: '#/components/schemas/EventCountLimit'
       required:
       - type
       title: Throttle Limit
@@ -7222,6 +7228,11 @@ components:
       - $ref: '#/components/schemas/ThrottleLimitBase'
       - $ref: '#/components/schemas/RequestCountLimit_allOf'
       title: Request Count Limit object
+    EventCountLimit:
+      allOf:
+      - $ref: '#/components/schemas/ThrottleLimitBase'
+      - $ref: '#/components/schemas/EventCountLimit_allOf'
+      title: Event Count Limit object
     BlockingCondition:
       description: Blocking Conditions
       example:
@@ -8628,6 +8639,11 @@ components:
           type: string
         permissions:
           $ref: '#/components/schemas/SubscriptionThrottlePolicyPermission'
+        subscriberCount:
+          description: |
+            Number of subscriptions allowed
+          example: 10
+          type: integer
       required:
       - defaultLimit
     CustomRule_allOf:
@@ -8669,6 +8685,15 @@ components:
           type: integer
       required:
       - requestCount
+    EventCountLimit_allOf:
+      properties:
+        eventCount:
+          description: Maximum number of events allowed
+          example: 3000
+          format: int64
+          type: integer
+      required:
+      - eventCount
     CustomUrlInfo_devPortal:
       example:
         url: http://example.com

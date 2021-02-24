@@ -97,7 +97,7 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         SubscriptionThrottlePolicyDTO bandwidthSubscriptionPolicyDTO = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(subPolicyName, "", "", false, defaultLimit,
                         -1, -1, 100, "min", new ArrayList<>(),
-                        true, "");
+                        true, "", 0);
         ApiResponse<SubscriptionThrottlePolicyDTO> addedSubscriptionPolicy =
                 restAPIAdmin.addSubscriptionThrottlingPolicy(bandwidthSubscriptionPolicyDTO);
 
