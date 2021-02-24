@@ -205,7 +205,7 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  |
- **revisionId** | **String**| Revision ID of an API  |
+ **revisionId** | **String**| Revision ID of an API  | [optional]
  **apIRevisionDeploymentDTO** | [**List&lt;APIRevisionDeploymentDTO&gt;**](APIRevisionDeploymentDTO.md)| Deployment object that needs to be added | [optional]
 
 ### Return type
@@ -485,7 +485,7 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  |
- **revisionId** | **String**| Revision ID of an API  |
+ **revisionId** | **String**| Revision ID of an API  | [optional]
 
 ### Return type
 
@@ -508,7 +508,7 @@ Name | Type | Description  | Notes
 
 <a name="undeployAPIProductRevision"></a>
 # **undeployAPIProductRevision**
-> undeployAPIProductRevision(apiProductId, revisionId, apIRevisionDeploymentDTO)
+> undeployAPIProductRevision(apiProductId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO)
 
 Un-Deploy a revision
 
@@ -536,9 +536,11 @@ public class Example {
     ApiProductRevisionsApi apiInstance = new ApiProductRevisionsApi(defaultClient);
     String apiProductId = "apiProductId_example"; // String | **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended. 
     String revisionId = "revisionId_example"; // String | Revision ID of an API 
+    String revisionNumber = "revisionNumber_example"; // String | Revision Number of an API 
+    Boolean allEnvironments = false; // Boolean | 
     List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO = Arrays.asList(); // List<APIRevisionDeploymentDTO> | Deployment object that needs to be added
     try {
-      apiInstance.undeployAPIProductRevision(apiProductId, revisionId, apIRevisionDeploymentDTO);
+      apiInstance.undeployAPIProductRevision(apiProductId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApiProductRevisionsApi#undeployAPIProductRevision");
       System.err.println("Status code: " + e.getCode());
@@ -555,7 +557,9 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  |
- **revisionId** | **String**| Revision ID of an API  |
+ **revisionId** | **String**| Revision ID of an API  | [optional]
+ **revisionNumber** | **String**| Revision Number of an API  | [optional]
+ **allEnvironments** | **Boolean**|  | [optional] [default to false]
  **apIRevisionDeploymentDTO** | [**List&lt;APIRevisionDeploymentDTO&gt;**](APIRevisionDeploymentDTO.md)| Deployment object that needs to be added | [optional]
 
 ### Return type

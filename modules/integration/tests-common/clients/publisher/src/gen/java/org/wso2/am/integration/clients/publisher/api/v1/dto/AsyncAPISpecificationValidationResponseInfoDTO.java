@@ -27,17 +27,18 @@ import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* APIProductInfoDTO
+* API definition information
 */
+    @ApiModel(description = "API definition information")
 
-public class APIProductInfoDTO {
-        public static final String SERIALIZED_NAME_ID = "id";
-        @SerializedName(SERIALIZED_NAME_ID)
-            private String id;
-
+public class AsyncAPISpecificationValidationResponseInfoDTO {
         public static final String SERIALIZED_NAME_NAME = "name";
         @SerializedName(SERIALIZED_NAME_NAME)
             private String name;
+
+        public static final String SERIALIZED_NAME_VERSION = "version";
+        @SerializedName(SERIALIZED_NAME_VERSION)
+            private String version;
 
         public static final String SERIALIZED_NAME_CONTEXT = "context";
         @SerializedName(SERIALIZED_NAME_CONTEXT)
@@ -47,105 +48,27 @@ public class APIProductInfoDTO {
         @SerializedName(SERIALIZED_NAME_DESCRIPTION)
             private String description;
 
-        public static final String SERIALIZED_NAME_PROVIDER = "provider";
-        @SerializedName(SERIALIZED_NAME_PROVIDER)
-            private String provider;
+        public static final String SERIALIZED_NAME_ASYNC_A_P_I_VERSION = "asyncAPIVersion";
+        @SerializedName(SERIALIZED_NAME_ASYNC_A_P_I_VERSION)
+            private String asyncAPIVersion;
 
-        public static final String SERIALIZED_NAME_HAS_THUMBNAIL = "hasThumbnail";
-        @SerializedName(SERIALIZED_NAME_HAS_THUMBNAIL)
-            private Boolean hasThumbnail;
-
-            /**
-* State of the API product. Only published api products are visible on the Developer Portal 
-*/
-    @JsonAdapter(StateEnum.Adapter.class)
-public enum StateEnum {
-        CREATED("CREATED"),
-        
-        PUBLISHED("PUBLISHED");
-
-private String value;
-
-StateEnum(String value) {
-this.value = value;
-}
-
-public String getValue() {
-return value;
-}
-
-@Override
-public String toString() {
-return String.valueOf(value);
-}
-
-public static StateEnum fromValue(String value) {
-    for (StateEnum b : StateEnum.values()) {
-    if (b.name().equals(value)) {
-        return b;
-    }
-}
-    throw new IllegalArgumentException("Unexpected value '" + value + "'");
-}
-
-    public static class Adapter extends TypeAdapter<StateEnum> {
-    @Override
-    public void write(final JsonWriter jsonWriter, final StateEnum enumeration) throws IOException {
-    jsonWriter.value(enumeration.getValue());
-    }
-
-    @Override
-    public StateEnum read(final JsonReader jsonReader) throws IOException {
-    String value =  jsonReader.nextString();
-    return StateEnum.fromValue(value);
-    }
-    }
-}
-
-        public static final String SERIALIZED_NAME_STATE = "state";
-        @SerializedName(SERIALIZED_NAME_STATE)
-            private StateEnum state;
-
-        public static final String SERIALIZED_NAME_SECURITY_SCHEME = "securityScheme";
-        @SerializedName(SERIALIZED_NAME_SECURITY_SCHEME)
-            private List<String> securityScheme = null;
+        public static final String SERIALIZED_NAME_ENDPOINTS = "endpoints";
+        @SerializedName(SERIALIZED_NAME_ENDPOINTS)
+            private List<String> endpoints = null;
 
 
-        public APIProductInfoDTO id(String id) {
-        
-        this.id = id;
-        return this;
-        }
-
-    /**
-        * UUID of the api product 
-    * @return id
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "UUID of the api product ")
-    
-    public String getId() {
-        return id;
-    }
-
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-
-        public APIProductInfoDTO name(String name) {
+        public AsyncAPISpecificationValidationResponseInfoDTO name(String name) {
         
         this.name = name;
         return this;
         }
 
     /**
-        * Name of the API Product
+        * Get name
     * @return name
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "PizzaShackAPIProduct", value = "Name of the API Product")
+      @ApiModelProperty(example = "Streetlights", value = "")
     
     public String getName() {
         return name;
@@ -157,7 +80,30 @@ public static StateEnum fromValue(String value) {
     }
 
 
-        public APIProductInfoDTO context(String context) {
+        public AsyncAPISpecificationValidationResponseInfoDTO version(String version) {
+        
+        this.version = version;
+        return this;
+        }
+
+    /**
+        * Get version
+    * @return version
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1.0.0", value = "")
+    
+    public String getVersion() {
+        return version;
+    }
+
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+
+        public AsyncAPISpecificationValidationResponseInfoDTO context(String context) {
         
         this.context = context;
         return this;
@@ -168,7 +114,7 @@ public static StateEnum fromValue(String value) {
     * @return context
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "pizzaproduct", value = "")
+      @ApiModelProperty(example = "/streetlights", value = "")
     
     public String getContext() {
         return context;
@@ -180,18 +126,18 @@ public static StateEnum fromValue(String value) {
     }
 
 
-        public APIProductInfoDTO description(String description) {
+        public AsyncAPISpecificationValidationResponseInfoDTO description(String description) {
         
         this.description = description;
         return this;
         }
 
     /**
-        * A brief description about the API
+        * Get description
     * @return description
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "This is a simple API for Pizza Shack online pizza delivery store", value = "A brief description about the API")
+      @ApiModelProperty(example = "A sample API that uses a streetlights as an example to demonstrate AsyncAPI specifications", value = "")
     
     public String getDescription() {
         return description;
@@ -203,95 +149,49 @@ public static StateEnum fromValue(String value) {
     }
 
 
-        public APIProductInfoDTO provider(String provider) {
+        public AsyncAPISpecificationValidationResponseInfoDTO asyncAPIVersion(String asyncAPIVersion) {
         
-        this.provider = provider;
+        this.asyncAPIVersion = asyncAPIVersion;
         return this;
         }
 
     /**
-        * If the provider value is not given, the user invoking the API will be used as the provider. 
-    * @return provider
+        * Get asyncAPIVersion
+    * @return asyncAPIVersion
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "admin", value = "If the provider value is not given, the user invoking the API will be used as the provider. ")
+      @ApiModelProperty(example = "2.0", value = "")
     
-    public String getProvider() {
-        return provider;
+    public String getAsyncAPIVersion() {
+        return asyncAPIVersion;
     }
 
 
-    public void setProvider(String provider) {
-        this.provider = provider;
+    public void setAsyncAPIVersion(String asyncAPIVersion) {
+        this.asyncAPIVersion = asyncAPIVersion;
     }
 
 
-        public APIProductInfoDTO hasThumbnail(Boolean hasThumbnail) {
+        public AsyncAPISpecificationValidationResponseInfoDTO endpoints(List<String> endpoints) {
         
-        this.hasThumbnail = hasThumbnail;
+        this.endpoints = endpoints;
         return this;
         }
 
     /**
-        * Get hasThumbnail
-    * @return hasThumbnail
+        * contains host/servers specified in the AsyncAPI file/URL
+    * @return endpoints
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "true", value = "")
+      @ApiModelProperty(value = "contains host/servers specified in the AsyncAPI file/URL")
     
-    public Boolean isHasThumbnail() {
-        return hasThumbnail;
+    public List<String> getEndpoints() {
+        return endpoints;
     }
 
 
-    public void setHasThumbnail(Boolean hasThumbnail) {
-        this.hasThumbnail = hasThumbnail;
-    }
-
-
-        public APIProductInfoDTO state(StateEnum state) {
-        
-        this.state = state;
-        return this;
-        }
-
-    /**
-        * State of the API product. Only published api products are visible on the Developer Portal 
-    * @return state
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "State of the API product. Only published api products are visible on the Developer Portal ")
-    
-    public StateEnum getState() {
-        return state;
-    }
-
-
-    public void setState(StateEnum state) {
-        this.state = state;
-    }
-
-
-        public APIProductInfoDTO securityScheme(List<String> securityScheme) {
-        
-        this.securityScheme = securityScheme;
-        return this;
-        }
-
-    /**
-        * Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If it is not set OAuth2 will be set as the security for the current API. 
-    * @return securityScheme
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "[\"oauth2\"]", value = "Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If it is not set OAuth2 will be set as the security for the current API. ")
-    
-    public List<String> getSecurityScheme() {
-        return securityScheme;
-    }
-
-
-    public void setSecurityScheme(List<String> securityScheme) {
-        this.securityScheme = securityScheme;
+    public void setEndpoints(List<String> endpoints) {
+        this.endpoints = endpoints;
     }
 
 
@@ -303,35 +203,31 @@ public static StateEnum fromValue(String value) {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            APIProductInfoDTO apIProductInfo = (APIProductInfoDTO) o;
-            return Objects.equals(this.id, apIProductInfo.id) &&
-            Objects.equals(this.name, apIProductInfo.name) &&
-            Objects.equals(this.context, apIProductInfo.context) &&
-            Objects.equals(this.description, apIProductInfo.description) &&
-            Objects.equals(this.provider, apIProductInfo.provider) &&
-            Objects.equals(this.hasThumbnail, apIProductInfo.hasThumbnail) &&
-            Objects.equals(this.state, apIProductInfo.state) &&
-            Objects.equals(this.securityScheme, apIProductInfo.securityScheme);
+            AsyncAPISpecificationValidationResponseInfoDTO asyncAPISpecificationValidationResponseInfo = (AsyncAPISpecificationValidationResponseInfoDTO) o;
+            return Objects.equals(this.name, asyncAPISpecificationValidationResponseInfo.name) &&
+            Objects.equals(this.version, asyncAPISpecificationValidationResponseInfo.version) &&
+            Objects.equals(this.context, asyncAPISpecificationValidationResponseInfo.context) &&
+            Objects.equals(this.description, asyncAPISpecificationValidationResponseInfo.description) &&
+            Objects.equals(this.asyncAPIVersion, asyncAPISpecificationValidationResponseInfo.asyncAPIVersion) &&
+            Objects.equals(this.endpoints, asyncAPISpecificationValidationResponseInfo.endpoints);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, securityScheme);
+        return Objects.hash(name, version, context, description, asyncAPIVersion, endpoints);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class APIProductInfoDTO {\n");
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+sb.append("class AsyncAPISpecificationValidationResponseInfoDTO {\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
-    sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
-    sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
-    sb.append("    state: ").append(toIndentedString(state)).append("\n");
-    sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
+    sb.append("    asyncAPIVersion: ").append(toIndentedString(asyncAPIVersion)).append("\n");
+    sb.append("    endpoints: ").append(toIndentedString(endpoints)).append("\n");
 sb.append("}");
 return sb.toString();
 }

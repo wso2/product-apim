@@ -26,7 +26,7 @@ Name | Type | Description | Notes
 **revisionId** | **Integer** |  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
 **enableStore** | **Boolean** |  |  [optional]
-**type** | [**TypeEnum**](#TypeEnum) | The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL |  [optional]
+**type** | [**TypeEnum**](#TypeEnum) | The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE |  [optional]
 **transport** | **List&lt;String&gt;** | Supported transports for the API (http and/or https).  |  [optional]
 **tags** | **List&lt;String&gt;** |  |  [optional]
 **policies** | **List&lt;String&gt;** |  |  [optional]
@@ -35,7 +35,7 @@ Name | Type | Description | Notes
 **securityScheme** | **List&lt;String&gt;** | Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If it is not set OAuth2 will be set as the security for the current API.  |  [optional]
 **maxTps** | [**APIMaxTpsDTO**](APIMaxTpsDTO.md) |  |  [optional]
 **visibility** | [**VisibilityEnum**](#VisibilityEnum) | The visibility level of the API. Accepts one of the following. PUBLIC, PRIVATE, RESTRICTED. |  [optional]
-**visibleRoles** | **List&lt;String&gt;** | The user roles that are able to access the API in Devportal |  [optional]
+**visibleRoles** | **List&lt;String&gt;** | The user roles that are able to access the API in Developer Portal |  [optional]
 **visibleTenants** | **List&lt;String&gt;** |  |  [optional]
 **endpointSecurity** | [**APIEndpointSecurityDTO**](APIEndpointSecurityDTO.md) |  |  [optional]
 **gatewayEnvironments** | **List&lt;String&gt;** | List of gateway environments the API is available  |  [optional]
@@ -50,6 +50,7 @@ Name | Type | Description | Notes
 **accessControlRoles** | **List&lt;String&gt;** | The user roles that are able to view/modify as API publisher or creator. |  [optional]
 **businessInformation** | [**APIBusinessInformationDTO**](APIBusinessInformationDTO.md) |  |  [optional]
 **corsConfiguration** | [**APICorsConfigurationDTO**](APICorsConfigurationDTO.md) |  |  [optional]
+**websubSubscriptionConfiguration** | [**WebsubSubscriptionConfigurationDTO**](WebsubSubscriptionConfigurationDTO.md) |  |  [optional]
 **workflowStatus** | **String** |  |  [optional]
 **createdTime** | **String** |  |  [optional]
 **lastUpdatedTime** | **String** |  |  [optional]
@@ -60,6 +61,7 @@ Name | Type | Description | Notes
 **threatProtectionPolicies** | [**APIThreatProtectionPoliciesDTO**](APIThreatProtectionPoliciesDTO.md) |  |  [optional]
 **categories** | **List&lt;String&gt;** | API categories  |  [optional]
 **keyManagers** | [**Object**](.md) | API Key Managers  |  [optional] [readonly]
+**serviceInfo** | [**APIServiceInfoDTO**](APIServiceInfoDTO.md) |  |  [optional]
 
 
 
@@ -72,6 +74,8 @@ WS | &quot;WS&quot;
 SOAPTOREST | &quot;SOAPTOREST&quot;
 SOAP | &quot;SOAP&quot;
 GRAPHQL | &quot;GRAPHQL&quot;
+WEBSUB | &quot;WEBSUB&quot;
+SSE | &quot;SSE&quot;
 
 
 

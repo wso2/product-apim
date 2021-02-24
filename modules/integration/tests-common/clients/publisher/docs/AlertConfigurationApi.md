@@ -218,6 +218,6 @@ Name | Type | Description  | Notes
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. The Devportal alert configuration.  |  * Content-Type - The content type of the body.  <br>  |
+**200** | OK. The Developer Portal alert configuration.  |  * Content-Type - The content type of the body.  <br>  |
 **500** | Internal Server Error. |  -  |
 
