@@ -633,6 +633,46 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         return requestHeaders;
     }
 
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvocationWithRevokedApiKeys() throws Exception {
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
+                .PRODUCTION.toString(), -1, null, null);
+        assertNotNull(apiKeyDTO, "API Key generation failed");
+
+        restAPIStore.revokeAPIKey(applicationId, apiKeyDTO.getApikey());
+
+        Map<String, String> requestHeader = new HashMap<>();
+        requestHeader.put("apikey", apiKeyDTO.getApikey());
+        requestHeader.put("accept", "text/xml");
+
+        boolean isApiKeyValid = true;
+        HttpResponse invocationResponseAfterRevoked;
+        int counter = 1;
+        do {
+            // Wait while the JMS message is received to the related JMS topic
+            Thread.sleep(1000L);
+            invocationResponseAfterRevoked = HTTPSClientUtils.doGet(
+                    getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                    requestHeader);
+            int responseCodeAfterRevoked = invocationResponseAfterRevoked.getResponseCode();
+
+            if (responseCodeAfterRevoked == HTTP_RESPONSE_CODE_UNAUTHORIZED) {
+                isApiKeyValid = false;
+            } else if (responseCodeAfterRevoked == HTTP_RESPONSE_CODE_OK) {
+                isApiKeyValid = true;
+            } else {
+                throw new APIManagerIntegrationTestException("Unexpected response received when invoking the API. " +
+                        "Response received :" + invocationResponseAfterRevoked.getData() + ":" +
+                        invocationResponseAfterRevoked.getResponseMessage());
+            }
+            counter++;
+        } while (isApiKeyValid && counter < 25);
+        Assert.assertFalse(isApiKeyValid, "API Key revocation failed. " +
+                "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_UNAUTHORIZED +
+                ", but got " + invocationResponseAfterRevoked.getResponseCode());
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationId);
