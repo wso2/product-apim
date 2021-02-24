@@ -148,7 +148,8 @@ public class DtoFactory {
     public static SubscriptionThrottlePolicyDTO createSubscriptionThrottlePolicyDTO(String policyName,
             String displayName, String description, boolean isDeployed, ThrottleLimitDTO defaultLimit,
             int graphQLMaxComplexity, int graphQLMaxDepth, int rateLimitCount, String rateLimitTimeUnit,
-            List<CustomAttributeDTO> customAttributes, boolean stopQuotaOnReach, String billingPlan) {
+            List<CustomAttributeDTO> customAttributes, boolean stopQuotaOnReach, String billingPlan,
+            int subscriberCount) {
 
         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
         subscriptionThrottlePolicyDTO.setPolicyName(policyName);
@@ -163,6 +164,8 @@ public class DtoFactory {
         subscriptionThrottlePolicyDTO.setCustomAttributes(customAttributes);
         subscriptionThrottlePolicyDTO.setStopOnQuotaReach(stopQuotaOnReach);
         subscriptionThrottlePolicyDTO.setBillingPlan(billingPlan);
+        subscriptionThrottlePolicyDTO.setSubscriberCount(subscriberCount);
+
         return subscriptionThrottlePolicyDTO;
     }
 

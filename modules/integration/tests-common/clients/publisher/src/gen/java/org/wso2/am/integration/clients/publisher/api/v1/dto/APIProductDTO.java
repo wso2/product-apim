@@ -125,6 +125,18 @@ public static StateEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_TEST_KEY)
             private String testKey;
 
+        public static final String SERIALIZED_NAME_IS_REVISION = "isRevision";
+        @SerializedName(SERIALIZED_NAME_IS_REVISION)
+            private Boolean isRevision;
+
+        public static final String SERIALIZED_NAME_REVISIONED_API_PRODUCT_ID = "revisionedApiProductId";
+        @SerializedName(SERIALIZED_NAME_REVISIONED_API_PRODUCT_ID)
+            private String revisionedApiProductId;
+
+        public static final String SERIALIZED_NAME_REVISION_ID = "revisionId";
+        @SerializedName(SERIALIZED_NAME_REVISION_ID)
+            private Integer revisionId;
+
         public static final String SERIALIZED_NAME_RESPONSE_CACHING_ENABLED = "responseCachingEnabled";
         @SerializedName(SERIALIZED_NAME_RESPONSE_CACHING_ENABLED)
             private Boolean responseCachingEnabled;
@@ -648,6 +660,75 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     public void setTestKey(String testKey) {
         this.testKey = testKey;
+    }
+
+
+        public APIProductDTO isRevision(Boolean isRevision) {
+        
+        this.isRevision = isRevision;
+        return this;
+        }
+
+    /**
+        * Get isRevision
+    * @return isRevision
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "")
+    
+    public Boolean isIsRevision() {
+        return isRevision;
+    }
+
+
+    public void setIsRevision(Boolean isRevision) {
+        this.isRevision = isRevision;
+    }
+
+
+        public APIProductDTO revisionedApiProductId(String revisionedApiProductId) {
+        
+        this.revisionedApiProductId = revisionedApiProductId;
+        return this;
+        }
+
+    /**
+        * UUID of the api product registry artifact 
+    * @return revisionedApiProductId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "UUID of the api product registry artifact ")
+    
+    public String getRevisionedApiProductId() {
+        return revisionedApiProductId;
+    }
+
+
+    public void setRevisionedApiProductId(String revisionedApiProductId) {
+        this.revisionedApiProductId = revisionedApiProductId;
+    }
+
+
+        public APIProductDTO revisionId(Integer revisionId) {
+        
+        this.revisionId = revisionId;
+        return this;
+        }
+
+    /**
+        * Get revisionId
+    * @return revisionId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1", value = "")
+    
+    public Integer getRevisionId() {
+        return revisionId;
+    }
+
+
+    public void setRevisionId(Integer revisionId) {
+        this.revisionId = revisionId;
     }
 
 
@@ -1268,6 +1349,9 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             Objects.equals(this.enableSchemaValidation, apIProduct.enableSchemaValidation) &&
             Objects.equals(this.enableStore, apIProduct.enableStore) &&
             Objects.equals(this.testKey, apIProduct.testKey) &&
+            Objects.equals(this.isRevision, apIProduct.isRevision) &&
+            Objects.equals(this.revisionedApiProductId, apIProduct.revisionedApiProductId) &&
+            Objects.equals(this.revisionId, apIProduct.revisionId) &&
             Objects.equals(this.responseCachingEnabled, apIProduct.responseCachingEnabled) &&
             Objects.equals(this.cacheTimeout, apIProduct.cacheTimeout) &&
             Objects.equals(this.visibility, apIProduct.visibility) &&
@@ -1298,7 +1382,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, enableStore, testKey, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
+        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, enableStore, testKey, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
     }
 
 
@@ -1316,6 +1400,9 @@ sb.append("class APIProductDTO {\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
     sb.append("    enableStore: ").append(toIndentedString(enableStore)).append("\n");
     sb.append("    testKey: ").append(toIndentedString(testKey)).append("\n");
+    sb.append("    isRevision: ").append(toIndentedString(isRevision)).append("\n");
+    sb.append("    revisionedApiProductId: ").append(toIndentedString(revisionedApiProductId)).append("\n");
+    sb.append("    revisionId: ").append(toIndentedString(revisionId)).append("\n");
     sb.append("    responseCachingEnabled: ").append(toIndentedString(responseCachingEnabled)).append("\n");
     sb.append("    cacheTimeout: ").append(toIndentedString(cacheTimeout)).append("\n");
     sb.append("    visibility: ").append(toIndentedString(visibility)).append("\n");

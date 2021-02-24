@@ -121,6 +121,7 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
         assertEquals(getAPIResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error when retrieving API: " + apiName);
 
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
         //publish API
         HttpResponse changeLCStatusResponse = restAPIPublisher.changeAPILifeCycleStatus(apiID,
                 APILifeCycleAction.PUBLISH.getAction(), null);
