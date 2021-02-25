@@ -27,6 +27,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -38,6 +39,9 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -107,27 +111,75 @@ import static org.testng.Assert.assertTrue;
         //-------------------------Test Comments------------------------------------------
 
         // Test add comments
-        String comment = "This is a test comment";
-        String category = "general";
-        String replyTo = null;
-        HttpResponse addCommentResponse = restAPIStore.addComment(apiId, comment, category, replyTo);
+        HttpResponse addCommentResponse = restAPIStore.addComment(apiId, "This is a test comment", "general", null);
         assertNotNull(addCommentResponse, "Error adding comment");
-        assertEquals(addCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
-                "Response code mismatched");
-        String commentId = addCommentResponse.getData();
-        assertNotNull(commentId, "Comment Id is null");
+        assertEquals(addCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),"Response code mismatched");
+        String rootCommentId = addCommentResponse.getData();
+        assertNotNull(rootCommentId, "Comment Id is null");
 
-        // Verify added comment
-        HttpResponse getCommentResponse = restAPIStore
-                .getComment(commentId, apiId, gatewayContextWrk.getContextTenant().getDomain(), false);
-        assertEquals(getCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Error retrieving comment");
-        Gson g = new Gson();
-        CommentDTO commentDTO = g.fromJson(getCommentResponse.getData(), CommentDTO.class);
-        assertEquals(commentDTO.getContent(), comment, "Comments do not match");
+//        // Verify added comment
+//        HttpResponse getCommentResponse = restAPIStore.getComment(rootCommentId, apiId, gatewayContextWrk.getContextTenant().getDomain(), false);
+//        assertEquals(getCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),"Error retrieving comment");
+//        Gson g = new Gson();
+//        CommentDTO rootCommentDTO = g.fromJson(getCommentResponse.getData(), CommentDTO.class);
+//        assertEquals(rootCommentDTO.getContent(), "This is a test comment", "Comments do not match");
+//        assertEquals(rootCommentDTO.getCategory(), "general", "Comments do not match");
+//        assertEquals(rootCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
+
+//        // Test add reply to above root comment
+//        HttpResponse addReply1CommentResponse = restAPIStore.addComment(apiId, "This is a reply 1", "general", rootCommentId);
+//        assertNotNull(addReply1CommentResponse, "Error adding comment");
+//        assertEquals(addReply1CommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(), "Response code mismatched");
+//        String reply1CommentId = addReply1CommentResponse.getData();
+//        assertNotNull(reply1CommentId, "Comment Id is null");
+//
+//
+//        // Verify added reply
+//        HttpResponse getReply1CommentResponse = restAPIStore.getComment(reply1CommentId, apiId, gatewayContextWrk.getContextTenant().getDomain(), false);
+//        assertEquals(getReply1CommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),"Error retrieving comment");
+//        Gson g1 = new Gson();
+//        CommentDTO reply1CommentDTO = g1.fromJson(getReply1CommentResponse.getData(), CommentDTO.class);
+//        assertEquals(reply1CommentDTO.getContent(), "This is a reply 1", "Comments do not match");
+//        assertEquals(reply1CommentDTO.getCategory(), "general", "Comments do not match");
+//        assertEquals(reply1CommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
+//        assertEquals(reply1CommentDTO.getParentCommentId(), rootCommentId, "Comments do not match");
+
+        // Test add another three replies to above root comment
+        List<String> replies = new ArrayList<String>();
+//        String[] VALUES = new String[] {"AB","BC","CD","AE"};
+        for (Integer i = 1; i < 5; i++) {
+            HttpResponse addReplyCommentResponse = restAPIStore.addComment(apiId, "This is a reply "+i.toString(), "general", rootCommentId);
+            assertNotNull(addReplyCommentResponse, "Error adding comment");
+            assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(), "Response code mismatched");
+            String replyCommentId = addReplyCommentResponse.getData();
+            assertNotNull(replyCommentId, "Comment Id is null");
+            replies.add(replyCommentId);
+        }
+        // Verify added comment with it's replies
+        HttpResponse getCommentWithRepliesResponse = restAPIStore.getComment(rootCommentId, apiId, gatewayContextWrk.getContextTenant().getDomain(), false);
+        assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),"Error retrieving comment");
+        Gson getCommentWithRepliesGson = new Gson();
+        CommentDTO commentWithRepliesCommentDTO = getCommentWithRepliesGson.fromJson(getCommentWithRepliesResponse.getData(), CommentDTO.class);
+        assertEquals(commentWithRepliesCommentDTO.getContent(), "This is a test comment", "Comments do not match");
+        assertEquals(commentWithRepliesCommentDTO.getCategory(), "general", "Comments do not match");
+        assertEquals(commentWithRepliesCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
+//        CommentListDTO a = commentWithRepliesCommentDTO.getReplies();
+//        List<CommentDTO> bb = commentWithRepliesCommentDTO.getReplies().getList();
+        for (CommentDTO reply: commentWithRepliesCommentDTO.getReplies().getList()){
+            assertEquals(reply.getCategory(), "general", "Comments do not match");
+            assertEquals(reply.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
+            assertEquals(reply.getParentCommentId(), rootCommentId, "Comments do not match");
+//            Arrays.asList(yourArray).contains(yourValue)
+            boolean a = replies.contains(reply.getId());
+            assertEquals(replies.contains(reply.getId()), true, "Comments do not match");
+//            assertEquals(reply1CommentDTO.getContent(), "This is a reply 1", "Comments do not match");
+
+        }
+
+
 
         // Test delete comments
-        HttpResponse deleteResponse = restAPIStore.removeComment(commentId, apiId);
+        HttpResponse deleteResponse = restAPIStore.removeComment(rootCommentId, apiId);
         assertEquals(deleteResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
 
         //-------------------------Test Ratings------------------------------------------
@@ -137,7 +189,7 @@ import static org.testng.Assert.assertTrue;
         HttpResponse ratingAddResponse = restAPIStore
                 .addRating(apiId, 4, gatewayContextWrk.getContextTenant().getDomain());
         assertEquals(ratingAddResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Error adding rating");
-        RatingDTO ratingDTO = g.fromJson(ratingAddResponse.getData(), RatingDTO.class);
+        RatingDTO ratingDTO = getCommentWithRepliesGson.fromJson(ratingAddResponse.getData(), RatingDTO.class);
         assertEquals(ratingDTO.getRating(), rating, "Ratings do not match");
 
         //Test delete rating
