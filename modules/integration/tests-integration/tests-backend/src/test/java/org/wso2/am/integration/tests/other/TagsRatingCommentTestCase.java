@@ -56,10 +56,10 @@ import static org.testng.Assert.assertTrue;
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN },
-                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
-                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
-                new Object[] { TestUserMode.TENANT_EMAIL_USER },
+//                new Object[] { TestUserMode.TENANT_ADMIN },
+//                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+//                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+//                new Object[] { TestUserMode.TENANT_EMAIL_USER },
         };
     }
 
@@ -108,7 +108,9 @@ import static org.testng.Assert.assertTrue;
 
         // Test add comments
         String comment = "This is a test comment";
-        HttpResponse addCommentResponse = restAPIStore.addComment(apiId, comment);
+        String category = "general";
+        String replyTo = null;
+        HttpResponse addCommentResponse = restAPIStore.addComment(apiId, comment, category, replyTo);
         assertNotNull(addCommentResponse, "Error adding comment");
         assertEquals(addCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
                 "Response code mismatched");

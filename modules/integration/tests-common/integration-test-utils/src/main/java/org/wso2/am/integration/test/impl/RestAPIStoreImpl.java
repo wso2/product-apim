@@ -35,8 +35,6 @@ import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.TagsApi;
 import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
@@ -58,6 +56,8 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.PostRequestBodyDTO;
+import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -1188,10 +1188,14 @@ public class RestAPIStoreImpl {
      * @return - http response of add comment
      * @throws ApiException - throws if add comment fails
      */
-    public HttpResponse addComment(String apiId, String comment) throws ApiException {
-        CommentDTO commentDTO = new CommentDTO();
-        commentDTO.setContent(comment);
-        ApiResponse<CommentDTO> apiResponse = commentsApi.addCommentToAPIWithHttpInfo(apiId, commentDTO);
+//    String apiId, PostRequestBodyDTO postRequestBodyDTO, String replyTo
+    public HttpResponse addComment(String apiId, String comment, String category, String replyTo) throws ApiException {
+        PostRequestBodyDTO postRequestBodyDTO = new PostRequestBodyDTO();
+        postRequestBodyDTO.setContent(comment);
+        postRequestBodyDTO.setCategory(category);
+//        CommentDTO commentDTO = new CommentDTO();
+//        commentDTO.setContent(comment);
+        ApiResponse<CommentDTO> apiResponse = commentsApi.addCommentToAPIWithHttpInfo(apiId, postRequestBodyDTO, replyTo);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
         HttpResponse response = null;
         if (apiResponse.getData() != null && StringUtils.isNotEmpty(apiResponse.getData().getId())) {
@@ -1233,7 +1237,9 @@ public class RestAPIStoreImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null, includeCommentorInfo);
+//            commentDTO1 = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null, includeCommentorInfo);
+            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null, false, 3, 0);
+//            String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
