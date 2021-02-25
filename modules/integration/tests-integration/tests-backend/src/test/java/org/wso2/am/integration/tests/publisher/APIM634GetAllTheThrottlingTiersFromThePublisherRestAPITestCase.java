@@ -66,10 +66,8 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
         ThrottlingPolicyListDTO throttlingPolicyListDTO = restAPIPublisher.getTiers(
                 ThrottlingPolicyDTO.PolicyLevelEnum.SUBSCRIPTION.getValue());
         assertNotNull(throttlingPolicyListDTO, "There are no API level policies available");
-
-
         //Validate the Tier Bronze
-        ThrottlingPolicyDTO tierBronze = throttlingPolicyListDTO.getList().get(0);
+        ThrottlingPolicyDTO tierBronze = throttlingPolicyListDTO.getList().get(8);
         assertEquals(tierBronze.getDescription(), "Allows 1000 requests per minute",
                 "Invalid description of the tier Bronze");
         assertEquals(tierBronze.getDisplayName(), "Bronze",
@@ -78,7 +76,7 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
                 "Invalid name of the tier Bronze");
 
         //Validate the Tier Gold
-        ThrottlingPolicyDTO tierGold = throttlingPolicyListDTO.getList().get(1);
+        ThrottlingPolicyDTO tierGold = throttlingPolicyListDTO.getList().get(9);
         assertEquals(tierGold.getDescription(), "Allows 5000 requests per minute",
                 "Invalid description of the tier Gold");
         assertEquals(tierGold.getDisplayName(), "Gold",
@@ -87,7 +85,7 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
                 "Invalid name of the tier Gold");
 
         //Validate the Tier Silver
-        ThrottlingPolicyDTO tierSilver = throttlingPolicyListDTO.getList().get(2);
+        ThrottlingPolicyDTO tierSilver = throttlingPolicyListDTO.getList().get(10);
         assertEquals(tierSilver.getDescription(), "Allows 2000 requests per minute",
                 "Invalid description of the tier Silver");
         assertEquals(tierSilver.getDisplayName(), "Silver",
@@ -96,7 +94,7 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
                 "Invalid name of the tier Silver");
 
         //Validate the Tier Unlimited
-        ThrottlingPolicyDTO tierUnlimited = throttlingPolicyListDTO.getList().get(3);
+        ThrottlingPolicyDTO tierUnlimited = throttlingPolicyListDTO.getList().get(11);
         assertEquals(tierUnlimited.getDescription(), "Allows unlimited requests",
                 "Invalid description of the tier Unlimited");
         assertEquals(tierUnlimited.getDisplayName(), "Unlimited",
