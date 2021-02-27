@@ -13686,13 +13686,15 @@ components:
         id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         deploymentInfo:
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+          vhost: mg.wso2.com
           displayOnDevportal: true
           deployedTime: deployedTime
-          name: production and sandbox
+          name: default
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+          vhost: mg.wso2.com
           displayOnDevportal: true
           deployedTime: deployedTime
-          name: production and sandbox
+          name: default
         apiInfo:
           id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -13733,13 +13735,15 @@ components:
           id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           deploymentInfo:
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+            vhost: mg.wso2.com
             displayOnDevportal: true
             deployedTime: deployedTime
-            name: production and sandbox
+            name: default
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+            vhost: mg.wso2.com
             displayOnDevportal: true
             deployedTime: deployedTime
-            name: production and sandbox
+            name: default
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
         - displayName: REVISION 1
@@ -13748,13 +13752,15 @@ components:
           id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           deploymentInfo:
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+            vhost: mg.wso2.com
             displayOnDevportal: true
             deployedTime: deployedTime
-            name: production and sandbox
+            name: default
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+            vhost: mg.wso2.com
             displayOnDevportal: true
             deployedTime: deployedTime
-            name: production and sandbox
+            name: default
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -13772,13 +13778,15 @@ components:
       example:
         list:
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+          vhost: mg.wso2.com
           displayOnDevportal: true
           deployedTime: deployedTime
-          name: production and sandbox
+          name: default
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+          vhost: mg.wso2.com
           displayOnDevportal: true
           deployedTime: deployedTime
-          name: production and sandbox
+          name: default
       properties:
         list:
           items:
@@ -13788,15 +13796,22 @@ components:
     APIRevisionDeployment:
       example:
         revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+        vhost: mg.wso2.com
         displayOnDevportal: true
         deployedTime: deployedTime
-        name: production and sandbox
+        name: default
       properties:
         revisionUuid:
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           type: string
         name:
-          example: production and sandbox
+          example: default
+          type: string
+        vhost:
+          example: mg.wso2.com
+          maxLength: 255
+          minLength: 1
+          pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$
           type: string
         displayOnDevportal:
           example: true
@@ -15044,12 +15059,29 @@ components:
           https: https://localhost:8243
           ws: http://localhost:9099
         showInApiConsole: true
+        displayName: Default
         serverUrl: https://localhost:9443/services/
-        name: Production and Sandbox
+        name: default
         type: hybrid
+        vhosts:
+        - httpContext: pets
+          wssPort: 8099
+          httpPort: 80
+          wsPort: 9099
+          host: mg.wso2.com
+          httpsPort: 443
+        - httpContext: pets
+          wssPort: 8099
+          httpPort: 80
+          wsPort: 9099
+          host: mg.wso2.com
+          httpsPort: 443
       properties:
         name:
-          example: Production and Sandbox
+          example: default
+          type: string
+        displayName:
+          example: Default
           type: string
         type:
           example: hybrid
@@ -15062,6 +15094,10 @@ components:
           type: boolean
         endpoints:
           $ref: '#/components/schemas/EnvironmentEndpoints'
+        vhosts:
+          items:
+            $ref: '#/components/schemas/VHost'
+          type: array
       required:
       - endpoints
       - name
@@ -15107,6 +15143,35 @@ components:
           example: https://localhost:8099
           type: string
       title: Environment Endpoints
+      type: object
+    VHost:
+      example:
+        httpContext: pets
+        wssPort: 8099
+        httpPort: 80
+        wsPort: 9099
+        host: mg.wso2.com
+        httpsPort: 443
+      properties:
+        host:
+          example: mg.wso2.com
+          type: string
+        httpContext:
+          example: pets
+          type: string
+        httpPort:
+          example: 80
+          type: integer
+        httpsPort:
+          example: 443
+          type: integer
+        wsPort:
+          example: 9099
+          type: integer
+        wssPort:
+          example: 8099
+          type: integer
+      title: Virtual Host
       type: object
     FileInfo:
       example:
@@ -16352,18 +16417,46 @@ components:
             https: https://localhost:8243
             ws: http://localhost:9099
           showInApiConsole: true
+          displayName: Default
           serverUrl: https://localhost:9443/services/
-          name: Production and Sandbox
+          name: default
           type: hybrid
+          vhosts:
+          - httpContext: pets
+            wssPort: 8099
+            httpPort: 80
+            wsPort: 9099
+            host: mg.wso2.com
+            httpsPort: 443
+          - httpContext: pets
+            wssPort: 8099
+            httpPort: 80
+            wsPort: 9099
+            host: mg.wso2.com
+            httpsPort: 443
         - endpoints:
             wss: https://localhost:8099
             http: http://localhost:8280
             https: https://localhost:8243
             ws: http://localhost:9099
           showInApiConsole: true
+          displayName: Default
           serverUrl: https://localhost:9443/services/
-          name: Production and Sandbox
+          name: default
           type: hybrid
+          vhosts:
+          - httpContext: pets
+            wssPort: 8099
+            httpPort: 80
+            wsPort: 9099
+            host: mg.wso2.com
+            httpsPort: 443
+          - httpContext: pets
+            wssPort: 8099
+            httpPort: 80
+            wsPort: 9099
+            host: mg.wso2.com
+            httpsPort: 443
         deployments:
         - name: Kubernetes
           clusters:

@@ -25,143 +25,170 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* APIRevisionDeploymentDTO
+* VHostDTO
 */
 
-public class APIRevisionDeploymentDTO {
-        public static final String SERIALIZED_NAME_REVISION_UUID = "revisionUuid";
-        @SerializedName(SERIALIZED_NAME_REVISION_UUID)
-            private String revisionUuid;
+public class VHostDTO {
+        public static final String SERIALIZED_NAME_HOST = "host";
+        @SerializedName(SERIALIZED_NAME_HOST)
+            private String host;
 
-        public static final String SERIALIZED_NAME_NAME = "name";
-        @SerializedName(SERIALIZED_NAME_NAME)
-            private String name;
+        public static final String SERIALIZED_NAME_HTTP_CONTEXT = "httpContext";
+        @SerializedName(SERIALIZED_NAME_HTTP_CONTEXT)
+            private String httpContext;
 
-        public static final String SERIALIZED_NAME_VHOST = "vhost";
-        @SerializedName(SERIALIZED_NAME_VHOST)
-            private String vhost;
+        public static final String SERIALIZED_NAME_HTTP_PORT = "httpPort";
+        @SerializedName(SERIALIZED_NAME_HTTP_PORT)
+            private Integer httpPort;
 
-        public static final String SERIALIZED_NAME_DISPLAY_ON_DEVPORTAL = "displayOnDevportal";
-        @SerializedName(SERIALIZED_NAME_DISPLAY_ON_DEVPORTAL)
-            private Boolean displayOnDevportal;
+        public static final String SERIALIZED_NAME_HTTPS_PORT = "httpsPort";
+        @SerializedName(SERIALIZED_NAME_HTTPS_PORT)
+            private Integer httpsPort;
 
-        public static final String SERIALIZED_NAME_DEPLOYED_TIME = "deployedTime";
-        @SerializedName(SERIALIZED_NAME_DEPLOYED_TIME)
-            private String deployedTime;
+        public static final String SERIALIZED_NAME_WS_PORT = "wsPort";
+        @SerializedName(SERIALIZED_NAME_WS_PORT)
+            private Integer wsPort;
+
+        public static final String SERIALIZED_NAME_WSS_PORT = "wssPort";
+        @SerializedName(SERIALIZED_NAME_WSS_PORT)
+            private Integer wssPort;
 
 
-        public APIRevisionDeploymentDTO revisionUuid(String revisionUuid) {
+        public VHostDTO host(String host) {
         
-        this.revisionUuid = revisionUuid;
+        this.host = host;
         return this;
         }
 
     /**
-        * Get revisionUuid
-    * @return revisionUuid
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "c26b2b9b-4632-4ca4-b6f3-521c8863990c", value = "")
-    
-    public String getRevisionUuid() {
-        return revisionUuid;
-    }
-
-
-    public void setRevisionUuid(String revisionUuid) {
-        this.revisionUuid = revisionUuid;
-    }
-
-
-        public APIRevisionDeploymentDTO name(String name) {
-        
-        this.name = name;
-        return this;
-        }
-
-    /**
-        * Get name
-    * @return name
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "default", value = "")
-    
-    public String getName() {
-        return name;
-    }
-
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-
-        public APIRevisionDeploymentDTO vhost(String vhost) {
-        
-        this.vhost = vhost;
-        return this;
-        }
-
-    /**
-        * Get vhost
-    * @return vhost
+        * Get host
+    * @return host
     **/
         @javax.annotation.Nullable
       @ApiModelProperty(example = "mg.wso2.com", value = "")
     
-    public String getVhost() {
-        return vhost;
+    public String getHost() {
+        return host;
     }
 
 
-    public void setVhost(String vhost) {
-        this.vhost = vhost;
+    public void setHost(String host) {
+        this.host = host;
     }
 
 
-        public APIRevisionDeploymentDTO displayOnDevportal(Boolean displayOnDevportal) {
+        public VHostDTO httpContext(String httpContext) {
         
-        this.displayOnDevportal = displayOnDevportal;
+        this.httpContext = httpContext;
         return this;
         }
 
     /**
-        * Get displayOnDevportal
-    * @return displayOnDevportal
+        * Get httpContext
+    * @return httpContext
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "true", value = "")
+      @ApiModelProperty(example = "pets", value = "")
     
-    public Boolean isDisplayOnDevportal() {
-        return displayOnDevportal;
+    public String getHttpContext() {
+        return httpContext;
     }
 
 
-    public void setDisplayOnDevportal(Boolean displayOnDevportal) {
-        this.displayOnDevportal = displayOnDevportal;
+    public void setHttpContext(String httpContext) {
+        this.httpContext = httpContext;
     }
 
 
-        public APIRevisionDeploymentDTO deployedTime(String deployedTime) {
+        public VHostDTO httpPort(Integer httpPort) {
         
-        this.deployedTime = deployedTime;
+        this.httpPort = httpPort;
         return this;
         }
 
     /**
-        * Get deployedTime
-    * @return deployedTime
+        * Get httpPort
+    * @return httpPort
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+      @ApiModelProperty(example = "80", value = "")
     
-    public String getDeployedTime() {
-        return deployedTime;
+    public Integer getHttpPort() {
+        return httpPort;
     }
 
 
-    public void setDeployedTime(String deployedTime) {
-        this.deployedTime = deployedTime;
+    public void setHttpPort(Integer httpPort) {
+        this.httpPort = httpPort;
+    }
+
+
+        public VHostDTO httpsPort(Integer httpsPort) {
+        
+        this.httpsPort = httpsPort;
+        return this;
+        }
+
+    /**
+        * Get httpsPort
+    * @return httpsPort
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "443", value = "")
+    
+    public Integer getHttpsPort() {
+        return httpsPort;
+    }
+
+
+    public void setHttpsPort(Integer httpsPort) {
+        this.httpsPort = httpsPort;
+    }
+
+
+        public VHostDTO wsPort(Integer wsPort) {
+        
+        this.wsPort = wsPort;
+        return this;
+        }
+
+    /**
+        * Get wsPort
+    * @return wsPort
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "9099", value = "")
+    
+    public Integer getWsPort() {
+        return wsPort;
+    }
+
+
+    public void setWsPort(Integer wsPort) {
+        this.wsPort = wsPort;
+    }
+
+
+        public VHostDTO wssPort(Integer wssPort) {
+        
+        this.wssPort = wssPort;
+        return this;
+        }
+
+    /**
+        * Get wssPort
+    * @return wssPort
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "8099", value = "")
+    
+    public Integer getWssPort() {
+        return wssPort;
+    }
+
+
+    public void setWssPort(Integer wssPort) {
+        this.wssPort = wssPort;
     }
 
 
@@ -173,29 +200,31 @@ public class APIRevisionDeploymentDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            APIRevisionDeploymentDTO apIRevisionDeployment = (APIRevisionDeploymentDTO) o;
-            return Objects.equals(this.revisionUuid, apIRevisionDeployment.revisionUuid) &&
-            Objects.equals(this.name, apIRevisionDeployment.name) &&
-            Objects.equals(this.vhost, apIRevisionDeployment.vhost) &&
-            Objects.equals(this.displayOnDevportal, apIRevisionDeployment.displayOnDevportal) &&
-            Objects.equals(this.deployedTime, apIRevisionDeployment.deployedTime);
+            VHostDTO vhost = (VHostDTO) o;
+            return Objects.equals(this.host, vhost.host) &&
+            Objects.equals(this.httpContext, vhost.httpContext) &&
+            Objects.equals(this.httpPort, vhost.httpPort) &&
+            Objects.equals(this.httpsPort, vhost.httpsPort) &&
+            Objects.equals(this.wsPort, vhost.wsPort) &&
+            Objects.equals(this.wssPort, vhost.wssPort);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(revisionUuid, name, vhost, displayOnDevportal, deployedTime);
+        return Objects.hash(host, httpContext, httpPort, httpsPort, wsPort, wssPort);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class APIRevisionDeploymentDTO {\n");
-    sb.append("    revisionUuid: ").append(toIndentedString(revisionUuid)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    vhost: ").append(toIndentedString(vhost)).append("\n");
-    sb.append("    displayOnDevportal: ").append(toIndentedString(displayOnDevportal)).append("\n");
-    sb.append("    deployedTime: ").append(toIndentedString(deployedTime)).append("\n");
+sb.append("class VHostDTO {\n");
+    sb.append("    host: ").append(toIndentedString(host)).append("\n");
+    sb.append("    httpContext: ").append(toIndentedString(httpContext)).append("\n");
+    sb.append("    httpPort: ").append(toIndentedString(httpPort)).append("\n");
+    sb.append("    httpsPort: ").append(toIndentedString(httpsPort)).append("\n");
+    sb.append("    wsPort: ").append(toIndentedString(wsPort)).append("\n");
+    sb.append("    wssPort: ").append(toIndentedString(wssPort)).append("\n");
 sb.append("}");
 return sb.toString();
 }
