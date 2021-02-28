@@ -1320,6 +1320,7 @@ public class RestAPIPublisherImpl {
         for (APIRevisionDeployUndeployRequest apiRevisionDeployRequest : apiRevisionDeployRequestList) {
             APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
             apiRevisionDeploymentDTO.setName(apiRevisionDeployRequest.getName());
+            apiRevisionDeploymentDTO.setVhost(apiRevisionDeployRequest.getVhost());
             apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionDeployRequest.isDisplayOnDevportal());
             apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
