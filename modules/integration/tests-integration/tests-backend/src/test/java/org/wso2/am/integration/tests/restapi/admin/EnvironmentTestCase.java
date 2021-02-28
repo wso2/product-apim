@@ -74,7 +74,8 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN}};
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN}};
     }
 
     @BeforeClass(alwaysRun = true)
@@ -275,9 +276,14 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         apisToBeUsed.add(apiTwo);
 
         // Step 2 : Create APIProduct
-        final String provider = UUID.randomUUID().toString();
+        String provider = UUID.randomUUID().toString();
         final String name = UUID.randomUUID().toString();
-        final String context = "/" + UUID.randomUUID().toString();
+        String context = "/" + UUID.randomUUID().toString();
+
+        String tenantDomain = gatewayContextMgt.getContextTenant().getDomain();
+        if (this.userMode != TestUserMode.SUPER_TENANT_ADMIN) {
+            provider = provider + "@" + tenantDomain;
+        }
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
