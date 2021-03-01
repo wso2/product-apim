@@ -742,7 +742,6 @@ public class CommentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    //**************************************************************
     public CommentDTO getCommentOfAPI(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset) throws ApiException {
         ApiResponse<CommentDTO> localVarResp = getCommentOfAPIWithHttpInfo(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset);
         return localVarResp.getData();

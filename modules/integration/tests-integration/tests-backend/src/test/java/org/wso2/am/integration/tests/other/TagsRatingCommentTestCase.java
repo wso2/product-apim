@@ -46,6 +46,7 @@ import java.util.List;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertNotEquals;
 
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) public class TagsRatingCommentTestCase
         extends APIMIntegrationBaseTest {
@@ -110,77 +111,157 @@ import static org.testng.Assert.assertTrue;
 
         //-------------------------Test Comments------------------------------------------
 
-        // Test add comments
-        HttpResponse addCommentResponse = restAPIStore.addComment(apiId, "This is a test comment", "general", null);
-        assertNotNull(addCommentResponse, "Error adding comment");
-        assertEquals(addCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),"Response code mismatched");
-        String rootCommentId = addCommentResponse.getData();
-        assertNotNull(rootCommentId, "Comment Id is null");
+        // Test add five root comments
+        List<String> rootComments = new ArrayList<String>();
+        for (Integer i = 1; i < 6; i++) {
+            HttpResponse addRootCommentResponse = restAPIStore.addComment(apiId, "This is root comment "+
+                    i.toString(), "general", null);
+            assertNotNull(addRootCommentResponse, "Error adding comment");
+            assertEquals(addRootCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                    "Response code mismatched");
+            Gson getCommentsGson = new Gson();
+            CommentDTO addedRootCommentDTO = getCommentsGson.fromJson(addRootCommentResponse.getData(), CommentDTO.class);
+            String rootCommentId = addedRootCommentDTO.getId();
+            assertNotNull(rootCommentId, "Comment Id is null");
+            rootComments.add(rootCommentId);
+        }
 
-//        // Verify added comment
-//        HttpResponse getCommentResponse = restAPIStore.getComment(rootCommentId, apiId, gatewayContextWrk.getContextTenant().getDomain(), false);
-//        assertEquals(getCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),"Error retrieving comment");
-//        Gson g = new Gson();
-//        CommentDTO rootCommentDTO = g.fromJson(getCommentResponse.getData(), CommentDTO.class);
-//        assertEquals(rootCommentDTO.getContent(), "This is a test comment", "Comments do not match");
-//        assertEquals(rootCommentDTO.getCategory(), "general", "Comments do not match");
-//        assertEquals(rootCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
+        String rootCommentIdToAddReplies = rootComments.get(0);
 
-//        // Test add reply to above root comment
-//        HttpResponse addReply1CommentResponse = restAPIStore.addComment(apiId, "This is a reply 1", "general", rootCommentId);
-//        assertNotNull(addReply1CommentResponse, "Error adding comment");
-//        assertEquals(addReply1CommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(), "Response code mismatched");
-//        String reply1CommentId = addReply1CommentResponse.getData();
-//        assertNotNull(reply1CommentId, "Comment Id is null");
-//
-//
-//        // Verify added reply
-//        HttpResponse getReply1CommentResponse = restAPIStore.getComment(reply1CommentId, apiId, gatewayContextWrk.getContextTenant().getDomain(), false);
-//        assertEquals(getReply1CommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),"Error retrieving comment");
-//        Gson g1 = new Gson();
-//        CommentDTO reply1CommentDTO = g1.fromJson(getReply1CommentResponse.getData(), CommentDTO.class);
-//        assertEquals(reply1CommentDTO.getContent(), "This is a reply 1", "Comments do not match");
-//        assertEquals(reply1CommentDTO.getCategory(), "general", "Comments do not match");
-//        assertEquals(reply1CommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
-//        assertEquals(reply1CommentDTO.getParentCommentId(), rootCommentId, "Comments do not match");
-
-        // Test add another three replies to above root comment
+        // Test add another four replies to above root comment
         List<String> replies = new ArrayList<String>();
-//        String[] VALUES = new String[] {"AB","BC","CD","AE"};
         for (Integer i = 1; i < 5; i++) {
-            HttpResponse addReplyCommentResponse = restAPIStore.addComment(apiId, "This is a reply "+i.toString(), "general", rootCommentId);
+            HttpResponse addReplyCommentResponse = restAPIStore.addComment(apiId, "This is a reply "+
+                    i.toString(), "general", rootCommentIdToAddReplies);
             assertNotNull(addReplyCommentResponse, "Error adding comment");
-            assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(), "Response code mismatched");
-            String replyCommentId = addReplyCommentResponse.getData();
+            assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                    "Response code mismatched");
+            Gson getCommentsGson = new Gson();
+            CommentDTO addedCommentDTO = getCommentsGson.fromJson(addReplyCommentResponse.getData(), CommentDTO.class);
+            String replyCommentId = addedCommentDTO.getId();
             assertNotNull(replyCommentId, "Comment Id is null");
             replies.add(replyCommentId);
         }
+
         // Verify added comment with it's replies
-        HttpResponse getCommentWithRepliesResponse = restAPIStore.getComment(rootCommentId, apiId, gatewayContextWrk.getContextTenant().getDomain(), false);
-        assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),"Error retrieving comment");
+        HttpResponse getCommentWithRepliesResponse = restAPIStore.getComment(rootCommentIdToAddReplies, apiId,
+                gatewayContextWrk.getContextTenant().getDomain(), false, 3,0);
+        assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
         Gson getCommentWithRepliesGson = new Gson();
-        CommentDTO commentWithRepliesCommentDTO = getCommentWithRepliesGson.fromJson(getCommentWithRepliesResponse.getData(), CommentDTO.class);
-        assertEquals(commentWithRepliesCommentDTO.getContent(), "This is a test comment", "Comments do not match");
+        CommentDTO commentWithRepliesCommentDTO = getCommentWithRepliesGson.fromJson(getCommentWithRepliesResponse
+                .getData(), CommentDTO.class);
+        assertEquals(commentWithRepliesCommentDTO.getContent(), "This is root comment 1",
+                "Comments do not match");
         assertEquals(commentWithRepliesCommentDTO.getCategory(), "general", "Comments do not match");
-        assertEquals(commentWithRepliesCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
-//        CommentListDTO a = commentWithRepliesCommentDTO.getReplies();
-//        List<CommentDTO> bb = commentWithRepliesCommentDTO.getReplies().getList();
+        assertEquals(commentWithRepliesCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL,
+                "Comments do not match");
         for (CommentDTO reply: commentWithRepliesCommentDTO.getReplies().getList()){
             assertEquals(reply.getCategory(), "general", "Comments do not match");
             assertEquals(reply.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
-            assertEquals(reply.getParentCommentId(), rootCommentId, "Comments do not match");
-//            Arrays.asList(yourArray).contains(yourValue)
-            boolean a = replies.contains(reply.getId());
+            assertEquals(reply.getParentCommentId(), rootCommentIdToAddReplies, "Comments do not match");
             assertEquals(replies.contains(reply.getId()), true, "Comments do not match");
-//            assertEquals(reply1CommentDTO.getContent(), "This is a reply 1", "Comments do not match");
-
         }
 
+        // Get  all the comments of  API
+        HttpResponse getCommentsResponse = restAPIStore.getComments(apiId, gatewayContextWrk.getContextTenant()
+                .getDomain(),  false, 5, 0);
+        assertEquals(getCommentsResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        Gson getCommentsGson = new Gson();
+        CommentListDTO commentListDTO = getCommentsGson.fromJson(getCommentsResponse.getData(), CommentListDTO.class);
+        assertEquals(commentListDTO.getCount().intValue(),5,"Root comments count do not match");
+        for (CommentDTO rootCommentDTO: commentListDTO.getList()){
+            assertEquals(rootCommentDTO.getCategory(), "general", "Comments do not match");
+            assertEquals(rootCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL,
+                    "Comments do not match");
+            assertEquals(rootCommentDTO.getParentCommentId(), null, "Comments do not match");
+            assertEquals(rootComments.contains(rootCommentDTO.getId()), true, "Comments do not match");
+        }
+
+        // Get all the replies of a given comment
+        HttpResponse getRepliesResponse = restAPIStore.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
+                .getContextTenant().getDomain(), false, 5, 0);
+        assertEquals(getRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        Gson getRepliesGson = new Gson();
+        CommentListDTO replyListDTO = getRepliesGson.fromJson(getRepliesResponse.getData(), CommentListDTO.class);
+        assertEquals(replyListDTO.getCount().intValue(),4,"Replies count do not match");
+        for (CommentDTO replyDTO: replyListDTO.getList()){
+            assertEquals(replyDTO.getCategory(), "general", "Comments do not match");
+            assertEquals(replyDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
+            assertEquals(replyDTO.getParentCommentId(), rootCommentIdToAddReplies, "Comments do not match");
+            assertEquals(replies.contains(replyDTO.getId()), true, "Comments do not match");
+        }
+
+        //Edit a comment
+        //Edit the content only
+        HttpResponse editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId,
+                "Edited root comment", "general");
+        assertNotNull(editCommentResponse, "Error adding comment");
+        assertEquals(editCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                "Response code mismatched");
+        Gson editCommentGson = new Gson();
+        CommentDTO editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        assertEquals(editCommentDTO.getContent(), "Edited root comment");
+        assertEquals(editCommentDTO.getCategory(), "general");
+        assertNotEquals(editCommentDTO.getUpdatedTime(),null);
+        String updatedTime = editCommentDTO.getUpdatedTime();
+        //Edit the category only
+        editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment",
+                "bug fix");
+        assertNotNull(editCommentResponse, "Error adding comment");
+        assertEquals(editCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                "Response code mismatched");
+        editCommentGson = new Gson();
+        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        assertEquals(editCommentDTO.getContent(), "Edited root comment");
+        assertEquals(editCommentDTO.getCategory(), "bug fix");
+        assertNotEquals(editCommentDTO.getUpdatedTime(),null);
+        assertNotEquals(editCommentDTO.getUpdatedTime(),updatedTime);
+        updatedTime = editCommentDTO.getUpdatedTime();
+        //Edit the category and content
+        editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId,"Edited root comment 1",
+                "general bug fix");
+        assertNotNull(editCommentResponse, "Error adding comment");
+        assertEquals(editCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                "Response code mismatched");
+        editCommentGson = new Gson();
+        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        assertEquals(editCommentDTO.getContent(), "Edited root comment 1");
+        assertEquals(editCommentDTO.getCategory(), "general bug fix");
+        assertNotEquals(editCommentDTO.getUpdatedTime(),null);
+        assertNotEquals(editCommentDTO.getUpdatedTime(),updatedTime);
+        updatedTime = editCommentDTO.getUpdatedTime();
+        //Edit - keep the category and content as it is
+        editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId,"Edited root comment 1",
+                "general bug fix");
+        assertNotNull(editCommentResponse, "Error adding comment");
+        assertEquals(editCommentResponse.getResponseCode(), Response.Status.NOT_MODIFIED.getStatusCode(),
+                "Response code mismatched");
+        editCommentResponse = restAPIStore.getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk
+                .getContextTenant().getDomain(), false, 3,0);
+        assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        editCommentGson = new Gson();
+        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        assertEquals(editCommentDTO.getContent(), "Edited root comment 1");
+        assertEquals(editCommentDTO.getCategory(), "general bug fix");
+        assertNotEquals(editCommentDTO.getUpdatedTime(),null);
+        assertEquals(editCommentDTO.getUpdatedTime(),updatedTime);
 
 
         // Test delete comments
-        HttpResponse deleteResponse = restAPIStore.removeComment(rootCommentId, apiId);
-        assertEquals(deleteResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
+        HttpResponse deleteResponse = restAPIStore.removeComment(rootCommentIdToAddReplies, apiId);
+        assertEquals(deleteResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched");
+        // Test check whether replies of above deleted root comment are deleted or not
+        for (String reply: replies){
+            HttpResponse replyResponse = restAPIStore.getComment(reply, apiId, gatewayContextWrk.getContextTenant()
+                    .getDomain(), false, 3, 0);
+            assertEquals(replyResponse.getResponseCode(), Response.Status.NOT_FOUND.getStatusCode(),
+                    "Error retrieving comment");
+        }
 
         //-------------------------Test Ratings------------------------------------------
 
