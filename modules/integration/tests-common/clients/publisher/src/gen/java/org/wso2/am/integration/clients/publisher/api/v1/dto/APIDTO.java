@@ -34,10 +34,12 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMaxTpsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIServiceInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIThreatProtectionPoliciesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DeploymentEnvironmentsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WebsubSubscriptionConfigurationDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIDTO
@@ -125,7 +127,7 @@ public class APIDTO {
             private Boolean enableStore;
 
             /**
-* The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
+* The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
 */
     @JsonAdapter(TypeEnum.Adapter.class)
 public enum TypeEnum {
@@ -137,7 +139,11 @@ public enum TypeEnum {
         
         SOAP("SOAP"),
         
-        GRAPHQL("GRAPHQL");
+        GRAPHQL("GRAPHQL"),
+        
+        WEBSUB("WEBSUB"),
+        
+        SSE("SSE");
 
 private String value;
 
@@ -418,6 +424,10 @@ public static AccessControlEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_CORS_CONFIGURATION)
             private APICorsConfigurationDTO corsConfiguration;
 
+        public static final String SERIALIZED_NAME_WEBSUB_SUBSCRIPTION_CONFIGURATION = "websubSubscriptionConfiguration";
+        @SerializedName(SERIALIZED_NAME_WEBSUB_SUBSCRIPTION_CONFIGURATION)
+            private WebsubSubscriptionConfigurationDTO websubSubscriptionConfiguration;
+
         public static final String SERIALIZED_NAME_WORKFLOW_STATUS = "workflowStatus";
         @SerializedName(SERIALIZED_NAME_WORKFLOW_STATUS)
             private String workflowStatus;
@@ -504,6 +514,10 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
         public static final String SERIALIZED_NAME_KEY_MANAGERS = "keyManagers";
         @SerializedName(SERIALIZED_NAME_KEY_MANAGERS)
             private Object keyManagers;
+
+        public static final String SERIALIZED_NAME_SERVICE_INFO = "serviceInfo";
+        @SerializedName(SERIALIZED_NAME_SERVICE_INFO)
+            private APIServiceInfoDTO serviceInfo;
 
 
         public APIDTO id(String id) {
@@ -970,11 +984,11 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
         }
 
     /**
-        * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
+        * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
     * @return type
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "HTTP", value = "The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL")
+      @ApiModelProperty(example = "HTTP", value = "The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE")
     
     public TypeEnum getType() {
         return type;
@@ -1177,11 +1191,11 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
         }
 
     /**
-        * The user roles that are able to access the API in Devportal
+        * The user roles that are able to access the API in Developer Portal
     * @return visibleRoles
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "[]", value = "The user roles that are able to access the API in Devportal")
+      @ApiModelProperty(example = "[]", value = "The user roles that are able to access the API in Developer Portal")
     
     public List<String> getVisibleRoles() {
         return visibleRoles;
@@ -1515,6 +1529,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO websubSubscriptionConfiguration(WebsubSubscriptionConfigurationDTO websubSubscriptionConfiguration) {
+        
+        this.websubSubscriptionConfiguration = websubSubscriptionConfiguration;
+        return this;
+        }
+
+    /**
+        * Get websubSubscriptionConfiguration
+    * @return websubSubscriptionConfiguration
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public WebsubSubscriptionConfigurationDTO getWebsubSubscriptionConfiguration() {
+        return websubSubscriptionConfiguration;
+    }
+
+
+    public void setWebsubSubscriptionConfiguration(WebsubSubscriptionConfigurationDTO websubSubscriptionConfiguration) {
+        this.websubSubscriptionConfiguration = websubSubscriptionConfiguration;
+    }
+
+
         public APIDTO workflowStatus(String workflowStatus) {
         
         this.workflowStatus = workflowStatus;
@@ -1745,6 +1782,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO serviceInfo(APIServiceInfoDTO serviceInfo) {
+        
+        this.serviceInfo = serviceInfo;
+        return this;
+        }
+
+    /**
+        * Get serviceInfo
+    * @return serviceInfo
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIServiceInfoDTO getServiceInfo() {
+        return serviceInfo;
+    }
+
+
+    public void setServiceInfo(APIServiceInfoDTO serviceInfo) {
+        this.serviceInfo = serviceInfo;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -1798,6 +1858,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.accessControlRoles, API.accessControlRoles) &&
             Objects.equals(this.businessInformation, API.businessInformation) &&
             Objects.equals(this.corsConfiguration, API.corsConfiguration) &&
+            Objects.equals(this.websubSubscriptionConfiguration, API.websubSubscriptionConfiguration) &&
             Objects.equals(this.workflowStatus, API.workflowStatus) &&
             Objects.equals(this.createdTime, API.createdTime) &&
             Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime) &&
@@ -1807,12 +1868,13 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.operations, API.operations) &&
             Objects.equals(this.threatProtectionPolicies, API.threatProtectionPolicies) &&
             Objects.equals(this.categories, API.categories) &&
-            Objects.equals(this.keyManagers, API.keyManagers);
+            Objects.equals(this.keyManagers, API.keyManagers) &&
+            Objects.equals(this.serviceInfo, API.serviceInfo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, testKey, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableStore, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, deploymentEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, testKey, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableStore, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, deploymentEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo);
     }
 
 
@@ -1864,6 +1926,7 @@ sb.append("class APIDTO {\n");
     sb.append("    accessControlRoles: ").append(toIndentedString(accessControlRoles)).append("\n");
     sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
     sb.append("    corsConfiguration: ").append(toIndentedString(corsConfiguration)).append("\n");
+    sb.append("    websubSubscriptionConfiguration: ").append(toIndentedString(websubSubscriptionConfiguration)).append("\n");
     sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
@@ -1874,6 +1937,7 @@ sb.append("class APIDTO {\n");
     sb.append("    threatProtectionPolicies: ").append(toIndentedString(threatProtectionPolicies)).append("\n");
     sb.append("    categories: ").append(toIndentedString(categories)).append("\n");
     sb.append("    keyManagers: ").append(toIndentedString(keyManagers)).append("\n");
+    sb.append("    serviceInfo: ").append(toIndentedString(serviceInfo)).append("\n");
 sb.append("}");
 return sb.toString();
 }

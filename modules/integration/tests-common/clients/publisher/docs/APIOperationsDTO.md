@@ -15,6 +15,8 @@ Name | Type | Description | Notes
 **usedProductIds** | **List&lt;String&gt;** |  |  [optional]
 **amznResourceName** | **String** |  |  [optional]
 **amznResourceTimeout** | **Integer** |  |  [optional]
+**payloadSchema** | **String** |  |  [optional]
+**uriMapping** | **String** |  |  [optional]
 
 
 

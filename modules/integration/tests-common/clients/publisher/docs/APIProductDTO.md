@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **description** | **String** | A brief description about the API |  [optional]
 **provider** | **String** | If the provider value is not given, the user invoking the API will be used as the provider.  |  [optional]
 **hasThumbnail** | **Boolean** |  |  [optional]
-**state** | [**StateEnum**](#StateEnum) | State of the API product. Only published api products are visible on the Devportal  |  [optional]
+**state** | [**StateEnum**](#StateEnum) | State of the API product. Only published api products are visible on the Developer Portal  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
 **enableStore** | **Boolean** |  |  [optional]
 **testKey** | **String** |  |  [optional] [readonly]

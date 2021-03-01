@@ -120,8 +120,6 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
                 .changeAPILifeCycleStatus(apiId, APILifeCycleAction.BLOCK.getAction(), null);
         assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "API publish Response code is invalid " + apiId);
-        // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
     }
 
 

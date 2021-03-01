@@ -205,7 +205,7 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **revisionId** | **String**| Revision ID of an API  |
+ **revisionId** | **String**| Revision ID of an API  | [optional]
  **apIRevisionDeploymentDTO** | [**List&lt;APIRevisionDeploymentDTO&gt;**](APIRevisionDeploymentDTO.md)| Deployment object that needs to be added | [optional]
 
 ### Return type
@@ -485,7 +485,7 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **revisionId** | **String**| Revision ID of an API  |
+ **revisionId** | **String**| Revision ID of an API  | [optional]
 
 ### Return type
 
@@ -508,7 +508,7 @@ Name | Type | Description  | Notes
 
 <a name="undeployAPIRevision"></a>
 # **undeployAPIRevision**
-> undeployAPIRevision(apiId, revisionId, apIRevisionDeploymentDTO)
+> undeployAPIRevision(apiId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO)
 
 Un-Deploy a revision
 
@@ -536,9 +536,11 @@ public class Example {
     ApiRevisionsApi apiInstance = new ApiRevisionsApi(defaultClient);
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     String revisionId = "revisionId_example"; // String | Revision ID of an API 
+    String revisionNumber = "revisionNumber_example"; // String | Revision Number of an API 
+    Boolean allEnvironments = false; // Boolean | 
     List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO = Arrays.asList(); // List<APIRevisionDeploymentDTO> | Deployment object that needs to be added
     try {
-      apiInstance.undeployAPIRevision(apiId, revisionId, apIRevisionDeploymentDTO);
+      apiInstance.undeployAPIRevision(apiId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApiRevisionsApi#undeployAPIRevision");
       System.err.println("Status code: " + e.getCode());
@@ -555,7 +557,9 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **revisionId** | **String**| Revision ID of an API  |
+ **revisionId** | **String**| Revision ID of an API  | [optional]
+ **revisionNumber** | **String**| Revision Number of an API  | [optional]
+ **allEnvironments** | **Boolean**|  | [optional] [default to false]
  **apIRevisionDeploymentDTO** | [**List&lt;APIRevisionDeploymentDTO&gt;**](APIRevisionDeploymentDTO.md)| Deployment object that needs to be added | [optional]
 
 ### Return type

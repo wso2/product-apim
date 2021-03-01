@@ -117,7 +117,10 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
         webAppAdminClient.uploadWarFile(GraphqlAPIWebAppSourcePath);
         webAppAdminClient.uploadWarFile(AuditAPIWebAppSourcePath);
-
+        String sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
+                + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator
+                + APIMIntegrationConstants.ETCD_WEB_APP_NAME + ".war";
+        webAppAdminClient.uploadWarFile(sourcePath);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 gatewayMgtSessionId, APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
@@ -141,10 +144,6 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 gatewayMgtSessionId, APIMIntegrationConstants.AUDIT_API_WEB_APP_NAME);
         WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
-        String sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
-                + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator
-                + APIMIntegrationConstants.ETCD_WEB_APP_NAME + ".war";
-        webAppAdminClient.uploadWarFile(sourcePath);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 gatewayMgtSessionId, APIMIntegrationConstants.ETCD_WEB_APP_NAME);
         log.info("Web App Deployed");
