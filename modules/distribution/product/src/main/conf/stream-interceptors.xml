@@ -17,5 +17,5 @@
   -->
 
 <interceptors>
-    <interceptor class="org.wso2.carbon.apimgt.gateway.handlers.streaming.sse.SseStreamInterceptor"/>
+    <interceptor class="org.wso2.carbon.apimgt.gateway.handlers.streaming.sse.SseResponseStreamInterceptor"/>
 </interceptors>
