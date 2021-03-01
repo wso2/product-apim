@@ -765,7 +765,6 @@ public class ApIsApi {
     /**
      * Build call for generateInternalAPIKey
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -775,10 +774,9 @@ public class ApIsApi {
         <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call generateInternalAPIKeyCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call generateInternalAPIKeyCall(String apiId, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -788,10 +786,6 @@ public class ApIsApi {
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        if (ifNoneMatch != null) {
-            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
-        }
-
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         final String[] localVarAccepts = {
@@ -813,7 +807,7 @@ public class ApIsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call generateInternalAPIKeyValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call generateInternalAPIKeyValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
@@ -821,7 +815,7 @@ public class ApIsApi {
         }
         
 
-        okhttp3.Call localVarCall = generateInternalAPIKeyCall(apiId, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = generateInternalAPIKeyCall(apiId, _callback);
         return localVarCall;
 
     }
@@ -830,7 +824,6 @@ public class ApIsApi {
      * Generate internal API Key to invoke APIS.
      * This operation can be used to generate internal api key which used to invoke API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @return APIKeyDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -839,11 +832,10 @@ public class ApIsApi {
         <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public APIKeyDTO generateInternalAPIKey(String apiId, String ifNoneMatch) throws ApiException {
-        ApiResponse<APIKeyDTO> localVarResp = generateInternalAPIKeyWithHttpInfo(apiId, ifNoneMatch);
+    public APIKeyDTO generateInternalAPIKey(String apiId) throws ApiException {
+        ApiResponse<APIKeyDTO> localVarResp = generateInternalAPIKeyWithHttpInfo(apiId);
         return localVarResp.getData();
     }
 
@@ -851,7 +843,6 @@ public class ApIsApi {
      * Generate internal API Key to invoke APIS.
      * This operation can be used to generate internal api key which used to invoke API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @return ApiResponse&lt;APIKeyDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -860,11 +851,10 @@ public class ApIsApi {
         <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIKeyDTO> generateInternalAPIKeyWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = generateInternalAPIKeyValidateBeforeCall(apiId, ifNoneMatch, null);
+    public ApiResponse<APIKeyDTO> generateInternalAPIKeyWithHttpInfo(String apiId) throws ApiException {
+        okhttp3.Call localVarCall = generateInternalAPIKeyValidateBeforeCall(apiId, null);
         Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -873,7 +863,6 @@ public class ApIsApi {
      * Generate internal API Key to invoke APIS. (asynchronously)
      * This operation can be used to generate internal api key which used to invoke API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -883,12 +872,11 @@ public class ApIsApi {
         <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call generateInternalAPIKeyAsync(String apiId, String ifNoneMatch, final ApiCallback<APIKeyDTO> _callback) throws ApiException {
+    public okhttp3.Call generateInternalAPIKeyAsync(String apiId, final ApiCallback<APIKeyDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = generateInternalAPIKeyValidateBeforeCall(apiId, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = generateInternalAPIKeyValidateBeforeCall(apiId, _callback);
         Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

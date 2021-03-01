@@ -7382,16 +7382,6 @@ paths:
         schema:
           type: string
         style: simple
-      - description: |
-          Validator for conditional requests; based on the ETag of the formerly retrieved
-          variant of the resource.
-        explode: false
-        in: header
-        name: If-None-Match
-        required: false
-        schema:
-          type: string
-        style: simple
       responses:
         "200":
           content:
@@ -7425,23 +7415,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
-        "412":
-          content:
-            application/json:
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the
-                  preconditions is not met
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Precondition Failed. The request has not been performed because
-            one of the preconditions is not met.
       security:
       - OAuth2Security:
-        - apim:api_create
+        - apim:api_generate_key
       summary: Generate internal API Key to invoke APIS.
       tags:
       - APIs
