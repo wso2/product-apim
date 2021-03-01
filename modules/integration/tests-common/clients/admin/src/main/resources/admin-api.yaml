@@ -2587,6 +2587,135 @@ paths:
           "https://127.0.0.1:9443/api/am/admin/v2/labels/d7cf8523-9180-4255-84fa-6cb171c1f779"'
 
   ######################################################
+  # The "Environment" resource API
+  ######################################################
+  /environments:
+    get:
+      tags:
+        - Environment Collection
+      summary: Get all registered Environments
+      description: |
+        Get all Registered Environments
+      responses:
+        200:
+          description: |
+            OK.
+            Environments returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentList'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:environment_read
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/environments"'
+
+    post:
+      tags:
+        - Environment
+      summary: Add an Environment
+      description: |
+        Add a new geteway environment
+      requestBody:
+        description: |
+          Environment object that should to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        400:
+          $ref: '#/components/responses/BadRequest'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:environment_manage
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v2/environments"'
+
+  ######################################################
+  # The "Individual Environment" resource APIs
+  ######################################################
+  /environments/{environmentId}:
+    put:
+      tags:
+        - Environment
+      summary: Update an Environment
+      description: |
+        Update a gateway Environment by environment Id
+      parameters:
+        - $ref: '#/components/parameters/environmentId'
+      requestBody:
+        description: |
+          Environment object with updated information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Environment updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:environment_manage
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v2/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+
+    delete:
+      tags:
+        - Environment
+      summary: Delete an Environment
+      description: |
+        Delete a Environment by Environment Id
+      parameters:
+        - $ref: '#/components/parameters/environmentId'
+      responses:
+        200:
+          description: |
+            OK.
+            Environment successfully deleted.
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:environment_manage
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+
+  ######################################################
   # The Bot Detection Data API resources
   ######################################################
   /bot-detection-data:
@@ -4615,6 +4744,85 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Label'
+    Environment:
+      title: Environment
+      required:
+        - name
+        - vhosts
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        name:
+          maxLength: 255
+          minLength: 1
+          pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\s+]*$)'
+          type: string
+          example: us-region
+        displayName:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: US Region
+        description:
+          maxLength: 1023
+          type: string
+          example: Gateway environment in US Region
+        isReadOnly:
+          type: boolean
+          readOnly: true
+          example: false
+        vhosts:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/VHost'
+    EnvironmentList:
+      title: Environment List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Environments returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/Environment'
+    VHost:
+      title: Virtual Host
+      required:
+        - host
+      type: object
+      properties:
+        host:
+          maxLength: 255
+          minLength: 1
+          # hostname regex as per RFC 1123 (http://tools.ietf.org/html/rfc1123) and appended *
+          pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
+          type: string
+          example: mg.wso2.com
+        httpContext:
+          maxLength: 255
+          minLength: 0
+          pattern: '^\/?([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])*$'
+          type: string
+          example: pets
+        httpPort:
+          type: integer
+          example: 80
+        httpsPort:
+          type: integer
+          example: 443
+        wsPort:
+          type: integer
+          example: 9099
+        wssPort:
+          type: integer
+          example: 8099
     PublishStatus:
       title: Usage publish status
       type: object
@@ -5450,6 +5658,14 @@ components:
       required: true
       schema:
         type: string
+    environmentId:
+      name: environmentId
+      in: path
+      description: |
+        Environment UUID (or Environment name defined in config)
+      required: true
+      schema:
+        type: string
     policyId:
       name: policyId
       in: path
@@ -5606,6 +5822,8 @@ components:
               operations
             apim:label_manage: Manage microgateway labels
             apim:label_read: Retrieve microgateway labels
+            apim:environment_manage: Manage gateway environments
+            apim:environment_read: Retrieve gateway environments
             apim:monetization_usage_publish: Retrieve and publish Monetization related
               usage records
             apim:api_workflow_approve: Manage workflows

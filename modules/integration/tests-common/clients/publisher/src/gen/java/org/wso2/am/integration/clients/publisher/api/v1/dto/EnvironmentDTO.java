@@ -23,7 +23,10 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.EnvironmentEndpointsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.VHostDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * EnvironmentDTO
@@ -33,6 +36,10 @@ public class EnvironmentDTO {
         public static final String SERIALIZED_NAME_NAME = "name";
         @SerializedName(SERIALIZED_NAME_NAME)
             private String name;
+
+        public static final String SERIALIZED_NAME_DISPLAY_NAME = "displayName";
+        @SerializedName(SERIALIZED_NAME_DISPLAY_NAME)
+            private String displayName;
 
         public static final String SERIALIZED_NAME_TYPE = "type";
         @SerializedName(SERIALIZED_NAME_TYPE)
@@ -50,6 +57,10 @@ public class EnvironmentDTO {
         @SerializedName(SERIALIZED_NAME_ENDPOINTS)
             private EnvironmentEndpointsDTO endpoints;
 
+        public static final String SERIALIZED_NAME_VHOSTS = "vhosts";
+        @SerializedName(SERIALIZED_NAME_VHOSTS)
+            private List<VHostDTO> vhosts = null;
+
 
         public EnvironmentDTO name(String name) {
         
@@ -61,7 +72,7 @@ public class EnvironmentDTO {
         * Get name
     * @return name
     **/
-      @ApiModelProperty(example = "Production and Sandbox", required = true, value = "")
+      @ApiModelProperty(example = "default", required = true, value = "")
     
     public String getName() {
         return name;
@@ -70,6 +81,29 @@ public class EnvironmentDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+        public EnvironmentDTO displayName(String displayName) {
+        
+        this.displayName = displayName;
+        return this;
+        }
+
+    /**
+        * Get displayName
+    * @return displayName
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "Default", value = "")
+    
+    public String getDisplayName() {
+        return displayName;
+    }
+
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
 
@@ -161,6 +195,29 @@ public class EnvironmentDTO {
     }
 
 
+        public EnvironmentDTO vhosts(List<VHostDTO> vhosts) {
+        
+        this.vhosts = vhosts;
+        return this;
+        }
+
+    /**
+        * Get vhosts
+    * @return vhosts
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<VHostDTO> getVhosts() {
+        return vhosts;
+    }
+
+
+    public void setVhosts(List<VHostDTO> vhosts) {
+        this.vhosts = vhosts;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -171,15 +228,17 @@ public class EnvironmentDTO {
         }
             EnvironmentDTO environment = (EnvironmentDTO) o;
             return Objects.equals(this.name, environment.name) &&
+            Objects.equals(this.displayName, environment.displayName) &&
             Objects.equals(this.type, environment.type) &&
             Objects.equals(this.serverUrl, environment.serverUrl) &&
             Objects.equals(this.showInApiConsole, environment.showInApiConsole) &&
-            Objects.equals(this.endpoints, environment.endpoints);
+            Objects.equals(this.endpoints, environment.endpoints) &&
+            Objects.equals(this.vhosts, environment.vhosts);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, type, serverUrl, showInApiConsole, endpoints);
+        return Objects.hash(name, displayName, type, serverUrl, showInApiConsole, endpoints, vhosts);
     }
 
 
@@ -188,10 +247,12 @@ public String toString() {
 StringBuilder sb = new StringBuilder();
 sb.append("class EnvironmentDTO {\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    serverUrl: ").append(toIndentedString(serverUrl)).append("\n");
     sb.append("    showInApiConsole: ").append(toIndentedString(showInApiConsole)).append("\n");
     sb.append("    endpoints: ").append(toIndentedString(endpoints)).append("\n");
+    sb.append("    vhosts: ").append(toIndentedString(vhosts)).append("\n");
 sb.append("}");
 return sb.toString();
 }

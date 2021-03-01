@@ -7694,7 +7694,14 @@ components:
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         name:
           type: string
-          example: production and sandbox
+          example: default
+        vhost:
+          maxLength: 255
+          minLength: 1
+          # hostname regex as per RFC 1123 (http://tools.ietf.org/html/rfc1123) and appended *
+          pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
+          type: string
+          example: mg.wso2.com
         displayOnDevportal:
           type: boolean
           example: true
@@ -8587,7 +8594,10 @@ components:
       properties:
         name:
           type: string
-          example: Production and Sandbox
+          example: default
+        displayName:
+          type: string
+          example: Default
         type:
           type: string
           example: hybrid
@@ -8599,6 +8609,10 @@ components:
           example: true
         endpoints:
           $ref: '#/components/schemas/EnvironmentEndpoints'
+        vhosts:
+          type: array
+          items:
+            $ref: '#/components/schemas/VHost'
     EnvironmentList:
       title: Environment List
       type: object
@@ -8632,6 +8646,28 @@ components:
           type: string
           description: WSS environment URL
           example: https://localhost:8099
+    VHost:
+      title: Virtual Host
+      type: object
+      properties:
+        host:
+          type: string
+          example: mg.wso2.com
+        httpContext:
+          type: string
+          example: pets
+        httpPort:
+          type: integer
+          example: 80
+        httpsPort:
+          type: integer
+          example: 443
+        wsPort:
+          type: integer
+          example: 9099
+        wssPort:
+          type: integer
+          example: 8099
     FileInfo:
       title: File Information including meta data
       type: object
