@@ -26,9 +26,9 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
+//import org.wso2.am.integration.clients.publisher.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -48,13 +48,13 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertNotEquals;
 
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) public class TagsRatingCommentTestCase
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) public class PublisherCommentTest
         extends APIMIntegrationBaseTest {
 
     private String apiId;
 
     @Factory(dataProvider = "userModeDataProvider")
-    public TagsRatingCommentTestCase(TestUserMode userMode) {
+    public PublisherCommentTest(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
@@ -62,9 +62,9 @@ import static org.testng.Assert.assertNotEquals;
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
                 new Object[] { TestUserMode.TENANT_ADMIN },
-                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
-                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
-                new Object[] { TestUserMode.TENANT_EMAIL_USER },
+//                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+//                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+//                new Object[] { TestUserMode.TENANT_EMAIL_USER },
         };
     }
 
@@ -74,7 +74,7 @@ import static org.testng.Assert.assertNotEquals;
     }
 
     @Test(groups = { "wso2.am" }, description = "Comment Rating Test case")
-    public void testTagsRatingCommentTestCase() throws Exception {
+    public void testPublisherCommentTest() throws Exception {
         String APIName = "CommentRatingAPI";
         String APIContext = "commentRating";
         String tags = "youtube, video, media";
@@ -114,7 +114,7 @@ import static org.testng.Assert.assertNotEquals;
         // Test add five root comments
         List<String> rootComments = new ArrayList<String>();
         for (Integer i = 1; i < 6; i++) {
-            HttpResponse addRootCommentResponse = restAPIStore.addComment(apiId, "This is root comment "+
+            HttpResponse addRootCommentResponse = restAPIPublisher.addComment(apiId, "This is root comment "+
                     i.toString(), "general", null);
             assertNotNull(addRootCommentResponse, "Error adding comment");
             assertEquals(addRootCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -132,7 +132,7 @@ import static org.testng.Assert.assertNotEquals;
         // Test add another four replies to above root comment
         List<String> replies = new ArrayList<String>();
         for (Integer i = 1; i < 5; i++) {
-            HttpResponse addReplyCommentResponse = restAPIStore.addComment(apiId, "This is a reply "+
+            HttpResponse addReplyCommentResponse = restAPIPublisher.addComment(apiId, "This is a reply "+
                     i.toString(), "general", rootCommentIdToAddReplies);
             assertNotNull(addReplyCommentResponse, "Error adding comment");
             assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -145,7 +145,7 @@ import static org.testng.Assert.assertNotEquals;
         }
 
         // Verify added comment with it's replies
-        HttpResponse getCommentWithRepliesResponse = restAPIStore.getComment(rootCommentIdToAddReplies, apiId,
+        HttpResponse getCommentWithRepliesResponse = restAPIPublisher.getComment(rootCommentIdToAddReplies, apiId,
                 gatewayContextWrk.getContextTenant().getDomain(), false, 3,0);
         assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
@@ -155,17 +155,17 @@ import static org.testng.Assert.assertNotEquals;
         assertEquals(commentWithRepliesCommentDTO.getContent(), "This is root comment 1",
                 "Comments do not match");
         assertEquals(commentWithRepliesCommentDTO.getCategory(), "general", "Comments do not match");
-        assertEquals(commentWithRepliesCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL,
+        assertEquals(commentWithRepliesCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.PUBLISHER,
                 "Comments do not match");
         for (CommentDTO reply: commentWithRepliesCommentDTO.getReplies().getList()){
             assertEquals(reply.getCategory(), "general", "Comments do not match");
-            assertEquals(reply.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
+            assertEquals(reply.getEntryPoint(), CommentDTO.EntryPointEnum.PUBLISHER, "Comments do not match");
             assertEquals(reply.getParentCommentId(), rootCommentIdToAddReplies, "Comments do not match");
             assertEquals(replies.contains(reply.getId()), true, "Comments do not match");
         }
 
         // Get  all the comments of  API
-        HttpResponse getCommentsResponse = restAPIStore.getComments(apiId, gatewayContextWrk.getContextTenant()
+        HttpResponse getCommentsResponse = restAPIPublisher.getComments(apiId, gatewayContextWrk.getContextTenant()
                 .getDomain(),  false, 5, 0);
         assertEquals(getCommentsResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
@@ -174,14 +174,14 @@ import static org.testng.Assert.assertNotEquals;
         assertEquals(commentListDTO.getCount().intValue(),5,"Root comments count do not match");
         for (CommentDTO rootCommentDTO: commentListDTO.getList()){
             assertEquals(rootCommentDTO.getCategory(), "general", "Comments do not match");
-            assertEquals(rootCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL,
+            assertEquals(rootCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.PUBLISHER,
                     "Comments do not match");
             assertEquals(rootCommentDTO.getParentCommentId(), null, "Comments do not match");
             assertEquals(rootComments.contains(rootCommentDTO.getId()), true, "Comments do not match");
         }
 
         // Get all the replies of a given comment
-        HttpResponse getRepliesResponse = restAPIStore.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
+        HttpResponse getRepliesResponse = restAPIPublisher.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
                 .getContextTenant().getDomain(), false, 5, 0);
         assertEquals(getRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
@@ -190,14 +190,14 @@ import static org.testng.Assert.assertNotEquals;
         assertEquals(replyListDTO.getCount().intValue(),4,"Replies count do not match");
         for (CommentDTO replyDTO: replyListDTO.getList()){
             assertEquals(replyDTO.getCategory(), "general", "Comments do not match");
-            assertEquals(replyDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
+            assertEquals(replyDTO.getEntryPoint(), CommentDTO.EntryPointEnum.PUBLISHER, "Comments do not match");
             assertEquals(replyDTO.getParentCommentId(), rootCommentIdToAddReplies, "Comments do not match");
             assertEquals(replies.contains(replyDTO.getId()), true, "Comments do not match");
         }
 
         //Edit a comment
         //Edit the content only
-        HttpResponse editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId,
+        HttpResponse editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId,
                 "Edited root comment", "general");
         assertNotNull(editCommentResponse, "Error adding comment");
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
@@ -209,7 +209,7 @@ import static org.testng.Assert.assertNotEquals;
         assertNotEquals(editCommentDTO.getUpdatedTime(),null);
         String updatedTime = editCommentDTO.getUpdatedTime();
         //Edit the category only
-        editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment",
+        editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment",
                 "bug fix");
         assertNotNull(editCommentResponse, "Error adding comment");
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
@@ -222,7 +222,7 @@ import static org.testng.Assert.assertNotEquals;
         assertNotEquals(editCommentDTO.getUpdatedTime(),updatedTime);
         updatedTime = editCommentDTO.getUpdatedTime();
         //Edit the category and content
-        editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId,"Edited root comment 1",
+        editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId,"Edited root comment 1",
                 "general bug fix");
         assertNotNull(editCommentResponse, "Error adding comment");
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
@@ -235,12 +235,12 @@ import static org.testng.Assert.assertNotEquals;
         assertNotEquals(editCommentDTO.getUpdatedTime(),updatedTime);
         updatedTime = editCommentDTO.getUpdatedTime();
         //Edit - keep the category and content as it is
-        editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId,"Edited root comment 1",
+        editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId,"Edited root comment 1",
                 "general bug fix");
         assertNotNull(editCommentResponse, "Error adding comment");
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.NOT_MODIFIED.getStatusCode(),
                 "Response code mismatched");
-        editCommentResponse = restAPIStore.getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk
+        editCommentResponse = restAPIPublisher.getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk
                 .getContextTenant().getDomain(), false, 3,0);
         assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
@@ -253,32 +253,16 @@ import static org.testng.Assert.assertNotEquals;
 
 
         // Test delete comments
-        HttpResponse deleteResponse = restAPIStore.removeComment(rootCommentIdToAddReplies, apiId);
+        HttpResponse deleteResponse = restAPIPublisher.removeComment(rootCommentIdToAddReplies, apiId);
         assertEquals(deleteResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
         // Test check whether replies of above deleted root comment are deleted or not
         for (String reply: replies){
-            HttpResponse replyResponse = restAPIStore.getComment(reply, apiId, gatewayContextWrk.getContextTenant()
+            HttpResponse replyResponse = restAPIPublisher.getComment(reply, apiId, gatewayContextWrk.getContextTenant()
                     .getDomain(), false, 3, 0);
             assertEquals(replyResponse.getResponseCode(), Response.Status.NOT_FOUND.getStatusCode(),
                     "Error retrieving comment");
         }
-
-        //-------------------------Test Ratings------------------------------------------
-
-        //Test and verify added rating
-        Integer rating = 4;
-        HttpResponse ratingAddResponse = restAPIStore
-                .addRating(apiId, 4, gatewayContextWrk.getContextTenant().getDomain());
-        assertEquals(ratingAddResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Error adding rating");
-        RatingDTO ratingDTO = getCommentWithRepliesGson.fromJson(ratingAddResponse.getData(), RatingDTO.class);
-        assertEquals(ratingDTO.getRating(), rating, "Ratings do not match");
-
-        //Test delete rating
-        HttpResponse deleteRatingResponse = restAPIStore
-                .removeRating(apiId, gatewayContextWrk.getContextTenant().getDomain());
-        assertEquals(deleteRatingResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched");
     }
 
     @AfterClass(alwaysRun = true)
