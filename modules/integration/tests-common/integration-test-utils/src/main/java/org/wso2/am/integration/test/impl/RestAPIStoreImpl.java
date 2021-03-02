@@ -19,6 +19,8 @@ package org.wso2.am.integration.test.impl;
 import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
@@ -64,6 +66,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 
 import java.io.IOException;
 import java.net.URL;
@@ -79,6 +82,9 @@ import org.wso2.am.integration.clients.store.api.v1.UsersApi;
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIStoreImpl {
+
+    private static final Log log = LogFactory.getLog(RestAPIStoreImpl.class);
+
     public ApIsApi apIsApi = new ApIsApi();
     public ApplicationsApi applicationsApi = new ApplicationsApi();
     public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
