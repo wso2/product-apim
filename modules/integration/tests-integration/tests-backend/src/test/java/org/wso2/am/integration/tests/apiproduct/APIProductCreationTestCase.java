@@ -28,9 +28,12 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRe
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.InvocationStatusCodes;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +58,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 createSession(keyManagerContext));
         apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation(),
-                keyManagerContext.getContextTenant().getDomain(), gatewayUrlsWrk.getWebAppURLNhttp());
+                keyManagerContext.getContextTenant().getDomain(), keyManagerHTTPSURL);
         apiProductTestHelper = new ApiProductTestHelper(restAPIPublisher, restAPIStore);
 
         userManagementClient.addRole(RESTRICTED_ROLE, null, null);
@@ -95,7 +98,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -157,7 +160,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -218,7 +221,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -280,7 +283,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher
@@ -346,7 +349,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
-
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
 
         // Step 2 : Verify created APIProduct in publisher

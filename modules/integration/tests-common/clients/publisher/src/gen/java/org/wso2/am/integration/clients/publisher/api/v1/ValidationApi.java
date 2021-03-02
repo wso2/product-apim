@@ -28,6 +28,7 @@ import java.io.IOException;
 
 
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AsyncAPISpecificationValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import java.io.File;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
@@ -183,6 +184,139 @@ public class ValidationApi {
 
         okhttp3.Call localVarCall = validateAPIValidateBeforeCall(query, ifNoneMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for validateAsyncAPISpecification
+     * @param returnContent Specify whether to return the full content of the AsyncAPI specification in the response. This is only applicable when using url based validation (optional, default to false)
+     * @param url AsyncAPI definition url (optional)
+     * @param file AsyncAPI definition as a file (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateAsyncAPISpecificationCall(Boolean returnContent, String url, File file, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/validate-asyncapi";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (returnContent != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("returnContent", returnContent));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (url != null) {
+            localVarFormParams.put("url", url);
+        }
+
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call validateAsyncAPISpecificationValidateBeforeCall(Boolean returnContent, String url, File file, final ApiCallback _callback) throws ApiException {
+        
+
+        okhttp3.Call localVarCall = validateAsyncAPISpecificationCall(returnContent, url, file, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Validate an AsyncAPI Specification
+     * This operation can be used to validate and AsyncAPI Specification and retrieve a summary. Provide either &#39;url&#39; or &#39;file&#39; to specify the definition.
+     * @param returnContent Specify whether to return the full content of the AsyncAPI specification in the response. This is only applicable when using url based validation (optional, default to false)
+     * @param url AsyncAPI definition url (optional)
+     * @param file AsyncAPI definition as a file (optional)
+     * @return AsyncAPISpecificationValidationResponseDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public AsyncAPISpecificationValidationResponseDTO validateAsyncAPISpecification(Boolean returnContent, String url, File file) throws ApiException {
+        ApiResponse<AsyncAPISpecificationValidationResponseDTO> localVarResp = validateAsyncAPISpecificationWithHttpInfo(returnContent, url, file);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Validate an AsyncAPI Specification
+     * This operation can be used to validate and AsyncAPI Specification and retrieve a summary. Provide either &#39;url&#39; or &#39;file&#39; to specify the definition.
+     * @param returnContent Specify whether to return the full content of the AsyncAPI specification in the response. This is only applicable when using url based validation (optional, default to false)
+     * @param url AsyncAPI definition url (optional)
+     * @param file AsyncAPI definition as a file (optional)
+     * @return ApiResponse&lt;AsyncAPISpecificationValidationResponseDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<AsyncAPISpecificationValidationResponseDTO> validateAsyncAPISpecificationWithHttpInfo(Boolean returnContent, String url, File file) throws ApiException {
+        okhttp3.Call localVarCall = validateAsyncAPISpecificationValidateBeforeCall(returnContent, url, file, null);
+        Type localVarReturnType = new TypeToken<AsyncAPISpecificationValidationResponseDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Validate an AsyncAPI Specification (asynchronously)
+     * This operation can be used to validate and AsyncAPI Specification and retrieve a summary. Provide either &#39;url&#39; or &#39;file&#39; to specify the definition.
+     * @param returnContent Specify whether to return the full content of the AsyncAPI specification in the response. This is only applicable when using url based validation (optional, default to false)
+     * @param url AsyncAPI definition url (optional)
+     * @param file AsyncAPI definition as a file (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. API definition validation information is returned </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call validateAsyncAPISpecificationAsync(Boolean returnContent, String url, File file, final ApiCallback<AsyncAPISpecificationValidationResponseDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = validateAsyncAPISpecificationValidateBeforeCall(returnContent, url, file, _callback);
+        Type localVarReturnType = new TypeToken<AsyncAPISpecificationValidationResponseDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**

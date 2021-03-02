@@ -81,7 +81,7 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
     public void testGenerateAccessTokenWithOpenIdScope() throws Exception {
         String requestBody = "grant_type=password&username=" + user.getUserName() + "&password="
                 + user.getPassword() + "&scope=openid";
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         JSONObject accessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey,
             consumerSecret, requestBody, tokenEndpointURL).getData());
 
@@ -98,8 +98,8 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
         requestHeaders.put("Authorization", "Bearer " + tokenJti);
 
-        HttpResponse userInfoResponse = HTTPSClientUtils.doGet(gatewayUrlsWrk.getWebAppURLNhttp()
-                + "userinfo?schema=openid", requestHeaders);
+        HttpResponse userInfoResponse = HTTPSClientUtils.doGet(keyManagerHTTPSURL
+                + "oauth2/userinfo?schema=openid", requestHeaders);
         Assert.assertEquals(userInfoResponse.getResponseCode(), 200, "Response code mismatched");
     }
 

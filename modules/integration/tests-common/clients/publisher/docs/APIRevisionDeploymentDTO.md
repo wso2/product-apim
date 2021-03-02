@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **revisionUuid** | **String** |  |  [optional]
 **name** | **String** |  |  [optional]
+**vhost** | **String** |  |  [optional]
 **displayOnDevportal** | **Boolean** |  |  [optional]
 **deployedTime** | **String** |  |  [optional]
 

@@ -12,7 +12,7 @@ Method | HTTP request | Description
 
 <a name="exportAPI"></a>
 # **exportAPI**
-> File exportAPI(apiId, name, version, providerName, format, preserveStatus)
+> File exportAPI(apiId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision)
 
 Export an API
 
@@ -41,11 +41,13 @@ public class Example {
     String apiId = "apiId_example"; // String | UUID of the API
     String name = "name_example"; // String | API Name 
     String version = "version_example"; // String | Version of the API 
+    String revisionNumber = "revisionNumber_example"; // String | Revision number of the API artifact 
     String providerName = "providerName_example"; // String | Provider name of the API 
     String format = "format_example"; // String | Format of output documents. Can be YAML or JSON. 
     Boolean preserveStatus = true; // Boolean | Preserve API Status on export 
+    Boolean latestRevision = false; // Boolean | Export the latest revision of the API 
     try {
-      File result = apiInstance.exportAPI(apiId, name, version, providerName, format, preserveStatus);
+      File result = apiInstance.exportAPI(apiId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ImportExportApi#exportAPI");
@@ -65,9 +67,11 @@ Name | Type | Description  | Notes
  **apiId** | **String**| UUID of the API | [optional]
  **name** | **String**| API Name  | [optional]
  **version** | **String**| Version of the API  | [optional]
+ **revisionNumber** | **String**| Revision number of the API artifact  | [optional]
  **providerName** | **String**| Provider name of the API  | [optional]
  **format** | **String**| Format of output documents. Can be YAML or JSON.  | [optional] [enum: JSON, YAML]
  **preserveStatus** | **Boolean**| Preserve API Status on export  | [optional]
+ **latestRevision** | **Boolean**| Export the latest revision of the API  | [optional] [default to false]
 
 ### Return type
 
@@ -91,7 +95,7 @@ Name | Type | Description  | Notes
 
 <a name="exportAPIProduct"></a>
 # **exportAPIProduct**
-> File exportAPIProduct(name, version, providerName, format, preserveStatus)
+> File exportAPIProduct(name, version, providerName, revisionNumber, format, preserveStatus, latestRevision)
 
 Export an API Product
 
@@ -120,10 +124,12 @@ public class Example {
     String name = "name_example"; // String | API Product Name 
     String version = "version_example"; // String | Version of the API Product 
     String providerName = "providerName_example"; // String | Provider name of the API Product 
+    String revisionNumber = "revisionNumber_example"; // String | Revision number of the API Product 
     String format = "format_example"; // String | Format of output documents. Can be YAML or JSON. 
     Boolean preserveStatus = true; // Boolean | Preserve API Product Status on export 
+    Boolean latestRevision = false; // Boolean | Export the latest revision of the API Product 
     try {
-      File result = apiInstance.exportAPIProduct(name, version, providerName, format, preserveStatus);
+      File result = apiInstance.exportAPIProduct(name, version, providerName, revisionNumber, format, preserveStatus, latestRevision);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ImportExportApi#exportAPIProduct");
@@ -143,8 +149,10 @@ Name | Type | Description  | Notes
  **name** | **String**| API Product Name  | [optional]
  **version** | **String**| Version of the API Product  | [optional]
  **providerName** | **String**| Provider name of the API Product  | [optional]
+ **revisionNumber** | **String**| Revision number of the API Product  | [optional]
  **format** | **String**| Format of output documents. Can be YAML or JSON.  | [optional] [enum: JSON, YAML]
  **preserveStatus** | **Boolean**| Preserve API Product Status on export  | [optional]
+ **latestRevision** | **Boolean**| Export the latest revision of the API Product  | [optional] [default to false]
 
 ### Return type
 
@@ -168,7 +176,7 @@ Name | Type | Description  | Notes
 
 <a name="importAPI"></a>
 # **importAPI**
-> importAPI(file, preserveProvider, overwrite)
+> importAPI(file, preserveProvider, rotateRevision, overwrite)
 
 Import an API
 
@@ -196,9 +204,10 @@ public class Example {
     ImportExportApi apiInstance = new ImportExportApi(defaultClient);
     File file = new File("/path/to/file"); // File | Zip archive consisting on exported api configuration
     Boolean preserveProvider = true; // Boolean | Preserve Original Provider of the API. This is the user choice to keep or replace the API provider 
+    Boolean rotateRevision = true; // Boolean | Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision 
     Boolean overwrite = true; // Boolean | Whether to update the API or not. This is used when updating already existing APIs 
     try {
-      apiInstance.importAPI(file, preserveProvider, overwrite);
+      apiInstance.importAPI(file, preserveProvider, rotateRevision, overwrite);
     } catch (ApiException e) {
       System.err.println("Exception when calling ImportExportApi#importAPI");
       System.err.println("Status code: " + e.getCode());
@@ -216,6 +225,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **file** | **File**| Zip archive consisting on exported api configuration |
  **preserveProvider** | **Boolean**| Preserve Original Provider of the API. This is the user choice to keep or replace the API provider  | [optional]
+ **rotateRevision** | **Boolean**| Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  | [optional]
  **overwrite** | **Boolean**| Whether to update the API or not. This is used when updating already existing APIs  | [optional]
 
 ### Return type
@@ -242,7 +252,7 @@ null (empty response body)
 
 <a name="importAPIProduct"></a>
 # **importAPIProduct**
-> importAPIProduct(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs)
+> importAPIProduct(file, preserveProvider, rotateRevision, importAPIs, overwriteAPIProduct, overwriteAPIs)
 
 Import an API Product
 
@@ -270,11 +280,12 @@ public class Example {
     ImportExportApi apiInstance = new ImportExportApi(defaultClient);
     File file = new File("/path/to/file"); // File | Zip archive consisting on exported API Product configuration 
     Boolean preserveProvider = true; // Boolean | Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider 
+    Boolean rotateRevision = true; // Boolean | Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision 
     Boolean importAPIs = true; // Boolean | Whether to import the dependent APIs or not. 
     Boolean overwriteAPIProduct = true; // Boolean | Whether to update the API Product or not. This is used when updating already existing API Products. 
     Boolean overwriteAPIs = true; // Boolean | Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product. 
     try {
-      apiInstance.importAPIProduct(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs);
+      apiInstance.importAPIProduct(file, preserveProvider, rotateRevision, importAPIs, overwriteAPIProduct, overwriteAPIs);
     } catch (ApiException e) {
       System.err.println("Exception when calling ImportExportApi#importAPIProduct");
       System.err.println("Status code: " + e.getCode());
@@ -292,6 +303,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **file** | **File**| Zip archive consisting on exported API Product configuration  |
  **preserveProvider** | **Boolean**| Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  | [optional]
+ **rotateRevision** | **Boolean**| Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  | [optional]
  **importAPIs** | **Boolean**| Whether to import the dependent APIs or not.  | [optional]
  **overwriteAPIProduct** | **Boolean**| Whether to update the API Product or not. This is used when updating already existing API Products.  | [optional]
  **overwriteAPIs** | **Boolean**| Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  | [optional]

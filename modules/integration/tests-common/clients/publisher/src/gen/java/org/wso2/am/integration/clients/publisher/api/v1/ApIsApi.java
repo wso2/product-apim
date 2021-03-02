@@ -28,6 +28,7 @@ import java.io.IOException;
 
 
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
 import java.io.File;
@@ -35,6 +36,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.FileInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePathListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.TopicListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLInfoDTO;
 
 import java.lang.reflect.Type;
@@ -62,6 +64,296 @@ public class ApIsApi {
         this.localVarApiClient = apiClient;
     }
 
+    /**
+     * Build call for apisApiIdAsyncapiGet
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested AsyncAPI definition of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Willl&#x3D; be supported in future).  <br>  * Last-Modified - Date and time the resource has beed modified the last time. Used by caches, or in conditional request (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call apisApiIdAsyncapiGetCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/asyncapi"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call apisApiIdAsyncapiGetValidateBeforeCall(String apiId, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdAsyncapiGet(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = apisApiIdAsyncapiGetCall(apiId, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get AsyncAPI definition
+     * This operation can be used to retrieve the AsyncAPI definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return String
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested AsyncAPI definition of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Willl&#x3D; be supported in future).  <br>  * Last-Modified - Date and time the resource has beed modified the last time. Used by caches, or in conditional request (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public String apisApiIdAsyncapiGet(String apiId, String ifNoneMatch) throws ApiException {
+        ApiResponse<String> localVarResp = apisApiIdAsyncapiGetWithHttpInfo(apiId, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get AsyncAPI definition
+     * This operation can be used to retrieve the AsyncAPI definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return ApiResponse&lt;String&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested AsyncAPI definition of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Willl&#x3D; be supported in future).  <br>  * Last-Modified - Date and time the resource has beed modified the last time. Used by caches, or in conditional request (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<String> apisApiIdAsyncapiGetWithHttpInfo(String apiId, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = apisApiIdAsyncapiGetValidateBeforeCall(apiId, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get AsyncAPI definition (asynchronously)
+     * This operation can be used to retrieve the AsyncAPI definition of an API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Requested AsyncAPI definition of the API is returned  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Willl&#x3D; be supported in future).  <br>  * Last-Modified - Date and time the resource has beed modified the last time. Used by caches, or in conditional request (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call apisApiIdAsyncapiGetAsync(String apiId, String ifNoneMatch, final ApiCallback<String> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = apisApiIdAsyncapiGetValidateBeforeCall(apiId, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for apisApiIdAsyncapiPut
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param apiDefinition AsyncAPI definition of the API (optional)
+     * @param url AsyncAPI definition URL of the API (optional)
+     * @param file AsyncAPI definition as a file (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated AsyncAPI definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has beed modified the last time. Use &#x3D;d by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call apisApiIdAsyncapiPutCall(String apiId, String ifMatch, String apiDefinition, String url, File file, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/asyncapi"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (apiDefinition != null) {
+            localVarFormParams.put("apiDefinition", apiDefinition);
+        }
+
+        if (url != null) {
+            localVarFormParams.put("url", url);
+        }
+
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call apisApiIdAsyncapiPutValidateBeforeCall(String apiId, String ifMatch, String apiDefinition, String url, File file, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdAsyncapiPut(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = apisApiIdAsyncapiPutCall(apiId, ifMatch, apiDefinition, url, file, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Update AsyncAPI definition
+     * This operation can be used to update the AsyncAPI definition of an existing API. AsyncAPI definition to be updated is passed as a form data parameter &#39;apiDefinition&#39;. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param apiDefinition AsyncAPI definition of the API (optional)
+     * @param url AsyncAPI definition URL of the API (optional)
+     * @param file AsyncAPI definition as a file (optional)
+     * @return String
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated AsyncAPI definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has beed modified the last time. Use &#x3D;d by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public String apisApiIdAsyncapiPut(String apiId, String ifMatch, String apiDefinition, String url, File file) throws ApiException {
+        ApiResponse<String> localVarResp = apisApiIdAsyncapiPutWithHttpInfo(apiId, ifMatch, apiDefinition, url, file);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Update AsyncAPI definition
+     * This operation can be used to update the AsyncAPI definition of an existing API. AsyncAPI definition to be updated is passed as a form data parameter &#39;apiDefinition&#39;. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param apiDefinition AsyncAPI definition of the API (optional)
+     * @param url AsyncAPI definition URL of the API (optional)
+     * @param file AsyncAPI definition as a file (optional)
+     * @return ApiResponse&lt;String&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated AsyncAPI definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has beed modified the last time. Use &#x3D;d by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<String> apisApiIdAsyncapiPutWithHttpInfo(String apiId, String ifMatch, String apiDefinition, String url, File file) throws ApiException {
+        okhttp3.Call localVarCall = apisApiIdAsyncapiPutValidateBeforeCall(apiId, ifMatch, apiDefinition, url, file, null);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Update AsyncAPI definition (asynchronously)
+     * This operation can be used to update the AsyncAPI definition of an existing API. AsyncAPI definition to be updated is passed as a form data parameter &#39;apiDefinition&#39;. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param apiDefinition AsyncAPI definition of the API (optional)
+     * @param url AsyncAPI definition URL of the API (optional)
+     * @param file AsyncAPI definition as a file (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated AsyncAPI definition  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has beed modified the last time. Use &#x3D;d by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call apisApiIdAsyncapiPutAsync(String apiId, String ifMatch, String apiDefinition, String url, File file, final ApiCallback<String> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = apisApiIdAsyncapiPutValidateBeforeCall(apiId, ifMatch, apiDefinition, url, file, _callback);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
     /**
      * Build call for createAPI
      * @param APIDTO API object that needs to be added (required)
@@ -193,6 +485,7 @@ public class ApIsApi {
      * @param newVersion Version of the new API. (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param defaultVersion Specifies whether new API should be added as default version. (optional, default to false)
+     * @param serviceVersion Version of the Service that will used in creating new version (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -204,7 +497,7 @@ public class ApIsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call createNewAPIVersionCall(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call createNewAPIVersionCall(String newVersion, String apiId, Boolean defaultVersion, String serviceVersion, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -218,6 +511,10 @@ public class ApIsApi {
 
         if (defaultVersion != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("defaultVersion", defaultVersion));
+        }
+
+        if (serviceVersion != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("serviceVersion", serviceVersion));
         }
 
         if (apiId != null) {
@@ -246,7 +543,7 @@ public class ApIsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call createNewAPIVersionValidateBeforeCall(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call createNewAPIVersionValidateBeforeCall(String newVersion, String apiId, Boolean defaultVersion, String serviceVersion, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'newVersion' is set
         if (newVersion == null) {
@@ -259,7 +556,7 @@ public class ApIsApi {
         }
         
 
-        okhttp3.Call localVarCall = createNewAPIVersionCall(newVersion, apiId, defaultVersion, _callback);
+        okhttp3.Call localVarCall = createNewAPIVersionCall(newVersion, apiId, defaultVersion, serviceVersion, _callback);
         return localVarCall;
 
     }
@@ -270,6 +567,7 @@ public class ApIsApi {
      * @param newVersion Version of the new API. (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param defaultVersion Specifies whether new API should be added as default version. (optional, default to false)
+     * @param serviceVersion Version of the Service that will used in creating new version (optional)
      * @return APIDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -280,8 +578,8 @@ public class ApIsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public APIDTO createNewAPIVersion(String newVersion, String apiId, Boolean defaultVersion) throws ApiException {
-        ApiResponse<APIDTO> localVarResp = createNewAPIVersionWithHttpInfo(newVersion, apiId, defaultVersion);
+    public APIDTO createNewAPIVersion(String newVersion, String apiId, Boolean defaultVersion, String serviceVersion) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = createNewAPIVersionWithHttpInfo(newVersion, apiId, defaultVersion, serviceVersion);
         return localVarResp.getData();
     }
 
@@ -291,6 +589,7 @@ public class ApIsApi {
      * @param newVersion Version of the new API. (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param defaultVersion Specifies whether new API should be added as default version. (optional, default to false)
+     * @param serviceVersion Version of the Service that will used in creating new version (optional)
      * @return ApiResponse&lt;APIDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -301,8 +600,8 @@ public class ApIsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIDTO> createNewAPIVersionWithHttpInfo(String newVersion, String apiId, Boolean defaultVersion) throws ApiException {
-        okhttp3.Call localVarCall = createNewAPIVersionValidateBeforeCall(newVersion, apiId, defaultVersion, null);
+    public ApiResponse<APIDTO> createNewAPIVersionWithHttpInfo(String newVersion, String apiId, Boolean defaultVersion, String serviceVersion) throws ApiException {
+        okhttp3.Call localVarCall = createNewAPIVersionValidateBeforeCall(newVersion, apiId, defaultVersion, serviceVersion, null);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -313,6 +612,7 @@ public class ApIsApi {
      * @param newVersion Version of the new API. (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param defaultVersion Specifies whether new API should be added as default version. (optional, default to false)
+     * @param serviceVersion Version of the Service that will used in creating new version (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -324,9 +624,9 @@ public class ApIsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call createNewAPIVersionAsync(String newVersion, String apiId, Boolean defaultVersion, final ApiCallback<APIDTO> _callback) throws ApiException {
+    public okhttp3.Call createNewAPIVersionAsync(String newVersion, String apiId, Boolean defaultVersion, String serviceVersion, final ApiCallback<APIDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = createNewAPIVersionValidateBeforeCall(newVersion, apiId, defaultVersion, _callback);
+        okhttp3.Call localVarCall = createNewAPIVersionValidateBeforeCall(newVersion, apiId, defaultVersion, serviceVersion, _callback);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -460,6 +760,125 @@ public class ApIsApi {
 
         okhttp3.Call localVarCall = deleteAPIValidateBeforeCall(apiId, ifMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for generateInternalAPIKey
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call generateInternalAPIKeyCall(String apiId, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/generate-key"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call generateInternalAPIKeyValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling generateInternalAPIKey(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = generateInternalAPIKeyCall(apiId, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Generate internal API Key to invoke APIS.
+     * This operation can be used to generate internal api key which used to invoke API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return APIKeyDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIKeyDTO generateInternalAPIKey(String apiId) throws ApiException {
+        ApiResponse<APIKeyDTO> localVarResp = generateInternalAPIKeyWithHttpInfo(apiId);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Generate internal API Key to invoke APIS.
+     * This operation can be used to generate internal api key which used to invoke API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return ApiResponse&lt;APIKeyDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIKeyDTO> generateInternalAPIKeyWithHttpInfo(String apiId) throws ApiException {
+        okhttp3.Call localVarCall = generateInternalAPIKeyValidateBeforeCall(apiId, null);
+        Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Generate internal API Key to invoke APIS. (asynchronously)
+     * This operation can be used to generate internal api key which used to invoke API. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. apikey generated.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call generateInternalAPIKeyAsync(String apiId, final ApiCallback<APIKeyDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = generateInternalAPIKeyValidateBeforeCall(apiId, _callback);
+        Type localVarReturnType = new TypeToken<APIKeyDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
@@ -1819,6 +2238,139 @@ public class ApIsApi {
         return localVarCall;
     }
     /**
+     * Build call for importAsyncAPISpecification
+     * @param file Definition to upload as a file (optional)
+     * @param url Definition url (optional)
+     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity. </td><td>  * Etag - Entity Tag of the respons resource. Used by caches, or in conditional requests (Will be supported in the future). <br>  * Location - The URL of the newly created resource. <br>  * Content-type - The content type of the body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importAsyncAPISpecificationCall(File file, String url, String additionalProperties, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/import-asyncapi";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        if (url != null) {
+            localVarFormParams.put("url", url);
+        }
+
+        if (additionalProperties != null) {
+            localVarFormParams.put("additionalProperties", additionalProperties);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call importAsyncAPISpecificationValidateBeforeCall(File file, String url, String additionalProperties, final ApiCallback _callback) throws ApiException {
+        
+
+        okhttp3.Call localVarCall = importAsyncAPISpecificationCall(file, url, additionalProperties, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * import an AsyncAPI Specification
+     * This operation can be used to create and API from the AsyncAPI Specification. Provide either &#39;url&#39; or &#39;file&#39; to specify the definition. Specify additionalProperties with **at least** API&#39;s name, version, context and endpointConfig.
+     * @param file Definition to upload as a file (optional)
+     * @param url Definition url (optional)
+     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
+     * @return APIDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity. </td><td>  * Etag - Entity Tag of the respons resource. Used by caches, or in conditional requests (Will be supported in the future). <br>  * Location - The URL of the newly created resource. <br>  * Content-type - The content type of the body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIDTO importAsyncAPISpecification(File file, String url, String additionalProperties) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = importAsyncAPISpecificationWithHttpInfo(file, url, additionalProperties);
+        return localVarResp.getData();
+    }
+
+    /**
+     * import an AsyncAPI Specification
+     * This operation can be used to create and API from the AsyncAPI Specification. Provide either &#39;url&#39; or &#39;file&#39; to specify the definition. Specify additionalProperties with **at least** API&#39;s name, version, context and endpointConfig.
+     * @param file Definition to upload as a file (optional)
+     * @param url Definition url (optional)
+     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
+     * @return ApiResponse&lt;APIDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity. </td><td>  * Etag - Entity Tag of the respons resource. Used by caches, or in conditional requests (Will be supported in the future). <br>  * Location - The URL of the newly created resource. <br>  * Content-type - The content type of the body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIDTO> importAsyncAPISpecificationWithHttpInfo(File file, String url, String additionalProperties) throws ApiException {
+        okhttp3.Call localVarCall = importAsyncAPISpecificationValidateBeforeCall(file, url, additionalProperties, null);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * import an AsyncAPI Specification (asynchronously)
+     * This operation can be used to create and API from the AsyncAPI Specification. Provide either &#39;url&#39; or &#39;file&#39; to specify the definition. Specify additionalProperties with **at least** API&#39;s name, version, context and endpointConfig.
+     * @param file Definition to upload as a file (optional)
+     * @param url Definition url (optional)
+     * @param additionalProperties Additional attributes specified as a stringified JSON with API&#39;s schema (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity. </td><td>  * Etag - Entity Tag of the respons resource. Used by caches, or in conditional requests (Will be supported in the future). <br>  * Location - The URL of the newly created resource. <br>  * Content-type - The content type of the body. <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importAsyncAPISpecificationAsync(File file, String url, String additionalProperties, final ApiCallback<APIDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = importAsyncAPISpecificationValidateBeforeCall(file, url, additionalProperties, _callback);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for importGraphQLSchema
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param type Definition type to upload (optional)
@@ -2093,6 +2645,132 @@ public class ApIsApi {
         return localVarCall;
     }
     /**
+     * Build call for importServiceFromCatalog
+     * @param serviceKey ID of service that should be imported from Service Catalog (required)
+     * @param APIDTO  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains the URL of the newly created entity.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importServiceFromCatalogCall(String serviceKey, APIDTO APIDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = APIDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/import-service";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (serviceKey != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("serviceKey", serviceKey));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call importServiceFromCatalogValidateBeforeCall(String serviceKey, APIDTO APIDTO, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'serviceKey' is set
+        if (serviceKey == null) {
+            throw new ApiException("Missing the required parameter 'serviceKey' when calling importServiceFromCatalog(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = importServiceFromCatalogCall(serviceKey, APIDTO, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Import a Service from Service Catalog
+     * This operation can be used to create an API from a Service from Service Catalog
+     * @param serviceKey ID of service that should be imported from Service Catalog (required)
+     * @param APIDTO  (optional)
+     * @return APIDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains the URL of the newly created entity.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIDTO importServiceFromCatalog(String serviceKey, APIDTO APIDTO) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = importServiceFromCatalogWithHttpInfo(serviceKey, APIDTO);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Import a Service from Service Catalog
+     * This operation can be used to create an API from a Service from Service Catalog
+     * @param serviceKey ID of service that should be imported from Service Catalog (required)
+     * @param APIDTO  (optional)
+     * @return ApiResponse&lt;APIDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains the URL of the newly created entity.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIDTO> importServiceFromCatalogWithHttpInfo(String serviceKey, APIDTO APIDTO) throws ApiException {
+        okhttp3.Call localVarCall = importServiceFromCatalogValidateBeforeCall(serviceKey, APIDTO, null);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Import a Service from Service Catalog (asynchronously)
+     * This operation can be used to create an API from a Service from Service Catalog
+     * @param serviceKey ID of service that should be imported from Service Catalog (required)
+     * @param APIDTO  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created object as entity in the body. Location header contains the URL of the newly created entity.  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importServiceFromCatalogAsync(String serviceKey, APIDTO APIDTO, final ApiCallback<APIDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = importServiceFromCatalogValidateBeforeCall(serviceKey, APIDTO, _callback);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for importWSDLDefinition
      * @param file WSDL definition as a file or archive  **Sample cURL to Upload WSDL File**  curl -k -H \\\&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\\\&quot; -F file&#x3D;@api.wsdl -F additionalProperties&#x3D;@data.json \\\&quot;https://127.0.0.1:9443/api/am/publisher/v2/apis/import-wsdl\\\&quot;  **Sample cURL to Upload WSDL Archive**  curl -k -H \\\&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\\\&quot; -F file&#x3D;\\\&quot;@wsdl.zip;type&#x3D;application/zip\\\&quot; -F additionalProperties&#x3D;@data.json \\\&quot;https://127.0.0.1:9443/api/am/publisher/v2/apis/import-wsdl\\\&quot;  (optional)
      * @param url WSDL Definition url (optional)
@@ -2229,6 +2907,125 @@ public class ApIsApi {
     public okhttp3.Call importWSDLDefinitionAsync(File file, String url, String additionalProperties, String implementationType, final ApiCallback<APIDTO> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = importWSDLDefinitionValidateBeforeCall(file, url, additionalProperties, implementationType, _callback);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for reimportServiceFromCatalog
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call reimportServiceFromCatalogCall(String apiId, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/reimport-service"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call reimportServiceFromCatalogValidateBeforeCall(String apiId, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling reimportServiceFromCatalog(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = reimportServiceFromCatalogCall(apiId, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Update the Service that is used to create the API
+     * This operation can be used to re-import the Service used to create the API
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return APIDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIDTO reimportServiceFromCatalog(String apiId) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = reimportServiceFromCatalogWithHttpInfo(apiId);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Update the Service that is used to create the API
+     * This operation can be used to re-import the Service used to create the API
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @return ApiResponse&lt;APIDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIDTO> reimportServiceFromCatalogWithHttpInfo(String apiId) throws ApiException {
+        okhttp3.Call localVarCall = reimportServiceFromCatalogValidateBeforeCall(apiId, null);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Update the Service that is used to create the API (asynchronously)
+     * This operation can be used to re-import the Service used to create the API
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call reimportServiceFromCatalogAsync(String apiId, final ApiCallback<APIDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = reimportServiceFromCatalogValidateBeforeCall(apiId, _callback);
         Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -2681,6 +3478,134 @@ public class ApIsApi {
 
         okhttp3.Call localVarCall = updateAPIThumbnailValidateBeforeCall(apiId, file, ifMatch, _callback);
         Type localVarReturnType = new TypeToken<FileInfoDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for updateTopics
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param topicListDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateTopicsCall(String apiId, TopicListDTO topicListDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = topicListDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/topics"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call updateTopicsValidateBeforeCall(String apiId, TopicListDTO topicListDTO, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling updateTopics(Async)");
+        }
+        
+        // verify the required parameter 'topicListDTO' is set
+        if (topicListDTO == null) {
+            throw new ApiException("Missing the required parameter 'topicListDTO' when calling updateTopics(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = updateTopicsCall(apiId, topicListDTO, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Update Topics
+     * This operation can be used to update topics of an existing API.
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param topicListDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return APIDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+     </table>
+     */
+    public APIDTO updateTopics(String apiId, TopicListDTO topicListDTO, String ifMatch) throws ApiException {
+        ApiResponse<APIDTO> localVarResp = updateTopicsWithHttpInfo(apiId, topicListDTO, ifMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Update Topics
+     * This operation can be used to update topics of an existing API.
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param topicListDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;APIDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIDTO> updateTopicsWithHttpInfo(String apiId, TopicListDTO topicListDTO, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = updateTopicsValidateBeforeCall(apiId, topicListDTO, ifMatch, null);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Update Topics (asynchronously)
+     * This operation can be used to update topics of an existing API.
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param topicListDTO API object that needs to be added (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Successful response with updated API object  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateTopicsAsync(String apiId, TopicListDTO topicListDTO, String ifMatch, final ApiCallback<APIDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = updateTopicsValidateBeforeCall(apiId, topicListDTO, ifMatch, _callback);
+        Type localVarReturnType = new TypeToken<APIDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

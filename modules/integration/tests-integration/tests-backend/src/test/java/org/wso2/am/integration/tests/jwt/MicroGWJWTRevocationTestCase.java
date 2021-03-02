@@ -168,7 +168,7 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
         log.info("revokeRequestTestCase  Initiated");
         //Retrieve a JWT
         String requestBody = "grant_type=password&username=" + userName + "&password=" + password;
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         Map<String, String> authenticationRequestHeaders = new HashMap<>();
         String basicAuthHeader = consumerKey + ":" + consumerSecret;
         byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes(StandardCharsets.UTF_8));
@@ -186,7 +186,7 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
         //jti = "2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d";
         String input = "token=" + jtiExtracted;
         //Call the revoke Endpoint
-        URL revokeEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "revoke");
+        URL revokeEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/revoke");
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse;
         try {
             httpResponse = HTTPSClientUtils.doPost(revokeEndpointURL, input, authenticationRequestHeaders);

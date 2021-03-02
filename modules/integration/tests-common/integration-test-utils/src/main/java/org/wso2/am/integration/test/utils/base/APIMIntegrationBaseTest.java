@@ -839,6 +839,10 @@ public class APIMIntegrationBaseTest {
             revisionUUID = revision.getString("id");
         }
 
+        if (revisionUUID == null) {
+            return null;
+        }
+
         // Undeploy Revisions
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
@@ -875,6 +879,123 @@ public class APIMIntegrationBaseTest {
         waitForAPIDeploymentSync(user.getUserName(), apiDto.getName(), apiDto.getVersion(),
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
 
+        return  revisionUUID;
+    }
+
+    /**
+     * Create API Product Revision and Deploy to gateway using REST API.
+     *
+     * @param apiId          - API UUID
+     * @param restAPIPublisher -  Instance of APIPublisherRestClient
+     */
+    protected String createAPIProductRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
+            throws ApiException, JSONException {
+        int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
+        int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
+        String revisionUUID = null;
+        //Add the API Revision using the API publisher.
+        APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
+        apiRevisionRequest.setApiUUID(apiId);
+        apiRevisionRequest.setDescription("Test Revision 1");
+
+        HttpResponse apiRevisionResponse = restAPIPublisher.addAPIProductRevision(apiRevisionRequest);
+
+        assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Create API Response Code is invalid." + apiRevisionResponse.getData());
+
+        // Retrieve Revision Info
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
+        List<JSONObject> revisionList = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject(apiRevisionsGetResponse.getData());
+
+        JSONArray arrayList = jsonObject.getJSONArray("list");
+        for (int i = 0, l = arrayList.length(); i < l; i++) {
+            revisionList.add(arrayList.getJSONObject(i));
+        }
+        for (JSONObject revision :revisionList) {
+            revisionUUID = revision.getString("id");
+        }
+
+        // Deploy Revision to gateway
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList);
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to deploy API Product Revisions:" +apiRevisionsDeployResponse.getData());
+        //Waiting for API deployment
+        waitForAPIDeployment();
+        return  revisionUUID;
+    }
+
+
+    /**
+     * Undeploy and Delete API Product Revisions using REST API.
+     *
+     * @param apiId          - API UUID
+     * @param restAPIPublisher -  Instance of APIPublisherRestClient
+     */
+    protected String undeployAndDeleteAPIProductRevisionsUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
+            throws ApiException, JSONException, XPathExpressionException, APIManagerIntegrationTestException {
+        int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
+        int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
+        String revisionUUID = null;
+
+        // Get Deployed Revisions
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIProductRevisions(apiId,"deployed:true");
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
+        List<JSONObject> revisionList = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject(apiRevisionsGetResponse.getData());
+
+        JSONArray arrayList = jsonObject.getJSONArray("list");
+        for (int i = 0, l = arrayList.length(); i < l; i++) {
+            revisionList.add(arrayList.getJSONObject(i));
+        }
+        for (JSONObject revision :revisionList) {
+            revisionUUID = revision.getString("id");
+        }
+
+        if (revisionUUID == null) {
+            return null;
+        }
+
+        // Undeploy Revisions
+        List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionUnDeployRequest.setName("Production and Sandbox");
+        apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
+        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIProductRevision(apiId, revisionUUID,
+                apiRevisionUndeployRequestList);
+        assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to Undeploy API Product Revisions:" + apiRevisionsUnDeployResponse.getData());
+
+        // Get Revisions
+        HttpResponse apiRevisionsFullGetResponse = restAPIPublisher.getAPIProductRevisions(apiId,null);
+        assertEquals(apiRevisionsFullGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve revisions" + apiRevisionsFullGetResponse.getData());
+        List<JSONObject> revisionFullList = new ArrayList<>();
+        JSONObject jsonFullObject = new JSONObject(apiRevisionsFullGetResponse.getData());
+
+        JSONArray arrayFullList = jsonFullObject.getJSONArray("list");
+        for (int i = 0, l = arrayFullList.length(); i < l; i++) {
+            revisionFullList.add(arrayFullList.getJSONObject(i));
+        }
+        for (JSONObject revision :revisionFullList) {
+            revisionUUID = revision.getString("id");
+            HttpResponse apiRevisionsDeleteResponse = restAPIPublisher.deleteAPIProductRevision(apiId, revisionUUID);
+            assertEquals(apiRevisionsDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                    "Unable to delete API Product Revisions:" + apiRevisionsDeleteResponse.getData());
+        }
+
+        //Waiting for API un-deployment
+        waitForAPIDeployment();
         return  revisionUUID;
     }
 }

@@ -263,6 +263,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         subscriptionThrottlePolicyDTO.setIsDeployed(true);
         subscriptionThrottlePolicyDTO.setGraphQLMaxComplexity(4);
         subscriptionThrottlePolicyDTO.setGraphQLMaxDepth(2);
+        subscriptionThrottlePolicyDTO.setSubscriberCount(0);
 
         ThrottleLimitDTO throttleLimitDTO = new ThrottleLimitDTO();
         throttleLimitDTO.setType(ThrottleLimitDTO.TypeEnum.valueOf("REQUESTCOUNTLIMIT"));

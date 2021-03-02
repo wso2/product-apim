@@ -37,11 +37,13 @@
   "message_formatter.json_badgerfish": "org.apache.axis2.json.JSONBadgerfishMessageFormatter",
   "message_formatter.text_javascript": "org.apache.axis2.json.JSONMessageFormatter",
   "message_formatter.text_plain": "org.apache.axis2.format.PlainTextFormatter",
+  "message_formatter.text_eventstream": "org.apache.axis2.format.PlainTextFormatter",
   "message_formatter.text_html": "org.apache.axis2.transport.http.ApplicationXMLFormatter",
   "message_formatter.octet_stream": "org.wso2.carbon.relay.ExpandingMessageFormatter",
   "message_builder.text_html": "org.wso2.carbon.relay.BinaryRelayBuilder",
   "message_builder.form_urlencoded": "org.apache.synapse.commons.builders.XFormURLEncodedBuilder",
   "message_builder.text_plain": "org.apache.axis2.format.PlainTextBuilder",
+  "message_builder.text_eventstream": "org.apache.axis2.format.PlainTextBuilder",
   "message_builder.json": "org.apache.synapse.commons.json.JsonStreamBuilder",
   "message_builder.text_javascript": "org.apache.axis2.json.JSONBuilder",
   "message_builder.content_type": "application/octet-stream",
@@ -49,6 +51,16 @@
   "message_builder.application_xml": "org.apache.axis2.builder.ApplicationXMLBuilder",
   "message_builder.multipart_form_data": "org.apache.axis2.builder.MultipartFormDataBuilder",
   "message_builder.json_badgerfish": "org.apache.axis2.json.JSONBadgerfishOMBuilder",
+  "multi_tenancy.cloud_services": [
+    {	
+      "name": "WSO2 API Manager",	
+      "default": true,	
+      "key": "AM",	
+      "label": "API Manager",	
+      "link": "https://am.cloud.wso2.com",	
+      "description": "API Manager in the cloud"	
+    }	
+  ],
   "transport.passthru_http.listener.enable": true,
   "transport.passthru_http.listener.parameters.port": "8280",
   "transport.passthru_http.listener.parameters.non-blocking": true,
@@ -116,6 +128,7 @@
   "passthru_http.'http.headers.preserve'": "Content-Type",
   "passthru_http.'rest_uri_api_regex'": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "passthru_http.'rest_uri_proxy_regex'": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
+  "passthru_http.'allowed_response_properties'": "sse_throttle_dto,artifact_type,sse_analytics_info",
   "n_http.'nhttp.rest.dispatcher.service'": "__MultitenantDispatcherService",
   "n_http.'rest_uri_api_regex'": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "n_http.'rest_uri_proxy_regex'": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",

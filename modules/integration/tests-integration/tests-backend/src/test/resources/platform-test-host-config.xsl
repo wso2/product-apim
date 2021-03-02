@@ -11,7 +11,7 @@
     <xsl:template match="xs:executionEnvironment/text()">platform</xsl:template>
 
     <!--setting coverage false-->
-    <xsl:template match="xs:coverage/text()">false</xsl:template>
+    <xsl:template match="xs:coverage/text()">true</xsl:template>
 
     <!--setting host names-->
     <!--xsl:template match="xs:instance[@name='store']/xs:hosts/xs:host/text()">store.am.wso2.com</xsl:template>

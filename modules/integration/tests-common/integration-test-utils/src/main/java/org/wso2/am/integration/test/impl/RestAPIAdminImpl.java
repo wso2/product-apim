@@ -31,6 +31,8 @@ import org.wso2.am.integration.clients.admin.api.ApplicationPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.ApplicationPolicyIndividualApi;
 import org.wso2.am.integration.clients.admin.api.CustomRulesCollectionApi;
 import org.wso2.am.integration.clients.admin.api.CustomRulesIndividualApi;
+import org.wso2.am.integration.clients.admin.api.EnvironmentApi;
+import org.wso2.am.integration.clients.admin.api.EnvironmentCollectionApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerCollectionApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
 import org.wso2.am.integration.clients.admin.api.LabelApi;
@@ -47,6 +49,8 @@ import org.wso2.am.integration.clients.admin.api.dto.APICategoryListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EnvironmentListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
@@ -85,6 +89,8 @@ public class RestAPIAdminImpl {
     private ApplicationApi applicationApi = new ApplicationApi();
     private LabelApi labelApi = new LabelApi();
     private LabelCollectionApi labelCollectionApi = new LabelCollectionApi();
+    private EnvironmentApi environmentApi = new EnvironmentApi();
+    private EnvironmentCollectionApi environmentCollectionApi = new EnvironmentCollectionApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -113,6 +119,8 @@ public class RestAPIAdminImpl {
                 "apim:api_product_import_export " +
                 "apim:label_manage " +
                 "apim:label_read " +
+                "apim:environment_manage " +
+                "apim:environment_read " +
                 "apim:monetization_usage_publish " +
                 "apim:api_workflow_approve " +
                 "apim:bot_data " +
@@ -150,6 +158,8 @@ public class RestAPIAdminImpl {
         applicationApi.setApiClient(apiAdminClient);
         labelApi.setApiClient(apiAdminClient);
         labelCollectionApi.setApiClient(apiAdminClient);
+        environmentApi.setApiClient(apiAdminClient);
+        environmentCollectionApi.setApiClient(apiAdminClient);
         workflowCollectionApi.setApiClient(apiAdminClient);
         workflowsIndividualApi.setApiClient(apiAdminClient);
         apiCategoryCollectionApi.setApiClient(apiAdminClient);
@@ -247,7 +257,7 @@ public class RestAPIAdminImpl {
             ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO) throws ApiException {
 
         return applicationPolicyCollectionApi
-                .throttlingPoliciesApplicationPostWithHttpInfo(Constants.APPLICATION_JSON_CONTENT_TYPE,
+                .throttlingPoliciesApplicationPostWithHttpInfo(Constants.APPLICATION_JSON,
                         applicationThrottlePolicyDTO);
     }
 
@@ -276,7 +286,7 @@ public class RestAPIAdminImpl {
             ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO) throws ApiException {
 
         return applicationPolicyIndividualApi
-                .throttlingPoliciesApplicationPolicyIdPutWithHttpInfo(policyId, Constants.APPLICATION_JSON_CONTENT_TYPE,
+                .throttlingPoliciesApplicationPolicyIdPutWithHttpInfo(policyId, Constants.APPLICATION_JSON,
                         applicationThrottlePolicyDTO, null, null);
     }
 
@@ -304,7 +314,7 @@ public class RestAPIAdminImpl {
             SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO) throws ApiException {
 
         return subscriptionPolicyCollectionApi
-                .throttlingPoliciesSubscriptionPostWithHttpInfo(Constants.APPLICATION_JSON_CONTENT_TYPE,
+                .throttlingPoliciesSubscriptionPostWithHttpInfo(Constants.APPLICATION_JSON,
                         subscriptionThrottlePolicyDTO);
 
     }
@@ -335,7 +345,7 @@ public class RestAPIAdminImpl {
 
         return subscriptionPolicyIndividualApi
                 .throttlingPoliciesSubscriptionPolicyIdPutWithHttpInfo(policyId,
-                        Constants.APPLICATION_JSON_CONTENT_TYPE, subscriptionThrottlePolicyDTO, null, null);
+                        Constants.APPLICATION_JSON, subscriptionThrottlePolicyDTO, null, null);
     }
 
     /**
@@ -361,7 +371,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<CustomRuleDTO> addCustomThrottlingPolicy(CustomRuleDTO customRuleDTO) throws ApiException {
 
         return customRulesCollectionApi
-                .throttlingPoliciesCustomPostWithHttpInfo(Constants.APPLICATION_JSON_CONTENT_TYPE, customRuleDTO);
+                .throttlingPoliciesCustomPostWithHttpInfo(Constants.APPLICATION_JSON, customRuleDTO);
     }
 
     /**
@@ -388,7 +398,7 @@ public class RestAPIAdminImpl {
             throws ApiException {
 
         return customRulesIndividualApi.throttlingPoliciesCustomRuleIdPutWithHttpInfo(policyId,
-                Constants.APPLICATION_JSON_CONTENT_TYPE, customRuleDTO, null, null);
+                Constants.APPLICATION_JSON, customRuleDTO, null, null);
     }
 
     /**
@@ -414,7 +424,7 @@ public class RestAPIAdminImpl {
             AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO) throws ApiException {
 
         return advancedPolicyCollectionApi.throttlingPoliciesAdvancedPostWithHttpInfo(
-                Constants.APPLICATION_JSON_CONTENT_TYPE, advancedThrottlePolicyDTO);
+                Constants.APPLICATION_JSON, advancedThrottlePolicyDTO);
 
     }
 
@@ -441,7 +451,7 @@ public class RestAPIAdminImpl {
             AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO) throws ApiException {
 
         return advancedPolicyIndividualApi
-                .throttlingPoliciesAdvancedPolicyIdPutWithHttpInfo(policyId, Constants.APPLICATION_JSON_CONTENT_TYPE,
+                .throttlingPoliciesAdvancedPolicyIdPutWithHttpInfo(policyId, Constants.APPLICATION_JSON,
                         advancedThrottlePolicyDTO, null, null);
     }
 
@@ -503,6 +513,55 @@ public class RestAPIAdminImpl {
     public ApiResponse<Void> deleteLabel(String labelId) throws ApiException {
 
         return labelApi.labelsLabelIdDeleteWithHttpInfo(labelId, null, null);
+    }
+
+    /**
+     * This method is used to add an environment.
+     *
+     * @param environmentDTO Environment DTO to be added.
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while adding the new environment.
+     */
+    public ApiResponse<EnvironmentDTO> addEnvironment(EnvironmentDTO environmentDTO) throws ApiException {
+
+        return environmentApi.environmentsPostWithHttpInfo(environmentDTO);
+    }
+
+    /**
+     * This method is used to retrieve all environments.
+     *
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while retrieving all environments of tenant.
+     */
+    public ApiResponse<EnvironmentListDTO> getEnvironments() throws ApiException {
+
+        return environmentCollectionApi.environmentsGetWithHttpInfo();
+    }
+
+    /**
+     * This method is used to update an environment.
+     *
+     * @param environmentId Environment Id of the label to be updated.
+     * @param environmentDTO Environment DTO which contains the updated content.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while updating the environment.
+     */
+    public ApiResponse<EnvironmentDTO> updateEnvironment(String environmentId, EnvironmentDTO environmentDTO)
+            throws ApiException {
+
+        return environmentApi.environmentsEnvironmentIdPutWithHttpInfo(environmentId, environmentDTO);
+    }
+
+    /**
+     * This method is used to delete an environment.
+     *
+     * @param environmentId Environment Id of the label to be deleted.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while deleting the environment.
+     */
+    public ApiResponse<Void> deleteEnvironment(String environmentId) throws ApiException {
+
+        return environmentApi.environmentsEnvironmentIdDeleteWithHttpInfo(environmentId);
     }
 
     /**
