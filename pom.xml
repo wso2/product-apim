@@ -557,6 +557,11 @@
                 <version>${carbon.automationutils.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${testng.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.admin.clients</artifactId>
                 <version>${apimserver.version}</version>
@@ -1364,6 +1369,7 @@
 
         <carbon.automation.version>4.4.7</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
+        <testng.version>6.11</testng.version>
         <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
         <org.apache.axis2.transport.version>2.0.0-wso2v2</org.apache.axis2.transport.version>
         <org.springframework.version>5.1.13.RELEASE</org.springframework.version>
