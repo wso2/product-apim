@@ -19211,36 +19211,6 @@ components:
           type: string
       title: Patch request body
       type: object
-    Post_request_body:
-      properties:
-        content:
-          description: |
-            Content of the comment
-          example: This is a comment
-          type: string
-        category:
-          description: |
-            Category of the comment
-          example: general
-          type: string
-      required:
-      - content
-      title: Post request body
-      type: object
-    Patch_request_body:
-      properties:
-        content:
-          description: |
-            Content of the comment
-          example: This is a comment
-          type: string
-        category:
-          description: |
-            Category of the comment
-          example: general
-          type: string
-      title: Patch request body
-      type: object
     API_threatProtectionPolicies_list:
       example:
         policyId: policyId
@@ -19622,6 +19592,7 @@ components:
             apim:api_import_export: Import and export APIs related operations
             apim:api_product_import_export: Import and export API Products related
               operations
+            apim:api_generate_key: Generate Internal Key
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
 
