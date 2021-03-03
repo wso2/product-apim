@@ -26,21 +26,28 @@ import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilException;
@@ -85,17 +92,35 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String applicationId;
+    private String consumerKey;
+    private String consumerSecret;
     private String apiId1, apiId2;
     private String apiId3, apiId4;
     private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
+    private ApiTestHelper apiTestHelper;
+
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN}};
+    }
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public APISecurityTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void initialize()
             throws APIManagerIntegrationTestException, IOException, ApiException,
             org.wso2.am.integration.clients.store.api.ApiException, XPathExpressionException, AutomationUtilException,
             InterruptedException, JSONException {
-        super.init();
+        super.init(userMode);
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation(),
+                keyManagerContext.getContextTenant().getDomain(), keyManagerHTTPSURL);
 
         APIRequest apiRequest1 = new APIRequest(mutualSSLOnlyAPIName, mutualSSLOnlyAPIContext, new URL(apiEndPointUrl));
         apiRequest1.setVersion(API_VERSION_1_0_0);
@@ -103,7 +128,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         apiRequest1.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest1.setTags(API_TAGS);
         apiRequest1.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
-
+        apiRequest1.setProvider(user.getUserName());
         APIOperationsDTO apiOperationsDTO1 = new APIOperationsDTO();
         apiOperationsDTO1.setVerb("GET");
         apiOperationsDTO1.setTarget("/customers/{id}");
@@ -127,10 +152,13 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         String certOne = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "example.crt";
-        restAPIPublisher.uploadCertificate(new File(certOne), "example", apiId1, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        restAPIPublisher.uploadCertificate(new File(certOne), "example", apiId1,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        APIRequest apiRequest2 = new APIRequest(mutualSSLWithOAuthAPI, mutualSSLWithOAuthAPIContext, new URL(apiEndPointUrl));
+        APIRequest apiRequest2 = new APIRequest(mutualSSLWithOAuthAPI, mutualSSLWithOAuthAPIContext,
+                new URL(apiEndPointUrl));
         apiRequest2.setVersion(API_VERSION_1_0_0);
+        apiRequest2.setProvider(user.getUserName());
         apiRequest2.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest2.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest2.setTags(API_TAGS);
@@ -152,14 +180,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         String certTwo = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "example.crt";
-        restAPIPublisher.uploadCertificate(new File(certTwo), "abcde", apiId2, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        restAPIPublisher.uploadCertificate(new File(certTwo), "abcde", apiId2,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(apiId1, restAPIPublisher);
-        createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
-
-        restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction());
-        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction());
 
         APIRequest apiRequest3 = new APIRequest(mutualSSLandOauthMandatoryAPI, mutualSSLandOAuthMandatoryAPIContext,
                 new URL(apiEndPointUrl));
@@ -169,6 +192,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         apiRequest3.setTags(API_TAGS);
         apiRequest3.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
         apiRequest3.setOperationsDTOS(operationsDTOS);
+        apiRequest3.setProvider(user.getUserName());
 
         List<String> securitySchemes3 = new ArrayList<>();
         securitySchemes3.add("mutualssl");
@@ -188,8 +212,6 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher
                 .uploadCertificate(new File(certThree), "abcdef", apiId3, APIMIntegrationConstants.API_TIER.UNLIMITED);
         // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(apiId3, restAPIPublisher);
-        restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction());
 
         // Add an API Secured with APIKey only
         APIRequest apiRequest4 = new APIRequest(apiKeySecuredAPI, apiKeySecuredAPIContext, new URL(apiEndPointUrl));
@@ -202,6 +224,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         apiRequest4.setDefault_version("true");
         apiRequest4.setHttps_checked("https");
         apiRequest4.setHttp_checked(null);
+        apiRequest4.setProvider(user.getUserName());
         apiRequest4.setDefault_version_checked("true");
         List<String> securitySchemes4 = new ArrayList<>();
         securitySchemes4.add("api_key");
@@ -211,13 +234,64 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         HttpResponse response4 = restAPIPublisher.addAPI(apiRequest4);
         apiId4 = response4.getData();
+    }
 
-        // Create Revision and Deploy to Gateway
-        createAPIRevisionAndDeployUsingRest(apiId4, restAPIPublisher);
-        waitForAPIDeploymentSync(apiRequest4.getProvider(), apiRequest4.getName(), apiRequest4.getVersion(),
+    @Test(description = "This test case tests the behaviour of internal Key token on Created API with authentication " +
+            "types")
+    public void testCreateAndDeployRevisionWithInternalKeyTesting() throws JSONException, ApiException,
+            XPathExpressionException, APIManagerIntegrationTestException, IOException,
+            org.wso2.am.integration.clients.store.api.ApiException, InterruptedException {
+        createAPIRevisionAndDeployUsingRest(apiId1, restAPIPublisher);
+        APIDTO api1 = restAPIPublisher.getAPIByID(apiId1);
+        waitForAPIDeploymentSync(api1.getProvider(), api1.getName(), api1.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
-        restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction());
+        ApiResponse<org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO> keyDTOApiResponse1 =
+                restAPIPublisher.generateInternalApiKey(apiId1);
+        Assert.assertEquals(keyDTOApiResponse1.getStatusCode(), 200);
+        HttpResponse httpResponse1 = invokeApiWithInternalKey(mutualSSLOnlyAPIContext, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, keyDTOApiResponse1.getData().getApikey());
+        Assert.assertEquals(httpResponse1.getResponseCode(), 200);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction());
+        createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
+        APIDTO api2 = restAPIPublisher.getAPIByID(apiId2);
+        waitForAPIDeploymentSync(api2.getProvider(), api2.getName(), api2.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+        ApiResponse<org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO> keyDTOApiResponse2 =
+                restAPIPublisher.generateInternalApiKey(apiId2);
+        HttpResponse httpResponse2 = invokeApiWithInternalKey(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, keyDTOApiResponse2.getData().getApikey());
+        Assert.assertEquals(httpResponse2.getResponseCode(), 200);
+        HttpResponse httpResponse3 = invokeApiWithInternalKey(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, keyDTOApiResponse1.getData().getApikey());
+        Assert.assertEquals(httpResponse3.getResponseCode(), 403);
+        // verify internal key authentication after publish
+        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction());
+        httpResponse2 = invokeApiWithInternalKey(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, keyDTOApiResponse2.getData().getApikey());
+        Assert.assertEquals(httpResponse2.getResponseCode(), 200);
 
+        createAPIRevisionAndDeployUsingRest(apiId3, restAPIPublisher);
+        APIDTO api3 = restAPIPublisher.getAPIByID(apiId3);
+        waitForAPIDeploymentSync(api3.getProvider(), api3.getName(), api3.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        ApiResponse<org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO> keyDTOApiResponse3 =
+                restAPIPublisher.generateInternalApiKey(apiId3);
+        HttpResponse httpResponse4 = invokeApiWithInternalKey(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, keyDTOApiResponse3.getData().getApikey());
+        Assert.assertEquals(httpResponse4.getResponseCode(), 200);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction());
+
+        createAPIRevisionAndDeployUsingRest(apiId4, restAPIPublisher);
+        APIDTO api4 = restAPIPublisher.getAPIByID(apiId4);
+        waitForAPIDeploymentSync(api4.getProvider(), api4.getName(), api4.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+        ApiResponse<org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO> keyDTOApiResponse4 =
+                restAPIPublisher.generateInternalApiKey(apiId3);
+        HttpResponse httpResponse5 = invokeApiWithInternalKey(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, keyDTOApiResponse4.getData().getApikey());
+        Assert.assertEquals(httpResponse5.getResponseCode(), 200);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction());
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
@@ -233,17 +307,29 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-
-
-
-
         //get access token
         accessToken = applicationKeyDTO.getToken().getAccessToken();
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
+        HttpResponse httpResponseAfterPublish = invokeApiWithInternalKey(mutualSSLOnlyAPIContext, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, keyDTOApiResponse1.getData().getApikey());
+        Assert.assertEquals(httpResponseAfterPublish.getResponseCode(), 200);
+
+        // wait until certificates loaded
         Thread.sleep(120000);
     }
 
+    private HttpResponse invokeApiWithInternalKey(String context, String version, String resource,
+                                                  String internalKey) throws XPathExpressionException, IOException {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "application/json");
+        requestHeaders.put("Internal-Key", internalKey);
+        return HttpRequestUtil.doGet(getAPIInvocationURLHttps(context, version) + resource, requestHeaders);
+    }
+
     @Test(description = "This test case tests the behaviour of APIs that are protected with mutual SSL and OAuth2 "
-            + "when the client certificate is not presented but OAuth2 token is presented.")
+            + "when the client certificate is not presented but OAuth2 token is presented.", dependsOnMethods =
+            {"testCreateAndDeployRevisionWithInternalKeyTesting"})
     public void testCreateAndPublishAPIWithOAuth2() throws XPathExpressionException, IOException, JSONException {
         // Create requestHeaders
         Map<String, String> requestHeaders = new HashMap<>();
@@ -265,27 +351,20 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                         + "both mutual sso and oauth2");
     }
 
-    @Test(description = "Testing the invocation with API Keys", dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
+    @Test(description = "Testing the invocation with API Keys", dependsOnMethods = {
+            "testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeys() throws Exception {
         APIKeyDTO apiKeyDTO = restAPIStore
-                    .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
-                            -1, null, null);
+                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
+                        -1, null, null);
 
         assertNotNull(apiKeyDTO, "API Key generation failed");
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "text/xml");
-        HttpResponse response = HTTPSClientUtils.doMutulSSLGet(
-                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                        + File.separator + "new-keystore.jks",
-                getAPIInvocationURLHttps(mutualSSLOnlyAPIName, API_VERSION_1_0_0) + API_END_POINT_METHOD,
-                requestHeaders);
-        HttpResponse defaultResponse = HTTPSClientUtils.doMutulSSLGet(
-                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
-                        + File.separator + "new-keystore.jks",
-                getAPIInvocationURLHttps(mutualSSLOnlyAPIName) + API_END_POINT_METHOD, requestHeaders);
+        requestHeaders.put("apikey", apiKeyDTO.getApikey());
+        HttpResponse response = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(apiKeySecuredAPIContext,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
         Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK);
-        Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_OK);
-
     }
 
     @Test(description = "Invoke mutual SSL only API with not supported certificate", dependsOnMethods =
@@ -587,7 +666,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(description = "Testing the invocation of API Secured only with API Keys", dependsOnMethods = {
-            "testCreateAndPublishAPIWithOAuth2" }) public void testInvocationWithApiKeysOnly() throws Exception {
+            "testCreateAndPublishAPIWithOAuth2"})
+    public void testInvocationWithApiKeysOnly() throws Exception {
         APIKeyDTO apiKeyDTO1 = restAPIStore
                 .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), -1,
                         null, null);
@@ -673,13 +753,97 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 ", but got " + invocationResponseAfterRevoked.getResponseCode());
     }
 
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvokeApiKeyAsJWTNegative() throws Exception {
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
+                .PRODUCTION.toString(), -1, null, null);
+        assertNotNull(apiKeyDTO, "API Key generation failed");
+
+        Map<String, String> requestHeader = new HashMap<>();
+        requestHeader.put("apikey", accessToken);
+        requestHeader.put("accept", "text/xml");
+
+        HttpResponse response = HTTPSClientUtils.doGet(
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeader);
+        Assert.assertEquals(response.getResponseCode(), 401);
+    }
+
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvokeJWTAsAPIKeyNegative() throws Exception {
+
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
+        String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(),
+                user.getPassword());
+        JSONObject subsAccessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey,
+                consumerSecret, subsAccessTokenPayload, tokenEndpointURL).getData());
+
+        Map<String, String> requestHeader = new HashMap<>();
+        requestHeader.put("apikey", subsAccessTokenGenerationResponse.getString("access_token"));
+        requestHeader.put("accept", "text/xml");
+
+        HttpResponse response = HTTPSClientUtils.doGet(
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeader);
+        Assert.assertEquals(response.getResponseCode(), 401);
+    }
+
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvokeInternalKeyAsAPIKeyNegative() throws Exception {
+        ApiResponse<org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO> keyDTOApiResponse1 =
+                restAPIPublisher.generateInternalApiKey(apiId2);
+        Assert.assertEquals(keyDTOApiResponse1.getStatusCode(), 200);
+        Map<String, String> requestHeader = new HashMap<>();
+        requestHeader.put("apikey", keyDTOApiResponse1.getData().getApikey());
+        requestHeader.put("accept", "text/xml");
+
+        HttpResponse response = HTTPSClientUtils.doGet(
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeader);
+        Assert.assertEquals(response.getResponseCode(), 401);
+    }
+
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvokeInternalKeyAsJWTNegative() throws Exception {
+        ApiResponse<org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO> keyDTOApiResponse1 =
+                restAPIPublisher.generateInternalApiKey(apiId2);
+        Assert.assertEquals(keyDTOApiResponse1.getStatusCode(), 200);
+        Map<String, String> requestHeader = new HashMap<>();
+        requestHeader.put("Authorization", "Bearer " + keyDTOApiResponse1.getData().getApikey());
+        requestHeader.put("accept", "text/xml");
+
+        HttpResponse response = HTTPSClientUtils.doGet(
+                getAPIInvocationURLHttps(mutualSSLWithOAuthAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeader);
+        Assert.assertEquals(response.getResponseCode(), 401);
+    }
+
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvokeJWTasInternalKey() throws Exception {
+        HttpResponse response = invokeApiWithInternalKey(mutualSSLWithOAuthAPI, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, accessToken);
+        Assert.assertEquals(response.getResponseCode(), 401);
+    }
+
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvokeAPIKeyAsInternalKey() throws Exception {
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
+                .PRODUCTION.toString(), -1, null, null);
+        HttpResponse response = invokeApiWithInternalKey(mutualSSLWithOAuthAPI, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, apiKeyDTO.getApikey());
+        Assert.assertEquals(response.getResponseCode(), 401);
+    }
+
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationId);
-        undeployAndDeleteAPIRevisionsUsingRest(apiId1, restAPIPublisher);
-        undeployAndDeleteAPIRevisionsUsingRest(apiId2, restAPIPublisher);
-        undeployAndDeleteAPIRevisionsUsingRest(apiId3, restAPIPublisher);
-        undeployAndDeleteAPIRevisionsUsingRest(apiId4, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId1);
         restAPIPublisher.deleteAPI(apiId2);
         restAPIPublisher.deleteAPI(apiId3);

@@ -63,7 +63,7 @@ public class APIProductDTO {
             private Boolean hasThumbnail;
 
             /**
-* State of the API product. Only published api products are visible on the Devportal 
+* State of the API product. Only published api products are visible on the Developer Portal 
 */
     @JsonAdapter(StateEnum.Adapter.class)
 public enum StateEnum {
@@ -578,11 +578,11 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
         }
 
     /**
-        * State of the API product. Only published api products are visible on the Devportal 
+        * State of the API product. Only published api products are visible on the Developer Portal 
     * @return state
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(value = "State of the API product. Only published api products are visible on the Devportal ")
+      @ApiModelProperty(value = "State of the API product. Only published api products are visible on the Developer Portal ")
     
     public StateEnum getState() {
         return state;

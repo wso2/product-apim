@@ -4,9 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**apisApiIdAsyncapiGet**](ApIsApi.md#apisApiIdAsyncapiGet) | **GET** /apis/{apiId}/asyncapi | Get AsyncAPI definition
+[**apisApiIdAsyncapiPut**](ApIsApi.md#apisApiIdAsyncapiPut) | **PUT** /apis/{apiId}/asyncapi | Update AsyncAPI definition
 [**createAPI**](ApIsApi.md#createAPI) | **POST** /apis | Create a New API
 [**createNewAPIVersion**](ApIsApi.md#createNewAPIVersion) | **POST** /apis/copy-api | Create a New API Version
 [**deleteAPI**](ApIsApi.md#deleteAPI) | **DELETE** /apis/{apiId} | Delete an API
+[**generateInternalAPIKey**](ApIsApi.md#generateInternalAPIKey) | **POST** /apis/{apiId}/generate-key | Generate internal API Key to invoke APIS.
 [**generateMockScripts**](ApIsApi.md#generateMockScripts) | **POST** /apis/{apiId}/generate-mock-scripts | Generate Mock Response Payloads
 [**getAPI**](ApIsApi.md#getAPI) | **GET** /apis/{apiId} | Get Details of an API
 [**getAPIResourcePaths**](ApIsApi.md#getAPIResourcePaths) | **GET** /apis/{apiId}/resource-paths | Get Resource Paths of an API
@@ -17,14 +20,169 @@ Method | HTTP request | Description
 [**getGeneratedMockScriptsOfAPI**](ApIsApi.md#getGeneratedMockScriptsOfAPI) | **GET** /apis/{apiId}/generated-mock-scripts | Get Generated Mock Response Payloads
 [**getWSDLInfoOfAPI**](ApIsApi.md#getWSDLInfoOfAPI) | **GET** /apis/{apiId}/wsdl-info | Get WSDL Meta Information
 [**getWSDLOfAPI**](ApIsApi.md#getWSDLOfAPI) | **GET** /apis/{apiId}/wsdl | Get WSDL definition
+[**importAsyncAPISpecification**](ApIsApi.md#importAsyncAPISpecification) | **POST** /apis/import-asyncapi | import an AsyncAPI Specification
 [**importGraphQLSchema**](ApIsApi.md#importGraphQLSchema) | **POST** /apis/import-graphql-schema | Import API Definition
 [**importOpenAPIDefinition**](ApIsApi.md#importOpenAPIDefinition) | **POST** /apis/import-openapi | Import an OpenAPI Definition
+[**importServiceFromCatalog**](ApIsApi.md#importServiceFromCatalog) | **POST** /apis/import-service | Import a Service from Service Catalog
 [**importWSDLDefinition**](ApIsApi.md#importWSDLDefinition) | **POST** /apis/import-wsdl | Import a WSDL Definition
+[**reimportServiceFromCatalog**](ApIsApi.md#reimportServiceFromCatalog) | **PUT** /apis/{apiId}/reimport-service | Update the Service that is used to create the API
 [**updateAPI**](ApIsApi.md#updateAPI) | **PUT** /apis/{apiId} | Update an API
 [**updateAPISwagger**](ApIsApi.md#updateAPISwagger) | **PUT** /apis/{apiId}/swagger | Update Swagger Definition
 [**updateAPIThumbnail**](ApIsApi.md#updateAPIThumbnail) | **PUT** /apis/{apiId}/thumbnail | Upload a Thumbnail Image
+[**updateTopics**](ApIsApi.md#updateTopics) | **PUT** /apis/{apiId}/topics | Update Topics
 [**updateWSDLOfAPI**](ApIsApi.md#updateWSDLOfAPI) | **PUT** /apis/{apiId}/wsdl | Update WSDL Definition
 
+
+<a name="apisApiIdAsyncapiGet"></a>
+# **apisApiIdAsyncapiGet**
+> String apisApiIdAsyncapiGet(apiId, ifNoneMatch)
+
+Get AsyncAPI definition
+
+This operation can be used to retrieve the AsyncAPI definition of an API. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
+    try {
+      String result = apiInstance.apisApiIdAsyncapiGet(apiId, ifNoneMatch);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#apisApiIdAsyncapiGet");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
+
+### Return type
+
+**String**
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Requested AsyncAPI definition of the API is returned  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Willl&#x3D; be supported in future).  <br>  * Last-Modified - Date and time the resource has beed modified the last time. Used by caches, or in conditional request (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  |
+**304** | Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**406** | Not Acceptable. The requested media type is not supported. |  -  |
+
+<a name="apisApiIdAsyncapiPut"></a>
+# **apisApiIdAsyncapiPut**
+> String apisApiIdAsyncapiPut(apiId, ifMatch, apiDefinition, url, file)
+
+Update AsyncAPI definition
+
+This operation can be used to update the AsyncAPI definition of an existing API. AsyncAPI definition to be updated is passed as a form data parameter &#39;apiDefinition&#39;. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
+    String apiDefinition = "apiDefinition_example"; // String | AsyncAPI definition of the API
+    String url = "url_example"; // String | AsyncAPI definition URL of the API
+    File file = new File("/path/to/file"); // File | AsyncAPI definition as a file
+    try {
+      String result = apiInstance.apisApiIdAsyncapiPut(apiId, ifMatch, apiDefinition, url, file);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#apisApiIdAsyncapiPut");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
+ **apiDefinition** | **String**| AsyncAPI definition of the API | [optional]
+ **url** | **String**| AsyncAPI definition URL of the API | [optional]
+ **file** | **File**| AsyncAPI definition as a file | [optional]
+
+### Return type
+
+**String**
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Successful response with updated AsyncAPI definition  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has beed modified the last time. Use &#x3D;d by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
 
 <a name="createAPI"></a>
 # **createAPI**
@@ -99,7 +257,7 @@ Name | Type | Description  | Notes
 
 <a name="createNewAPIVersion"></a>
 # **createNewAPIVersion**
-> APIDTO createNewAPIVersion(newVersion, apiId, defaultVersion)
+> APIDTO createNewAPIVersion(newVersion, apiId, defaultVersion, serviceVersion)
 
 Create a New API Version
 
@@ -128,8 +286,9 @@ public class Example {
     String newVersion = "newVersion_example"; // String | Version of the new API.
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**. 
     Boolean defaultVersion = false; // Boolean | Specifies whether new API should be added as default version.
+    String serviceVersion = "serviceVersion_example"; // String | Version of the Service that will used in creating new version
     try {
-      APIDTO result = apiInstance.createNewAPIVersion(newVersion, apiId, defaultVersion);
+      APIDTO result = apiInstance.createNewAPIVersion(newVersion, apiId, defaultVersion, serviceVersion);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApIsApi#createNewAPIVersion");
@@ -149,6 +308,7 @@ Name | Type | Description  | Notes
  **newVersion** | **String**| Version of the new API. |
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  |
  **defaultVersion** | **Boolean**| Specifies whether new API should be added as default version. | [optional] [default to false]
+ **serviceVersion** | **String**| Version of the Service that will used in creating new version | [optional]
 
 ### Return type
 
@@ -240,6 +400,78 @@ null (empty response body)
 **403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **409** | Conflict. Specified resource already exists. |  -  |
+**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
+
+<a name="generateInternalAPIKey"></a>
+# **generateInternalAPIKey**
+> APIKeyDTO generateInternalAPIKey(apiId, ifNoneMatch)
+
+Generate internal API Key to invoke APIS.
+
+This operation can be used to generate internal api key which used to invoke API. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
+    try {
+      APIKeyDTO result = apiInstance.generateInternalAPIKey(apiId, ifNoneMatch);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#generateInternalAPIKey");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
+
+### Return type
+
+[**APIKeyDTO**](APIKeyDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. apikey generated.  |  -  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
 **412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
 
 <a name="generateMockScripts"></a>
@@ -974,6 +1206,79 @@ null (empty response body)
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
 
+<a name="importAsyncAPISpecification"></a>
+# **importAsyncAPISpecification**
+> APIDTO importAsyncAPISpecification(file, url, additionalProperties)
+
+import an AsyncAPI Specification
+
+This operation can be used to create and API from the AsyncAPI Specification. Provide either &#39;url&#39; or &#39;file&#39; to specify the definition. Specify additionalProperties with **at least** API&#39;s name, version, context and endpointConfig.
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    File file = new File("/path/to/file"); // File | Definition to upload as a file
+    String url = "url_example"; // String | Definition url
+    String additionalProperties = "additionalProperties_example"; // String | Additional attributes specified as a stringified JSON with API's schema
+    try {
+      APIDTO result = apiInstance.importAsyncAPISpecification(file, url, additionalProperties);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#importAsyncAPISpecification");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **file** | **File**| Definition to upload as a file | [optional]
+ **url** | **String**| Definition url | [optional]
+ **additionalProperties** | **String**| Additional attributes specified as a stringified JSON with API&#39;s schema | [optional]
+
+### Return type
+
+[**APIDTO**](APIDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**201** | Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity. |  * Etag - Entity Tag of the respons resource. Used by caches, or in conditional requests (Will be supported in the future). <br>  * Location - The URL of the newly created resource. <br>  * Content-type - The content type of the body. <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**415** | Unsupported Media Type. The entity of the request was not in a supported format. |  -  |
+
 <a name="importGraphQLSchema"></a>
 # **importGraphQLSchema**
 > APIDTO importGraphQLSchema(ifMatch, type, file, additionalProperties)
@@ -1122,6 +1427,77 @@ Name | Type | Description  | Notes
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **415** | Unsupported Media Type. The entity of the request was not in a supported format. |  -  |
 
+<a name="importServiceFromCatalog"></a>
+# **importServiceFromCatalog**
+> APIDTO importServiceFromCatalog(serviceKey, APIDTO)
+
+Import a Service from Service Catalog
+
+This operation can be used to create an API from a Service from Service Catalog
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String serviceKey = "serviceKey_example"; // String | ID of service that should be imported from Service Catalog
+    APIDTO APIDTO = new APIDTO(); // APIDTO | 
+    try {
+      APIDTO result = apiInstance.importServiceFromCatalog(serviceKey, APIDTO);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#importServiceFromCatalog");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **serviceKey** | **String**| ID of service that should be imported from Service Catalog |
+ **APIDTO** | [**APIDTO**](APIDTO.md)|  | [optional]
+
+### Return type
+
+[**APIDTO**](APIDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**201** | Created. Successful response with the newly created object as entity in the body. Location header contains the URL of the newly created entity.  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
+
 <a name="importWSDLDefinition"></a>
 # **importWSDLDefinition**
 > APIDTO importWSDLDefinition(file, url, additionalProperties, implementationType)
@@ -1196,6 +1572,75 @@ Name | Type | Description  | Notes
 **201** | Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **415** | Unsupported Media Type. The entity of the request was not in a supported format. |  -  |
+
+<a name="reimportServiceFromCatalog"></a>
+# **reimportServiceFromCatalog**
+> APIDTO reimportServiceFromCatalog(apiId)
+
+Update the Service that is used to create the API
+
+This operation can be used to re-import the Service used to create the API
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    try {
+      APIDTO result = apiInstance.reimportServiceFromCatalog(apiId);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#reimportServiceFromCatalog");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+
+### Return type
+
+[**APIDTO**](APIDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Successful response with updated API object  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="updateAPI"></a>
 # **updateAPI**
@@ -1425,6 +1870,77 @@ Name | Type | Description  | Notes
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
+
+<a name="updateTopics"></a>
+# **updateTopics**
+> APIDTO updateTopics(apiId, topicListDTO, ifMatch)
+
+Update Topics
+
+This operation can be used to update topics of an existing API.
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    TopicListDTO topicListDTO = new TopicListDTO(); // TopicListDTO | API object that needs to be added
+    String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
+    try {
+      APIDTO result = apiInstance.updateTopics(apiId, topicListDTO, ifMatch);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#updateTopics");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **topicListDTO** | [**TopicListDTO**](TopicListDTO.md)| API object that needs to be added |
+ **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
+
+### Return type
+
+[**APIDTO**](APIDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Successful response with updated API object  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
 
 <a name="updateWSDLOfAPI"></a>
 # **updateWSDLOfAPI**

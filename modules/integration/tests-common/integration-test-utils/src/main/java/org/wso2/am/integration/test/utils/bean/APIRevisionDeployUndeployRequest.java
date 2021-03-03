@@ -8,6 +8,7 @@ public class APIRevisionDeployUndeployRequest {
 
     private String name;
     private boolean displayOnDevportal;
+    private String vhost;
 
     public String getName() {
         return name;
@@ -23,5 +24,13 @@ public class APIRevisionDeployUndeployRequest {
 
     public void setDisplayOnDevportal(boolean displayOnDevportal) {
         this.displayOnDevportal = displayOnDevportal;
+    }
+
+    public String getVhost() {
+        return vhost;
+    }
+
+    public void setVhost(String vhost) {
+        this.vhost = vhost;
     }
 }

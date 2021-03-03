@@ -314,7 +314,7 @@ public class ApiProductRevisionsApi {
     /**
      * Build call for deployAPIProductRevision
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
      * @param apIRevisionDeploymentDTO Deployment object that needs to be added (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -369,11 +369,6 @@ public class ApiProductRevisionsApi {
             throw new ApiException("Missing the required parameter 'apiProductId' when calling deployAPIProductRevision(Async)");
         }
         
-        // verify the required parameter 'revisionId' is set
-        if (revisionId == null) {
-            throw new ApiException("Missing the required parameter 'revisionId' when calling deployAPIProductRevision(Async)");
-        }
-        
 
         okhttp3.Call localVarCall = deployAPIProductRevisionCall(apiProductId, revisionId, apIRevisionDeploymentDTO, _callback);
         return localVarCall;
@@ -384,7 +379,7 @@ public class ApiProductRevisionsApi {
      * Deploy a revision
      * Deploy a revision 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
      * @param apIRevisionDeploymentDTO Deployment object that needs to be added (optional)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -403,7 +398,7 @@ public class ApiProductRevisionsApi {
      * Deploy a revision
      * Deploy a revision 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
      * @param apIRevisionDeploymentDTO Deployment object that needs to be added (optional)
      * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -424,7 +419,7 @@ public class ApiProductRevisionsApi {
      * Deploy a revision (asynchronously)
      * Deploy a revision 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
      * @param apIRevisionDeploymentDTO Deployment object that needs to be added (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -809,7 +804,7 @@ public class ApiProductRevisionsApi {
     /**
      * Build call for restoreAPIProductRevision
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -862,11 +857,6 @@ public class ApiProductRevisionsApi {
             throw new ApiException("Missing the required parameter 'apiProductId' when calling restoreAPIProductRevision(Async)");
         }
         
-        // verify the required parameter 'revisionId' is set
-        if (revisionId == null) {
-            throw new ApiException("Missing the required parameter 'revisionId' when calling restoreAPIProductRevision(Async)");
-        }
-        
 
         okhttp3.Call localVarCall = restoreAPIProductRevisionCall(apiProductId, revisionId, _callback);
         return localVarCall;
@@ -877,7 +867,7 @@ public class ApiProductRevisionsApi {
      * Restore a revision
      * Restore a revision to the working copy of the API Product 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
      * @return APIProductDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -896,7 +886,7 @@ public class ApiProductRevisionsApi {
      * Restore a revision
      * Restore a revision to the working copy of the API Product 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
      * @return ApiResponse&lt;APIProductDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -916,7 +906,7 @@ public class ApiProductRevisionsApi {
      * Restore a revision (asynchronously)
      * Restore a revision to the working copy of the API Product 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -937,7 +927,9 @@ public class ApiProductRevisionsApi {
     /**
      * Build call for undeployAPIProductRevision
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
+     * @param revisionNumber Revision Number of an API  (optional)
+     * @param allEnvironments  (optional, default to false)
      * @param apIRevisionDeploymentDTO Deployment object that needs to be added (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -950,7 +942,7 @@ public class ApiProductRevisionsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call undeployAPIProductRevisionCall(String apiProductId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call undeployAPIProductRevisionCall(String apiProductId, String revisionId, String revisionNumber, Boolean allEnvironments, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = apIRevisionDeploymentDTO;
 
         // create path and map variables
@@ -961,6 +953,14 @@ public class ApiProductRevisionsApi {
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         if (revisionId != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("revisionId", revisionId));
+        }
+
+        if (revisionNumber != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("revisionNumber", revisionNumber));
+        }
+
+        if (allEnvironments != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("allEnvironments", allEnvironments));
         }
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
@@ -985,20 +985,15 @@ public class ApiProductRevisionsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call undeployAPIProductRevisionValidateBeforeCall(String apiProductId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call undeployAPIProductRevisionValidateBeforeCall(String apiProductId, String revisionId, String revisionNumber, Boolean allEnvironments, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiProductId' is set
         if (apiProductId == null) {
             throw new ApiException("Missing the required parameter 'apiProductId' when calling undeployAPIProductRevision(Async)");
         }
         
-        // verify the required parameter 'revisionId' is set
-        if (revisionId == null) {
-            throw new ApiException("Missing the required parameter 'revisionId' when calling undeployAPIProductRevision(Async)");
-        }
-        
 
-        okhttp3.Call localVarCall = undeployAPIProductRevisionCall(apiProductId, revisionId, apIRevisionDeploymentDTO, _callback);
+        okhttp3.Call localVarCall = undeployAPIProductRevisionCall(apiProductId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO, _callback);
         return localVarCall;
 
     }
@@ -1007,7 +1002,9 @@ public class ApiProductRevisionsApi {
      * Un-Deploy a revision
      * Un-Deploy a revision 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
+     * @param revisionNumber Revision Number of an API  (optional)
+     * @param allEnvironments  (optional, default to false)
      * @param apIRevisionDeploymentDTO Deployment object that needs to be added (optional)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1018,15 +1015,17 @@ public class ApiProductRevisionsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public void undeployAPIProductRevision(String apiProductId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO) throws ApiException {
-        undeployAPIProductRevisionWithHttpInfo(apiProductId, revisionId, apIRevisionDeploymentDTO);
+    public void undeployAPIProductRevision(String apiProductId, String revisionId, String revisionNumber, Boolean allEnvironments, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO) throws ApiException {
+        undeployAPIProductRevisionWithHttpInfo(apiProductId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO);
     }
 
     /**
      * Un-Deploy a revision
      * Un-Deploy a revision 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
+     * @param revisionNumber Revision Number of an API  (optional)
+     * @param allEnvironments  (optional, default to false)
      * @param apIRevisionDeploymentDTO Deployment object that needs to be added (optional)
      * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -1038,8 +1037,8 @@ public class ApiProductRevisionsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> undeployAPIProductRevisionWithHttpInfo(String apiProductId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO) throws ApiException {
-        okhttp3.Call localVarCall = undeployAPIProductRevisionValidateBeforeCall(apiProductId, revisionId, apIRevisionDeploymentDTO, null);
+    public ApiResponse<Void> undeployAPIProductRevisionWithHttpInfo(String apiProductId, String revisionId, String revisionNumber, Boolean allEnvironments, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO) throws ApiException {
+        okhttp3.Call localVarCall = undeployAPIProductRevisionValidateBeforeCall(apiProductId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -1047,7 +1046,9 @@ public class ApiProductRevisionsApi {
      * Un-Deploy a revision (asynchronously)
      * Un-Deploy a revision 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param revisionId Revision ID of an API  (required)
+     * @param revisionId Revision ID of an API  (optional)
+     * @param revisionNumber Revision Number of an API  (optional)
+     * @param allEnvironments  (optional, default to false)
      * @param apIRevisionDeploymentDTO Deployment object that needs to be added (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -1060,9 +1061,9 @@ public class ApiProductRevisionsApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call undeployAPIProductRevisionAsync(String apiProductId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call undeployAPIProductRevisionAsync(String apiProductId, String revisionId, String revisionNumber, Boolean allEnvironments, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = undeployAPIProductRevisionValidateBeforeCall(apiProductId, revisionId, apIRevisionDeploymentDTO, _callback);
+        okhttp3.Call localVarCall = undeployAPIProductRevisionValidateBeforeCall(apiProductId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }

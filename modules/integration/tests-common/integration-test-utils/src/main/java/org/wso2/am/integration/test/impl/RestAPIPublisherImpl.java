@@ -37,48 +37,45 @@ import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GlobalMediationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SettingsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionAPIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -150,7 +147,7 @@ public class RestAPIPublisherImpl {
                                 "apim:client_certificates_view apim:client_certificates_add " +
                                 "apim:client_certificates_update apim:ep_certificates_view " +
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
-                                "apim:pub_alert_manage apim:shared_scope_manage",
+                                "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -307,7 +304,8 @@ public class RestAPIPublisherImpl {
      * @throws ApiException Throws if an error occurs when creating the new API version.
      */
     public String createNewAPIVersion(String newVersion, String apiId, boolean defaultVersion) throws ApiException {
-        String apiLocation = apIsApi.createNewAPIVersionWithHttpInfo(newVersion, apiId, defaultVersion).getHeaders()
+        String apiLocation =
+                apIsApi.createNewAPIVersionWithHttpInfo(newVersion, apiId, defaultVersion, null).getHeaders()
                 .get("Location").get(0);
         String[] splitValues = apiLocation.split("/");
         return splitValues[splitValues.length - 1];
@@ -417,7 +415,7 @@ public class RestAPIPublisherImpl {
      * @throws APIManagerIntegrationTestException - Throws if error occurred at API copy operation
      */
     public HttpResponse copyAPI(String newVersion, String apiId, Boolean isDefault) throws ApiException {
-        APIDTO apiDto = apIsApi.createNewAPIVersion(newVersion, apiId, isDefault);
+        APIDTO apiDto = apIsApi.createNewAPIVersion(newVersion, apiId, isDefault, null);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(apiDto.getId())) {
             response = new HttpResponse(apiDto.getId(), 200);
@@ -434,7 +432,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException
      */
     public APIDTO copyAPIWithReturnDTO(String newVersion, String apiId, Boolean isDefault) throws ApiException {
-        ApiResponse<APIDTO> response = apIsApi.createNewAPIVersionWithHttpInfo(newVersion, apiId, isDefault);
+        ApiResponse<APIDTO> response = apIsApi.createNewAPIVersionWithHttpInfo(newVersion, apiId, isDefault, null);
         Assert.assertEquals(HttpStatus.SC_CREATED, response.getStatusCode());
         return response.getData();
     }
@@ -1325,6 +1323,7 @@ public class RestAPIPublisherImpl {
         for (APIRevisionDeployUndeployRequest apiRevisionDeployRequest : apiRevisionDeployRequestList) {
             APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
             apiRevisionDeploymentDTO.setName(apiRevisionDeployRequest.getName());
+            apiRevisionDeploymentDTO.setVhost(apiRevisionDeployRequest.getVhost());
             apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionDeployRequest.isDisplayOnDevportal());
             apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
@@ -1368,7 +1367,8 @@ public class RestAPIPublisherImpl {
             apiRevisionUnDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
         try {
-            ApiResponse<Void> httpInfo = apiRevisionsApi.undeployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionUnDeploymentDTOList);
+            ApiResponse<Void> httpInfo = apiRevisionsApi.undeployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, null,
+                    false, apiRevisionUnDeploymentDTOList);
             Assert.assertEquals(201, httpInfo.getStatusCode());
             //apiRevisionUnDeploymentDTOResponseList = httpInfo.getData();
         } catch (ApiException e) {
@@ -1558,7 +1558,7 @@ public class RestAPIPublisherImpl {
         }
         try {
             ApiResponse<Void> httpInfo = apiProductRevisionsApi.undeployAPIProductRevisionWithHttpInfo(
-                    apiUUID, revisionUUID, apiRevisionUnDeploymentDTOList);
+                    apiUUID, revisionUUID, null, false, apiRevisionUnDeploymentDTOList);
             Assert.assertEquals(201, httpInfo.getStatusCode());
             //apiRevisionUnDeploymentDTOResponseList = httpInfo.getData();
         } catch (ApiException e) {
@@ -1633,4 +1633,7 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
+    public ApiResponse<APIKeyDTO> generateInternalApiKey(String apiId) throws ApiException {
+        return apIsApi.generateInternalAPIKeyWithHttpInfo(apiId);
+    }
 }

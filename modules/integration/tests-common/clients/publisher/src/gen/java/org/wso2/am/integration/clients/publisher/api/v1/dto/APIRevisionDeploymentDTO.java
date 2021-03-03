@@ -37,6 +37,10 @@ public class APIRevisionDeploymentDTO {
         @SerializedName(SERIALIZED_NAME_NAME)
             private String name;
 
+        public static final String SERIALIZED_NAME_VHOST = "vhost";
+        @SerializedName(SERIALIZED_NAME_VHOST)
+            private String vhost;
+
         public static final String SERIALIZED_NAME_DISPLAY_ON_DEVPORTAL = "displayOnDevportal";
         @SerializedName(SERIALIZED_NAME_DISPLAY_ON_DEVPORTAL)
             private Boolean displayOnDevportal;
@@ -80,7 +84,7 @@ public class APIRevisionDeploymentDTO {
     * @return name
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "production and sandbox", value = "")
+      @ApiModelProperty(example = "default", value = "")
     
     public String getName() {
         return name;
@@ -89,6 +93,29 @@ public class APIRevisionDeploymentDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+        public APIRevisionDeploymentDTO vhost(String vhost) {
+        
+        this.vhost = vhost;
+        return this;
+        }
+
+    /**
+        * Get vhost
+    * @return vhost
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "mg.wso2.com", value = "")
+    
+    public String getVhost() {
+        return vhost;
+    }
+
+
+    public void setVhost(String vhost) {
+        this.vhost = vhost;
     }
 
 
@@ -149,13 +176,14 @@ public class APIRevisionDeploymentDTO {
             APIRevisionDeploymentDTO apIRevisionDeployment = (APIRevisionDeploymentDTO) o;
             return Objects.equals(this.revisionUuid, apIRevisionDeployment.revisionUuid) &&
             Objects.equals(this.name, apIRevisionDeployment.name) &&
+            Objects.equals(this.vhost, apIRevisionDeployment.vhost) &&
             Objects.equals(this.displayOnDevportal, apIRevisionDeployment.displayOnDevportal) &&
             Objects.equals(this.deployedTime, apIRevisionDeployment.deployedTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(revisionUuid, name, displayOnDevportal, deployedTime);
+        return Objects.hash(revisionUuid, name, vhost, displayOnDevportal, deployedTime);
     }
 
 
@@ -165,6 +193,7 @@ StringBuilder sb = new StringBuilder();
 sb.append("class APIRevisionDeploymentDTO {\n");
     sb.append("    revisionUuid: ").append(toIndentedString(revisionUuid)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    vhost: ").append(toIndentedString(vhost)).append("\n");
     sb.append("    displayOnDevportal: ").append(toIndentedString(displayOnDevportal)).append("\n");
     sb.append("    deployedTime: ").append(toIndentedString(deployedTime)).append("\n");
 sb.append("}");
