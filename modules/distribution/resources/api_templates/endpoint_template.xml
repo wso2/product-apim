@@ -53,8 +53,8 @@
 #print_if_exist_only("duration" $config.get("actionDuration"))
 #print_if_exist_only("responseAction" $config.get("actionSelect"))
 </timeout>
-#else
-        ##add default timeout config
+#elseif( $endpointClass != "ws" )
+        ##add default timeout config for non WS endpoints
 <timeout>
      <responseAction>fault</responseAction>
 </timeout>

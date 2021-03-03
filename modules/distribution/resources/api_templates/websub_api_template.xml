@@ -31,12 +31,12 @@
                         </target>
                         <target>
                             <sequence>
-                                <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
                                 <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersLoader"/>
                                 <clone iterations="{get-property('SUBSCRIBERS_COUNT')}" continueParent="true">
                                     <target>
                                         <sequence onError="webhooksFaultSequence">
                                             <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscriberInfoLoader"/>
+                                            <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
                                             <property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
                                             <header name="To" expression="$ctx:SUBSCRIBER_CALLBACK"/>
                                             <filter source="boolean($ctx:SUBSCRIBER_SECRET)" regex="true">

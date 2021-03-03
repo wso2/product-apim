@@ -423,6 +423,89 @@ paths:
           "https://127.0.0.1:9443/api/am/publisher/v2/apis/7a2298c4-c905-403f-8fac-38c73301631f"'
       operationId: deleteAPI
 
+  /apis/{apiId}/topics:
+    put:
+      tags:
+        - APIs
+      summary: Update Topics
+      description: This operation can be used to update topics of an existing API.
+      operationId: updateTopics
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/If-Match'
+      requestBody:
+        description: API object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicList'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Successful response with updated API object
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+
+  /apis/{apiId}/reimport-service:
+    put:
+      tags:
+        - APIs
+      summary: Update the Service that is used to create the API
+      description: This operation can be used to re-import the Service used to create the API
+      operationId: reimportServiceFromCatalog
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+      responses:
+        200:
+          description: |
+            OK.
+            Successful response with updated API object
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
   /apis/{apiId}/swagger:
     get:
       tags:
@@ -605,6 +688,7 @@ paths:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/apis/7a2298c4-c905-403f-8fac-38c73301631f/generate-mock-scripts"'
+
 
   /apis/{apiId}/generated-mock-scripts:
     get:
@@ -1050,6 +1134,12 @@ paths:
           schema:
             type: boolean
             default: false
+        - name: serviceVersion
+          in: query
+          description: Version of the Service that will used in creating new version
+          schema:
+            type: string
+          required: false
         - $ref: '#/components/parameters/apiId-Q'
       responses:
         201:
@@ -1336,6 +1426,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
+            - apim:api_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1375,6 +1466,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
+            - apim:api_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1449,6 +1541,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
+            - apim:api_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1546,6 +1639,12 @@ paths:
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/revisionId-Q'
+        - $ref: '#/components/parameters/revisionNum-Q'
+        - name: allEnvironments
+          in: query
+          schema:
+            type: boolean
+            default: false
       requestBody:
         description: Deployment object that needs to be added
         content:
@@ -1573,6 +1672,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
+            - apim:api_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1611,6 +1711,354 @@ paths:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
             "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+
+  /apis/import-service:
+    post:
+      tags:
+        - APIs
+      summary: Import a Service from Service Catalog
+      description: This operation can be used to create an API from a Service from Service Catalog
+      operationId: importServiceFromCatalog
+      parameters:
+        - name: serviceKey
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ID of service that should be imported from Service Catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/API'
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains the URL of the newly created entity.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /apis/{apiId}/comments:
+    get:
+      tags:
+        - Comments
+      summary: Retrieve API Comments
+      description: |
+        Get a list of Comments that are already added to APIs
+      operationId: getAllCommentsOfAPI
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/includeCommenterInfo'
+      responses:
+        200:
+          description: |
+            OK.
+            Comments list is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security: []
+      x-code-samples:
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
+
+    post:
+      tags:
+        - Comments
+      summary: Add an API Comment
+      operationId: addCommentToAPI
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/parentCommentID'
+      requestBody:
+        description: |
+          Comment object that should to be added
+        content:
+          application/json:
+            schema:
+              title: Post request body
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: |
+                    Content of the comment
+                  example: This is a comment
+                category:
+                  type: string
+                  description: |
+                    Category of the comment
+                  example: general
+              required:
+                - content
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional request.
+              schema:
+                type: string
+            Location:
+              description: |
+                Location to the newly created Comment.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        415:
+          $ref: '#/components/responses/UnsupportedMediaType'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
+
+  /apis/{apiId}/comments/{commentId}:
+    get:
+      tags:
+        - Comments
+      summary: Get Details of an API Comment
+      description: |
+        Get the individual comment given by a username for a certain API.
+      operationId: getCommentOfAPI
+      parameters:
+        - $ref: '#/components/parameters/commentId'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/includeCommenterInfo'
+        - $ref: '#/components/parameters/replyLimit'
+        - $ref: '#/components/parameters/replyOffset'
+      responses:
+        200:
+          description: |
+            OK.
+            Comment returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+          content: {}
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security: []
+      x-code-samples:
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+
+    patch:
+      tags:
+        - Comments
+      summary: Edit a comment
+      description: |
+        Edit the individual comment
+      operationId: editCommentOfAPI
+      parameters:
+        - $ref: '#/components/parameters/commentId'
+        - $ref: '#/components/parameters/apiId'
+      requestBody:
+        description: |
+          Comment object that should to be updated
+        content:
+          application/json:
+            schema:
+              title: Patch request body
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: |
+                    Content of the comment
+                  example: This is a comment
+                category:
+                  type: string
+                  description: |
+                    Category of the comment
+                  example: general
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Comment updated.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional request.
+              schema:
+                type: string
+            Location: #???
+              description: |
+                Location to the newly created Comment.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        415:
+          $ref: '#/components/responses/UnsupportedMediaType'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
+
+    delete:
+      tags:
+        - Comments
+      summary: Delete an API Comment
+      description: |
+        Remove a Comment
+      operationId: deleteComment
+      parameters:
+        - $ref: '#/components/parameters/commentId'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/If-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+          content: {}
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+
+  /apis/{apiId}/comments/{commentId}/replies:
+    get:
+      tags:
+        - Comments
+      summary: Get replies of a comment
+      description: |
+        Get replies of a comment
+      operationId: getRepliesOfComment
+      parameters:
+        - $ref: '#/components/parameters/commentId'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/includeCommenterInfo'
+      responses:
+        200:
+          description: |
+            OK.
+            Comment returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentList'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+          content: {}
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security: []
+      x-code-samples:
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
 
   /apis/{apiId}/comments:
     get:
@@ -3943,6 +4391,37 @@ paths:
       x-examples:
         $ref: docs/examples/external-stores/external_stores.yaml#/publishToExternalStore
 
+  /apis/{apiId}/generate-key:
+    post:
+      tags:
+        - APIs
+      summary: Generate internal API Key to invoke APIS.
+      description: |
+        This operation can be used to generate internal api key which used to invoke API.
+      operationId: generateInternalAPIKey
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+      responses:
+        200:
+          description: |
+            OK.
+            apikey generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIKey'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_generate_key
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/7a2298c4-c905-403f-8fac-38c73301631f/generate-key"'
+
   /apis/export:
     get:
       tags:
@@ -3968,6 +4447,12 @@ paths:
             Version of the API
           schema:
             type: string
+        - name: revisionNumber
+          in: query
+          description: |
+            Revision number of the API artifact
+          schema:
+            type: string
         - name: providerName
           in: query
           description: |
@@ -3989,6 +4474,13 @@ paths:
             Preserve API Status on export
           schema:
             type: boolean
+        - name: latestRevision
+          in: query
+          description: |
+            Export the latest revision of the API
+          schema:
+            type: boolean
+            default: false
       responses:
         200:
           description: |
@@ -4033,6 +4525,13 @@ paths:
           in: query
           description: |
             Preserve Original Provider of the API. This is the user choice to keep or replace the API provider
+          required: false
+          schema:
+            type: boolean
+        - name: rotateRevision
+          in: query
+          description: |
+            Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision
           required: false
           schema:
             type: boolean
@@ -6152,6 +6651,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
+            - apim:api_product_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -6362,6 +6862,12 @@ paths:
       parameters:
         - $ref: '#/components/parameters/apiProductId'
         - $ref: '#/components/parameters/revisionId-Q'
+        - $ref: '#/components/parameters/revisionNum-Q'
+        - name: allEnvironments
+          in: query
+          schema:
+            type: boolean
+            default: false
       requestBody:
         description: Deployment object that needs to be added
         content:
@@ -6389,6 +6895,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
+            - apim:api_product_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -6454,6 +6961,12 @@ paths:
             Provider name of the API Product
           schema:
             type: string
+        - name: revisionNumber
+          in: query
+          description: |
+            Revision number of the API Product
+          schema:
+            type: string
         - name: format
           in: query
           description: |
@@ -6469,6 +6982,13 @@ paths:
             Preserve API Product Status on export
           schema:
             type: boolean
+        - name: latestRevision
+          in: query
+          description: |
+            Export the latest revision of the API Product
+          schema:
+            type: boolean
+            default: false
       responses:
         200:
           description: |
@@ -6495,7 +7015,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/export?name=LeasingAPIProduct&version=1.0.0&provider=admin&format=YAML"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/export?name=LeasingAPIProduct&version=1.0.0&revisionNumber=2&provider=admin&format=YAML"
           > exportAPIProduct.zip'
       operationId: exportAPIProduct
 
@@ -6511,6 +7031,13 @@ paths:
           in: query
           description: |
             Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider
+          required: false
+          schema:
+            type: boolean
+        - name: rotateRevision
+          in: query
+          description: |
+            Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision
           required: false
           schema:
             type: boolean
@@ -6925,7 +7452,7 @@ paths:
         200:
           description: |
             OK.
-            The Devportal alert configuration.
+            The Developer Portal alert configuration.
           headers:
             Content-Type:
               description: |
@@ -7429,6 +7956,236 @@ paths:
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/apis/92bc1330-1848-4fe8-b992-c792186c212e/deployments/"'
 
+  /apis/validate-asyncapi:
+    post:
+      tags:
+        - Validation
+      summary: Validate an AsyncAPI Specification
+      description:
+        This operation can be used to validate and AsyncAPI Specification and retrieve a summary. Provide either 'url'
+        or 'file' to specify the definition.
+      operationId: validateAsyncAPISpecification
+      parameters:
+        - name: returnContent
+          in: query
+          description:
+            Specify whether to return the full content of the AsyncAPI specification in the response. This is only
+            applicable when using url based validation
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                url:
+                  type: string
+                  description: AsyncAPI definition url
+                file:
+                  type: string
+                  description: AsyncAPI definition as a file
+                  format: binary
+      responses:
+        200:
+          description:
+            OK.
+            API definition validation information is returned
+          headers:
+            Content-Type:
+              description:
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncAPISpecificationValidationResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+
+  /apis/import-asyncapi:
+    post:
+      tags:
+        - APIs
+      summary: import an AsyncAPI Specification
+      description:
+        This operation can be used to create and API from the AsyncAPI Specification. Provide either 'url' or 'file'
+        to specify the definition.
+
+        Specify additionalProperties with **at least** API's name, version, context and endpointConfig.
+      operationId: importAsyncAPISpecification
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file:
+                  type: string
+                  description: Definition to upload as a file
+                  format: binary
+                url:
+                  type: string
+                  description: Definition url
+                additionalProperties:
+                  type: string
+                  description: Additional attributes specified as a stringified JSON with API's schema
+      responses:
+        201:
+          description:
+            Created. Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          headers:
+            Etag:
+              description:
+                Entity Tag of the respons resource. Used by caches, or in conditional requests (Will be supported in the future).
+              schema:
+                type: string
+            Location:
+              description:
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-type:
+              description:
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        415:
+          $ref: '#/components/responses/UnsupportedMediaType'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+
+  /apis/{apiId}/asyncapi:
+    get:
+      tags:
+        - APIs
+      summary: Get AsyncAPI definition
+      description: |
+        This operation can be used to retrieve the AsyncAPI definition of an API.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Requested AsyncAPI definition of the API is returned
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Willl= be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has beed modified the last time.
+                Used by caches, or in conditional request (Will be supported in future).
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+          content: { }
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+
+    put:
+      tags:
+        - APIs
+      summary: Update AsyncAPI definition
+      description: |
+        This operation can be used to update the AsyncAPI definition of an existing API. AsyncAPI definition to be updated is passed as a form data parameter 'apiDefinition'.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/If-Match'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                apiDefinition:
+                  type: string
+                  description: AsyncAPI definition of the API
+                url:
+                  type: string
+                  description: AsyncAPI definition URL of the API
+                file:
+                  type: string
+                  description: AsyncAPI definition as a file
+                  format: binary
+      responses:
+        200:
+          description: |
+            OK.
+            Successful response with updated AsyncAPI definition
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has beed modified the last time.
+                Use =d by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+
 components:
   schemas:
     Comment:
@@ -7527,6 +8284,7 @@ components:
             $ref: '#/components/schemas/API'
         pagination:
           $ref: '#/components/schemas/Pagination'
+
     APIInfo:
       title: API Info object with basic API details.
       type: object
@@ -7567,6 +8325,49 @@ components:
           type: array
           items:
             type: string
+
+    Topic:
+      title: Topic object
+      required:
+        - name
+        - mode
+        - description
+      type: object
+      properties:
+        id:
+          type: string
+          description: id
+          readOnly: true
+          example: 1222344
+        name:
+          maxLength: 50
+          minLength: 1
+          pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\s+]*$)'
+          type: string
+          example: PizzaShackAPI
+        mode:
+          maxLength: 32766
+          type: string
+          example: This is a simple API for Pizza Shack online pizza delivery store.
+        description:
+          maxLength: 32766
+          type: string
+          example: This is a simple API for Pizza Shack online pizza delivery store.
+    TopicList:
+      title: Topic List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Topics returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/Topic'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     API:
       title: API object
       required:
@@ -7661,7 +8462,7 @@ components:
         type:
           type: string
           description: The api creation type to be used. Accepted values are HTTP,
-            WS, SOAPTOREST, GRAPHQL
+            WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
           example: HTTP
           default: HTTP
           enum:
@@ -7670,6 +8471,8 @@ components:
             - SOAPTOREST
             - SOAP
             - GRAPHQL
+            - WEBSUB
+            - SSE
         transport:
           type: array
           description: |
@@ -7734,7 +8537,7 @@ components:
             - apim:api_publish
         visibleRoles:
           type: array
-          description: The user roles that are able to access the API in Devportal
+          description: The user roles that are able to access the API in Developer Portal
           example: []
           items:
             type: string
@@ -7833,6 +8636,8 @@ components:
             - apim:api_publish
         corsConfiguration:
           $ref: '#/components/schemas/APICorsConfiguration'
+        websubSubscriptionConfiguration:
+          $ref: '#/components/schemas/WebsubSubscriptionConfiguration'
         workflowStatus:
           type: string
           example: APPROVED
@@ -7989,9 +8794,25 @@ components:
           description: |
             API Key Managers
           readOnly: true
+        serviceInfo:
+          type: object
+          properties:
+            key:
+              type: string
+              example: PetStore-1.0.0
+            name:
+              type: string
+              example: PetStore
+            version:
+              type: string
+              example: 1.0.0
+            outdated:
+              type: boolean
+              example: false
       x-scopes:
         - apim:api_create
         - apim:api_import_export
+
     #-----------------------------------------------------
     # The API Revision resource
     #-----------------------------------------------------
@@ -8063,7 +8884,14 @@ components:
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         name:
           type: string
-          example: production and sandbox
+          example: default
+        vhost:
+          maxLength: 255
+          minLength: 1
+          # hostname regex as per RFC 1123 (http://tools.ietf.org/html/rfc1123) and appended *
+          pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
+          type: string
+          example: mg.wso2.com
         displayOnDevportal:
           type: boolean
           example: true
@@ -8140,7 +8968,7 @@ components:
         state:
           type: string
           description: |
-            State of the API product. Only published api products are visible on the Devportal
+            State of the API product. Only published api products are visible on the Developer Portal
           enum:
             - CREATED
             - PUBLISHED
@@ -8192,7 +9020,7 @@ components:
         state:
           type: string
           description: |
-            State of the API product. Only published api products are visible on the Devportal
+            State of the API product. Only published api products are visible on the Developer Portal
           enum:
             - CREATED
             - PUBLISHED
@@ -8794,6 +9622,11 @@ components:
             Maximum number of requests which can be sent within a provided unit time
           format: int64
           example: 50
+        dataUnit:
+          description: |
+            Unit of data allowed to be transfered. Allowed values are "KB", "MB" and "GB"
+          type: string
+          example: KB
         unitTime:
           type: integer
           format: int64
@@ -8801,6 +9634,22 @@ components:
         timeUnit:
           type: string
           example: min
+        rateLimitCount:
+          type: integer
+          default: 0
+          description: Burst control request count
+          example: 10
+        rateLimitTimeUnit:
+          type: string
+          description: Burst control time unit
+          example: min
+        quotaPolicyType:
+          type: string
+          description: Default quota limit type
+          enum:
+            - REQUESTCOUNT
+            - BANDWIDTHVOLUME
+          example: REQUESTCOUNT
         tierPlan:
           type: string
           description: |
@@ -8956,7 +9805,10 @@ components:
       properties:
         name:
           type: string
-          example: Production and Sandbox
+          example: default
+        displayName:
+          type: string
+          example: Default
         type:
           type: string
           example: hybrid
@@ -8968,6 +9820,10 @@ components:
           example: true
         endpoints:
           $ref: '#/components/schemas/EnvironmentEndpoints'
+        vhosts:
+          type: array
+          items:
+            $ref: '#/components/schemas/VHost'
     EnvironmentList:
       title: Environment List
       type: object
@@ -9001,6 +9857,28 @@ components:
           type: string
           description: WSS environment URL
           example: https://localhost:8099
+    VHost:
+      title: Virtual Host
+      type: object
+      properties:
+        host:
+          type: string
+          example: mg.wso2.com
+        httpContext:
+          type: string
+          example: pets
+        httpPort:
+          type: integer
+          example: 80
+        httpsPort:
+          type: integer
+          example: 443
+        wsPort:
+          type: integer
+          example: 9099
+        wssPort:
+          type: integer
+          example: 8099
     FileInfo:
       title: File Information including meta data
       type: object
@@ -9059,6 +9937,20 @@ components:
         technicalOwnerEmail:
           type: string
           example: technicalowner@wso2.com
+
+    WebsubSubscriptionConfiguration:
+      type: object
+      properties:
+        secret:
+          type: string
+          description: Secret key to be used for subscription
+        signingAlgorithm:
+          type: string
+          description: The algorithm used for signing
+        signatureHeader:
+          type: string
+          description: The header uses to send the signature
+
     APICorsConfiguration:
       type: object
       properties:
@@ -9328,6 +10220,12 @@ components:
           example: ""
         amznResourceTimeout:
           type: integer
+        payloadSchema:
+          type: string
+          example: ""
+        uriMapping:
+          type: string
+          example: ""
     ScopeList:
       title: Scope List
       type: object
@@ -10362,6 +11260,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/KeyManagerInfo'
+    APIKey:
+      title: API Key details to invoke APIs
+      type: object
+      properties:
+        apikey:
+          type: string
+          description: API Key
+          example: eyJoZWxsbyI6IndvcmxkIn0=.eyJ3c28yIjoiYXBpbSJ9.eyJ3c28yIjoic2lnbmF0dXJlIn0=
+        validityTime:
+          type: integer
+          format: int32
+          example: 3600
     DeploymentList:
       title: Deployment List
       type: object
@@ -10491,6 +11401,55 @@ components:
         creationTimestamp:
           type: string
           example: 2020-05-12T06:12:00Z
+    AsyncAPISpecificationValidationResponse:
+      title: AsyncAPI Specification Validation Response
+      required:
+        - isValid
+      type: object
+      properties:
+        isValid:
+          type: boolean
+          description:
+            This attribute declares whether this definition is valid or not.
+          example: true
+        content:
+          type: string
+          description:
+            AsyncAPI specification content
+        info:
+          type: object
+          properties:
+            name:
+              type: string
+              example: Streetlights
+            version:
+              type: string
+              example: 1.0.0
+            context:
+              type: string
+              example: /streetlights
+            description:
+              type: string
+              example: A sample API that uses a streetlights as an example to demonstrate AsyncAPI specifications
+            asyncAPIVersion:
+              type: string
+              example: 2.0
+            endpoints:
+              type: array
+              description:
+                contains host/servers specified in the AsyncAPI file/URL
+              items:
+                type: string
+                example: "https://localhost:9443/am/sample/pizzashack/v1/api/"
+          description:
+            API definition information
+        errors:
+          type: array
+          description:
+            If there are more than one error list them out.
+            For example, list out validation error by each field.
+          items:
+            $ref: '#/components/schemas/ErrorListItem'
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
@@ -10706,6 +11665,27 @@ components:
       required: true
       schema:
         type: string
+    apiName-Q:
+      name: name
+      in: query
+      description: |
+        Name of the API
+      schema:
+        type: string
+    apiVersion-Q:
+      name: version
+      in: query
+      description: |
+        Version of the API
+      schema:
+        type: string
+    apiProvider-Q:
+      name: providerName
+      in: query
+      description: |
+        Provider name of the API
+      schema:
+        type: string
     documentId:
       name: documentId
       in: path
@@ -10754,6 +11734,7 @@ components:
       required: true
       schema:
         type: string
+
     # API Revision Identifier
     # Specified as part of the path expression
     revisionId:
@@ -10772,7 +11753,13 @@ components:
       in: query
       description: |
         Revision ID of an API
-      required: true
+      schema:
+        type: string
+    revisionNum-Q:
+      name: revisionNumber
+      in: query
+      description: |
+        Revision Number of an API
       schema:
         type: string
     policyName:
@@ -10976,3 +11963,4 @@ components:
             apim:app_import_export: Import and export applications related operations
             apim:api_import_export: Import and export APIs related operations
             apim:api_product_import_export: Import and export API Products related operations
+            apim:api_generate_key: Generate Internal Key

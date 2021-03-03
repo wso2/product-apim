@@ -52,6 +52,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
     private String rateLimitTimeUnit = "NA";
     private boolean stopQuotaOnReach = false;
     private String billingPlan = "COMMERCIAL";
+    private Integer subscriberCount = 0;
     private List<CustomAttributeDTO> customAttributes = null;
     private SubscriptionThrottlePolicyDTO requestCountPolicyDTO;
     private SubscriptionThrottlePolicyDTO bandwidthPolicyDTO;
@@ -92,7 +93,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         requestCountPolicyDTO = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(policyName, displayName, description, false, defaultLimit,
                         graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
-                        stopQuotaOnReach, billingPlan);
+                        stopQuotaOnReach, billingPlan, subscriberCount);
 
         //Add the subscription throttling policy
         ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy =
@@ -124,7 +125,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         bandwidthPolicyDTO = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(policyName, displayName, description, false, defaultLimit,
                         graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
-                        stopQuotaOnReach, billingPlan);
+                        stopQuotaOnReach, billingPlan, subscriberCount);
 
         //Add the subscription throttling policy
         ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy =

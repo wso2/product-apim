@@ -67,6 +67,14 @@ public class APIOperationsDTO {
         @SerializedName(SERIALIZED_NAME_AMZN_RESOURCE_TIMEOUT)
             private Integer amznResourceTimeout;
 
+        public static final String SERIALIZED_NAME_PAYLOAD_SCHEMA = "payloadSchema";
+        @SerializedName(SERIALIZED_NAME_PAYLOAD_SCHEMA)
+            private String payloadSchema;
+
+        public static final String SERIALIZED_NAME_URI_MAPPING = "uriMapping";
+        @SerializedName(SERIALIZED_NAME_URI_MAPPING)
+            private String uriMapping;
+
 
         public APIOperationsDTO id(String id) {
         
@@ -275,6 +283,52 @@ public class APIOperationsDTO {
     }
 
 
+        public APIOperationsDTO payloadSchema(String payloadSchema) {
+        
+        this.payloadSchema = payloadSchema;
+        return this;
+        }
+
+    /**
+        * Get payloadSchema
+    * @return payloadSchema
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getPayloadSchema() {
+        return payloadSchema;
+    }
+
+
+    public void setPayloadSchema(String payloadSchema) {
+        this.payloadSchema = payloadSchema;
+    }
+
+
+        public APIOperationsDTO uriMapping(String uriMapping) {
+        
+        this.uriMapping = uriMapping;
+        return this;
+        }
+
+    /**
+        * Get uriMapping
+    * @return uriMapping
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getUriMapping() {
+        return uriMapping;
+    }
+
+
+    public void setUriMapping(String uriMapping) {
+        this.uriMapping = uriMapping;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -292,12 +346,14 @@ public class APIOperationsDTO {
             Objects.equals(this.scopes, apIOperations.scopes) &&
             Objects.equals(this.usedProductIds, apIOperations.usedProductIds) &&
             Objects.equals(this.amznResourceName, apIOperations.amznResourceName) &&
-            Objects.equals(this.amznResourceTimeout, apIOperations.amznResourceTimeout);
+            Objects.equals(this.amznResourceTimeout, apIOperations.amznResourceTimeout) &&
+            Objects.equals(this.payloadSchema, apIOperations.payloadSchema) &&
+            Objects.equals(this.uriMapping, apIOperations.uriMapping);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes, usedProductIds, amznResourceName, amznResourceTimeout);
+        return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes, usedProductIds, amznResourceName, amznResourceTimeout, payloadSchema, uriMapping);
     }
 
 
@@ -314,6 +370,8 @@ sb.append("class APIOperationsDTO {\n");
     sb.append("    usedProductIds: ").append(toIndentedString(usedProductIds)).append("\n");
     sb.append("    amznResourceName: ").append(toIndentedString(amznResourceName)).append("\n");
     sb.append("    amznResourceTimeout: ").append(toIndentedString(amznResourceTimeout)).append("\n");
+    sb.append("    payloadSchema: ").append(toIndentedString(payloadSchema)).append("\n");
+    sb.append("    uriMapping: ").append(toIndentedString(uriMapping)).append("\n");
 sb.append("}");
 return sb.toString();
 }

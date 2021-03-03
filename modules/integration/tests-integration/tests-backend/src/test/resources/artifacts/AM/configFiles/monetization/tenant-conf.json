@@ -13,6 +13,10 @@
         "Roles": "admin"
       },
       {
+        "Name": "apim:api_generate_key",
+        "Roles": "admin,Internal/creator"
+      },
+      {
         "Name": "apim:api_view",
         "Roles": "admin"
       },

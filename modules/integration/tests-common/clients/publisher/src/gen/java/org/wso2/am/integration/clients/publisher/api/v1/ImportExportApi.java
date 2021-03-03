@@ -60,9 +60,11 @@ public class ImportExportApi {
      * @param apiId UUID of the API (optional)
      * @param name API Name  (optional)
      * @param version Version of the API  (optional)
+     * @param revisionNumber Revision number of the API artifact  (optional)
      * @param providerName Provider name of the API  (optional)
      * @param format Format of output documents. Can be YAML or JSON.  (optional)
      * @param preserveStatus Preserve API Status on export  (optional)
+     * @param latestRevision Export the latest revision of the API  (optional, default to false)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -74,7 +76,7 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call exportAPICall(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call exportAPICall(String apiId, String name, String version, String revisionNumber, String providerName, String format, Boolean preserveStatus, Boolean latestRevision, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -94,6 +96,10 @@ public class ImportExportApi {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("version", version));
         }
 
+        if (revisionNumber != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("revisionNumber", revisionNumber));
+        }
+
         if (providerName != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("providerName", providerName));
         }
@@ -104,6 +110,10 @@ public class ImportExportApi {
 
         if (preserveStatus != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveStatus", preserveStatus));
+        }
+
+        if (latestRevision != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("latestRevision", latestRevision));
         }
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
@@ -128,10 +138,10 @@ public class ImportExportApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call exportAPIValidateBeforeCall(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call exportAPIValidateBeforeCall(String apiId, String name, String version, String revisionNumber, String providerName, String format, Boolean preserveStatus, Boolean latestRevision, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = exportAPICall(apiId, name, version, providerName, format, preserveStatus, _callback);
+        okhttp3.Call localVarCall = exportAPICall(apiId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision, _callback);
         return localVarCall;
 
     }
@@ -142,9 +152,11 @@ public class ImportExportApi {
      * @param apiId UUID of the API (optional)
      * @param name API Name  (optional)
      * @param version Version of the API  (optional)
+     * @param revisionNumber Revision number of the API artifact  (optional)
      * @param providerName Provider name of the API  (optional)
      * @param format Format of output documents. Can be YAML or JSON.  (optional)
      * @param preserveStatus Preserve API Status on export  (optional)
+     * @param latestRevision Export the latest revision of the API  (optional, default to false)
      * @return File
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -155,8 +167,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public File exportAPI(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
-        ApiResponse<File> localVarResp = exportAPIWithHttpInfo(apiId, name, version, providerName, format, preserveStatus);
+    public File exportAPI(String apiId, String name, String version, String revisionNumber, String providerName, String format, Boolean preserveStatus, Boolean latestRevision) throws ApiException {
+        ApiResponse<File> localVarResp = exportAPIWithHttpInfo(apiId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision);
         return localVarResp.getData();
     }
 
@@ -166,9 +178,11 @@ public class ImportExportApi {
      * @param apiId UUID of the API (optional)
      * @param name API Name  (optional)
      * @param version Version of the API  (optional)
+     * @param revisionNumber Revision number of the API artifact  (optional)
      * @param providerName Provider name of the API  (optional)
      * @param format Format of output documents. Can be YAML or JSON.  (optional)
      * @param preserveStatus Preserve API Status on export  (optional)
+     * @param latestRevision Export the latest revision of the API  (optional, default to false)
      * @return ApiResponse&lt;File&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -179,8 +193,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<File> exportAPIWithHttpInfo(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
-        okhttp3.Call localVarCall = exportAPIValidateBeforeCall(apiId, name, version, providerName, format, preserveStatus, null);
+    public ApiResponse<File> exportAPIWithHttpInfo(String apiId, String name, String version, String revisionNumber, String providerName, String format, Boolean preserveStatus, Boolean latestRevision) throws ApiException {
+        okhttp3.Call localVarCall = exportAPIValidateBeforeCall(apiId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision, null);
         Type localVarReturnType = new TypeToken<File>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -191,9 +205,11 @@ public class ImportExportApi {
      * @param apiId UUID of the API (optional)
      * @param name API Name  (optional)
      * @param version Version of the API  (optional)
+     * @param revisionNumber Revision number of the API artifact  (optional)
      * @param providerName Provider name of the API  (optional)
      * @param format Format of output documents. Can be YAML or JSON.  (optional)
      * @param preserveStatus Preserve API Status on export  (optional)
+     * @param latestRevision Export the latest revision of the API  (optional, default to false)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -205,9 +221,9 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call exportAPIAsync(String apiId, String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback<File> _callback) throws ApiException {
+    public okhttp3.Call exportAPIAsync(String apiId, String name, String version, String revisionNumber, String providerName, String format, Boolean preserveStatus, Boolean latestRevision, final ApiCallback<File> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = exportAPIValidateBeforeCall(apiId, name, version, providerName, format, preserveStatus, _callback);
+        okhttp3.Call localVarCall = exportAPIValidateBeforeCall(apiId, name, version, revisionNumber, providerName, format, preserveStatus, latestRevision, _callback);
         Type localVarReturnType = new TypeToken<File>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -217,8 +233,10 @@ public class ImportExportApi {
      * @param name API Product Name  (optional)
      * @param version Version of the API Product  (optional)
      * @param providerName Provider name of the API Product  (optional)
+     * @param revisionNumber Revision number of the API Product  (optional)
      * @param format Format of output documents. Can be YAML or JSON.  (optional)
      * @param preserveStatus Preserve API Product Status on export  (optional)
+     * @param latestRevision Export the latest revision of the API Product  (optional, default to false)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -230,7 +248,7 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call exportAPIProductCall(String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call exportAPIProductCall(String name, String version, String providerName, String revisionNumber, String format, Boolean preserveStatus, Boolean latestRevision, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -250,12 +268,20 @@ public class ImportExportApi {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("providerName", providerName));
         }
 
+        if (revisionNumber != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("revisionNumber", revisionNumber));
+        }
+
         if (format != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("format", format));
         }
 
         if (preserveStatus != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveStatus", preserveStatus));
+        }
+
+        if (latestRevision != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("latestRevision", latestRevision));
         }
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
@@ -280,10 +306,10 @@ public class ImportExportApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call exportAPIProductValidateBeforeCall(String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call exportAPIProductValidateBeforeCall(String name, String version, String providerName, String revisionNumber, String format, Boolean preserveStatus, Boolean latestRevision, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = exportAPIProductCall(name, version, providerName, format, preserveStatus, _callback);
+        okhttp3.Call localVarCall = exportAPIProductCall(name, version, providerName, revisionNumber, format, preserveStatus, latestRevision, _callback);
         return localVarCall;
 
     }
@@ -294,8 +320,10 @@ public class ImportExportApi {
      * @param name API Product Name  (optional)
      * @param version Version of the API Product  (optional)
      * @param providerName Provider name of the API Product  (optional)
+     * @param revisionNumber Revision number of the API Product  (optional)
      * @param format Format of output documents. Can be YAML or JSON.  (optional)
      * @param preserveStatus Preserve API Product Status on export  (optional)
+     * @param latestRevision Export the latest revision of the API Product  (optional, default to false)
      * @return File
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -306,8 +334,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public File exportAPIProduct(String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
-        ApiResponse<File> localVarResp = exportAPIProductWithHttpInfo(name, version, providerName, format, preserveStatus);
+    public File exportAPIProduct(String name, String version, String providerName, String revisionNumber, String format, Boolean preserveStatus, Boolean latestRevision) throws ApiException {
+        ApiResponse<File> localVarResp = exportAPIProductWithHttpInfo(name, version, providerName, revisionNumber, format, preserveStatus, latestRevision);
         return localVarResp.getData();
     }
 
@@ -317,8 +345,10 @@ public class ImportExportApi {
      * @param name API Product Name  (optional)
      * @param version Version of the API Product  (optional)
      * @param providerName Provider name of the API Product  (optional)
+     * @param revisionNumber Revision number of the API Product  (optional)
      * @param format Format of output documents. Can be YAML or JSON.  (optional)
      * @param preserveStatus Preserve API Product Status on export  (optional)
+     * @param latestRevision Export the latest revision of the API Product  (optional, default to false)
      * @return ApiResponse&lt;File&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -329,8 +359,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<File> exportAPIProductWithHttpInfo(String name, String version, String providerName, String format, Boolean preserveStatus) throws ApiException {
-        okhttp3.Call localVarCall = exportAPIProductValidateBeforeCall(name, version, providerName, format, preserveStatus, null);
+    public ApiResponse<File> exportAPIProductWithHttpInfo(String name, String version, String providerName, String revisionNumber, String format, Boolean preserveStatus, Boolean latestRevision) throws ApiException {
+        okhttp3.Call localVarCall = exportAPIProductValidateBeforeCall(name, version, providerName, revisionNumber, format, preserveStatus, latestRevision, null);
         Type localVarReturnType = new TypeToken<File>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -341,8 +371,10 @@ public class ImportExportApi {
      * @param name API Product Name  (optional)
      * @param version Version of the API Product  (optional)
      * @param providerName Provider name of the API Product  (optional)
+     * @param revisionNumber Revision number of the API Product  (optional)
      * @param format Format of output documents. Can be YAML or JSON.  (optional)
      * @param preserveStatus Preserve API Product Status on export  (optional)
+     * @param latestRevision Export the latest revision of the API Product  (optional, default to false)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -354,9 +386,9 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call exportAPIProductAsync(String name, String version, String providerName, String format, Boolean preserveStatus, final ApiCallback<File> _callback) throws ApiException {
+    public okhttp3.Call exportAPIProductAsync(String name, String version, String providerName, String revisionNumber, String format, Boolean preserveStatus, Boolean latestRevision, final ApiCallback<File> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = exportAPIProductValidateBeforeCall(name, version, providerName, format, preserveStatus, _callback);
+        okhttp3.Call localVarCall = exportAPIProductValidateBeforeCall(name, version, providerName, revisionNumber, format, preserveStatus, latestRevision, _callback);
         Type localVarReturnType = new TypeToken<File>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -365,6 +397,7 @@ public class ImportExportApi {
      * Build call for importAPI
      * @param file Zip archive consisting on exported api configuration (required)
      * @param preserveProvider Preserve Original Provider of the API. This is the user choice to keep or replace the API provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
      * @param overwrite Whether to update the API or not. This is used when updating already existing APIs  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -379,7 +412,7 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call importAPICall(File file, Boolean preserveProvider, Boolean overwrite, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call importAPICall(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean overwrite, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -389,6 +422,10 @@ public class ImportExportApi {
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         if (preserveProvider != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveProvider", preserveProvider));
+        }
+
+        if (rotateRevision != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("rotateRevision", rotateRevision));
         }
 
         if (overwrite != null) {
@@ -421,7 +458,7 @@ public class ImportExportApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call importAPIValidateBeforeCall(File file, Boolean preserveProvider, Boolean overwrite, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call importAPIValidateBeforeCall(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean overwrite, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'file' is set
         if (file == null) {
@@ -429,7 +466,7 @@ public class ImportExportApi {
         }
         
 
-        okhttp3.Call localVarCall = importAPICall(file, preserveProvider, overwrite, _callback);
+        okhttp3.Call localVarCall = importAPICall(file, preserveProvider, rotateRevision, overwrite, _callback);
         return localVarCall;
 
     }
@@ -439,6 +476,7 @@ public class ImportExportApi {
      * This operation can be used to import an API. 
      * @param file Zip archive consisting on exported api configuration (required)
      * @param preserveProvider Preserve Original Provider of the API. This is the user choice to keep or replace the API provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
      * @param overwrite Whether to update the API or not. This is used when updating already existing APIs  (optional)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -451,8 +489,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public void importAPI(File file, Boolean preserveProvider, Boolean overwrite) throws ApiException {
-        importAPIWithHttpInfo(file, preserveProvider, overwrite);
+    public void importAPI(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean overwrite) throws ApiException {
+        importAPIWithHttpInfo(file, preserveProvider, rotateRevision, overwrite);
     }
 
     /**
@@ -460,6 +498,7 @@ public class ImportExportApi {
      * This operation can be used to import an API. 
      * @param file Zip archive consisting on exported api configuration (required)
      * @param preserveProvider Preserve Original Provider of the API. This is the user choice to keep or replace the API provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
      * @param overwrite Whether to update the API or not. This is used when updating already existing APIs  (optional)
      * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -473,8 +512,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> importAPIWithHttpInfo(File file, Boolean preserveProvider, Boolean overwrite) throws ApiException {
-        okhttp3.Call localVarCall = importAPIValidateBeforeCall(file, preserveProvider, overwrite, null);
+    public ApiResponse<Void> importAPIWithHttpInfo(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean overwrite) throws ApiException {
+        okhttp3.Call localVarCall = importAPIValidateBeforeCall(file, preserveProvider, rotateRevision, overwrite, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -483,6 +522,7 @@ public class ImportExportApi {
      * This operation can be used to import an API. 
      * @param file Zip archive consisting on exported api configuration (required)
      * @param preserveProvider Preserve Original Provider of the API. This is the user choice to keep or replace the API provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
      * @param overwrite Whether to update the API or not. This is used when updating already existing APIs  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -497,9 +537,9 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call importAPIAsync(File file, Boolean preserveProvider, Boolean overwrite, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call importAPIAsync(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean overwrite, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = importAPIValidateBeforeCall(file, preserveProvider, overwrite, _callback);
+        okhttp3.Call localVarCall = importAPIValidateBeforeCall(file, preserveProvider, rotateRevision, overwrite, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
@@ -507,6 +547,7 @@ public class ImportExportApi {
      * Build call for importAPIProduct
      * @param file Zip archive consisting on exported API Product configuration  (required)
      * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
      * @param importAPIs Whether to import the dependent APIs or not.  (optional)
      * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
      * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
@@ -523,7 +564,7 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call importAPIProductCall(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call importAPIProductCall(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -533,6 +574,10 @@ public class ImportExportApi {
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         if (preserveProvider != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("preserveProvider", preserveProvider));
+        }
+
+        if (rotateRevision != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("rotateRevision", rotateRevision));
         }
 
         if (importAPIs != null) {
@@ -573,7 +618,7 @@ public class ImportExportApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call importAPIProductValidateBeforeCall(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call importAPIProductValidateBeforeCall(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'file' is set
         if (file == null) {
@@ -581,7 +626,7 @@ public class ImportExportApi {
         }
         
 
-        okhttp3.Call localVarCall = importAPIProductCall(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs, _callback);
+        okhttp3.Call localVarCall = importAPIProductCall(file, preserveProvider, rotateRevision, importAPIs, overwriteAPIProduct, overwriteAPIs, _callback);
         return localVarCall;
 
     }
@@ -591,6 +636,7 @@ public class ImportExportApi {
      * This operation can be used to import an API Product. 
      * @param file Zip archive consisting on exported API Product configuration  (required)
      * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
      * @param importAPIs Whether to import the dependent APIs or not.  (optional)
      * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
      * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
@@ -605,8 +651,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public void importAPIProduct(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs) throws ApiException {
-        importAPIProductWithHttpInfo(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs);
+    public void importAPIProduct(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs) throws ApiException {
+        importAPIProductWithHttpInfo(file, preserveProvider, rotateRevision, importAPIs, overwriteAPIProduct, overwriteAPIs);
     }
 
     /**
@@ -614,6 +660,7 @@ public class ImportExportApi {
      * This operation can be used to import an API Product. 
      * @param file Zip archive consisting on exported API Product configuration  (required)
      * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
      * @param importAPIs Whether to import the dependent APIs or not.  (optional)
      * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
      * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
@@ -629,8 +676,8 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> importAPIProductWithHttpInfo(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs) throws ApiException {
-        okhttp3.Call localVarCall = importAPIProductValidateBeforeCall(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs, null);
+    public ApiResponse<Void> importAPIProductWithHttpInfo(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs) throws ApiException {
+        okhttp3.Call localVarCall = importAPIProductValidateBeforeCall(file, preserveProvider, rotateRevision, importAPIs, overwriteAPIProduct, overwriteAPIs, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -639,6 +686,7 @@ public class ImportExportApi {
      * This operation can be used to import an API Product. 
      * @param file Zip archive consisting on exported API Product configuration  (required)
      * @param preserveProvider Preserve Original Provider of the API Product. This is the user choice to keep or replace the API Product provider  (optional)
+     * @param rotateRevision Once the revision max limit reached, undeploy and delete the earliest revision and create a new revision  (optional)
      * @param importAPIs Whether to import the dependent APIs or not.  (optional)
      * @param overwriteAPIProduct Whether to update the API Product or not. This is used when updating already existing API Products.  (optional)
      * @param overwriteAPIs Whether to update the dependent APIs or not. This is used when updating already existing dependent APIs of an API Product.  (optional)
@@ -655,9 +703,9 @@ public class ImportExportApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call importAPIProductAsync(File file, Boolean preserveProvider, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call importAPIProductAsync(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = importAPIProductValidateBeforeCall(file, preserveProvider, importAPIs, overwriteAPIProduct, overwriteAPIs, _callback);
+        okhttp3.Call localVarCall = importAPIProductValidateBeforeCall(file, preserveProvider, rotateRevision, importAPIs, overwriteAPIProduct, overwriteAPIs, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
