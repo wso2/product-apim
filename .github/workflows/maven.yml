@@ -18,7 +18,14 @@ jobs:
         node-version: '10.x'
     - name: Build product-apim with Test.
       run: mvn clean install --file pom.xml
+      env:
+        PRODUCT_APIM_TESTS: apim-store-tests, apim-integration-tests-graphql
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.2.1
       with:
         flags: integration_tests
+    - name: Publish Test Report
+      if: ${{ always() }}
+      uses: scacap/action-surefire-report@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
