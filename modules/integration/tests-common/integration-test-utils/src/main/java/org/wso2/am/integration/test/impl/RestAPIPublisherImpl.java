@@ -26,6 +26,7 @@ import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
@@ -44,6 +45,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -76,6 +78,14 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.PatchRequestBodyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.PostRequestBodyDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -110,6 +120,7 @@ public class RestAPIPublisherImpl {
     public GraphQlSchemaApi graphQlSchemaApi = new GraphQlSchemaApi();
     public GraphQlSchemaIndividualApi graphQlSchemaIndividualApi = new GraphQlSchemaIndividualApi();
     public ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
+    public CommentsApi commentsApi = new CommentsApi();
     public RolesApi rolesApi = new RolesApi();
     public ValidationApi validationApi = new ValidationApi();
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
@@ -156,6 +167,7 @@ public class RestAPIPublisherImpl {
         apiPublisherClient.setConnectTimeout(600000);
         apiPublisherClient.setWriteTimeout(600000);
         apIsApi.setApiClient(apiPublisherClient);
+        commentsApi.setApiClient(apiPublisherClient);
 	    apiProductsApi.setApiClient(apiPublisherClient);
 	    apiRevisionsApi.setApiClient(apiPublisherClient);
 	    apiProductRevisionsApi.setApiClient(apiPublisherClient);
@@ -1631,4 +1643,160 @@ public class RestAPIPublisherImpl {
     public ApiResponse<APIKeyDTO> generateInternalApiKey(String apiId) throws ApiException {
         return apIsApi.generateInternalAPIKeyWithHttpInfo(apiId);
     }
+    /**
+     * Add comment to given API
+     *
+     * @param apiId   - api Id
+     * @param comment - comment to  add
+     * @param category - category of the comment
+     * @param replyTo - comment id of the root comment to add replies
+     * @return - http response of add comment
+     * @throws ApiException - throws if add comment fails
+     */
+
+    public HttpResponse addComment(String apiId, String comment, String category, String replyTo) throws ApiException {
+        PostRequestBodyDTO postRequestBodyDTO = new PostRequestBodyDTO();
+        postRequestBodyDTO.setContent(comment);
+        postRequestBodyDTO.setCategory(category);
+        Gson gson = new Gson();
+        CommentDTO commentDTO = commentsApi.addCommentToAPI(apiId,postRequestBodyDTO,replyTo);
+        HttpResponse response = null;
+        if (commentDTO != null) {
+            response = new HttpResponse(gson.toJson(commentDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get Comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo,
+                                   Integer limit, Integer offset) throws ApiException {
+        CommentDTO commentDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null,
+                    includeCommentorInfo, limit, offset);
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (StringUtils.isNotEmpty(commentDTO.getId())) {
+            response = new HttpResponse(gson.toJson(commentDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get all the comments from given API
+     *
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getComments(String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit,
+                                    Integer offset) throws ApiException {
+        CommentListDTO commentListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            commentListDTO = commentsApi.getAllCommentsOfAPI(apiId, tenantDomain, limit, offset, includeCommentorInfo);
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (commentListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(commentListDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get replies of a comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset    - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getReplies(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit, Integer offset)
+            throws ApiException {
+        CommentListDTO commentListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+
+        try {
+            commentListDTO = commentsApi.getRepliesOfComment(commentId, apiId, tenantDomain, limit, offset, null, includeCommentorInfo);
+
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (commentListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(commentListDTO), 200);
+        }
+
+        return response;
+    }
+
+    /**
+     * Get Comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param comment - comment to  add
+     * @param category - category of the comment
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse editComment(String commentId, String apiId, String comment, String category) throws
+            ApiException {
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            PatchRequestBodyDTO patchRequestBodyDTO = new PatchRequestBodyDTO();
+            patchRequestBodyDTO.setCategory(category);
+            patchRequestBodyDTO.setContent(comment);
+
+            CommentDTO editedCommentDTO = commentsApi.editCommentOfAPI(commentId,apiId,patchRequestBodyDTO);
+            if (editedCommentDTO != null) {
+                response = new HttpResponse(gson.toJson(editedCommentDTO), 201);
+            }
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
+    }
+
+    /**
+     * Remove comment in given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @throws ApiException - throws if remove comment fails
+     */
+    public HttpResponse removeComment(String commentId, String apiId) throws ApiException {
+        HttpResponse response;
+        try {
+            commentsApi.deleteComment(commentId, apiId, null);
+            response = new HttpResponse("Successfully deleted the comment", 200);
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            response = new HttpResponse("Failed to delete the comment", e.getCode());
+        }
+        return response;
+    }
+
+
 }

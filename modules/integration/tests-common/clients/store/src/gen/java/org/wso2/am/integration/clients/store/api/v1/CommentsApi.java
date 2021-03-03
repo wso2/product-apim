@@ -30,6 +30,8 @@ import java.io.IOException;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.PatchRequestBodyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.PostRequestBodyDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -59,7 +61,8 @@ public class CommentsApi {
     /**
      * Build call for addCommentToAPI
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param commentDTO Comment object that should to be added  (required)
+     * @param postRequestBodyDTO  (required)
+     * @param replyTo ID of the parent comment.  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -72,8 +75,8 @@ public class CommentsApi {
         <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call addCommentToAPICall(String apiId, CommentDTO commentDTO, final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = commentDTO;
+    public okhttp3.Call addCommentToAPICall(String apiId, PostRequestBodyDTO postRequestBodyDTO, String replyTo, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = postRequestBodyDTO;
 
         // create path and map variables
         String localVarPath = "/apis/{apiId}/comments"
@@ -81,6 +84,10 @@ public class CommentsApi {
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (replyTo != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("replyTo", replyTo));
+        }
+
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
@@ -103,20 +110,20 @@ public class CommentsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call addCommentToAPIValidateBeforeCall(String apiId, CommentDTO commentDTO, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call addCommentToAPIValidateBeforeCall(String apiId, PostRequestBodyDTO postRequestBodyDTO, String replyTo, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling addCommentToAPI(Async)");
         }
         
-        // verify the required parameter 'commentDTO' is set
-        if (commentDTO == null) {
-            throw new ApiException("Missing the required parameter 'commentDTO' when calling addCommentToAPI(Async)");
+        // verify the required parameter 'postRequestBodyDTO' is set
+        if (postRequestBodyDTO == null) {
+            throw new ApiException("Missing the required parameter 'postRequestBodyDTO' when calling addCommentToAPI(Async)");
         }
         
 
-        okhttp3.Call localVarCall = addCommentToAPICall(apiId, commentDTO, _callback);
+        okhttp3.Call localVarCall = addCommentToAPICall(apiId, postRequestBodyDTO, replyTo, _callback);
         return localVarCall;
 
     }
@@ -125,7 +132,8 @@ public class CommentsApi {
      * Add an API Comment
      * 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param commentDTO Comment object that should to be added  (required)
+     * @param postRequestBodyDTO  (required)
+     * @param replyTo ID of the parent comment.  (optional)
      * @return CommentDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -137,8 +145,8 @@ public class CommentsApi {
         <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public CommentDTO addCommentToAPI(String apiId, CommentDTO commentDTO) throws ApiException {
-        ApiResponse<CommentDTO> localVarResp = addCommentToAPIWithHttpInfo(apiId, commentDTO);
+    public CommentDTO addCommentToAPI(String apiId, PostRequestBodyDTO postRequestBodyDTO, String replyTo) throws ApiException {
+        ApiResponse<CommentDTO> localVarResp = addCommentToAPIWithHttpInfo(apiId, postRequestBodyDTO, replyTo);
         return localVarResp.getData();
     }
 
@@ -146,7 +154,8 @@ public class CommentsApi {
      * Add an API Comment
      * 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param commentDTO Comment object that should to be added  (required)
+     * @param postRequestBodyDTO  (required)
+     * @param replyTo ID of the parent comment.  (optional)
      * @return ApiResponse&lt;CommentDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -158,8 +167,8 @@ public class CommentsApi {
         <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<CommentDTO> addCommentToAPIWithHttpInfo(String apiId, CommentDTO commentDTO) throws ApiException {
-        okhttp3.Call localVarCall = addCommentToAPIValidateBeforeCall(apiId, commentDTO, null);
+    public ApiResponse<CommentDTO> addCommentToAPIWithHttpInfo(String apiId, PostRequestBodyDTO postRequestBodyDTO, String replyTo) throws ApiException {
+        okhttp3.Call localVarCall = addCommentToAPIValidateBeforeCall(apiId, postRequestBodyDTO, replyTo, null);
         Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -168,7 +177,8 @@ public class CommentsApi {
      * Add an API Comment (asynchronously)
      * 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param commentDTO Comment object that should to be added  (required)
+     * @param postRequestBodyDTO  (required)
+     * @param replyTo ID of the parent comment.  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -181,9 +191,9 @@ public class CommentsApi {
         <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call addCommentToAPIAsync(String apiId, CommentDTO commentDTO, final ApiCallback<CommentDTO> _callback) throws ApiException {
+    public okhttp3.Call addCommentToAPIAsync(String apiId, PostRequestBodyDTO postRequestBodyDTO, String replyTo, final ApiCallback<CommentDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = addCommentToAPIValidateBeforeCall(apiId, commentDTO, _callback);
+        okhttp3.Call localVarCall = addCommentToAPIValidateBeforeCall(apiId, postRequestBodyDTO, replyTo, _callback);
         Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -319,6 +329,152 @@ public class CommentsApi {
 
         okhttp3.Call localVarCall = deleteCommentValidateBeforeCall(commentId, apiId, ifMatch, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for editCommentOfAPI
+     * @param commentId Comment Id  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param patchRequestBodyDTO  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment updated.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call editCommentOfAPICall(String commentId, String apiId, PatchRequestBodyDTO patchRequestBodyDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = patchRequestBodyDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/comments/{commentId}"
+            .replaceAll("\\{" + "commentId" + "\\}", localVarApiClient.escapeString(commentId.toString()))
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PATCH", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call editCommentOfAPIValidateBeforeCall(String commentId, String apiId, PatchRequestBodyDTO patchRequestBodyDTO, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'commentId' is set
+        if (commentId == null) {
+            throw new ApiException("Missing the required parameter 'commentId' when calling editCommentOfAPI(Async)");
+        }
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling editCommentOfAPI(Async)");
+        }
+        
+        // verify the required parameter 'patchRequestBodyDTO' is set
+        if (patchRequestBodyDTO == null) {
+            throw new ApiException("Missing the required parameter 'patchRequestBodyDTO' when calling editCommentOfAPI(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = editCommentOfAPICall(commentId, apiId, patchRequestBodyDTO, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Edit a comment
+     * Edit the individual comment 
+     * @param commentId Comment Id  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param patchRequestBodyDTO  (required)
+     * @return CommentDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment updated.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public CommentDTO editCommentOfAPI(String commentId, String apiId, PatchRequestBodyDTO patchRequestBodyDTO) throws ApiException {
+        ApiResponse<CommentDTO> localVarResp = editCommentOfAPIWithHttpInfo(commentId, apiId, patchRequestBodyDTO);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Edit a comment
+     * Edit the individual comment 
+     * @param commentId Comment Id  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param patchRequestBodyDTO  (required)
+     * @return ApiResponse&lt;CommentDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment updated.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<CommentDTO> editCommentOfAPIWithHttpInfo(String commentId, String apiId, PatchRequestBodyDTO patchRequestBodyDTO) throws ApiException {
+        okhttp3.Call localVarCall = editCommentOfAPIValidateBeforeCall(commentId, apiId, patchRequestBodyDTO, null);
+        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Edit a comment (asynchronously)
+     * Edit the individual comment 
+     * @param commentId Comment Id  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param patchRequestBodyDTO  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment updated.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 415 </td><td> Unsupported Media Type. The entity of the request was not in a supported format. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call editCommentOfAPIAsync(String commentId, String apiId, PatchRequestBodyDTO patchRequestBodyDTO, final ApiCallback<CommentDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = editCommentOfAPIValidateBeforeCall(commentId, apiId, patchRequestBodyDTO, _callback);
+        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
@@ -479,6 +635,8 @@ public class CommentsApi {
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param replyLimit Maximum size of replies array to return.  (optional, default to 25)
+     * @param replyOffset Starting point within the complete list of replies.  (optional, default to 0)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -492,7 +650,7 @@ public class CommentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getCommentOfAPICall(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getCommentOfAPICall(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -502,6 +660,191 @@ public class CommentsApi {
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (includeCommenterInfo != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("includeCommenterInfo", includeCommenterInfo));
+        }
+
+        if (replyLimit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("replyLimit", replyLimit));
+        }
+
+        if (replyOffset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("replyOffset", replyOffset));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getCommentOfAPIValidateBeforeCall(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'commentId' is set
+        if (commentId == null) {
+            throw new ApiException("Missing the required parameter 'commentId' when calling getCommentOfAPI(Async)");
+        }
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getCommentOfAPI(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getCommentOfAPICall(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Details of an API Comment
+     * Get the individual comment given by a username for a certain API. 
+     * @param commentId Comment Id  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param replyLimit Maximum size of replies array to return.  (optional, default to 25)
+     * @param replyOffset Starting point within the complete list of replies.  (optional, default to 0)
+     * @return CommentDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public CommentDTO getCommentOfAPI(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset) throws ApiException {
+        ApiResponse<CommentDTO> localVarResp = getCommentOfAPIWithHttpInfo(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get Details of an API Comment
+     * Get the individual comment given by a username for a certain API. 
+     * @param commentId Comment Id  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param replyLimit Maximum size of replies array to return.  (optional, default to 25)
+     * @param replyOffset Starting point within the complete list of replies.  (optional, default to 0)
+     * @return ApiResponse&lt;CommentDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<CommentDTO> getCommentOfAPIWithHttpInfo(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset) throws ApiException {
+        okhttp3.Call localVarCall = getCommentOfAPIValidateBeforeCall(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset, null);
+        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get Details of an API Comment (asynchronously)
+     * Get the individual comment given by a username for a certain API. 
+     * @param commentId Comment Id  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param replyLimit Maximum size of replies array to return.  (optional, default to 25)
+     * @param replyOffset Starting point within the complete list of replies.  (optional, default to 0)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getCommentOfAPIAsync(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, Integer replyLimit, Integer replyOffset, final ApiCallback<CommentDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getCommentOfAPIValidateBeforeCall(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset, _callback);
+        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for getRepliesOfComment
+     * @param commentId Comment Id  (required)
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Comment returned.  </td><td>  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  </td></tr>
+        <tr><td> 304 </td><td> Not Modified. Empty body because the client has already the latest version of the requested resource.  </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getRepliesOfCommentCall(String commentId, String apiId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/comments/{commentId}/replies"
+            .replaceAll("\\{" + "commentId" + "\\}", localVarApiClient.escapeString(commentId.toString()))
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (limit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
+        }
+
+        if (offset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
+        }
+
         if (includeCommenterInfo != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("includeCommenterInfo", includeCommenterInfo));
         }
@@ -536,33 +879,35 @@ public class CommentsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call getCommentOfAPIValidateBeforeCall(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getRepliesOfCommentValidateBeforeCall(String commentId, String apiId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'commentId' is set
         if (commentId == null) {
-            throw new ApiException("Missing the required parameter 'commentId' when calling getCommentOfAPI(Async)");
+            throw new ApiException("Missing the required parameter 'commentId' when calling getRepliesOfComment(Async)");
         }
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
-            throw new ApiException("Missing the required parameter 'apiId' when calling getCommentOfAPI(Async)");
+            throw new ApiException("Missing the required parameter 'apiId' when calling getRepliesOfComment(Async)");
         }
         
 
-        okhttp3.Call localVarCall = getCommentOfAPICall(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, _callback);
+        okhttp3.Call localVarCall = getRepliesOfCommentCall(commentId, apiId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Get Details of an API Comment
-     * Get the individual comment given by a username for a certain API. 
+     * Get replies of a comment
+     * Get replies of a comment 
      * @param commentId Comment Id  (required)
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
-     * @return CommentDTO
+     * @return CommentListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -574,20 +919,22 @@ public class CommentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public CommentDTO getCommentOfAPI(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo) throws ApiException {
-        ApiResponse<CommentDTO> localVarResp = getCommentOfAPIWithHttpInfo(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo);
+    public CommentListDTO getRepliesOfComment(String commentId, String apiId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo) throws ApiException {
+        ApiResponse<CommentListDTO> localVarResp = getRepliesOfCommentWithHttpInfo(commentId, apiId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo);
         return localVarResp.getData();
     }
 
     /**
-     * Get Details of an API Comment
-     * Get the individual comment given by a username for a certain API. 
+     * Get replies of a comment
+     * Get replies of a comment 
      * @param commentId Comment Id  (required)
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
-     * @return ApiResponse&lt;CommentDTO&gt;
+     * @return ApiResponse&lt;CommentListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -599,18 +946,20 @@ public class CommentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<CommentDTO> getCommentOfAPIWithHttpInfo(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo) throws ApiException {
-        okhttp3.Call localVarCall = getCommentOfAPIValidateBeforeCall(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, null);
-        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+    public ApiResponse<CommentListDTO> getRepliesOfCommentWithHttpInfo(String commentId, String apiId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo) throws ApiException {
+        okhttp3.Call localVarCall = getRepliesOfCommentValidateBeforeCall(commentId, apiId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo, null);
+        Type localVarReturnType = new TypeToken<CommentListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get Details of an API Comment (asynchronously)
-     * Get the individual comment given by a username for a certain API. 
+     * Get replies of a comment (asynchronously)
+     * Get replies of a comment 
      * @param commentId Comment Id  (required)
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param includeCommenterInfo Whether we need to display commentor details.  (optional, default to false)
      * @param _callback The callback to be executed when the API call finishes
@@ -626,10 +975,10 @@ public class CommentsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getCommentOfAPIAsync(String commentId, String apiId, String xWSO2Tenant, String ifNoneMatch, Boolean includeCommenterInfo, final ApiCallback<CommentDTO> _callback) throws ApiException {
+    public okhttp3.Call getRepliesOfCommentAsync(String commentId, String apiId, String xWSO2Tenant, Integer limit, Integer offset, String ifNoneMatch, Boolean includeCommenterInfo, final ApiCallback<CommentListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = getCommentOfAPIValidateBeforeCall(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, _callback);
-        Type localVarReturnType = new TypeToken<CommentDTO>(){}.getType();
+        okhttp3.Call localVarCall = getRepliesOfCommentValidateBeforeCall(commentId, apiId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo, _callback);
+        Type localVarReturnType = new TypeToken<CommentListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

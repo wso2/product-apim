@@ -6,13 +6,15 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addCommentToAPI**](CommentsApi.md#addCommentToAPI) | **POST** /apis/{apiId}/comments | Add an API Comment
 [**deleteComment**](CommentsApi.md#deleteComment) | **DELETE** /apis/{apiId}/comments/{commentId} | Delete an API Comment
+[**editCommentOfAPI**](CommentsApi.md#editCommentOfAPI) | **PATCH** /apis/{apiId}/comments/{commentId} | Edit a comment
 [**getAllCommentsOfAPI**](CommentsApi.md#getAllCommentsOfAPI) | **GET** /apis/{apiId}/comments | Retrieve API Comments
 [**getCommentOfAPI**](CommentsApi.md#getCommentOfAPI) | **GET** /apis/{apiId}/comments/{commentId} | Get Details of an API Comment
+[**getRepliesOfComment**](CommentsApi.md#getRepliesOfComment) | **GET** /apis/{apiId}/comments/{commentId}/replies | Get replies of a comment
 
 
 <a name="addCommentToAPI"></a>
 # **addCommentToAPI**
-> CommentDTO addCommentToAPI(apiId, commentDTO)
+> CommentDTO addCommentToAPI(apiId, postRequestBodyDTO, replyTo)
 
 Add an API Comment
 
@@ -37,9 +39,10 @@ public class Example {
 
     CommentsApi apiInstance = new CommentsApi(defaultClient);
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
-    CommentDTO commentDTO = new CommentDTO(); // CommentDTO | Comment object that should to be added 
+    PostRequestBodyDTO postRequestBodyDTO = new PostRequestBodyDTO(); // PostRequestBodyDTO | 
+    String replyTo = "replyTo_example"; // String | ID of the parent comment. 
     try {
-      CommentDTO result = apiInstance.addCommentToAPI(apiId, commentDTO);
+      CommentDTO result = apiInstance.addCommentToAPI(apiId, postRequestBodyDTO, replyTo);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling CommentsApi#addCommentToAPI");
@@ -57,7 +60,8 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **commentDTO** | [**CommentDTO**](CommentDTO.md)| Comment object that should to be added  |
+ **postRequestBodyDTO** | [**PostRequestBodyDTO**](PostRequestBodyDTO.md)|  |
+ **replyTo** | **String**| ID of the parent comment.  | [optional]
 
 ### Return type
 
@@ -152,6 +156,81 @@ null (empty response body)
 **401** | Unauthorized. The user is not authorized. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 
+<a name="editCommentOfAPI"></a>
+# **editCommentOfAPI**
+> CommentDTO editCommentOfAPI(commentId, apiId, patchRequestBodyDTO)
+
+Edit a comment
+
+Edit the individual comment 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.store.api.ApiClient;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.Configuration;
+import org.wso2.am.integration.clients.store.api.auth.*;
+import org.wso2.am.integration.clients.store.api.models.*;
+import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    CommentsApi apiInstance = new CommentsApi(defaultClient);
+    String commentId = "commentId_example"; // String | Comment Id 
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    PatchRequestBodyDTO patchRequestBodyDTO = new PatchRequestBodyDTO(); // PatchRequestBodyDTO | 
+    try {
+      CommentDTO result = apiInstance.editCommentOfAPI(commentId, apiId, patchRequestBodyDTO);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling CommentsApi#editCommentOfAPI");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **commentId** | **String**| Comment Id  |
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **patchRequestBodyDTO** | [**PatchRequestBodyDTO**](PatchRequestBodyDTO.md)|  |
+
+### Return type
+
+[**CommentDTO**](CommentDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Comment updated.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**401** | Unauthorized. The user is not authorized. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**415** | Unsupported Media Type. The entity of the request was not in a supported format. |  -  |
+
 <a name="getAllCommentsOfAPI"></a>
 # **getAllCommentsOfAPI**
 > CommentListDTO getAllCommentsOfAPI(apiId, xWSO2Tenant, limit, offset, includeCommenterInfo)
@@ -231,7 +310,7 @@ Name | Type | Description  | Notes
 
 <a name="getCommentOfAPI"></a>
 # **getCommentOfAPI**
-> CommentDTO getCommentOfAPI(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo)
+> CommentDTO getCommentOfAPI(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset)
 
 Get Details of an API Comment
 
@@ -262,8 +341,10 @@ public class Example {
     String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
     Boolean includeCommenterInfo = false; // Boolean | Whether we need to display commentor details. 
+    Integer replyLimit = 25; // Integer | Maximum size of replies array to return. 
+    Integer replyOffset = 0; // Integer | Starting point within the complete list of replies. 
     try {
-      CommentDTO result = apiInstance.getCommentOfAPI(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo);
+      CommentDTO result = apiInstance.getCommentOfAPI(commentId, apiId, xWSO2Tenant, ifNoneMatch, includeCommenterInfo, replyLimit, replyOffset);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling CommentsApi#getCommentOfAPI");
@@ -285,10 +366,95 @@ Name | Type | Description  | Notes
  **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  | [optional]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
  **includeCommenterInfo** | **Boolean**| Whether we need to display commentor details.  | [optional] [default to false]
+ **replyLimit** | **Integer**| Maximum size of replies array to return.  | [optional] [default to 25]
+ **replyOffset** | **Integer**| Starting point within the complete list of replies.  | [optional] [default to 0]
 
 ### Return type
 
 [**CommentDTO**](CommentDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Comment returned.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  |
+**304** | Not Modified. Empty body because the client has already the latest version of the requested resource.  |  -  |
+**401** | Unauthorized. The user is not authorized. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**406** | Not Acceptable. The requested media type is not supported. |  -  |
+
+<a name="getRepliesOfComment"></a>
+# **getRepliesOfComment**
+> CommentListDTO getRepliesOfComment(commentId, apiId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo)
+
+Get replies of a comment
+
+Get replies of a comment 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.store.api.ApiClient;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.Configuration;
+import org.wso2.am.integration.clients.store.api.auth.*;
+import org.wso2.am.integration.clients.store.api.models.*;
+import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    CommentsApi apiInstance = new CommentsApi(defaultClient);
+    String commentId = "commentId_example"; // String | Comment Id 
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
+    Integer limit = 25; // Integer | Maximum size of resource array to return. 
+    Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
+    String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
+    Boolean includeCommenterInfo = false; // Boolean | Whether we need to display commentor details. 
+    try {
+      CommentListDTO result = apiInstance.getRepliesOfComment(commentId, apiId, xWSO2Tenant, limit, offset, ifNoneMatch, includeCommenterInfo);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling CommentsApi#getRepliesOfComment");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **commentId** | **String**| Comment Id  |
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  | [optional]
+ **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
+ **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
+ **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
+ **includeCommenterInfo** | **Boolean**| Whether we need to display commentor details.  | [optional] [default to false]
+
+### Return type
+
+[**CommentListDTO**](CommentListDTO.md)
 
 ### Authorization
 

@@ -23,6 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommenterInfoDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
@@ -46,9 +47,76 @@ public class CommentDTO {
         @SerializedName(SERIALIZED_NAME_CREATED_BY)
             private String createdBy;
 
+        public static final String SERIALIZED_NAME_UPDATED_TIME = "updatedTime";
+        @SerializedName(SERIALIZED_NAME_UPDATED_TIME)
+            private String updatedTime;
+
+        public static final String SERIALIZED_NAME_CATEGORY = "category";
+        @SerializedName(SERIALIZED_NAME_CATEGORY)
+            private String category = "general";
+
+        public static final String SERIALIZED_NAME_PARENT_COMMENT_ID = "parentCommentId";
+        @SerializedName(SERIALIZED_NAME_PARENT_COMMENT_ID)
+            private String parentCommentId;
+
+            /**
+* Gets or Sets entryPoint
+*/
+    @JsonAdapter(EntryPointEnum.Adapter.class)
+public enum EntryPointEnum {
+        DEVPORTAL("DEVPORTAL"),
+        
+        PUBLISHER("PUBLISHER");
+
+private String value;
+
+EntryPointEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static EntryPointEnum fromValue(String value) {
+    for (EntryPointEnum b : EntryPointEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<EntryPointEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final EntryPointEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public EntryPointEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return EntryPointEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_ENTRY_POINT = "entryPoint";
+        @SerializedName(SERIALIZED_NAME_ENTRY_POINT)
+            private EntryPointEnum entryPoint;
+
         public static final String SERIALIZED_NAME_COMMENTER_INFO = "commenterInfo";
         @SerializedName(SERIALIZED_NAME_COMMENTER_INFO)
             private CommenterInfoDTO commenterInfo;
+
+        public static final String SERIALIZED_NAME_REPLIES = "replies";
+        @SerializedName(SERIALIZED_NAME_REPLIES)
+            private CommentListDTO replies;
 
 
         public CommentDTO id(String id) {
@@ -107,7 +175,7 @@ public class CommentDTO {
     * @return createdTime
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+      @ApiModelProperty(example = "2021-02-11-09:57:25", value = "")
     
     public String getCreatedTime() {
         return createdTime;
@@ -142,6 +210,98 @@ public class CommentDTO {
     }
 
 
+        public CommentDTO updatedTime(String updatedTime) {
+        
+        this.updatedTime = updatedTime;
+        return this;
+        }
+
+    /**
+        * Get updatedTime
+    * @return updatedTime
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "2021-02-12-19:57:25", value = "")
+    
+    public String getUpdatedTime() {
+        return updatedTime;
+    }
+
+
+    public void setUpdatedTime(String updatedTime) {
+        this.updatedTime = updatedTime;
+    }
+
+
+        public CommentDTO category(String category) {
+        
+        this.category = category;
+        return this;
+        }
+
+    /**
+        * Get category
+    * @return category
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getCategory() {
+        return category;
+    }
+
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+
+        public CommentDTO parentCommentId(String parentCommentId) {
+        
+        this.parentCommentId = parentCommentId;
+        return this;
+        }
+
+    /**
+        * Get parentCommentId
+    * @return parentCommentId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "6f38aea2-f41e-4ac9-b3f2-a9493d00ba97", value = "")
+    
+    public String getParentCommentId() {
+        return parentCommentId;
+    }
+
+
+    public void setParentCommentId(String parentCommentId) {
+        this.parentCommentId = parentCommentId;
+    }
+
+
+        public CommentDTO entryPoint(EntryPointEnum entryPoint) {
+        
+        this.entryPoint = entryPoint;
+        return this;
+        }
+
+    /**
+        * Get entryPoint
+    * @return entryPoint
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public EntryPointEnum getEntryPoint() {
+        return entryPoint;
+    }
+
+
+    public void setEntryPoint(EntryPointEnum entryPoint) {
+        this.entryPoint = entryPoint;
+    }
+
+
         public CommentDTO commenterInfo(CommenterInfoDTO commenterInfo) {
         
         this.commenterInfo = commenterInfo;
@@ -165,6 +325,29 @@ public class CommentDTO {
     }
 
 
+        public CommentDTO replies(CommentListDTO replies) {
+        
+        this.replies = replies;
+        return this;
+        }
+
+    /**
+        * Get replies
+    * @return replies
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public CommentListDTO getReplies() {
+        return replies;
+    }
+
+
+    public void setReplies(CommentListDTO replies) {
+        this.replies = replies;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -178,12 +361,17 @@ public class CommentDTO {
             Objects.equals(this.content, comment.content) &&
             Objects.equals(this.createdTime, comment.createdTime) &&
             Objects.equals(this.createdBy, comment.createdBy) &&
-            Objects.equals(this.commenterInfo, comment.commenterInfo);
+            Objects.equals(this.updatedTime, comment.updatedTime) &&
+            Objects.equals(this.category, comment.category) &&
+            Objects.equals(this.parentCommentId, comment.parentCommentId) &&
+            Objects.equals(this.entryPoint, comment.entryPoint) &&
+            Objects.equals(this.commenterInfo, comment.commenterInfo) &&
+            Objects.equals(this.replies, comment.replies);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, content, createdTime, createdBy, commenterInfo);
+        return Objects.hash(id, content, createdTime, createdBy, updatedTime, category, parentCommentId, entryPoint, commenterInfo, replies);
     }
 
 
@@ -195,7 +383,12 @@ sb.append("class CommentDTO {\n");
     sb.append("    content: ").append(toIndentedString(content)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
+    sb.append("    updatedTime: ").append(toIndentedString(updatedTime)).append("\n");
+    sb.append("    category: ").append(toIndentedString(category)).append("\n");
+    sb.append("    parentCommentId: ").append(toIndentedString(parentCommentId)).append("\n");
+    sb.append("    entryPoint: ").append(toIndentedString(entryPoint)).append("\n");
     sb.append("    commenterInfo: ").append(toIndentedString(commenterInfo)).append("\n");
+    sb.append("    replies: ").append(toIndentedString(replies)).append("\n");
 sb.append("}");
 return sb.toString();
 }
