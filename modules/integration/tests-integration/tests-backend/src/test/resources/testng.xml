@@ -108,7 +108,7 @@
             <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>-->
             <!--            <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>-->
             <!--            <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>-->
-<!--            <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.other.PublisherCommentTest"/>
             <!--            <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>-->
             <!--            <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>-->

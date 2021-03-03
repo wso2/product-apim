@@ -120,7 +120,6 @@ import static org.testng.Assert.assertNotEquals;
             assertEquals(addRootCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
             Gson getCommentsGson = new Gson();
-            String test1 = addRootCommentResponse.getData();
             CommentDTO addedRootCommentDTO = getCommentsGson.fromJson(addRootCommentResponse.getData(), CommentDTO.class);
             String rootCommentId = addedRootCommentDTO.getId();
             assertNotNull(rootCommentId, "Comment Id is null");

@@ -120,8 +120,7 @@ import static org.testng.Assert.assertNotEquals;
             assertEquals(addRootCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
             Gson getCommentsGson = new Gson();
-            String test1 = addRootCommentResponse.getData();
-            CommentDTO addedRootCommentDTO = getCommentsGson.fromJson(addRootCommentResponse.getData(), CommentDTO.class);
+            CommentDTO addedRootCommentDTO = getCommentsGson.fromJson(addRootCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
             String rootCommentId = addedRootCommentDTO.getId();
             assertNotNull(rootCommentId, "Comment Id is null");
             rootComments.add(rootCommentId);
@@ -138,7 +137,7 @@ import static org.testng.Assert.assertNotEquals;
             assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
             Gson getCommentsGson = new Gson();
-            CommentDTO addedCommentDTO = getCommentsGson.fromJson(addReplyCommentResponse.getData(), CommentDTO.class);
+            CommentDTO addedCommentDTO = getCommentsGson.fromJson(addReplyCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
             String replyCommentId = addedCommentDTO.getId();
             assertNotNull(replyCommentId, "Comment Id is null");
             replies.add(replyCommentId);
@@ -151,7 +150,7 @@ import static org.testng.Assert.assertNotEquals;
                 "Error retrieving comment");
         Gson getCommentWithRepliesGson = new Gson();
         CommentDTO commentWithRepliesCommentDTO = getCommentWithRepliesGson.fromJson(getCommentWithRepliesResponse
-                .getData(), CommentDTO.class);
+                .getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         assertEquals(commentWithRepliesCommentDTO.getContent(), "This is root comment 1",
                 "Comments do not match");
         assertEquals(commentWithRepliesCommentDTO.getCategory(), "general", "Comments do not match");
@@ -170,7 +169,7 @@ import static org.testng.Assert.assertNotEquals;
         assertEquals(getCommentsResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getCommentsGson = new Gson();
-        CommentListDTO commentListDTO = getCommentsGson.fromJson(getCommentsResponse.getData(), CommentListDTO.class);
+        CommentListDTO commentListDTO = getCommentsGson.fromJson(getCommentsResponse.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertEquals(commentListDTO.getCount().intValue(),5,"Root comments count do not match");
         for (CommentDTO rootCommentDTO: commentListDTO.getList()){
             assertEquals(rootCommentDTO.getCategory(), "general", "Comments do not match");
@@ -186,7 +185,7 @@ import static org.testng.Assert.assertNotEquals;
         assertEquals(getRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getRepliesGson = new Gson();
-        CommentListDTO replyListDTO = getRepliesGson.fromJson(getRepliesResponse.getData(), CommentListDTO.class);
+        CommentListDTO replyListDTO = getRepliesGson.fromJson(getRepliesResponse.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertEquals(replyListDTO.getCount().intValue(),4,"Replies count do not match");
         for (CommentDTO replyDTO: replyListDTO.getList()){
             assertEquals(replyDTO.getCategory(), "general", "Comments do not match");
@@ -203,7 +202,7 @@ import static org.testng.Assert.assertNotEquals;
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
                 "Response code mismatched");
         Gson editCommentGson = new Gson();
-        CommentDTO editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        CommentDTO editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         assertEquals(editCommentDTO.getContent(), "Edited root comment");
         assertEquals(editCommentDTO.getCategory(), "general");
         assertNotEquals(editCommentDTO.getUpdatedTime(),null);
@@ -215,7 +214,7 @@ import static org.testng.Assert.assertNotEquals;
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
                 "Response code mismatched");
         editCommentGson = new Gson();
-        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         assertEquals(editCommentDTO.getContent(), "Edited root comment");
         assertEquals(editCommentDTO.getCategory(), "bug fix");
         assertNotEquals(editCommentDTO.getUpdatedTime(),null);
@@ -228,7 +227,7 @@ import static org.testng.Assert.assertNotEquals;
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
                 "Response code mismatched");
         editCommentGson = new Gson();
-        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         assertEquals(editCommentDTO.getContent(), "Edited root comment 1");
         assertEquals(editCommentDTO.getCategory(), "general bug fix");
         assertNotEquals(editCommentDTO.getUpdatedTime(),null);
@@ -245,7 +244,7 @@ import static org.testng.Assert.assertNotEquals;
         assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         editCommentGson = new Gson();
-        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         assertEquals(editCommentDTO.getContent(), "Edited root comment 1");
         assertEquals(editCommentDTO.getCategory(), "general bug fix");
         assertNotEquals(editCommentDTO.getUpdatedTime(),null);
