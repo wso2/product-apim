@@ -28,7 +28,6 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
-//import org.wso2.am.integration.clients.publisher.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -62,9 +61,9 @@ import static org.testng.Assert.assertNotEquals;
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
                 new Object[] { TestUserMode.TENANT_ADMIN },
-//                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
-//                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
-//                new Object[] { TestUserMode.TENANT_EMAIL_USER },
+                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+                new Object[] { TestUserMode.TENANT_EMAIL_USER },
         };
     }
 
