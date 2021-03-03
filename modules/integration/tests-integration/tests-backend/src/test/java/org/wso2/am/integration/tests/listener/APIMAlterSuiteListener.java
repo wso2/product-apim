@@ -39,7 +39,7 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
                 List<XmlTest> newXMLTests = new ArrayList<>();
                 for(XmlTest test: suite.getTests()) {
                     for (String enabledTest: enabledTests) {
-                        if (enabledTest.equals(test.getName())) {
+                        if (enabledTest.trim().equals(test.getName().trim())) {
                             newXMLTests.add(test);
                         }
                     }
