@@ -22,8 +22,10 @@ import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.APICategoryDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
 
 /**
  * A collection of helper methods to aid Admin REST API related tests
@@ -147,6 +149,49 @@ public class AdminApiTestHelper {
                 "Label description does not match with the expected description");
         boolean isAccessUrlsEqual = actualLabel.getAccessUrls().equals(expectedLabel.getAccessUrls());
         Assert.assertTrue(isAccessUrlsEqual, "Access URLs does not match with the expected access URLs");
+    }
+
+    /**
+     * Verify whether the field values of the environment DTO contains the expected values.
+     *
+     * @param expectedEnv Expected environment which contains the expected field values.
+     * @param actualEnv   Environment object of which the field values should be verified.
+     */
+    public void verifyEnvironmentDTO(EnvironmentDTO expectedEnv, EnvironmentDTO actualEnv) {
+
+        Assert.assertEquals(actualEnv.getId(), expectedEnv.getId(),
+                "Environment ID does not match with the expected environment ID");
+        Assert.assertEquals(actualEnv.getName(), expectedEnv.getName(),
+                "Environment name does not match with the expected name");
+        Assert.assertEquals(actualEnv.getDisplayName(), expectedEnv.getDisplayName(),
+                "Environment display name does not match with the expected display name");
+        Assert.assertEquals(actualEnv.getDescription(), expectedEnv.getDescription(),
+                "Environment description does not match with the expected description");
+        Assert.assertEquals(actualEnv.isIsReadOnly(), expectedEnv.isIsReadOnly());
+        Assert.assertEquals(actualEnv.getVhosts(), expectedEnv.getVhosts(),
+                "Vhosts of environment does not match with the expected vhosts");
+    }
+
+    /**
+     * Verify whether the field values of the vhost DTO contains the expected values.
+     *
+     * @param expectedVhost Expected vhost which contains the expected field values.
+     * @param actualVhost   Vhost object of which the field values should be verified.
+     */
+    public void verifyVhostDTO(VHostDTO expectedVhost, VHostDTO actualVhost) {
+
+        Assert.assertEquals(actualVhost.getHost(), expectedVhost.getHost(),
+                "Host of vhost does not match with the expected host");
+        Assert.assertEquals(actualVhost.getHttpContext(), expectedVhost.getHttpContext(),
+                "HTTP context of vhost does not match with the expected HTTP context");
+        Assert.assertEquals(actualVhost.getHttpPort(), expectedVhost.getHttpPort(),
+                "HTTP port of vhost does not match with the expected HTTP port");
+        Assert.assertEquals(actualVhost.getHttpsPort(), expectedVhost.getHttpsPort(),
+                "HTTPS port of vhost does not match with the expected HTTPS port");
+        Assert.assertEquals(actualVhost.getWsPort(), expectedVhost.getWsPort(),
+                "WS port of vhost does not match with the expected WS port");
+        Assert.assertEquals(actualVhost.getWssPort(), expectedVhost.getWssPort(),
+                "WSS port of vhost does not match with the expected WSS port");
     }
 
     /**

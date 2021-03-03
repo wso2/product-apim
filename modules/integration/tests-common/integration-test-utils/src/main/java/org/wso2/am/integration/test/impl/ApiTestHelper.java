@@ -93,31 +93,17 @@ public class ApiTestHelper {
         String swaggerPath = resourceLocation + File.separator + SWAGGER_FOLDER +
                 File.separator + "customer-info-api.yaml";
 
-        File definition = new File(swaggerPath);
-
-        JSONObject endpoints = new JSONObject();
-        endpoints.put("url", backendUrl);
-
-        JSONObject endpointConfig = new JSONObject();
-        endpointConfig.put("endpoint_type", "http");
-        endpointConfig.put("production_endpoints", endpoints);
-        endpointConfig.put("sandbox_endpoints", endpoints);
-
-        String uniqueName = UUID.randomUUID().toString();
-        JSONObject apiProperties = new JSONObject();
-        apiProperties.put("name", uniqueName);
-        apiProperties.put("context", "/" + uniqueName);
-        apiProperties.put("version", "1.0.0");
-        apiProperties.put("provider", "admin");
-        apiProperties.put("endpointConfig", endpointConfig);
-
-        return restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
+        return getApiDTO(backendUrl, swaggerPath);
     }
 
     public APIDTO createApiTwo(String backendUrl) throws ApiException {
         String swaggerPath = resourceLocation + File.separator + SWAGGER_FOLDER +
                 File.separator + "leasing-api.yaml";
 
+        return getApiDTO(backendUrl, swaggerPath);
+    }
+
+    private APIDTO getApiDTO(String backendUrl, String swaggerPath) throws ApiException {
         File definition = new File(swaggerPath);
 
         JSONObject endpoints = new JSONObject();
@@ -129,11 +115,16 @@ public class ApiTestHelper {
         endpointConfig.put("sandbox_endpoints", endpoints);
 
         String uniqueName = UUID.randomUUID().toString();
+        String provider = "admin";
+        if (!"carbon.super".equals(tenantDomain)) {
+            provider = "admin@" + tenantDomain;
+        }
+
         JSONObject apiProperties = new JSONObject();
         apiProperties.put("name", uniqueName);
         apiProperties.put("context", "/" + uniqueName);
         apiProperties.put("version", "1.0.0");
-        apiProperties.put("provider", "admin");
+        apiProperties.put("provider", provider);
         apiProperties.put("endpointConfig", endpointConfig);
 
         return restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
@@ -153,12 +144,17 @@ public class ApiTestHelper {
         endpointConfig.put("production_endpoints", endpoints);
         endpointConfig.put("sandbox_endpoints", endpoints);
 
+        String provider = "admin";
+        if (!"carbon.super".equals(tenantDomain)) {
+            provider = "admin@" + tenantDomain;
+        }
+
         String uniqueName = UUID.randomUUID().toString();
         JSONObject apiProperties = new JSONObject();
         apiProperties.put("name", uniqueName);
         apiProperties.put("context", "/" + uniqueName);
         apiProperties.put("version", "1.0.0");
-        apiProperties.put("provider", "admin");
+        apiProperties.put("provider", provider);
         apiProperties.put("endpointConfig", endpointConfig);
         apiProperties.put("visibility", "RESTRICTED");
         apiProperties.put("visibleRoles", Collections.singletonList(role));

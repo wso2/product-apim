@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EventCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
@@ -38,7 +39,9 @@ public class ThrottleLimitDTO {
 public enum TypeEnum {
         REQUESTCOUNTLIMIT("REQUESTCOUNTLIMIT"),
         
-        BANDWIDTHLIMIT("BANDWIDTHLIMIT");
+        BANDWIDTHLIMIT("BANDWIDTHLIMIT"),
+        
+        EVENTCOUNTLIMIT("EVENTCOUNTLIMIT");
 
 private String value;
 
@@ -89,6 +92,10 @@ public static TypeEnum fromValue(String value) {
         public static final String SERIALIZED_NAME_BANDWIDTH = "bandwidth";
         @SerializedName(SERIALIZED_NAME_BANDWIDTH)
             private BandwidthLimitDTO bandwidth = null;
+
+        public static final String SERIALIZED_NAME_EVENT_COUNT = "eventCount";
+        @SerializedName(SERIALIZED_NAME_EVENT_COUNT)
+            private EventCountLimitDTO eventCount = null;
 
 
         public ThrottleLimitDTO type(TypeEnum type) {
@@ -159,6 +166,29 @@ public static TypeEnum fromValue(String value) {
     }
 
 
+        public ThrottleLimitDTO eventCount(EventCountLimitDTO eventCount) {
+        
+        this.eventCount = eventCount;
+        return this;
+        }
+
+    /**
+        * Get eventCount
+    * @return eventCount
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public EventCountLimitDTO getEventCount() {
+        return eventCount;
+    }
+
+
+    public void setEventCount(EventCountLimitDTO eventCount) {
+        this.eventCount = eventCount;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -170,12 +200,13 @@ public static TypeEnum fromValue(String value) {
             ThrottleLimitDTO throttleLimit = (ThrottleLimitDTO) o;
             return Objects.equals(this.type, throttleLimit.type) &&
             Objects.equals(this.requestCount, throttleLimit.requestCount) &&
-            Objects.equals(this.bandwidth, throttleLimit.bandwidth);
+            Objects.equals(this.bandwidth, throttleLimit.bandwidth) &&
+            Objects.equals(this.eventCount, throttleLimit.eventCount);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, requestCount, bandwidth);
+        return Objects.hash(type, requestCount, bandwidth, eventCount);
     }
 
 
@@ -186,6 +217,7 @@ sb.append("class ThrottleLimitDTO {\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    requestCount: ").append(toIndentedString(requestCount)).append("\n");
     sb.append("    bandwidth: ").append(toIndentedString(bandwidth)).append("\n");
+    sb.append("    eventCount: ").append(toIndentedString(eventCount)).append("\n");
 sb.append("}");
 return sb.toString();
 }

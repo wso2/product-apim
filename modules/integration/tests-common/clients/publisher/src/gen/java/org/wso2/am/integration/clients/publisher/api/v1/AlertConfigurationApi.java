@@ -332,7 +332,7 @@ public class AlertConfigurationApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Devportal alert configuration.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Developer Portal alert configuration.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
@@ -389,7 +389,7 @@ public class AlertConfigurationApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Devportal alert configuration.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Developer Portal alert configuration.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
@@ -407,7 +407,7 @@ public class AlertConfigurationApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Devportal alert configuration.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Developer Portal alert configuration.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
@@ -427,7 +427,7 @@ public class AlertConfigurationApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. The Devportal alert configuration.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 200 </td><td> OK. The Developer Portal alert configuration.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */

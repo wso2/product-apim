@@ -103,6 +103,10 @@ public static PolicyLevelEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_REQUEST_COUNT)
             private Long requestCount;
 
+        public static final String SERIALIZED_NAME_DATA_UNIT = "dataUnit";
+        @SerializedName(SERIALIZED_NAME_DATA_UNIT)
+            private String dataUnit;
+
         public static final String SERIALIZED_NAME_UNIT_TIME = "unitTime";
         @SerializedName(SERIALIZED_NAME_UNIT_TIME)
             private Long unitTime;
@@ -110,6 +114,65 @@ public static PolicyLevelEnum fromValue(String value) {
         public static final String SERIALIZED_NAME_TIME_UNIT = "timeUnit";
         @SerializedName(SERIALIZED_NAME_TIME_UNIT)
             private String timeUnit;
+
+        public static final String SERIALIZED_NAME_RATE_LIMIT_COUNT = "rateLimitCount";
+        @SerializedName(SERIALIZED_NAME_RATE_LIMIT_COUNT)
+            private Integer rateLimitCount = 0;
+
+        public static final String SERIALIZED_NAME_RATE_LIMIT_TIME_UNIT = "rateLimitTimeUnit";
+        @SerializedName(SERIALIZED_NAME_RATE_LIMIT_TIME_UNIT)
+            private String rateLimitTimeUnit;
+
+            /**
+* Default quota limit type
+*/
+    @JsonAdapter(QuotaPolicyTypeEnum.Adapter.class)
+public enum QuotaPolicyTypeEnum {
+        REQUESTCOUNT("REQUESTCOUNT"),
+        
+        BANDWIDTHVOLUME("BANDWIDTHVOLUME");
+
+private String value;
+
+QuotaPolicyTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static QuotaPolicyTypeEnum fromValue(String value) {
+    for (QuotaPolicyTypeEnum b : QuotaPolicyTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<QuotaPolicyTypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final QuotaPolicyTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public QuotaPolicyTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return QuotaPolicyTypeEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_QUOTA_POLICY_TYPE = "quotaPolicyType";
+        @SerializedName(SERIALIZED_NAME_QUOTA_POLICY_TYPE)
+            private QuotaPolicyTypeEnum quotaPolicyType;
 
             /**
 * This attribute declares whether this policy is available under commercial or free 
@@ -307,6 +370,29 @@ public static TierPlanEnum fromValue(String value) {
     }
 
 
+        public ThrottlingPolicyDTO dataUnit(String dataUnit) {
+        
+        this.dataUnit = dataUnit;
+        return this;
+        }
+
+    /**
+        * Unit of data allowed to be transfered. Allowed values are \&quot;KB\&quot;, \&quot;MB\&quot; and \&quot;GB\&quot; 
+    * @return dataUnit
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "KB", value = "Unit of data allowed to be transfered. Allowed values are \"KB\", \"MB\" and \"GB\" ")
+    
+    public String getDataUnit() {
+        return dataUnit;
+    }
+
+
+    public void setDataUnit(String dataUnit) {
+        this.dataUnit = dataUnit;
+    }
+
+
         public ThrottlingPolicyDTO unitTime(Long unitTime) {
         
         this.unitTime = unitTime;
@@ -349,6 +435,75 @@ public static TierPlanEnum fromValue(String value) {
 
     public void setTimeUnit(String timeUnit) {
         this.timeUnit = timeUnit;
+    }
+
+
+        public ThrottlingPolicyDTO rateLimitCount(Integer rateLimitCount) {
+        
+        this.rateLimitCount = rateLimitCount;
+        return this;
+        }
+
+    /**
+        * Burst control request count
+    * @return rateLimitCount
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "10", value = "Burst control request count")
+    
+    public Integer getRateLimitCount() {
+        return rateLimitCount;
+    }
+
+
+    public void setRateLimitCount(Integer rateLimitCount) {
+        this.rateLimitCount = rateLimitCount;
+    }
+
+
+        public ThrottlingPolicyDTO rateLimitTimeUnit(String rateLimitTimeUnit) {
+        
+        this.rateLimitTimeUnit = rateLimitTimeUnit;
+        return this;
+        }
+
+    /**
+        * Burst control time unit
+    * @return rateLimitTimeUnit
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "min", value = "Burst control time unit")
+    
+    public String getRateLimitTimeUnit() {
+        return rateLimitTimeUnit;
+    }
+
+
+    public void setRateLimitTimeUnit(String rateLimitTimeUnit) {
+        this.rateLimitTimeUnit = rateLimitTimeUnit;
+    }
+
+
+        public ThrottlingPolicyDTO quotaPolicyType(QuotaPolicyTypeEnum quotaPolicyType) {
+        
+        this.quotaPolicyType = quotaPolicyType;
+        return this;
+        }
+
+    /**
+        * Default quota limit type
+    * @return quotaPolicyType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "REQUESTCOUNT", value = "Default quota limit type")
+    
+    public QuotaPolicyTypeEnum getQuotaPolicyType() {
+        return quotaPolicyType;
+    }
+
+
+    public void setQuotaPolicyType(QuotaPolicyTypeEnum quotaPolicyType) {
+        this.quotaPolicyType = quotaPolicyType;
     }
 
 
@@ -434,8 +589,12 @@ public static TierPlanEnum fromValue(String value) {
             Objects.equals(this.displayName, throttlingPolicy.displayName) &&
             Objects.equals(this.attributes, throttlingPolicy.attributes) &&
             Objects.equals(this.requestCount, throttlingPolicy.requestCount) &&
+            Objects.equals(this.dataUnit, throttlingPolicy.dataUnit) &&
             Objects.equals(this.unitTime, throttlingPolicy.unitTime) &&
             Objects.equals(this.timeUnit, throttlingPolicy.timeUnit) &&
+            Objects.equals(this.rateLimitCount, throttlingPolicy.rateLimitCount) &&
+            Objects.equals(this.rateLimitTimeUnit, throttlingPolicy.rateLimitTimeUnit) &&
+            Objects.equals(this.quotaPolicyType, throttlingPolicy.quotaPolicyType) &&
             Objects.equals(this.tierPlan, throttlingPolicy.tierPlan) &&
             Objects.equals(this.stopOnQuotaReach, throttlingPolicy.stopOnQuotaReach) &&
             Objects.equals(this.monetizationProperties, throttlingPolicy.monetizationProperties);
@@ -443,7 +602,7 @@ public static TierPlanEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, policyLevel, displayName, attributes, requestCount, unitTime, timeUnit, tierPlan, stopOnQuotaReach, monetizationProperties);
+        return Objects.hash(name, description, policyLevel, displayName, attributes, requestCount, dataUnit, unitTime, timeUnit, rateLimitCount, rateLimitTimeUnit, quotaPolicyType, tierPlan, stopOnQuotaReach, monetizationProperties);
     }
 
 
@@ -457,8 +616,12 @@ sb.append("class ThrottlingPolicyDTO {\n");
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    attributes: ").append(toIndentedString(attributes)).append("\n");
     sb.append("    requestCount: ").append(toIndentedString(requestCount)).append("\n");
+    sb.append("    dataUnit: ").append(toIndentedString(dataUnit)).append("\n");
     sb.append("    unitTime: ").append(toIndentedString(unitTime)).append("\n");
     sb.append("    timeUnit: ").append(toIndentedString(timeUnit)).append("\n");
+    sb.append("    rateLimitCount: ").append(toIndentedString(rateLimitCount)).append("\n");
+    sb.append("    rateLimitTimeUnit: ").append(toIndentedString(rateLimitTimeUnit)).append("\n");
+    sb.append("    quotaPolicyType: ").append(toIndentedString(quotaPolicyType)).append("\n");
     sb.append("    tierPlan: ").append(toIndentedString(tierPlan)).append("\n");
     sb.append("    stopOnQuotaReach: ").append(toIndentedString(stopOnQuotaReach)).append("\n");
     sb.append("    monetizationProperties: ").append(toIndentedString(monetizationProperties)).append("\n");

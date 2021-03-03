@@ -23,6 +23,7 @@ import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ConditionalGroupDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
 import org.wso2.am.integration.clients.admin.api.dto.HeaderConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.IPConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.JWTClaimsConditionDTO;
@@ -32,6 +33,7 @@ import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
 
@@ -148,7 +150,8 @@ public class DtoFactory {
     public static SubscriptionThrottlePolicyDTO createSubscriptionThrottlePolicyDTO(String policyName,
             String displayName, String description, boolean isDeployed, ThrottleLimitDTO defaultLimit,
             int graphQLMaxComplexity, int graphQLMaxDepth, int rateLimitCount, String rateLimitTimeUnit,
-            List<CustomAttributeDTO> customAttributes, boolean stopQuotaOnReach, String billingPlan) {
+            List<CustomAttributeDTO> customAttributes, boolean stopQuotaOnReach, String billingPlan,
+            int subscriberCount) {
 
         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
         subscriptionThrottlePolicyDTO.setPolicyName(policyName);
@@ -163,6 +166,8 @@ public class DtoFactory {
         subscriptionThrottlePolicyDTO.setCustomAttributes(customAttributes);
         subscriptionThrottlePolicyDTO.setStopOnQuotaReach(stopQuotaOnReach);
         subscriptionThrottlePolicyDTO.setBillingPlan(billingPlan);
+        subscriptionThrottlePolicyDTO.setSubscriberCount(subscriberCount);
+
         return subscriptionThrottlePolicyDTO;
     }
 
@@ -330,6 +335,46 @@ public class DtoFactory {
                 name(name).
                 description(description).
                 accessUrls(accessUrls);
+    }
+
+    /**
+     * Creates an Environment DTO using the given parameters
+     *
+     * @param name        Name of the environment
+     * @param displayName Display name of the environment
+     * @param description Description of the environment
+     * @param vhosts      Vhosts available in the environment
+     * @return Environment DTO object
+     */
+    public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description,
+                                                      boolean isReadOnly, List<VHostDTO> vhosts) {
+        return new EnvironmentDTO()
+                .name(name)
+                .displayName(displayName)
+                .description(description)
+                .isReadOnly(isReadOnly)
+                .vhosts(vhosts);
+    }
+
+    /**
+     * Creates a Vhost DTO using the given parameters
+     *
+     * @param host        Host name
+     * @param httpContext HTTP context of access URL
+     * @param httpPort    HTTP port
+     * @param httpsPort   HTTPS port
+     * @param wsPort      WS port
+     * @param wssPort     WSS port
+     * @return VHost DTO object
+     */
+    public static VHostDTO createVhostDTO(String host, String httpContext, Integer httpPort, Integer httpsPort,
+                                          Integer wsPort, Integer wssPort) {
+        return new VHostDTO().host(host)
+                .httpContext(httpContext)
+                .httpPort(httpPort)
+                .httpsPort(httpsPort)
+                .wsPort(wsPort)
+                .wssPort(wssPort);
     }
 
     /**

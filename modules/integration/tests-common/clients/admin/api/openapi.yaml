@@ -1369,6 +1369,7 @@ paths:
                 isDeployed: true
                 graphQLMaxComplexity: 0
                 graphQLMaxDepth: 0
+                subscriberCount: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -1567,6 +1568,7 @@ paths:
                 isDeployed: true
                 graphQLMaxComplexity: 0
                 graphQLMaxDepth: 0
+                subscriberCount: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -1708,6 +1710,7 @@ paths:
                 isDeployed: true
                 graphQLMaxComplexity: 0
                 graphQLMaxDepth: 0
+                subscriberCount: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -4562,6 +4565,187 @@ paths:
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v2/labels/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       x-contentType: application/json
       x-accepts: application/json
+  /environments:
+    get:
+      description: |
+        Get all Registered Environments
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentList'
+          description: |
+            OK.
+            Environments returned
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:environment_read
+      summary: Get all registered Environments
+      tags:
+      - Environment Collection
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/environments"'
+      x-accepts: application/json
+    post:
+      description: |
+        Add a new geteway environment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+        description: |
+          Environment object that should to be added
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:environment_manage
+      summary: Add an Environment
+      tags:
+      - Environment
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v2/environments"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /environments/{environmentId}:
+    delete:
+      description: |
+        Delete a Environment by Environment Id
+      parameters:
+      - description: |
+          Environment UUID (or Environment name defined in config)
+        explode: false
+        in: path
+        name: environmentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Environment successfully deleted.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:environment_manage
+      summary: Delete an Environment
+      tags:
+      - Environment
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+      x-accepts: application/json
+    put:
+      description: |
+        Update a gateway Environment by environment Id
+      parameters:
+      - description: |
+          Environment UUID (or Environment name defined in config)
+        explode: false
+        in: path
+        name: environmentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+        description: |
+          Environment object with updated information
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+          description: |
+            OK.
+            Environment updated.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:environment_manage
+      summary: Update an Environment
+      tags:
+      - Environment
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v2/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+      x-contentType: application/json
+      x-accepts: application/json
   /bot-detection-data:
     get:
       description: |
@@ -6490,6 +6674,16 @@ components:
       schema:
         type: string
       style: simple
+    environmentId:
+      description: |
+        Environment UUID (or Environment name defined in config)
+      explode: false
+      in: path
+      name: environmentId
+      required: true
+      schema:
+        type: string
+      style: simple
     policyId:
       description: |
         Thorttle policy UUID
@@ -7183,12 +7377,15 @@ components:
           enum:
           - REQUESTCOUNTLIMIT
           - BANDWIDTHLIMIT
+          - EVENTCOUNTLIMIT
           example: REQUESTCOUNTLIMIT
           type: string
         requestCount:
           $ref: '#/components/schemas/RequestCountLimit'
         bandwidth:
           $ref: '#/components/schemas/BandwidthLimit'
+        eventCount:
+          $ref: '#/components/schemas/EventCountLimit'
       required:
       - type
       title: Throttle Limit
@@ -7222,6 +7419,11 @@ components:
       - $ref: '#/components/schemas/ThrottleLimitBase'
       - $ref: '#/components/schemas/RequestCountLimit_allOf'
       title: Request Count Limit object
+    EventCountLimit:
+      allOf:
+      - $ref: '#/components/schemas/ThrottleLimitBase'
+      - $ref: '#/components/schemas/EventCountLimit_allOf'
+      title: Event Count Limit object
     BlockingCondition:
       description: Blocking Conditions
       example:
@@ -7564,6 +7766,149 @@ components:
             $ref: '#/components/schemas/Label'
           type: array
       title: Label List
+      type: object
+    Environment:
+      example:
+        isReadOnly: false
+        displayName: US Region
+        name: us-region
+        description: Gateway environment in US Region
+        id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        vhosts:
+        - httpContext: pets
+          wssPort: 8099
+          httpPort: 80
+          wsPort: 9099
+          host: mg.wso2.com
+          httpsPort: 443
+        - httpContext: pets
+          wssPort: 8099
+          httpPort: 80
+          wsPort: 9099
+          host: mg.wso2.com
+          httpsPort: 443
+      properties:
+        id:
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        name:
+          example: us-region
+          maxLength: 255
+          minLength: 1
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+]*$)
+          type: string
+        displayName:
+          example: US Region
+          maxLength: 255
+          minLength: 1
+          type: string
+        description:
+          example: Gateway environment in US Region
+          maxLength: 1023
+          type: string
+        isReadOnly:
+          example: false
+          readOnly: true
+          type: boolean
+        vhosts:
+          items:
+            $ref: '#/components/schemas/VHost'
+          minItems: 1
+          type: array
+      required:
+      - name
+      - vhosts
+      title: Environment
+      type: object
+    EnvironmentList:
+      example:
+        count: 1
+        list:
+        - isReadOnly: false
+          displayName: US Region
+          name: us-region
+          description: Gateway environment in US Region
+          id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          vhosts:
+          - httpContext: pets
+            wssPort: 8099
+            httpPort: 80
+            wsPort: 9099
+            host: mg.wso2.com
+            httpsPort: 443
+          - httpContext: pets
+            wssPort: 8099
+            httpPort: 80
+            wsPort: 9099
+            host: mg.wso2.com
+            httpsPort: 443
+        - isReadOnly: false
+          displayName: US Region
+          name: us-region
+          description: Gateway environment in US Region
+          id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          vhosts:
+          - httpContext: pets
+            wssPort: 8099
+            httpPort: 80
+            wsPort: 9099
+            host: mg.wso2.com
+            httpsPort: 443
+          - httpContext: pets
+            wssPort: 8099
+            httpPort: 80
+            wsPort: 9099
+            host: mg.wso2.com
+            httpsPort: 443
+      properties:
+        count:
+          description: |
+            Number of Environments returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/Environment'
+          type: array
+      title: Environment List
+      type: object
+    VHost:
+      example:
+        httpContext: pets
+        wssPort: 8099
+        httpPort: 80
+        wsPort: 9099
+        host: mg.wso2.com
+        httpsPort: 443
+      properties:
+        host:
+          example: mg.wso2.com
+          maxLength: 255
+          minLength: 1
+          pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$
+          type: string
+        httpContext:
+          example: pets
+          maxLength: 255
+          minLength: 0
+          pattern: ^\/?([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])*$
+          type: string
+        httpPort:
+          example: 80
+          type: integer
+        httpsPort:
+          example: 443
+          type: integer
+        wsPort:
+          example: 9099
+          type: integer
+        wssPort:
+          example: 8099
+          type: integer
+      required:
+      - host
+      title: Virtual Host
       type: object
     PublishStatus:
       example:
@@ -8628,6 +8973,11 @@ components:
           type: string
         permissions:
           $ref: '#/components/schemas/SubscriptionThrottlePolicyPermission'
+        subscriberCount:
+          description: |
+            Number of subscriptions allowed
+          example: 10
+          type: integer
       required:
       - defaultLimit
     CustomRule_allOf:
@@ -8669,6 +9019,15 @@ components:
           type: integer
       required:
       - requestCount
+    EventCountLimit_allOf:
+      properties:
+        eventCount:
+          description: Maximum number of events allowed
+          example: 3000
+          format: int64
+          type: integer
+      required:
+      - eventCount
     CustomUrlInfo_devPortal:
       example:
         url: http://example.com
@@ -8754,6 +9113,8 @@ components:
               operations
             apim:label_manage: Manage microgateway labels
             apim:label_read: Retrieve microgateway labels
+            apim:environment_manage: Manage gateway environments
+            apim:environment_read: Retrieve gateway environments
             apim:monetization_usage_publish: Retrieve and publish Monetization related
               usage records
             apim:api_workflow_approve: Manage workflows
