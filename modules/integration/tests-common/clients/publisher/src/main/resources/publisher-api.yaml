@@ -4138,6 +4138,56 @@ paths:
           "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/api/Platinum"'
 
   ######################################################
+  # The "Subscription Throttling Based on Quota Type" resource APIs
+  ######################################################
+  /throttling-policies/streaming/subscription:
+    get:
+      tags:
+        - Throttling Policies
+      summary: Get subscription throttling policies based on quota type
+      description: |
+        This operation can be used to list the available subscription policies for a given tenent ID based on the given quota type.
+        Quota Type should be provide as a query parameters and supported Quota types are "requestCount" ,"bandwidthVolume" and "eventCount"
+      operationId: getSubscriptionThrottlingPolicies
+      parameters:
+        - $ref: '#/components/parameters/tierQuotaType'
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            List of subscription policies returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Content-Type:
+              description: The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThrottlingPolicyList'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+          content: {}
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/subscription?tierQuotaType=RequestCountLimit"'
+
+  ######################################################
   # The "Mediation Policy Collection" resource APIs
   ######################################################
   /mediation-policies:
@@ -10523,6 +10573,12 @@ components:
       in: path
       description: The alert configuration id.
       required: true
+      schema:
+        type: string
+    tierQuotaType:
+      name: tierQuotaType
+      description: Filter the subscription base on tier quota type
+      in: query
       schema:
         type: string
   requestBodies:

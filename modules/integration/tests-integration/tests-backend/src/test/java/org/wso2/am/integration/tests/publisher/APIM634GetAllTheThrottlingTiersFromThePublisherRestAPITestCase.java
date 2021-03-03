@@ -66,6 +66,72 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
         ThrottlingPolicyListDTO throttlingPolicyListDTO = restAPIPublisher.getTiers(
                 ThrottlingPolicyDTO.PolicyLevelEnum.SUBSCRIPTION.getValue());
         assertNotNull(throttlingPolicyListDTO, "There are no API level policies available");
+
+        ThrottlingPolicyDTO tierAsyncBronze = throttlingPolicyListDTO.getList().get(0);
+        assertEquals(tierAsyncBronze.getDescription(), "Allows 5000 events per day",
+                "Invalid description of the tier Async Bronze");
+        assertEquals(tierAsyncBronze.getDisplayName(), "AsyncBronze",
+                "Invalid display name of the tier Async Bronze");
+        assertEquals(tierAsyncBronze.getName(), "AsyncBronze",
+                "Invalid name of the tier Async Bronze");
+
+        ThrottlingPolicyDTO tierAsyncGold = throttlingPolicyListDTO.getList().get(0);
+        assertEquals(tierAsyncGold.getDescription(), "Allows 50000 events per day",
+                "Invalid description of the tier Async Gold");
+        assertEquals(tierAsyncGold.getDisplayName(), "AsyncGold",
+                "Invalid display name of the tier Async Gold");
+        assertEquals(tierAsyncGold.getName(), "AsyncGold",
+                "Invalid name of the tier Async Gold");
+
+        ThrottlingPolicyDTO tierAsyncSilver = throttlingPolicyListDTO.getList().get(0);
+        assertEquals(tierAsyncSilver.getDescription(), "Allows 25000 events per day",
+                "Invalid description of the tier Async Silver");
+        assertEquals(tierAsyncSilver.getDisplayName(), "AsyncSilver",
+                "Invalid display name of the tier Async Silver");
+        assertEquals(tierAsyncSilver.getName(), "AsyncSilver",
+                "Invalid name of the tier Async Silver");
+
+        ThrottlingPolicyDTO tierAsyncUnlimited = throttlingPolicyListDTO.getList().get(0);
+        assertEquals(tierAsyncUnlimited.getDescription(), "Allows unlimited events",
+                "Invalid description of the tier Async Unlimited");
+        assertEquals(tierAsyncUnlimited.getDisplayName(), "AsyncUnlimited",
+                "Invalid display name of the tier Async Unlimited");
+        assertEquals(tierAsyncUnlimited.getName(), "AsyncUnlimited",
+                "Invalid name of the tier Async Unlimited");
+
+        ThrottlingPolicyDTO tierAsyncWHBronze = throttlingPolicyListDTO.getList().get(0);
+        assertEquals(tierAsyncWHBronze.getDescription(), "Allows 1000 events per month and 500 active " +
+                        "subscriptions", "Invalid description of the tier AsyncWHBronze");
+        assertEquals(tierAsyncWHBronze.getDisplayName(), "AsyncWHBronze",
+                "Invalid display name of the tier AsyncWHBronze");
+        assertEquals(tierAsyncWHBronze.getName(), "AsyncWHBronze",
+                "Invalid name of the tier AsyncWHBronze");
+
+        ThrottlingPolicyDTO tierAsyncWHGold = throttlingPolicyListDTO.getList().get(0);
+        assertEquals(tierAsyncWHGold.getDescription(), "Allows 10000 events per month and 1000 active" +
+                        " subscriptions",  "Invalid description of the tier AsyncWHGold");
+        assertEquals(tierAsyncWHGold.getDisplayName(), "AsyncWHGold",
+                "Invalid display name of the tier AsyncWHGold");
+        assertEquals(tierAsyncWHGold.getName(), "AsyncWHGold",
+                "Invalid name of the tier AsyncWHGold");
+
+        ThrottlingPolicyDTO tierAsyncWHSilver = throttlingPolicyListDTO.getList().get(0);
+        assertEquals(tierAsyncWHSilver.getDescription(), "Allows 5000 events per month and 500 active " +
+                        "subscriptions", "Invalid description of the tier AsyncWHSilver");
+        assertEquals(tierAsyncWHSilver.getDisplayName(), "AsyncWHSilver",
+                "Invalid display name of the tier AsyncWHSilver");
+        assertEquals(tierAsyncWHSilver.getName(), "AsyncWHSilver",
+                "Invalid name of the tier AsyncWHSilver");
+
+        ThrottlingPolicyDTO tierAsyncWHUnlimited = throttlingPolicyListDTO.getList().get(0);
+        assertEquals(tierAsyncWHUnlimited.getDescription(), "Allows unlimited events and unlimited active " +
+                        "subscriptions", "Invalid description of the tier AsyncWHUnlimited");
+        assertEquals(tierAsyncWHUnlimited.getDisplayName(), "AsyncWHUnlimited",
+                "Invalid display name of the tier Bronze");
+        assertEquals(tierAsyncWHUnlimited.getName(), "AsyncWHUnlimited",
+                "Invalid name of the tier AsyncWHUnlimited");
+
+
         //Validate the Tier Bronze
         ThrottlingPolicyDTO tierBronze = throttlingPolicyListDTO.getList().get(8);
         assertEquals(tierBronze.getDescription(), "Allows 1000 requests per minute",
@@ -104,6 +170,4 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
 
 
     }
-
-
 }

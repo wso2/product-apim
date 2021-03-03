@@ -7277,6 +7277,83 @@ paths:
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/api/Platinum"'
       x-accepts: application/json
+  /throttling-policies/streaming/subscription:
+    get:
+      description: |
+        This operation can be used to list the available subscription policies for a given tenent ID based on the given quota type.
+        Quota Type should be provide as a query parameters and supported Quota types are "requestCount" ,"bandwidthVolume" and "eventCount"
+      operationId: getSubscriptionThrottlingPolicies
+      parameters:
+      - description: Filter the subscription base on tier quota type
+        explode: true
+        in: query
+        name: tierQuotaType
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resource.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThrottlingPolicyList'
+          description: |
+            OK.
+            List of subscription policies returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+      summary: Get subscription throttling policies based on quota type
+      tags:
+      - Throttling Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/subscription?tierQuotaType=RequestCountLimit"'
+      x-accepts: application/json
   /mediation-policies:
     get:
       description: |
@@ -12881,6 +12958,15 @@ components:
       schema:
         type: string
       style: simple
+    tierQuotaType:
+      description: Filter the subscription base on tier quota type
+      explode: true
+      in: query
+      name: tierQuotaType
+      required: false
+      schema:
+        type: string
+      style: form
   requestBodies:
     threatProtectionPolicy:
       content:

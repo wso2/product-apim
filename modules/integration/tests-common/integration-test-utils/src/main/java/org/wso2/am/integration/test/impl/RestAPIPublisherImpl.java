@@ -86,6 +86,7 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
 import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
+import org.wso2.carbon.apimgt.api.model.policy.SubscriptionPolicy;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.am.integration.test.ClientAuthenticator;
 
@@ -957,6 +958,10 @@ public class RestAPIPublisherImpl {
         }
         return null;
 
+    }
+
+    public List<SubscriptionPolicy> getSubscriptionPolicies(String tierQuotaTypes) throws ApiException {
+        List<SubscriptionPolicy> subscriptionPolicyList = throttlingPoliciesApi.getSubscriptionThrottlingPolicies(tierQuotaTypes, null);
     }
 
     /**
