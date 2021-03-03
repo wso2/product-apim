@@ -1,4 +1,4 @@
-name: API Manager Pull Request builder
+name: APIM PR builder
 
 on: [push, pull_request]
 
@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
     steps:
     - name: Checkout master
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Cache Maven packages
       uses: actions/cache@v2
       with:
