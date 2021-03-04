@@ -158,7 +158,7 @@ public class ApiClient {
     }
 
     private void init() {
-        verifyingSsl = false;
+        verifyingSsl = true;
 
         json = new JSON();
 

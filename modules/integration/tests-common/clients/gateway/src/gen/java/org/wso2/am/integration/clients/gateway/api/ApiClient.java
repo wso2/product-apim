@@ -80,7 +80,7 @@ public class ApiClient {
         httpClient = new OkHttpClient();
 
 
-        verifyingSsl = false;
+        verifyingSsl = true;
 
         json = new JSON();
 
