@@ -84,6 +84,7 @@ public class ApiClient {
     public ApiClient() {
         init();
         initHttpClient();
+        applySslSettings();
 
         // Setup authentications (key: authentication name, value: authentication).
         authentications.put("OAuth2Security", new OAuth());
