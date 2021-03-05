@@ -1279,6 +1279,26 @@ public class RestAPIPublisherImpl {
     }
 
     /**
+     * This method is used to create an API Revision.
+     *
+     * @param apiId API Revision create object body
+     * @return HttpResponse
+     * @throws ApiException throws of an error occurred when creating the API Revision.
+     */
+    public APIRevisionDTO addAPIRevision(String apiId) throws ApiException {
+        APIRevisionDTO apiRevisionDTO = new APIRevisionDTO();
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIRevisionDTO> httpInfo = apiRevisionsApi.
+                    createAPIRevisionWithHttpInfo(apiId, apiRevisionDTO);
+            Assert.assertEquals(201, httpInfo.getStatusCode());
+            return httpInfo.getData();
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+    }
+
+    /**
      * Method to get API Revisions per API
      *
      * @param apiUUID - API uuid
@@ -1337,6 +1357,39 @@ public class RestAPIPublisherImpl {
 //        if (StringUtils.isNotEmpty(apiRevisionDeploymentDTOResponseList.toString())) {
 //            response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
 //        }
+        return response;
+    }
+
+    /**
+     * This method is used to deploy API Revision to Gateways.
+     *
+     * @param apiRevisionDeployRequestList API Revision deploy object body
+     * @return HttpResponse
+     * @throws ApiException throws of an error occurred when creating the API Revision.
+     */
+    public HttpResponse deployAPIRevision(String apiUUID, String revisionUUID,
+                                          APIRevisionDeployUndeployRequest apiRevisionDeployRequest)
+            throws ApiException {
+        Gson gson = new Gson();
+        List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOList = new ArrayList<>();
+        List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOResponseList = new ArrayList<>();
+        APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
+        apiRevisionDeploymentDTO.setName(apiRevisionDeployRequest.getName());
+        apiRevisionDeploymentDTO.setVhost(apiRevisionDeployRequest.getVhost());
+        apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionDeployRequest.isDisplayOnDevportal());
+        apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
+        try {
+            ApiResponse<Void> httpInfo = apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID,
+                    apiRevisionDeploymentDTOList);
+            Assert.assertEquals(201, httpInfo.getStatusCode());
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
         return response;
     }
 
