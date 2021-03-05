@@ -106,6 +106,7 @@ public class ApiClient {
     public ApiClient() {
         init();
         initHttpClient();
+        applySslSettings();
 
         // Setup authentications (key: authentication name, value: authentication).{{#authMethods}}{{#isBasic}}{{#isBasicBasic}}
         authentications.put("{{name}}", new HttpBasicAuth());{{/isBasicBasic}}{{^isBasicBasic}}
@@ -215,7 +216,7 @@ public class ApiClient {
     }
 
     private void init() {
-        verifyingSsl = false;
+        verifyingSsl = true;
 
         json = new JSON();
 
