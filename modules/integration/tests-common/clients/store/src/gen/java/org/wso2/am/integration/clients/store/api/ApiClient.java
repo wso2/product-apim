@@ -32,6 +32,8 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -84,6 +86,21 @@ public class ApiClient {
     public ApiClient() {
         init();
         initHttpClient();
+        applySslSettings();
+
+        // Setup authentications (key: authentication name, value: authentication).
+        authentications.put("OAuth2Security", new OAuth());
+        // Prevent the authentications from being modified.
+        authentications = Collections.unmodifiableMap(authentications);
+    }
+
+    /*
+     * Basic constructor with custom OkHttpClient
+     */
+    public ApiClient(OkHttpClient client) {
+        init();
+
+        httpClient = client;
 
         // Setup authentications (key: authentication name, value: authentication).
         authentications.put("OAuth2Security", new OAuth());
@@ -158,7 +175,7 @@ public class ApiClient {
     }
 
     private void init() {
-        verifyingSsl = true;
+        verifyingSsl = false;
 
         json = new JSON();
 
@@ -329,6 +346,7 @@ public class ApiClient {
         return authentications.get(authName);
     }
 
+
     /**
      * Helper method to set username for the first HTTP basic authentication.
      *
@@ -461,7 +479,9 @@ public class ApiClient {
                 loggingInterceptor.setLevel(Level.BODY);
                 httpClient = httpClient.newBuilder().addInterceptor(loggingInterceptor).build();
             } else {
-                httpClient.interceptors().remove(loggingInterceptor);
+                final OkHttpClient.Builder builder = httpClient.newBuilder();
+                builder.interceptors().remove(loggingInterceptor);
+                httpClient = builder.build();
                 loggingInterceptor = null;
             }
         }
@@ -474,7 +494,7 @@ public class ApiClient {
      * with file response. The default value is <code>null</code>, i.e. using
      * the system's default tempopary folder.
      *
-     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/io/File.html#createTempFile">createTempFile</a>
+     * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/nio/file/Files.html#createTempFile(java.lang.String,%20java.lang.String,%20java.nio.file.attribute.FileAttribute...)">createTempFile</a>
      * @return Temporary folder path
      */
     public String getTempFolderPath() {
@@ -930,15 +950,15 @@ public class ApiClient {
                 prefix = filename.substring(0, pos) + "-";
                 suffix = filename.substring(pos);
             }
-            // File.createTempFile requires the prefix to be at least three characters long
+            // Files.createTempFile requires the prefix to be at least three characters long
             if (prefix.length() < 3)
                 prefix = "download-";
         }
 
         if (tempFolderPath == null)
-            return File.createTempFile(prefix, suffix);
+            return Files.createTempFile(prefix, suffix).toFile();
         else
-            return File.createTempFile(prefix, suffix, new File(tempFolderPath));
+            return Files.createTempFile(Paths.get(tempFolderPath), prefix, suffix).toFile();
     }
 
     /**
@@ -1009,6 +1029,9 @@ public class ApiClient {
                     result = (T) handleResponse(response, returnType);
                 } catch (ApiException e) {
                     callback.onFailure(e, response.code(), response.headers().toMultimap());
+                    return;
+                } catch (Exception e) {
+                    callback.onFailure(new ApiException(e), response.code(), response.headers().toMultimap());
                     return;
                 }
                 callback.onSuccess(result, response.code(), response.headers().toMultimap());
@@ -1380,6 +1403,56 @@ public class ApiClient {
         } catch (GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void applyIgnoreHostnameVerifier() {
+        try {
+            TrustManager[] trustManagers;
+            HostnameVerifier hostnameVerifier;
+
+            TrustManager trustManager = new X509TrustManager() {
+
+                @Override public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
+                        throws CertificateException {
+                }
+
+                @Override public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
+                        throws CertificateException {
+                }
+
+                @Override public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+
+            };
+            hostnameVerifier = new HostnameVerifier() {
+
+                @Override public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            };
+
+            trustManagers = new TrustManager[]{ trustManager };
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            if (keyManagers != null) {
+                sslContext.init(keyManagers, trustManagers, new SecureRandom());
+                httpClient = httpClient.newBuilder()
+                        .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagers[0])
+                        .hostnameVerifier(hostnameVerifier)
+                        .build();
+            } else {
+                sslContext.init(null, trustManagers, new SecureRandom());
+            }
+
+            httpClient = httpClient.newBuilder()
+                    .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagers[0])
+                    .hostnameVerifier(hostnameVerifier)
+                    .build();
+
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     private KeyStore newEmptyKeyStore(char[] password) throws GeneralSecurityException {
