@@ -74,6 +74,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.Constants;
@@ -958,8 +959,13 @@ public class RestAPIPublisherImpl {
 
     }
 
-    public List<SubscriptionPolicy> getSubscriptionPolicies(String tierQuotaTypes) throws ApiException {
-        List<SubscriptionPolicy> subscriptionPolicyList = throttlingPoliciesApi.getSubscriptionThrottlingPolicies(tierQuotaTypes, null);
+    public List<SubscriptionPolicyDTO> getSubscriptionPolicies(String tierQuotaTypes) throws ApiException {
+        List<SubscriptionPolicyDTO> subscriptionPolicyList
+                = throttlingPoliciesApi.getSubscriptionThrottlingPolicies(tierQuotaTypes, null);
+        if (subscriptionPolicyList.size() > 0){
+            return subscriptionPolicyList;
+        }
+        return null;
     }
 
     /**

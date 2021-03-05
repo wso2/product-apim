@@ -8356,7 +8356,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ThrottlingPolicyList'
+                items:
+                  $ref: '#/components/schemas/SubscriptionPolicy'
+                type: array
           description: |
             OK.
             List of subscription policies returned.
@@ -16841,6 +16843,223 @@ components:
       - throttlingPolicy
       title: Subscription
       type: object
+    ThrottleLimitBase:
+      properties:
+        timeUnit:
+          description: Unit of the time. Allowed values are "sec", "min", "hour",
+            "day"
+          example: min
+          type: string
+        unitTime:
+          description: Time limit that the throttling limit applies.
+          example: 10
+          type: integer
+      required:
+      - timeUnit
+      - unitTime
+      title: Throttle Limit Base
+      type: object
+    ThrottleLimit:
+      example:
+        type: REQUESTCOUNTLIMIT
+      properties:
+        type:
+          description: |
+            Type of the throttling limit. Allowed values are "REQUESTCOUNTLIMIT" and "BANDWIDTHLIMIT".
+            Please see schemas of "RequestCountLimit" and "BandwidthLimit" throttling limit types in
+            Definitions section.
+          enum:
+          - REQUESTCOUNTLIMIT
+          - BANDWIDTHLIMIT
+          - EVENTCOUNTLIMIT
+          example: REQUESTCOUNTLIMIT
+          type: string
+        requestCount:
+          $ref: '#/components/schemas/RequestCountLimit'
+        bandwidth:
+          $ref: '#/components/schemas/BandwidthLimit'
+        eventCount:
+          $ref: '#/components/schemas/EventCountLimit'
+      required:
+      - type
+      title: Throttle Limit
+      type: object
+    MonetizationInfo:
+      example:
+        monetizationPlan: FixedRate
+        properties:
+          key: properties
+      properties:
+        monetizationPlan:
+          description: Flag to indicate the monetization plan
+          enum:
+          - FIXEDRATE
+          - DYNAMICRATE
+          example: FixedRate
+          type: string
+        properties:
+          additionalProperties:
+            type: string
+          description: Map of custom properties related to each monetization plan
+          type: object
+      required:
+      - monetizationPlan
+      - properties
+      title: API monetization details object
+      type: object
+    BandwidthLimit:
+      allOf:
+      - $ref: '#/components/schemas/ThrottleLimitBase'
+      - $ref: '#/components/schemas/BandwidthLimit_allOf'
+      title: Bandwidth Limit object
+    RequestCountLimit:
+      allOf:
+      - $ref: '#/components/schemas/ThrottleLimitBase'
+      - $ref: '#/components/schemas/RequestCountLimit_allOf'
+      title: Request Count Limit object
+    EventCountLimit:
+      allOf:
+      - $ref: '#/components/schemas/ThrottleLimitBase'
+      - $ref: '#/components/schemas/EventCountLimit_allOf'
+      title: Event Count Limit object
+    SubscriptionPolicy:
+      example:
+        graphQLMaxComplexity: 400
+        graphQLMaxDepth: 10
+        stopOnQuotaReach: false
+        policyName: 30PerMin
+        displayName: 30PerMin
+        monetization:
+          monetizationPlan: FixedRate
+          properties:
+            key: properties
+        rateLimitTimeUnit: min
+        description: Allows 30 request per minute
+        type: type
+        rateLimitCount: 10
+        policyId: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+        permissions:
+          permissionType: deny
+          roles:
+          - Internal/everyone
+        isDeployed: false
+        defaultLimit:
+          type: REQUESTCOUNTLIMIT
+        subscriberCount: 10
+        billingPlan: FREE
+        customAttributes: []
+      properties:
+        policyId:
+          description: Id of policy
+          example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+          readOnly: true
+          type: string
+        policyName:
+          description: Name of policy
+          example: 30PerMin
+          maxLength: 60
+          minLength: 1
+          type: string
+        displayName:
+          description: Display name of the policy
+          example: 30PerMin
+          maxLength: 512
+          type: string
+        description:
+          description: Description of the policy
+          example: Allows 30 request per minute
+          maxLength: 1024
+          type: string
+        isDeployed:
+          default: false
+          description: Indicates whether the policy is deployed successfully or not.
+          type: boolean
+        type:
+          description: Indicates the type of throttle policy
+          type: string
+        defaultLimit:
+          $ref: '#/components/schemas/ThrottleLimit'
+        monetization:
+          $ref: '#/components/schemas/MonetizationInfo'
+        rateLimitCount:
+          description: Burst control request count
+          example: 10
+          type: integer
+        rateLimitTimeUnit:
+          description: Burst control time unit
+          example: min
+          type: string
+        subscriberCount:
+          description: Number of subscriptions allowed
+          example: 10
+          type: integer
+        customAttributes:
+          description: |
+            Custom attributes added to the Subscription Throttling Policy
+          example: []
+          items:
+            $ref: '#/components/schemas/CustomAttribute'
+          type: array
+        stopOnQuotaReach:
+          default: false
+          description: |
+            This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through.
+          type: boolean
+        billingPlan:
+          description: |
+            define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
+          example: FREE
+          type: string
+        permissions:
+          $ref: '#/components/schemas/SubscriptionThrottlePolicyPermission'
+        graphQLMaxComplexity:
+          description: Maximum Complexity of the GraphQL query
+          example: 400
+          type: integer
+        graphQLMaxDepth:
+          description: Maximum Depth of the GraphQL query
+          example: 10
+          type: integer
+      title: Subscription Throttling Policy
+      type: object
+    CustomAttribute:
+      properties:
+        name:
+          description: Name of the custom attribute
+          example: customAttr1
+          type: string
+        value:
+          description: Value of the custom attribute
+          example: value1
+          type: string
+      required:
+      - name
+      - value
+      title: Name-Value pair
+      type: object
+    SubscriptionThrottlePolicyPermission:
+      example:
+        permissionType: deny
+        roles:
+        - Internal/everyone
+      properties:
+        permissionType:
+          enum:
+          - ALLOW
+          - DENY
+          example: deny
+          type: string
+        roles:
+          example:
+          - Internal/everyone
+          items:
+            type: string
+          type: array
+      required:
+      - permissionType
+      - roles
+      title: SubscriptionThrottlePolicyPermission
+      type: object
     APIMonetizationUsage:
       example:
         properties:
@@ -19337,6 +19556,39 @@ components:
         outdated:
           example: false
           type: boolean
+    BandwidthLimit_allOf:
+      properties:
+        dataAmount:
+          description: Amount of data allowed to be transfered
+          example: 1000
+          format: int64
+          type: integer
+        dataUnit:
+          description: Unit of data allowed to be transfered. Allowed values are "KB",
+            "MB" and "GB"
+          example: KB
+          type: string
+      required:
+      - dataAmount
+      - dataUnit
+    RequestCountLimit_allOf:
+      properties:
+        requestCount:
+          description: Maximum number of requests allowed
+          example: 30
+          format: int64
+          type: integer
+      required:
+      - requestCount
+    EventCountLimit_allOf:
+      properties:
+        eventCount:
+          description: Maximum number of events allowed
+          example: 3000
+          format: int64
+          type: integer
+      required:
+      - eventCount
     Endpoint_endpointConfig:
       properties:
         endpointType:
@@ -19678,6 +19930,7 @@ components:
             apim:api_import_export: Import and export APIs related operations
             apim:api_product_import_export: Import and export API Products related
               operations
+            apim:api_generate_key: Generate Internal Key
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
 

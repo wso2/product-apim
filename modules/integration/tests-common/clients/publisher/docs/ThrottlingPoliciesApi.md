@@ -86,7 +86,7 @@ Name | Type | Description  | Notes
 
 <a name="getSubscriptionThrottlingPolicies"></a>
 # **getSubscriptionThrottlingPolicies**
-> ThrottlingPolicyListDTO getSubscriptionThrottlingPolicies(tierQuotaType, ifNoneMatch)
+> List&lt;SubscriptionPolicyDTO&gt; getSubscriptionThrottlingPolicies(tierQuotaType, ifNoneMatch)
 
 Get subscription throttling policies based on quota type
 
@@ -115,7 +115,7 @@ public class Example {
     String tierQuotaType = "tierQuotaType_example"; // String | Filter the subscription base on tier quota type
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      ThrottlingPolicyListDTO result = apiInstance.getSubscriptionThrottlingPolicies(tierQuotaType, ifNoneMatch);
+      List<SubscriptionPolicyDTO> result = apiInstance.getSubscriptionThrottlingPolicies(tierQuotaType, ifNoneMatch);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ThrottlingPoliciesApi#getSubscriptionThrottlingPolicies");
@@ -137,7 +137,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ThrottlingPolicyListDTO**](ThrottlingPolicyListDTO.md)
+[**List&lt;SubscriptionPolicyDTO&gt;**](SubscriptionPolicyDTO.md)
 
 ### Authorization
 
