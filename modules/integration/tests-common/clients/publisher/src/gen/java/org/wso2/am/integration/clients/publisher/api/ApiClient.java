@@ -84,7 +84,6 @@ public class ApiClient {
     public ApiClient() {
         init();
         initHttpClient();
-        applySslSettings();
 
         // Setup authentications (key: authentication name, value: authentication).
         authentications.put("OAuth2Security", new OAuth());
@@ -159,7 +158,7 @@ public class ApiClient {
     }
 
     private void init() {
-        verifyingSsl = false;
+        verifyingSsl = true;
 
         json = new JSON();
 
