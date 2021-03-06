@@ -135,9 +135,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
 
+        // Removing Tenant_ADMIN due to https://github.com/wso2/product-apim/issues/10183
         return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN}
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
         };
     }
 
@@ -176,11 +176,12 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         //Create the api creation request object
         apiRequest = new APIRequest(apiName, apiContext, endpointUri, endpointUri);
         apiRequest.setVersion(apiVersion);
-        apiRequest.setTiersCollection("Unlimited");
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
         apiRequest.setProvider(provider);
         apiRequest.setType("WS");
         HttpResponse addAPIResponse = restAPIPublisher.addAPI(apiRequest);
          websocketAPIID = addAPIResponse.getData();
+         createAPIRevisionAndDeployUsingRest(websocketAPIID,restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(websocketAPIID, APILifeCycleAction.PUBLISH.getAction(), null);
         waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -214,7 +215,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
         appId = applicationResponse.getData();
         SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(websocketAPIID, appId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+                APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
         //Validate Subscription of the API
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
     }
@@ -249,7 +250,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
         appJWTId = applicationResponse.getData();
         SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(websocketAPIID, appJWTId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+                APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
         //Validate Subscription of the API
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
     }
@@ -278,7 +279,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     }
     @Test(description = "Test Throttling for WebSocket API", dependsOnMethods = "testWebSocketAPIInvocation")
     public void testWebSocketAPIThrottling() throws Exception {
-        // Deploy Throttling policy with throttle limit set as 8 frames. One message is two frames, therefore 4
+            // Deploy Throttling policy with throttle limit set as 8 frames. One message is two frames, therefore 4
         // messages can be sent.
         InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
                 "configFiles" + File.separator + "webSocketTest" + File.separator + "policy.json");
@@ -321,7 +322,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), "WebSocketTestThrottlingPolicy");
         //Get an Access Token from the user who is logged into the API Store.
-        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(getKeyManagerURLHttps() + "/oauth2/token");
         String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(),
                 user.getPassword());
         JSONObject subsAccessTokenGenerationResponse = new JSONObject(

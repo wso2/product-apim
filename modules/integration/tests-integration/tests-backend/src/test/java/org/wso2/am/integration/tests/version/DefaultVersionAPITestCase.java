@@ -302,7 +302,7 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
 
         } else {
             do {
-                Thread.sleep(50000);
+                Thread.sleep(10000);
                 response = invokeWithGet(invocationUrl, headers);
                 if (response.getResponseCode() == 200) {
                     return response;
