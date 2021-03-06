@@ -153,6 +153,7 @@ public class RESTApiCreateRevisionTestCase extends ScenarioTestBase {
         apiId = apidto.getId();
         apiIdList.add(apiId);
         assertTrue(StringUtils.isNotEmpty(apiId), "Error occured when creating api");
+        waitForAPIDeployment();
     }
 
     @Test(description = "1.1.4.1")
@@ -172,6 +173,7 @@ public class RESTApiCreateRevisionTestCase extends ScenarioTestBase {
 
         assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Create API Response Code is invalid." + apiRevisionResponse.getData());
+        waitForAPIDeployment();
     }
 
     @Test(description = "1.1.4.2", dependsOnMethods = "testRESTAPIRevisionCreate")
@@ -191,6 +193,7 @@ public class RESTApiCreateRevisionTestCase extends ScenarioTestBase {
             revisionUUID = revision.getString("id");
         }
         assertNotNull(revisionUUID, "Unable to retrieve revision UUID");
+        waitForAPIDeployment();
     }
 
     @Test(description = "1.1.4.3", dependsOnMethods = "testGETRevisions")
@@ -205,6 +208,7 @@ public class RESTApiCreateRevisionTestCase extends ScenarioTestBase {
                 apiRevisionDeployRequestList);
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
+        waitForAPIDeployment();
     }
 
     @Test(description = "1.1.4.4", dependsOnMethods = "testDeployAPIRevision")
@@ -218,6 +222,7 @@ public class RESTApiCreateRevisionTestCase extends ScenarioTestBase {
                 apiRevisionUndeployRequestList);
         assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to Undeploy API Revisions:" + apiRevisionsUnDeployResponse.getData());
+        waitForAPIDeployment();
 
     }
 
@@ -226,6 +231,7 @@ public class RESTApiCreateRevisionTestCase extends ScenarioTestBase {
         HttpResponse apiRevisionsRestoreResponse = restAPIPublisher.restoreAPIRevision(apiId, revisionUUID);
         assertEquals(apiRevisionsRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to resotre API Revisions:" + apiRevisionsRestoreResponse.getData());
+        waitForAPIDeployment();
     }
 
     @Test(description = "1.1.4.6", dependsOnMethods = "testRestoreAPIRevision")
@@ -233,9 +239,10 @@ public class RESTApiCreateRevisionTestCase extends ScenarioTestBase {
         HttpResponse apiRevisionsDeleteResponse = restAPIPublisher.deleteAPIRevision(apiId, revisionUUID);
         assertEquals(apiRevisionsDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to delete API Revisions:" + apiRevisionsDeleteResponse.getData());
+        waitForAPIDeployment();
     }
 
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
     }
