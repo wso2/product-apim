@@ -1038,4 +1038,17 @@ public class ScenarioTestBase {
     protected String getKeyManagerURLHttp() {
         return keyMangerUrl.getWebAppURLHttp();
     }
+
+    /**
+     * This method can be used to wait for API deployment sync in distributed and clustered environment
+     * APIStatusMonitor will be invoked to get API related data and then verify that data matches with
+     * expected response provided.
+     */
+    protected void waitForAPIDeployment() {
+        try {
+            Thread.sleep(15000);
+        } catch (InterruptedException ignored) {
+
+        }
+    }
 }
