@@ -22,18 +22,12 @@
         <property name="ERROR_MESSAGE" expression="get-property('THREAT_MSG')"/>
         <property name="ERROR_DESCRIPTION" expression="get-property('THREAT_DESC')"/>
     </log>
-    <payloadFactory>
-        <format>
-            <am:fault xmlns:am="http://wso2.org/apimanager">
-                <am:code>$1</am:code>
-                <am:message>$2</am:message>
-                <am:description>$3</am:description>
-            </am:fault>
-        </format>
+    <payloadFactory media-type="json">
+        <format>{"code":"$1","message":"$2","description":"$3"}</format>
         <args>
-            <arg expression="get-property('THREAT_CODE')"/>
-            <arg expression="get-property('THREAT_MSG')"/>
-            <arg expression="get-property('THREAT_DESC')"/>
+            <arg expression="$ctx:THREAT_CODE"/>
+            <arg expression="$ctx:THREAT_MSG"/>
+            <arg expression="$ctx:THREAT_DESC"/>
         </args>
     </payloadFactory>
     <property name="RESPONSE" value="true"/>
