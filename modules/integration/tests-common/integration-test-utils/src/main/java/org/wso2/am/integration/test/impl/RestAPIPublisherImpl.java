@@ -1358,6 +1358,7 @@ public class RestAPIPublisherImpl {
         for (APIRevisionDeployUndeployRequest apiRevisionUndeployRequest : apiRevisionUndeployRequestList) {
             APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
             apiRevisionDeploymentDTO.setName(apiRevisionUndeployRequest.getName());
+            apiRevisionDeploymentDTO.setVhost(apiRevisionUndeployRequest.getVhost());
             apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionUndeployRequest.isDisplayOnDevportal());
             apiRevisionUnDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
@@ -1508,6 +1509,7 @@ public class RestAPIPublisherImpl {
         for (APIRevisionDeployUndeployRequest apiRevisionDeployRequest : apiRevisionDeployRequestList) {
             APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
             apiRevisionDeploymentDTO.setName(apiRevisionDeployRequest.getName());
+            apiRevisionDeploymentDTO.setVhost(apiRevisionDeployRequest.getVhost());
             apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionDeployRequest.isDisplayOnDevportal());
             apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
@@ -1548,6 +1550,7 @@ public class RestAPIPublisherImpl {
         for (APIRevisionDeployUndeployRequest apiRevisionUndeployRequest : apiRevisionUndeployRequestList) {
             APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
             apiRevisionDeploymentDTO.setName(apiRevisionUndeployRequest.getName());
+            apiRevisionDeploymentDTO.setVhost(apiRevisionUndeployRequest.getVhost());
             apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionUndeployRequest.isDisplayOnDevportal());
             apiRevisionUnDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
