@@ -66,7 +66,8 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
         ThrottlingPolicyListDTO throttlingPolicyListDTO = restAPIPublisher.getTiers(
                 ThrottlingPolicyDTO.PolicyLevelEnum.SUBSCRIPTION.getValue());
         assertNotNull(throttlingPolicyListDTO, "There are no API level policies available");
-
+        assertNotNull(throttlingPolicyListDTO.getCount(), "Throttle policy count should be available");
+        assertEquals(throttlingPolicyListDTO.getCount().intValue(), 4, "There must be only 4 policies by default");
 
         //Validate the Tier Bronze
         ThrottlingPolicyDTO tierBronze = throttlingPolicyListDTO.getList().get(0);
