@@ -20,8 +20,14 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.scenario.test.common.APIConstants;
 import org.wso2.am.scenario.test.common.APIPublisherRestClient;
 import org.wso2.am.scenario.test.common.APIRequest;
@@ -32,9 +38,12 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertEquals;
 
 public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends ScenarioTestBase {
 
@@ -56,6 +65,12 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     private final String ADMIN_PASSWORD = "admin";
     private final String SUBSCRIBER_USERNAME = "subscriberUser2";
     private final String SUBSCRIBER_PASSWORD = "password@123";
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String ADMIN_PW = "admin";
+    private static final String API_CREATOR_PUBLISHER_USERNAME = "micheal";
+    private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
+    private static final String API_SUBSCRIBER_USERNAME = "andrew";
+    private static final String API_SUBSCRIBER_PW = "Andrew#123";
     private final String SUPER_TENANT_USER_USERNAME = "APIVisiSuperTenantUserNeg";
     private final String SUPER_TENANT_USER_PASSWORD = "APIVisiSuperTenantUserNeg";
     private final String TENANT_SUBSCRIBER_USERNAME = "APIVisiTenantSubscriberNeg";
@@ -67,19 +82,22 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
     private final String API_DEVELOPER_USER = "api-dev-user1";
     private final String API_DEVELOPER_USER_PWD = "api-dev-user1";
 
-    private APIStoreRestClient apiStoreClient;
-
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        apiPublisher = new APIPublisherRestClient(publisherURL);
-        apiStoreClient = new APIStoreRestClient(storeURL);
 
         String[] permission = new String[]{"/permission/admin/login",
                 "/permission/admin/manage/api/subscribe"};
-        
+
+        createUserWithPublisherAndCreatorRole(API_CREATOR_PUBLISHER_USERNAME, API_CREATOR_PUBLISHER_PW,
+                ADMIN_USERNAME, ADMIN_PW);
+        createUserWithSubscriberRole(API_SUBSCRIBER_USERNAME, API_SUBSCRIBER_PW, ADMIN_USERNAME, ADMIN_PW);
         createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, SUBSCRIBER_ROLE, permission);
+        createRole(ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD, CREATOR_ROLE, permission);
         createUserWithSubscriberRole(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         createUserWithPublisherAndCreatorRole(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+
+        setup();
+        super.init();
     }
 
     @Test(description = "1.5.2.3")
@@ -87,104 +105,112 @@ public class RESTApiVisibilityRestrictedByRolesNegativeTestCase extends Scenario
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverify";
 
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, apiVisibility, SUBSCRIBER_ROLE, VISIBILITY_TYPE, apiVersion, apiResource,
-                tierCollection, new URL(backendEndPoint));
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion,
+                API_DEVELOPER_USER, new URL(backendEndPoint));
+        apiCreationRequestBean.setRoles(SUBSCRIBER_ROLE);
+        apiCreationRequestBean.setVisibility(apiVisibility);
 
-        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(apiCreationResponse);
+        String apiId = createAPI(apiCreationRequestBean);
+        getAPI(apiId, apiName);
+        publishAPI(apiId);
 
-        HttpResponse apiResponsePublisher = apiPublisher.getAPI(apiName, API_DEVELOPER_USER, apiVersion);
-        verifyResponse(apiResponsePublisher);
-        assertTrue(apiResponsePublisher.getData().contains(apiName), apiName + " is not visible in publisher");
+        RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
+                SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, storeContext.getContextTenant().getDomain(), storeURLHttps);
 
-        APILifeCycleStateRequest updateLifeCycle =
-                new APILifeCycleStateRequest(apiName, API_DEVELOPER_USER, APILifeCycleState.PUBLISHED);
-        HttpResponse apiPublishStatusResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
-        verifyResponse(apiPublishStatusResponse);
-        assertTrue(apiPublishStatusResponse.getData().contains("PUBLISHED"));
+        restAPIStoreNew.isAvailableInDevPortal(apiId);
 
-        apiStoreClient.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD);
-        HttpResponse apiResponseStore = apiStoreClient.getAllPublishedAPIs();
-        verifyResponse(apiResponseStore);
-        assertFalse(apiResponseStore.getData().contains(apiName));
+        restAPIPublisher.deleteAPI(apiId);
     }
 
     @Test(description = "1.5.2.6")
     public void testTagCloudContainsRestrictedTag() throws Exception {
         final String restrictedTag = "restricted-tag";
-        APIRequest apiRequest = new APIRequest(apiName2, apiContext2, apiVisibility, ADMIN_LOGIN_USERNAME, apiVersion,
-                apiResource, "",
-                restrictedTag, tierCollection, backendEndPoint, "", "", "", "", "",
-                "", "", "", APIConstants.DefaultVersion.ENABLED, APIConstants.ResponseCaching.DISABLED, "0",
-                APIConstants.SubscriptionAvailability.ALL_TENANTS, APIConstants.TRANSPORT.HTTP, "", "", "");
 
-        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
-        apiPublisher
-                .changeAPILifeCycleStatusToPublish(new APIIdentifier(API_DEVELOPER_USER, apiName2, apiVersion2), false);
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName2, apiContext2, apiVersion,
+                API_DEVELOPER_USER, new URL(backendEndPoint));
+        apiCreationRequestBean.setRoles(ADMIN_LOGIN_USERNAME);
+        apiCreationRequestBean.setVisibility(apiVisibility);
+        apiCreationRequestBean.setTiersCollection(tierCollection);
+        apiCreationRequestBean.setTags(restrictedTag);
 
-        apiStoreClient.login(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD);
-        HttpResponse serviceResponseGetAllTags = apiStoreClient.getAllTags();
-        verifyResponse(serviceResponseGetAllTags);
+        //define resources
+        List<APIResourceBean> resList = new ArrayList<APIResourceBean>();
+        APIResourceBean res = new APIResourceBean("GET",
+                APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
+                APIMIntegrationConstants.RESOURCE_TIER.TWENTYK_PER_MIN, "/find");
+        resList.add(res);
+        apiCreationRequestBean.setResourceBeanList(resList);
 
-        JSONObject tagsResponseData = new JSONObject(serviceResponseGetAllTags.getData());
-        assertFalse(isTagsResponseContainsTag(tagsResponseData, restrictedTag), "Restricted tag was"
-                + " returned in the tag cloud but it is not expected to be returned.");
+        String apiId = createAPI(apiCreationRequestBean);
+        getAPI(apiId, apiName2);
+        publishAPI(apiId);
+
+        RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
+                SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, storeContext.getContextTenant().getDomain(), storeURLHttps);
+        TagListDTO allTags = restAPIStoreNew.getAllTags();
+        assertFalse(allTags.getList().contains(restrictedTag),
+                "Restricted tag was"
+                        + " returned in the tag cloud but it is not expected to be returned.");
+        restAPIPublisher.deleteAPI(apiId);
     }
 
-    @Test(description = "1.5.2.2")
+    @Test(description = "1.5.2.10")
     public void testCreateAPIWithInvalidRoleInStoreVisibility() throws Exception {
-        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
-        HttpResponse checkValidationRole = apiPublisher.validateRoles(CREATOR_ROLE);
-        assertFalse(checkValidationRole.getData().contains("true"));
-        verifyResponse(checkValidationRole);
+        RestAPIPublisherImpl restAPIPublisherImpl = new RestAPIPublisherImpl(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD,
+                publisherContext.getContextTenant().getDomain(), baseUrl);
+        restAPIPublisherImpl.validateRoles(CREATOR_ROLE);
     }
 
     @Test(description = "1.5.2.11")
     public void testAPIVisibilityRestrictedByRoleAndTenantType() throws Exception {
-        //Add and activate wso2.com tenant
-        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        apiName = "APIVisibility_ByRoleAndTenant";
+        apiContext = "APIVisibility_ByRoleAndTenant";
         createUser(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD, new String[]{
                 ScenarioTestConstants.CREATOR_ROLE, ScenarioTestConstants.PUBLISHER_ROLE,
                 ScenarioTestConstants.SUBSCRIBER_ROLE}, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        //Add and activate wso2.com tenant
+        addTenantAndActivate(ScenarioTestConstants.TENANT_WSO2, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         // create user in wso2.com tenant
         createUserWithSubscriberRole(TENANT_SUBSCRIBER_USERNAME, TENANT_SUBSCRIBER_PASSWORD,
                 ADMIN_LOGIN_USERNAME + "@" + ScenarioTestConstants.TENANT_WSO2, ADMIN_PASSWORD);
 
-        apiPublisher.login(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD);
-        APIRequest apiRequest = new APIRequest("APIVisibility_ByRoleAndTenant", apiContext, apiVisibility,
-                SUBSCRIBER_ROLE, VISIBILITY_TYPE, apiVersion, apiResource, tierCollection, new URL(backendEndPoint));
-        HttpResponse apiCreationResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(apiCreationResponse);
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName,
+                apiContext, apiVersion, API_DEVELOPER_USER, new URL(backendEndPoint));
+        apiCreationRequestBean.setRoles(SUBSCRIBER_ROLE);
+        apiCreationRequestBean.setVisibility(apiVisibility);
+        apiCreationRequestBean.setTiersCollection(tierCollection);
 
-        APILifeCycleStateRequest updateLifeCycle =
-                new APILifeCycleStateRequest("APIVisibility_ByRoleAndTenant", SUPER_TENANT_USER_USERNAME,
-                        APILifeCycleState.PUBLISHED);
-        HttpResponse apiPublishStatusResponse = apiPublisher.changeAPILifeCycleStatus(updateLifeCycle);
-        verifyResponse(apiPublishStatusResponse);
-        assertTrue(apiPublishStatusResponse.getData().contains("PUBLISHED"));
+        String apiId = createAPI(apiCreationRequestBean);
+        getAPI(apiId, apiName);
+        publishAPI(apiId);
 
-        apiStoreClient.login(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD);
-        isAPIVisibleInStore("APIVisibility_ByRoleAndTenant", apiStoreClient);
-        apiStoreClient.login(TENANT_SUBSCRIBER_USERNAME+ "@" + ScenarioTestConstants.TENANT_WSO2,
-                TENANT_SUBSCRIBER_PASSWORD);
-        isAPINotVisibleInStore("APIVisibility_ByRoleAndTenant", apiStoreClient);
+        RestAPIStoreImpl restAPIStoreSuperTenant = new RestAPIStoreImpl(SUPER_TENANT_USER_USERNAME,
+                SUPER_TENANT_USER_PASSWORD, storeContext.getContextTenant().getDomain(), storeURLHttps);
+
+        restAPIStoreSuperTenant.isAvailableInDevPortal(apiId);
+
+        RestAPIStoreImpl restAPIStoreTenant = new RestAPIStoreImpl(TENANT_SUBSCRIBER_USERNAME,
+                TENANT_SUBSCRIBER_PASSWORD, ScenarioTestConstants.TENANT_WSO2, storeURLHttps);
+
+        restAPIStoreTenant.isAvailableInDevPortal(apiId);
+
+        restAPIPublisher.deleteAPI(apiId);
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.login(API_DEVELOPER_USER, API_DEVELOPER_USER_PWD);
-        apiPublisher.deleteAPI(apiName, apiVersion, API_DEVELOPER_USER);
-        apiPublisher.deleteAPI(apiName2, apiVersion2, API_DEVELOPER_USER);
-        apiPublisher.login(SUPER_TENANT_USER_USERNAME, SUPER_TENANT_USER_PASSWORD);
-        apiPublisher.deleteAPI("APIVisibility_ByRoleAndTenant", apiVersion, SUPER_TENANT_USER_USERNAME);
-      // deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-        // deleteUser(API_DEVELOPER_USER, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-      // deleteUser(SUPER_TENANT_USER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
-      // deleteUser(TENANT_SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME + "@" +
-                ScenarioTestConstants.TENANT_WSO2, ADMIN_PASSWORD);
+        deleteUser(SUBSCRIBER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteUser(API_DEVELOPER_USER, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+        deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+        deleteUser(SUPER_TENANT_USER_USERNAME, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
         deleteRole(SUBSCRIBER_ROLE, ADMIN_LOGIN_USERNAME, ADMIN_PASSWORD);
+    }
+
+    private void getAPI(String id, String apiName) throws Exception {
+        HttpResponse apiResponseGetAPI = restAPIPublisher.getAPI(id);
+        verifyResponse(apiResponseGetAPI);
+        JSONObject responseJson = new JSONObject(apiResponseGetAPI.getData());
+        assertEquals(responseJson.get("name").toString(), apiName, apiName + " is not updated");
     }
 }

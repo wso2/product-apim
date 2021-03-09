@@ -436,10 +436,10 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         restAPIPublisher.changeAPILifeCycleStatus(updatedAPI.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
         // Waiting until the api is available in store.
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(updatedAPI.getId(), "carbon.super");
+            restAPIStore.isAvailableInDevPortal(updatedAPI.getId());
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(updatedAPI.getId(), "wso2.com");
+            restAPIStore.isAvailableInDevPortal(updatedAPI.getId());
         }
 
         log.info("API available in store" + "api_id: " + apiId);
