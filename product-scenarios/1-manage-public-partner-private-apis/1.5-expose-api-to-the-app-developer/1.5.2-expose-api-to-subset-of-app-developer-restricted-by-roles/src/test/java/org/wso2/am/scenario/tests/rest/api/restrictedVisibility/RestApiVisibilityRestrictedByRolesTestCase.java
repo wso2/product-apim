@@ -124,7 +124,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
             createUser(userName, password, new String[]{subscribeRole}, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
 
-        restAPIPublisher.validateRoles(Base64.getUrlEncoder().encodeToString(subscribeRole.getBytes()));
+        restAPIPublisher.validateRoles(subscribeRole);
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, userName, new URL(backendEndPoint));
         apiCreationRequestBean.setRoles(subscribeRole);
@@ -138,6 +138,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
                 userName, password, storeContext.getContextTenant().getDomain(), storeURLHttps);
+        restAPIStoreNew.isAvailableInDevPortal(apiId);
         try {
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStoreNew.getAPI(apiId);
@@ -152,11 +153,11 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         } finally {
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 deleteRole(subscribeRole, ADMIN_USERNAME, ADMIN_PW);
-              // deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
+                deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
             }
             if (this.userMode.equals(TestUserMode.TENANT_USER)) {
                 deleteRole(subscribeRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-              // deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             }
         }
 
@@ -190,8 +191,8 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
             createUser(userName, password, new String[]{subscribeRole}, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
 
-        restAPIPublisher.validateRoles(Base64.getUrlEncoder().encodeToString(subscribeRole.getBytes()));
-        restAPIPublisher.validateRoles(Base64.getUrlEncoder().encodeToString(creatorRole.getBytes()));
+        restAPIPublisher.validateRoles(subscribeRole);
+        restAPIPublisher.validateRoles(creatorRole);
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, userName, new URL(backendEndPoint));
         apiCreationRequestBean.setRoles(multipleRoles);
@@ -205,6 +206,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
                 userName, password, storeContext.getContextTenant().getDomain(), storeURLHttps);
+        restAPIStoreNew.isAvailableInDevPortal(apiId);
         try {
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStoreNew.getAPI(apiId);
@@ -220,12 +222,12 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 deleteRole(subscribeRole, ADMIN_USERNAME, ADMIN_PW);
                 deleteRole(creatorRole, ADMIN_USERNAME, ADMIN_PW);
-              // deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
+                deleteUser(userName, ADMIN_USERNAME, ADMIN_PW);
             }
             if (this.userMode.equals(TestUserMode.TENANT_USER)) {
                 deleteRole(subscribeRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
                 deleteRole(creatorRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-              // deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+                deleteUser(userName, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             }
         }
 
@@ -260,7 +262,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         String tag = "tagA";
         List<String> apiIdList = new ArrayList<>();
 
-        restAPIPublisher.validateRoles(Base64.getUrlEncoder().encodeToString(ScenarioTestConstants.SUBSCRIBER_ROLE.getBytes()));
+        restAPIPublisher.validateRoles(ScenarioTestConstants.SUBSCRIBER_ROLE);
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, "/" + apiName, apiVersion, userName, new URL(backendEndPoint));
         apiCreationRequestBean.setRoles(ScenarioTestConstants.SUBSCRIBER_ROLE);
@@ -274,12 +276,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         publishAPI(apiId);
         // Wait until the tags are indexed in store
         // Waiting until the api is available in store.
-        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(apiId, "carbon.super");
-        }
-        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(apiId, "wso2.com");
-        }
+        restAPIStore.isAvailableInDevPortal(apiId);
 
         log.info("API available in store" + "api_id: " + apiId);
 
@@ -287,16 +284,16 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.getAPI(apiId);
                 assertEquals(apiResponseStore.getId(), apiId, "Response object API ID mismatch");
-
-                ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "", null);
-                assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag));
+                assertTrue(restAPIStore.isTagAvailableInDevPortal(tag),
+                        "Allowed tag was"
+                                + " not returned in the tag cloud but it is expected to be returned.");
             }
             if (this.userMode.equals(TestUserMode.TENANT_USER)) {
                 org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.apIsApi.apisApiIdGet(apiId, "wso2.com", null);
                 assertEquals(apiResponseStore.getId(), apiId, "Response object API ID mismatch");
-
-                ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "wso2.com", null);
-                assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag));
+                assertTrue(restAPIStore.isTagAvailableInDevPortal(tag),
+                        "Allowed tag was"
+                                + " not returned in the tag cloud but it is expected to be returned.");
             }
         } catch (ApiException e) {
             assertTrue(false, "Cannot get the API from the store for role " + ScenarioTestConstants.SUBSCRIBER_ROLE);
@@ -313,7 +310,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         String tag = "tagsPublicAndRestricted";
         List<String> apiIdList = new ArrayList<>();
 
-        restAPIPublisher.validateRoles(Base64.getUrlEncoder().encodeToString(ScenarioTestConstants.CREATOR_ROLE.getBytes()));
+        restAPIPublisher.validateRoles(ScenarioTestConstants.CREATOR_ROLE);
 
         APICreationRequestBean apiCreationRequestBeanRestricted = new APICreationRequestBean(apiName, "/" + apiName, apiVersion, userName, new URL(backendEndPoint));
         apiCreationRequestBeanRestricted.setRoles(ScenarioTestConstants.CREATOR_ROLE);
@@ -339,12 +336,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         publishAPI(apiIdPublic);
 
         // Waiting until the api is available in store.
-        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(apiIdPublic, "carbon.super");
-        }
-        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(apiIdPublic, "wso2.com");
-        }
+        restAPIStore.isAvailableInDevPortal(apiIdPublic);
 
         log.info("API available in store" + "api_id: " + apiIdPublic);
 
@@ -353,16 +345,16 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.getAPI(apiIdPublic);
                 assertEquals(apiResponseStore.getId(), apiIdPublic, "Response object API ID mismatch");
-
-                ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "", null);
-                assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + " not visible in the store");
+                assertTrue(restAPIStore.isTagAvailableInDevPortal(tag),
+                        "Allowed tag was"
+                                + " not returned in the tag cloud but it is expected to be returned.");
             }
             if (this.userMode.equals(TestUserMode.TENANT_USER)) {
                 org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.apIsApi.apisApiIdGet(apiIdPublic, "wso2.com", null);
                 assertEquals(apiResponseStore.getId(), apiIdPublic, "Response object API ID mismatch");
-
-                ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "wso2.com", null);
-                assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + " not visible in the store");
+                assertTrue(restAPIStore.isTagAvailableInDevPortal(tag),
+                        "Allowed tag was"
+                                + " not returned in the tag cloud but it is expected to be returned.");
             }
         } catch (ApiException e) {
             assertTrue(false, "Cannot get the API from the store for role " + ScenarioTestConstants.CREATOR_ROLE);
@@ -376,17 +368,21 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 
         // Check visibility in store for unAuthenticated user.
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "", null);
-            assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + "not visible in the store");
+            assertTrue(restAPIStore.isTagAvailableInDevPortal(tag),
+                    "Allowed tag was"
+                            + " not returned in the tag cloud but it is expected to be returned.");
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "wso2.com", null);
-            assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + "not visible in the store");
+            assertTrue(restAPIStore.isTagAvailableInDevPortal(tag),
+                    "Allowed tag was"
+                            + " not returned in the tag cloud but it is expected to be returned.");
         }
 
         for (String id : apiIdList) {
             restAPIPublisher.deleteAPI(id);
         }
+
+        restAPIStore.apIsApi.setApiClient(existingAPIClient);
     }
 
     @Test(description = "1.5.2.9")
@@ -395,8 +391,8 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         String tag = "tagsDistinctRoles";
         List<String> apiIdList = new ArrayList<>();
 
-        restAPIPublisher.validateRoles(Base64.getUrlEncoder().encodeToString(ScenarioTestConstants.SUBSCRIBER_ROLE.getBytes()));
-        restAPIPublisher.validateRoles(Base64.getUrlEncoder().encodeToString(ScenarioTestConstants.CREATOR_ROLE.getBytes()));
+        restAPIPublisher.validateRoles(ScenarioTestConstants.SUBSCRIBER_ROLE);
+        restAPIPublisher.validateRoles(ScenarioTestConstants.CREATOR_ROLE);
         APICreationRequestBean apiCreationRequestBeanCreator = new APICreationRequestBean(apiName, "/" + apiName, apiVersion, userName, new URL(backendEndPoint));
         apiCreationRequestBeanCreator.setRoles(ScenarioTestConstants.CREATOR_ROLE);
         apiCreationRequestBeanCreator.setVisibility(VISIBILITY_TYPE);
@@ -422,12 +418,7 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
         publishAPI(apiIdSub);
 
         // Waiting until the api is available in store.
-        if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(apiIdSub, "carbon.super");
-        }
-        if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(apiIdSub, "wso2.com");
-        }
+        restAPIStore.isAvailableInDevPortal(apiIdSub);
 
         log.info("API available in store" + "api_id: " + apiIdSub);
 
@@ -435,16 +426,16 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
             if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
                 org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.getAPI(apiIdSub);
                 assertEquals(apiResponseStore.getId(), apiIdSub, "Response object API ID mismatch");
-
-                ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "", null);
-                assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + " not visible in the store");
+                assertTrue(restAPIStore.isTagAvailableInDevPortal(tag),
+                        "Allowed tag was"
+                                + " not returned in the tag cloud but it is expected to be returned.");
             }
             if (this.userMode.equals(TestUserMode.TENANT_USER)) {
                 org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponseStore = restAPIStore.apIsApi.apisApiIdGet(apiIdSub, "wso2.com", null);
                 assertEquals(apiResponseStore.getId(), apiIdSub, "Response object API ID mismatch");
-
-                ApiResponse<TagListDTO> tagResponse = restAPIStore.tagsApi.tagsGetWithHttpInfo(25, 0, "wso2.com", null);
-                assertTrue(tagResponse.getData().getList().get(0).getValue().equals(tag), tag + " not visible in the store");
+                assertTrue(restAPIStore.isTagAvailableInDevPortal(tag),
+                        "Allowed tag was"
+                                + " not returned in the tag cloud but it is expected to be returned.");
             }
         } catch (ApiException e) {
             assertTrue(false, "Cannot get the API from the store for role " + ScenarioTestConstants.SUBSCRIBER_ROLE);
@@ -473,16 +464,6 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
 //                "API \'APIVisibility_tagsDistinctRoles1\' is visible to the user without the restricted role");
 //    }
 
-    private String createAPI(APICreationRequestBean apiCreationRequest) throws Exception {
-        APIDTO apidto = restAPIPublisher.addAPI(apiCreationRequest);
-        String apiId = apidto.getId();
-        assertNotNull(apiId, "API creation fails");
-        return apiId;
-    }
-
-    private void publishAPI(String id) throws Exception {
-        HttpResponse apiLifecycleResponse = restAPIPublisher.changeAPILifeCycleStatus(id, APILifeCycleAction.PUBLISH.getAction(), null);
-    }
 
     public void getAPI(String id) throws Exception {
         HttpResponse apiResponseGetAPI = restAPIPublisher.getAPI(id);
@@ -494,13 +475,12 @@ public class RestApiVisibilityRestrictedByRolesTestCase extends ScenarioTestBase
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 

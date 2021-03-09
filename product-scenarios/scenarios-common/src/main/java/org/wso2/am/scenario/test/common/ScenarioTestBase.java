@@ -37,6 +37,8 @@ import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -71,6 +73,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 public class ScenarioTestBase {
 
@@ -1050,5 +1055,25 @@ public class ScenarioTestBase {
         } catch (InterruptedException ignored) {
 
         }
+    }
+
+    public String createAPI(APICreationRequestBean apiCreationRequest) throws Exception {
+        org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO apidto = restAPIPublisher.addAPI(apiCreationRequest);
+        String apiId = apidto.getId();
+        assertNotNull(apiId, "API creation fails");
+        return apiId;
+    }
+
+    public String createAPI(APICreationRequestBean apiCreationRequest, RestAPIPublisherImpl restAPIPublisher)
+            throws Exception {
+        org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO apidto = restAPIPublisher
+                .addAPI(apiCreationRequest);
+        String apiId = apidto.getId();
+        assertNotNull(apiId, "API creation fails");
+        return apiId;
+    }
+
+    public void publishAPI(String id) throws Exception {
+        HttpResponse apiLifecycleResponse = restAPIPublisher.changeAPILifeCycleStatus(id, APILifeCycleAction.PUBLISH.getAction(), null);
     }
 }

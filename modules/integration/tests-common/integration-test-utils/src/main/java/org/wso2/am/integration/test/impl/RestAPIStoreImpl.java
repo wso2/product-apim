@@ -84,6 +84,7 @@ import org.wso2.am.integration.clients.store.api.v1.UsersApi;
 public class RestAPIStoreImpl {
 
     private static final Log log = LogFactory.getLog(RestAPIStoreImpl.class);
+    private static final long WAIT_TIME = 60 * 1000;
 
     public ApIsApi apIsApi = new ApIsApi();
     public ApplicationsApi applicationsApi = new ApplicationsApi();
@@ -1837,5 +1838,67 @@ public class RestAPIStoreImpl {
             response = new HttpResponse("Successfully get the GraphQL Schema Type List", 200);
         }
         return response;
+    }
+
+    /**
+     * Check whether the specific api is available in dev portal.
+     *
+     * @param apiId        apiID
+     * @return
+     */
+    public boolean isAvailableInDevPortal(String apiId) {
+        boolean isAvailable = false;
+        long waitTime = System.currentTimeMillis() + WAIT_TIME;
+        APIDTO response = null;
+        while (waitTime > System.currentTimeMillis()) {
+            try {
+                response = apIsApi.apisApiIdGet(apiId, tenantDomain, null);
+            } catch (ApiException e) {
+                log.info("Waiting for api " + apiId + " to be available in dev portal.");
+            }
+            if (response != null && response.getId().equals(apiId)) {
+                isAvailable = true;
+                break;
+            } else {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {
+                }
+                log.info("Waiting for api " + apiId + " to be available in dev portal.");
+            }
+        }
+        return isAvailable;
+    }
+
+    /**
+     * Check whether the specific tag is available in dev portal.
+     *
+     * @param tag        tag
+     * @return
+     */
+    public boolean isTagAvailableInDevPortal(String tag) {
+        boolean isAvailable = false;
+        long waitTime = System.currentTimeMillis() + WAIT_TIME;
+        TagListDTO response = null;
+
+        while (waitTime > System.currentTimeMillis()) {
+            try {
+                response = tagsApi.tagsGet(25, 0, tenantDomain, "");
+            } catch (ApiException e) {
+                log.info("Waiting for tag " + tag + " to be available in tag cloud.");
+            }
+            if (response != null && response.toString().contains(tag)) {
+                log.info("Tag: " + tag + " is available in tag cloud.");
+                isAvailable = true;
+                break;
+            } else {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {
+                }
+                log.info("Waiting for tag " + tag + " to be available in tag cloud.");
+            }
+        }
+        return isAvailable;
     }
 }

@@ -104,10 +104,10 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
 
         // Waiting until the api is available in store.
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+            restAPIStore.isAvailableInDevPortal(apiID);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+            restAPIStore.isAvailableInDevPortal(apiID);
         }
 
         log.info("API available in store" + "api_id: " + apiID);
@@ -149,10 +149,10 @@ public class PublicRestApiVisibilityTestCase extends ScenarioTestBase {
 
         // Waiting until the api is available in store.
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(apiID, "carbon.super");
+            restAPIStore.isAvailableInDevPortal(apiID);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            restAPIStore.isAvailableInDevPortal(apiID, "wso2.com");
+            restAPIStore.isAvailableInDevPortal(apiID);
         }
 
         log.info("API available in store" + "api_id: " + apiID);
