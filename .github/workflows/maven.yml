@@ -15,7 +15,7 @@ jobs:
       matrix:
         include:
           - id: 1
-            segment: apim-integration-tests-api-common, apim-integration-tests-api-change-endpoint, apim-integration-tests-api-product, apim-integration-tests-api-lifecycle, apim-email-secondary-userstore-tests, apim-CORS-tests, apim-integration-tests-samples, apim-publisher-tests, apim-store-tests, apim-integration-tests-graphql, admin-rest-api-tests
+            segment: apim-integration-tests-api-common, apim-integration-tests-api-change-endpoint, apim-integration-tests-api-product, apim-integration-tests-api-lifecycle, apim-email-secondary-userstore-tests, apim-CORS-tests, apim-integration-tests-samples, apim-publisher-tests, apim-store-tests, apim-integration-tests-graphql, admin-rest-api-tests, apim-websocket-tests
           - id: 2
             segment: rest-api-tests, apim-mediation-tests, apim-integration-tests-without-restarts, apim-integration-tests-application-sharing, apim-JWT-integration-tests, apim-urlsafe-JWT-integration-tests, apim-integration-tests-endpoint-security, apim-integration-tests-external-idp, apim-integration-emailusername-login, apim-integration-tests-workflow
       fail-fast: false
