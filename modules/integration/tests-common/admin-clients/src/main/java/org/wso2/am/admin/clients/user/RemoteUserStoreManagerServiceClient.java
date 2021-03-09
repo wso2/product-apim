@@ -124,4 +124,27 @@ public class RemoteUserStoreManagerServiceClient {
         remoteUserStoreManagerServiceStub.setUserClaimValue(username, claim, value, profile);
     }
 
+    /**
+     *  Used to delete user.
+     * @param user
+     * @throws RemoteUserStoreManagerServiceUserStoreExceptionException
+     * @throws RemoteException
+     */
+    public void removeUser(String user) throws RemoteUserStoreManagerServiceUserStoreExceptionException,
+            RemoteException {
+        remoteUserStoreManagerServiceStub.deleteUser(user);
+    }
+
+    /**
+     *
+     * @param user
+     * @param password
+     * @throws RemoteUserStoreManagerServiceUserStoreExceptionException
+     * @throws RemoteException
+     */
+    public void updateUser(String user, String password)
+            throws RemoteUserStoreManagerServiceUserStoreExceptionException, RemoteException {
+        remoteUserStoreManagerServiceStub.updateCredentialByAdmin(user, password);
+    }
+
 }
