@@ -29,6 +29,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.internal.api.dto.RevokedJWTDTO;
+import org.wso2.am.integration.clients.internal.api.dto.RevokedJWTListDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -37,6 +39,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.RestAPIInternalImpl;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -45,6 +48,7 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -66,6 +70,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -106,7 +111,6 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     String users[] = {"apisecUser", "apisecUser2@wso2.com", "apisecUser2@abc.com"};
     String endUserPassword = "password@123";
-
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
@@ -989,7 +993,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     @Test(description = "Testing the User Token Invocation and Password Reset", dependsOnMethods = {
             "testInvokeBasicAuth"})
     public void testInvokeJWTUserToken() throws XPathExpressionException, IOException, JSONException,
-            APIManagerIntegrationTestException, RemoteUserStoreManagerServiceUserStoreExceptionException {
+            APIManagerIntegrationTestException, RemoteUserStoreManagerServiceUserStoreExceptionException,
+            ParseException, InterruptedException, org.wso2.am.integration.clients.internal.ApiException {
         // Create requestHeaders
         String user1 = users[0];
         URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
@@ -1010,6 +1015,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                         + "both mutual sso and oauth2");
         // Change the User Credentials
         remoteUserStoreManagerServiceClient.updateUser(user1, "changeme");
+        verifyRevokedTokenAvailable(TokenUtils.getJtiOfJwtToken(accessToken1));
+        Thread.sleep(10000);
         apiResponse = HttpRequestUtil
                 .doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                         requestHeaders);
@@ -1029,7 +1036,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders1);
         Assert.assertEquals(response.getResponseCode(), 401);
         Map<String, String> requestHeaders2 = new HashMap<>();
-        requestHeaders1.put("Authorization",
+        requestHeaders2.put("Authorization",
                 "Basic " + Base64.encodeBase64String(user1.concat("@").concat(this.user.getUserDomain()).concat(":")
                         .concat("changeme").getBytes()));
         response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
@@ -1061,6 +1068,27 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         for (String user : users) {
             remoteUserStoreManagerServiceClient.removeUser(user);
         }
+    }
+
+    private void verifyRevokedTokenAvailable(String alias)
+            throws org.wso2.am.integration.clients.internal.ApiException, InterruptedException {
+        int retryCount = 0;
+        RevokedJWTDTO selectedRevokedJWTDTO = null;
+        do {
+            RevokedJWTListDTO revokedJWTListDTOS = restAPIInternal.retrieveRevokedList();
+            for (RevokedJWTDTO revokedJWTDTO : revokedJWTListDTOS) {
+                if (alias.equals(revokedJWTDTO.getJwtSignature())) {
+                    selectedRevokedJWTDTO = revokedJWTDTO;
+                    break;
+                }
+            }
+            if (selectedRevokedJWTDTO != null) {
+                break;
+            }
+            retryCount++;
+            Thread.sleep(5000);
+        } while (retryCount > 10);
+        Assert.assertNotNull(selectedRevokedJWTDTO, "Revoked Token didn't store in database");
     }
 
 }

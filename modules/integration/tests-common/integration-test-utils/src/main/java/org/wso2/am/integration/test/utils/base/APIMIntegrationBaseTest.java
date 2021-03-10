@@ -42,6 +42,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.test.RestAPIInternalImpl;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
@@ -120,6 +121,7 @@ public class APIMIntegrationBaseTest {
     protected String storeURLHttps;
     protected String keymanagerSessionCookie;
     protected String keymanagerSuperTenantSessionCookie;
+    protected  RestAPIInternalImpl restAPIInternal;
     protected final int inboundWebSocketPort = 9099;
     protected final int portOffset = 500;  //This need to be properly fixed rather than hard coding
 
@@ -189,7 +191,9 @@ public class APIMIntegrationBaseTest {
             superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                                                       APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                                                       TestUserMode.SUPER_TENANT_ADMIN);
-
+            restAPIInternal =
+                    new RestAPIInternalImpl(keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                            keyManagerContext.getContextTenant().getContextUser().getPassword(), user.getUserDomain());
             keymanagerSessionCookie = createSession(keyManagerContext);
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
