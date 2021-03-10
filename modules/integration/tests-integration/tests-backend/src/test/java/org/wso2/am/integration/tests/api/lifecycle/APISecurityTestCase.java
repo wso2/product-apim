@@ -1087,7 +1087,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
             }
             retryCount++;
             Thread.sleep(5000);
-        } while (retryCount > 10);
+        } while (retryCount > 20);
         Assert.assertNotNull(selectedRevokedJWTDTO, "Revoked Token didn't store in database");
     }
 
