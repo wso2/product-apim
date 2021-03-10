@@ -30,5 +30,6 @@
         <module>store</module>
         <module>admin</module>
         <module>gateway</module>
+        <module>internal-api</module>
     </modules>
 </project>

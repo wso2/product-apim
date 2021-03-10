@@ -29,6 +29,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.internal.api.dto.RevokedJWTDTO;
+import org.wso2.am.integration.clients.internal.api.dto.RevokedJWTListDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -37,6 +39,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.RestAPIInternalImpl;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -44,13 +47,17 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilException;
+import org.wso2.carbon.um.ws.api.stub.ClaimValue;
+import org.wso2.carbon.um.ws.api.stub.RemoteUserStoreManagerServiceUserStoreExceptionException;
+import org.wso2.carbon.user.core.UserStoreException;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
@@ -58,10 +65,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,6 +94,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String mutualSSLWithOAuthAPIContext = "mutualSSLWithOAuthAPI";
     private final String mutualSSLandOAuthMandatoryAPIContext = "mutualSSLandOAuthMandatoryAPI";
     private final String apiKeySecuredAPIContext = "apiKeySecuredAPI";
+    private final String basicAuthSecuredAPI = "BasicAuthSecuredAPI";
+    private final String basicAuthSecuredAPIContext = "BasicAuthSecuredAPI";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
@@ -96,9 +107,10 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private String consumerSecret;
     private String apiId1, apiId2;
     private String apiId3, apiId4;
+    private String apiId5;
     private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
-    private ApiTestHelper apiTestHelper;
-
+    String users[] = {"apisecUser", "apisecUser2@wso2.com", "apisecUser2@abc.com"};
+    String endUserPassword = "password@123";
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
@@ -106,6 +118,17 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN}};
     }
+
+    private void createUser() throws RemoteException,
+            RemoteUserStoreManagerServiceUserStoreExceptionException, UserStoreException {
+
+        for (String user : users) {
+            remoteUserStoreManagerServiceClient.addUser(user, endUserPassword, new String[]{}, new ClaimValue[]{},
+                    "default", false);
+        }
+
+    }
+
 
     @Factory(dataProvider = "userModeDataProvider")
     public APISecurityTestCase(TestUserMode userMode) {
@@ -116,11 +139,11 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     public void initialize()
             throws APIManagerIntegrationTestException, IOException, ApiException,
             org.wso2.am.integration.clients.store.api.ApiException, XPathExpressionException, AutomationUtilException,
-            InterruptedException, JSONException {
+            InterruptedException, JSONException, RemoteUserStoreManagerServiceUserStoreExceptionException,
+            UserStoreException {
         super.init(userMode);
+        createUser();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation(),
-                keyManagerContext.getContextTenant().getDomain(), keyManagerHTTPSURL);
 
         APIRequest apiRequest1 = new APIRequest(mutualSSLOnlyAPIName, mutualSSLOnlyAPIContext, new URL(apiEndPointUrl));
         apiRequest1.setVersion(API_VERSION_1_0_0);
@@ -234,6 +257,30 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         HttpResponse response4 = restAPIPublisher.addAPI(apiRequest4);
         apiId4 = response4.getData();
+
+        APIRequest apiRequest5 = new APIRequest(basicAuthSecuredAPI, basicAuthSecuredAPIContext,
+                new URL(apiEndPointUrl));
+        apiRequest5.setVersion(API_VERSION_1_0_0);
+        apiRequest5.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest5.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest5.setTags(API_TAGS);
+        apiRequest5.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest5.setOperationsDTOS(operationsDTOS);
+        apiRequest5.setProvider(user.getUserName());
+
+        List<String> securitySchemes5 = new ArrayList<>();
+        securitySchemes5.add("basic_auth");
+        securitySchemes5.add("oauth_basic_auth_api_key_mandatory");
+        apiRequest5.setSecurityScheme(securitySchemes5);
+        apiRequest5.setDefault_version("true");
+        apiRequest5.setHttps_checked("https");
+        apiRequest5.setHttp_checked(null);
+        HttpResponse response5 = restAPIPublisher.addAPI(apiRequest5);
+        apiId5 = response5.getData();
+        createAPIRevisionAndDeployUsingRest(apiId5, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId5, false);
+        waitForAPIDeploymentSync(apiRequest5.getProvider(), apiRequest5.getName(), apiRequest5.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(description = "This test case tests the behaviour of internal Key token on Created API with authentication " +
@@ -351,6 +398,17 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                         + "both mutual sso and oauth2");
     }
 
+    @Test(description = "Testing the invocation with Basic Auth for Oauth2 Only API", dependsOnMethods = {
+            "testCreateAndPublishAPIWithOAuth2"})
+    public void testInvocationWithBasicAuthForOauthOnlyAPINegative() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Basic abcce");
+        HttpResponse response = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLandOauthMandatoryAPI,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED);
+    }
+
     @Test(description = "Testing the invocation with API Keys", dependsOnMethods = {
             "testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeys() throws Exception {
@@ -366,6 +424,18 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
         Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK);
     }
+
+    @Test(description = "Testing the invocation with Basic Auth for APIKey Only API", dependsOnMethods = {
+            "testCreateAndPublishAPIWithOAuth2"})
+    public void testInvocationWithBasicAuthFoAPIKeyNegative() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Basic abcce");
+        HttpResponse response = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(apiKeySecuredAPIContext,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED);
+    }
+
 
     @Test(description = "Invoke mutual SSL only API with not supported certificate", dependsOnMethods =
             "testCreateAndPublishAPIWithOAuth2")
@@ -824,7 +894,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
-    public void testInvokeJWTasInternalKey() throws Exception {
+    public void testInvokeJWTasInternalKeyNegative() throws Exception {
         HttpResponse response = invokeApiWithInternalKey(mutualSSLWithOAuthAPI, API_VERSION_1_0_0,
                 API_END_POINT_METHOD, accessToken);
         Assert.assertEquals(response.getResponseCode(), 401);
@@ -832,7 +902,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
             {"testCreateAndPublishAPIWithOAuth2"})
-    public void testInvokeAPIKeyAsInternalKey() throws Exception {
+    public void testInvokeAPIKeyAsInternalKeyNegative() throws Exception {
         APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
                 .PRODUCTION.toString(), -1, null, null);
         HttpResponse response = invokeApiWithInternalKey(mutualSSLWithOAuthAPI, API_VERSION_1_0_0,
@@ -840,6 +910,139 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), 401);
     }
 
+    @Test(description = "Testing the invocation with Revoked API Keys", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvokeInternalKeyForBasicAuthOnlyAPI() throws Exception {
+        ApiResponse<org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO> keyDTOApiResponse1 =
+                restAPIPublisher.generateInternalApiKey(apiId5);
+        Assert.assertEquals(keyDTOApiResponse1.getStatusCode(), 200);
+        HttpResponse response = invokeApiWithInternalKey(basicAuthSecuredAPIContext, API_VERSION_1_0_0,
+                API_END_POINT_METHOD, keyDTOApiResponse1.getData().getApikey());
+        Assert.assertEquals(response.getResponseCode(), 200);
+    }
+
+    @Test(description = "Testing the invocation with BasicAuth", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvokeBasicAuth() throws Exception {
+        String user1 = users[0];
+        Map<String, String> requestHeaders1 = new HashMap<>();
+        requestHeaders1.put("Authorization",
+                "Basic " + Base64.encodeBase64String(user1.concat("@").concat(this.user.getUserDomain()).concat(":")
+                        .concat("randomPassword1").getBytes()));
+        HttpResponse response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders1);
+        Assert.assertEquals(response.getResponseCode(), 401);
+        for (String user : users) {
+            Map<String, String> requestHeaders = new HashMap<>();
+            requestHeaders.put("Authorization",
+                    "Basic " + Base64.encodeBase64String(user.concat("@").concat(this.user.getUserDomain()).concat(
+                            ":").concat(endUserPassword).getBytes()));
+            response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
+                    API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+            Assert.assertEquals(response.getResponseCode(), 200);
+        }
+        Map<String, String> requestHeaders2 = new HashMap<>();
+        requestHeaders2.put("Authorization",
+                "Basic " + Base64.encodeBase64String(user1.concat("@").concat(this.user.getUserDomain()).concat(":")
+                        .concat("randomPassword1").getBytes()));
+        response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders2);
+        Assert.assertEquals(response.getResponseCode(), 401);
+    }
+
+    @Test(description = "Testing the invocation with BasicAuth Invalid user ", dependsOnMethods =
+            {"testInvokeBasicAuth"})
+    public void testInvokeBasicAuthInvalidCredentials2() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("Authorization",
+                "Basic " + Base64.encodeBase64String("random@".concat(user.getUserDomain()).concat(":").concat(
+                        "randomPassword").getBytes()));
+        HttpResponse response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), 401);
+    }
+
+    @Test(description = "Testing the invocation with Oauth Token for BasicAuth api", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvokeBearerTokenForBasicNegative() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "application/json");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        HttpResponse response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), 401);
+    }
+
+    @Test(description = "Testing the invocation with APIkey Token for BasicAuth api", dependsOnMethods =
+            {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvokeAPIKeyForBasicOauthAPINegative() throws Exception {
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
+                .PRODUCTION.toString(), -1, null, null);
+        assertNotNull(apiKeyDTO, "API Key generation failed");
+
+        Map<String, String> requestHeader = new HashMap<>();
+        requestHeader.put("apikey", apiKeyDTO.getApikey());
+        requestHeader.put("accept", "text/xml");
+
+        HttpResponse response = HTTPSClientUtils.doGet(
+                getAPIInvocationURLHttps(basicAuthSecuredAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeader);
+        Assert.assertEquals(response.getResponseCode(), 401);
+    }
+
+    @Test(description = "Testing the User Token Invocation and Password Reset", dependsOnMethods = {
+            "testInvokeBasicAuth"})
+    public void testInvokeJWTUserToken() throws XPathExpressionException, IOException, JSONException,
+            APIManagerIntegrationTestException, RemoteUserStoreManagerServiceUserStoreExceptionException,
+            ParseException, InterruptedException, org.wso2.am.integration.clients.internal.ApiException {
+        // Create requestHeaders
+        String user1 = users[0];
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
+        String subsAccessTokenPayload =
+                APIMTestCaseUtils.getPayloadForPasswordGrant(user1.concat("@").concat(user.getUserDomain()),
+                        endUserPassword);
+        JSONObject subsAccessTokenGenerationResponse = new JSONObject(restAPIStore.generateUserAccessKey(consumerKey,
+                consumerSecret, subsAccessTokenPayload, tokenEndpointURL).getData());
+        String accessToken1 = subsAccessTokenGenerationResponse.getString("access_token");
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "application/json");
+        requestHeaders.put("Authorization", "Bearer " + accessToken1);
+        HttpResponse apiResponse = HttpRequestUtil
+                .doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                        requestHeaders);
+        assertEquals(apiResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "API invocation failed for a test case with valid access token when the API is protected with "
+                        + "both mutual sso and oauth2");
+        // Change the User Credentials
+        remoteUserStoreManagerServiceClient.updateUser(user1, "changeme");
+        verifyRevokedTokenAvailable(TokenUtils.getJtiOfJwtToken(accessToken1));
+        Thread.sleep(10000);
+        apiResponse = HttpRequestUtil
+                .doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                        requestHeaders);
+        assertEquals(apiResponse.getResponseCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED,
+                "API Invocation pass for Revoked Token");
+    }
+
+    @Test(description = "Testing the invocation with BasicAuth", dependsOnMethods =
+            {"testInvokeJWTUserToken"})
+    public void testInvokeBasicAuthAfterCredentialsInvalid() throws Exception {
+        String user1 = users[0];
+        Map<String, String> requestHeaders1 = new HashMap<>();
+        requestHeaders1.put("Authorization",
+                "Basic " + Base64.encodeBase64String(user1.concat("@").concat(this.user.getUserDomain()).concat(":")
+                        .concat(endUserPassword).getBytes()));
+        HttpResponse response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders1);
+        Assert.assertEquals(response.getResponseCode(), 401);
+        Map<String, String> requestHeaders2 = new HashMap<>();
+        requestHeaders2.put("Authorization",
+                "Basic " + Base64.encodeBase64String(user1.concat("@").concat(this.user.getUserDomain()).concat(":")
+                        .concat("changeme").getBytes()));
+        response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders2);
+        Assert.assertEquals(response.getResponseCode(), 200);
+    }
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
@@ -848,6 +1051,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId2);
         restAPIPublisher.deleteAPI(apiId3);
         restAPIPublisher.deleteAPI(apiId4);
+        restAPIPublisher.deleteAPI(apiId5);
+        removeUsers();
     }
 
     public String generateBase64EncodedCertificate() throws IOException {
@@ -858,4 +1063,32 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         base64EncodedString = Base64.encodeBase64URLSafeString(base64EncodedString.getBytes());
         return base64EncodedString;
     }
+
+    private void removeUsers() throws RemoteException, RemoteUserStoreManagerServiceUserStoreExceptionException {
+        for (String user : users) {
+            remoteUserStoreManagerServiceClient.removeUser(user);
+        }
+    }
+
+    private void verifyRevokedTokenAvailable(String alias)
+            throws org.wso2.am.integration.clients.internal.ApiException, InterruptedException {
+        int retryCount = 0;
+        RevokedJWTDTO selectedRevokedJWTDTO = null;
+        do {
+            RevokedJWTListDTO revokedJWTListDTOS = restAPIInternal.retrieveRevokedList();
+            for (RevokedJWTDTO revokedJWTDTO : revokedJWTListDTOS) {
+                if (alias.equals(revokedJWTDTO.getJwtSignature())) {
+                    selectedRevokedJWTDTO = revokedJWTDTO;
+                    break;
+                }
+            }
+            if (selectedRevokedJWTDTO != null) {
+                break;
+            }
+            retryCount++;
+            Thread.sleep(5000);
+        } while (retryCount > 10);
+        Assert.assertNotNull(selectedRevokedJWTDTO, "Revoked Token didn't store in database");
+    }
+
 }

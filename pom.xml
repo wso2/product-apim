@@ -989,7 +989,12 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
-                <artifactId>org.wso2.carbon.apimgt.clients.gateway.api</artifactId>
+                <artifactId>org.wso2.am.integration.clients.gateway.api</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.integration.clients.internal.api</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
             <dependency>
@@ -1256,7 +1261,7 @@
         <carbon.analytics.common.version>5.2.34</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.0.35</carbon.apimgt.version>
+        <carbon.apimgt.version>9.0.37</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1451,7 +1456,7 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.2.5</wso2is.km.version>
+        <wso2is.km.version>1.2.6</wso2is.km.version>
         <okta.keymanager.feature.version>3.0.6</okta.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.0.5</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.1</auth0.keymanager.feature.version>
