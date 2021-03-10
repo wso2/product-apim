@@ -102,6 +102,7 @@ public class APIMIntegrationConstants {
         public static final String GOLD = "Gold";
         public static final String SILVER = "Silver";
         public static final String BRONZE = "Bronze";
+        public static final String ASYNC_UNLIMITED = "AsyncWHUnlimited";
 
         public static final int GOLD_LIMIT = 20;
         public static final int SILVER_LIMIT = 5;

@@ -7,8 +7,6 @@
       "apim.throttling.enable_blacklist_condition": true,
       "indexing.enable": false,
       "system.parameter.profile": "gateway-worker",
-      "synapse_handlers.external_call_logger.enabled": true,
-      "synapse_handlers.open_tracing.enabled": true,
       "apim.key_manager.enable_registration": false
     },
     "api-key-manager": {
@@ -56,9 +54,7 @@
       "apim.throttling.enable_blacklist_condition": false
     },
     "default": {
-      "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl",
-      "synapse_handlers.external_call_logger.enabled": true,
-      "synapse_handlers.open_tracing.enabled": true
+      "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl"
     }
   },
   "apim.jwt.encoding": {

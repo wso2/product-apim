@@ -1,14 +1,33 @@
-name: API Manager Pull Request builder
+name: APIM builder
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        include:
+          - id: 1
+            segment: apim-integration-tests-api-common, apim-integration-tests-api-change-endpoint, apim-integration-tests-api-product, apim-integration-tests-api-lifecycle, apim-email-secondary-userstore-tests, apim-CORS-tests, apim-integration-tests-samples, apim-publisher-tests, apim-store-tests, apim-integration-tests-graphql, admin-rest-api-tests, apim-websocket-tests
+          - id: 2
+            segment: rest-api-tests, apim-mediation-tests, apim-integration-tests-without-restarts, apim-integration-tests-application-sharing, apim-JWT-integration-tests, apim-urlsafe-JWT-integration-tests, apim-integration-tests-endpoint-security, apim-integration-tests-external-idp, apim-integration-emailusername-login, apim-integration-tests-workflow
+      fail-fast: false
     steps:
     - name: Checkout master
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
+    - name: Cache Maven packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2
+        restore-keys: ${{ runner.os }}-m2
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
       with:
@@ -18,7 +37,10 @@ jobs:
         node-version: '10.x'
     - name: Build product-apim with Test.
       run: mvn clean install --file pom.xml
+      env:
+        PRODUCT_APIM_TESTS: ${{ matrix.segment }}
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.2.1
       with:
         flags: integration_tests
+

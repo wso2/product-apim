@@ -557,6 +557,11 @@
                 <version>${carbon.automationutils.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${testng.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.admin.clients</artifactId>
                 <version>${apimserver.version}</version>
@@ -1251,7 +1256,7 @@
         <carbon.analytics.common.version>5.2.34</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.0.15</carbon.apimgt.version>
+        <carbon.apimgt.version>9.0.35</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1274,7 +1279,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.81</carbon.mediation.version>
+        <carbon.mediation.version>4.7.84</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.18.187</carbon.identity.version>
@@ -1322,7 +1327,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v205</synapse.version>
+        <synapse.version>2.1.7-wso2v207</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v41</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
@@ -1364,6 +1369,7 @@
 
         <carbon.automation.version>4.4.7</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
+        <testng.version>6.11</testng.version>
         <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
         <org.apache.axis2.transport.version>2.0.0-wso2v2</org.apache.axis2.transport.version>
         <org.springframework.version>5.1.13.RELEASE</org.springframework.version>
