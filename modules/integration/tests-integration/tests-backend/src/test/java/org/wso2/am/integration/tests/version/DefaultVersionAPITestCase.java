@@ -212,6 +212,7 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
         APIRevisionDTO apiRevisionDTO = restAPIPublisher.addAPIRevision(newAPIVersion);
         APIRevisionDeployUndeployRequest apiRevisionDeployUndeployRequest = new APIRevisionDeployUndeployRequest();
         apiRevisionDeployUndeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployUndeployRequest.setVhost("localhost");
         apiRevisionDeployUndeployRequest.setDisplayOnDevportal(true);
         restAPIPublisher.deployAPIRevision(newAPIVersion, apiRevisionDTO.getId(), apiRevisionDeployUndeployRequest);
         APIDTO storeAPIAfterUpdate = restAPIStore.getAPI(apiId);
