@@ -192,8 +192,9 @@ public class APIMIntegrationBaseTest {
                                                       APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                                                       TestUserMode.SUPER_TENANT_ADMIN);
             restAPIInternal =
-                    new RestAPIInternalImpl(keyManagerContext.getContextTenant().getContextUser().getUserName(),
-                            keyManagerContext.getContextTenant().getContextUser().getPassword(), user.getUserDomain());
+                    new RestAPIInternalImpl(superTenantKeyManagerContext.getContextTenant().getContextUser().getUserName(),
+                            superTenantKeyManagerContext.getContextTenant().getContextUser().getPassword(),
+                            user.getUserDomain());
             keymanagerSessionCookie = createSession(keyManagerContext);
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
