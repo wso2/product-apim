@@ -16,13 +16,16 @@
 
 package org.wso2.am.scenario.tests.rest.api.publisherVisibilityRoleRestriction;
 
+import org.apache.http.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -33,11 +36,12 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class publisherAccessControlNegativeTestCase extends ScenarioTestBase {
+public class PublisherAccessControlNegativeTestCase extends ScenarioTestBase {
 
     private String secondUser;
     private String apiName;
@@ -60,7 +64,7 @@ public class publisherAccessControlNegativeTestCase extends ScenarioTestBase {
     private static final String API_SUBSCRIBER_PW = "Andrew#123";
 
     @Factory(dataProvider = "userModeDataProvider")
-    public publisherAccessControlNegativeTestCase(TestUserMode userMode) {
+    public PublisherAccessControlNegativeTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
@@ -96,7 +100,14 @@ public class publisherAccessControlNegativeTestCase extends ScenarioTestBase {
         apiVersion = "1.0.0";
 
 //        assertTrue(validateRoles(apiRole).getData().contains("false"));
-        assertTrue(restAPIPublisher.validateRoles(apiRole).getData().toString().contains("false"));
+        //Validate the publisher role
+        try {
+            restAPIPublisher.validateRoles(apiRole);
+            Assert.fail("Exception was not thrown when validating a not existing role");
+        } catch (ApiException e) {
+            assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND,
+                    "User already exists for " + apiRole);
+        }
     }
 
     @Test(description = "2.2.1.1")
@@ -133,22 +144,22 @@ public class publisherAccessControlNegativeTestCase extends ScenarioTestBase {
         restAPIPublisher.deleteAPI(apiDto.getId());
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-          // deleteUser(secondUser, ADMIN_USERNAME, ADMIN_PW);
+          deleteUser(secondUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-          // deleteUser(secondUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+          deleteUser(secondUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }

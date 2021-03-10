@@ -22,7 +22,7 @@
           verbose="2" parallel="false">
           <classes>
 <!--            <class name="org.wso2.am.scenario.tests.rest.api.publisherVisibilityRoleRestriction.PublisherAccessControlTestCase"/>-->
-            <class name="org.wso2.am.scenario.tests.rest.api.publisherVisibilityRoleRestriction.publisherAccessControlNegativeTestCase"/>
+            <class name="org.wso2.am.scenario.tests.rest.api.publisherVisibilityRoleRestriction.PublisherAccessControlNegativeTestCase"/>
         </classes>
     </test>
 </suite>

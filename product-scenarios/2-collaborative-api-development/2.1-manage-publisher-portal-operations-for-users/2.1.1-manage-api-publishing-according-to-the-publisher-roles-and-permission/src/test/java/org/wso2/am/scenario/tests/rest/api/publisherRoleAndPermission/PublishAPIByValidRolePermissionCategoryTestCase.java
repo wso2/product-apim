@@ -139,10 +139,10 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         restAPIPublisher.deleteAPI(apiDto.getId());
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-          // deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-          // deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
@@ -201,11 +201,11 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         restAPIPublisher.deleteAPI(apiDto.getId());
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-          // deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
             deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-          // deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
@@ -259,10 +259,10 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-          // deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-          // deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
@@ -318,11 +318,11 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-          // deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(devPortalUser, ADMIN_USERNAME, ADMIN_PW);
             deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-          // deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(devPortalUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
@@ -330,12 +330,12 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }

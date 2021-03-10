@@ -128,9 +128,10 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_USER, APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/name/"));
 
         apiCreationRequestBean.setResourceBeanList(resourceBeanArrayList);
-        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId = apiDto.getId();
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+        apiId = createAPI(apiCreationRequestBean);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        publishAPI(apiId);
 
         HttpResponse applicationResponse = restAPIStore.createApplication(TEST_APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
@@ -203,12 +204,12 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId2, "1", "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes, "3");
         applicationOneAccessToken = accessToken;
         accessToken = applicationKeyDTO.getToken().getAccessToken();
         consumerKey = applicationKeyDTO.getConsumerKey();
         consumerSecret = applicationKeyDTO.getConsumerSecret();
-        Thread.sleep(2000);
+        Thread.sleep(5000);
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
@@ -233,7 +234,7 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
     @Test(description = "3.1.1.11", dependsOnMethods = "testResourceInvokedByExpiredToken")
     public void testResourceInvokedByRevokedToken() throws Exception {
         Map<String, String> requestHeaders = new HashMap<>();
-        URL tokenEndpointURL = new URL(gatewayHttpsURL + "/" + REVOKE_TOKEN);
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "/oauth2/revoke");
 
         String requestBody = "token=" + accessToken;
         HttpResponse response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
@@ -405,12 +406,10 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         Gson g = new Gson();
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
         apidto.setAuthorizationHeader(CUSTOM_AUTH_HEADER);
-        try {
-            restAPIPublisherNew.updateAPI(apidto, apiId);
-            fail("API Creator role was able to update the authorization header");
-        } catch (ApiException e) {
-            assertTrue(e.getResponseBody().contains("Error while updating the API : " + apiId));
-        }
+        APIDTO updatedApiDto = restAPIPublisherNew.updateAPI(apidto, apiId);
+        assertEquals(updatedApiDto.getAuthorizationHeader(), CUSTOM_AUTH_HEADER,
+                    "API Creator is not able to update the authorization header");
+
     }
 
 
@@ -433,6 +432,8 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
         apidto.setAuthorizationHeader(customAuth);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(updatedAPI.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
         // Waiting until the api is available in store.
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
@@ -450,14 +451,15 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         restAPIStore.deleteApplication(applicationId2);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
