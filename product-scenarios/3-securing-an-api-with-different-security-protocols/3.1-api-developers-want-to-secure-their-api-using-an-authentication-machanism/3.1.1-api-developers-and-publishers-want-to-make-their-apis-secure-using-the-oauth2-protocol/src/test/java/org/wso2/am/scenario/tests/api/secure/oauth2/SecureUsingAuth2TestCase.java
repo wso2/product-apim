@@ -120,9 +120,10 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_NONE, APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/name/"));
 
         apiCreationRequestBean.setResourceBeanList(resourceBeanArrayList);
-        APIDTO apiDto = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId = apiDto.getId();
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+        apiId = createAPI(apiCreationRequestBean);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        publishAPI(apiId);
 
         HttpResponse applicationResponse = restAPIStore.createApplication(TEST_APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
@@ -258,6 +259,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
         apidto.setAuthorizationHeader(customAuth);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(updatedAPI.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
         // Waiting until the api is available in store.
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
@@ -294,7 +296,7 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         //get access token
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         consumerKey = applicationKeyDTO.getConsumerKey();
-        URL tokenEndpointURL = new URL(gatewayHttpsURL + "/token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "/oauth2/token");
 
         String requestBody = null;
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
@@ -316,12 +318,12 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         restAPIStore.deleteApplication(applicationId2);
         restAPIPublisher.deleteAPI(apiId);
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }

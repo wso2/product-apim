@@ -154,10 +154,10 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-          // deleteUser(publisherUser, ADMIN_USERNAME, ADMIN_PW);
+           deleteUser(publisherUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-          // deleteUser(publisherUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+           deleteUser(publisherUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
@@ -202,9 +202,7 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
 
 
         try {
-            ApiResponse<WorkflowResponseDTO> workflowResponseDTOApiResponse = restAPIPublisherNew.apiLifecycleApi
-                    .apisChangeLifecyclePostWithHttpInfo(APILifeCycleAction.PUBLISH.getAction(), apiID, null, null);
-            Assert.assertEquals(HttpStatus.SC_OK, workflowResponseDTOApiResponse.getStatusCode());
+            restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
         } catch (ApiException e) {
             e.printStackTrace();
         }
@@ -225,11 +223,11 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-          // deleteUser(publisherUser, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(publisherUser, ADMIN_USERNAME, ADMIN_PW);
             deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-          // deleteUser(publisherUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(publisherUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
@@ -282,10 +280,12 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
             updateUser(testUser, new String[]{inValidRole}, new String[]{validRole}, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
 
+        // Uncomment after fixing product-apim/issues/10219
+        restAPIPublisherNew = new RestAPIPublisherImpl(testUser, "password123$",
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+
         try {
-            ApiResponse<WorkflowResponseDTO> workflowResponseDTOApiResponse = restAPIPublisherNew.apiLifecycleApi
-                    .apisChangeLifecyclePostWithHttpInfo(APILifeCycleAction.PUBLISH.getAction(), apiID, null, null);
-            Assert.assertEquals(HttpStatus.SC_OK, workflowResponseDTOApiResponse.getStatusCode());
+            restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
         } catch (ApiException e) {
             e.printStackTrace();
         }
@@ -294,15 +294,15 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-          // deleteUser(testUser, ADMIN_USERNAME, ADMIN_PW);
+           deleteUser(testUser, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-          // deleteUser(testUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+           deleteUser(testUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
 
     //TODO : Investigate test failures and fix
-    @Test(description = "2.1.1.4", dataProvider = "permissionUpdatingDataProvider",
+    @Test(description = "2.1.1.4", dataProvider = "PermissionUpdatingDataProvider",
             dataProviderClass = ScenarioDataProvider.class, enabled = false)
     public void testPublishAPIByUpdatingPermissionInUser(String[] validPermissionList, String[] inValidPermissionList) throws Exception {
 
@@ -351,11 +351,12 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
             updateRole(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW, userRole, new String[]{testUser}, inValidPermissionList);
         }
+        // Uncomment after fixing product-apim/issues/10219
+        restAPIPublisherNew = new RestAPIPublisherImpl(testUser, "password123$",
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
 
         try {
-            ApiResponse<WorkflowResponseDTO> workflowResponseDTOApiResponse = restAPIPublisherNew.apiLifecycleApi
-                    .apisChangeLifecyclePostWithHttpInfo(APILifeCycleAction.PUBLISH.getAction(), apiID, null, null);
-            Assert.assertEquals(HttpStatus.SC_OK, workflowResponseDTOApiResponse.getStatusCode());
+            restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
         } catch (ApiException e) {
             e.printStackTrace();
         }
@@ -364,11 +365,11 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         restAPIPublisher.deleteAPI(apiID);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-          // deleteUser(testUser, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(testUser, ADMIN_USERNAME, ADMIN_PW);
             deleteRole(userRole, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-          // deleteUser(testUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(testUser, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             deleteRole(userRole, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
         }
     }
@@ -376,12 +377,12 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            // deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            // deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }

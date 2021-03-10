@@ -17,6 +17,7 @@
 package org.wso2.am.integration.test.impl;
 
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -321,6 +322,32 @@ public class RestAPIStoreImpl {
         applicationKeyGenerateRequest.setKeyType(keyTypeEnum);
         applicationKeyGenerateRequest.setScopes(scopes);
         applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
+
+        ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
+                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
+    }
+
+    public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
+            ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
+            List<String> grantTypes, String appTokenExpiryTime)
+            throws ApiException {
+        ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
+        applicationKeyGenerateRequest.setValidityTime(validityTime);
+        applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
+        applicationKeyGenerateRequest.setKeyType(keyTypeEnum);
+        applicationKeyGenerateRequest.setScopes(scopes);
+        applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
+
+        LinkedTreeMap<String, String> applicationProperties = new LinkedTreeMap<>();
+        //"additionalProperties":{"id_token_expiry_time":3600,"application_access_token_expiry_time":60,"refresh_token_expiry_time":86400,"user_access_token_expiry_time":3600}
+        applicationProperties.put("id_token_expiry_time", "N/A");
+        applicationProperties.put("application_access_token_expiry_time", appTokenExpiryTime);
+        applicationProperties.put("refresh_token_expiry_time", "N/A");
+        applicationProperties.put("user_access_token_expiry_time", "N/A");
+
+        applicationKeyGenerateRequest.setAdditionalProperties(applicationProperties);
 
         ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
                 .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
