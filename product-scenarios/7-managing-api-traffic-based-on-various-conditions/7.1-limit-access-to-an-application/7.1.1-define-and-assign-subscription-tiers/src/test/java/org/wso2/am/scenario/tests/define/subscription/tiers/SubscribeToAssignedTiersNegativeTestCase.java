@@ -49,9 +49,6 @@ import static junit.framework.Assert.assertTrue;
 public class SubscribeToAssignedTiersNegativeTestCase extends ScenarioTestBase {
 
     private final Log log = LogFactory.getLog(SubscribeToAssignedTiersTestCase.class);
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
-    private APIRequest apiRequest;
 
     private String apiNameNoTiers = "API_1";
     private String apiContextNoTiers = "/api1";
@@ -107,7 +104,7 @@ public class SubscribeToAssignedTiersNegativeTestCase extends ScenarioTestBase {
         super.init(userMode);
     }
 
-    @Test(description = "7.1.1.5")
+    @Test(groups = { "wso2.am" }, description = "7.1.1.5")
     public void testCreateAPIWithNoSubscriptionTiers() throws Exception {
 
         APIDTO apiDto = new APIDTO();
@@ -137,7 +134,7 @@ public class SubscribeToAssignedTiersNegativeTestCase extends ScenarioTestBase {
         restAPIPublisher.deleteAPI(response.getId());
     }
 
-    @Test(description = "7.1.1.6", dependsOnMethods = "testCreateAPIWithNoSubscriptionTiers")
+    @Test(groups = { "wso2.am" }, description = "7.1.1.6", dependsOnMethods = "testCreateAPIWithNoSubscriptionTiers")
     public void testSubscribeWithTierNotAssignedToAPI() throws Exception {
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiNameSubscribeToNotAssigned, apiContextSubscribeToNotAssigned, apiVersion,

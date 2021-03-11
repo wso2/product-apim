@@ -19,11 +19,13 @@
 package org.wso2.am.scenario.tests.define.subscription.tiers;
 
 import com.google.gson.Gson;
+import org.apache.http.HttpStatus;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
@@ -44,6 +46,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
 
 public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
 
@@ -72,6 +77,12 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
     private static String applicationId3;
     private static String applicationId4;
     private static String applicationId5;
+
+    private static String subId1;
+    private static String subId2;
+    private static String subId3;
+    private static String subId4;
+    private static String subId5;
 
     private static String policyId;
 
@@ -120,7 +131,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         super.init(userMode);
     }
 
-    @Test(description = "7.1.1.1")
+    @Test(groups = { "wso2.am" }, description = "7.1.1.1")
     public void testSingleTierSubscriptionAvailability() throws Exception {
 
         APIRequest apiRequest = new APIRequest(apiNameSingleTier, apiContextSingleTier, new URL(endpointUrl));
@@ -128,7 +139,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         apiRequest.setTiersCollection(singleTier);
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId1 = serviceResponse.getData();
-        restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction(), null);
+        publishAPI(apiId1);
 
         // wait till API indexed in Store
         isAPIVisibleInStore(apiId1);
@@ -142,9 +153,12 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         //Subscribe to the API with single tier
         HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId1, applicationId1, singleTier);
         verifyResponse(subscriptionResponse);
+
+        restAPIStore.deleteApplication(applicationId1);
+        restAPIPublisher.deleteAPI(apiId1);
     }
 
-    @Test(description = "7.1.1.2")
+    @Test(groups = { "wso2.am" }, description = "7.1.1.2")
     public void testSingleCustomTierSubscriptionAvailability() throws Exception {
         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
         subscriptionThrottlePolicyDTO.setBillingPlan("FREE");
@@ -153,6 +167,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         subscriptionThrottlePolicyDTO.setPolicyName(customTier);
         subscriptionThrottlePolicyDTO.setDescription("6000 requests per minute");
         subscriptionThrottlePolicyDTO.setStopOnQuotaReach(true);
+        subscriptionThrottlePolicyDTO.setSubscriberCount(0);
 
         RequestCountLimitDTO requestCountLimitDTO = new RequestCountLimitDTO();
         requestCountLimitDTO.setRequestCount(Long.valueOf(6000));
@@ -169,16 +184,20 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         subscriptionThrottlePolicyDTO.setRateLimitCount(0);
         subscriptionThrottlePolicyDTO.setRateLimitTimeUnit("sec");
 
-        org.wso2.am.integration.test.HttpResponse policyAddResponse = restAPIAdmin
-                .addSubscriptionPolicy(subscriptionThrottlePolicyDTO, "application/json");
-        policyId = policyAddResponse.getData();
+        ApiResponse<SubscriptionThrottlePolicyDTO> policyAddResponse = restAPIAdmin
+                .addSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO);
+
+        //Assert the status code and policy ID
+        assertEquals(policyAddResponse.getStatusCode(), HttpStatus.SC_CREATED);
+        policyId = policyAddResponse.getData().getPolicyId();
+        assertNotNull(policyId, "The policy ID cannot be null or empty");
 
         APIRequest apiRequest = new APIRequest(apiNameCustomTier, apiContextCustomTier, new URL(endpointUrl));
         apiRequest.setVersion(apiVersion);
         apiRequest.setTiersCollection(customTier);
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId2 = serviceResponse.getData();
-        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction(), null);
+        publishAPI(apiId2);
 
         // wait till API indexed in Store
         isAPIVisibleInStore(apiId2);
@@ -192,9 +211,12 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         //Subscribe to the API with single tier
         HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId2, applicationId2, customTier);
         verifyResponse(subscriptionResponse);
+        restAPIStore.deleteApplication(applicationId2);
+        restAPIPublisher.deleteAPI(apiId2);
+        restAPIAdmin.deleteSubscriptionThrottlingPolicy(policyId);
     }
 
-    @Test(description = "7.1.1.3", dependsOnMethods = "testSingleCustomTierSubscriptionAvailability")
+    @Test(groups = { "wso2.am" }, description = "7.1.1.3", dependsOnMethods = "testSingleCustomTierSubscriptionAvailability")
     public void testMultipleTierSubscriptionAvailability() throws Exception {
 
         APIRequest apiRequest = new APIRequest(apiNameMultipleTier, apiContextMultipleTier, new URL(endpointUrl));
@@ -202,7 +224,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         apiRequest.setTiersCollection(multiTier);
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId3 = serviceResponse.getData();
-        restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction(), null);
+        publishAPI(apiId3);
 
         // wait till API indexed in Store
         isAPIVisibleInStore(apiId3);
@@ -219,9 +241,11 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         restAPIStore.removeSubscription(subscriptionResponse.getData());
         HttpResponse subscriptionResponse2 = restAPIStore.createSubscription(apiId3, applicationId3, silverTier);
         verifyResponse(subscriptionResponse2);
+        restAPIStore.deleteApplication(applicationId3);
+        restAPIPublisher.deleteAPI(apiId3);
     }
 
-    @Test(description = "7.1.1.4", dependsOnMethods = "testMultipleTierSubscriptionAvailability")
+    @Test(groups = { "wso2.am" }, description = "7.1.1.4", dependsOnMethods = "testMultipleTierSubscriptionAvailability")
     public void testRepublishWithDifferentTier() throws Exception {
 
         APIRequest apiRequest = new APIRequest(apiRepublishedWithDiffTier, apiContextRepublishedWithDiffTier, new URL(endpointUrl));
@@ -229,7 +253,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         apiRequest.setTiersCollection(goldTier);
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId4 = serviceResponse.getData();
-        restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction(), null);
+        publishAPI(apiId4);
 
         // wait till API indexed in Store
         isAPIVisibleInStore(apiId4);
@@ -243,6 +267,7 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         //Subscribe to the API with single tier
         HttpResponse subscriptionResponse = restAPIStore.createSubscription(apiId4, addApplicationResponse.getData(), goldTier);
         verifyResponse(subscriptionResponse);
+        restAPIStore.deleteApplication(applicationId4);
 
         //Update API with silver tier
         HttpResponse response = restAPIPublisher.getAPI(apiId4);
@@ -268,22 +293,13 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
 
         SubscriptionListDTO subscriptionListDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId5);
         assertTrue(subscriptionListDTO.getList().get(0).getApplicationInfo().getName().equals(applicationNameAfterAPIRepublish));
+
+        restAPIStore.deleteApplication(applicationId5);
+        restAPIPublisher.deleteAPI(apiId4);
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIStore.deleteApplication(applicationId1);
-        restAPIStore.deleteApplication(applicationId2);
-        restAPIStore.deleteApplication(applicationId3);
-        restAPIStore.deleteApplication(applicationId4);
-        restAPIStore.deleteApplication(applicationId5);
-
-        restAPIPublisher.deleteAPI(apiId1);
-        restAPIPublisher.deleteAPI(apiId2);
-        restAPIPublisher.deleteAPI(apiId3);
-        restAPIPublisher.deleteAPI(apiId4);
-
-        restAPIAdmin.deleteSubscriptionPolicy(policyId);
 
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
