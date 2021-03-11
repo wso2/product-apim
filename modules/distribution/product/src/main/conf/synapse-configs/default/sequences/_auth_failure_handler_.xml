@@ -2,10 +2,10 @@
     <filter source="get-property('MESSAGE_FORMAT')" regex="soap1[1-2]">
         <then>
             <property name="SOAP_FAULT_CODE" value="Client"/>
-            <makefault response="false" version="soap11">
+            <makefault version="soap11">
                 <code expression="$ctx:SOAP_FAULT_CODE"/>
                 <reason value="Authentication Failure"/>
-                <detail>$ctx:ERROR_MESSAGE</detail>
+                <detail expression="$ctx:ERROR_MESSAGE"/>
             </makefault>
         </then>
         <else>
