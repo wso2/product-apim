@@ -73,7 +73,8 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             "{\"code\":\"404\",\"type\":\"Status report\",\"message\":\"Not Found\",\"description\":\"The requested " +
                     "resource is not available.\"}";
     protected static final String HTTP_RESPONSE_DATA_API_FORBIDDEN =
-            "<ams:code>900908</ams:code><ams:message>Resource forbidden </ams:message>";
+            "{\"code\":\"900908\",\"message\":\"Resource forbidden \",\"description\":\"User is NOT authorized to " +
+                    "access the Resource. API Subscription validation failed.\"}";
     protected static final int GOLD_INVOCATION_LIMIT_PER_MIN = 20;
     protected static final int SILVER_INVOCATION_LIMIT_PER_MIN = 5;
     protected static final String TIER_UNLIMITED = "Unlimited";

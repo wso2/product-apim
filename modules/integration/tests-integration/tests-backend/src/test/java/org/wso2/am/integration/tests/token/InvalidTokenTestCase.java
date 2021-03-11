@@ -18,29 +18,23 @@
  */
 package org.wso2.am.integration.tests.token;
 
-import junit.framework.Assert;
-import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.util.AXIOMUtil;
-import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jaxen.JaxenException;
 import org.json.JSONException;
+import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -48,7 +42,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -112,7 +105,7 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
         apiRequest.setProvider(provider);
 
         HttpResponse response = restAPIPublisher.addAPI(apiRequest);
-        assertNotNull("API Creation failed", response.getData());
+        Assert.assertNotNull("API Creation failed", response.getData());
         id = response.getData();
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(id, restAPIPublisher);
@@ -130,30 +123,22 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
         try {
             HttpResponse httpResponse = HttpRequestUtil.doGet(apiInvocationUrl, headers);
             //Fail test if response is null
-            Assert.assertNotNull(httpResponse);
+            org.testng.Assert.assertNotNull(httpResponse);
             //Fail test if response code != 401
             Assert.assertEquals(401, httpResponse.getResponseCode());
 
             String responsePayload = httpResponse.getData();
             Assert.assertNotNull(responsePayload);
-            OMElement element = AXIOMUtil.stringToOM(responsePayload);
-            AXIOMXPath xpath = new AXIOMXPath("/ams:fault/ams:description");
-            xpath.addNamespace("ams", "http://wso2.org/apimanager/security");
-            Object descriptionElement = xpath.selectSingleNode(element);
-            Assert.assertNotNull("Error message doesn't contain a 'description'", descriptionElement);
-            String description = ((OMElement)descriptionElement).getText();
-            Assert.assertTrue("Unexpected error response string. Expected to have 'Make sure you have " +
-                            "provided the correct security credentials' but received '" + description + "'",
-                    description.contains("Make sure you have provided the correct security credentials"));
+            JSONObject responsePayloadJsonObject = new JSONObject(responsePayload);
+            Assert.assertNotNull(responsePayloadJsonObject.get("description"), "Error message doesn't contain a " +
+                    "'description'");
+            String description = responsePayloadJsonObject.getString("description");
+            Assert.assertTrue(description.contains("Make sure you have provided the correct security credentials"),
+                    "Unexpected error response string. Expected to have 'Make sure you have provided the correct " +
+                            "security credentials' but received '" + description + "'");
         } catch (IOException e) {
             log.error("Error sending request to endpoint " + apiInvocationUrl, e);
-            Assert.assertTrue("Could not send request to endpoint " + apiInvocationUrl + ": " + e.getMessage(), false);
-        } catch (XMLStreamException e) {
-            log.error("Error parsing response XML ", e);
-            Assert.assertTrue("Error parsing response XML " + e.getMessage(), false);
-        } catch (JaxenException e) {
-            log.error("XPath error when searching for 'description' element ", e);
-            Assert.assertTrue("XPath error when searching for 'description' element " + e.getMessage(), false);
+            Assert.assertTrue(false,"Could not send request to endpoint " + apiInvocationUrl + ": " + e.getMessage());
         }
     }
 
