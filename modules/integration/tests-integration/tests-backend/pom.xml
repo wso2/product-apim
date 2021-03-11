@@ -594,6 +594,10 @@ under the License.
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.carbon.automationutils</groupId>
             <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
         </dependency>
@@ -765,8 +769,17 @@ under the License.
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.am.integration.clients.internal.api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.clients.gateway.api</artifactId>
-            <version>4.0.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.api</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
