@@ -4,15 +4,8 @@
         <property name="ERROR_CODE" expression="get-property('ERROR_CODE')"/>
         <property name="ERROR_MESSAGE" expression="get-property('ERROR_MESSAGE')"/>
     </log>
-    <payloadFactory>
-        <format>
-            <am:fault xmlns:am="http://wso2.org/apimanager">
-                <am:code>$1</am:code>
-                <am:type>Status report</am:type>
-                <am:message>Runtime Error</am:message>
-                <am:description>$2</am:description>
-            </am:fault>
-        </format>
+    <payloadFactory media-type="json">
+        <format>{"code":"$1","type":"Status report","message":"Runtime Error","description":"$2"}</format>
         <args>
             <arg expression="$ctx:ERROR_CODE"/>
             <arg expression="$ctx:ERROR_MESSAGE"/>
@@ -33,7 +26,7 @@
     <property name="Authorization" scope="transport" action="remove"/>
     <property name="Host" scope="transport" action="remove"/>
     <property name="Accept" scope="transport" action="remove"/>
-    <property name="messageType" value="application/xml" scope="axis2"/>
+    <property name="messageType" value="application/json" scope="axis2"/>
     <sequence key="_cors_request_handler_"/>
     <send/>
     <drop/>
