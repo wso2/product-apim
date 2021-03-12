@@ -84,7 +84,7 @@ import static org.testng.Assert.assertNotNull;
  * This class tests the behaviour of API when there is choice of selection between oauth2 and mutual ssl in API Manager.
  */
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
-public class    APISecurityTestCase extends APIManagerLifecycleBaseTest {
+public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
     private final String mutualSSLOnlyAPIName = "mutualsslOnlyAPI";
     private final String mutualSSLWithOAuthAPI = "mutualSSLWithOAuthAPI";
@@ -1087,7 +1087,7 @@ public class    APISecurityTestCase extends APIManagerLifecycleBaseTest {
             }
             retryCount++;
             Thread.sleep(5000);
-        } while (retryCount > 20);
+        } while (retryCount < 20);
         Assert.assertNotNull(selectedRevokedJWTDTO, "Revoked Token didn't store in database");
     }
 
