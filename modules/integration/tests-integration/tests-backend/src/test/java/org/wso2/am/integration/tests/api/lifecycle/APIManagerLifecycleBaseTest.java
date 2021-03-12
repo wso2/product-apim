@@ -67,11 +67,14 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected static final int HTTP_RESPONSE_CODE_TOO_MANY_REQUESTS = 429; // Define manually since value is not available in enum
     protected static final int HTTP_RESPONSE_CODE_FORBIDDEN = Response.Status.FORBIDDEN.getStatusCode();
     protected static final String HTTP_RESPONSE_DATA_API_BLOCK =
-            "<am:code>700700</am:code><am:message>API blocked</am:message>";
+            "{\"code\":\"700700\",\"type\":\"API blocked\",\"description\":\"This API has been blocked temporarily. " +
+                    "Please try again later or contact the system administrators.\"}";
     protected static final String HTTP_RESPONSE_DATA_NOT_FOUND =
-            "<am:code>404</am:code><am:type>Status report</am:type><am:message>Not Found</am:message>";
+            "{\"code\":\"404\",\"type\":\"Status report\",\"message\":\"Not Found\",\"description\":\"The requested " +
+                    "resource is not available.\"}";
     protected static final String HTTP_RESPONSE_DATA_API_FORBIDDEN =
-            "<ams:code>900908</ams:code><ams:message>Resource forbidden </ams:message>";
+            "{\"code\":\"900908\",\"message\":\"Resource forbidden \",\"description\":\"User is NOT authorized to " +
+                    "access the Resource. API Subscription validation failed.\"}";
     protected static final int GOLD_INVOCATION_LIMIT_PER_MIN = 20;
     protected static final int SILVER_INVOCATION_LIMIT_PER_MIN = 5;
     protected static final String TIER_UNLIMITED = "Unlimited";

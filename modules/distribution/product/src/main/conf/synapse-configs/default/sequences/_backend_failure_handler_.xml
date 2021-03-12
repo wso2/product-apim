@@ -1,11 +1,11 @@
-<sequence name="_auth_failure_handler_" xmlns="http://ws.apache.org/ns/synapse">
+<sequence name="_backend_failure_handler_" xmlns="http://ws.apache.org/ns/synapse">
     <filter source="get-property('MESSAGE_FORMAT')" regex="soap1[1-2]">
         <then>
             <property name="SOAP_FAULT_CODE" value="Client"/>
             <makefault version="soap11">
                 <code expression="$ctx:SOAP_FAULT_CODE"/>
                 <reason value="Authentication Failure"/>
-                <detail expression="$ctx:ERROR_MESSAGE"/>
+                <detail expression = "$ctx:ERROR_MESSAGE"/>
             </makefault>
         </then>
         <else>

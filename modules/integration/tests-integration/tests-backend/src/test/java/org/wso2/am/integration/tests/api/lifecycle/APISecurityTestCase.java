@@ -84,7 +84,7 @@ import static org.testng.Assert.assertNotNull;
  * This class tests the behaviour of API when there is choice of selection between oauth2 and mutual ssl in API Manager.
  */
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
-public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
+public class    APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
     private final String mutualSSLOnlyAPIName = "mutualsslOnlyAPI";
     private final String mutualSSLWithOAuthAPI = "mutualSSLWithOAuthAPI";
@@ -388,7 +388,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                         requestHeaders);
         JSONObject response = new JSONObject(apiResponse.getData());
         //fix test failure due to error code changes introduced in product-apim pull #7106
-        assertEquals(response.getJSONObject("fault").getInt("code"), 900901,
+        assertEquals(response.getString("code"), "900901",
                 "API invocation succeeded with the access token without need for mutual ssl");
         apiResponse = HttpRequestUtil
                 .doGet(getAPIInvocationURLHttps(mutualSSLWithOAuthAPIContext, API_VERSION_1_0_0) + API_END_POINT_METHOD,
