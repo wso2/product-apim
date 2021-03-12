@@ -2968,80 +2968,6 @@ paths:
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
       x-accepts: application/json
-  /apis/import-service:
-    post:
-      description: This operation can be used to create an API from a Service from
-        Service Catalog
-      operationId: importServiceFromCatalog
-      parameters:
-      - description: ID of service that should be imported from Service Catalog
-        explode: true
-        in: query
-        name: serviceKey
-        required: true
-        schema:
-          type: string
-        style: form
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/API'
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/API'
-          description: |
-            Created.
-            Successful response with the newly created object as entity in the body.
-            Location header contains the URL of the newly created entity.
-          headers:
-            Location:
-              description: |
-                The URL of the newly created resource.
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      summary: Import a Service from Service Catalog
-      tags:
-      - APIs
-      x-contentType: application/json
-      x-accepts: application/json
   /apis/{apiId}/comments:
     get:
       description: |
@@ -3758,6 +3684,80 @@ paths:
       x-code-samples:
       - lang: Curl
         source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+      x-accepts: application/json
+  /apis/import-service:
+    post:
+      description: This operation can be used to create an API from a Service from
+        Service Catalog
+      operationId: importServiceFromCatalog
+      parameters:
+      - description: ID of service that should be imported from Service Catalog
+        explode: true
+        in: query
+        name: serviceKey
+        required: true
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/API'
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains the URL of the newly created entity.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      summary: Import a Service from Service Catalog
+      tags:
+      - APIs
+      x-contentType: application/json
       x-accepts: application/json
   /apis/import-openapi:
     post:
@@ -19138,6 +19138,36 @@ components:
       - ready
       - status
       title: PodStatus
+      type: object
+    Post_request_body:
+      properties:
+        content:
+          description: |
+            Content of the comment
+          example: This is a comment
+          type: string
+        category:
+          description: |
+            Category of the comment
+          example: general
+          type: string
+      required:
+      - content
+      title: Post request body
+      type: object
+    Patch_request_body:
+      properties:
+        content:
+          description: |
+            Content of the comment
+          example: This is a comment
+          type: string
+        category:
+          description: |
+            Category of the comment
+          example: general
+          type: string
+      title: Patch request body
       type: object
     AsyncAPISpecificationValidationResponse:
       example:

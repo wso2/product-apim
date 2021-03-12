@@ -153,6 +153,12 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                     "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
                             + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
             loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "version1.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "version2.xml", gatewayContextMgt, gatewaySessionCookie);
+            loadSynapseConfigurationFromClasspath(
                     "artifacts" + File.separator + "AM" + File.separator + "sequence" + File.separator +
                             "xml_api.xml", gatewayContextMgt, gatewaySessionCookie);
             loadSynapseConfigurationFromClasspath(

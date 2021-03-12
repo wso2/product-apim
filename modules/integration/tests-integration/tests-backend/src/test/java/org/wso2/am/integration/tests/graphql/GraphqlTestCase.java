@@ -258,7 +258,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(graphqlAPIId, restAPIPublisher);
 
-        testAppId3 = createGraphqlAppAndSubscribeToAPI("testOperationalLevelOAuthScopesForGraphql","OAUTH");
+        testAppId3 = createGraphqlAppAndSubscribeToAPI("testOperationalLevelOAuthScopesForGraphql", "OAUTH");
         // Keep sufficient time to update map
         Thread.sleep(10000);
         waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
@@ -272,8 +272,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         queryObject.put("query", "{languages{code name}}");
         String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";
         Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("Content-Type",  "application/json");
-
+        requestHeaders.put("Content-Type", "application/json");
 
         // invoke api without authorized scope
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(testAppId3, "36000", "",
@@ -282,24 +281,39 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
         log.info("Access Token response without scope: " + accessToken);
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
-        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
-        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN,
-                "Response code is not as expected");
+        HttpResponse serviceResponse = null;
+        boolean status = false;
+
+        long waitTime = System.currentTimeMillis() + WAIT_TIME;
+        while (waitTime > System.currentTimeMillis()) {
+            serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
+            if (HttpStatus.SC_OK == serviceResponse.getResponseCode()) {
+                status = true;
+                break;
+            } else {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+
+        Assert.assertTrue(status, "Response code is not as expected");
 
         String consumerKey = applicationKeyDTO.getConsumerKey();
-        String consumerSecret =  applicationKeyDTO.getConsumerSecret();
+        String consumerSecret = applicationKeyDTO.getConsumerSecret();
         URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
         HttpResponse response;
         String requestBody;
         JSONObject accessTokenGenerationResponse;
         String username = GRAPHQL_TEST_USER;
         //Obtain user access token for Admin
-        if (userMode != TestUserMode.SUPER_TENANT_ADMIN){
+        if (userMode != TestUserMode.SUPER_TENANT_ADMIN) {
             username = username.concat("@").concat(user.getUserDomain());
         }
         requestBody =
                 "grant_type=password&username=" + username + "&password=" + GRAPHQL_TEST_USER_PASSWORD +
-                "&scope=subscriber";
+                        "&scope=subscriber";
 
         response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
         accessTokenGenerationResponse = new JSONObject(response.getData());
@@ -307,10 +321,23 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         accessToken = accessTokenGenerationResponse.getString("access_token");
         tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
-        serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
+        status = false;
 
-        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
-                "Response code is not as expected");
+        waitTime = System.currentTimeMillis() + WAIT_TIME;
+        while (waitTime > System.currentTimeMillis()) {
+            serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
+            if (HttpStatus.SC_OK == serviceResponse.getResponseCode()) {
+                status = true;
+                break;
+            } else {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+
+        Assert.assertTrue(status, "Response code is not as expected");
         Assert.assertEquals(serviceResponse.getData(), RESPONSE_DATA, "Response data is not as expected");
 
     }

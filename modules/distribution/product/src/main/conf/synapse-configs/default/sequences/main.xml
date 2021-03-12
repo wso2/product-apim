@@ -43,14 +43,8 @@
             <respond/>
         </filter>
         <filter source="$ctx:TRANSPORT_DENIED" regex="true">
-            <payloadFactory>
-                <format>
-                    <am:fault xmlns:am="http://wso2.org/apimanager">
-                        <am:code>403</am:code>
-                        <am:type>Status report</am:type>
-                        <am:message>Forbidden</am:message>
-                        <am:description>Unsupported Transport [ $1 ]. The requested resource is not available.</am:description>
-                    </am:fault>
+            <payloadFactory media-type="json">
+                <format>{"code":"403","type":"Status report","message":"Forbidden","description":"Unsupported Transport [ $1 ]. The requested resource is not available."}
                 </format>
                 <args>
                      <arg expression="$ctx:IN_TRANSPORT"/>
@@ -76,20 +70,17 @@
                 </makefault>
             </then>
             <else>
-                <payloadFactory>
-                    <format>
-                        <am:fault xmlns:am="http://wso2.org/apimanager">
-                            <am:code>404</am:code>
-                            <am:type>Status report</am:type>
-                            <am:message>Not Found</am:message>
-                            <am:description>The requested resource is not available.</am:description>
-                        </am:fault>
+                <payloadFactory media-type="json">
+                    <format>{"code":"404","type":"Status report","message":"Not Found","description":"The requested resource is not available."}
                     </format>
+                    <args>
+                        <arg expression="$ctx:IN_TRANSPORT"/>
+                    </args>
                 </payloadFactory>
             </else>
         </filter>
         <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT|PATCH)).*$">
-            <property name="messageType" value="application/xml" scope="axis2"/>
+            <property name="messageType" value="application/json" scope="axis2"/>
         </filter>
         <property name="HTTP_SC" value="404" scope="axis2"/>
         <property name="RESPONSE" value="true"/>
