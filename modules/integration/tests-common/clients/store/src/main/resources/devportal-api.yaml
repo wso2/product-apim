@@ -874,13 +874,28 @@ paths:
       operationId: addCommentToAPI
       parameters:
       - $ref: '#/components/parameters/apiId'
+      - $ref: '#/components/parameters/parentCommentID'
       requestBody:
         description: |
           Comment object that should to be added
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Comment'
+              title: Post request body
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: |
+                    Content of the comment
+                  example: This is a comment
+                category:
+                  type: string
+                  description: |
+                    Category of the comment
+                  example: general
+              required:
+                - content
         required: true
       responses:
         201:
@@ -933,6 +948,8 @@ paths:
       - $ref: '#/components/parameters/requestedTenant'
       - $ref: '#/components/parameters/If-None-Match'
       - $ref: '#/components/parameters/includeCommenterInfo'
+      - $ref: '#/components/parameters/replyLimit'
+      - $ref: '#/components/parameters/replyOffset'
       responses:
         200:
           description: |
@@ -974,6 +991,74 @@ paths:
       x-examples:
         $ref: docs/examples/apis/comment_id-comments.yaml#/get
 
+    patch:
+      tags:
+        - Comments
+      summary: Edit a comment
+      description: |
+        Edit the individual comment
+      operationId: editCommentOfAPI
+      parameters:
+        - $ref: '#/components/parameters/commentId'
+        - $ref: '#/components/parameters/apiId'
+      requestBody:
+        description: |
+          Comment object that should to be updated
+        content:
+          application/json:
+            schema:
+              title: Patch request body
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: |
+                    Content of the comment
+                  example: This is a comment
+                category:
+                  type: string
+                  description: |
+                    Category of the comment
+                  example: general
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Comment updated.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional request.
+              schema:
+                type: string
+            Location: #???
+              description: |
+                Location to the newly created Comment.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        415:
+          $ref: '#/components/responses/UnsupportedMediaType'
+      security:
+        - OAuth2Security:
+            - apim:subscribe
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/store/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
+      x-examples:
+        $ref: docs/examples/apis/comments.yaml#/post
+
     delete:
       tags:
       - Comments
@@ -1004,6 +1089,63 @@ paths:
           "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
       x-examples:
         $ref: docs/examples/apis/comment_id-comments.yaml#/delete
+
+  /apis/{apiId}/comments/{commentId}/replies:
+    get:
+      tags:
+        - Comments
+      summary: Get replies of a comment
+      description: |
+        Get replies of a comment
+      operationId: getRepliesOfComment
+      parameters:
+        - $ref: '#/components/parameters/commentId'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/includeCommenterInfo'
+      responses:
+        200:
+          description: |
+            OK.
+            Comment returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentList'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+          content: {}
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security: []
+      x-code-samples:
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/store/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+      x-examples:
+        $ref: docs/examples/apis/comment_id-comments.yaml#/get
 
   /apis/{apiId}/subscription-policies:
     get:
@@ -4198,12 +4340,28 @@ components:
         createdTime:
           type: string
           readOnly: true
+          example : 2021-02-11-09:57:25
         createdBy:
           type: string
           readOnly: true
           example: admin
+        updatedTime:
+          type: string
+          readOnly: true
+          example : 2021-02-12-19:57:25
+        category:
+          type: string
+          default: general
+        parentCommentId:
+          type: string
+          example: 6f38aea2-f41e-4ac9-b3f2-a9493d00ba97
+        entryPoint:
+          type: string
+          enum: [DEVPORTAL, PUBLISHER]
         commenterInfo:
           $ref: '#/components/schemas/CommenterInfo'
+        replies:
+          $ref: '#/components/schemas/CommentList'
     CommentList:
       title: Comments List
       type: object
@@ -5651,6 +5809,29 @@ components:
         The alert configuration id.
         Base64 encoded value of 'apiName#apiVersion#applicationName'.
       required: true
+      schema:
+        type: string
+    replyLimit:
+      name: replyLimit
+      in: query
+      description: |
+        Maximum size of replies array to return.
+      schema:
+        type: integer
+        default: 25
+    replyOffset:
+      name: replyOffset
+      in: query
+      description: |
+        Starting point within the complete list of replies.
+      schema:
+        type: integer
+        default: 0
+    parentCommentID:
+      name: replyTo
+      in: query
+      description: |
+        ID of the parent comment.
       schema:
         type: string
   securitySchemes:
