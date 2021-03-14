@@ -26,7 +26,6 @@
   "visibleTenants": [],
   "endpointSecurity": null,
   "gatewayEnvironments": ["Production and Sandbox"],
-  "labels": [],
   "mediationPolicies": [],
   "subscriptionAvailability": "ALL_TENANTS",
   "subscriptionAvailableTenants": [],
