@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -31,6 +32,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Class to Provides basic API request.
@@ -75,6 +77,7 @@ public class APIRequest extends AbstractRequest {
     private String apiTier = "";
     private String accessControl;
     private String accessControlRoles;
+    private APIDTO.SubscriptionAvailabilityEnum subscriptionAvailability;
     private String businessOwner;
     private String businessOwnerEmail;
     private String technicalOwner;
@@ -656,6 +659,27 @@ public class APIRequest extends AbstractRequest {
 
     public void setApiCategories(List<String> apiCategories) {
         this.apiCategories = apiCategories;
+    }
+
+    public APIDTO.SubscriptionAvailabilityEnum getSubscriptionAvailability() {
+        return subscriptionAvailability;
+    }
+
+    public void setSubscriptionAvailability(String subscriptionAvailability) {
+        if (subscriptionAvailability == null) {
+            return;
+        }
+        switch (subscriptionAvailability.toLowerCase(Locale.ROOT)) {
+            case ("all_tenants"):
+                this.subscriptionAvailability = APIDTO.SubscriptionAvailabilityEnum.ALL_TENANTS;
+                break;
+            case ("current_tenant"):
+                this.subscriptionAvailability = APIDTO.SubscriptionAvailabilityEnum.CURRENT_TENANT;
+                break;
+            case ("specific_tenants"):
+                this.subscriptionAvailability = APIDTO.SubscriptionAvailabilityEnum.SPECIFIC_TENANTS;
+                break;
+        }
     }
 
     public List<String> getApiCategories() {
