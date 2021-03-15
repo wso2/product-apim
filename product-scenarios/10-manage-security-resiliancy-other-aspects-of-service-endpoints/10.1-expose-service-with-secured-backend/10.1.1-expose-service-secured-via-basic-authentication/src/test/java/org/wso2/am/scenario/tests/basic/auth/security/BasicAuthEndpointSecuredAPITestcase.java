@@ -53,7 +53,7 @@ import static org.testng.Assert.assertTrue;
 
 public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(BasicAuthEndpointSecuredAPITestcase.class);
-    private final String apiName = "BasicAuthEndpointSecuredAPITestcase API";
+    private final String apiName = "BasicAuthEndpointSecuredAPITestcaseAPI";
     private final String TEST_API_1_CONTEXT = "security";
     private final String TEST_API_1_CONTEXT_TENANT = "t/wso2.com/" + TEST_API_1_CONTEXT;
     private final String apiVersion = "1.0.0";
@@ -140,6 +140,8 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         APIDTO apiDtoResponse = restAPIPublisher.addAPI(apiDto, "3.0");
 
         apiID = apiDtoResponse.getId();
+        //Create and deploy revision
+        createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
         // Change the API lifecycle state from CREATED to PUBLISHED
         HttpResponse response = restAPIPublisher
                 .changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction(), null);
@@ -189,12 +191,13 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         assertTrue(apiResponse.getData().contains(encodedCredentials), "Response Data not match for GET" +
                 " request for endpoint type secured. Expected value :" + encodedCredentials + " not contains in " +
                 "response data:" + apiResponse.getData());
+
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiID);
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIStore.deleteApplication(applicationId);
-        restAPIPublisher.deleteAPI(apiID);
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             // deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
             // deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
