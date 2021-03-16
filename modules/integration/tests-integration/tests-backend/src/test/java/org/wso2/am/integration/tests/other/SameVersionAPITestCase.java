@@ -35,6 +35,7 @@ import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -105,13 +106,14 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
         //try to copy api with same version
         try {
             restAPIPublisher.copyAPI(newVersion, apiId, false);
-            assertTrue(false, "Same version API test case failed");
+            fail("Creating a new version has been allowed with an existing version. It should be disallowed.");
         } catch (Exception e) {
-            if (((ApiException) e).getResponseBody().contains("Resource Already Exists")) {
-                log.info("Same version API test case passed");
-            } else {
-                assertTrue(false, "Same version API test case failed");
-            }
+            ApiException apiException = (ApiException)e;
+            assertTrue(apiException.getResponseBody().contains("The API version already exists"),
+                    "Response body of the create version request doesn't contain the string " +
+                            "'The API version already exists'. Response body: " + apiException.getResponseBody());
+            assertEquals(409, apiException.getCode(), "Response status code of create version request is not " +
+                    "'409'. Status code: " + apiException.getCode());
         }
     }
 
