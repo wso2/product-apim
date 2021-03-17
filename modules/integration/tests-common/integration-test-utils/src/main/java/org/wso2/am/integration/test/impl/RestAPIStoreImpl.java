@@ -59,6 +59,9 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.PostRequestBodyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.PatchRequestBodyDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -1194,17 +1197,134 @@ public class RestAPIStoreImpl {
      *
      * @param apiId   - api Id
      * @param comment - comment to  add
+     * @param category - category of the comment
+     * @param replyTo - comment id of the root comment to add replies
      * @return - http response of add comment
      * @throws ApiException - throws if add comment fails
      */
-    public HttpResponse addComment(String apiId, String comment) throws ApiException {
-        CommentDTO commentDTO = new CommentDTO();
-        commentDTO.setContent(comment);
-        ApiResponse<CommentDTO> apiResponse = commentsApi.addCommentToAPIWithHttpInfo(apiId, commentDTO);
-        Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
+
+    public HttpResponse addComment(String apiId, String comment, String category, String replyTo) throws ApiException {
+        PostRequestBodyDTO postRequestBodyDTO = new PostRequestBodyDTO();
+        postRequestBodyDTO.setContent(comment);
+        postRequestBodyDTO.setCategory(category);
+        Gson gson = new Gson();
+        CommentDTO commentDTO = commentsApi.addCommentToAPI(apiId,postRequestBodyDTO,replyTo);
         HttpResponse response = null;
-        if (apiResponse.getData() != null && StringUtils.isNotEmpty(apiResponse.getData().getId())) {
-            response = new HttpResponse(apiResponse.getData().getId(), 201);
+        if (commentDTO != null) {
+            response = new HttpResponse(gson.toJson(commentDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get Comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo,
+                                   Integer limit, Integer offset) throws ApiException {
+        CommentDTO commentDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null,
+                    includeCommentorInfo, limit, offset);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (StringUtils.isNotEmpty(commentDTO.getId())) {
+            response = new HttpResponse(gson.toJson(commentDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get all the comments from given API
+     *
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getComments(String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit,
+                                    Integer offset) throws ApiException {
+        CommentListDTO commentListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            commentListDTO = commentsApi.getAllCommentsOfAPI(apiId, tenantDomain, limit, offset, includeCommentorInfo);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (commentListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(commentListDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get replies of a comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset    - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getReplies(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit, Integer offset)
+            throws ApiException {
+        CommentListDTO commentListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+
+        try {
+            commentListDTO = commentsApi.getRepliesOfComment(commentId, apiId, tenantDomain, limit, offset, null, includeCommentorInfo);
+
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (commentListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(commentListDTO), 200);
+        }
+
+        return response;
+    }
+
+    /**
+     * Get Comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param comment - comment to  add
+     * @param category - category of the comment
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse editComment(String commentId, String apiId, String comment, String category) throws
+            ApiException {
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            PatchRequestBodyDTO patchRequestBodyDTO = new PatchRequestBodyDTO();
+            patchRequestBodyDTO.setCategory(category);
+            patchRequestBodyDTO.setContent(comment);
+
+            CommentDTO editedCommentDTO = commentsApi.editCommentOfAPI(commentId,apiId,patchRequestBodyDTO);
+            if (editedCommentDTO != null) {
+                response = new HttpResponse(gson.toJson(editedCommentDTO), 201);
+            }
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
         return response;
     }
@@ -1223,31 +1343,6 @@ public class RestAPIStoreImpl {
             response = new HttpResponse("Successfully deleted the comment", 200);
         } catch (ApiException e) {
             response = new HttpResponse("Failed to delete the comment", e.getCode());
-        }
-        return response;
-    }
-
-    /**
-     * Get Comment from given API
-     *
-     * @param commentId - comment Id
-     * @param apiId     - api Id
-     * @param tenantDomain - tenant domain
-     * @return - http response get comment
-     * @throws ApiException - throws if get comment fails
-     */
-    public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo)
-            throws ApiException {
-        CommentDTO commentDTO;
-        HttpResponse response = null;
-        Gson gson = new Gson();
-        try {
-            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null, includeCommentorInfo);
-        } catch (ApiException e) {
-            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
-        }
-        if (StringUtils.isNotEmpty(commentDTO.getId())) {
-            response = new HttpResponse(gson.toJson(commentDTO), 200);
         }
         return response;
     }
