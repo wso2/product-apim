@@ -195,8 +195,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
     public void testUpdateEnvironment() throws Exception {
         //Update the dynamic environment
         environmentDTO.setDisplayName("US Gateway Environment");
-        environmentDTO.setDescription("This is a updated test label");
-        environmentDTO.setDescription("This is a updated test label");
+        environmentDTO.setDescription("This is a updated test gateway environment");
         List<VHostDTO> vHostDTOList = new ArrayList<>();
         vHostDTOList.add(DtoFactory.createVhostDTO("updated.wso2.com", "", 7080, 7443, 7099, 8099));
         environmentDTO.setVhosts(vHostDTOList);
