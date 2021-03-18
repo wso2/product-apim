@@ -162,6 +162,19 @@ import static org.testng.Assert.assertNotEquals;
             assertEquals(replies.contains(reply.getId()), true, "Comments do not match");
         }
 
+        // Verify Pagination of replies list of a comment
+        assertEquals(commentWithRepliesCommentDTO.getReplies().getList().size(), 3, "Replies limit does not match");
+        HttpResponse getCommentToVerifyPagination = restAPIStore.getComment(rootCommentIdToAddReplies, apiId,
+                gatewayContextWrk.getContextTenant().getDomain(), false, 3,2);
+        assertEquals(getCommentToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        Gson getCommentToVerifyPaginationGson = new Gson();
+        CommentDTO getCommentToVerifyPaginationCommentDTO = getCommentToVerifyPaginationGson.fromJson(getCommentToVerifyPagination
+                .getData().replace("devportal", "DEVPORTAL"), CommentDTO.class);
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().size(), 2, "Replies limit does not match");
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(0).getContent(), "This is a reply 3", "Offset value does not captured");
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(1).getContent(), "This is a reply 4", "Offset value does not captured");
+
         // Get  all the comments of  API
         HttpResponse getCommentsResponse = restAPIStore.getComments(apiId, gatewayContextWrk.getContextTenant()
                 .getDomain(),  false, 5, 0);
@@ -178,6 +191,19 @@ import static org.testng.Assert.assertNotEquals;
             assertEquals(rootComments.contains(rootCommentDTO.getId()), true, "Comments do not match");
         }
 
+        // Verify Pagination of root comment list
+        HttpResponse getRootCommentsToVerifyPagination = restAPIStore.getComments(apiId, gatewayContextWrk.getContextTenant()
+                .getDomain(),  false, 3, 2);
+        assertEquals(getRootCommentsToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        Gson getRootCommentsToVerifyPaginationGson = new Gson();
+        CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getRootCommentsToVerifyPaginationGson.fromJson(getRootCommentsToVerifyPagination
+                .getData().replace("devportal", "DEVPORTAL"), CommentListDTO.class);
+        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().size(), 3, "Comments limit does not match");
+        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(0).getContent(), "This is root comment 3", "Offset value does not captured");
+        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(1).getContent(), "This is root comment 2", "Offset value does not captured");
+        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(2).getContent(), "This is root comment 1", "Offset value does not captured");
+
         // Get all the replies of a given comment
         HttpResponse getRepliesResponse = restAPIStore.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
                 .getContextTenant().getDomain(), false, 5, 0);
@@ -192,6 +218,18 @@ import static org.testng.Assert.assertNotEquals;
             assertEquals(replyDTO.getParentCommentId(), rootCommentIdToAddReplies, "Comments do not match");
             assertEquals(replies.contains(replyDTO.getId()), true, "Comments do not match");
         }
+
+        // Verify Pagination of replies list of a comment
+        HttpResponse getRepliesToVerifyPagination = restAPIStore.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
+                .getContextTenant().getDomain(), false, 3, 2);
+        assertEquals(getRepliesToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        Gson getRepliesToVerifyPaginationGson = new Gson();
+        CommentListDTO getRepliesToVerifyPaginationCommenListDTO = getRepliesToVerifyPaginationGson.fromJson(getRepliesToVerifyPagination
+                .getData().replace("devportal", "DEVPORTAL"), CommentListDTO.class);
+        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().size(), 2, "Comments limit does not match");
+        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(0).getContent(), "This is a reply 3", "Offset value does not captured");
+        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(1).getContent(), "This is a reply 4", "Offset value does not captured");
 
         //Edit a comment
         //Edit the content only
