@@ -8022,6 +8022,15 @@ components:
           type: array
           items:
             type: string
+        websubSubscriptionConfiguration:
+          type: object
+          properties:
+            secret:
+              type: string
+            signingAlgorithm:
+              type: string
+            signatureHeader:
+              type: string
 
     Topic:
       title: Topic object

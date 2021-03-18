@@ -274,6 +274,13 @@
         </classes>
     </test>
 
+    <test name="apim-streaming-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
+        </classes>
+    </test>
+
     <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>

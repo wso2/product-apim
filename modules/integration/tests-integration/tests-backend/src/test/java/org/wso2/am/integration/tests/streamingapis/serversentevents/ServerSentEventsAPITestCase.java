@@ -1,22 +1,22 @@
 /*
- *Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
- *WSO2 Inc. licenses this file to you under the Apache License,
- *Version 2.0 (the "License"); you may not use this file except
- *in compliance with the License.
- *You may obtain a copy of the License at
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *Unless required by applicable law or agreed to in writing,
- *software distributed under the License is distributed on an
- *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *KIND, either express or implied.  See the License for the
- *specific language governing permissions and limitations
- *under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
-package org.wso2.am.integration.tests.serversentevents;
+package org.wso2.am.integration.tests.streamingapis.serversentevents;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +24,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -39,8 +40,9 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.tests.serversentevents.client.SimpleSseReceiver;
-import org.wso2.am.integration.tests.serversentevents.server.SSEServlet;
+import org.wso2.am.integration.tests.streamingapis.StreamingApiTestUtils;
+import org.wso2.am.integration.tests.streamingapis.serversentevents.client.SimpleSseReceiver;
+import org.wso2.am.integration.tests.streamingapis.serversentevents.server.SseServlet;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -54,9 +56,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -67,61 +67,54 @@ import static org.testng.Assert.assertTrue;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
 
-    private final Log log = LogFactory.getLog(ServerSentEventsAPITestCase.class);
+    private final String apiName = "SSEAPI";
+    private final String applicationName = "SSEApplication";
+    private final String apiContext = "sse";
+    private final String apiVersion = "1.0.0";
 
+    private final Log log = LogFactory.getLog(ServerSentEventsAPITestCase.class);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private String sseEventPublisherSource = TestConfigurationProvider.getResourceLocation() + File.separator +
             "artifacts"
-            + File.separator + "AM" + File.separator + "configFiles" + File.separator + "serverSentEventsTest"
+            + File.separator + "AM" + File.separator + "configFiles" + File.separator + "streamingAPIs" + File.separator + "serverSentEventsTest"
             + File.separator;
-    private String sseRequestEventPublisherSource = "WS_Req_Logger.xml"; // TODO rename
-    private String sseThrottleOutEventPublisherSource = "WS_Throttle_Out_Logger.xml"; // TODO rename
+    private String sseRequestEventPublisherSource = "SSE_Req_Logger.xml";
+    private String sseThrottleOutEventPublisherSource = "SSE_Throttle_Out_Logger.xml";
     private String sseEventPublisherTarget = FrameworkPathUtil.getCarbonHome() + File.separator + "repository"
             + File.separator + "deployment" + File.separator + "server" + File.separator + "eventpublishers"
             + File.separator;
 
     private ServerConfigurationManager serverConfigurationManager;
-
     private String provider;
-
-
-    private final String apiName = "SSEAPI";
-    private final String applicationName = "SSEApplication";
-
     private APIRequest apiRequest;
-
     private int sseServerPort;
     private String sseServerHost;
     private String apiId;
-    String appId;
-
-    private SSEServlet sseServlet;
+    private String appId;
+    private SseServlet sseServlet;
     private Server sseServer;
     private SimpleSseReceiver sseReceiver;
-
     private String apiEndpoint;
-
-
 
     @Factory(dataProvider = "userModeDataProvider")
     public ServerSentEventsAPITestCase(TestUserMode userMode) {
-
         this.userMode = userMode;
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-
-        // Removing Tenant_ADMIN due to https://github.com/wso2/product-apim/issues/10183
         return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[] { TestUserMode.TENANT_ADMIN },
+                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
+                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
+                new Object[] { TestUserMode.TENANT_EMAIL_USER },
         };
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
         super.init(userMode);
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfigurationWithoutRestart
@@ -133,7 +126,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         sseServerHost = InetAddress.getLocalHost().getHostName();
         int lowerPortLimit = 8080;
         int upperPortLimit = 8090;
-        sseServerPort = getAvailablePort(lowerPortLimit, upperPortLimit);
+        sseServerPort = StreamingApiTestUtils.getAvailablePort(lowerPortLimit, upperPortLimit, sseServerHost);
         if (sseServerPort == -1) {
             throw new APIManagerIntegrationTestException("No available port in the range " +
                     lowerPortLimit + "-" + upperPortLimit + " was found");
@@ -143,10 +136,8 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(description = "Publish SSE API")
-    public void publishSSEAPI() throws Exception {
+    public void testPublishSseApi() throws Exception {
         provider = user.getUserName();
-        String apiContext = "sse";
-        String apiVersion = "1.0.0";
 
         URI endpointUri = new URI("http://" + sseServerHost + ":" + sseServerPort);
 
@@ -183,8 +174,8 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
                 "Published API is visible in API Store.");
     }
 
-    @Test(description = "Create Application and subscribe", dependsOnMethods = "publishSSEAPI")
-    public void testSSEAPIApplicationSubscription() throws Exception {
+    @Test(description = "Create Application and subscribe", dependsOnMethods = "testPublishSseApi")
+    public void testSseApiApplicationSubscription() throws Exception {
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
                 "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
         appId = applicationResponse.getData();
@@ -194,8 +185,8 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
     }
 
-    @Test(description = "Invoke SSE API", dependsOnMethods = "testSSEAPIApplicationSubscription")
-    public void testInvokeSSEAPI() throws Exception {
+    @Test(description = "Invoke SSE API", dependsOnMethods = "testSseApiApplicationSubscription")
+    public void testInvokeSseApi() throws Exception {
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
@@ -218,7 +209,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         ServletHandler servletHandler = new ServletHandler();
         server.setHandler(servletHandler);
 
-        sseServlet = new SSEServlet();
+        sseServlet = new SseServlet();
         ServletHolder servletHolder = new ServletHolder(sseServlet);
         servletHandler.addServletWithMapping(servletHolder, "/memory");
 
@@ -259,35 +250,10 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         });
     }
 
-    private int getAvailablePort(int lowerPortLimit, int upperPortLimit) {
-
-        while (lowerPortLimit < upperPortLimit) {
-            if (isPortFree(lowerPortLimit)) {
-                return lowerPortLimit;
-            }
-            lowerPortLimit += 1;
-        }
-        return -1;
-    }
-
-    private boolean isPortFree(int port) {
-
-        Socket s = null;
-        try {
-            s = new Socket(sseServerHost, port);
-            // something is using the port and has responded.
-            return false;
-        } catch (IOException e) {
-            //port available
-            return true;
-        } finally {
-            if (s != null) {
-                try {
-                    s.close();
-                } catch (IOException e) {
-                    throw new RuntimeException("Unable to close connection ", e);
-                }
-            }
-        }
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        serverConfigurationManager.restoreToLastConfiguration(false);
+        executorService.shutdownNow();
+        super.cleanUp();
     }
 }
