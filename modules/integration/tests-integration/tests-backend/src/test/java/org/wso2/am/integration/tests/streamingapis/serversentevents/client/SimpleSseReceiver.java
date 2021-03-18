@@ -72,7 +72,6 @@ public class SimpleSseReceiver implements SseEventSource {
 
     @Override
     public void open() {
-        System.out.println("Receiver opened");
         Invocation.Builder builder = target.request(MEDIA_TYPE_SSE)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
         Response response = builder.get();
