@@ -50,6 +50,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationTokenDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
@@ -79,14 +80,15 @@ public class ApiTestHelper {
     private final String resourceLocation;
     private final String tenantDomain;
     private final String keyManagerUrl;
-
+    private final User user;
     public ApiTestHelper(RestAPIPublisherImpl restAPIPublisher, RestAPIStoreImpl restAPIStore, String resourceLocation,
-                         String tenantDomain, String keyManagerUrl) {
+                         String tenantDomain, String keyManagerUrl, User user) {
         this.restAPIPublisher = restAPIPublisher;
         this.restAPIStore = restAPIStore;
         this.resourceLocation = resourceLocation;
         this.tenantDomain = tenantDomain;
         this.keyManagerUrl = keyManagerUrl;
+        this.user = user;
     }
 
     public APIDTO createApiOne(String backendUrl) throws ApiException {
@@ -115,16 +117,13 @@ public class ApiTestHelper {
         endpointConfig.put("sandbox_endpoints", endpoints);
 
         String uniqueName = UUID.randomUUID().toString();
-        String provider = "admin";
-        if (!"carbon.super".equals(tenantDomain)) {
-            provider = "admin@" + tenantDomain;
-        }
+
 
         JSONObject apiProperties = new JSONObject();
         apiProperties.put("name", uniqueName);
         apiProperties.put("context", "/" + uniqueName);
         apiProperties.put("version", "1.0.0");
-        apiProperties.put("provider", provider);
+        apiProperties.put("provider", user.getUserName());
         apiProperties.put("endpointConfig", endpointConfig);
 
         return restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
@@ -144,17 +143,14 @@ public class ApiTestHelper {
         endpointConfig.put("production_endpoints", endpoints);
         endpointConfig.put("sandbox_endpoints", endpoints);
 
-        String provider = "admin";
-        if (!"carbon.super".equals(tenantDomain)) {
-            provider = "admin@" + tenantDomain;
-        }
+
 
         String uniqueName = UUID.randomUUID().toString();
         JSONObject apiProperties = new JSONObject();
         apiProperties.put("name", uniqueName);
         apiProperties.put("context", "/" + uniqueName);
         apiProperties.put("version", "1.0.0");
-        apiProperties.put("provider", provider);
+        apiProperties.put("provider", user.getUserName());
         apiProperties.put("endpointConfig", endpointConfig);
         apiProperties.put("visibility", "RESTRICTED");
         apiProperties.put("visibleRoles", Collections.singletonList(role));
@@ -177,6 +173,7 @@ public class ApiTestHelper {
         String uniqueName = UUID.randomUUID().toString();
         apiProperties.put("name", uniqueName);
         apiProperties.put("context", "/" + uniqueName);
+        apiProperties.put("provider", user.getUserName());
         ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("production_endpoints")).put("url", backendUrl);
         ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("sandbox_endpoints")).put("url", backendUrl);
 
@@ -211,6 +208,7 @@ public class ApiTestHelper {
         String uniqueName = UUID.randomUUID().toString();
         apiProperties.put("name", uniqueName);
         apiProperties.put("context", "/" + uniqueName);
+        apiProperties.put("provider", user.getUserName());
         ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("production_endpoints")).put("url", backendUrl);
         ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("sandbox_endpoints")).put("url", backendUrl);
 
@@ -232,6 +230,7 @@ public class ApiTestHelper {
         String uniqueName = UUID.randomUUID().toString();
         apiProperties.put("name", uniqueName);
         apiProperties.put("context", "/" + uniqueName);
+        apiProperties.put("provider", user.getUserName());
         ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("production_endpoints")).put("url", backendUrl);
         ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("sandbox_endpoints")).put("url", backendUrl);
 

@@ -57,7 +57,7 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init();
         apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation(),
-                keyManagerContext.getContextTenant().getDomain(), keyManagerHTTPSURL);
+                keyManagerContext.getContextTenant().getDomain(), keyManagerHTTPSURL, user);
         apiProductTestHelper = new ApiProductTestHelper(restAPIPublisher, restAPIStore);
 
     }
