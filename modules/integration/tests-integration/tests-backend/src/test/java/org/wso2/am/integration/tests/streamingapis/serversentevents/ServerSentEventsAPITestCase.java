@@ -29,11 +29,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.gateway.api.v2.dto.APIArtifactDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.test.impl.RestAPIGatewayImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -58,7 +60,6 @@ import javax.ws.rs.client.WebTarget;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -68,7 +69,7 @@ import static org.testng.Assert.assertTrue;
 public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
 
     private final String apiName = "SSEAPI";
-    private final String applicationName = "SSEApplication";
+    private final String applicationName = "WebSocketApplication";
     private final String apiContext = "sse";
     private final String apiVersion = "1.0.0";
 
@@ -105,11 +106,8 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[] { TestUserMode.TENANT_ADMIN },
-                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
-                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
-                new Object[] { TestUserMode.TENANT_EMAIL_USER },
+                new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN }
         };
     }
 
@@ -183,25 +181,6 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
         // Validate Subscription of the API
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
-    }
-
-    @Test(description = "Invoke SSE API", dependsOnMethods = "testSseApiApplicationSubscription")
-    public void testInvokeSseApi() throws Exception {
-        ArrayList grantTypes = new ArrayList();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        invokeSseApi(accessToken, 30000);
-
-        // Assert
-        int sent = sseServlet.getEventsSent();
-        int received = sseReceiver.getReceivedDataEventsCount();
-
-        Assert.assertNotEquals(sent, 0);
-        Assert.assertEquals(sent, received);
     }
 
     private void initializeSseServer(int port) {
