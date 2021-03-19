@@ -1824,7 +1824,9 @@ public class RestAPIPublisherImpl {
 
             CommentDTO editedCommentDTO = commentsApi.editCommentOfAPI(commentId,apiId,patchRequestBodyDTO);
             if (editedCommentDTO != null) {
-                response = new HttpResponse(gson.toJson(editedCommentDTO), 201);
+                response = new HttpResponse(gson.toJson(editedCommentDTO), 200);
+            } else {
+                response = new HttpResponse(null, 200);
             }
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
