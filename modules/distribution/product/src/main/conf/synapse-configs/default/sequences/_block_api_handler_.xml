@@ -1,11 +1,6 @@
 <sequence name="_api_blocked_sequence_" xmlns="http://ws.apache.org/ns/synapse">
-    <payloadFactory media-type="xml">
-        <format>
-            <am:fault xmlns:am="http://wso2.org/apimanager">
-                <am:code>700700</am:code>
-                <am:message>API blocked</am:message>
-                <am:description>This API has been blocked temporarily. Please try again later or contact the system administrators.</am:description>
-            </am:fault>
+    <payloadFactory media-type="json">
+        <format>{"code":"700700","type":"API blocked","description":"This API has been blocked temporarily. Please try again later or contact the system administrators."}
         </format>
         <args/>
     </payloadFactory>

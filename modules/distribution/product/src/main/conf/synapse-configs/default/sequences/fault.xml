@@ -25,28 +25,21 @@
     <filter source="get-property('MESSAGE_FORMAT')" regex="soap1[1-2]">
         <then>
             <property name="SOAP_FAULT_CODE" value="Server"/>
-            <makefault>
+            <makefault version="soap11">
                 <code expression="$ctx:SOAP_FAULT_CODE"/>
                 <reason expression="$ctx:ERROR_MESSAGE"/>
             </makefault>
         </then>
         <else>
-            <payloadFactory>
-                <format>
-                    <am:fault xmlns:am="http://wso2.org/apimanager">
-                        <am:code>$1</am:code>
-                        <am:type>Status report</am:type>
-                        <am:message>Runtime Error</am:message>
-                        <am:description>$2</am:description>
-                    </am:fault>
-                </format>
+            <payloadFactory media-type="json">
+                <format>{"code":"$1","type":"Status report","message":"Runtime Error","description":"$2"}</format>
                 <args>
                     <arg expression="$ctx:ERROR_CODE"/>
                     <arg expression="$ctx:ERROR_MESSAGE"/>
                 </args>
             </payloadFactory>
             <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT|PATCH)).*$">
-                <property name="messageType" value="application/xml" scope="axis2"/>
+                <property name="messageType" value="application/json" scope="axis2"/>
             </filter>
         </else>
     </filter>

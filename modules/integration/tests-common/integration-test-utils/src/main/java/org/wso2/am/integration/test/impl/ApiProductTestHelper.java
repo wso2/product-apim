@@ -42,7 +42,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -72,7 +71,7 @@ public class ApiProductTestHelper {
 
         // Validate that APIProduct resources returned in response data are same as originally selected API resources
         List<ProductAPIDTO> responseResources = responseData.getApis();
-        verifyAPIProductDto(responseResources,resourcesForProduct);
+        verifyAPIProductDto(responseResources, resourcesForProduct);
 
         // Validate mandatory fields returned in response data
         Assert.assertEquals(responseData.getProvider(), provider);

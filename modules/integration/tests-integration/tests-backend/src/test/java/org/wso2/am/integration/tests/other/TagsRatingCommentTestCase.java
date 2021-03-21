@@ -27,6 +27,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -38,12 +39,16 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertNotEquals;
 
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) public class TagsRatingCommentTestCase
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
+public class TagsRatingCommentTestCase
         extends APIMIntegrationBaseTest {
 
     private String apiId;
@@ -55,11 +60,11 @@ import static org.testng.Assert.assertTrue;
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN },
-                new Object[] { TestUserMode.SUPER_TENANT_USER_STORE_USER },
-                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER },
-                new Object[] { TestUserMode.TENANT_EMAIL_USER },
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.SUPER_TENANT_USER_STORE_USER},
+                new Object[]{TestUserMode.SUPER_TENANT_EMAIL_USER},
+                new Object[]{TestUserMode.TENANT_EMAIL_USER},
         };
     }
 
@@ -68,7 +73,7 @@ import static org.testng.Assert.assertTrue;
         super.init(userMode);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Comment Rating Test case")
+    @Test(groups = {"wso2.am"}, description = "Comment Rating Test case")
     public void testTagsRatingCommentTestCase() throws Exception {
         String APIName = "CommentRatingAPI";
         String APIContext = "commentRating";
@@ -106,27 +111,195 @@ import static org.testng.Assert.assertTrue;
 
         //-------------------------Test Comments------------------------------------------
 
-        // Test add comments
-        String comment = "This is a test comment";
-        HttpResponse addCommentResponse = restAPIStore.addComment(apiId, comment);
-        assertNotNull(addCommentResponse, "Error adding comment");
-        assertEquals(addCommentResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
-                "Response code mismatched");
-        String commentId = addCommentResponse.getData();
-        assertNotNull(commentId, "Comment Id is null");
+        // Test add five root comments
+        List<String> rootComments = new ArrayList<String>();
+        for (Integer i = 1; i < 6; i++) {
+            HttpResponse addRootCommentResponse = restAPIStore.addComment(apiId, "This is root comment " +
+                    i.toString(), "general", null);
+            assertNotNull(addRootCommentResponse, "Error adding comment");
+            assertEquals(addRootCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                    "Response code mismatched");
+            Gson getCommentsGson = new Gson();
+            CommentDTO addedRootCommentDTO = getCommentsGson.fromJson(addRootCommentResponse.getData(), CommentDTO.class);
+            String rootCommentId = addedRootCommentDTO.getId();
+            assertNotNull(rootCommentId, "Comment Id is null");
+            rootComments.add(rootCommentId);
+        }
 
-        // Verify added comment
-        HttpResponse getCommentResponse = restAPIStore
-                .getComment(commentId, apiId, gatewayContextWrk.getContextTenant().getDomain(), false);
-        assertEquals(getCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+        String rootCommentIdToAddReplies = rootComments.get(0);
+
+        // Test add another four replies to above root comment
+        List<String> replies = new ArrayList<String>();
+        for (Integer i = 1; i < 5; i++) {
+            HttpResponse addReplyCommentResponse = restAPIStore.addComment(apiId, "This is a reply " +
+                    i.toString(), "general", rootCommentIdToAddReplies);
+            assertNotNull(addReplyCommentResponse, "Error adding comment");
+            assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                    "Response code mismatched");
+            Gson getCommentsGson = new Gson();
+            CommentDTO addedCommentDTO = getCommentsGson.fromJson(addReplyCommentResponse.getData(), CommentDTO.class);
+            String replyCommentId = addedCommentDTO.getId();
+            assertNotNull(replyCommentId, "Comment Id is null");
+            replies.add(replyCommentId);
+        }
+
+        // Verify added comment with it's replies
+        HttpResponse getCommentWithRepliesResponse = restAPIStore.getComment(rootCommentIdToAddReplies, apiId,
+                gatewayContextWrk.getContextTenant().getDomain(), false, 3, 0);
+        assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson g = new Gson();
-        CommentDTO commentDTO = g.fromJson(getCommentResponse.getData(), CommentDTO.class);
-        assertEquals(commentDTO.getContent(), comment, "Comments do not match");
+        Gson getCommentWithRepliesGson = new Gson();
+        CommentDTO commentWithRepliesCommentDTO = getCommentWithRepliesGson.fromJson(getCommentWithRepliesResponse
+                .getData(), CommentDTO.class);
+        assertEquals(commentWithRepliesCommentDTO.getContent(), "This is root comment 1",
+                "Comments do not match");
+        assertEquals(commentWithRepliesCommentDTO.getCategory(), "general", "Comments do not match");
+        assertEquals(commentWithRepliesCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL,
+                "Comments do not match");
+        for (CommentDTO reply : commentWithRepliesCommentDTO.getReplies().getList()) {
+            assertEquals(reply.getCategory(), "general", "Comments do not match");
+            assertEquals(reply.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
+            assertEquals(reply.getParentCommentId(), rootCommentIdToAddReplies, "Comments do not match");
+            assertEquals(replies.contains(reply.getId()), true, "Comments do not match");
+        }
+
+        // Verify Pagination of replies list of a comment
+        assertEquals(commentWithRepliesCommentDTO.getReplies().getList().size(), 3, "Replies limit does not match");
+        HttpResponse getCommentToVerifyPagination = restAPIStore.getComment(rootCommentIdToAddReplies, apiId,
+                gatewayContextWrk.getContextTenant().getDomain(), false, 3, 2);
+        assertEquals(getCommentToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        Gson getCommentToVerifyPaginationGson = new Gson();
+        CommentDTO getCommentToVerifyPaginationCommentDTO = getCommentToVerifyPaginationGson.fromJson(getCommentToVerifyPagination
+                .getData().replace("devportal", "DEVPORTAL"), CommentDTO.class);
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().size(), 2, "Replies limit does not match");
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(0).getContent(), "This is a reply 3", "Offset value does not captured");
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(1).getContent(), "This is a reply 4", "Offset value does not captured");
+
+        // Get  all the comments of  API
+        HttpResponse getCommentsResponse = restAPIStore.getComments(apiId, gatewayContextWrk.getContextTenant()
+                .getDomain(), false, 5, 0);
+        assertEquals(getCommentsResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        Gson getCommentsGson = new Gson();
+        CommentListDTO commentListDTO = getCommentsGson.fromJson(getCommentsResponse.getData(), CommentListDTO.class);
+        assertEquals(commentListDTO.getCount().intValue(), 5, "Root comments count do not match");
+        for (CommentDTO rootCommentDTO : commentListDTO.getList()) {
+            assertEquals(rootCommentDTO.getCategory(), "general", "Comments do not match");
+            assertEquals(rootCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL,
+                    "Comments do not match");
+            assertEquals(rootCommentDTO.getParentCommentId(), null, "Comments do not match");
+            assertEquals(rootComments.contains(rootCommentDTO.getId()), true, "Comments do not match");
+        }
+
+        // Verify Pagination of root comment list
+        HttpResponse getRootCommentsToVerifyPagination = restAPIStore.getComments(apiId, gatewayContextWrk.getContextTenant()
+                .getDomain(), false, 3, 2);
+        assertEquals(getRootCommentsToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        Gson getRootCommentsToVerifyPaginationGson = new Gson();
+        CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getRootCommentsToVerifyPaginationGson.fromJson(getRootCommentsToVerifyPagination
+                .getData().replace("devportal", "DEVPORTAL"), CommentListDTO.class);
+        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().size(), 3, "Comments limit does not match");
+        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(0).getContent(), "This is root comment 3", "Offset value does not captured");
+        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(1).getContent(), "This is root comment 2", "Offset value does not captured");
+        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(2).getContent(), "This is root comment 1", "Offset value does not captured");
+
+        // Get all the replies of a given comment
+        HttpResponse getRepliesResponse = restAPIStore.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
+                .getContextTenant().getDomain(), false, 5, 0);
+        assertEquals(getRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        Gson getRepliesGson = new Gson();
+        CommentListDTO replyListDTO = getRepliesGson.fromJson(getRepliesResponse.getData(), CommentListDTO.class);
+        assertEquals(replyListDTO.getCount().intValue(), 4, "Replies count do not match");
+        for (CommentDTO replyDTO : replyListDTO.getList()) {
+            assertEquals(replyDTO.getCategory(), "general", "Comments do not match");
+            assertEquals(replyDTO.getEntryPoint(), CommentDTO.EntryPointEnum.DEVPORTAL, "Comments do not match");
+            assertEquals(replyDTO.getParentCommentId(), rootCommentIdToAddReplies, "Comments do not match");
+            assertEquals(replies.contains(replyDTO.getId()), true, "Comments do not match");
+        }
+
+        // Verify Pagination of replies list of a comment
+        HttpResponse getRepliesToVerifyPagination = restAPIStore.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
+                .getContextTenant().getDomain(), false, 3, 2);
+        assertEquals(getRepliesToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        Gson getRepliesToVerifyPaginationGson = new Gson();
+        CommentListDTO getRepliesToVerifyPaginationCommenListDTO = getRepliesToVerifyPaginationGson.fromJson(getRepliesToVerifyPagination
+                .getData().replace("devportal", "DEVPORTAL"), CommentListDTO.class);
+        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().size(), 2, "Comments limit does not match");
+        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(0).getContent(), "This is a reply 3", "Offset value does not captured");
+        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(1).getContent(), "This is a reply 4", "Offset value does not captured");
+
+        //Edit a comment
+        //Edit the content only
+        HttpResponse editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId,
+                "Edited root comment", "general");
+        assertNotNull(editCommentResponse, "Error adding comment");
+        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched");
+        Gson editCommentGson = new Gson();
+        CommentDTO editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        assertEquals(editCommentDTO.getContent(), "Edited root comment");
+        assertEquals(editCommentDTO.getCategory(), "general");
+        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
+        String updatedTime = editCommentDTO.getUpdatedTime();
+        //Edit the category only
+        editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment",
+                "bug fix");
+        assertNotNull(editCommentResponse, "Error adding comment");
+        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched");
+        editCommentGson = new Gson();
+        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        assertEquals(editCommentDTO.getContent(), "Edited root comment");
+        assertEquals(editCommentDTO.getCategory(), "bug fix");
+        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
+        assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+        updatedTime = editCommentDTO.getUpdatedTime();
+        //Edit the category and content
+        editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment 1",
+                "general bug fix");
+        assertNotNull(editCommentResponse, "Error adding comment");
+        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched");
+        editCommentGson = new Gson();
+        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        assertEquals(editCommentDTO.getContent(), "Edited root comment 1");
+        assertEquals(editCommentDTO.getCategory(), "general bug fix");
+        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
+        assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+        updatedTime = editCommentDTO.getUpdatedTime();
+        //Edit - keep the category and content as it is
+        editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment 1",
+                "general bug fix");
+        assertEquals(editCommentResponse.getData(), null);
+        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched");
+        editCommentResponse = restAPIStore.getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk
+                .getContextTenant().getDomain(), false, 3, 0);
+        assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Error retrieving comment");
+        editCommentGson = new Gson();
+        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData(), CommentDTO.class);
+        assertEquals(editCommentDTO.getContent(), "Edited root comment 1");
+        assertEquals(editCommentDTO.getCategory(), "general bug fix");
+        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
+        assertEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+
 
         // Test delete comments
-        HttpResponse deleteResponse = restAPIStore.removeComment(commentId, apiId);
-        assertEquals(deleteResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
+        HttpResponse deleteResponse = restAPIStore.removeComment(rootCommentIdToAddReplies, apiId);
+        assertEquals(deleteResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched");
+        // Test check whether replies of above deleted root comment are deleted or not
+        for (String reply : replies) {
+            HttpResponse replyResponse = restAPIStore.getComment(reply, apiId, gatewayContextWrk.getContextTenant()
+                    .getDomain(), false, 3, 0);
+            assertEquals(replyResponse.getResponseCode(), Response.Status.NOT_FOUND.getStatusCode(),
+                    "Error retrieving comment");
+        }
 
         //-------------------------Test Ratings------------------------------------------
 
@@ -135,7 +308,7 @@ import static org.testng.Assert.assertTrue;
         HttpResponse ratingAddResponse = restAPIStore
                 .addRating(apiId, 4, gatewayContextWrk.getContextTenant().getDomain());
         assertEquals(ratingAddResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Error adding rating");
-        RatingDTO ratingDTO = g.fromJson(ratingAddResponse.getData(), RatingDTO.class);
+        RatingDTO ratingDTO = getCommentWithRepliesGson.fromJson(ratingAddResponse.getData(), RatingDTO.class);
         assertEquals(ratingDTO.getRating(), rating, "Ratings do not match");
 
         //Test delete rating
