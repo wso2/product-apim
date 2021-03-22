@@ -1229,6 +1229,11 @@
             <filtered>true</filtered>
         </file>
         <file>
+            <source>src/main/conf/multitenant-msg-context.properties</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <destName>multitenant-msg-context.properties</destName>
+        </file>
+        <file>
             <source>src/main/conf/sec.policy</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>sec.policy</destName>
