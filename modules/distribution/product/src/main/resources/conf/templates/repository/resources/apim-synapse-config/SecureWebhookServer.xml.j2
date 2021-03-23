@@ -3,7 +3,6 @@
                  protocol="https"
                  suspend="false" sequence="TestIn" onError="fault" >
     <p:parameters xmlns:p="http://ws.apache.org/ns/synapse">
-    <test></test>
         <p:parameter  name="inbound.http.port">{{apim.webhooks.https.port}}</p:parameter>
         <p:parameter name="keystore">
             <KeyStore>
