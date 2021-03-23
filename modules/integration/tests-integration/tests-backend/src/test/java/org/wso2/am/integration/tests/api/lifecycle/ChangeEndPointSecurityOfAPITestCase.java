@@ -20,6 +20,8 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -41,6 +43,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import javax.xml.bind.DatatypeConverter;
 
 import static org.testng.Assert.assertEquals;
@@ -51,6 +54,7 @@ import static org.testng.Assert.assertTrue;
  * the response body.
  */
 public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBaseTest {
+
     private static final Log log = LogFactory.getLog(ChangeEndPointSecurityOfAPITestCase.class);
     private final String API_NAME = "ChangeEndPointSecurityOfAPITest";
     private final String API_CONTEXT = "ChangeEndPointSecurityOfAPI";
@@ -67,11 +71,21 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
 
     @Factory(dataProvider = "userModeDataProvider")
     public ChangeEndPointSecurityOfAPITestCase(TestUserMode userMode) {
+
         this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+        };
     }
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
+
         super.init();
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
@@ -84,13 +98,13 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         applicationID = dto.getApplicationId();
     }
 
-
     @Test(groups = {"wso2.am"}, description = "Test the API with endpoint security enabled with simple password" +
             " that only has characters and numbers")
     public void testInvokeGETResourceWithSecuredEndPointPasswordOnlyNumbersAndLetters() throws Exception {
+
         String endpointUsername = "admin1";
-        char[] endpointPassword = {'a', 'd', 'm', 'i', 'n', '1', '2', '3'};
-        byte[] userNamePasswordByteArray = (endpointUsername + ":" + String.valueOf(endpointPassword)).getBytes();
+        String endpointPassword = "admin123";
+        byte[] userNamePasswordByteArray = (endpointUsername + ":" + endpointPassword).getBytes();
         String encodedUserNamePassword = DatatypeConverter.printBase64Binary(userNamePasswordByteArray);
 
         APICreationRequestBean apiCreationRequestBean =
@@ -100,7 +114,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setEndpointType(APIEndpointSecurityDTO.TypeEnum.BASIC.getValue());
         apiCreationRequestBean.setEpUsername(endpointUsername);
-        apiCreationRequestBean.setEpPassword(String.valueOf(endpointPassword));
+        apiCreationRequestBean.setEpPassword(endpointPassword);
         apiCreationRequestBean.setTier(TIER_UNLIMITED);
         apiCreationRequestBean.setTiersCollection(TIER_UNLIMITED);
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
@@ -129,33 +143,44 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         assertTrue(httpResponseGet.getData().contains(encodedUserNamePassword), "Response Data not match for GET" +
                 " request for endpoint type secured. Expected value :" + encodedUserNamePassword + " not contains in " +
                 "response data:" + httpResponseGet.getData() + "username:" + endpointUsername + " password:" +
-                String.valueOf(endpointPassword));
+                endpointPassword);
 
     }
 
-
     @Test(groups = {"wso2.am"}, description = "Test the API with endpoint security" +
-                                                                                 " enabled with complex password",
-          dependsOnMethods = "testInvokeGETResourceWithSecuredEndPointPasswordOnlyNumbersAndLetters")
+            " enabled with complex password",
+            dependsOnMethods = "testInvokeGETResourceWithSecuredEndPointPasswordOnlyNumbersAndLetters")
     public void testInvokeGETResourceWithSecuredEndPointComplexPassword()
             throws Exception {
 
-        char[] symbolicCharacter = {'!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '+', '=', '{', '[',
-                '}', ']', '|', '\\', ':', ';', '"', '\'', '<', ',', '>', '.', '?', '/'};
+        String[] symbolicCharacter = {"!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "-", "+", "=", "{", "[",
+                "}", "]", "|", ":", ";", "'", "<", ",", ">", ".", "?", "/"};
         APIDTO apidto = restAPIPublisher.getAPIByID(apiID, user.getUserDomain());
 
         for (int i = 0; i < symbolicCharacter.length; i++) {
             String endpointUsername = "user";
-            char[] endpointPassword = {'a', 'b', 'c', 'd', symbolicCharacter[i], 'e', 'f', 'g', 'h', 'i', 'j', 'k'};
-            byte[] userNamePasswordByteArray = (endpointUsername + ":" + String.valueOf(endpointPassword)).getBytes();
+            String endpointPassword = "abcd" + symbolicCharacter[i] + "efghijk";
+            byte[] userNamePasswordByteArray = (endpointUsername + ":" + endpointPassword).getBytes();
             String encodedUserNamePassword = DatatypeConverter.printBase64Binary(userNamePasswordByteArray);
-
-            APIEndpointSecurityDTO securityDTO = apidto.getEndpointSecurity();
-            securityDTO.setUsername(endpointUsername);
-            securityDTO.setPassword(String.valueOf(endpointPassword));
-            apidto.setEndpointSecurity(securityDTO);
-
-            //Update API with Edited information
+            String endpointSecurity = "{\n" +
+                    "  \"production\":{\n" +
+                    "    \"enabled\":true,\n" +
+                    "    \"type\":\"BASIC\",\n" +
+                    "    \"username\":\"" + endpointUsername + "\",\n" +
+                    "    \"password\":\"" + endpointPassword + "\"\n" +
+                    "  },\n" +
+                    "  \"sandbox\":{\n" +
+                    "    \"enabled\":true,\n" +
+                    "    \"type\":\"BASIC\",\n" +
+                    "    \"username\":\"" + endpointUsername + "\",\n" +
+                    "    \"password\":\"" + endpointPassword + "\"\n" +
+                    "  }\n" +
+                    "  }";
+            Object endpointConfig = apidto.getEndpointConfig();
+            JSONObject endpointConfigJson = new JSONObject();
+            endpointConfigJson.putAll((Map) endpointConfig);
+            endpointConfigJson.put("endpoint_security", new JSONParser().parse(endpointSecurity));
+            apidto.setEndpointConfig(endpointConfigJson);            //Update API with Edited information
             restAPIPublisher.updateAPI(apidto);
 
             // Undeploy and Delete existing API Revisions Since it has reached 5 max revision limit
@@ -182,9 +207,9 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
                     if (j == retries) {
                         log.error("Max retry count reached!!!");
                         Assert.fail("Response Data not match for GET request for endpoint type secured. " +
-                                        "Expected value : " + encodedUserNamePassword + " not contains in " +
-                                        "response data: " + httpResponseGet.getData() + " username:" + endpointUsername
-                                        + " password:" + String.valueOf(endpointPassword));
+                                "Expected value : " + encodedUserNamePassword + " not contains in " +
+                                "response data: " + httpResponseGet.getData() + " username:" + endpointUsername
+                                + " password:" + String.valueOf(endpointPassword));
                     } else {
                         log.warn("[Warning] Response Data not match for GET request for endpoint type secured. " +
                                 "Expected value : " + encodedUserNamePassword + " not contains in " +
@@ -199,17 +224,10 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+
         restAPIStore.removeApplicationById(applicationID);
         undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiID);
         super.cleanUp();
     }
-
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][] {
-                new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-        };
-    }
-
 }

@@ -32,13 +32,16 @@
         #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
         #set( $ep_key = "${endpointKey}_API${type}Endpoint")
         #set( $endpointsecurity = $endpoint_security.get("${type}"))
-
         ## IF endpoint secured
         #if($endpointsecurity.enabled)
+        #if($endpointsecurity.type == "basic" || $endpointsecurity.type == "BASIC")
         #if($isSecureVaultEnabled)
 <property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$endpointsecurity.alias')"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$endpointsecurity.username',':',get-property('password'))"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
+        #else
+<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', '$endpointsecurity.base64EncodedPassword')" scope="transport"/>
+        #end
         #else
         #if($endpointsecurity.type == "digest" || $endpointsecurity.type == "DIGEST")
 <property xmlns="http://ws.apache.org/ns/synapse" name="UNAMEPASSWORD" value="$util.escapeXml($endpointsecurity.base64EncodedPassword)" type="STRING"/>
@@ -69,24 +72,28 @@
 <source type="property" property="MessageBody" clone="true"/>
 <target type="body"/>
 </enrich>
-
         #else
         #if($endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH")
-
-<property xmlns="http://ws.apache.org/ns/synapse" name="uniqueIdentifier" value="$util.escapeXml($endpointsecurity.uniqueIdentifier)" type="STRING"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="tokenUrl" value="$util.escapeXml($endpointsecurity.tokenUrl)" type="STRING"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="clientId" value="$util.escapeXml($endpointsecurity.clientId)" type="STRING"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="clientSecret" value="$util.escapeXml($endpointsecurity.clientSecret)" type="STRING"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="grantType" value="$util.escapeXml($endpointsecurity.grantType)" type="STRING"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="customParameters" value="$util.escapeXml($endpointsecurity.customParameters)" type="STRING"/>
-
-        #if($endpointsecurity.grantType == "password" || $endpointsecurity.grantType == "PASSWORD")
-<property xmlns="http://ws.apache.org/ns/synapse" name="usernamePassword" value="$util.escapeXml($endpointsecurity.base64EncodedPassword)" type="STRING"/>
-        #end
-<class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthMediator" />
-
-        #else
-<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', '$endpointsecurity.base64EncodedPassword')" scope="transport"/>
+<class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthMediator">
+<property name="uniqueIdentifier" value="$util.escapeXml($endpointsecurity.uniqueIdentifier)" type="STRING"/>
+<property name="tokenEndpointUrl" value="$util.escapeXml($endpointsecurity.tokenUrl)" type="STRING"/>
+<property name="clientId" value="$util.escapeXml($endpointsecurity.clientId)" type="STRING"/>
+<property name="grantType" value="$util.escapeXml($endpointsecurity.grantType)" type="STRING"/>
+<property name="customParameters" value="$util.escapeXml($endpointsecurity.customParameters)" type="STRING"/>
+#if($isSecureVaultEnabled)
+<property name="clientSecret" expression="wso2:vault-lookup('$endpointsecurity.clientSecretAlias')" type="STRING"/>
+#else
+<property name="clientSecret" value="$util.escapeXml($endpointsecurity.clientSecret)" type="STRING"/>
+#end
+#if($endpointsecurity.grantType == "password" || $endpointsecurity.grantType == "PASSWORD")
+<property name="username" value="$util.escapeXml($endpointsecurity.username)" type="STRING"/>
+#if($isSecureVaultEnabled)
+<property name="password" expression="wso2:vault-lookup('$endpointsecurity.passwordAlias')" type="STRING"/>
+#else
+<property name="password" value="$util.escapeXml($endpointsecurity.password)" type="STRING"/>
+#end
+#end
+</class>
         #end
         #end
         #end
@@ -135,30 +142,30 @@
      version="$!apiVersion"
      transports="$!transport"
      version-type="context"
-     #if($apiType == 'WS')
-     binds-to="WebSocketInboundEndpoint, SecureWebSocketEP"
-     #end
->
-#if($apiIsBlocked)
-## if API is blocked send the API Block message
+        #if($apiType == 'WS')
+        binds-to="WebSocketInboundEndpoint, SecureWebSocketEP"
+        #end
+        >
+        #if($apiIsBlocked)
+        ## if API is blocked send the API Block message
 <resource methods="GET POST PUT DELETE PATCH" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
-    <payloadFactory>
-        <format>
-            <am:fault xmlns:am="http://wso2.org/apimanager">
-                <am:code>700700</am:code>
-                <am:message>API blocked</am:message>
-                <am:description>This API has been blocked temporarily. Please try again later or contact the system administrators.</am:description>
-            </am:fault>
-        </format>
-    </payloadFactory>
-    <property name="HTTP_SC" value="503" scope="axis2"/>
-    <property name="RESPONSE" value="true"/>
-    <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
-    <header name="To" action="remove"/>
-    <send/>
+<payloadFactory>
+    <format>
+        <am:fault xmlns:am="http://wso2.org/apimanager">
+            <am:code>700700</am:code>
+            <am:message>API blocked</am:message>
+            <am:description>This API has been blocked temporarily. Please try again later or contact the system administrators.</am:description>
+        </am:fault>
+    </format>
+</payloadFactory>
+<property name="HTTP_SC" value="503" scope="axis2"/>
+<property name="RESPONSE" value="true"/>
+<property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+<header name="To" action="remove"/>
+<send/>
 </inSequence>
-</resource>
+        </resource>
         #else
         ## api not blocked
         #set ($resourceNo = 0)
@@ -314,12 +321,12 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
         #if($apiStatus == 'PROTOTYPED')
         #end
         ## end of apiIsBlocked check
-#if($apiType != 'WS')
+        #if($apiType != 'WS')
 <handlers>
 <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler">
     <property name="inline" value="INLINE"/>
 </handler>
 </handlers>
-#end
+        #end
         </api>
         <!--$endpoint_security-->

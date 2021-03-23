@@ -1085,6 +1085,18 @@ public class RestAPIPublisherImpl {
         sandUrl.put("url", apiCreationRequestBean.getEndpointUrl().toString());
         jsonObject.put("sandbox_endpoints", sandUrl);
         jsonObject.put("production_endpoints", sandUrl);
+        if (APIEndpointSecurityDTO.TypeEnum.BASIC.getValue()
+                .equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
+            JSONObject endpointSecurityGlobal = new JSONObject();
+            endpointSecurityGlobal.put("enabled", true);
+            endpointSecurityGlobal.put("type", APIEndpointSecurityDTO.TypeEnum.BASIC.getValue());
+            endpointSecurityGlobal.put("username", apiCreationRequestBean.getEpUsername());
+            endpointSecurityGlobal.put("password", apiCreationRequestBean.getEpPassword());
+            JSONObject endpointSecurity = new JSONObject();
+            endpointSecurity.put("production", endpointSecurityGlobal);
+            endpointSecurity.put("sandbox", endpointSecurityGlobal);
+            jsonObject.put("endpoint_security", endpointSecurity);
+        }
         body.setEndpointConfig(jsonObject);
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
@@ -1095,14 +1107,6 @@ public class RestAPIPublisherImpl {
             }
         }
         body.setPolicies(tierList);
-        if (APIEndpointSecurityDTO.TypeEnum.BASIC.getValue()
-                .equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
-            APIEndpointSecurityDTO dto = new APIEndpointSecurityDTO();
-            dto.setUsername(apiCreationRequestBean.getEpUsername());
-            dto.setPassword(apiCreationRequestBean.getEpPassword());
-            dto.setType(APIEndpointSecurityDTO.TypeEnum.BASIC);
-            body.setEndpointSecurity(dto);
-        }
         ApiResponse<APIDTO> httpInfo = apIsApi.createAPIWithHttpInfo(body, "v3");
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
