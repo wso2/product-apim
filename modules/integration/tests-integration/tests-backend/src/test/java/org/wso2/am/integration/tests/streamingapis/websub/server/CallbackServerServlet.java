@@ -40,6 +40,10 @@ public class CallbackServerServlet extends HttpServlet {
         return callbacksReceived.get();
     }
 
+    public void setCallbacksReceived(int callbacksReceived) {
+        this.callbacksReceived.set(callbacksReceived);
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("Callback Received");

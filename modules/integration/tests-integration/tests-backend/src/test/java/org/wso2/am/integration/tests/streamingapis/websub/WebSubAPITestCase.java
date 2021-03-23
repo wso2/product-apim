@@ -33,6 +33,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WebsubSubscriptionConfigurationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -62,7 +64,9 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -70,23 +74,27 @@ import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class WebSubAPITestCase extends APIMIntegrationBaseTest {
-    private final String apiName = "WebSubAPI";
-    private final String applicationName = "WebSubApplication";
-    private final String apiContext = "websub";
-    private final String apiVersion = "1.0.0";
 
     private final Log log = LogFactory.getLog(WebSubAPITestCase.class);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final int TOPIC_PORT = 9021;
+    private final String DEFAULT_TOPIC = "_default";
+    private final String SUBSCRIBE = "subscribe";
+    private final String UNSUBSCRIBE = "unsubscribe";
+
+    private String apiName = "WebSubAPI";
+    private String applicationName = "WebSubApplication";
+    private String apiContext = "websub";
+    private String apiVersion = "1.0.0";
 
     private String webSubEventPublisherSource = TestConfigurationProvider.getResourceLocation() + File.separator +
-            "artifacts"
-            + File.separator + "AM" + File.separator + "configFiles" + File.separator + "streamingAPIs" + File.separator +"webSubTest"
-            + File.separator;
+            "artifacts" + File.separator + "AM" + File.separator + "configFiles" + File.separator + "streamingAPIs" +
+            File.separator +"webSubTest" + File.separator;
     private String webSubRequestEventPublisherSource = "WebSub_Req_Logger.xml";
     private String webSubThrottleOutEventPublisherSource = "WebSub_Throttle_Out_Logger.xml";
-    private String webSubEventPublisherTarget = FrameworkPathUtil.getCarbonHome() + File.separator + "repository"
-            + File.separator + "deployment" + File.separator + "server" + File.separator + "eventpublishers"
-            + File.separator;
+    private String webSubEventPublisherTarget = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" +
+            File.separator + "deployment" + File.separator + "server" + File.separator + "eventpublishers" +
+            File.separator;
 
     private ServerConfigurationManager serverConfigurationManager;
     private String provider;
@@ -95,8 +103,6 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
     private String serverHost;
     private String apiId;
     private String appId;
-    private int topicPort = 9021;
-    private String topicName = "_default";
     private String topicSecret;
     private String apiEndpoint;
     private WebhookSender webhookSender;
@@ -148,23 +154,20 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         //Create the api creation request object
         apiRequest = new APIRequest(apiName, apiContext, endpointUri, endpointUri);
         apiRequest.setVersion(apiVersion);
-        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.ASYNC_WH_UNLIMITED);
         apiRequest.setProvider(provider);
         apiRequest.setType("WEBSUB");
         HttpResponse addAPIResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = addAPIResponse.getData();
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-
         APIDTO apiDto = restAPIPublisher.getAPIByID(apiId);
-        topicSecret = "websub-secret";
+        topicSecret = UUID.randomUUID().toString();
         WebsubSubscriptionConfigurationDTO websubSubscriptionConfig = new WebsubSubscriptionConfigurationDTO();
         websubSubscriptionConfig.setSecret(topicSecret);
         websubSubscriptionConfig.setSigningAlgorithm("SHA1");
         websubSubscriptionConfig.setSignatureHeader("x-hub-signature");
         apiDto.setWebsubSubscriptionConfiguration(websubSubscriptionConfig);
         restAPIPublisher.updateAPI(apiDto, apiId);
-        Thread.sleep(6000);
-
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
         waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
@@ -195,18 +198,49 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
                 "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
         appId = applicationResponse.getData();
         SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, appId,
-                APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
+                APIMIntegrationConstants.API_TIER.ASYNC_WH_UNLIMITED);
         // Validate Subscription of the API
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
     }
 
-    private void initializeCallbackReceiver(int port) throws Exception {
+    @Test(description = "Invoke the WebSub API", dependsOnMethods = "testWebSubApiApplicationSubscription")
+    public void testInvokeWebSubApi() throws Exception {
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+
+        String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
+        handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
+                accessToken);
+        initializeWebhookSender(topicSecret);
+        Thread.sleep(5000);
+        int noOfEventsToSend = 10;
+        for (int i = 0; i < noOfEventsToSend; i++) {
+            webhookSender.send();
+            Thread.sleep(3000);
+        }
+        handleCallbackSubscription(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
+                accessToken);
+
+        int sent = webhookSender.getWebhooksSent();
+        int received = callbackServerServlet.getCallbacksReceived();
+        Assert.assertEquals(sent, noOfEventsToSend);
+        Assert.assertEquals(sent + 1, received); // no. of events received = no. of events sent + 1 subscribe event
+
+        callbackServerServlet.setCallbacksReceived(0);
+        webhookSender.setWebhooksSent(0);
+    }
+
+    private void initializeCallbackReceiver(int port) {
         Server server = new Server(port);
         ServletHandler servletHandler = new ServletHandler();
         server.setHandler(servletHandler);
 
         callbackServerServlet = new CallbackServerServlet();
-
         callbackServer = server;
         executorService.execute(new Runnable() {
             @Override
@@ -222,26 +256,26 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         });
     }
 
-    private void initializeWebhookSender(String apiContext, String apiVersion, String secret) {
-        String payloadUrl = "http://" + serverHost + ":" + topicPort + "/" + apiContext + "/" + apiVersion +
-                "/webhooks_events_receiver_resource?topic=" + topicName;
+    private void initializeWebhookSender(String secret) {
+        String payloadUrl = apiEndpoint.replaceAll(":([0-9]+)/", ":" + TOPIC_PORT + "/") +
+                "/webhooks_events_receiver_resource?topic=" + DEFAULT_TOPIC;
         webhookSender = new WebhookSender(payloadUrl, secret);
     }
 
-    private static void subscribeToWebhookSender(String webSubApiUrl, String callbackUrl, String hubTopic,
-                                                 String hubSecret, String hubLeaseSeconds, String bearerToken)
-            throws MalformedURLException, AutomationFrameworkException, UnsupportedEncodingException {
+    private static void handleCallbackSubscription(String hubMode, String webSubApiUrl, String callbackUrl,
+                                                   String hubTopic, String hubSecret, String hubLeaseSeconds,
+                                                   String bearerToken)
+            throws UnsupportedEncodingException, MalformedURLException, AutomationFrameworkException {
         String encodedUrl = URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8.toString());
-
-        String url = webSubApiUrl + "?hub.callback=" + encodedUrl + "&hub.mode=subscribe&hub.secret=" + hubSecret +
-                "&hub.lease_seconds=" + hubLeaseSeconds + "&hub.topic=" + hubTopic;
-        HttpRequestUtil.doPost(new URL(url), "",
-                Collections.singletonMap("Authorization", "Bearer " + bearerToken));
+        String url = webSubApiUrl + "?hub.callback=" + encodedUrl + "&hub.mode=" + hubMode + "&hub.secret=" +
+                hubSecret + "&hub.lease_seconds=" + hubLeaseSeconds + "&hub.topic=" + hubTopic;
+        HttpRequestUtil.doPost(new URL(url), "", Collections.singletonMap("Authorization", "Bearer " + bearerToken));
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         serverConfigurationManager.restoreToLastConfiguration(false);
+        callbackServer.stop();
         executorService.shutdownNow();
         super.cleanUp();
     }

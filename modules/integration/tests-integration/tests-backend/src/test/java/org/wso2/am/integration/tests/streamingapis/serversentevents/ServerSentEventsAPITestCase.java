@@ -24,18 +24,16 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.gateway.api.v2.dto.APIArtifactDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.test.impl.RestAPIGatewayImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -60,6 +58,7 @@ import javax.ws.rs.client.WebTarget;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -68,23 +67,20 @@ import static org.testng.Assert.assertTrue;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
 
-    private final String apiName = "SSEAPI";
-    private final String applicationName = "WebSocketApplication";
-    private final String apiContext = "sse";
-    private final String apiVersion = "1.0.0";
-
     private final Log log = LogFactory.getLog(ServerSentEventsAPITestCase.class);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private String sseEventPublisherSource = TestConfigurationProvider.getResourceLocation() + File.separator +
-            "artifacts"
-            + File.separator + "AM" + File.separator + "configFiles" + File.separator + "streamingAPIs" + File.separator + "serverSentEventsTest"
-            + File.separator;
+            "artifacts" + File.separator + "AM" + File.separator + "configFiles" + File.separator + "streamingAPIs" +
+            File.separator + "serverSentEventsTest" + File.separator;
     private String sseRequestEventPublisherSource = "SSE_Req_Logger.xml";
     private String sseThrottleOutEventPublisherSource = "SSE_Throttle_Out_Logger.xml";
-    private String sseEventPublisherTarget = FrameworkPathUtil.getCarbonHome() + File.separator + "repository"
-            + File.separator + "deployment" + File.separator + "server" + File.separator + "eventpublishers"
-            + File.separator;
+    private String sseEventPublisherTarget = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" +
+            File.separator + "deployment" + File.separator + "server" + File.separator + "eventpublishers" +
+            File.separator;
+
+    private String apiName = "SSEAPI";
+    private String applicationName = "SSEApplication";
 
     private ServerConfigurationManager serverConfigurationManager;
     private String provider;
@@ -126,8 +122,8 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         int upperPortLimit = 8090;
         sseServerPort = StreamingApiTestUtils.getAvailablePort(lowerPortLimit, upperPortLimit, sseServerHost);
         if (sseServerPort == -1) {
-            throw new APIManagerIntegrationTestException("No available port in the range " +
-                    lowerPortLimit + "-" + upperPortLimit + " was found");
+            throw new APIManagerIntegrationTestException("No available port in the range " + lowerPortLimit + "-" +
+                    upperPortLimit + " was found");
         }
         log.info("Selected port " + sseServerPort + " to start backend server");
         initializeSseServer(sseServerPort);
@@ -136,6 +132,8 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     @Test(description = "Publish SSE API")
     public void testPublishSseApi() throws Exception {
         provider = user.getUserName();
+        String apiContext = "sse";
+        String apiVersion = "1.0.0";
 
         URI endpointUri = new URI("http://" + sseServerHost + ":" + sseServerPort);
 
@@ -183,6 +181,23 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
     }
 
+    @Test(description = "Invoke SSE API", dependsOnMethods = "testSseApiApplicationSubscription")
+    public void testInvokeSseApi() throws Exception {
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        invokeSseApi(accessToken, 30000);
+
+        int sent = sseServlet.getEventsSent();
+        int received = sseReceiver.getReceivedDataEventsCount();
+        Assert.assertNotEquals(sent, 0);
+        Assert.assertEquals(sent, received);
+    }
+
     private void initializeSseServer(int port) {
         Server server = new Server(port);
         ServletHandler servletHandler = new ServletHandler();
@@ -199,17 +214,6 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         startAndStopSseServer(runForMillis);
         Thread.sleep(5000);
         startSseReceiver(bearerToken);
-    }
-
-    private void startSseReceiver(String bearerToken) {
-        Client client = ClientBuilder.newClient();
-        WebTarget target = client.target(apiEndpoint + "/memory");
-        sseReceiver = new SimpleSseReceiver(target, bearerToken);
-        try {
-            sseReceiver.open();
-        } finally {
-            sseReceiver.close(); // This will be called when sseServer.stop() is called
-        }
     }
 
     private void startAndStopSseServer(long stopAfterMillis) {
@@ -229,7 +233,18 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         });
     }
 
-    @AfterClass(alwaysRun = true)
+    private void startSseReceiver(String bearerToken) {
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target(apiEndpoint + "/memory");
+        sseReceiver = new SimpleSseReceiver(target, bearerToken);
+        try {
+            sseReceiver.open();
+        } finally {
+            sseReceiver.close(); // This will be called when sseServer.stop() is called
+        }
+    }
+
+    @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
         serverConfigurationManager.restoreToLastConfiguration(false);
         executorService.shutdownNow();
