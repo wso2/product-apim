@@ -25,6 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoWebsubSubscriptionConfigurationDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIInfoDTO
@@ -74,6 +75,10 @@ public class APIInfoDTO {
         public static final String SERIALIZED_NAME_SECURITY_SCHEME = "securityScheme";
         @SerializedName(SERIALIZED_NAME_SECURITY_SCHEME)
             private List<String> securityScheme = null;
+
+        public static final String SERIALIZED_NAME_WEBSUB_SUBSCRIPTION_CONFIGURATION = "websubSubscriptionConfiguration";
+        @SerializedName(SERIALIZED_NAME_WEBSUB_SUBSCRIPTION_CONFIGURATION)
+            private APIInfoWebsubSubscriptionConfigurationDTO websubSubscriptionConfiguration;
 
 
         public APIInfoDTO id(String id) {
@@ -329,6 +334,29 @@ public class APIInfoDTO {
     }
 
 
+        public APIInfoDTO websubSubscriptionConfiguration(APIInfoWebsubSubscriptionConfigurationDTO websubSubscriptionConfiguration) {
+        
+        this.websubSubscriptionConfiguration = websubSubscriptionConfiguration;
+        return this;
+        }
+
+    /**
+        * Get websubSubscriptionConfiguration
+    * @return websubSubscriptionConfiguration
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIInfoWebsubSubscriptionConfigurationDTO getWebsubSubscriptionConfiguration() {
+        return websubSubscriptionConfiguration;
+    }
+
+
+    public void setWebsubSubscriptionConfiguration(APIInfoWebsubSubscriptionConfigurationDTO websubSubscriptionConfiguration) {
+        this.websubSubscriptionConfiguration = websubSubscriptionConfiguration;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -348,12 +376,13 @@ public class APIInfoDTO {
             Objects.equals(this.lifeCycleStatus, apIInfo.lifeCycleStatus) &&
             Objects.equals(this.workflowStatus, apIInfo.workflowStatus) &&
             Objects.equals(this.hasThumbnail, apIInfo.hasThumbnail) &&
-            Objects.equals(this.securityScheme, apIInfo.securityScheme);
+            Objects.equals(this.securityScheme, apIInfo.securityScheme) &&
+            Objects.equals(this.websubSubscriptionConfiguration, apIInfo.websubSubscriptionConfiguration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, type, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme);
+        return Objects.hash(id, name, description, context, version, provider, type, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme, websubSubscriptionConfiguration);
     }
 
 
@@ -372,6 +401,7 @@ sb.append("class APIInfoDTO {\n");
     sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
+    sb.append("    websubSubscriptionConfiguration: ").append(toIndentedString(websubSubscriptionConfiguration)).append("\n");
 sb.append("}");
 return sb.toString();
 }

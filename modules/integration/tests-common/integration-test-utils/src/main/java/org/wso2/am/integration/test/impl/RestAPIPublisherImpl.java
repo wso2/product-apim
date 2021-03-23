@@ -262,8 +262,18 @@ public class RestAPIPublisherImpl {
         } else {
             List<APIOperationsDTO> operations = new ArrayList<>();
             APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
-            apiOperationsDTO.setVerb("GET");
-            apiOperationsDTO.setTarget("/*");
+
+            if (isAsyncApi(apiRequest)) {
+                apiOperationsDTO.setVerb("SUBSCRIBE");
+            } else {
+                apiOperationsDTO.setVerb("GET");
+            }
+
+            if ("WEBSUB".equalsIgnoreCase(apiRequest.getType())) {
+                apiOperationsDTO.setTarget("_default");
+            } else {
+                apiOperationsDTO.setTarget("/*");
+            }
             apiOperationsDTO.setAuthType("Application & Application User");
             apiOperationsDTO.setThrottlingPolicy("Unlimited");
             operations.add(apiOperationsDTO);
@@ -298,6 +308,11 @@ public class RestAPIPublisherImpl {
         ApiResponse<APIDTO> httpInfo = apIsApi.createAPIWithHttpInfo(apidto, osVersion);
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
+    }
+
+    private boolean isAsyncApi(APIRequest apiRequest) {
+        String type = apiRequest.getType();
+        return "SSE".equalsIgnoreCase(type) || "WS".equalsIgnoreCase(type) || "WEBSUB".equalsIgnoreCase(type);
     }
 
     /**
