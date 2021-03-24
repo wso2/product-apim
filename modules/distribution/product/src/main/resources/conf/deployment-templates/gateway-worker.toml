@@ -69,16 +69,9 @@ traffic_manager_urls=["tcp://tm2.local:9611"]
 traffic_manager_auth_urls=["ssl://tm2.local:9711"]
 
 [apim.analytics]
-username= "$ref{super_admin.username}"
-password= "$ref{super_admin.password}"
-
-[[apim.analytics.url_group]]
-analytics_url=["tcp://analytics1.local:7612"]
-analytics_auth_url=["ssl://analytics1.local:7712"]
-
-[[apim.analytics.url_group]]
-analytics_url=["tcp://analytics2.local:7612"]
-analytics_auth_url=["ssl://analytics2.local:7712"]
+enable = false
+config_endpoint = "https://localhost:8080/auth/v1"
+auth_token = ""
 
 # Caches
 [apim.cache.gateway_token]

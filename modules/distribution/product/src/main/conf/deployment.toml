@@ -94,7 +94,6 @@ https_endpoint = "https://localhost:${https.nio.port}"
 enable = false
 config_endpoint = "https://localhost:8080/auth/v1"
 auth_token = ""
-properties.'worker.thread.count' = 1
 
 #[apim.key_manager]
 #service_url = "https://localhost:${mgt.transport.https.port}/services/"
