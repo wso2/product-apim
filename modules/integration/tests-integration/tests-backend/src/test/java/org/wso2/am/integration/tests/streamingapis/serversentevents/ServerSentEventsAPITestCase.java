@@ -18,28 +18,40 @@
 
 package org.wso2.am.integration.tests.streamingapis.serversentevents;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.admin.ApiResponse;
+import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EventCountLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.streamingapis.StreamingApiTestUtils;
 import org.wso2.am.integration.tests.streamingapis.serversentevents.client.SimpleSseReceiver;
 import org.wso2.am.integration.tests.streamingapis.serversentevents.server.SseServlet;
@@ -56,12 +68,19 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
@@ -93,6 +112,8 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     private Server sseServer;
     private SimpleSseReceiver sseReceiver;
     private String apiEndpoint;
+    private String consumerKey;
+    private String consumerSecret;
 
     @Factory(dataProvider = "userModeDataProvider")
     public ServerSentEventsAPITestCase(TestUserMode userMode) {
@@ -190,12 +211,114 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
         invokeSseApi(accessToken, 30000);
 
         int sent = sseServlet.getEventsSent();
         int received = sseReceiver.getReceivedDataEventsCount();
         Assert.assertNotEquals(sent, 0);
         Assert.assertEquals(sent, received);
+
+        sseServlet.setEventsSent(0);
+        sseReceiver.setReceivedDataEventsCount(0);
+    }
+
+    public void testSseApiThrottling() throws Exception {
+        InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
+                "configFiles" + File.separator + "streamingAPIs" + File.separator + "serverSentEventsTest" +
+                File.separator + "policy.json");
+
+        // Extract the field values from the input stream
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonMap = mapper.readTree(inputStream);
+        String policyName = jsonMap.get("policyName").textValue();
+        String policyDescription = jsonMap.get("policyDescription").textValue();
+        JsonNode defaultLimitJson = jsonMap.get("defaultLimit");
+        JsonNode requestCountJson = defaultLimitJson.get("requestCount");
+        Long requestCountLimit = Long.valueOf(String.valueOf(requestCountJson.get("requestCount")));
+        String timeUnit = requestCountJson.get("timeUnit").textValue();
+        Integer unitTime = Integer.valueOf(String.valueOf(requestCountJson.get("unitTime")));
+
+        // Create the advanced throttling policy with request count quota type
+        EventCountLimitDTO eventCountLimitDTO = DtoFactory.createEventCountLimitDTO(timeUnit, unitTime,
+                requestCountLimit);
+        ThrottleLimitDTO defaultLimit = DtoFactory.createEventCountThrottleLimitDTO(eventCountLimitDTO);
+        AdvancedThrottlePolicyDTO advancedPolicyDTO = DtoFactory
+                .createAdvancedThrottlePolicyDTO(policyName, "", policyDescription, false, defaultLimit,
+                        new ArrayList<>());
+
+        // Add the advanced throttling policy
+        ApiResponse<AdvancedThrottlePolicyDTO> addedPolicy =
+                restAPIAdmin.addAdvancedThrottlingPolicy(advancedPolicyDTO);
+        // Assert the status code and policy ID
+        Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
+        AdvancedThrottlePolicyDTO addedAdvancedPolicyDTO = addedPolicy.getData();
+        String apiPolicyId = addedAdvancedPolicyDTO.getPolicyId();
+        Assert.assertNotNull(apiPolicyId, "The policy ID cannot be null or empty");
+
+        // Update Throttling policy of the API
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
+        apidto.setApiThrottlingPolicy("SSETestThrottlingPolicy");
+        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto);
+        Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), "SSETestThrottlingPolicy");
+        // Get an Access Token from the user who is logged into the API Store.
+        URL tokenEndpointURL = new URL(getKeyManagerURLHttps() + "/oauth2/token");
+        String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(),
+                user.getPassword());
+        JSONObject subsAccessTokenGenerationResponse = new JSONObject(
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret, subsAccessTokenPayload,
+                        tokenEndpointURL).getData());
+
+        String subsRefreshToken = subsAccessTokenGenerationResponse.getString("refresh_token");
+        assertFalse(org.apache.commons.lang.StringUtils.isEmpty(subsRefreshToken),
+                "Refresh token of access token generated by subscriber is empty");
+
+        // Obtain user access token
+        String requestBody = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(), user.getPassword());
+        JSONObject accessTokenGenerationResponse = new JSONObject(
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
+                        tokenEndpointURL).getData());
+
+        // Get Access Token and Refresh Token
+        String refreshToken = accessTokenGenerationResponse.getString("refresh_token");
+        String getAccessTokenFromRefreshTokenRequestBody =
+                "grant_type=refresh_token&refresh_token=" + refreshToken;
+        accessTokenGenerationResponse = new JSONObject(
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret,
+                        getAccessTokenFromRefreshTokenRequestBody,
+                        tokenEndpointURL).getData());
+        String userAccessToken = accessTokenGenerationResponse.getString("access_token");
+
+        Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
+        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
+        testThrottling(tokenJti);
+    }
+
+    private void testThrottling(String accessToken) throws Exception {
+        // Attempt to run for 3 minutes. Connection is expected to be closed within 1 minute due to throttle out.
+        startAndStopSseServer(3 * 60000);
+        // Prevent API requests getting dispersed into two time units
+        while (LocalDateTime.now().getSecond() > 40) {
+            Thread.sleep(5000L);
+        }
+        long startTime = System.currentTimeMillis();
+        startSseReceiver(accessToken, null);
+        long endTime = System.currentTimeMillis();
+        Assert.assertTrue((endTime - startTime) < 60000);
+
+        // Re-attempt to connect after throttle out. A throttled out event is expected to be received.
+        AtomicBoolean isThrottled = new AtomicBoolean(false);
+        startSseReceiver(accessToken, new Consumer<Boolean>() {
+            @Override
+            public void accept(Boolean aBoolean) {
+                isThrottled.set(aBoolean);
+            }
+        });
+        Thread.sleep(3000L);
+        Assert.assertTrue(isThrottled.get());
     }
 
     private void initializeSseServer(int port) {
@@ -213,7 +336,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     private void invokeSseApi(String bearerToken, long runForMillis) throws Exception {
         startAndStopSseServer(runForMillis);
         Thread.sleep(5000);
-        startSseReceiver(bearerToken);
+        startSseReceiver(bearerToken, null);
     }
 
     private void startAndStopSseServer(long stopAfterMillis) {
@@ -233,10 +356,11 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         });
     }
 
-    private void startSseReceiver(String bearerToken) {
+    private void startSseReceiver(String bearerToken, Consumer<Boolean> throttledResponseConsumer) {
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(apiEndpoint + "/memory");
         sseReceiver = new SimpleSseReceiver(target, bearerToken);
+        sseReceiver.registerThrottledResponseConsumer(throttledResponseConsumer);
         try {
             sseReceiver.open();
         } finally {

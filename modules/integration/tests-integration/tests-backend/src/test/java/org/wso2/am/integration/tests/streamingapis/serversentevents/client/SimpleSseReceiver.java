@@ -42,17 +42,23 @@ import java.util.function.Consumer;
 public class SimpleSseReceiver implements SseEventSource {
 
     private static final String DATA = "data:";
+    private static final String REQUEST_IS_THROTTLED_SEGMENT = "request is throttled";
     private static final String MEDIA_TYPE_SSE = "text/event-stream";
 
     private final Log log = LogFactory.getLog(SimpleSseReceiver.class);
     private final WebTarget target;
     private String bearerToken;
     private AtomicInteger receivedDataEventsCount;
+    private Consumer<Boolean> throttledResponseProcessor;
 
     public SimpleSseReceiver(WebTarget target, String bearerToken) {
         this.target = target;
         this.bearerToken = bearerToken;
         this.receivedDataEventsCount = new AtomicInteger(0);
+    }
+
+    public void registerThrottledResponseConsumer(Consumer<Boolean> consumer) {
+        this.throttledResponseProcessor = consumer;
     }
 
     @Override
@@ -91,12 +97,21 @@ public class SimpleSseReceiver implements SseEventSource {
                 if (line.startsWith(DATA)) {
                     log.info("Received data - " + line);
                     receivedDataEventsCount.incrementAndGet();
+                } else if (line.contains(REQUEST_IS_THROTTLED_SEGMENT)) {
+                    processThrottledResponse();
                 }
                 line = reader.readLine();
             }
         } catch (IOException e) {
             log.error("Failed to read the response.", e);
         }
+    }
+
+    private void processThrottledResponse() {
+        if (this.throttledResponseProcessor != null) {
+            throttledResponseProcessor.accept(true);
+        }
+        log.info("Throttled out");
     }
 
     @Override
@@ -111,5 +126,9 @@ public class SimpleSseReceiver implements SseEventSource {
 
     public int getReceivedDataEventsCount() {
         return receivedDataEventsCount.get();
+    }
+
+    public void setReceivedDataEventsCount(int receivedDataEventsCount) {
+        this.receivedDataEventsCount.set(receivedDataEventsCount);
     }
 }

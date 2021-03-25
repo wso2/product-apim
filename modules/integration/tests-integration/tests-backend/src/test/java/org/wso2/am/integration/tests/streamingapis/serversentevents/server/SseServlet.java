@@ -42,6 +42,10 @@ public class SseServlet extends EventSourceServlet {
         return eventsSent.get();
     }
 
+    public void setEventsSent(int eventsSent) {
+        this.eventsSent.set(eventsSent);
+    }
+
     @Override
     protected EventSource newEventSource(HttpServletRequest httpServletRequest) {
         return new EventSource() {
