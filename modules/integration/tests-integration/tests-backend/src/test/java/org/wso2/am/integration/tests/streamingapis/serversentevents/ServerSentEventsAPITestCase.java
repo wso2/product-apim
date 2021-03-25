@@ -44,6 +44,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.TopicListDTO;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -200,6 +201,15 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
         // Validate Subscription of the API
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
+    }
+
+    @Test(description = "check for topics of a SSE api", dependsOnMethods = "testSseApiApplicationSubscription")
+    public void testTopicRetrievalofSSEApi() throws  Exception {
+        HttpResponse topicResponse = restAPIStore.getTopics(apiId, user.getUserDomain());
+        Gson g = new Gson();
+        TopicListDTO topicListDTO = g.fromJson(topicResponse.getData(), TopicListDTO.class);
+        Assert.assertEquals(topicListDTO.getCount().intValue(), 1);
+
     }
 
     @Test(description = "Invoke SSE API", dependsOnMethods = "testSseApiApplicationSubscription")
