@@ -732,7 +732,7 @@ org.apache.felix.gogo.command_0.10.0.v201209301215.jar                          
 azure-core_1.9.0.wso2v1.jar                                                                         bundle         mit
 org.eclipse.wst.jsdt.debug.rhino.debugger_1.0.300.v201109150503.jar                                 bundle         epl1
 org.wso2.carbon.governance.custom.lifecycles.history.ui_4.8.19.jar                                  bundle         apache2
-org.wso2.carbon.mediator.cache_4.7.81.jar                                                           bundle         apache2
+org.wso2.carbon.mediator.cache_4.7.87.jar                                                           bundle         apache2
 org.wso2.carbon.andes.admin_3.3.13.jar                                                              bundle         apache2
 org.apache.commons.lang3_3.9.0.jar                                                                  bundle         apache2
 org.wso2.carbon.proxyadmin_4.7.81.jar                                                               bundle         apache2
