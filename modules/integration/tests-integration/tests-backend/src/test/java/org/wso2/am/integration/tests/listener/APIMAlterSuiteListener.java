@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.listener;
 
 import org.apache.commons.lang.StringUtils;
 import org.testng.IAlterSuiteListener;
+import org.testng.xml.XmlClass;
 import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlTest;
 
@@ -30,17 +31,53 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
     @Override
     public void alter(List<XmlSuite> list) {
         String testsToRunCommaSeparated = System.getenv("PRODUCT_APIM_TESTS");
-        if (StringUtils.isBlank(testsToRunCommaSeparated)) {
+        String testClassesToRunCommaSeparated = System.getenv("PRODUCT_APIM_TEST_CLASSES");
+        if (StringUtils.isBlank(testsToRunCommaSeparated) && StringUtils.isBlank(testClassesToRunCommaSeparated) ) {
             return;
         }
-        String[] enabledTests = testsToRunCommaSeparated.split(",");
+        String[] enabledTests = new String[]{};
+        String[] enabledTestClasses = new String[]{};
+        if (!StringUtils.isBlank(testsToRunCommaSeparated)) {
+            enabledTests = testsToRunCommaSeparated.split(",");
+        }
+        if (!StringUtils.isBlank(testClassesToRunCommaSeparated)) {
+            enabledTestClasses = testClassesToRunCommaSeparated.split(",");
+        }
         for (XmlSuite suite: list) {
             if ("ApiManager-features-test-suite".equals(suite.getName())) {
                 List<XmlTest> newXMLTests = new ArrayList<>();
-                for(XmlTest test: suite.getTests()) {
+                for (XmlTest xmlTest: suite.getTests()) {
+                    // process PRODUCT_APIM_TESTS to select xml tests to run
+                    boolean xmlTestAdded = false;
                     for (String enabledTest: enabledTests) {
-                        if (enabledTest.trim().equals(test.getName().trim())) {
-                            newXMLTests.add(test);
+                        if (enabledTest.trim().equals(xmlTest.getName().trim())) {
+                            xmlTestAdded = true;
+                            newXMLTests.add(xmlTest);
+                        }
+                    }
+
+                    List<XmlClass> selectedXmlClassList = new ArrayList<>();
+                    // process PRODUCT_APIM_TEST_CLASSES to select xml test classes to run
+                    for (String enabledTestClass : enabledTestClasses) {
+                        List<XmlClass> xmlClassList = xmlTest.getClasses();
+                        for (int i = 0; i < xmlClassList.size(); i++) {
+                            if (enabledTestClass.trim().equals(xmlClassList.get(i).getName().trim())) {
+                                // add first XML test class of the XML test always if any of the test xml class is
+                                // selected.
+                                if (i != 0) {
+                                    selectedXmlClassList.add(xmlClassList.get(0));
+                                }
+                                selectedXmlClassList.add(xmlClassList.get(i));
+                            }
+                        }
+                    }
+                    // if any xml class is selected in the particular xml test, we need to run the xml test if it is
+                    //  not added to the suite to run
+                    if (selectedXmlClassList.size() > 0) {
+                        xmlTest.setClasses(selectedXmlClassList);
+                        // when the xml is not added already from the PRODUCT_APIM_TESTS list, need to add them.
+                        if (!xmlTestAdded) {
+                            newXMLTests.add(xmlTest);
                         }
                     }
                 }
