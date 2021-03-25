@@ -168,8 +168,10 @@ public class AdminApiTestHelper {
         Assert.assertEquals(actualEnv.getDescription(), expectedEnv.getDescription(),
                 "Environment description does not match with the expected description");
         Assert.assertEquals(actualEnv.isIsReadOnly(), expectedEnv.isIsReadOnly());
-        Assert.assertEquals(actualEnv.getVhosts(), expectedEnv.getVhosts(),
-                "Vhosts of environment does not match with the expected vhosts");
+        Assert.assertTrue(actualEnv.getVhosts().contains(expectedEnv.getVhosts().get(0)),
+                "Vhosts of environment does not contain an expected vhost");
+        Assert.assertTrue(actualEnv.getVhosts().contains(expectedEnv.getVhosts().get(1)),
+                "Vhosts of environment does not contain an expected vhost");
     }
 
     /**
