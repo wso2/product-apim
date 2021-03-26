@@ -15,8 +15,8 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  -->
-<api xmlns="http://ws.apache.org/ns/synapse" name="$!apiName" context="$!apiContext" version="$!apiVersion" version-type="context" binds-to="WebhookServer, default">
-    <resource methods="POST" url-mapping="/webhooks_events_receiver_resource" binds-to="WebhookServer">
+<api xmlns="http://ws.apache.org/ns/synapse" name="$!apiName" context="$!apiContext" version="$!apiVersion" version-type="context" binds-to="WebhookServer, SecureWebhookServer, default">
+    <resource methods="POST" url-mapping="/webhooks_events_receiver_resource" binds-to="WebhookServer, SecureWebhookServer">
         <inSequence>
             #if($isSecurityEnabled)
             <property name="generated_signature" expression="fn:concat('$signingAlgorithm', hmac-generate($ctx:ORIGINAL_PAYLOAD, '$secret', '$hmacSignatureGenerationAlgorithm'))"/>
