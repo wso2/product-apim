@@ -54,6 +54,10 @@ public class WebhookSender {
         return webhooksSent.get();
     }
 
+    public void setWebhooksSent(int webhooksSent) {
+        this.webhooksSent.set(webhooksSent);
+    }
+
     public void send() throws Exception {
         String body = "{\"Hello\" : \"World\"}";
         Map<String, String> headers = new HashMap<>();
