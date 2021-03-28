@@ -77,7 +77,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
 
     private final Log log = LogFactory.getLog(WebSubAPITestCase.class);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private final int TOPIC_PORT = 9021;
+    private final int TOPIC_PORT = 9521;
     private final String DEFAULT_TOPIC = "_default";
     private final String SUBSCRIBE = "subscribe";
     private final String UNSUBSCRIBE = "unsubscribe";
