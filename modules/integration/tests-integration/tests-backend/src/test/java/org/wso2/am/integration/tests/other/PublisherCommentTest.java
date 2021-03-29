@@ -110,10 +110,15 @@ public class PublisherCommentTest
         }
 
         //-------------------------Test Comments------------------------------------------
+        /* *
+            In some databases(mysql, oracle), the timestamp format do not store milliseconds.
+            So, a delay of 1 second is used when adding comments and replies and also when editing comments
+            to have different CREATED_TIME and UPDATED_TIME values
+        * */
 
-        // Test add five root comments
+        // Test add two root comments
         List<String> rootComments = new ArrayList<String>();
-        for (Integer i = 1; i < 6; i++) {
+        for (Integer i = 1; i < 3; i++) {
             HttpResponse addRootCommentResponse = restAPIPublisher.addComment(apiId, "This is root comment " +
                     i.toString(), "general", null);
             assertNotNull(addRootCommentResponse, "Error adding comment");
@@ -124,13 +129,14 @@ public class PublisherCommentTest
             String rootCommentId = addedRootCommentDTO.getId();
             assertNotNull(rootCommentId, "Comment Id is null");
             rootComments.add(rootCommentId);
+            Thread.sleep(1000);
         }
 
         String rootCommentIdToAddReplies = rootComments.get(0);
 
-        // Test add another four replies to above root comment
+        // Test add another three replies to above root comment
         List<String> replies = new ArrayList<String>();
-        for (Integer i = 1; i < 5; i++) {
+        for (Integer i = 1; i < 4; i++) {
             HttpResponse addReplyCommentResponse = restAPIPublisher.addComment(apiId, "This is a reply " +
                     i.toString(), "general", rootCommentIdToAddReplies);
             assertNotNull(addReplyCommentResponse, "Error adding comment");
@@ -141,6 +147,7 @@ public class PublisherCommentTest
             String replyCommentId = addedCommentDTO.getId();
             assertNotNull(replyCommentId, "Comment Id is null");
             replies.add(replyCommentId);
+            Thread.sleep(1000);
         }
 
         // Verify added comment with it's replies
@@ -166,15 +173,15 @@ public class PublisherCommentTest
         // Verify Pagination of replies list of a comment
         assertEquals(commentWithRepliesCommentDTO.getReplies().getList().size(), 3, "Replies limit does not match");
         HttpResponse getCommentToVerifyPagination = restAPIPublisher.getComment(rootCommentIdToAddReplies, apiId,
-                gatewayContextWrk.getContextTenant().getDomain(), false, 3, 2);
+                gatewayContextWrk.getContextTenant().getDomain(), false, 3, 1);
         assertEquals(getCommentToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getCommentToVerifyPaginationGson = new Gson();
         CommentDTO getCommentToVerifyPaginationCommentDTO = getCommentToVerifyPaginationGson.fromJson(getCommentToVerifyPagination
                 .getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().size(), 2, "Replies limit does not match");
-        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(0).getContent(), "This is a reply 3", "Offset value does not captured");
-        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(1).getContent(), "This is a reply 4", "Offset value does not captured");
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(0).getContent(), "This is a reply 2", "Offset value does not captured");
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(1).getContent(), "This is a reply 3", "Offset value does not captured");
 
         // Get  all the comments of  API
         HttpResponse getCommentsResponse = restAPIPublisher.getComments(apiId, gatewayContextWrk.getContextTenant()
@@ -183,7 +190,7 @@ public class PublisherCommentTest
                 "Error retrieving comment");
         Gson getCommentsGson = new Gson();
         CommentListDTO commentListDTO = getCommentsGson.fromJson(getCommentsResponse.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
-        assertEquals(commentListDTO.getCount().intValue(), 5, "Root comments count do not match");
+        assertEquals(commentListDTO.getCount().intValue(), 2, "Root comments count do not match");
         for (CommentDTO rootCommentDTO : commentListDTO.getList()) {
             assertEquals(rootCommentDTO.getCategory(), "general", "Comments do not match");
             assertEquals(rootCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.PUBLISHER,
@@ -194,16 +201,14 @@ public class PublisherCommentTest
 
         // Verify Pagination of root comment list
         HttpResponse getRootCommentsToVerifyPagination = restAPIPublisher.getComments(apiId, gatewayContextWrk.getContextTenant()
-                .getDomain(), false, 3, 2);
+                .getDomain(), false, 3, 1);
         assertEquals(getRootCommentsToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getRootCommentsToVerifyPaginationGson = new Gson();
         CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getRootCommentsToVerifyPaginationGson.fromJson(getRootCommentsToVerifyPagination
                 .getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
-        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().size(), 3, "Comments limit does not match");
-        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(0).getContent(), "This is root comment 3", "Offset value does not captured");
-        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(1).getContent(), "This is root comment 2", "Offset value does not captured");
-        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(2).getContent(), "This is root comment 1", "Offset value does not captured");
+        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().size(), 1, "Comments limit does not match");
+        assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(0).getContent(), "This is root comment 1", "Offset value does not captured");
 
         // Get all the replies of a given comment
         HttpResponse getRepliesResponse = restAPIPublisher.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
@@ -212,7 +217,7 @@ public class PublisherCommentTest
                 "Error retrieving comment");
         Gson getRepliesGson = new Gson();
         CommentListDTO replyListDTO = getRepliesGson.fromJson(getRepliesResponse.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
-        assertEquals(replyListDTO.getCount().intValue(), 4, "Replies count do not match");
+        assertEquals(replyListDTO.getCount().intValue(), 3, "Replies count do not match");
         for (CommentDTO replyDTO : replyListDTO.getList()) {
             assertEquals(replyDTO.getCategory(), "general", "Comments do not match");
             assertEquals(replyDTO.getEntryPoint(), CommentDTO.EntryPointEnum.PUBLISHER, "Comments do not match");
@@ -222,15 +227,15 @@ public class PublisherCommentTest
 
         // Verify Pagination of replies list of a comment
         HttpResponse getRepliesToVerifyPagination = restAPIPublisher.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
-                .getContextTenant().getDomain(), false, 3, 2);
+                .getContextTenant().getDomain(), false, 3, 1);
         assertEquals(getRepliesToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getRepliesToVerifyPaginationGson = new Gson();
         CommentListDTO getRepliesToVerifyPaginationCommenListDTO = getRepliesToVerifyPaginationGson.fromJson(getRepliesToVerifyPagination
                 .getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().size(), 2, "Comments limit does not match");
-        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(0).getContent(), "This is a reply 3", "Offset value does not captured");
-        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(1).getContent(), "This is a reply 4", "Offset value does not captured");
+        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(0).getContent(), "This is a reply 2", "Offset value does not captured");
+        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(1).getContent(), "This is a reply 3", "Offset value does not captured");
 
         //Edit a comment
         //Edit the content only
@@ -246,6 +251,7 @@ public class PublisherCommentTest
         assertNotEquals(editCommentDTO.getUpdatedTime(), null);
         String updatedTime = editCommentDTO.getUpdatedTime();
         //Edit the category only
+        Thread.sleep(1000);
         editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment",
                 "bug fix");
         assertNotNull(editCommentResponse, "Error adding comment");
@@ -259,6 +265,7 @@ public class PublisherCommentTest
         assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
         updatedTime = editCommentDTO.getUpdatedTime();
         //Edit the category and content
+        Thread.sleep(1000);
         editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment 1",
                 "general bug fix");
         assertNotNull(editCommentResponse, "Error adding comment");
@@ -272,6 +279,7 @@ public class PublisherCommentTest
         assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
         updatedTime = editCommentDTO.getUpdatedTime();
         //Edit - keep the category and content as it is
+        Thread.sleep(1000);
         editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment 1",
                 "general bug fix");
         assertEquals(editCommentResponse.getData(), null);
