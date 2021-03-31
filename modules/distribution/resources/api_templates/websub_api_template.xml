@@ -15,13 +15,15 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  -->
-<api xmlns="http://ws.apache.org/ns/synapse" name="$!apiName" context="$!apiContext" version="$!apiVersion" version-type="context" binds-to="WebhookServer, default">
-    <resource methods="POST" url-mapping="/webhooks_events_receiver_resource" binds-to="WebhookServer">
+<api xmlns="http://ws.apache.org/ns/synapse" name="$!apiName" context="$!apiContext" version="$!apiVersion" version-type="context" binds-to="WebhookServer, SecureWebhookServer, default">
+    <resource methods="POST" url-mapping="/webhooks_events_receiver_resource" binds-to="WebhookServer, SecureWebhookServer">
         <inSequence>
+            #if($isSecurityEnabled)
             <property name="generated_signature" expression="fn:concat('$signingAlgorithm', hmac-generate($ctx:ORIGINAL_PAYLOAD, '$secret', '$hmacSignatureGenerationAlgorithm'))"/>
             <property name="received_signature" expression="$trp:$signatureHeader"/>
             <filter xpath="get-property('received_signature') = get-property('generated_signature')">
                 <then>
+            #end
                     <clone>
                         <target>
                             <sequence>
@@ -73,6 +75,7 @@
                             </sequence>
                         </target>
                     </clone>
+            #if($isSecurityEnabled)
                 </then>
                 <else>
                     <log level="custom">
@@ -81,10 +84,12 @@
                     <drop/>
                 </else>
             </filter>
+            #end
         </inSequence>
     </resource>
     <resource methods="POST" url-mapping="/*" binds-to="default">
         <inSequence>
+            <property name="STOP_TARGET_EXECUTION_ON_FAILURE" value="true"/>
             <clone sequential="true">
                 <target>
                     <sequence>

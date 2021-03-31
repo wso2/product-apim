@@ -1,10 +1,10 @@
 name: APIM builder
 
 on:
-  push:
+  pull_request:
     branches:
       - master
-  pull_request:
+  workflow_dispatch:
     branches:
       - master
 
@@ -15,9 +15,9 @@ jobs:
       matrix:
         include:
           - id: 1
-            segment: apim-integration-tests-api-common, apim-integration-tests-api-change-endpoint, apim-integration-tests-api-product, apim-integration-tests-api-lifecycle, apim-email-secondary-userstore-tests, apim-CORS-tests, apim-integration-tests-samples, apim-publisher-tests, apim-store-tests, apim-integration-tests-graphql, admin-rest-api-tests
+            segment: apim-integration-tests-api-common, apim-integration-tests-api-change-endpoint, apim-integration-tests-api-product, apim-integration-tests-api-lifecycle, apim-integration-tests-api-lifecycle-2, apim-email-secondary-userstore-tests, apim-CORS-tests, apim-integration-tests-samples, apim-publisher-tests, apim-store-tests, apim-integration-tests-graphql, admin-rest-api-tests, rest-api-tests, apim-mediation-tests, apim-websocket-tests
           - id: 2
-            segment: rest-api-tests, apim-mediation-tests, apim-integration-tests-without-restarts, apim-integration-tests-application-sharing, apim-JWT-integration-tests, apim-urlsafe-JWT-integration-tests, apim-integration-tests-endpoint-security, apim-integration-tests-external-idp, apim-integration-emailusername-login, apim-integration-tests-workflow
+            segment: apim-integration-tests-without-restarts, apim-integration-tests-without-advance-throttling, apim-integration-tests-application-sharing, apim-JWT-integration-tests, apim-urlsafe-JWT-integration-tests, apim-integration-tests-endpoint-security, apim-integration-tests-external-idp, apim-integration-emailusername-login, apim-integration-tests-workflow, apim-streaming-api-tests
       fail-fast: false
     steps:
     - name: Checkout master
@@ -39,8 +39,32 @@ jobs:
       run: mvn clean install --file pom.xml
       env:
         PRODUCT_APIM_TESTS: ${{ matrix.segment }}
+    - name: Prepare upload testng report
+      if: always()
+      run: mv modules/integration/tests-integration/tests-backend/target/surefire-reports/TEST-TestSuite.xml TEST-TestSuite_${{ matrix.id }}.xml
+    - name: Archive testng report
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: TEST-TestSuite_${{ matrix.id }}
+        path: |
+          TEST-TestSuite_${{ matrix.id }}.xml
+        if-no-files-found: warn
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.2.1
       with:
         flags: integration_tests
 
+  show-report:
+    if: always()
+    needs: build
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          path: reports
+      - name: Publish Test Report
+        if: always()
+        uses: malinthaprasan/action-surefire-report@v1
+        with:
+          report_paths: 'reports/**/TEST-*.xml'

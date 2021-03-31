@@ -14814,6 +14814,10 @@ components:
           securityScheme:
           - securityScheme
           - securityScheme
+          websubSubscriptionConfiguration:
+            signingAlgorithm: signingAlgorithm
+            signatureHeader: signatureHeader
+            secret: secret
           name: CalculatorAPI
           context: CalculatorAPI
           description: A calculator API that supports basic operations
@@ -14827,6 +14831,10 @@ components:
           securityScheme:
           - securityScheme
           - securityScheme
+          websubSubscriptionConfiguration:
+            signingAlgorithm: signingAlgorithm
+            signatureHeader: signatureHeader
+            secret: secret
           name: CalculatorAPI
           context: CalculatorAPI
           description: A calculator API that supports basic operations
@@ -14871,6 +14879,10 @@ components:
         securityScheme:
         - securityScheme
         - securityScheme
+        websubSubscriptionConfiguration:
+          signingAlgorithm: signingAlgorithm
+          signatureHeader: signatureHeader
+          secret: secret
         name: CalculatorAPI
         context: CalculatorAPI
         description: A calculator API that supports basic operations
@@ -14915,6 +14927,8 @@ components:
           items:
             type: string
           type: array
+        websubSubscriptionConfiguration:
+          $ref: '#/components/schemas/APIInfo_websubSubscriptionConfiguration'
       title: API Info object with basic API details.
       type: object
     Topic:
@@ -19516,6 +19530,18 @@ components:
           type: string
       title: Patch request body
       type: object
+    APIInfo_websubSubscriptionConfiguration:
+      example:
+        signingAlgorithm: signingAlgorithm
+        signatureHeader: signatureHeader
+        secret: secret
+      properties:
+        secret:
+          type: string
+        signingAlgorithm:
+          type: string
+        signatureHeader:
+          type: string
     API_threatProtectionPolicies_list:
       example:
         policyId: policyId

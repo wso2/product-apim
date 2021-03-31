@@ -20,6 +20,15 @@
 
 package org.wso2.am.integration.test.utils.http;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.BufferedReader;
@@ -143,313 +152,55 @@ public class HttpRequestUtil {
         }
     }
 
-    public static HttpResponse doPost(URL endpoint, String body) throws Exception {
-        HttpURLConnection urlConnection = null;
-        try {
-            urlConnection = (HttpURLConnection) endpoint.openConnection();
-            try {
-                urlConnection.setRequestMethod("POST");
-            } catch (ProtocolException e) {
-                throw new Exception("Shouldn't happen: HttpURLConnection doesn't support POST??", e);
-            }
-            urlConnection.setDoOutput(true);
-            urlConnection.setDoInput(true);
-            urlConnection.setUseCaches(false);
-            urlConnection.setAllowUserInteraction(false);
-            urlConnection.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
-            OutputStream out = urlConnection.getOutputStream();
-            try {
-                Writer writer = new OutputStreamWriter(out, "UTF-8");
-                writer.write(body);
-                writer.close();
-            } catch (IOException e) {
-                throw new Exception("IOException while posting data", e);
-            } finally {
-                if (out != null) {
-                    out.close();
-                }
-            }
-            // Get the response
-            StringBuilder sb = new StringBuilder();
-            BufferedReader rd = null;
-            try {
-                rd = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    sb.append(line);
-                }
-            } catch (FileNotFoundException ignored) {
-            } finally {
-                if (rd != null) {
-                    rd.close();
-                }
-            }
-            Iterator<String> itr = urlConnection.getHeaderFields().keySet().iterator();
-            Map<String, String> headers = new HashMap();
-            while (itr.hasNext()) {
-                String key = itr.next();
-                if (key != null) {
-                    headers.put(key, urlConnection.getHeaderField(key));
-                }
-            }
-            return new HttpResponse(sb.toString(), urlConnection.getResponseCode(), headers);
-        } catch (IOException e) {
-            throw new Exception("Connection error (is server running at " + endpoint + " ?): " + e);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-        }
-    }
-
     public static HttpResponse doPost(URL endpoint, String postBody, Map<String, String> headers)
             throws Exception {
-        HttpURLConnection urlConnection = null;
+        HttpClient httpClient = HttpClientBuilder.create().build();
         try {
-            urlConnection = (HttpURLConnection) endpoint.openConnection();
-            try {
-                urlConnection.setRequestMethod("POST");
-            } catch (ProtocolException e) {
-                throw new Exception("Shouldn't happen: HttpURLConnection doesn't support POST??", e);
-            }
-            urlConnection.setDoOutput(true);
-            urlConnection.setDoInput(true);
-            urlConnection.setUseCaches(false);
-            urlConnection.setAllowUserInteraction(false);
+            HttpPost httpPost = new HttpPost(endpoint.toURI());
+            httpPost.setEntity(new StringEntity(postBody));
             //setting headers
             if (headers != null && headers.size() > 0) {
-                Iterator<String> itr = headers.keySet().iterator();
-                while (itr.hasNext()) {
-                    String key = itr.next();
+                for (String key : headers.keySet()) {
                     if (key != null) {
-                        urlConnection.setRequestProperty(key, headers.get(key));
+                        httpPost.addHeader(key, headers.get(key));
                     }
                 }
-                for (String key : headers.keySet()) {
-                    urlConnection.setRequestProperty(key, headers.get(key));
-                }
-
             }
-            OutputStream out = urlConnection.getOutputStream();
-            try {
-                Writer writer = new OutputStreamWriter(out, "UTF-8");
-                writer.write(postBody);
-                writer.close();
-            } catch (IOException e) {
-                throw new Exception("IOException while posting data", e);
-            } finally {
-                if (out != null) {
-                    out.close();
-                }
+            org.apache.http.HttpResponse httpResponse = httpClient.execute(httpPost);
+            InputStream content = httpResponse.getEntity().getContent();
+            Map<String, String> responseHeaders = new HashMap<>();
+            for (Header header : httpResponse.getAllHeaders()) {
+                responseHeaders.put(header.getName(), header.getValue());
             }
-            // Get the response
-            StringBuilder sb = new StringBuilder();
-            BufferedReader rd = null;
-            try {
-                rd = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    sb.append(line);
-                }
-            } catch (FileNotFoundException ignored) {
-            } finally {
-                if (rd != null) {
-                    rd.close();
-                }
-            }
-            Iterator<String> itr = urlConnection.getHeaderFields().keySet().iterator();
-            Map<String, String> responseHeaders = new HashMap();
-            while (itr.hasNext()) {
-                String key = itr.next();
-                if (key != null) {
-                    responseHeaders.put(key, urlConnection.getHeaderField(key));
-                }
-            }
-            return new HttpResponse(sb.toString(), urlConnection.getResponseCode(), responseHeaders);
+            return new HttpResponse(IOUtils.toString(content), httpResponse.getStatusLine().getStatusCode(),
+                    responseHeaders);
         } catch (IOException e) {
             throw new Exception("Connection error (is server running at " + endpoint + " ?): " + e);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
         }
     }
 
     public static HttpResponse doGet(String endpoint, Map<String, String> headers) throws IOException {
-        HttpResponse httpResponse;
-        if (endpoint.startsWith("http://")) {
-            URL url = new URL(endpoint);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setDoOutput(true);
-            conn.setReadTimeout(30000);
-            //setting headers
-            if (headers != null && headers.size() > 0) {
-                Iterator<String> itr = headers.keySet().iterator();
-                while (itr.hasNext()) {
-                    String key = itr.next();
-                    if (key != null) {
-                        conn.setRequestProperty(key, headers.get(key));
-                    }
-                }
-                for (String key : headers.keySet()) {
-                    conn.setRequestProperty(key, headers.get(key));
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpGet httpGet = new HttpGet(endpoint);
+        //setting headers
+        if (headers != null && headers.size() > 0) {
+            for (String key : headers.keySet()) {
+                if (key != null) {
+                    httpGet.addHeader(key, headers.get(key));
                 }
             }
-            conn.connect();
-            // Get the response
-            StringBuilder sb = new StringBuilder();
-            BufferedReader rd = null;
-            try {
-                rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    sb.append(line);
-                }
-                httpResponse = new HttpResponse(sb.toString(), conn.getResponseCode());
-                httpResponse.setResponseMessage(conn.getResponseMessage());
-            } catch (IOException ignored) {
-                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    sb.append(line);
-                }
-                httpResponse = new HttpResponse(sb.toString(), conn.getResponseCode());
-                httpResponse.setResponseMessage(conn.getResponseMessage());
-            } finally {
-                if (rd != null) {
-                    rd.close();
-                }
-            }
-            return httpResponse;
         }
-        return null;
-    }
-
-    /**
-     * Reads data from the data reader and posts it to a server via POST request.
-     * data - The data you want to send
-     * endpoint - The server's address
-     * output - writes the server's response to output
-     * contentType   content type of the message
-     *
-     * @param data        Data to be sent
-     * @param endpoint    The endpoint to which the data has to be POSTed
-     * @param output      Output
-     * @param contentType content type of the message
-     * @throws Exception If an error occurs while POSTing
-     */
-    public static void sendPostRequest(Reader data, URL endpoint, Writer output, String contentType)
-            throws Exception {
-        HttpURLConnection urlConnection = null;
-        try {
-            urlConnection = (HttpURLConnection) endpoint.openConnection();
-            try {
-                urlConnection.setRequestMethod("POST");
-            } catch (ProtocolException e) {
-                throw new Exception("Shouldn't happen: HttpURLConnection doesn't support POST??", e);
+        org.apache.http.HttpResponse httpResponse = httpClient.execute(httpGet);
+        try (InputStream content = httpResponse.getEntity().getContent()) {
+            Map<String, String> responseHeaders = new HashMap<>();
+            for (Header header : httpResponse.getAllHeaders()) {
+                responseHeaders.put(header.getName(), header.getValue());
             }
-            urlConnection.setDoOutput(true);
-            urlConnection.setDoInput(true);
-            urlConnection.setUseCaches(false);
-            urlConnection.setAllowUserInteraction(false);
-            urlConnection.setRequestProperty("Content-type", contentType);
-            OutputStream out = urlConnection.getOutputStream();
-            try {
-                Writer writer = new OutputStreamWriter(out, "UTF-8");
-                pipe(data, writer);
-                writer.close();
-            } catch (IOException e) {
-                throw new Exception("IOException while posting data", e);
-            } finally {
-                if (out != null) {
-                    out.close();
-                }
-            }
-            InputStream in = urlConnection.getInputStream();
-            try {
-                Reader reader = new InputStreamReader(in);
-                pipe(reader, output);
-                reader.close();
-            } catch (IOException e) {
-                throw new Exception("IOException while reading response", e);
-            } finally {
-                if (in != null) {
-                    in.close();
-                }
-            }
-        } catch (IOException e) {
-            throw new Exception("Connection error (is server running at " + endpoint + " ?): " + e);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
+            return new HttpResponse(IOUtils.toString(content), httpResponse.getStatusLine().getStatusCode(),
+                    responseHeaders);
         }
     }
 
-
-    /**
-     * Reads data from the data reader and posts it to a server via PUT request.
-     * data - The data you want to send
-     * endpoint - The server's address
-     * output - writes the server's response to output
-     * contentType   content type of the message
-     *
-     * @param data        Data to be sent
-     * @param endpoint    The endpoint to which the data has to be POSTed
-     * @param output      Output
-     * @param contentType content type of the message
-     * @throws Exception If an error occurs while POSTing
-     */
-    public static void sendPutRequest(Reader data, URL endpoint, Writer output, String contentType)
-            throws Exception {
-        HttpURLConnection urlConnection = null;
-        try {
-            urlConnection = (HttpURLConnection) endpoint.openConnection();
-            try {
-                urlConnection.setRequestMethod("PUT");
-            } catch (ProtocolException e) {
-                throw new Exception("Shouldn't happen: HttpURLConnection doesn't support PUT??" +
-                        e.getMessage(), e);
-            }
-            urlConnection.setDoOutput(true);
-            urlConnection.setDoInput(true);
-            urlConnection.setUseCaches(false);
-            urlConnection.setAllowUserInteraction(false);
-            urlConnection.setRequestProperty("Content-type", contentType);
-            OutputStream out = urlConnection.getOutputStream();
-            try {
-                Writer writer = new OutputStreamWriter(out, "UTF-8");
-                pipe(data, writer);
-                writer.close();
-            } catch (IOException e) {
-                throw new Exception("IOException while posting data" + e.getMessage(), e);
-            } finally {
-                if (out != null) {
-                    out.close();
-                }
-            }
-            InputStream in = urlConnection.getInputStream();
-            try {
-                Reader reader = new InputStreamReader(in);
-                pipe(reader, output);
-                reader.close();
-            } catch (IOException e) {
-                throw new Exception("IOException while reading response" + e.getMessage(), e);
-            } finally {
-                if (in != null) {
-                    in.close();
-                }
-            }
-        } catch (IOException e) {
-            throw new Exception("Connection error (is server running at " + endpoint + " ?): " +
-                    e.getMessage(), e);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-        }
-    }
 
     /**
      * @param endpoint
@@ -461,110 +212,29 @@ public class HttpRequestUtil {
 
     public static HttpResponse doPut(URL endpoint, String putBody, Map<String, String> headers)
             throws Exception {
-        HttpURLConnection urlConnection = null;
+        HttpClient httpClient = HttpClientBuilder.create().build();
         try {
-            urlConnection = (HttpURLConnection) endpoint.openConnection();
-            try {
-                urlConnection.setRequestMethod("PUT");
-            } catch (ProtocolException e) {
-                throw new Exception("Shouldn't happen: HttpURLConnection doesn't support PUT??", e);
-            }
-            urlConnection.setDoOutput(true);
-            urlConnection.setDoInput(true);
-            urlConnection.setUseCaches(false);
-            urlConnection.setAllowUserInteraction(false);
+            HttpPut httpPut = new HttpPut(endpoint.toURI());
+            httpPut.setEntity(new StringEntity(putBody));
             //setting headers
             if (headers != null && headers.size() > 0) {
-                Iterator<String> itr = headers.keySet().iterator();
-                while (itr.hasNext()) {
-                    String key = itr.next();
+                for (String key : headers.keySet()) {
                     if (key != null) {
-                        urlConnection.setRequestProperty(key, headers.get(key));
+                        httpPut.addHeader(key, headers.get(key));
                     }
                 }
-                for (String key : headers.keySet()) {
-                    urlConnection.setRequestProperty(key, headers.get(key));
-                }
-
             }
-            OutputStream out = urlConnection.getOutputStream();
-            try {
-                Writer writer = new OutputStreamWriter(out, "UTF-8");
-                writer.write(putBody);
-                writer.close();
-            } catch (IOException e) {
-                throw new Exception("IOException while putting data", e);
-            } finally {
-                if (out != null) {
-                    out.close();
-                }
+            org.apache.http.HttpResponse httpResponse = httpClient.execute(httpPut);
+            InputStream content = httpResponse.getEntity().getContent();
+            Map<String, String> responseHeaders = new HashMap<>();
+            for (Header header : httpResponse.getAllHeaders()) {
+                responseHeaders.put(header.getName(), header.getValue());
             }
-            // Get the response
-            StringBuilder sb = new StringBuilder();
-            BufferedReader rd = null;
-            try {
-                rd = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    sb.append(line);
-                }
-            } catch (FileNotFoundException ignored) {
-            } finally {
-                if (rd != null) {
-                    rd.close();
-                }
-            }
-            Iterator<String> itr = urlConnection.getHeaderFields().keySet().iterator();
-            Map<String, String> responseHeaders = new HashMap();
-            while (itr.hasNext()) {
-                String key = itr.next();
-                if (key != null) {
-                    responseHeaders.put(key, urlConnection.getHeaderField(key));
-                }
-            }
-            return new HttpResponse(sb.toString(), urlConnection.getResponseCode(), responseHeaders);
+            return new HttpResponse(IOUtils.toString(content), httpResponse.getStatusLine().getStatusCode(),
+                    responseHeaders);
         } catch (IOException e) {
-            throw new Exception("Connection error (is server running at " + endpoint + " ?): " +
-                    e.getMessage(), e);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
+            throw new Exception("Connection error (is server running at " + endpoint + " ?): " + e);
         }
-    }
-
-
-    /**
-     * Sends an HTTP DELETE request to a url
-     *
-     * @param endpoint - The URL of the server. (Example: " http://www.yahoo.com/search")
-     * @param contentType - content type of the message
-     * @return - The response code from the endpoint
-     * @throws java.io.IOException If an error occurs while sending the DELETE request
-     */
-    public static int sendDeleteRequest(URL endpoint, String contentType) throws Exception {
-        HttpURLConnection urlConnection = null;
-        int responseCode;
-        try {
-            urlConnection = (HttpURLConnection)endpoint.openConnection();
-            try {
-                urlConnection.setRequestMethod("DELETE");
-            } catch (ProtocolException var33) {
-                throw new Exception(
-                        "Shouldn\'t happen: HttpURLConnection doesn\'t support DELETE?? " + var33.getMessage(), var33);
-            }
-            urlConnection.setDoOutput(true);
-            urlConnection.setRequestProperty("Content-type", contentType);
-            responseCode = urlConnection.getResponseCode();
-        } catch (IOException var36) {
-            throw new Exception(
-                    "Connection error (is server running at " + endpoint + " ?): " + var36.getMessage(), var36);
-        } finally {
-            if(urlConnection != null) {
-                urlConnection.disconnect();
-            }
-        }
-        return responseCode;
     }
 
 
@@ -578,41 +248,27 @@ public class HttpRequestUtil {
 
     public static int doDelete(URL endpoint, Map<String, String> headers)
             throws Exception {
-        HttpURLConnection urlConnection = null;
-        int responseCode;
+        HttpClient httpClient = HttpClientBuilder.create().build();
         try {
-            urlConnection = (HttpURLConnection)endpoint.openConnection();
-            try {
-                urlConnection.setRequestMethod("DELETE");
-            } catch (ProtocolException var33) {
-                throw new Exception(
-                        "Shouldn\'t happen: HttpURLConnection doesn\'t support DELETE?? " + var33.getMessage(), var33);
-            }
-            urlConnection.setDoOutput(true);
+            HttpDelete httpDelete = new HttpDelete(endpoint.toURI());
             //setting headers
             if (headers != null && headers.size() > 0) {
-                Iterator<String> itr = headers.keySet().iterator();
-                while (itr.hasNext()) {
-                    String key = itr.next();
+                for (String key : headers.keySet()) {
                     if (key != null) {
-                        urlConnection.setRequestProperty(key, headers.get(key));
+                        httpDelete.addHeader(key, headers.get(key));
                     }
                 }
-                for (String key : headers.keySet()) {
-                    urlConnection.setRequestProperty(key, headers.get(key));
-                }
             }
-            responseCode = urlConnection.getResponseCode();
-        } catch (IOException var36) {
-            throw new Exception(
-                    "Connection error (is server running at " + endpoint + " ?): " + var36.getMessage(), var36);
-        } finally {
-            if(urlConnection != null) {
-                urlConnection.disconnect();
+            org.apache.http.HttpResponse httpResponse = httpClient.execute(httpDelete);
+            InputStream content = httpResponse.getEntity().getContent();
+            Map<String, String> responseHeaders = new HashMap<>();
+            for (Header header : httpResponse.getAllHeaders()) {
+                responseHeaders.put(header.getName(), header.getValue());
             }
+            return httpResponse.getStatusLine().getStatusCode();
+        } catch (IOException e) {
+            throw new Exception("Connection error (is server running at " + endpoint + " ?): " + e);
         }
-        return responseCode;
-
     }
 
 

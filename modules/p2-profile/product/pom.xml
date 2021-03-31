@@ -250,9 +250,6 @@
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediation.configadmin.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
 
-                                <featureArtifactDef>
-                                    org.wso2.carbon.apimgt:org.wso2.carbon.forum.server.feature:${carbon.apimgt.version}
-                                </featureArtifactDef>
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediators.server.feature:${carbon.mediation.version}
@@ -1238,10 +1235,6 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.forum.server.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.tenant.common.feature.group</id>
                                     <version>${carbon.multitenancy.version}</version>
                                 </feature>
@@ -2225,6 +2218,10 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.store.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.store.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -2327,11 +2324,7 @@
                                     <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-                               
-                                <feature>
-                                    <id>org.wso2.carbon.forum.server.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.tenant.common.feature.group</id>
                                     <version>${carbon.multitenancy.version}</version>
@@ -3688,6 +3681,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.throttle.policy.deployer.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>

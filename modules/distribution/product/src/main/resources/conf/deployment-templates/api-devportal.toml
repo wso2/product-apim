@@ -58,11 +58,6 @@ http_endpoint = "http://api.gw.wso2.com:8280/"
 https_endpoint = "https://api.gw.wso2.com:8243/"
 show_as_token_endpoint_url = true
 
-[apim.analytics]
-store_api_url = "https://analytics.wso2.com:7444"
-username= "$ref{super_admin.username}"
-password= "$ref{super_admin.password}"
-
 [[apim.analytics.url_group]]
 analytics_url=["tcp://analytic1.local:7612"]
 analytics_auth_url=["ssl://analytic1.local:7712"]

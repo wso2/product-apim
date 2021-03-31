@@ -148,15 +148,7 @@ under the License.
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
-            <artifactId>org.wso2.am.integration.clients.gateway.api</artifactId>
-            <version>4.0.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.am</groupId>
-            <artifactId>org.wso2.am.integration.clients.gateway.api</artifactId>
-            <version>4.0.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <artifactId>org.wso2.am.integration.clients.internal.api</artifactId>
         </dependency>
     </dependencies>
 

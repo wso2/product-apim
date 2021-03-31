@@ -1,10 +1,7 @@
 <handlers xmlns:svns="http://org.wso2.securevault/configuration">
-{% for key,value in synapse_handlers.items() %}
-    {% if value.enabled %}
-    <handler name="{{key}}" class="{{value.class}}"/>
-    {% endif %}
-{% endfor %}
-
+    <handler name="external_call_logger" class="org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"/>
+    <handler name="external_call_logger" class="org.wso2.carbon.apimgt.gateway.handlers.DefaultAPIHandler"/>
+    <handler name="open_tracing" class="org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencySynapseHandler"/>
 {% if apim.transport_headers is defined %}
 {% if apim.transport_headers.enable %}
     <handler name="TransportHeaderHandler" class="org.wso2.carbon.apimgt.gateway.handlers.common.TransportHeaderHandler">
@@ -23,4 +20,9 @@
     </handler>
 {% endif %}
 {% endif %}
+{% for key,value in synapse_handlers.items() %}
+    {% if value.enabled %}
+    <handler name="{{key}}" class="{{value.class}}"/>
+    {% endif %}
+{% endfor %}
 </handlers>

@@ -30,6 +30,18 @@ public class DCRParamRequest {
     private String password;
     private String tenantDomain;
 
+    /**
+     *
+     * @param appName
+     * @param callBackURL
+     * @param tokenScope
+     * @param appOwner
+     * @param grantType
+     * @param dcrEndpoint
+     * @param username
+     * @param password
+     * @param tenantDomain
+     */
     public DCRParamRequest(String appName, String callBackURL, String tokenScope, String appOwner, String grantType,
             String dcrEndpoint, String username, String password, String tenantDomain) {
         this.appName = appName;

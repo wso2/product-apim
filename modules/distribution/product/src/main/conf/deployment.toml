@@ -94,7 +94,6 @@ https_endpoint = "https://localhost:${https.nio.port}"
 enable = false
 config_endpoint = "https://localhost:8080/auth/v1"
 auth_token = ""
-properties.'worker.thread.count' = 1
 
 #[apim.key_manager]
 #service_url = "https://localhost:${mgt.transport.https.port}/services/"
@@ -142,11 +141,13 @@ properties.'worker.thread.count' = 1
 #enable_ratings = true
 #enable_forum = true
 #enable_anonymous_mode=true
+#enable_cross_tenant_subscriptions = true
+#default_reserved_username = "apim_reserved_user"
 
 [apim.cors]
 allow_origins = "*"
 allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
-allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","apikey", "testKey"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","apikey","Internal-Key"]
 allow_credentials = false
 
 #[apim.throttling]

@@ -114,6 +114,7 @@
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.PublisherCommentTest"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
@@ -239,7 +240,6 @@
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.SubscriptionThrottlingPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.CustomThrottlingPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.AdvancedThrottlingPolicyTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.admin.LabelTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.admin.EnvironmentTestCase"/>
         </classes>
     </test>
@@ -268,12 +268,19 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
         </classes>
     </test>
-    <!--<test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
+    <test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
-            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>&ndash;&gt;
+            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
         </classes>
-    </test>-->
+    </test>
+
+    <test name="apim-streaming-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
+        </classes>
+    </test>
 
     <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
