@@ -196,6 +196,10 @@
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="false" hashGenerator="org.wso2.carbon.mediator.cache.digest.HttpRequestHashGenerator" timeout="$!responseCacheTimeOut">
     <implementation type="memory" maxSize="500"/>
+    <onCacheHit>
+        <property name="api.analytics.cacheHit" value="true" scope="default"/>
+        <respond/>
+    </onCacheHit>
 </cache>
 #end
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
