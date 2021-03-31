@@ -2218,6 +2218,10 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.store.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.store.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -3677,6 +3681,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.throttle.policy.deployer.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
