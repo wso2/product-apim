@@ -1267,7 +1267,7 @@
         <carbon.analytics.common.version>5.2.34</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.0.85</carbon.apimgt.version>
+        <carbon.apimgt.version>9.0.89</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1290,7 +1290,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.87</carbon.mediation.version>
+        <carbon.mediation.version>4.7.92</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.18.187</carbon.identity.version>
@@ -1338,7 +1338,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v210</synapse.version>
+        <synapse.version>2.1.7-wso2v216</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v41</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
@@ -1422,7 +1422,7 @@
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.23</swagger-annotations-version>
         <jersey-version>1.19.4</jersey-version>
-        <jackson-version>2.9.9</jackson-version>
+        <jackson-version>2.10.3</jackson-version>
         <jodatime-version>2.10.6</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <log4j.version>1.2.13</log4j.version>
@@ -1448,7 +1448,7 @@
         <javax.jms.version>2.0.1</javax.jms.version>
 
         <!-- API Import/Export Dependencies -->
-        <com.fasterxml.jackson.dataformat.version>2.9.9</com.fasterxml.jackson.dataformat.version>
+        <com.fasterxml.jackson.dataformat.version>2.10.3</com.fasterxml.jackson.dataformat.version>
         <versions.pax.logging>1.11.2</versions.pax.logging>
         <config.mapper.version>1.0.2</config.mapper.version>
 
@@ -1462,7 +1462,7 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.2.6</wso2is.km.version>
+        <wso2is.km.version>1.2.7</wso2is.km.version>
         <okta.keymanager.feature.version>3.0.6</okta.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.0.5</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.1</auth0.keymanager.feature.version>

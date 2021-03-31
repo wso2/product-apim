@@ -89,6 +89,7 @@
     </resource>
     <resource methods="POST" url-mapping="/*" binds-to="default">
         <inSequence>
+            <property name="STOP_TARGET_EXECUTION_ON_FAILURE" value="true"/>
             <clone sequential="true">
                 <target>
                     <sequence>
