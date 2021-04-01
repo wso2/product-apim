@@ -28,7 +28,7 @@ import java.io.IOException;
 
 
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ErrorDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 
@@ -202,7 +202,8 @@ public class ThrottlingPoliciesApi {
     }
     /**
      * Build call for getSubscriptionThrottlingPolicies
-     * @param tierQuotaType Filter the subscription base on tier quota type (optional)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -215,7 +216,7 @@ public class ThrottlingPoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getSubscriptionThrottlingPoliciesCall(String tierQuotaType, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getSubscriptionThrottlingPoliciesCall(Integer limit, Integer offset, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -223,8 +224,12 @@ public class ThrottlingPoliciesApi {
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (tierQuotaType != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("tierQuotaType", tierQuotaType));
+        if (limit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
+        }
+
+        if (offset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
         }
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
@@ -253,20 +258,21 @@ public class ThrottlingPoliciesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call getSubscriptionThrottlingPoliciesValidateBeforeCall(String tierQuotaType, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getSubscriptionThrottlingPoliciesValidateBeforeCall(Integer limit, Integer offset, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = getSubscriptionThrottlingPoliciesCall(tierQuotaType, ifNoneMatch, _callback);
+        okhttp3.Call localVarCall = getSubscriptionThrottlingPoliciesCall(limit, offset, ifNoneMatch, _callback);
         return localVarCall;
 
     }
 
     /**
-     * Get subscription throttling policies based on quota type
-     * This operation can be used to list the available subscription policies for a given tenent ID based on the given quota type. Quota Type should be provide as a query parameters and supported Quota types are \&quot;requestCount\&quot; ,\&quot;bandwidthVolume\&quot; and \&quot;eventCount\&quot; 
-     * @param tierQuotaType Filter the subscription base on tier quota type (optional)
+     * Get streaming throttling policies
+     * This operation can be used to list the available streaming subscription policies 
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return List&lt;SubscriptionPolicyDTO&gt;
+     * @return SubscriptionPolicyListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -276,17 +282,18 @@ public class ThrottlingPoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public List<SubscriptionPolicyDTO> getSubscriptionThrottlingPolicies(String tierQuotaType, String ifNoneMatch) throws ApiException {
-        ApiResponse<List<SubscriptionPolicyDTO>> localVarResp = getSubscriptionThrottlingPoliciesWithHttpInfo(tierQuotaType, ifNoneMatch);
+    public SubscriptionPolicyListDTO getSubscriptionThrottlingPolicies(Integer limit, Integer offset, String ifNoneMatch) throws ApiException {
+        ApiResponse<SubscriptionPolicyListDTO> localVarResp = getSubscriptionThrottlingPoliciesWithHttpInfo(limit, offset, ifNoneMatch);
         return localVarResp.getData();
     }
 
     /**
-     * Get subscription throttling policies based on quota type
-     * This operation can be used to list the available subscription policies for a given tenent ID based on the given quota type. Quota Type should be provide as a query parameters and supported Quota types are \&quot;requestCount\&quot; ,\&quot;bandwidthVolume\&quot; and \&quot;eventCount\&quot; 
-     * @param tierQuotaType Filter the subscription base on tier quota type (optional)
+     * Get streaming throttling policies
+     * This operation can be used to list the available streaming subscription policies 
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;List&lt;SubscriptionPolicyDTO&gt;&gt;
+     * @return ApiResponse&lt;SubscriptionPolicyListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -296,16 +303,17 @@ public class ThrottlingPoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<List<SubscriptionPolicyDTO>> getSubscriptionThrottlingPoliciesWithHttpInfo(String tierQuotaType, String ifNoneMatch) throws ApiException {
-        okhttp3.Call localVarCall = getSubscriptionThrottlingPoliciesValidateBeforeCall(tierQuotaType, ifNoneMatch, null);
-        Type localVarReturnType = new TypeToken<List<SubscriptionPolicyDTO>>(){}.getType();
+    public ApiResponse<SubscriptionPolicyListDTO> getSubscriptionThrottlingPoliciesWithHttpInfo(Integer limit, Integer offset, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getSubscriptionThrottlingPoliciesValidateBeforeCall(limit, offset, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<SubscriptionPolicyListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Get subscription throttling policies based on quota type (asynchronously)
-     * This operation can be used to list the available subscription policies for a given tenent ID based on the given quota type. Quota Type should be provide as a query parameters and supported Quota types are \&quot;requestCount\&quot; ,\&quot;bandwidthVolume\&quot; and \&quot;eventCount\&quot; 
-     * @param tierQuotaType Filter the subscription base on tier quota type (optional)
+     * Get streaming throttling policies (asynchronously)
+     * This operation can be used to list the available streaming subscription policies 
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -318,10 +326,10 @@ public class ThrottlingPoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getSubscriptionThrottlingPoliciesAsync(String tierQuotaType, String ifNoneMatch, final ApiCallback<List<SubscriptionPolicyDTO>> _callback) throws ApiException {
+    public okhttp3.Call getSubscriptionThrottlingPoliciesAsync(Integer limit, Integer offset, String ifNoneMatch, final ApiCallback<SubscriptionPolicyListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = getSubscriptionThrottlingPoliciesValidateBeforeCall(tierQuotaType, ifNoneMatch, _callback);
-        Type localVarReturnType = new TypeToken<List<SubscriptionPolicyDTO>>(){}.getType();
+        okhttp3.Call localVarCall = getSubscriptionThrottlingPoliciesValidateBeforeCall(limit, offset, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<SubscriptionPolicyListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

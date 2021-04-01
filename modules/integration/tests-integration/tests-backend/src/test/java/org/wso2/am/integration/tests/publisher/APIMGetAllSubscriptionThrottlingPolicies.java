@@ -25,10 +25,10 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
-import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -57,14 +57,12 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
 
     @Test(groups = {"wso2.am"}, description = "Get all the subscription throttling polices for event count quota type ")
     public void testGetAllSubscriptionThrottlingPoliciesByQuotaType() throws Exception {
-        List<SubscriptionPolicyDTO> subscriptionPolicyList = restAPIPublisher.getSubscriptionPolicies(EVENT_COUNT_TYPE);
+        SubscriptionPolicyListDTO subscriptionPolicyList = restAPIPublisher.getSubscriptionPolicies(EVENT_COUNT_TYPE);
         assertNotNull(subscriptionPolicyList, "There are no subscription policies available");
+        assertNotNull(subscriptionPolicyList.getCount(), "Subscription policy count should be available");
+        assertEquals(subscriptionPolicyList.getCount().intValue(), 8, "There must be only 8 policies by default");
 
-        for (SubscriptionPolicyDTO subs : subscriptionPolicyList) {
-            System.out.println("Name " + subs.getDisplayName());
-        }
-
-        SubscriptionPolicyDTO tierAsyncBronze = subscriptionPolicyList.get(2);
+        SubscriptionPolicyDTO tierAsyncBronze = subscriptionPolicyList.getList().get(2);
         assertEquals(tierAsyncBronze.getDescription(), "Allows 5000 events per day",
                 "Invalid description of the tier Async Bronze");
         assertEquals(tierAsyncBronze.getDisplayName(), "AsyncBronze",
@@ -72,7 +70,7 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
         assertEquals(tierAsyncBronze.getPolicyName(), "AsyncBronze",
                 "Invalid name of the tier Async Bronze");
 
-        SubscriptionPolicyDTO tierAsyncGold = subscriptionPolicyList.get(0);
+        SubscriptionPolicyDTO tierAsyncGold = subscriptionPolicyList.getList().get(0);
         assertEquals(tierAsyncGold.getDescription(), "Allows 50000 events per day",
                 "Invalid description of the tier Async Gold");
         assertEquals(tierAsyncGold.getDisplayName(), "AsyncGold",
@@ -80,7 +78,7 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
         assertEquals(tierAsyncGold.getPolicyName(), "AsyncGold",
                 "Invalid name of the tier Async Gold");
 
-        SubscriptionPolicyDTO tierAsyncSilver = subscriptionPolicyList.get(1);
+        SubscriptionPolicyDTO tierAsyncSilver = subscriptionPolicyList.getList().get(1);
         assertEquals(tierAsyncSilver.getDescription(), "Allows 25000 events per day",
                 "Invalid description of the tier Async Silver");
         assertEquals(tierAsyncSilver.getDisplayName(), "AsyncSilver",
@@ -88,7 +86,7 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
         assertEquals(tierAsyncSilver.getPolicyName(), "AsyncSilver",
                 "Invalid name of the tier Async Silver");
 
-        SubscriptionPolicyDTO tierAsyncUnlimited = subscriptionPolicyList.get(3);
+        SubscriptionPolicyDTO tierAsyncUnlimited = subscriptionPolicyList.getList().get(3);
         assertEquals(tierAsyncUnlimited.getDescription(), "Allows unlimited events",
                 "Invalid description of the tier Async Unlimited");
         assertEquals(tierAsyncUnlimited.getDisplayName(), "AsyncUnlimited",
@@ -96,7 +94,7 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
         assertEquals(tierAsyncUnlimited.getPolicyName(), "AsyncUnlimited",
                 "Invalid name of the tier Async Unlimited");
 
-        SubscriptionPolicyDTO tierAsyncWHBronze = subscriptionPolicyList.get(6);
+        SubscriptionPolicyDTO tierAsyncWHBronze = subscriptionPolicyList.getList().get(6);
         assertEquals(tierAsyncWHBronze.getDescription(), "Allows 1000 events per month and 500 active " +
                 "subscriptions", "Invalid description of the tier AsyncWHBronze");
         assertEquals(tierAsyncWHBronze.getDisplayName(), "AsyncWHBronze",
@@ -104,7 +102,7 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
         assertEquals(tierAsyncWHBronze.getPolicyName(), "AsyncWHBronze",
                 "Invalid name of the tier AsyncWHBronze");
 
-        SubscriptionPolicyDTO tierAsyncWHGold = subscriptionPolicyList.get(4);
+        SubscriptionPolicyDTO tierAsyncWHGold = subscriptionPolicyList.getList().get(4);
         assertEquals(tierAsyncWHGold.getDescription(), "Allows 10000 events per month and 1000 active" +
                 " subscriptions", "Invalid description of the tier AsyncWHGold");
         assertEquals(tierAsyncWHGold.getDisplayName(), "AsyncWHGold",
@@ -112,7 +110,7 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
         assertEquals(tierAsyncWHGold.getPolicyName(), "AsyncWHGold",
                 "Invalid name of the tier AsyncWHGold");
 
-        SubscriptionPolicyDTO tierAsyncWHSilver = subscriptionPolicyList.get(5);
+        SubscriptionPolicyDTO tierAsyncWHSilver = subscriptionPolicyList.getList().get(5);
         assertEquals(tierAsyncWHSilver.getDescription(), "Allows 5000 events per month and 500 active " +
                 "subscriptions", "Invalid description of the tier AsyncWHSilver");
         assertEquals(tierAsyncWHSilver.getDisplayName(), "AsyncWHSilver",
@@ -120,7 +118,7 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
         assertEquals(tierAsyncWHSilver.getPolicyName(), "AsyncWHSilver",
                 "Invalid name of the tier AsyncWHSilver");
 
-        SubscriptionPolicyDTO tierAsyncWHUnlimited = subscriptionPolicyList.get(7);
+        SubscriptionPolicyDTO tierAsyncWHUnlimited = subscriptionPolicyList.getList().get(7);
         assertEquals(tierAsyncWHUnlimited.getDescription(), "Allows unlimited events and unlimited active " +
                 "subscriptions", "Invalid description of the tier AsyncWHUnlimited");
         assertEquals(tierAsyncWHUnlimited.getDisplayName(), "AsyncWHUnlimited",

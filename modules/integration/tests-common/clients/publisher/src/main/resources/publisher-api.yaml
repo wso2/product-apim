@@ -4643,13 +4643,13 @@ paths:
     get:
       tags:
         - Throttling Policies
-      summary: Get subscription throttling policies based on quota type
+      summary: Get streaming throttling policies
       description: |
-        This operation can be used to list the available subscription policies for a given tenent ID based on the given quota type.
-        Quota Type should be provide as a query parameters and supported Quota types are "requestCount" ,"bandwidthVolume" and "eventCount"
+        This operation can be used to list the available streaming subscription policies
       operationId: getSubscriptionThrottlingPolicies
       parameters:
-        - $ref: '#/components/parameters/tierQuotaType'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
@@ -4670,9 +4670,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SubscriptionPolicy'
+                $ref: '#/components/schemas/SubscriptionPolicyList'
         304:
           description: |
             Not Modified.
@@ -4686,7 +4684,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/subscription?tierQuotaType=RequestCountLimit"'
+          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/streaming/subscription"'
 
   ######################################################
   # The "Mediation Policy Collection" resource APIs
@@ -9470,54 +9468,6 @@ components:
             - ON_HOLD
             - REJECTED
             - TIER_UPDATE_PENDING
-#    ThrottlePolicy:
-#      title: Generic Throttling Policy
-#      required:
-#        - policyName
-#      type: object
-#      properties:
-#        policyId:
-#          type: string
-#          description: Id of policy
-#          readOnly: true
-#          example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
-#        policyName:
-#          maxLength: 60
-#          minLength: 1
-#          type: string
-#          description: Name of policy
-#          example: 30PerMin
-#        displayName:
-#          type: string
-#          description: Display name of the policy
-#          example: 30PerMin
-#          maxLength: 512
-#        description:
-#          maxLength: 1024
-#          type: string
-#          description: Description of the policy
-#          example: Allows 30 request per minute
-#        isDeployed:
-#          type: boolean
-#          description: Indicates whether the policy is deployed successfully or not.
-#          default: false
-#        type:
-#          type: string
-#          description: Indicates the type of throttle policy
-#      discriminator:
-#        propertyName: type
-#    GraphQLQuery:
-#      title: GraphQL Query
-#      type: object
-#      properties:
-#        graphQLMaxComplexity:
-#          type: integer
-#          description: Maximum Complexity of the GraphQL query
-#          example: 400
-#        graphQLMaxDepth:
-#          type: integer
-#          description: Maximum Depth of the GraphQL query
-#          example: 10
     ThrottleLimitBase:
       title: Throttle Limit Base
       required:
@@ -9621,81 +9571,99 @@ components:
               description: Maximum number of events allowed
               format: int64
               example: 3000
-    SubscriptionPolicy:
-      title: Subscription Throttling Policy
+    SubscriptionPolicyList:
+      title: Subscription policy list
       type: object
       properties:
-        policyId:
-          type: string
-          description: Id of policy
-          readOnly: true
-          example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
-        policyName:
-          maxLength: 60
-          minLength: 1
-          type: string
-          description: Name of policy
-          example: 30PerMin
-        displayName:
-          type: string
-          description: Display name of the policy
-          example: 30PerMin
-          maxLength: 512
-        description:
-          maxLength: 1024
-          type: string
-          description: Description of the policy
-          example: Allows 30 request per minute
-        isDeployed:
-          type: boolean
-          description: Indicates whether the policy is deployed successfully or not.
-          default: false
-        type:
-          type: string
-          description: Indicates the type of throttle policy
-        defaultLimit:
-          $ref: '#/components/schemas/ThrottleLimit'
-        monetization:
-          $ref: '#/components/schemas/MonetizationInfo'
-        rateLimitCount:
+        count:
           type: integer
-          description: Burst control request count
-          example: 10
-        rateLimitTimeUnit:
-          type: string
-          description: Burst control time unit
-          example: min
-        subscriberCount:
-          type: integer
-          description: Number of subscriptions allowed
-          example: 10
-        customAttributes:
+          description: |
+            Number of Tiers returned.
+          example: 1
+        list:
           type: array
           description: |
-            Custom attributes added to the Subscription Throttling Policy
-          example: [ ]
+            Array of SubscriptionPolicies
           items:
-            $ref: '#/components/schemas/CustomAttribute'
-        stopOnQuotaReach:
-          type: boolean
-          description: |
-            This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through.
-          default: false
-        billingPlan:
-          type: string
-          description: |
-            define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
-          example: FREE
-        permissions:
-          $ref: '#/components/schemas/SubscriptionThrottlePolicyPermission'
-        graphQLMaxComplexity:
-          type: integer
-          description: Maximum Complexity of the GraphQL query
-          example: 400
-        graphQLMaxDepth:
-          type: integer
-          description: Maximum Depth of the GraphQL query
-          example: 10
+            $ref: '#/components/schemas/SubscriptionPolicy'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    SubscriptionPolicy:
+      title: Subscription Throttling Policy
+      allOf:
+        - required:
+            - defaultLimit
+          type: object
+          properties:
+            policyId:
+              type: int
+              description: Id of policy
+              example: 1
+            uuid:
+              type: string
+              description: policy uuid
+              example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+            policyName:
+              maxLength: 60
+              minLength: 1
+              type: string
+              description: Name of policy
+              example: 30PerMin
+            displayName:
+              type: string
+              description: Display name of the policy
+              example: 30PerMin
+              maxLength: 512
+            description:
+              maxLength: 1024
+              type: string
+              description: Description of the policy
+              example: Allows 30 request per minute
+            isDeployed:
+              type: boolean
+              description: Indicates whether the policy is deployed successfully or not.
+              default: false
+            tenantId:
+              type: int
+              description: Throttling policy tenant domain id
+              example: -1234
+            tenantDomain:
+              type: string
+              description: Throttling policy tenant domain
+              example: carbon.super
+            defaultLimit:
+              $ref: '#/components/schemas/ThrottleLimit'
+            rateLimitCount:
+              type: integer
+              description: Burst control request count
+              example: 10
+            rateLimitTimeUnit:
+              type: string
+              description: Burst control time unit
+              example: min
+            subscriberCount:
+              type: integer
+              description: Number of subscriptions allowed
+              example: 10
+            customAttributes:
+              type: array
+              description: |
+                Custom attributes added to the Subscription Throttling Policy
+              example: [ ]
+              items:
+                $ref: '#/components/schemas/CustomAttribute'
+            stopOnQuotaReach:
+              type: boolean
+              description: |
+                This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through.
+              default: false
+            billingPlan:
+              type: string
+              description: |
+                define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
+              example: FREE
+            permissions:
+              $ref: '#/components/schemas/SubscriptionThrottlePolicyPermission'
     CustomAttribute:
       title: Name-Value pair
       required:

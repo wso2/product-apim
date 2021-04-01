@@ -5,7 +5,7 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v2*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getAllThrottlingPolicies**](ThrottlingPoliciesApi.md#getAllThrottlingPolicies) | **GET** /throttling-policies/{policyLevel} | Get All Throttling Policies for the Given Type
-[**getSubscriptionThrottlingPolicies**](ThrottlingPoliciesApi.md#getSubscriptionThrottlingPolicies) | **GET** /throttling-policies/streaming/subscription | Get subscription throttling policies based on quota type
+[**getSubscriptionThrottlingPolicies**](ThrottlingPoliciesApi.md#getSubscriptionThrottlingPolicies) | **GET** /throttling-policies/streaming/subscription | Get streaming throttling policies
 [**getThrottlingPolicyByName**](ThrottlingPoliciesApi.md#getThrottlingPolicyByName) | **GET** /throttling-policies/{policyLevel}/{policyName} | Get Details of a Policy
 
 
@@ -86,11 +86,11 @@ Name | Type | Description  | Notes
 
 <a name="getSubscriptionThrottlingPolicies"></a>
 # **getSubscriptionThrottlingPolicies**
-> List&lt;SubscriptionPolicyDTO&gt; getSubscriptionThrottlingPolicies(tierQuotaType, ifNoneMatch)
+> SubscriptionPolicyListDTO getSubscriptionThrottlingPolicies(limit, offset, ifNoneMatch)
 
-Get subscription throttling policies based on quota type
+Get streaming throttling policies
 
-This operation can be used to list the available subscription policies for a given tenent ID based on the given quota type. Quota Type should be provide as a query parameters and supported Quota types are \&quot;requestCount\&quot; ,\&quot;bandwidthVolume\&quot; and \&quot;eventCount\&quot; 
+This operation can be used to list the available streaming subscription policies 
 
 ### Example
 ```java
@@ -112,10 +112,11 @@ public class Example {
     OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
     ThrottlingPoliciesApi apiInstance = new ThrottlingPoliciesApi(defaultClient);
-    String tierQuotaType = "tierQuotaType_example"; // String | Filter the subscription base on tier quota type
+    Integer limit = 25; // Integer | Maximum size of resource array to return. 
+    Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      List<SubscriptionPolicyDTO> result = apiInstance.getSubscriptionThrottlingPolicies(tierQuotaType, ifNoneMatch);
+      SubscriptionPolicyListDTO result = apiInstance.getSubscriptionThrottlingPolicies(limit, offset, ifNoneMatch);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ThrottlingPoliciesApi#getSubscriptionThrottlingPolicies");
@@ -132,12 +133,13 @@ public class Example {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **tierQuotaType** | **String**| Filter the subscription base on tier quota type | [optional]
+ **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
+ **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
 
 ### Return type
 
-[**List&lt;SubscriptionPolicyDTO&gt;**](SubscriptionPolicyDTO.md)
+[**SubscriptionPolicyListDTO**](SubscriptionPolicyListDTO.md)
 
 ### Authorization
 
