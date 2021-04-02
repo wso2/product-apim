@@ -129,10 +129,11 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         apiRequest.setProvider(provider);
         apiRequest.setType("WS");
         HttpResponse addAPIResponse = restAPIPublisher.addAPI(apiRequest);
-        restAPIPublisher.changeAPILifeCycleStatus(addAPIResponse.getData(), APILifeCycleAction.PUBLISH.getAction(), null);
         websocketAPIID = addAPIResponse.getData();
-        //publish the api
 
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(websocketAPIID, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatus(websocketAPIID, APILifeCycleAction.PUBLISH.getAction(), null);
         waitForAPIDeploymentSync(user.getUserName(), WS_API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         APIIdentifier apiIdentifierWebSocket = new APIIdentifier(provider, WS_API_NAME, API_VERSION);
@@ -182,15 +183,17 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         APIDTO wsApidto = restAPIStore.getAPI(websocketAPIID);
         Assert.assertNotNull(wsApidto);
         Assert.assertNotNull(wsApidto.getEndpointURLs());
+        Assert.assertTrue(!wsApidto.getEndpointURLs().isEmpty());
         for (APIEndpointURLsDTO endpointURL : wsApidto.getEndpointURLs()) {
             Assert.assertNotNull(endpointURL.getUrLs());
             Assert.assertNotNull(endpointURL.getUrLs().getWs());
+            log.info("API Endpoint URL = " + endpointURL.getUrLs().getWs());
             if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
                 assertTrue(endpointURL.getUrLs().getWs()
-                        .matches("ws://(.)+:[0-9]+/" + WS_API_CONTEXT + "/" + API_VERSION ));
+                        .matches("ws://(.)+:[0-9]+/" + WS_API_CONTEXT + "/" + API_VERSION ), "websocketAPI gateway url = " + endpointURL.getUrLs().getWs());
             } else {
                 assertTrue(endpointURL.getUrLs().getWs()
-                        .matches("ws://(.)+:[0-9]+/t/wso2.com/" + WS_API_CONTEXT + "/" + API_VERSION ));
+                        .matches("ws://(.)+:[0-9]+/t/wso2.com/" + WS_API_CONTEXT + "/" + API_VERSION ), "websocketAPI gateway url = " + endpointURL.getUrLs().getWs());
             }
 
         }
@@ -210,6 +213,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
         APIDTO restAPIStoreAPI = restAPIStore.getAPI(restAPIId);
         Assert.assertNotNull(restAPIStoreAPI);
         Assert.assertNotNull(restAPIStoreAPI.getEndpointURLs());
+        Assert.assertTrue(!restAPIStoreAPI.getEndpointURLs().isEmpty());
         for (APIEndpointURLsDTO endpointURL : restAPIStoreAPI.getEndpointURLs()) {
             Assert.assertNotNull(endpointURL.getUrLs());
             Assert.assertNull(endpointURL.getUrLs().getHttp());
