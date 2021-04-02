@@ -206,7 +206,7 @@ public class ApiProductTestHelper {
     }
 
     public org.wso2.am.integration.clients.store.api.v1.dto.APIDTO verifyApiProductInPortal(APIProductDTO apiProductDTO)
-            throws org.wso2.am.integration.clients.store.api.ApiException {
+            throws org.wso2.am.integration.clients.store.api.ApiException, InterruptedException {
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO responseData = restAPIStore.getAPI(apiProductDTO.getId());
 
         // Validate mandatory fields returned in response data
@@ -218,12 +218,17 @@ public class ApiProductTestHelper {
 
         boolean isAPIProductInListing = false;
         int productCount = 0;
-        for (APIInfoDTO apiInfo : apiInfos) {
-            if (apiInfo.getId().equals(apiProductDTO.getId())) {
-                isAPIProductInListing = true;
-                ++productCount;
-                verifyApiInfoDtoWithApiProduct(apiInfo, apiProductDTO);
+        int retries = 0;
+        while(productCount==0 && retries<5){
+            Thread.sleep(5000);
+            for (APIInfoDTO apiInfo : apiInfos) {
+                if (apiInfo.getId().equals(apiProductDTO.getId())) {
+                    isAPIProductInListing = true;
+                    ++productCount;
+                    verifyApiInfoDtoWithApiProduct(apiInfo, apiProductDTO);
+                }
             }
+            retries++;
         }
 
         Assert.assertTrue(isAPIProductInListing);
