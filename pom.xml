@@ -1467,7 +1467,7 @@
         <keycloak.keymanager.feature.version>2.0.5</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.1</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.3</pingfederate.keymanager.feature.version>
-        <forgerock.keymanager.feature.version>1.0.1</forgerock.keymanager.feature.version>
+        <forgerock.keymanager.feature.version>1.0.2</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>1.0.0-ALPHA2</apim.analytics.publisher.version>
     </properties>
 
