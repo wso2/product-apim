@@ -279,6 +279,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.websub.FailedWebSubSubscriptionTestCase"/>
         </classes>
     </test>
 

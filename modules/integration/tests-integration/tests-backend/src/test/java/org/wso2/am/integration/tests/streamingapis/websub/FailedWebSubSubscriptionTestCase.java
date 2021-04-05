@@ -18,8 +18,16 @@
 
 package org.wso2.am.integration.tests.streamingapis.websub;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -43,47 +51,40 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.tests.streamingapis.StreamingApiTestUtils;
-import org.wso2.am.integration.tests.streamingapis.websub.client.WebhookSender;
 import org.wso2.am.integration.tests.streamingapis.websub.server.CallbackServerServlet;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.testng.Assert.assertTrue;
-
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
-public class WebSubAPITestCase extends APIMIntegrationBaseTest {
+public class FailedWebSubSubscriptionTestCase extends APIMIntegrationBaseTest {
 
     private final Log log = LogFactory.getLog(WebSubAPITestCase.class);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private final int TOPIC_PORT = 9521;
     private final String DEFAULT_TOPIC = "_default";
     private final String SUBSCRIBE = "subscribe";
-    private final String UNSUBSCRIBE = "unsubscribe";
 
-    private String apiName = "WebSubAPI";
-    private String applicationName = "WebSubApplication";
+    private String apiName = "FailedSubscriptionWebSubAPI";
+    private String applicationName = "FailedWebSubApplication";
     private String apiContext = "websub";
     private String apiVersion = "1.0.0";
 
@@ -105,12 +106,12 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
     private String appId;
     private String topicSecret;
     private String apiEndpoint;
-    private WebhookSender webhookSender;
     private CallbackServerServlet callbackServerServlet;
     private Server callbackServer;
+    private String accessToken;
 
     @Factory(dataProvider = "userModeDataProvider")
-    public WebSubAPITestCase(TestUserMode userMode) {
+    public FailedWebSubSubscriptionTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
@@ -180,7 +181,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         }
 
         APIListDTO apiPublisherAllAPIs = restAPIPublisher.getAllAPIs();
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiPublisherAllAPIs),
+        Assert.assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiPublisherAllAPIs),
                 "Published API is visible in API Publisher.");
         org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO restAPIStoreAllAPIs;
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
@@ -188,7 +189,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         } else {
             restAPIStoreAllAPIs = restAPIStore.getAllAPIs(user.getUserDomain());
         }
-        assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, restAPIStoreAllAPIs),
+        Assert.assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, restAPIStoreAllAPIs),
                 "Published API is visible in API Store.");
     }
 
@@ -201,38 +202,49 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.API_TIER.ASYNC_WH_UNLIMITED);
         // Validate Subscription of the API
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
-    }
-
-    @Test(description = "Invoke the WebSub API", dependsOnMethods = "testWebSubApiApplicationSubscription")
-    public void testInvokeWebSubApi() throws Exception {
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+    }
 
+    @Test(description = "Invoke the WebSub API with invalid Token", dependsOnMethods = "testWebSubApiApplicationSubscription")
+    public void testInvokeWebSubApiWithInvalidToken() throws Exception {
         String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
-        handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
-                accessToken);
-        initializeWebhookSender(topicSecret);
-        Thread.sleep(5000);
-        int noOfEventsToSend = 10;
-        for (int i = 0; i < noOfEventsToSend; i++) {
-            webhookSender.send();
-            Thread.sleep(3000);
-        }
-        handleCallbackSubscription(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
-                accessToken);
+        org.apache.http.HttpResponse response = handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC,
+                topicSecret, "50000000",
+                "this_is_an_invalid_token");
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response Code Mismatched");
+        String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
+        Assert.assertFalse(responseBody.contains("invalid_access_token"),
+                "Access token entered is valid");
+    }
 
-        int sent = webhookSender.getWebhooksSent();
-        int received = callbackServerServlet.getCallbacksReceived();
-        Assert.assertEquals(sent, noOfEventsToSend);
-        Assert.assertTrue(sent <= received); // no. of events received = no. of events sent + 1 subscribe event
+    @Test(description = "Invoke the WebSub API without callback URL", dependsOnMethods = "testWebSubApiApplicationSubscription")
+    public void testInvokeWebSubApiWithoutCallbackURL() throws Exception {
+        org.apache.http.HttpResponse response = handleCallbackSubscription(SUBSCRIBE, apiEndpoint, null, DEFAULT_TOPIC,
+                topicSecret, "50000000", accessToken);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+                "Response Code Mismatched");
+        String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
+        Assert.assertTrue(responseBody.contains("Callback URL cannot be empty"),
+                "Callback URL cannot be empty should be present in the response body");
+    }
 
-        callbackServerServlet.setCallbacksReceived(0);
-        webhookSender.setWebhooksSent(0);
+    @Test(description = "Invoke the WebSub API without Topic name", dependsOnMethods = "testWebSubApiApplicationSubscription")
+    public void testInvokeWebSubApiWithoutTopic() throws Exception {
+        String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
+        org.apache.http.HttpResponse response = handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl, null,
+                topicSecret, "50000000", accessToken);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+                "Response Code Mismatched");
+        String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
+        Assert.assertTrue(responseBody.contains("Topic name not found for web hook subscription request"),
+                "Topic name not found for web hook subscription request should be present in the response body");
     }
 
     private void initializeCallbackReceiver(int port) {
@@ -256,20 +268,34 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         });
     }
 
-    private void initializeWebhookSender(String secret) {
-        String payloadUrl = apiEndpoint.replaceAll(":([0-9]+)/", ":" + TOPIC_PORT + "/") +
-                "/webhooks_events_receiver_resource?topic=" + DEFAULT_TOPIC;
-        webhookSender = new WebhookSender(payloadUrl, secret);
-    }
-
-    private static void handleCallbackSubscription(String hubMode, String webSubApiUrl, String callbackUrl,
-                                                   String hubTopic, String hubSecret, String hubLeaseSeconds,
-                                                   String bearerToken)
-            throws UnsupportedEncodingException, MalformedURLException, AutomationFrameworkException {
-        String encodedUrl = URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8.toString());
-        String url = webSubApiUrl + "?hub.callback=" + encodedUrl + "&hub.mode=" + hubMode + "&hub.secret=" +
-                hubSecret + "&hub.lease_seconds=" + hubLeaseSeconds + "&hub.topic=" + hubTopic;
-        HttpRequestUtil.doPost(new URL(url), "", Collections.singletonMap("Authorization", "Bearer " + bearerToken));
+    private static org.apache.http.HttpResponse handleCallbackSubscription(String hubMode, String webSubApiUrl,
+                                                                           String callbackUrl, String hubTopic,
+                                                                           String hubSecret, String hubLeaseSeconds,
+                                                                           String bearerToken)
+            throws IOException, URISyntaxException {
+        HttpClient httpclient = HttpClients.createDefault();
+        HttpPost httppost = new HttpPost(webSubApiUrl);
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        if (!StringUtils.isEmpty(callbackUrl)) {
+            String encodedUrl = URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8.toString());
+            params.add(new BasicNameValuePair("hub.callback", encodedUrl));
+        }
+        if (!StringUtils.isEmpty(hubMode)) {
+            params.add(new BasicNameValuePair("hub.mode", hubMode));
+        }
+        if (!StringUtils.isEmpty(hubTopic)) {
+            params.add(new BasicNameValuePair("hub.topic", hubTopic));
+        }
+        if (!StringUtils.isEmpty(hubSecret)) {
+            params.add(new BasicNameValuePair("hub.secret", hubSecret));
+        }
+        if (!StringUtils.isEmpty(hubLeaseSeconds)) {
+            params.add(new BasicNameValuePair("hub.lease_seconds", hubLeaseSeconds));
+        }
+        URI uri = new URIBuilder(httppost.getURI()).addParameters(params).build();
+        httppost.setURI(uri);
+        httppost.setHeader("Authorization", "Bearer " + bearerToken);
+        return httpclient.execute(httppost);
     }
 
     @AfterClass(alwaysRun = true)

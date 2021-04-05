@@ -34,7 +34,9 @@ import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
 import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.TagsApi;
+import org.wso2.am.integration.clients.store.api.v1.TopicsApi;
 import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
+import org.wso2.am.integration.clients.store.api.v1.WebhooksApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
@@ -62,6 +64,9 @@ import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDT
 import org.wso2.am.integration.clients.store.api.v1.dto.PostRequestBodyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.PatchRequestBodyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.TopicListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.WebhookSubscriptionDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.WebhookSubscriptionListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -96,6 +101,8 @@ public class RestAPIStoreImpl {
     public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     ApiClient apiStoreClient = new ApiClient();
     public UsersApi usersApi = new UsersApi();
+    public TopicsApi topicsApi = new TopicsApi();
+    public WebhooksApi webhooksApi = new WebhooksApi();
     public static final String appName = "Integration_Test_App_Store";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -135,6 +142,8 @@ public class RestAPIStoreImpl {
         subscriptionIndividualApi.setApiClient(apiStoreClient);
         applicationKeysApi.setApiClient(apiStoreClient);
         commentsApi.setApiClient(apiStoreClient);
+        topicsApi.setApiClient(apiStoreClient);
+        webhooksApi.setApiClient(apiStoreClient);
         ratingsApi.setApiClient(apiStoreClient);
         tagsApi.setApiClient(apiStoreClient);
         unifiedSearchApi.setApiClient(apiStoreClient);
@@ -1266,6 +1275,38 @@ public class RestAPIStoreImpl {
         }
         if (commentListDTO.getCount() > 0) {
             response = new HttpResponse(gson.toJson(commentListDTO), 200);
+        }
+        return response;
+    }
+
+    public HttpResponse getTopics(String apiId, String tenantDomain) {
+
+        TopicListDTO topicListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            topicListDTO = topicsApi.getAllTopicsOfAPI(apiId, tenantDomain);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (topicListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(topicListDTO), 200);
+        }
+        return response;
+    }
+
+    public HttpResponse getWebhooks(String apiId, String applicationId, String tenantDomain) throws ApiException {
+
+        WebhookSubscriptionListDTO subscriptionListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            subscriptionListDTO = webhooksApi.getAllWebhooksOfAPI(applicationId, apiId, tenantDomain);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (subscriptionListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(subscriptionListDTO), 200);
         }
         return response;
     }
