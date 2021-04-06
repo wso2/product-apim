@@ -56,4 +56,8 @@ public class Constants {
     public static final String XML = ".xml";
     public static final String CARBON_HOME = "carbon.home";
     public static final String CARBON_HOME_VALUE = "../../";
+
+    public static final String BANDWIDTH_TYPE = "bandwidthVolume";
+    public static final String REQUEST_COUNT_TYPE = "requestCount";
+    public static final String EVENT_COUNT_TYPE = "eventCount";
 }
