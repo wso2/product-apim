@@ -2399,6 +2399,10 @@
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>wso2is.key.manager.notification.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>
+                                <feature>
                                     <id>okta.key.manager.feature.group</id>
                                     <version>${okta.keymanager.feature.version}</version>
                                 </feature>
@@ -2888,6 +2892,10 @@
                                 </feature>
                                 <feature>
                                     <id>wso2is.key.manager.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>wso2is.key.manager.notification.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>

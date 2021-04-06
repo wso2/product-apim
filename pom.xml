@@ -1267,7 +1267,7 @@
         <carbon.analytics.common.version>5.2.34</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.0.97</carbon.apimgt.version>
+        <carbon.apimgt.version>9.0.116</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1338,7 +1338,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v217</synapse.version>
+        <synapse.version>2.1.7-wso2v218</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v41</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
@@ -1411,7 +1411,7 @@
 
         <carbon.metrics.version>1.3.7</carbon.metrics.version>
         <!-- MB Features -->
-        <carbon.messaging.version>3.3.13</carbon.messaging.version>
+        <carbon.messaging.version>3.3.15</carbon.messaging.version>
         <carbon.event-processing.version>2.2.14</carbon.event-processing.version>
         <andes.version>3.3.12</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
@@ -1462,13 +1462,13 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.2.7</wso2is.km.version>
+        <wso2is.km.version>1.2.8</wso2is.km.version>
         <okta.keymanager.feature.version>3.0.6</okta.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.0.5</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.1</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.3</pingfederate.keymanager.feature.version>
-        <forgerock.keymanager.feature.version>1.0.1</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.0.0-ALPHA2</apim.analytics.publisher.version>
+        <forgerock.keymanager.feature.version>1.0.2</forgerock.keymanager.feature.version>
+        <apim.analytics.publisher.version>1.0.0-BETA2</apim.analytics.publisher.version>
     </properties>
 
 </project>
