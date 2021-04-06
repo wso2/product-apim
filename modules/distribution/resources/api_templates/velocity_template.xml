@@ -225,8 +225,12 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
     #if($accessKey != '')
     <property name="accessKey" value="$accessKey"/>
     #end
+    #if($isSecureVaultEnabled)
+    <property name="secretKey" expression="wso2:vault-lookup('$endpoint_config.get('awsAlias')')" type="STRING"/>
+    #else
     #if($secretKey != '')
     <property name="secretKey" value="$secretKey"/>
+    #end
     #end
     #if($resourceName != '')
     <property name="resourceName" value="$resourceName"/>
