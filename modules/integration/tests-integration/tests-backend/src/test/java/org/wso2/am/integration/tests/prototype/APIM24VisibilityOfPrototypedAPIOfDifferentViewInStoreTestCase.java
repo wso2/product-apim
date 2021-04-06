@@ -111,7 +111,6 @@ public class APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase exten
         apidto.setEndpointConfig(endpoint);
 
         restAPIPublisher.updateAPI(apidto);
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEPLOY_AS_PROTOTYPE.getAction());
 
         HttpResponse response2 = restAPIPublisher.getAPI(apiId);
         Gson g2 = new Gson();

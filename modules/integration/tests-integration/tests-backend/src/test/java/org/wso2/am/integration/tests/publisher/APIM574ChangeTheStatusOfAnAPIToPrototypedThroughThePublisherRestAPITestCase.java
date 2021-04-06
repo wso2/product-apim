@@ -129,11 +129,26 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
                 "publisher");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Change the status of the API to PUBLISHED through" +
+    @Test(groups = {"wso2.am"}, description = "Change the status of the API to CREATED through" +
             " the publisher rest API ", dependsOnMethods = "testChangeTheStatusOfTheAPIToPrototyped")
+    public void testChangeTheStatusOfTheAPIToCreated() throws Exception {
+        //Change the status PROTOTYPED to CREATED
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
+        assertTrue(APILifeCycleState.CREATED.getState().equals(restAPIPublisher.getLifecycleStatus(apiId).getData()),
+                apiNameTest + "status not updated as Published");
+        //Check whether published API is available in publisher
+        HttpResponse publishedApiResponse = restAPIPublisher.getAPI(apiId);
+        assertEquals(publishedApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(), apiNameTest +
+                " is not visible in publisher");
+        assertTrue(publishedApiResponse.getData().contains(apiNameTest), apiNameTest + " is not visible in " +
+                "publisher");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Change the status of the API to PUBLISHED through" +
+            " the publisher rest API ", dependsOnMethods = "testChangeTheStatusOfTheAPIToCreated")
     public void testChangeTheStatusOfTheAPIToPublished() throws Exception {
 
-        //Change the status PROTOTYPED to PUBLISHED
+        //Change the status CREATED to PUBLISHED
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
         assertTrue(APILifeCycleState.PUBLISHED.getState().equals(restAPIPublisher.getLifecycleStatus(apiId).getData()),
                 apiNameTest + "status not updated as Published");

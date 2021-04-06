@@ -210,8 +210,6 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
         String documentId = documentHttpResponse.getData();
         restAPIPublisher.addContentDocument(apiId, documentId, documentContent);
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
-
         //check in publisher
         for (int i = 0; i <= retries; i++) {
             SearchResultListDTO searchResultListDTO = restAPIPublisher.searchAPIs("github4156");
