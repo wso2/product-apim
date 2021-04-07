@@ -232,11 +232,11 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         get.addHeader("Authorization", "Bearer " + generatedJWT);
         HttpResponse response = httpclient.execute(get);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-                Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+                Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched when api invocation");
         String payload = IOUtils.toString(response.getEntity().getContent());
-        Assert.assertTrue(payload.contains("900900"));
-        Assert.assertTrue(payload.contains("Unclassified Authentication Failure"));
+        Assert.assertTrue(payload.contains("900901"));
+        Assert.assertTrue(payload.contains("Invalid Credentials"));
     }
 
     @Test(groups = {"wso2.am"}, description = "invoking From ExternalIDP Generated JWT")
