@@ -318,15 +318,8 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
 #if($enableSchemaValidation)
 <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.SchemaValidator"/>
 #end
-#if(!$enableStore)
-<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.TestKeyAuthenticator">
-    <property name="testKey" value="$!testKey"/>
-</handler>
-#end
 </handlers>
         #end
-        #end
-        #if($apiStatus == 'PROTOTYPED')
         #end
         ## end of apiIsBlocked check
         #if($apiType != 'WS')
