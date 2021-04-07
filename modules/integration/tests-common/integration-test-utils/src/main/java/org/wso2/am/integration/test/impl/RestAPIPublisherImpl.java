@@ -492,9 +492,15 @@ public class RestAPIPublisherImpl {
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
+        List<String> tierCollection = Arrays.asList(apiRequest.getTiersCollection().split(","));
         List<String> tierList = new ArrayList<>();
-        tierList.add(Constants.TIERS_UNLIMITED);
-        body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
+        for (String tier : tierCollection) {
+            tierList.add(tier);
+        }
+        if (!tierList.contains(Constants.TIERS_UNLIMITED)) {
+            tierList.add(Constants.TIERS_UNLIMITED);
+        }
+        body.setPolicies(tierList);
         body.setCategories(apiRequest.getApiCategories());
         APIDTO apidto;
         try {
