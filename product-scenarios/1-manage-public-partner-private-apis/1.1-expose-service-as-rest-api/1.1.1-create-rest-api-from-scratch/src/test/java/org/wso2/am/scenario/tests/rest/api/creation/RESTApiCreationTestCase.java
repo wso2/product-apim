@@ -69,8 +69,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private String bizOwnerMail = "wso2test@gmail.com";
     private String techOwner = "wso2";
     private String techOwnerMail = "wso2@gmail.com";
-    private String endpointType = "secured";
-    private String endpointAuthType = "BASIC";
     private String epUsername = "wso2";
     private String epPassword = "wso2123";
     private boolean default_version_checked = true;
@@ -79,11 +77,8 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
     private String subscriptions = "all_tenants";
     private String http_checked = "http";
     private String https_checked = "";
-    private String inSequence = "debug_in_flow";
-    private String outSequence = "debug_out_flow";
     private String apiProviderName;
     private String apiId;
-    private  String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" + "customerservice/customers/123";
     private String backendEndPoint = "http://ws.cdyne.com/phoneverify/phoneverify.asmx";
     private List<String> apiIdList = new ArrayList<>();
 
@@ -144,6 +139,15 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     @Test(description = "1.1.1.2" , dependsOnMethods = "testRESTAPICreationWithMandatoryValues")
     public void testRESTAPICreationWithOptionalValues() throws Exception {
+        String productionEndpointSecurity = "{\n" +
+                "  \"production\":{\n" +
+                "    \"enabled\":true,\n" +
+                "    \"type\":\"BASIC\",\n" +
+                "    \"username\":\"" + epUsername + "\",\n" +
+                "    \"password\":\""+ epPassword +"\"\n" +
+                "  }\n" +
+                "  }";
+
         apiName = "PhoneVerificationOptionalAdd";
         apiContext = "/phoneverifyOptionaladd";
 
@@ -194,6 +198,14 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiCreationDTO.setSubscriptionAvailableTenants(subscriptionTenants);
         apiCreationDTO.setIsDefaultVersion(default_version_checked);
         apiCreationDTO.setTransport(transports);
+        org.json.simple.JSONObject jsonObject = new org.json.simple.JSONObject();
+        jsonObject.put("endpoint_type", "http");
+        org.json.simple.JSONObject sandUrl = new org.json.simple.JSONObject();
+        sandUrl.put("url", backendEndPoint);
+        jsonObject.put("sandbox_endpoints", sandUrl);
+        jsonObject.put("production_endpoints", sandUrl);
+        jsonObject.put("endpoint_security", new org.json.simple.parser.JSONParser().parse(productionEndpointSecurity));
+        apiCreationDTO.setEndpointConfig(jsonObject);
 
         //Design API with name,context,version,visibility,apiResource and with all optional values
         APIDTO apidto = restAPIPublisher.addAPI(apiCreationDTO, "v3");
@@ -231,16 +243,28 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
 
     private void validateOptionalField(HttpResponse response) throws APIManagerIntegrationTestException {
         JSONObject responseJson = new JSONObject(response.getData());
-        assertEquals(responseJson.getJSONObject("businessInformation").get("businessOwner").toString(), bizOwner, "Expected bizOwner value not match");
-        assertEquals(responseJson.getJSONObject("businessInformation").get("businessOwnerEmail").toString(), bizOwnerMail, "Expected bizOwnerMail value not match");
-        assertEquals(responseJson.getJSONObject("businessInformation").get("technicalOwner").toString(), techOwner, "Expected techOwner value not match");
-        assertEquals(responseJson.getJSONObject("businessInformation").get("technicalOwnerEmail").toString(), techOwnerMail, "Expected techOwnerMail value not match");
-        assertEquals(responseJson.getJSONObject("endpointSecurity").get("type").toString(), "BASIC", "Expected endpointType value not match with the actual value");
-        assertEquals(responseJson.getJSONObject("endpointSecurity").get("username").toString(), epUsername, "Expected epUsername value not match with the actual value");
-        assertEquals(responseJson.getJSONArray("subscriptionAvailableTenants").get(0).toString(), subscriptions, "Expected subscriptions value not match");
-        assertEquals(responseJson.getJSONArray("transport").get(0).toString(), http_checked, "Expected http_checked value not match");
-        assertEquals(responseJson.get("isDefaultVersion"), default_version_checked, "Expected default_version_checked value not match");
-        assertEquals(responseJson.get("cacheTimeout").toString(), cacheTimeout, "Expected cacheTimeout value not match");
+        assertEquals(responseJson.getJSONObject("businessInformation").get("businessOwner").toString(), bizOwner,
+                "Expected bizOwner value not match");
+        assertEquals(responseJson.getJSONObject("businessInformation").get("businessOwnerEmail").toString(),
+                bizOwnerMail, "Expected bizOwnerMail value not match");
+        assertEquals(responseJson.getJSONObject("businessInformation").get("technicalOwner").toString(), techOwner,
+                "Expected techOwner value not match");
+        assertEquals(responseJson.getJSONObject("businessInformation").get("technicalOwnerEmail").toString(),
+                techOwnerMail, "Expected techOwnerMail value not match");
+        assertEquals(responseJson.getJSONObject("endpointConfig").getJSONObject("endpoint_security")
+                        .getJSONObject("production").get("type").toString(), "BASIC",
+                "Expected endpointType value not match with the actual value");
+        assertEquals(responseJson.getJSONObject("endpointConfig").getJSONObject("endpoint_security")
+                        .getJSONObject("production").get("username").toString(), epUsername,
+                "Expected epUsername value not match with the actual value");
+        assertEquals(responseJson.getJSONArray("subscriptionAvailableTenants").get(0).toString(), subscriptions,
+                "Expected subscriptions value not match");
+        assertEquals(responseJson.getJSONArray("transport").get(0).toString(), http_checked,
+                "Expected http_checked value not match");
+        assertEquals(responseJson.get("isDefaultVersion"), default_version_checked,
+                "Expected default_version_checked value not match");
+        assertEquals(responseJson.get("cacheTimeout").toString(), cacheTimeout,
+                "Expected cacheTimeout value not match");
     }
 
     private void verifyAPIName(String apiName, String apiId) throws APIManagerIntegrationTestException {

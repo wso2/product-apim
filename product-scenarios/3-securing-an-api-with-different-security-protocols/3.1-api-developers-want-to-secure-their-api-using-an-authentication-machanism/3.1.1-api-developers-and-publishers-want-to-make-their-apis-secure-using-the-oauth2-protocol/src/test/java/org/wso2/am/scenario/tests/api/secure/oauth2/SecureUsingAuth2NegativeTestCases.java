@@ -325,7 +325,6 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
     public void testResourceApplicationInvokeByCustomAuthorization() throws Exception {
         Map<String, String> requestHeaders = new HashMap();
         changeCustomAuthorizationHeaderInAPI(CUSTOM_AUTH_HEADER, apiId);
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
         requestHeaders.put("Authorization", "Bearer " + applicationOneAccessToken);
         requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
 
@@ -434,7 +433,6 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-        restAPIPublisher.changeAPILifeCycleStatus(updatedAPI.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
         // Waiting until the api is available in store.
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             restAPIStore.isAvailableInDevPortal(updatedAPI.getId());
