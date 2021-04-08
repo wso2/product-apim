@@ -23,12 +23,19 @@
 <%@ page import="org.wso2.carbon.identity.recovery.IdentityRecoveryConstants" %>
 <%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="java.io.File" %>
+<%@ page import="java.net.URISyntaxException" %>
 <jsp:directive.include file="includes/localize.jsp"/>
 
 <%
     String errorMsg = IdentityManagementEndpointUtil.getStringValue(request.getAttribute("errorMsg"));
     String errorCode = IdentityManagementEndpointUtil.getStringValue(request.getAttribute("errorCode"));
     String callback = request.getParameter("callback");
+    boolean isValidCallback = true;
+    try {
+        IdentityManagementEndpointUtil.getURLEncodedCallback(callback);
+    } catch (URISyntaxException e) {
+        isValidCallback = false;
+    }
     if (StringUtils.isBlank(errorMsg)) {
         errorMsg = IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Server.failed.to.respond");
     }
@@ -66,11 +73,13 @@
                         <p><%=IdentityManagementEndpointUtil.i18nBase64(recoveryResourceBundle, errorMsg)%></p>
                     </div>
 
+                    <% if (isValidCallback) { %>
                     <div id="action-buttons" class="buttons">
                         <a href="javascript:goBack()" class="ui button primary button">
                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Go back")%>
                         </a>
                     </div>
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -95,6 +104,7 @@
             }
         });
 
+        <% if (isValidCallback) { %>
         function goBack() {
 
             var errorCodeFromParams = "<%=errorCode%>";
@@ -110,6 +120,7 @@
 
             window.history.back();
         }
+        <% } %>
     </script>
 </body>
 </html>
