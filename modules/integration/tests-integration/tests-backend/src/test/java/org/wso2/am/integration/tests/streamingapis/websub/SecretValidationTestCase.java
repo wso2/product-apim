@@ -80,8 +80,8 @@ public class SecretValidationTestCase extends APIMIntegrationBaseTest {
     private final String SUBSCRIBE = "subscribe";
     private final String UNSUBSCRIBE = "unsubscribe";
 
-    private String apiName = "WebSubAPI";
-    private String applicationName = "WebSubApplication";
+    private String apiName = "WebSubSecretValidationAPI";
+    private String applicationName = "WebSubSecretValidationApplication";
     private String apiContext = "websub";
     private String apiVersion = "1.0.0";
 
