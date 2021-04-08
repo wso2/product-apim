@@ -153,7 +153,6 @@ public class UpdatePublishedAPITest extends ScenarioTestBase {
         assertNotNull(publisherSwaggerUpdated);
         log.info("publisherSwagger : "  + publisherSwagger + "/n");
         log.info("publisherSwagger : "  + publisherSwaggerUpdated + "/n");
-        publishAPI(apiId);
         String storeSwaggerUpdated = null;
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             storeSwaggerUpdated = restAPIStore.getSwaggerByID(apiId,"carbon.super");

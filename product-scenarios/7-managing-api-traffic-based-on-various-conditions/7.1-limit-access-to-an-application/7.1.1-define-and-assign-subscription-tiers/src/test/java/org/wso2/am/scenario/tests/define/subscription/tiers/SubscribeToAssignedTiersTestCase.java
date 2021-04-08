@@ -277,8 +277,6 @@ public class SubscribeToAssignedTiersTestCase extends ScenarioTestBase {
         tierList.add(silverTier);
         apiDTO2.setPolicies(tierList);
         restAPIPublisher.updateAPI(apiDTO2, apiId4);
-        //Republish API
-        restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction(), null);
 
         //Create new application to subscribe to updated API
         HttpResponse newAddApplicationResponse = restAPIStore.createApplication(applicationNameAfterAPIRepublish,

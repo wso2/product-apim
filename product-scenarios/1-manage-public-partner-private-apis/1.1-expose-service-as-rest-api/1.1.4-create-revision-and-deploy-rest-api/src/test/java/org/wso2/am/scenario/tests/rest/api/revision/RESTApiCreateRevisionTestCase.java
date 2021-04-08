@@ -202,6 +202,7 @@ public class RESTApiCreateRevisionTestCase extends ScenarioTestBase {
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
         apiRevisionDeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
@@ -216,6 +217,7 @@ public class RESTApiCreateRevisionTestCase extends ScenarioTestBase {
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
         apiRevisionUnDeployRequest.setName("Production and Sandbox");
+        apiRevisionUnDeployRequest.setVhost("localhost");
         apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
         apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
         HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, revisionUUID,
@@ -230,7 +232,7 @@ public class RESTApiCreateRevisionTestCase extends ScenarioTestBase {
     public void testRestoreAPIRevision() throws Exception {
         HttpResponse apiRevisionsRestoreResponse = restAPIPublisher.restoreAPIRevision(apiId, revisionUUID);
         assertEquals(apiRevisionsRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
-                "Unable to resotre API Revisions:" + apiRevisionsRestoreResponse.getData());
+                "Unable to restore API Revisions:" + apiRevisionsRestoreResponse.getData());
         waitForAPIDeployment();
     }
 

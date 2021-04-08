@@ -260,7 +260,6 @@ public class SecureUsingAuth2TestCase extends ScenarioTestBase {
         apidto.setAuthorizationHeader(customAuth);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-        restAPIPublisher.changeAPILifeCycleStatus(updatedAPI.getId(), APILifeCycleAction.PUBLISH.getAction(), null);
         // Waiting until the api is available in store.
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
             restAPIStore.isAvailableInDevPortal(updatedAPI.getId());

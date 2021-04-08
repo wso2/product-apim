@@ -1123,6 +1123,7 @@ public class ScenarioTestBase {
         APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
         apiRevisionDeployRequest.setName("Production and Sandbox");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
                 apiRevisionDeployRequestList);
