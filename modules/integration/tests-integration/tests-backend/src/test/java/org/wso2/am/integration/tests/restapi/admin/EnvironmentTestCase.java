@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.admin.api.dto.EnvironmentListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
@@ -148,10 +149,10 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
     public void testDeployApiRevisionWithVhost() throws Exception {
         addApiAndProductRevision();
 
-        // Deploy API one in "Production and Sandbox"
+        // Deploy API one in "Default"
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionDeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
@@ -160,10 +161,10 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HttpStatus.SC_CREATED,
                 "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
 
-        // Deploy API two in "Production and Sandbox" and "us-region"
+        // Deploy API two in "Default" and "us-region"
         apiRevisionDeployRequestList = new ArrayList<>();
         apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionDeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
@@ -252,13 +253,13 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
     private EnvironmentDTO getConfiguredGatewayEnvironment() {
         VHostDTO vhostDTO = DtoFactory.createVhostDTO("localhost", "", 8780, 8743, 9099, 8099);
         EnvironmentDTO configuredEnv = DtoFactory.createEnvironmentDTO(
-                "Production and Sandbox",
-                "Production and Sandbox",
+                                        Constants.GATEWAY_ENVIRONMENT,
+                                        Constants.GATEWAY_ENVIRONMENT,
                 "This is a hybrid gateway that handles both production and sandbox token traffic.",
                 true,
                 Collections.singletonList(vhostDTO)
         );
-        configuredEnv.setId("Production and Sandbox");
+        configuredEnv.setId(Constants.GATEWAY_ENVIRONMENT);
         return configuredEnv;
     }
 

@@ -7452,7 +7452,7 @@ components:
             http: http://localhost:8280/phoneverify/1.0.0
             https: https://localhost:8243/phoneverify/1.0.0
             ws: ws://localhost:9099/phoneverify/1.0.0
-          environmentName: Production and Sandbox
+          environmentName: Default
           environmentType: hybrid
           defaultVersionURLs:
             wss: ws://localhost:9099/phoneverify/
@@ -7464,7 +7464,7 @@ components:
             http: http://localhost:8280/phoneverify/1.0.0
             https: https://localhost:8243/phoneverify/1.0.0
             ws: ws://localhost:9099/phoneverify/1.0.0
-          environmentName: Production and Sandbox
+          environmentName: Default
           environmentType: hybrid
           defaultVersionURLs:
             wss: ws://localhost:9099/phoneverify/
@@ -10353,7 +10353,7 @@ components:
           http: http://localhost:8280/phoneverify/1.0.0
           https: https://localhost:8243/phoneverify/1.0.0
           ws: ws://localhost:9099/phoneverify/1.0.0
-        environmentName: Production and Sandbox
+        environmentName: Default
         environmentType: hybrid
         defaultVersionURLs:
           wss: ws://localhost:9099/phoneverify/
@@ -10362,7 +10362,7 @@ components:
           ws: ws://localhost:9099/phoneverify/
       properties:
         environmentName:
-          example: Production and Sandbox
+          example: Default
           type: string
         environmentType:
           example: hybrid

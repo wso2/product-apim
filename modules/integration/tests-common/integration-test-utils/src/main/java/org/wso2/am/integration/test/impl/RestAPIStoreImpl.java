@@ -65,9 +65,9 @@ import org.wso2.am.integration.clients.store.api.v1.dto.PostRequestBodyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.PatchRequestBodyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TopicListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.WebhookSubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.WebhookSubscriptionListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
@@ -1871,7 +1871,7 @@ public class RestAPIStoreImpl {
 
     public String getSwaggerByID(String apiId, String tenantDomain) throws ApiException {
         ApiResponse<String> response =
-                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, "Production and Sandbox",
+                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, Constants.GATEWAY_ENVIRONMENT,
                         null, null, tenantDomain);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();

@@ -49,7 +49,7 @@ key_password =  "wso2carbon"
 #key_password =  "wso2carbon"
 
 [[apim.gateway.environment]]
-name = "Production and Sandbox"
+name = "Default"
 type = "hybrid"
 display_in_api_console = true
 description = "This is a hybrid gateway that handles both production and sandbox token traffic."

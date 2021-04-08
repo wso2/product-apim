@@ -1264,7 +1264,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     * @return gatewayEnvironments
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "[\"Production and Sandbox\"]", value = "List of gateway environments the API is available ")
+      @ApiModelProperty(example = "[\"Default\"]", value = "List of gateway environments the API is available ")
     
     public List<String> getGatewayEnvironments() {
         return gatewayEnvironments;

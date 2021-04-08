@@ -31,12 +31,12 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.*;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
@@ -211,7 +211,7 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.updateAPI(newVersionAPI);
         APIRevisionDTO apiRevisionDTO = restAPIPublisher.addAPIRevision(newAPIVersion);
         APIRevisionDeployUndeployRequest apiRevisionDeployUndeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionDeployUndeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployUndeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionDeployUndeployRequest.setVhost("localhost");
         apiRevisionDeployUndeployRequest.setDisplayOnDevportal(true);
         restAPIPublisher.deployAPIRevision(newAPIVersion, apiRevisionDTO.getId(), apiRevisionDeployUndeployRequest);

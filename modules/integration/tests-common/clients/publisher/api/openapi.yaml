@@ -15105,7 +15105,7 @@ components:
         destinationStatsEnabled: Disabled
         keyManagers: '{}'
         gatewayEnvironments:
-        - Production and Sandbox
+        - Default
         scopes:
         - shared: true
           scope:
@@ -15313,7 +15313,7 @@ components:
           description: |
             List of gateway environments the API is available
           example:
-          - Production and Sandbox
+          - Default
           items:
             type: string
           type: array
@@ -15892,7 +15892,7 @@ components:
         - oauth2
         name: PizzaShackAPIProduct
         gatewayEnvironments:
-        - Production and Sandbox
+        - Default
         additionalProperties:
           key: additionalProperties
         scopes: []
@@ -16007,7 +16007,7 @@ components:
           description: |
             List of gateway environments the API Product is available
           example:
-          - Production and Sandbox
+          - Default
           items:
             type: string
           type: array

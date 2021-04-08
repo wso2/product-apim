@@ -30,6 +30,7 @@ import org.xmlunit.builder.Input;
 import org.xmlunit.diff.DefaultNodeMatcher;
 import org.xmlunit.diff.Diff;
 import org.xmlunit.diff.ElementSelectors;
+import org.wso2.am.integration.test.Constants;
 
 import java.io.File;
 import java.util.Map;
@@ -107,12 +108,12 @@ public class TomlBasedConfigurationTestCase {
         outputFileContentMap = configParser.parse();
         String apim = outputFileContentMap.get("repository/conf/api-manager.xml");
 
-        //Check 'Production and Sandbox' environment
-        String envHybXpathPrefix = "//Environments/Environment[Name=\"Production and Sandbox\"]";
+        //Check 'Default' environment
+        String envHybXpathPrefix = "//Environments/Environment[Name=\""+ Constants.GATEWAY_ENVIRONMENT + "\"]";
         assertThat(apim).nodesByXPath(envHybXpathPrefix).haveAttribute("type", "hybrid");
         assertThat(apim).nodesByXPath(envHybXpathPrefix).haveAttribute("api-console", "true");
         assertThat(apim).nodesByXPath(envHybXpathPrefix).haveAttribute("isDefault", "true");
-        assertThat(apim).valueByXPath(envHybXpathPrefix + "/Name").isEqualTo("Production and Sandbox");
+        assertThat(apim).valueByXPath(envHybXpathPrefix + "/Name").isEqualTo(Constants.GATEWAY_ENVIRONMENT);
         assertThat(apim).valueByXPath(envHybXpathPrefix + "/Description")
                 .isEqualTo("This is a hybrid gateway " + "that handles both production and sandbox token traffic.");
         assertThat(apim).valueByXPath(envHybXpathPrefix + "/ServerURL").isEqualTo("https://localhost:9443/services/");

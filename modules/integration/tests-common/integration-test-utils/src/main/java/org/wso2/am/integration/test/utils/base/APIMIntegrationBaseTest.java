@@ -42,6 +42,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.RestAPIInternalImpl;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
@@ -806,7 +807,7 @@ public class APIMIntegrationBaseTest {
         // Deploy Revision to gateway
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionDeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
@@ -852,7 +853,7 @@ public class APIMIntegrationBaseTest {
         // Undeploy Revisions
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionUnDeployRequest.setName("Production and Sandbox");
+        apiRevisionUnDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionUnDeployRequest.setVhost(null);
         apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
         apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
@@ -928,7 +929,7 @@ public class APIMIntegrationBaseTest {
         // Deploy Revision to gateway
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionDeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
@@ -976,7 +977,7 @@ public class APIMIntegrationBaseTest {
         // Undeploy Revisions
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionUnDeployRequest.setName("Production and Sandbox");
+        apiRevisionUnDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionUnDeployRequest.setVhost(null);
         apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
         apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);

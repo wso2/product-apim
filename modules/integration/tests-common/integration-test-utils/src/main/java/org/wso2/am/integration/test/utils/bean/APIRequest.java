@@ -26,6 +26,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
 import java.net.URI;
@@ -71,7 +72,7 @@ public class APIRequest extends AbstractRequest {
     private String sandbox = "";
     private String provider = "admin";
     private JSONObject corsConfiguration;
-    private String environment = "Production and Sandbox";
+    private String environment = Constants.GATEWAY_ENVIRONMENT;
     private String apiTier = "";
     private String accessControl;
     private String accessControlRoles;
