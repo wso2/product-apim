@@ -41,9 +41,9 @@
 			<send>
 			    <endpoint>
                 #if( $transport == "https" )
-				<http uri-template="https://localhost:{uri.var.portnum}/$!{fwdApiContext}">
+				<http uri-template="https://localhost:{uri.var.portnum}/$!{fwdApiContext}" format="rest">
                 #else
-				<http uri-template="http://localhost:{uri.var.portnum}/$!{fwdApiContext}">
+				<http uri-template="http://localhost:{uri.var.portnum}/$!{fwdApiContext}" format="rest">
                 #end
 			            <timeout>
 			                <duration>60000</duration>
