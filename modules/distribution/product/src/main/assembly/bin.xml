@@ -538,6 +538,7 @@
                 <exclude>authenticationendpoint/includes/product-footer.jsp</exclude>
                 <exclude>authenticationendpoint/includes/product-title.jsp</exclude>
                 <exclude>authenticationendpoint/includes/privacy-policy-content.jsp</exclude>
+                <exclude>authenticationendpoint/login.jsp</exclude>
             </excludes>
         </fileSet>
 
@@ -566,6 +567,7 @@
             </outputDirectory>
             <includes>
                 <include>basicauth.jsp</include>
+                <include>login.jsp</include>
             </includes>
         </fileSet>
 
