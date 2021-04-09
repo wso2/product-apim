@@ -46,7 +46,7 @@ username= "$ref{super_admin.username}"
 password= "$ref{super_admin.password}"
 
 [[apim.gateway.environment]]
-name= "Production and Sandbox"
+name= "Default"
 type= "hybrid"
 display_in_api_console= true
 description= "This is a hybrid gateway that handles both production and sandbox token traffic."

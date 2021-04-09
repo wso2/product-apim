@@ -27,7 +27,6 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIEndpointURLsDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIURLsDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -35,7 +34,6 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.FrameworkConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -160,7 +158,7 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
         List<APIEndpointURLsDTO> endpointURLs = apiFromStore.getEndpointURLs();
         APIURLsDTO urls = endpointURLs.get(0).getUrLs();
 
-        assertEquals(endpointURLs.get(0).getEnvironmentName(), Constants.GATEWAY_ENVIRONMENTS, "Mismatch in " +
+        assertEquals(endpointURLs.get(0).getEnvironmentName(), Constants.GATEWAY_ENVIRONMENT, "Mismatch in " +
                 "environment name");
         assertEquals(endpointURLs.get(0).getEnvironmentType(), "hybrid", "Mismatch in environment type");
         assertTrue(urls.getHttp() != null, "HTTP URL is not available");

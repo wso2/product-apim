@@ -31,7 +31,7 @@
     "type": "basic",
     "password": "pass"
   },
-  "gatewayEnvironments": "Production and Sandbox",
+  "gatewayEnvironments": "Default",
   "sequences": [],
   "subscriptionAvailability": null,
   "subscriptionAvailableTenants": [],
