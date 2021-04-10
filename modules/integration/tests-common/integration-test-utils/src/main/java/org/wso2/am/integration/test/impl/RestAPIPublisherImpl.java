@@ -154,7 +154,8 @@ public class RestAPIPublisherImpl {
                                 "apim:client_certificates_view apim:client_certificates_add " +
                                 "apim:client_certificates_update apim:ep_certificates_view " +
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
-                                "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key",
+                                "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
+                                "apim:comment_write",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
