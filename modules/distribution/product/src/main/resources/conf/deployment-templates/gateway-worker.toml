@@ -47,6 +47,9 @@ signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
 
+[apim.sync_runtime_artifacts.gateway]
+gateway_labels =["Default"]
+
 # Traffic Manager configurations
 [apim.throttling]
 username= "$ref{super_admin.username}"
