@@ -73,6 +73,16 @@
                 <checksumPolicy>ignore</checksumPolicy>
             </releases>
         </repository>
+        <repository>
+            <id>wso2-nexus-staging</id>
+            <name>WSO2 staging Repository</name>
+            <url>https://maven.wso2.org/nexus/content/repositories/orgwso2carbon-4927/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -1280,7 +1290,7 @@
         <carbon.governance.version>4.8.19</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.6.1</carbon.kernel.version>
+        <carbon.kernel.version>4.6.2</carbon.kernel.version>
         <apimserver.version>4.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.3</ws.feature.version>
 
