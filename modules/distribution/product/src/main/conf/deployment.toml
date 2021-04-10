@@ -62,6 +62,9 @@ wss_endpoint = "wss://localhost:8099"
 http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
 
+[apim.sync_runtime_artifacts.gateway]
+gateway_labels =["Default"]
+
 #[apim.cache.gateway_token]
 #enable = true
 #expiry_time = "900s"
