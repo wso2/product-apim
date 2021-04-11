@@ -1529,6 +1529,23 @@ public class RestAPIStoreImpl {
         return subscriptionResponse.getData();
     }
 
+    public List<SubscriptionDTO> subscribeToMultipleAPIs(String apiID, String appID, String tier) throws ApiException {
+
+        SubscriptionDTO subscription = new SubscriptionDTO();
+        subscription.setApplicationId(appID);
+        subscription.setApiId(apiID);
+        subscription.setThrottlingPolicy(tier);
+
+        List<SubscriptionDTO> subscriptionListDTOList = new ArrayList<>();
+        subscriptionListDTOList.add(subscription);
+
+        ApiResponse<List<SubscriptionDTO>> multipleSubscriptionResponse =
+                subscriptionIndividualApi.subscriptionsMultiplePostWithHttpInfo(subscriptionListDTOList,
+                        this.tenantDomain);
+        Assert.assertEquals(HttpStatus.SC_CREATED, multipleSubscriptionResponse.getStatusCode());
+        return multipleSubscriptionResponse.getData();
+    }
+
 //    /**
 //     * Retrieve the API store page as anonymous user.
 //     *
