@@ -77,6 +77,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -1529,15 +1530,20 @@ public class RestAPIStoreImpl {
         return subscriptionResponse.getData();
     }
 
-    public List<SubscriptionDTO> subscribeToMultipleAPIs(String apiID, String appID, String tier) throws ApiException {
+    public List<SubscriptionDTO> subscribeToMultipleAPIs(List<String> apiIDList, String appID, List<String> tiers)
+            throws ApiException {
 
-        SubscriptionDTO subscription = new SubscriptionDTO();
-        subscription.setApplicationId(appID);
-        subscription.setApiId(apiID);
-        subscription.setThrottlingPolicy(tier);
-
+        Iterator apiIdIterator = apiIDList.iterator();
+        Iterator tierIterator = tiers.iterator();
         List<SubscriptionDTO> subscriptionListDTOList = new ArrayList<>();
-        subscriptionListDTOList.add(subscription);
+
+        while (apiIdIterator.hasNext() && tierIterator.hasNext()) {
+            SubscriptionDTO subscription = new SubscriptionDTO();
+            subscription.setApplicationId(appID);
+            subscription.setApiId(apiIdIterator.next().toString());
+            subscription.setThrottlingPolicy(tierIterator.next().toString());
+            subscriptionListDTOList.add(subscription);
+        }
 
         ApiResponse<List<SubscriptionDTO>> multipleSubscriptionResponse =
                 subscriptionIndividualApi.subscriptionsMultiplePostWithHttpInfo(subscriptionListDTOList,
