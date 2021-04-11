@@ -1,5 +1,6 @@
 {
   "server.base_path,": "${carbon.protocol}://${carbon.host}:${carbon.management.port}",
+  "server.node_ip":"127.0.0.1",
   "server.default_cache_timeout": "15",
   "default_cache_timeout.force_local_cache": false,
   "server.enableMTOM": false,

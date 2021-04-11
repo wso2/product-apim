@@ -3131,7 +3131,8 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
       security:
-      - OAuth2Security: []
+      - OAuth2Security:
+        - apim:comment_view
       summary: Retrieve API Comments
       tags:
       - Comments
@@ -3247,7 +3248,7 @@ paths:
             a supported format.
       security:
       - OAuth2Security:
-        - apim:api_publish
+        - apim:comment_write
       summary: Add an API Comment
       tags:
       - Comments
@@ -3322,7 +3323,8 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
-        - apim:api_publish
+        - apim:comment_write
+        - apim:admin
       summary: Delete an API Comment
       tags:
       - Comments
@@ -3472,7 +3474,8 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
       security:
-      - OAuth2Security: []
+      - OAuth2Security:
+        - apim:comment_view
       summary: Get Details of an API Comment
       tags:
       - Comments
@@ -3599,7 +3602,7 @@ paths:
             a supported format.
       security:
       - OAuth2Security:
-        - apim:api_publish
+        - apim:comment_write
       summary: Edit a comment
       tags:
       - Comments
@@ -3751,7 +3754,8 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
       security:
-      - OAuth2Security: []
+      - OAuth2Security:
+        - apim:comment_view
       summary: Get replies of a comment
       tags:
       - Comments
@@ -19961,6 +19965,9 @@ components:
             apim:api_product_import_export: Import and export API Products related
               operations
             apim:api_generate_key: Generate Internal Key
+            apim:admin: Manage all admin operations
+            apim:comment_view: Read permission to comments
+            apim:comment_write: Write permission to comments
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
 

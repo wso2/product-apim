@@ -1,6 +1,5 @@
 [server]
 #hostname = "gw.wso2.com"
-node_ip = "127.0.0.1"
 server_role = "gateway-worker"
 
 [user_store]
@@ -47,6 +46,9 @@ header = "X-JWT-Assertion"
 signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+
+[apim.sync_runtime_artifacts.gateway]
+gateway_labels =["Default"]
 
 # Traffic Manager configurations
 [apim.throttling]
