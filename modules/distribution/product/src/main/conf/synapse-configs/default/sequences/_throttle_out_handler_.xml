@@ -9,14 +9,29 @@
             </makefault>
         </then>
         <else>
-            <payloadFactory media-type="json">
-                <format>{"code":"$1","message":"$2","description":"$3"}</format>
-                <args>
-                    <arg expression="$ctx:ERROR_CODE"/>
-                    <arg expression="$ctx:ERROR_MESSAGE"/>
-                    <arg expression="$ctx:ERROR_DETAIL"/>
-                </args>
-            </payloadFactory>
+            <filter source="boolean(get-property('NEXT_ACCESS_UTC_TIME'))" regex="true">
+            <then>
+                <payloadFactory media-type="json">
+                    <format>{"code":"$1","message":"$2","description":"$3","nextAccessTime":"$4"}</format>
+                    <args>
+                        <arg expression="$ctx:ERROR_CODE"/>
+                        <arg expression="$ctx:ERROR_MESSAGE"/>
+                        <arg expression="$ctx:ERROR_DETAIL"/>
+                        <arg expression="$ctx:NEXT_ACCESS_UTC_TIME"/>
+                    </args>
+                </payloadFactory>
+            </then>
+                <else>
+                    <payloadFactory media-type="json">
+                        <format>{"code":"$1","message":"$2","description":"$3"}</format>
+                        <args>
+                            <arg expression="$ctx:ERROR_CODE"/>
+                            <arg expression="$ctx:ERROR_MESSAGE"/>
+                            <arg expression="$ctx:ERROR_DETAIL"/>
+                        </args>
+                    </payloadFactory>
+                </else>
+            </filter>
             <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT|PATCH)).*$">
                 <property name="messageType" value="application/json" scope="axis2"/>
             </filter>

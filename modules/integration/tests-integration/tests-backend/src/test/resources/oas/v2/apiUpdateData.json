@@ -24,7 +24,7 @@
   "visibleRoles": [],
   "visibleTenants": [],
   "endpointSecurity": null,
-  "gatewayEnvironments": ["Production and Sandbox"],
+  "gatewayEnvironments": ["Default"],
   "mediationPolicies": [],
   "subscriptionAvailability": "ALL_TENANTS",
   "subscriptionAvailableTenants": [],

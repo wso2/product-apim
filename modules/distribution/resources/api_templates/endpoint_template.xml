@@ -98,6 +98,7 @@
         ##macro for websocket endpoints
         #macro ( websocket_endpoint $name )
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="${name}_${websocketResourceKey}">
+<property name="OUT_ONLY" value="true"/>
 <http uri-template="$util.escapeXml($endpointUrl)">
 #timeout( $ep.get('config') )
 </http>

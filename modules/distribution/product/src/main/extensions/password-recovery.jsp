@@ -29,6 +29,7 @@
 <%@ page import="org.wso2.carbon.identity.core.util.IdentityTenantUtil" %>
 <%@ page import="java.io.File" %>
 <%@ page import="java.util.*" %>
+
 <jsp:directive.include file="includes/localize.jsp"/>
 <jsp:directive.include file="tenant-resolve.jsp"/>
 
@@ -36,14 +37,27 @@
     boolean error = IdentityManagementEndpointUtil.getBooleanValue(request.getAttribute("error"));
     String errorMsg = IdentityManagementEndpointUtil.getStringValue(request.getAttribute("errorMsg"));
     String username = request.getParameter("username");
-    if (StringUtils.isNotEmpty(username)) {
-        User user = IdentityManagementServiceUtil.getInstance().getUser(username);
-        tenantDomain = user.getTenantDomain();
+    boolean isSaaSApp = Boolean.parseBoolean(request.getParameter("isSaaSApp"));
+
+    if (StringUtils.isBlank(tenantDomain)) {
+        tenantDomain = IdentityManagementEndpointConstants.SUPER_TENANT;
     }
+    
+    // The user could have already been resolved and sent here.
+    // Trying to resolve tenant domain from user to handle saas scenario.
+    if (isSaaSApp &&
+            StringUtils.isNotBlank(username) &&
+            !IdentityTenantUtil.isTenantQualifiedUrlsEnabled() &&
+            StringUtils.equals(tenantDomain, IdentityManagementEndpointConstants.SUPER_TENANT)) {
+        
+        tenantDomain = IdentityManagementServiceUtil.getInstance().getUser(username).getTenantDomain();
+    }
+
     ReCaptchaApi reCaptchaApi = new ReCaptchaApi();
     try {
         ReCaptchaProperties reCaptchaProperties = reCaptchaApi.getReCaptcha(tenantDomain, true, "ReCaptcha",
                 "password-recovery");
+
         if (reCaptchaProperties.getReCaptchaEnabled()) {
             Map<String, List<String>> headers = new HashMap<>();
             headers.put("reCaptcha", Arrays.asList(String.valueOf(true)));
@@ -57,12 +71,14 @@
         request.getRequestDispatcher("error.jsp").forward(request, response);
         return;
     }
+
     boolean isEmailNotificationEnabled = false;
+
     isEmailNotificationEnabled = Boolean.parseBoolean(application.getInitParameter(
             IdentityManagementEndpointConstants.ConfigConstants.ENABLE_EMAIL_NOTIFICATION));
-%>
-<%
-    boolean reCaptchaEnabled = true;
+
+    boolean reCaptchaEnabled = false;
+
     if (request.getAttribute("reCaptcha") != null &&
             "TRUE".equalsIgnoreCase((String) request.getAttribute("reCaptcha"))) {
         reCaptchaEnabled = true;
@@ -103,18 +119,16 @@
             <% } %>
             <div class="ui segment">
                 <!-- page content -->
-                <h2>
+                <h3 class="ui header">
                     <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.password")%>
-                </h2>
+                </h3>
                 <% if (error) { %>
                 <div class="ui visible negative message" id="server-error-msg">
                     <%=IdentityManagementEndpointUtil.i18nBase64(recoveryResourceBundle, errorMsg)%>
                 </div>
                 <% } %>
                 <div class="ui negative message" id="error-msg" hidden="hidden"></div>
-                <p>
-                    <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Enter.detail.to.recover.pwd")%>
-                </p>
+
                 <div class="ui divider hidden"></div>
                 <div class="segment-form">
                     <form class="ui large form" method="post" action="verify.do" id="recoverDetailsForm">
@@ -141,6 +155,7 @@
                             <%
                                 }
                             %>
+                            <input id="isSaaSApp" name="isSaaSApp" value="<%= isSaaSApp %>" type="hidden">
                         </div>
 
                         <%
@@ -168,6 +183,18 @@
                         %>
                         <div>
                             <input type="hidden" name="callback" value="<%=Encode.forHtmlAttribute(callback) %>"/>
+                        </div>
+                        <%
+                            }
+                        %>
+
+                        <%
+                            String sessionDataKey = request.getParameter("sessionDataKey");
+                            if (sessionDataKey != null) {
+                        %>
+                        <div>
+                            <input type="hidden" name="sessionDataKey"
+                                   value="<%=Encode.forHtmlAttribute(sessionDataKey) %>"/>
                         </div>
                         <%
                             }
@@ -224,51 +251,51 @@
     <% } %>
 
     <script type="text/javascript">
-            function goBack() {
-                window.history.back();
-            }
+        function goBack() {
+            window.history.back();
+        }
 
-            $(document).ready(function () {
+        $(document).ready(function () {
 
-                $("#recoverDetailsForm").submit(function (e) {
-                    var errorMessage = $("#error-msg");
-                    errorMessage.hide();
+            $("#recoverDetailsForm").submit(function (e) {
+                var errorMessage = $("#error-msg");
+                errorMessage.hide();
 
-                    var userName = document.getElementById("username");
-                    var usernameUserInput = document.getElementById("usernameUserInput");
-                    if (usernameUserInput) {
-                        userName.value = usernameUserInput.value.trim();
-                    }
-                    // Validate User Name
-                    var firstName = $("#username").val();
+                var userName = document.getElementById("username");
+                var usernameUserInput = document.getElementById("usernameUserInput");
+                if (usernameUserInput) {
+                    userName.value = usernameUserInput.value.trim();
+                }
+                // Validate User Name
+                var firstName = $("#username").val();
 
-                    if (firstName == '') {
-                        errorMessage.text("Please fill the first name.");
-                        errorMessage.show();
-                        $("html, body").animate({scrollTop: errorMessage.offset().top}, 'slow');
+                if (firstName == '') {
+                    errorMessage.text("Please fill the first name.");
+                    errorMessage.show();
+                    $("html, body").animate({scrollTop: errorMessage.offset().top}, 'slow');
 
-                        return false;
-                    }
+                    return false;
+                }
 
-                    // Validate reCaptcha
-                    <% if (reCaptchaEnabled) { %>
+                // Validate reCaptcha
+                <% if (reCaptchaEnabled) { %>
 
-                    var reCaptchaResponse = $("[name='g-recaptcha-response']")[0].value;
+                var reCaptchaResponse = $("[name='g-recaptcha-response']")[0].value;
 
-                    if (reCaptchaResponse.trim() == '') {
-                        errorMessage.text("Please select reCaptcha.");
-                        errorMessage.show();
-                        $("html, body").animate({scrollTop: errorMessage.offset().top}, 'slow');
+                if (reCaptchaResponse.trim() == '') {
+                    errorMessage.text("Please select reCaptcha.");
+                    errorMessage.show();
+                    $("html, body").animate({scrollTop: errorMessage.offset().top}, 'slow');
 
-                        return false;
-                    }
+                    return false;
+                }
 
-                    <% } %>
+                <% } %>
 
-                    return true;
-                });
+                return true;
             });
+        });
 
-        </script>
+    </script>
 </body>
 </html>

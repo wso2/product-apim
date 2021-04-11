@@ -40,7 +40,7 @@ public class Constants {
     public static final String PROVIDER_ADMIN = "admin";
     public static final String PROTOCOL_HTTP = "http";
     public static final String PROTOCOL_HTTPS = "https";
-    public static final String GATEWAY_ENVIRONMENTS = "Production and Sandbox";
+    public static final String GATEWAY_ENVIRONMENT = "Default";
     public static final String APPLICATION_JSON = "application/json";
     public static final String API_DEFINITION = "api-definition-";
     public static final String ENDPOINT_DEFINITION = "endpoint-config-";
@@ -56,4 +56,8 @@ public class Constants {
     public static final String XML = ".xml";
     public static final String CARBON_HOME = "carbon.home";
     public static final String CARBON_HOME_VALUE = "../../";
+
+    public static final String BANDWIDTH_TYPE = "bandwidthVolume";
+    public static final String REQUEST_COUNT_TYPE = "requestCount";
+    public static final String EVENT_COUNT_TYPE = "eventCount";
 }

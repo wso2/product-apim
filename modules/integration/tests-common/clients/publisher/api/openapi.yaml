@@ -3131,7 +3131,8 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
       security:
-      - OAuth2Security: []
+      - OAuth2Security:
+        - apim:comment_view
       summary: Retrieve API Comments
       tags:
       - Comments
@@ -3247,7 +3248,7 @@ paths:
             a supported format.
       security:
       - OAuth2Security:
-        - apim:api_publish
+        - apim:comment_write
       summary: Add an API Comment
       tags:
       - Comments
@@ -3322,7 +3323,8 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
-        - apim:api_publish
+        - apim:comment_write
+        - apim:admin
       summary: Delete an API Comment
       tags:
       - Comments
@@ -3472,7 +3474,8 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
       security:
-      - OAuth2Security: []
+      - OAuth2Security:
+        - apim:comment_view
       summary: Get Details of an API Comment
       tags:
       - Comments
@@ -3599,7 +3602,7 @@ paths:
             a supported format.
       security:
       - OAuth2Security:
-        - apim:api_publish
+        - apim:comment_write
       summary: Edit a comment
       tags:
       - Comments
@@ -3751,7 +3754,8 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
       security:
-      - OAuth2Security: []
+      - OAuth2Security:
+        - apim:comment_view
       summary: Get replies of a comment
       tags:
       - Comments
@@ -8325,6 +8329,94 @@ paths:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/api/Platinum"'
+      x-accepts: application/json
+  /throttling-policies/streaming/subscription:
+    get:
+      description: |
+        This operation can be used to list the available streaming subscription policies
+      operationId: getSubscriptionThrottlingPolicies
+      parameters:
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resource.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPolicyList'
+          description: |
+            OK.
+            List of subscription policies returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+      summary: Get streaming throttling policies
+      tags:
+      - Throttling Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/subscription?tierQuotaType=RequestCountLimit"'
       x-accepts: application/json
   /mediation-policies:
     get:
@@ -14455,6 +14547,15 @@ components:
       schema:
         type: string
       style: simple
+    tierQuotaType:
+      description: Filter the subscription base on tier quota type
+      explode: true
+      in: query
+      name: tierQuotaType
+      required: false
+      schema:
+        type: string
+      style: form
   requestBodies:
     threatProtectionPolicy:
       content:
@@ -15008,7 +15109,7 @@ components:
         destinationStatsEnabled: Disabled
         keyManagers: '{}'
         gatewayEnvironments:
-        - Production and Sandbox
+        - Default
         scopes:
         - shared: true
           scope:
@@ -15216,7 +15317,7 @@ components:
           description: |
             List of gateway environments the API is available
           example:
-          - Production and Sandbox
+          - Default
           items:
             type: string
           type: array
@@ -15795,7 +15896,7 @@ components:
         - oauth2
         name: PizzaShackAPIProduct
         gatewayEnvironments:
-        - Production and Sandbox
+        - Default
         additionalProperties:
           key: additionalProperties
         scopes: []
@@ -15910,7 +16011,7 @@ components:
           description: |
             List of gateway environments the API Product is available
           example:
-          - Production and Sandbox
+          - Default
           items:
             type: string
           type: array
@@ -16768,6 +16869,145 @@ components:
       - subscriptionStatus
       - throttlingPolicy
       title: Subscription
+      type: object
+    ThrottleLimitBase:
+      properties:
+        timeUnit:
+          description: Unit of the time. Allowed values are "sec", "min", "hour",
+            "day"
+          example: min
+          type: string
+        unitTime:
+          description: Time limit that the throttling limit applies.
+          example: 10
+          type: integer
+      required:
+      - timeUnit
+      - unitTime
+      title: Throttle Limit Base
+      type: object
+    ThrottleLimit:
+      properties:
+        type:
+          description: |
+            Type of the throttling limit. Allowed values are "REQUESTCOUNTLIMIT" and "BANDWIDTHLIMIT".
+            Please see schemas of "RequestCountLimit" and "BandwidthLimit" throttling limit types in
+            Definitions section.
+          enum:
+          - REQUESTCOUNTLIMIT
+          - BANDWIDTHLIMIT
+          - EVENTCOUNTLIMIT
+          example: REQUESTCOUNTLIMIT
+          type: string
+        requestCount:
+          $ref: '#/components/schemas/RequestCountLimit'
+        bandwidth:
+          $ref: '#/components/schemas/BandwidthLimit'
+        eventCount:
+          $ref: '#/components/schemas/EventCountLimit'
+      required:
+      - type
+      title: Throttle Limit
+      type: object
+    MonetizationInfo:
+      properties:
+        monetizationPlan:
+          description: Flag to indicate the monetization plan
+          enum:
+          - FIXEDRATE
+          - DYNAMICRATE
+          example: FixedRate
+          type: string
+        properties:
+          additionalProperties:
+            type: string
+          description: Map of custom properties related to each monetization plan
+          type: object
+      required:
+      - monetizationPlan
+      - properties
+      title: API monetization details object
+      type: object
+    BandwidthLimit:
+      allOf:
+      - $ref: '#/components/schemas/ThrottleLimitBase'
+      - $ref: '#/components/schemas/BandwidthLimit_allOf'
+      title: Bandwidth Limit object
+    RequestCountLimit:
+      allOf:
+      - $ref: '#/components/schemas/ThrottleLimitBase'
+      - $ref: '#/components/schemas/RequestCountLimit_allOf'
+      title: Request Count Limit object
+    EventCountLimit:
+      allOf:
+      - $ref: '#/components/schemas/ThrottleLimitBase'
+      - $ref: '#/components/schemas/EventCountLimit_allOf'
+      title: Event Count Limit object
+    SubscriptionPolicyList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 1
+        list:
+        - null
+        - null
+      properties:
+        count:
+          description: |
+            Number of Tiers returned.
+          example: 1
+          type: integer
+        list:
+          description: |
+            Array of SubscriptionPolicies
+          items:
+            $ref: '#/components/schemas/SubscriptionPolicy'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Subscription policy list
+      type: object
+    SubscriptionPolicy:
+      allOf:
+      - $ref: '#/components/schemas/SubscriptionPolicy_allOf'
+      title: Subscription Throttling Policy
+    CustomAttribute:
+      properties:
+        name:
+          description: Name of the custom attribute
+          example: customAttr1
+          type: string
+        value:
+          description: Value of the custom attribute
+          example: value1
+          type: string
+      required:
+      - name
+      - value
+      title: Name-Value pair
+      type: object
+    SubscriptionThrottlePolicyPermission:
+      properties:
+        permissionType:
+          enum:
+          - ALLOW
+          - DENY
+          example: deny
+          type: string
+        roles:
+          example:
+          - Internal/everyone
+          items:
+            type: string
+          type: array
+      required:
+      - permissionType
+      - roles
+      title: SubscriptionThrottlePolicyPermission
       type: object
     APIMonetizationUsage:
       example:
@@ -19277,6 +19517,112 @@ components:
         outdated:
           example: false
           type: boolean
+    BandwidthLimit_allOf:
+      properties:
+        dataAmount:
+          description: Amount of data allowed to be transfered
+          example: 1000
+          format: int64
+          type: integer
+        dataUnit:
+          description: Unit of data allowed to be transfered. Allowed values are "KB",
+            "MB" and "GB"
+          example: KB
+          type: string
+      required:
+      - dataAmount
+      - dataUnit
+    RequestCountLimit_allOf:
+      properties:
+        requestCount:
+          description: Maximum number of requests allowed
+          example: 30
+          format: int64
+          type: integer
+      required:
+      - requestCount
+    EventCountLimit_allOf:
+      properties:
+        eventCount:
+          description: Maximum number of events allowed
+          example: 3000
+          format: int64
+          type: integer
+      required:
+      - eventCount
+    SubscriptionPolicy_allOf:
+      properties:
+        policyId:
+          description: Id of policy
+          example: 1
+          type: int
+        uuid:
+          description: policy uuid
+          example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+          type: string
+        policyName:
+          description: Name of policy
+          example: 30PerMin
+          maxLength: 60
+          minLength: 1
+          type: string
+        displayName:
+          description: Display name of the policy
+          example: 30PerMin
+          maxLength: 512
+          type: string
+        description:
+          description: Description of the policy
+          example: Allows 30 request per minute
+          maxLength: 1024
+          type: string
+        isDeployed:
+          default: false
+          description: Indicates whether the policy is deployed successfully or not.
+          type: boolean
+        tenantId:
+          description: Throttling policy tenant domain id
+          example: -1234
+          type: int
+        tenantDomain:
+          description: Throttling policy tenant domain
+          example: carbon.super
+          type: string
+        defaultLimit:
+          $ref: '#/components/schemas/ThrottleLimit'
+        rateLimitCount:
+          description: Burst control request count
+          example: 10
+          type: integer
+        rateLimitTimeUnit:
+          description: Burst control time unit
+          example: min
+          type: string
+        subscriberCount:
+          description: Number of subscriptions allowed
+          example: 10
+          type: integer
+        customAttributes:
+          description: |
+            Custom attributes added to the Subscription Throttling Policy
+          example: []
+          items:
+            $ref: '#/components/schemas/CustomAttribute'
+          type: array
+        stopOnQuotaReach:
+          default: false
+          description: |
+            This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through.
+          type: boolean
+        billingPlan:
+          description: |
+            define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
+          example: FREE
+          type: string
+        permissions:
+          $ref: '#/components/schemas/SubscriptionThrottlePolicyPermission'
+      required:
+      - defaultLimit
     Endpoint_endpointConfig:
       properties:
         endpointType:
@@ -19619,6 +19965,9 @@ components:
             apim:api_product_import_export: Import and export API Products related
               operations
             apim:api_generate_key: Generate Internal Key
+            apim:admin: Manage all admin operations
+            apim:comment_view: Read permission to comments
+            apim:comment_write: Write permission to comments
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
 

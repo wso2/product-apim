@@ -2272,6 +2272,85 @@ paths:
       x-examples:
         $ref: docs/examples/apis/comment_id-comments.yaml#/get
       x-accepts: application/json
+  /apis/{apiId}/topics:
+    get:
+      description: |
+        This operation will provide a list of topics available for a given Async API, based on the provided API ID.
+      operationId: getAllTopicsOfAPI
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicList'
+          description: |
+            OK.
+            Topic list returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security: []
+      summary: |
+        Get a list of available topics for a given async API
+      tags:
+      - Topics
+      x-code-samples:
+      - lang: Curl
+        source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://localhost:9443/api/am/store/v1/topics/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"
+      x-accepts: application/json
   /apis/{apiId}/subscription-policies:
     get:
       description: |
@@ -5771,6 +5850,95 @@ paths:
         source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/sdk-gen/languages"
       x-accepts: application/json
+  /webhooks/subscriptions:
+    get:
+      description: |
+        This operation will provide a list of web hook topic subscriptions for a given application. If the api id is provided
+        results will be filtered by the api Id.
+      operationId: getAllWebhooksOfAPI
+      parameters:
+      - description: |
+          **Application Identifier** consisting of the UUID of the Application.
+        explode: true
+        in: query
+        name: applicationId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: true
+        in: query
+        name: apiId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookSubscriptionList'
+          description: |
+            OK.
+            Topic list returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security: []
+      summary: |
+        Get available web hook subscriptions for a given application.
+      tags:
+      - Webhooks
+      x-code-samples:
+      - lang: Curl
+        source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://localhost:9443/api/am/store/v1/webhooks/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"
+      x-accepts: application/json
   /settings:
     get:
       description: |
@@ -7284,7 +7452,7 @@ components:
             http: http://localhost:8280/phoneverify/1.0.0
             https: https://localhost:8243/phoneverify/1.0.0
             ws: ws://localhost:9099/phoneverify/1.0.0
-          environmentName: Production and Sandbox
+          environmentName: Default
           environmentType: hybrid
           defaultVersionURLs:
             wss: ws://localhost:9099/phoneverify/
@@ -7296,7 +7464,7 @@ components:
             http: http://localhost:8280/phoneverify/1.0.0
             https: https://localhost:8243/phoneverify/1.0.0
             ws: ws://localhost:9099/phoneverify/1.0.0
-          environmentName: Production and Sandbox
+          environmentName: Default
           environmentType: hybrid
           defaultVersionURLs:
             wss: ws://localhost:9099/phoneverify/
@@ -8084,6 +8252,118 @@ components:
         pagination:
           $ref: '#/components/schemas/Pagination'
       title: Subscription List
+      type: object
+    TopicList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 1
+        list:
+        - name: orderBooks
+          type: publisher
+          apiId: faae5fcc-cbae-40c4-bf43-89931630d313
+        - name: orderBooks
+          type: publisher
+          apiId: faae5fcc-cbae-40c4-bf43-89931630d313
+      properties:
+        count:
+          description: |
+            Number of Topics returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/Topic'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Topic List
+      type: object
+    Topic:
+      example:
+        name: orderBooks
+        type: publisher
+        apiId: faae5fcc-cbae-40c4-bf43-89931630d313
+      properties:
+        apiId:
+          example: faae5fcc-cbae-40c4-bf43-89931630d313
+          type: string
+        name:
+          example: orderBooks
+          type: string
+        type:
+          example: publisher
+          type: string
+      title: Topic
+      type: object
+    WebhookSubscriptionList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 1
+        list:
+        - callBackUrl: www.orderbooksite.com
+          deliveryTime: faae5fcc-cbae-40c4-bf43-89931630d313
+          appId: faae5fcc-cbae-40c4-bf43-89931630d313
+          topic: orderBooks
+          apiId: faae5fcc-cbae-40c4-bf43-89931630d313
+          deliveryStatus: 1
+        - callBackUrl: www.orderbooksite.com
+          deliveryTime: faae5fcc-cbae-40c4-bf43-89931630d313
+          appId: faae5fcc-cbae-40c4-bf43-89931630d313
+          topic: orderBooks
+          apiId: faae5fcc-cbae-40c4-bf43-89931630d313
+          deliveryStatus: 1
+      properties:
+        count:
+          description: |
+            Number of webhook subscriptions returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/WebhookSubscription'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Subscribed Webhook List
+      type: object
+    WebhookSubscription:
+      example:
+        callBackUrl: www.orderbooksite.com
+        deliveryTime: faae5fcc-cbae-40c4-bf43-89931630d313
+        appId: faae5fcc-cbae-40c4-bf43-89931630d313
+        topic: orderBooks
+        apiId: faae5fcc-cbae-40c4-bf43-89931630d313
+        deliveryStatus: 1
+      properties:
+        apiId:
+          example: faae5fcc-cbae-40c4-bf43-89931630d313
+          type: string
+        appId:
+          example: faae5fcc-cbae-40c4-bf43-89931630d313
+          type: string
+        topic:
+          example: orderBooks
+          type: string
+        callBackUrl:
+          example: www.orderbooksite.com
+          type: string
+        deliveryTime:
+          example: faae5fcc-cbae-40c4-bf43-89931630d313
+          type: string
+        deliveryStatus:
+          example: 1
+          type: integer
+      title: Webhook Subscription
       type: object
     APIBusinessInformation:
       example:
@@ -10073,7 +10353,7 @@ components:
           http: http://localhost:8280/phoneverify/1.0.0
           https: https://localhost:8243/phoneverify/1.0.0
           ws: ws://localhost:9099/phoneverify/1.0.0
-        environmentName: Production and Sandbox
+        environmentName: Default
         environmentType: hybrid
         defaultVersionURLs:
           wss: ws://localhost:9099/phoneverify/
@@ -10082,7 +10362,7 @@ components:
           ws: ws://localhost:9099/phoneverify/
       properties:
         environmentName:
-          example: Production and Sandbox
+          example: Default
           type: string
         environmentType:
           example: hybrid

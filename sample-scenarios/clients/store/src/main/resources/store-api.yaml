@@ -1937,7 +1937,7 @@ definitions:
           properties:
             environmentName:
               type: string
-              example: Production and Sandbox
+              example: Default
             environmentType:
               type: string
               example: hybrid

@@ -52,26 +52,21 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
 import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.xml.StringUtils;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -320,6 +315,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
         apidto.setApiThrottlingPolicy("WebSocketTestThrottlingPolicy");
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto);
+        createAPIRevisionAndDeployUsingRest(updatedAPI.getId(), restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), "WebSocketTestThrottlingPolicy");
         //Get an Access Token from the user who is logged into the API Store.
         URL tokenEndpointURL = new URL(getKeyManagerURLHttps() + "/oauth2/token");

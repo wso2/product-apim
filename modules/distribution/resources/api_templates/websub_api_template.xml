@@ -100,7 +100,7 @@
                 </target>
                 <target>
                     <sequence onError="webhooksFaultSequence">
-                        <filter xpath="$url:hub.mode">
+                        <filter source="fn:lower-case($url:hub.mode)" regex="subscribe">
                             <then>
                                 <property name="SUBSCRIBER_CALLBACK" expression="$url:hub.callback"/>
                                 <property name="SUBSCRIBER_TOPIC" expression="$url:hub.topic"/>

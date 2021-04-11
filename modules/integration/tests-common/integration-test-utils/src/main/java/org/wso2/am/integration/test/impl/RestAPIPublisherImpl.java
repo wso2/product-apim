@@ -79,6 +79,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
@@ -152,7 +154,8 @@ public class RestAPIPublisherImpl {
                                 "apim:client_certificates_view apim:client_certificates_add " +
                                 "apim:client_certificates_update apim:ep_certificates_view " +
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
-                                "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key",
+                                "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
+                                "apim:comment_write",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -977,6 +980,15 @@ public class RestAPIPublisherImpl {
         }
         return null;
 
+    }
+
+    public SubscriptionPolicyListDTO getSubscriptionPolicies(String tierQuotaTypes) throws ApiException {
+        SubscriptionPolicyListDTO subscriptionPolicyList
+                = throttlingPoliciesApi.getSubscriptionThrottlingPolicies(null, null, null);
+        if (subscriptionPolicyList.getCount() > 0){
+            return subscriptionPolicyList;
+        }
+        return null;
     }
 
     /**

@@ -35,13 +35,16 @@
 
         ## IF endpoint secured
         #if($endpointsecurity.enabled)
+        #if($endpointsecurity.type == "basic" || $endpointsecurity.type == "BASIC")
         #if($isSecureVaultEnabled)
 <property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$endpointsecurity.alias')"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$endpointsecurity.username',':',get-property('password'))"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
         #else
+<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', '$endpointsecurity.base64EncodedPassword')" scope="transport"/>
+        #end
+        #else
         #if($endpointsecurity.type == "digest" || $endpointsecurity.type == "DIGEST")
-
 <property xmlns="http://ws.apache.org/ns/synapse" name="UNAMEPASSWORD" value="$util.escapeXml($endpointsecurity.base64EncodedPassword)" type="STRING"/>
 <property name="BACKEND_URL" value="$util.escapeXml($endpoints.get("url"))"/>
 <property name="POSTFIX" expression="get-property('axis2', 'REST_URL_POSTFIX')"/>
@@ -70,24 +73,28 @@
 <source type="property" property="MessageBody" clone="true"/>
 <target type="body"/>
 </enrich>
-
         #else
         #if($endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH")
-
-<property xmlns="http://ws.apache.org/ns/synapse" name="uniqueIdentifier" value="$util.escapeXml($endpointsecurity.uniqueIdentifier)" type="STRING"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="tokenUrl" value="$util.escapeXml($endpointsecurity.tokenUrl)" type="STRING"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="clientId" value="$util.escapeXml($endpointsecurity.clientId)" type="STRING"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="clientSecret" value="$util.escapeXml($endpointsecurity.clientSecret)" type="STRING"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="grantType" value="$util.escapeXml($endpointsecurity.grantType)" type="STRING"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="customParameters" value="$util.escapeXml($endpointsecurity.customParameters)" type="STRING"/>
-
-        #if($endpointsecurity.grantType == "password" || $endpointsecurity.grantType == "PASSWORD")
-<property xmlns="http://ws.apache.org/ns/synapse" name="usernamePassword" value="$util.escapeXml($endpointsecurity.base64EncodedPassword)" type="STRING"/>
-        #end
-<class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthMediator" />
-
-        #else
-<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', '$endpointsecurity.base64EncodedPassword')" scope="transport"/>
+<class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthMediator">
+<property name="uniqueIdentifier" value="$util.escapeXml($endpointsecurity.uniqueIdentifier)" type="STRING"/>
+<property name="tokenEndpointUrl" value="$util.escapeXml($endpointsecurity.tokenUrl)" type="STRING"/>
+<property name="clientId" value="$util.escapeXml($endpointsecurity.clientId)" type="STRING"/>
+<property name="grantType" value="$util.escapeXml($endpointsecurity.grantType)" type="STRING"/>
+<property name="customParameters" value="$util.escapeXml($endpointsecurity.customParameters)" type="STRING"/>
+#if($isSecureVaultEnabled)
+<property name="clientSecret" expression="wso2:vault-lookup('$endpointsecurity.clientSecretAlias')" type="STRING"/>
+#else
+<property name="clientSecret" value="$util.escapeXml($endpointsecurity.clientSecret)" type="STRING"/>
+#end
+#if($endpointsecurity.grantType == "password" || $endpointsecurity.grantType == "PASSWORD")
+<property name="username" value="$util.escapeXml($endpointsecurity.username)" type="STRING"/>
+#if($isSecureVaultEnabled)
+<property name="password" expression="wso2:vault-lookup('$endpointsecurity.passwordAlias')" type="STRING"/>
+#else
+<property name="password" value="$util.escapeXml($endpointsecurity.password)" type="STRING"/>
+#end
+#end
+</class>
         #end
         #end
         #end

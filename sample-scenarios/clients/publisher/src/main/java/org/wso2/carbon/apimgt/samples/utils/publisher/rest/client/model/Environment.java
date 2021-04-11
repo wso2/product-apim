@@ -48,7 +48,7 @@ public class Environment {
    * Get name
    * @return name
   **/
-  @ApiModelProperty(example = "Production and Sandbox", required = true, value = "")
+  @ApiModelProperty(example = "Default", required = true, value = "")
   public String getName() {
     return name;
   }

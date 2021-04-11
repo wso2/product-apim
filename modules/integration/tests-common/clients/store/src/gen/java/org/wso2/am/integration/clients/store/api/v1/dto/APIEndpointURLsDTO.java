@@ -59,7 +59,7 @@ public class APIEndpointURLsDTO {
     * @return environmentName
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "Production and Sandbox", value = "")
+      @ApiModelProperty(example = "Default", value = "")
     
     public String getEnvironmentName() {
         return environmentName;
