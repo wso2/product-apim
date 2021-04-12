@@ -398,6 +398,8 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
             }
         }
 
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
+
         RestAPIPublisherImpl restAPIPublisherNew = new RestAPIPublisherImpl(creatorUsername, creatorPassword,
                 storeContext.getContextTenant().getDomain(), storeURLHttps);
 
