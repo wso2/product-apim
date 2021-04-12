@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.streamingapis.websub.client;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.am.integration.tests.streamingapis.StreamingApiTestUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -38,7 +39,6 @@ import javax.crypto.spec.SecretKeySpec;
  * Represents the test webhook sender.
  */
 public class WebhookSender {
-    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     private final Log log = LogFactory.getLog(WebhookSender.class);
     private String payloadUrl;
     private String secretKey;
@@ -74,22 +74,7 @@ public class WebhookSender {
     }
 
     private String generateXHubSignature(String body) throws InvalidKeyException, NoSuchAlgorithmException {
-        return "sha1=" + calculateRFC2104HMAC(body, secretKey);
+        return "sha1=" + StreamingApiTestUtils.calculateRFC2104HMAC(body, secretKey);
     }
 
-    private static String calculateRFC2104HMAC(String data, String key) throws NoSuchAlgorithmException,
-            InvalidKeyException {
-        SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), HMAC_SHA1_ALGORITHM);
-        Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
-        mac.init(signingKey);
-        return toHexString(mac.doFinal(data.getBytes()));
-    }
-
-    private static String toHexString(byte[] bytes) {
-        Formatter formatter = new Formatter();
-        for (byte b : bytes) {
-            formatter.format("%02x", b);
-        }
-        return formatter.toString();
-    }
 }

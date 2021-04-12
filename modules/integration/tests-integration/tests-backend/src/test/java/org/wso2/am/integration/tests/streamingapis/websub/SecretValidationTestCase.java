@@ -15,7 +15,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.am.integration.tests.streamingapis.websub;
 
 import org.apache.commons.logging.Log;
@@ -73,8 +72,7 @@ import java.util.concurrent.Executors;
 import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
-public class WebSubAPITestCase extends APIMIntegrationBaseTest {
-
+public class SecretValidationTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(WebSubAPITestCase.class);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final int TOPIC_PORT = 9521;
@@ -82,8 +80,8 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
     private final String SUBSCRIBE = "subscribe";
     private final String UNSUBSCRIBE = "unsubscribe";
 
-    private String apiName = "WebSubAPI";
-    private String applicationName = "WebSubApplication";
+    private String apiName = "WebSubSecretValidationAPI";
+    private String applicationName = "WebSubSecretValidationApplication";
     private String apiContext = "websub";
     private String apiVersion = "1.0.0";
 
@@ -104,13 +102,14 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
     private String apiId;
     private String appId;
     private String topicSecret;
+    private String clientTopicSecret;
     private String apiEndpoint;
     private WebhookSender webhookSender;
     private CallbackServerServlet callbackServerServlet;
     private Server callbackServer;
 
     @Factory(dataProvider = "userModeDataProvider")
-    public WebSubAPITestCase(TestUserMode userMode) {
+    public SecretValidationTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
@@ -162,6 +161,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         APIDTO apiDto = restAPIPublisher.getAPIByID(apiId);
         topicSecret = UUID.randomUUID().toString();
+        clientTopicSecret = UUID.randomUUID().toString();
         WebsubSubscriptionConfigurationDTO websubSubscriptionConfig = new WebsubSubscriptionConfigurationDTO();
         websubSubscriptionConfig.setSecret(topicSecret);
         websubSubscriptionConfig.setSigningAlgorithm("SHA1");
@@ -204,7 +204,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(description = "Invoke the WebSub API", dependsOnMethods = "testWebSubApiApplicationSubscription")
-    public void testInvokeWebSubApi() throws Exception {
+    public void testInvokeWebSubApiWithHubSecret() throws Exception {
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
@@ -214,22 +214,19 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
-        handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
+        handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, clientTopicSecret, "50000000",
                 accessToken);
         initializeWebhookSender(topicSecret);
         Thread.sleep(5000);
-        int noOfEventsToSend = 10;
-        for (int i = 0; i < noOfEventsToSend; i++) {
-            webhookSender.send();
-            Thread.sleep(3000);
-        }
-        handleCallbackSubscription(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
+        webhookSender.send();
+        Thread.sleep(3000);
+        handleCallbackSubscription(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, clientTopicSecret, "50000000",
                 accessToken);
 
-        int sent = webhookSender.getWebhooksSent();
-        int received = callbackServerServlet.getCallbacksReceived();
-        Assert.assertEquals(sent, noOfEventsToSend);
-        Assert.assertEquals(sent + 1, received); // no. of events received = no. of events sent + 1 subscribe event
+        String body = "{\"Hello\" : \"World\"}";
+        String signature = "sha1=" + StreamingApiTestUtils.calculateRFC2104HMAC(body, clientTopicSecret);
+        Assert.assertEquals(body, callbackServerServlet.getLastReceivedMessage());
+        Assert.assertEquals(signature, callbackServerServlet.getLastReceivedSignature()); // no. of events received = no. of events sent + 1 subscribe event
 
         callbackServerServlet.setCallbacksReceived(0);
         webhookSender.setWebhooksSent(0);
