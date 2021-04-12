@@ -1,6 +1,6 @@
 [server]
 #hostname = "km.wso2.com"
-server_role = "api-key-manager"
+server_role = "api-key-manager-deprecated"
 
 [user_store]
 type = "database_unique_id"

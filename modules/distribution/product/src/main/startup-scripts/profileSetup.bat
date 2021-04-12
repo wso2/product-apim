@@ -52,9 +52,10 @@ if "%3"=="skipConfigOptimization" set passedSkipConfigOptimizationOption=true
 
 rem ----- Process the input commands (two args only)-------------------------------------------
 if ""%1""==""-Dprofile"" (
-	if ""%2""==""api-key-manager"" 	goto keyManager
-	if ""%2""==""api-publisher"" 	goto publisher
-	if ""%2""==""api-devportal"" 	goto devportal
+	if ""%2""==""control-plane"" 	goto controlPlane
+	if ""%2""==""api-key-manager-deprecated"" 	goto keyManager
+	if ""%2""==""api-publisher-deprecated"" 	goto publisher
+	if ""%2""==""api-devportal-deprecated"" 	goto devportal
 	if ""%2""==""traffic-manager"" 	goto trafficManager
 	if ""%2""==""gateway-worker"" 	goto gatewayWorker
 )
@@ -93,6 +94,13 @@ for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b') do (
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i directory from %pathToJaggeryapps%
 )
+goto finishOptimization
+
+:controlPlane
+echo Starting to optimize API Manager for the Control Plane profile
+call :removeWebSocketInboundEndpoint
+call :removeSecureWebSocketInboundEndpoint
+call :replaceDeploymentConfiguration
 goto finishOptimization
 
 :publisher
