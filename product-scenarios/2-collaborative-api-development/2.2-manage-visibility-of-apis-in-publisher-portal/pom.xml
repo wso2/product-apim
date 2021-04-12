@@ -31,7 +31,7 @@
     <groupId>org.wso2.am</groupId>
     <version>4.0.0-SNAPSHOT</version>
     <name>[APIM][SCENARIO_2][SUBSCENARIO_2] - manage visibility of APIs in Publisher portal</name>
-    <artifactId>2.2-manage-visibility-of-APIs-in-Publisher-portal</artifactId>
+    <artifactId>2.2-manage-visibility-of-apis-in-publisher-portal</artifactId>
     <packaging>pom</packaging>
     <url>http://wso2.org</url>
 
