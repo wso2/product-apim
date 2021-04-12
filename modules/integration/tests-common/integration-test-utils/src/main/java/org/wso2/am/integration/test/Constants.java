@@ -40,7 +40,7 @@ public class Constants {
     public static final String PROVIDER_ADMIN = "admin";
     public static final String PROTOCOL_HTTP = "http";
     public static final String PROTOCOL_HTTPS = "https";
-    public static final String GATEWAY_ENVIRONMENTS = "Production and Sandbox";
+    public static final String GATEWAY_ENVIRONMENT = "Default";
     public static final String APPLICATION_JSON = "application/json";
     public static final String API_DEFINITION = "api-definition-";
     public static final String ENDPOINT_DEFINITION = "endpoint-config-";

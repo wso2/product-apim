@@ -973,7 +973,7 @@ public class APIPublisherRestClient {
             // get Swagger
             HttpResponse getSwaggerResponse = getSwagger(apiName, apiVersion, apiDeveloperUsername);
             APIManageBean apiManageBean = new APIManageBean(apiName, apiVersion, apiDeveloperUsername, "https", "disabled",
-                    "resource_level", "Production and Sandbox", getSwaggerResponse.getData(), "Unlimited,Gold,Bronze");
+                    "resource_level", "Default", getSwaggerResponse.getData(), "Unlimited,Gold,Bronze");
             HttpResponse apiManageResponse = manageAPI(apiManageBean);
             scenarioTestBase.verifyResponse(apiManageResponse);
 
