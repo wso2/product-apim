@@ -84,6 +84,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
@@ -1101,10 +1102,25 @@ public class RestAPIPublisherImpl {
         return response.getData();
     }
 
+    public WSDLValidationResponseDTO validateWsdlDefinition(String url, File wsdlDefinition) throws ApiException {
+        ApiResponse<WSDLValidationResponseDTO> response = validationApi
+                .validateWSDLDefinitionWithHttpInfo(url, wsdlDefinition);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
     public APIDTO importGraphqlSchemaDefinition(File file, String properties) throws ApiException {
 
         ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importGraphQLSchemaWithHttpInfo(null, "GRAPHQL",
                 file, properties);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    public APIDTO importWSDLDefinition(File file, String url, String additionalProperties, String implementationType)
+            throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi
+                .importWSDLDefinitionWithHttpInfo(file, url, additionalProperties, implementationType);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }

@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://ws.cdyne.com/PhoneVerify/query" xmlns:s1="http://ws.cdyne.com/PhoneVerify/query/AbstractTypes" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="http://ws.cdyne.com/PhoneVerify/query" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://ws.cdyne.com/PhoneVerify/query">
+      <s:element name="CheckPhoneNumber">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="PhoneNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="LicenseKey" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckPhoneNumberResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="CheckPhoneNumberResult" type="tns:PhoneReturn" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="PhoneReturn">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Company" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Valid" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="Use" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="State" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Switch" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="RC" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OCN" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OriginalNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CleanNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SwitchName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="SwitchType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Country" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CLLI" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="PrefixType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="LATA" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="sms" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Email" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AssignDate" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TelecomCity" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TelecomCounty" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TelecomState" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TelecomZip" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TimeZone" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Lat" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Long" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Wireless" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="LRN" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="CheckPhoneNumbers">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="PhoneNumbers" type="tns:ArrayOfString" />
+            <s:element minOccurs="0" maxOccurs="1" name="LicenseKey" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfString">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="CheckPhoneNumbersResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CheckPhoneNumbersResult" type="tns:ArrayOfPhoneReturn" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfPhoneReturn">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="PhoneReturn" type="tns:PhoneReturn" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="PhoneReturn" type="tns:PhoneReturn" />
+      <s:element name="ArrayOfPhoneReturn" nillable="true" type="tns:ArrayOfPhoneReturn" />
+    </s:schema>
+    <s:schema targetNamespace="http://ws.cdyne.com/PhoneVerify/query/AbstractTypes">
+      <s:import namespace="http://schemas.xmlsoap.org/soap/encoding/" />
+      <s:complexType name="StringArray">
+        <s:complexContent mixed="false">
+          <s:restriction base="soapenc:Array">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="unbounded" name="String" type="s:string" />
+            </s:sequence>
+          </s:restriction>
+        </s:complexContent>
+      </s:complexType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="CheckPhoneNumberSoapIn">
+    <wsdl:part name="parameters" element="tns:CheckPhoneNumber" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumberSoapOut">
+    <wsdl:part name="parameters" element="tns:CheckPhoneNumberResponse" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumbersSoapIn">
+    <wsdl:part name="parameters" element="tns:CheckPhoneNumbers" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumbersSoapOut">
+    <wsdl:part name="parameters" element="tns:CheckPhoneNumbersResponse" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumberHttpGetIn">
+    <wsdl:part name="PhoneNumber" type="s:string" />
+    <wsdl:part name="LicenseKey" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumberHttpGetOut">
+    <wsdl:part name="Body" element="tns:PhoneReturn" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumbersHttpGetIn">
+    <wsdl:part name="PhoneNumbers" type="s1:StringArray" />
+    <wsdl:part name="LicenseKey" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumbersHttpGetOut">
+    <wsdl:part name="Body" element="tns:ArrayOfPhoneReturn" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumberHttpPostIn">
+    <wsdl:part name="PhoneNumber" type="s:string" />
+    <wsdl:part name="LicenseKey" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumberHttpPostOut">
+    <wsdl:part name="Body" element="tns:PhoneReturn" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumbersHttpPostIn">
+    <wsdl:part name="PhoneNumbers" type="s1:StringArray" />
+    <wsdl:part name="LicenseKey" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CheckPhoneNumbersHttpPostOut">
+    <wsdl:part name="Body" element="tns:ArrayOfPhoneReturn" />
+  </wsdl:message>
+  <wsdl:portType name="PhoneVerifySoap">
+    <wsdl:operation name="CheckPhoneNumber">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Insert a phone number and your license key in the fields below to verify the phone number. This method also provides additional information about the phone number which includes the RateCenter, Telecom Address, Wireless, Switch Information, CLLI, LATA, Company, TimeZone, and more.&lt;br /&gt;&lt;br /&gt;For more information, please visit our &lt;a href='http://wiki.cdyne.com/wiki/index.php?title=Phone_Verification'&gt;wiki&lt;/a&gt;.</wsdl:documentation>
+      <wsdl:input message="tns:CheckPhoneNumberSoapIn" />
+      <wsdl:output message="tns:CheckPhoneNumberSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckPhoneNumbers">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This method is the same as &lt;a href='http://ws.cdyne.com/phoneverify/phoneverify.asmx?op=CheckPhoneNumber'&gt;CheckPhoneNumber&lt;/a&gt;, although you are allowed to insert an array of phone numbers to be validated.&lt;br /&gt;&lt;br /&gt;For more information, please visit our &lt;a href='http://wiki.cdyne.com/wiki/index.php?title=Phone_Verification'&gt;wiki&lt;/a&gt;.</wsdl:documentation>
+      <wsdl:input message="tns:CheckPhoneNumbersSoapIn" />
+      <wsdl:output message="tns:CheckPhoneNumbersSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="PhoneVerifyHttpGet">
+    <wsdl:operation name="CheckPhoneNumber">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Insert a phone number and your license key in the fields below to verify the phone number. This method also provides additional information about the phone number which includes the RateCenter, Telecom Address, Wireless, Switch Information, CLLI, LATA, Company, TimeZone, and more.&lt;br /&gt;&lt;br /&gt;For more information, please visit our &lt;a href='http://wiki.cdyne.com/wiki/index.php?title=Phone_Verification'&gt;wiki&lt;/a&gt;.</wsdl:documentation>
+      <wsdl:input message="tns:CheckPhoneNumberHttpGetIn" />
+      <wsdl:output message="tns:CheckPhoneNumberHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckPhoneNumbers">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This method is the same as &lt;a href='http://ws.cdyne.com/phoneverify/phoneverify.asmx?op=CheckPhoneNumber'&gt;CheckPhoneNumber&lt;/a&gt;, although you are allowed to insert an array of phone numbers to be validated.&lt;br /&gt;&lt;br /&gt;For more information, please visit our &lt;a href='http://wiki.cdyne.com/wiki/index.php?title=Phone_Verification'&gt;wiki&lt;/a&gt;.</wsdl:documentation>
+      <wsdl:input message="tns:CheckPhoneNumbersHttpGetIn" />
+      <wsdl:output message="tns:CheckPhoneNumbersHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="PhoneVerifyHttpPost">
+    <wsdl:operation name="CheckPhoneNumber">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Insert a phone number and your license key in the fields below to verify the phone number. This method also provides additional information about the phone number which includes the RateCenter, Telecom Address, Wireless, Switch Information, CLLI, LATA, Company, TimeZone, and more.&lt;br /&gt;&lt;br /&gt;For more information, please visit our &lt;a href='http://wiki.cdyne.com/wiki/index.php?title=Phone_Verification'&gt;wiki&lt;/a&gt;.</wsdl:documentation>
+      <wsdl:input message="tns:CheckPhoneNumberHttpPostIn" />
+      <wsdl:output message="tns:CheckPhoneNumberHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckPhoneNumbers">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This method is the same as &lt;a href='http://ws.cdyne.com/phoneverify/phoneverify.asmx?op=CheckPhoneNumber'&gt;CheckPhoneNumber&lt;/a&gt;, although you are allowed to insert an array of phone numbers to be validated.&lt;br /&gt;&lt;br /&gt;For more information, please visit our &lt;a href='http://wiki.cdyne.com/wiki/index.php?title=Phone_Verification'&gt;wiki&lt;/a&gt;.</wsdl:documentation>
+      <wsdl:input message="tns:CheckPhoneNumbersHttpPostIn" />
+      <wsdl:output message="tns:CheckPhoneNumbersHttpPostOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PhoneVerifySoap" type="tns:PhoneVerifySoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="CheckPhoneNumber">
+      <soap:operation soapAction="http://ws.cdyne.com/PhoneVerify/query/CheckPhoneNumber" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckPhoneNumbers">
+      <soap:operation soapAction="http://ws.cdyne.com/PhoneVerify/query/CheckPhoneNumbers" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PhoneVerifySoap12" type="tns:PhoneVerifySoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="CheckPhoneNumber">
+      <soap12:operation soapAction="http://ws.cdyne.com/PhoneVerify/query/CheckPhoneNumber" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckPhoneNumbers">
+      <soap12:operation soapAction="http://ws.cdyne.com/PhoneVerify/query/CheckPhoneNumbers" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PhoneVerifyHttpGet" type="tns:PhoneVerifyHttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="CheckPhoneNumber">
+      <http:operation location="/CheckPhoneNumber" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckPhoneNumbers">
+      <http:operation location="/CheckPhoneNumbers" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PhoneVerifyHttpPost" type="tns:PhoneVerifyHttpPost">
+    <http:binding verb="POST" />
+    <wsdl:operation name="CheckPhoneNumber">
+      <http:operation location="/CheckPhoneNumber" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckPhoneNumbers">
+      <http:operation location="/CheckPhoneNumbers" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="PhoneVerify">
+    <wsdl:port name="PhoneVerifySoap" binding="tns:PhoneVerifySoap">
+      <soap:address location="http://ws.cdyne.com/phoneverify/phoneverify.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PhoneVerifySoap12" binding="tns:PhoneVerifySoap12">
+      <soap12:address location="http://ws.cdyne.com/phoneverify/phoneverify.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PhoneVerifyHttpGet" binding="tns:PhoneVerifyHttpGet">
+      <http:address location="http://ws.cdyne.com/phoneverify/phoneverify.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PhoneVerifyHttpPost" binding="tns:PhoneVerifyHttpPost">
+      <http:address location="http://ws.cdyne.com/phoneverify/phoneverify.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
