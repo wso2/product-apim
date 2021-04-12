@@ -280,24 +280,9 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
         log.info("Access Token response without scope: " + accessToken);
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
-        HttpResponse serviceResponse = null;
-        boolean status = false;
-
-        long waitTime = System.currentTimeMillis() + WAIT_TIME;
-        while (waitTime > System.currentTimeMillis()) {
-            serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
-            if (HttpStatus.SC_OK == serviceResponse.getResponseCode()) {
-                status = true;
-                break;
-            } else {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ignored) {
-                }
-            }
-        }
-
-        Assert.assertTrue(status, "Response code is not as expected");
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN,
+                "Response code is not as expected");
 
         String consumerKey = applicationKeyDTO.getConsumerKey();
         String consumerSecret = applicationKeyDTO.getConsumerSecret();
@@ -320,29 +305,17 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         accessToken = accessTokenGenerationResponse.getString("access_token");
         tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
-        status = false;
-
-        waitTime = System.currentTimeMillis() + WAIT_TIME;
-        while (waitTime > System.currentTimeMillis()) {
-            serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
-            if (HttpStatus.SC_OK == serviceResponse.getResponseCode()) {
-                status = true;
-                break;
-            } else {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ignored) {
-                }
-            }
-        }
-
-        Assert.assertTrue(status, "Response code is not as expected");
+        serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Response code is not as expected");
         Assert.assertEquals(serviceResponse.getData(), RESPONSE_DATA, "Response data is not as expected");
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Oauth Scopes")
-    public void testOperationalLevelSecurityForGraphql() throws Exception {
+    @Test(groups = { "wso2.am" }, description = "Oauth Scopes", dependsOnMethods = {
+            "testOperationalLevelOAuthScopesForGraphql" })
+    public void testOperationalLevelSecurityForGraphql()
+            throws Exception {
         HttpResponse response = restAPIPublisher.getAPI(graphqlAPIId);
         Gson g = new Gson();
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
