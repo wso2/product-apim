@@ -131,7 +131,7 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         jsonObject.put("production_endpoints", sandUrl);
         apiDto.setEndpointConfig(jsonObject);
         ArrayList<String> gatewayEnvironments = new ArrayList<>();
-        gatewayEnvironments.add("Production and Sandbox");
+        gatewayEnvironments.add("Default");
         apiDto.setGatewayEnvironments(gatewayEnvironments);
         List<String> policies = new ArrayList<>();
         policies.add("Gold");
