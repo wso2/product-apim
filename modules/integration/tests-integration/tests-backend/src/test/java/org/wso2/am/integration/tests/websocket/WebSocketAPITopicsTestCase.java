@@ -185,9 +185,8 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
                 "}";
         restAPIPublisher.updateAsyncAPI(websocketAPIID, asyncApiDefinition);
         restAPIPublisher.changeAPILifeCycleStatus(websocketAPIID, APILifeCycleAction.PUBLISH.getAction(), null);
-        waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
         createAPIRevisionAndDeployUsingRest(websocketAPIID, restAPIPublisher);
-        Thread.sleep(10000);
+        waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
         APIIdentifier apiIdentifierWebSocket = new APIIdentifier(provider, apiName, apiVersion);
 
