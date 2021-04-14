@@ -8364,10 +8364,17 @@ components:
           items:
             type: string
         additionalProperties:
-          type: object
-          additionalProperties:
-            type: string
+          type: array
           description: Map of custom properties of API
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              display:
+                type: boolean
           x-otherScopes:
             - apim:api_publish
         monetization:

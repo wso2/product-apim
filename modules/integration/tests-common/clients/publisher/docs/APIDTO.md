@@ -44,7 +44,7 @@ Name | Type | Description | Notes
 **mediationPolicies** | [**List&lt;MediationPolicyDTO&gt;**](MediationPolicyDTO.md) |  |  [optional]
 **subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS. |  [optional]
 **subscriptionAvailableTenants** | **List&lt;String&gt;** |  |  [optional]
-**additionalProperties** | **Map&lt;String, String&gt;** | Map of custom properties of API |  [optional]
+**additionalProperties** | [**List&lt;APIAdditionalPropertiesDTO&gt;**](APIAdditionalPropertiesDTO.md) | Map of custom properties of API |  [optional]
 **monetization** | [**APIMonetizationInfoDTO**](APIMonetizationInfoDTO.md) |  |  [optional]
 **accessControl** | [**AccessControlEnum**](#AccessControlEnum) | Is the API is restricted to certain set of publishers or creators or is it visible to all the publishers and creators. If the accessControl restriction is none, this API can be modified by all the publishers and creators, if not it can only be viewable/modifiable by certain set of publishers and creators,  based on the restriction.  |  [optional]
 **accessControlRoles** | **List&lt;String&gt;** | The user roles that are able to view/modify as API publisher or creator. |  [optional]

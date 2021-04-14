@@ -3863,9 +3863,16 @@ components:
           example: true
           default: false
         additionalProperties:
-          type: object
-          additionalProperties:
-            type: string
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              display:
+                type: boolean
           description: |
             Custom(user defined) properties of API
           example: {}

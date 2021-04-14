@@ -7631,12 +7631,12 @@ components:
           example: true
           type: boolean
         additionalProperties:
-          additionalProperties:
-            type: string
           description: |
             Custom(user defined) properties of API
           example: {}
-          type: object
+          items:
+            $ref: '#/components/schemas/API_additionalProperties'
+          type: array
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
         ingressURLs:
@@ -10282,6 +10282,14 @@ components:
           type: string
         monetizationAttributes:
           $ref: '#/components/schemas/API_monetizationAttributes'
+    API_additionalProperties:
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+        display:
+          type: boolean
     API_ingressURLs:
       example:
         deploymentEnvironmentName: kubernetes
