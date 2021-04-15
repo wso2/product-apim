@@ -8063,16 +8063,6 @@ components:
           example: []
           items:
             type: string
-        gatewayEnvironments:
-          type: array
-          description: |
-            List of gateway environments the API is available
-          example:
-            - Default
-          items:
-            type: string
-          x-otherScopes:
-            - apim:api_publish
         mediationPolicies:
           type: array
           example:
@@ -8601,14 +8591,6 @@ components:
           description: The user roles that are able to view/modify as API Product
             publisher or creator.
           example: []
-          items:
-            type: string
-        gatewayEnvironments:
-          type: array
-          description: |
-            List of gateway environments the API Product is available
-          example:
-            - Default
           items:
             type: string
         apiType:

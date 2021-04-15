@@ -53,7 +53,6 @@ public class DtoFactory {
                 context(context).
                 name(name).
                 policies(polices).
-                gatewayEnvironments(Arrays.asList(Constants.GATEWAY_ENVIRONMENT)).
                 provider(provider);
     }
 

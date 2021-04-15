@@ -146,7 +146,6 @@ public class ApiProductTestHelper {
         Assert.assertEquals(returnedProduct.getVisibleTenants(), responseData.getVisibleTenants());
         Assert.assertEquals(returnedProduct.getAccessControl(), responseData.getAccessControl());
         Assert.assertEquals(returnedProduct.getAccessControlRoles(), responseData.getAccessControlRoles());
-        Assert.assertEquals(returnedProduct.getGatewayEnvironments(), responseData.getGatewayEnvironments());
         Assert.assertEquals(returnedProduct.getApiType(), responseData.getApiType());
         Assert.assertEquals(returnedProduct.getTransport(), responseData.getTransport());
         Assert.assertEquals(returnedProduct.getTags(), responseData.getTags());
@@ -319,7 +318,6 @@ public class ApiProductTestHelper {
         verifyBusinessInformation(apiDTO.getBusinessInformation(), apiProductDTO.getBusinessInformation());
         Assert.assertEquals(apiDTO.getContext(), apiProductDTO.getContext());
         Assert.assertEquals(apiDTO.getDescription(), apiProductDTO.getDescription());
-        Assert.assertEquals(new HashSet<>(apiDTO.getEnvironmentList()), new HashSet<>(apiProductDTO.getGatewayEnvironments()));
         Assert.assertEquals(apiDTO.getLifeCycleStatus(), apiProductDTO.getState().getValue());
         Assert.assertEquals(apiDTO.getName(), apiProductDTO.getName());
         verifyResources(apiDTO.getOperations(), apiProductDTO.getApis());
