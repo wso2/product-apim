@@ -8416,7 +8416,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/subscription?tierQuotaType=RequestCountLimit"'
+          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/streaming/subscription"'
       x-accepts: application/json
   /mediation-policies:
     get:
@@ -15030,7 +15030,12 @@ components:
         name: PizzaShackAPI
         revisionedApiId: 01234567-0123-0123-0123-012345678901
         additionalProperties:
-          key: additionalProperties
+        - display: true
+          name: name
+          value: value
+        - display: true
+          name: name
+          value: value
         lifeCycleStatus: CREATED
         accessControl: NONE
         monetization:
@@ -15367,10 +15372,10 @@ components:
             type: string
           type: array
         additionalProperties:
-          additionalProperties:
-            type: string
           description: Map of custom properties of API
-          type: object
+          items:
+            $ref: '#/components/schemas/API_additionalProperties'
+          type: array
           x-otherScopes:
           - apim:api_publish
         monetization:
@@ -15898,7 +15903,12 @@ components:
         gatewayEnvironments:
         - Default
         additionalProperties:
-          key: additionalProperties
+        - display: true
+          name: name
+          value: value
+        - display: true
+          name: name
+          value: value
         scopes: []
         apiType: APIPRODUCT
         subscriptionAvailableTenants: []
@@ -16082,10 +16092,10 @@ components:
           x-otherScopes:
           - apim:api_publish
         additionalProperties:
-          additionalProperties:
-            type: string
           description: Map of custom properties of API
-          type: object
+          items:
+            $ref: '#/components/schemas/API_additionalProperties'
+          type: array
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
         businessInformation:
@@ -19477,6 +19487,18 @@ components:
           type: string
         signatureHeader:
           type: string
+    API_additionalProperties:
+      example:
+        display: true
+        name: name
+        value: value
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+        display:
+          type: boolean
     API_threatProtectionPolicies_list:
       example:
         policyId: policyId

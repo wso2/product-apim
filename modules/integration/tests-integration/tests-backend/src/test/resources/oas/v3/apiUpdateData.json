@@ -28,7 +28,7 @@
   "mediationPolicies": [],
   "subscriptionAvailability": "ALL_TENANTS",
   "subscriptionAvailableTenants": [],
-  "additionalProperties": {},
+  "additionalProperties": [],
   "monetization": null,
   "accessControl": "NONE",
   "accessControlRoles": [],
