@@ -255,9 +255,6 @@ public class RestAPIPublisherImpl {
         body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
-        ArrayList<String> gatewayEnvironments = new ArrayList<>();
-        gatewayEnvironments.add(apiRequest.getEnvironment());
-        body.setGatewayEnvironments(gatewayEnvironments);
         if (apiRequest.getOperationsDTOS() != null) {
             body.setOperations(apiRequest.getOperationsDTOS());
         } else {
@@ -507,9 +504,6 @@ public class RestAPIPublisherImpl {
         body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
-        ArrayList<String> gatewayEnvironments = new ArrayList<>();
-        gatewayEnvironments.add(apiRequest.getEnvironment());
-        body.setGatewayEnvironments(gatewayEnvironments);
         body.setMediationPolicies(apiRequest.getMediationPolicies());
         if (apiRequest.getOperationsDTOS() != null) {
             body.setOperations(apiRequest.getOperationsDTOS());
@@ -1088,9 +1082,6 @@ public class RestAPIPublisherImpl {
         }});
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
-        ArrayList<String> gatewayEnvironments = new ArrayList<>();
-        gatewayEnvironments.add(apiCreationRequestBean.getEnvironment());
-        body.setGatewayEnvironments(gatewayEnvironments);
         List<APIOperationsDTO> operations = new ArrayList<>();
         for (APIResourceBean resourceBean : apiCreationRequestBean.getResourceBeanList()) {
             APIOperationsDTO dto = new APIOperationsDTO();

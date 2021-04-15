@@ -128,7 +128,6 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         endpointConfig.put("sandbox_endpoints", url);
         endpointConfig.put("production_endpoints", url);
         additionalPropertiesObj.put("endpointConfig", endpointConfig);
-        additionalPropertiesObj.put("gatewayEnvironments", environment);
         additionalPropertiesObj.put("policies", policies);
         additionalPropertiesObj.put("operations", operations);
 

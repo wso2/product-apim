@@ -262,10 +262,6 @@ public static VisibilityEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_VISIBLE_TENANTS)
             private List<String> visibleTenants = null;
 
-        public static final String SERIALIZED_NAME_GATEWAY_ENVIRONMENTS = "gatewayEnvironments";
-        @SerializedName(SERIALIZED_NAME_GATEWAY_ENVIRONMENTS)
-            private List<String> gatewayEnvironments = null;
-
         public static final String SERIALIZED_NAME_MEDIATION_POLICIES = "mediationPolicies";
         @SerializedName(SERIALIZED_NAME_MEDIATION_POLICIES)
             private List<MediationPolicyDTO> mediationPolicies = null;
@@ -1139,29 +1135,6 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
-        public APIDTO gatewayEnvironments(List<String> gatewayEnvironments) {
-        
-        this.gatewayEnvironments = gatewayEnvironments;
-        return this;
-        }
-
-    /**
-        * List of gateway environments the API is available 
-    * @return gatewayEnvironments
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "[\"Default\"]", value = "List of gateway environments the API is available ")
-    
-    public List<String> getGatewayEnvironments() {
-        return gatewayEnvironments;
-    }
-
-
-    public void setGatewayEnvironments(List<String> gatewayEnvironments) {
-        this.gatewayEnvironments = gatewayEnvironments;
-    }
-
-
         public APIDTO mediationPolicies(List<MediationPolicyDTO> mediationPolicies) {
         
         this.mediationPolicies = mediationPolicies;
@@ -1705,7 +1678,6 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.visibility, API.visibility) &&
             Objects.equals(this.visibleRoles, API.visibleRoles) &&
             Objects.equals(this.visibleTenants, API.visibleTenants) &&
-            Objects.equals(this.gatewayEnvironments, API.gatewayEnvironments) &&
             Objects.equals(this.mediationPolicies, API.mediationPolicies) &&
             Objects.equals(this.subscriptionAvailability, API.subscriptionAvailability) &&
             Objects.equals(this.subscriptionAvailableTenants, API.subscriptionAvailableTenants) &&
@@ -1732,7 +1704,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, gatewayEnvironments, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo);
     }
 
 
@@ -1768,7 +1740,6 @@ sb.append("class APIDTO {\n");
     sb.append("    visibility: ").append(toIndentedString(visibility)).append("\n");
     sb.append("    visibleRoles: ").append(toIndentedString(visibleRoles)).append("\n");
     sb.append("    visibleTenants: ").append(toIndentedString(visibleTenants)).append("\n");
-    sb.append("    gatewayEnvironments: ").append(toIndentedString(gatewayEnvironments)).append("\n");
     sb.append("    mediationPolicies: ").append(toIndentedString(mediationPolicies)).append("\n");
     sb.append("    subscriptionAvailability: ").append(toIndentedString(subscriptionAvailability)).append("\n");
     sb.append("    subscriptionAvailableTenants: ").append(toIndentedString(subscriptionAvailableTenants)).append("\n");

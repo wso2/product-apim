@@ -23,7 +23,6 @@
   "visibility": "PUBLIC",
   "visibleRoles": [],
   "visibleTenants": [],
-  "gatewayEnvironments": ["Default"],
   "mediationPolicies": [],
   "subscriptionAvailability": "ALL_TENANTS",
   "subscriptionAvailableTenants": [],

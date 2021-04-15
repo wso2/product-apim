@@ -252,10 +252,6 @@ public static AccessControlEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_ACCESS_CONTROL_ROLES)
             private List<String> accessControlRoles = null;
 
-        public static final String SERIALIZED_NAME_GATEWAY_ENVIRONMENTS = "gatewayEnvironments";
-        @SerializedName(SERIALIZED_NAME_GATEWAY_ENVIRONMENTS)
-            private List<String> gatewayEnvironments = null;
-
             /**
 * The API type to be used. Accepted values are API, APIPRODUCT
 */
@@ -838,29 +834,6 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
-        public APIProductDTO gatewayEnvironments(List<String> gatewayEnvironments) {
-        
-        this.gatewayEnvironments = gatewayEnvironments;
-        return this;
-        }
-
-    /**
-        * List of gateway environments the API Product is available 
-    * @return gatewayEnvironments
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "[\"Default\"]", value = "List of gateway environments the API Product is available ")
-    
-    public List<String> getGatewayEnvironments() {
-        return gatewayEnvironments;
-    }
-
-
-    public void setGatewayEnvironments(List<String> gatewayEnvironments) {
-        this.gatewayEnvironments = gatewayEnvironments;
-    }
-
-
         public APIProductDTO apiType(ApiTypeEnum apiType) {
         
         this.apiType = apiType;
@@ -1302,7 +1275,6 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             Objects.equals(this.visibleTenants, apIProduct.visibleTenants) &&
             Objects.equals(this.accessControl, apIProduct.accessControl) &&
             Objects.equals(this.accessControlRoles, apIProduct.accessControlRoles) &&
-            Objects.equals(this.gatewayEnvironments, apIProduct.gatewayEnvironments) &&
             Objects.equals(this.apiType, apIProduct.apiType) &&
             Objects.equals(this.transport, apIProduct.transport) &&
             Objects.equals(this.tags, apIProduct.tags) &&
@@ -1325,7 +1297,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
+        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
     }
 
 
@@ -1351,7 +1323,6 @@ sb.append("class APIProductDTO {\n");
     sb.append("    visibleTenants: ").append(toIndentedString(visibleTenants)).append("\n");
     sb.append("    accessControl: ").append(toIndentedString(accessControl)).append("\n");
     sb.append("    accessControlRoles: ").append(toIndentedString(accessControlRoles)).append("\n");
-    sb.append("    gatewayEnvironments: ").append(toIndentedString(gatewayEnvironments)).append("\n");
     sb.append("    apiType: ").append(toIndentedString(apiType)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
