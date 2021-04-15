@@ -1,0 +1,13 @@
+{
+  "policyName": "WHTestThrottlingPolicy",
+  "policyDescription": "Webhooks Test Throttling Policy",
+  "conditionalGroups": [],
+  "defaultLimit": {
+    "type": "EVENTCOUNTLIMIT",
+    "requestCount": {
+      "requestCount": 2,
+      "timeUnit": "month",
+      "unitTime": 1
+    }
+  }
+}
