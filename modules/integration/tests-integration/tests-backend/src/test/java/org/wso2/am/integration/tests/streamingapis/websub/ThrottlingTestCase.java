@@ -20,8 +20,15 @@ package org.wso2.am.integration.tests.streamingapis.websub;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -57,25 +64,22 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -120,6 +124,7 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
     private Server callbackServer;
     private String subPolicyId;
     private String subPolicyName;
+    private String accessToken;
 
     @Factory(dataProvider = "userModeDataProvider")
     public ThrottlingTestCase(TestUserMode userMode) {
@@ -246,18 +251,17 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
                 subPolicyName);
         // Validate Subscription of the API
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
-    }
-
-    @Test(description = "Invoke the WebSub API", dependsOnMethods = "testWebSubApiApplicationSubscription")
-    public void testInvokeWebSubApi() throws Exception {
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+    }
 
+    @Test(description = "Test events throttling", dependsOnMethods = "testWebSubApiApplicationSubscription")
+    public void testEventsThrottling() throws Exception {
         String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
         handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
                 accessToken);
@@ -274,10 +278,27 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         int sent = webhookSender.getWebhooksSent();
         int received = callbackServerServlet.getCallbacksReceived();
         Assert.assertEquals(sent, noOfEventsToSend);
-        Assert.assertEquals(received, 5); // no. of events received = no. of events allowed
+        Assert.assertTrue(received < noOfEventsToSend);
+        // received no of events are less than the sent events. The number cannot be guaranteed due to async nature.
 
         callbackServerServlet.setCallbacksReceived(0);
         webhookSender.setWebhooksSent(0);
+    }
+
+    @Test(description = "Test subscription count throttling", dependsOnMethods = "testWebSubApiApplicationSubscription")
+    public void testSubscriptionCountThrottling() throws Exception {
+        String callbackUrl1 = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
+        String callbackUrl2 = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver2";
+        String callbackUrl3 = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver3";
+        org.apache.http.HttpResponse response = handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl1, DEFAULT_TOPIC, topicSecret, "50000000",
+                accessToken);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
+        response = handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl2 , DEFAULT_TOPIC, topicSecret, "50000000",
+                accessToken);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
+        response = handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl3 , DEFAULT_TOPIC, topicSecret, "50000000",
+                accessToken);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), 429);
     }
 
     private void initializeCallbackReceiver(int port) {
@@ -307,14 +328,34 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         webhookSender = new WebhookSender(payloadUrl, secret);
     }
 
-    private static void handleCallbackSubscription(String hubMode, String webSubApiUrl, String callbackUrl,
-                                                   String hubTopic, String hubSecret, String hubLeaseSeconds,
-                                                   String bearerToken)
-            throws UnsupportedEncodingException, MalformedURLException, AutomationFrameworkException {
-        String encodedUrl = URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8.toString());
-        String url = webSubApiUrl + "?hub.callback=" + encodedUrl + "&hub.mode=" + hubMode + "&hub.secret=" +
-                hubSecret + "&hub.lease_seconds=" + hubLeaseSeconds + "&hub.topic=" + hubTopic;
-        HttpRequestUtil.doPost(new URL(url), "", Collections.singletonMap("Authorization", "Bearer " + bearerToken));
+    private static org.apache.http.HttpResponse handleCallbackSubscription(String hubMode, String webSubApiUrl,
+                                                                           String callbackUrl, String hubTopic,
+                                                                           String hubSecret, String hubLeaseSeconds,
+                                                                           String bearerToken)
+            throws IOException, URISyntaxException {
+        HttpClient httpclient = HttpClients.createDefault();
+        HttpPost httppost = new HttpPost(webSubApiUrl);
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        if (!StringUtils.isEmpty(callbackUrl)) {
+            String encodedUrl = URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8.toString());
+            params.add(new BasicNameValuePair("hub.callback", encodedUrl));
+        }
+        if (!StringUtils.isEmpty(hubMode)) {
+            params.add(new BasicNameValuePair("hub.mode", hubMode));
+        }
+        if (!StringUtils.isEmpty(hubTopic)) {
+            params.add(new BasicNameValuePair("hub.topic", hubTopic));
+        }
+        if (!StringUtils.isEmpty(hubSecret)) {
+            params.add(new BasicNameValuePair("hub.secret", hubSecret));
+        }
+        if (!StringUtils.isEmpty(hubLeaseSeconds)) {
+            params.add(new BasicNameValuePair("hub.lease_seconds", hubLeaseSeconds));
+        }
+        URI uri = new URIBuilder(httppost.getURI()).addParameters(params).build();
+        httppost.setURI(uri);
+        httppost.setHeader("Authorization", "Bearer " + bearerToken);
+        return httpclient.execute(httppost);
     }
 
     @AfterClass(alwaysRun = true)
