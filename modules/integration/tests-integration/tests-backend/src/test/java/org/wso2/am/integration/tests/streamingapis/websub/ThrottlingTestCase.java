@@ -274,7 +274,7 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         int sent = webhookSender.getWebhooksSent();
         int received = callbackServerServlet.getCallbacksReceived();
         Assert.assertEquals(sent, noOfEventsToSend);
-        Assert.assertEquals(received, 5); // no. of events received = no. of events sent + 1 subscribe event
+        Assert.assertEquals(received, 5); // no. of events received = no. of events allowed
 
         callbackServerServlet.setCallbacksReceived(0);
         webhookSender.setWebhooksSent(0);
