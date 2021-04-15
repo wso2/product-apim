@@ -8180,19 +8180,12 @@ components:
           type: string
           readOnly: true
           example: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
-        testKey:
-          type: string
-          readOnly: true
-          example: 8swdwj9080edejhj
         responseCachingEnabled:
           type: boolean
           example: true
         cacheTimeout:
           type: integer
           example: 300
-        destinationStatsEnabled:
-          type: string
-          example: Disabled
         hasThumbnail:
           type: boolean
           example: false
@@ -8214,11 +8207,6 @@ components:
         enableSchemaValidation:
           type: boolean
           example: false
-        enableStore:
-          type: boolean
-          example: true
-          x-otherScopes:
-            - apim:api_publish
         type:
           type: string
           description: The api creation type to be used. Accepted values are HTTP,
@@ -8794,13 +8782,6 @@ components:
         enableSchemaValidation:
           type: boolean
           example: false
-        enableStore:
-          type: boolean
-          example: true
-        testKey:
-          type: string
-          readOnly: true
-          example: 8swdwj9080edejhj
         isRevision:
           type: boolean
           example: false

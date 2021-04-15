@@ -14,8 +14,6 @@ Name | Type | Description | Notes
 **hasThumbnail** | **Boolean** |  |  [optional]
 **state** | [**StateEnum**](#StateEnum) | State of the API product. Only published api products are visible on the Developer Portal  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
-**enableStore** | **Boolean** |  |  [optional]
-**testKey** | **String** |  |  [optional] [readonly]
 **isRevision** | **Boolean** |  |  [optional]
 **revisionedApiProductId** | **String** | UUID of the api product registry artifact  |  [optional] [readonly]
 **revisionId** | **Integer** |  |  [optional]

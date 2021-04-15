@@ -15020,7 +15020,6 @@ components:
         labels: []
         visibleTenants: []
         cacheTimeout: 300
-        enableStore: true
         isDefaultVersion: false
         apiThrottlingPolicy: Unlimited
         websubSubscriptionConfiguration:
@@ -15089,7 +15088,6 @@ components:
             priority: 0
           - policyId: policyId
             priority: 0
-        testKey: 8swdwj9080edejhj
         categories:
         - categories
         - categories
@@ -15111,7 +15109,6 @@ components:
           technicalOwner: technicalowner
         securityScheme:
         - oauth2
-        destinationStatsEnabled: Disabled
         keyManagers: '{}'
         gatewayEnvironments:
         - Default
@@ -15187,19 +15184,12 @@ components:
           example: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
           readOnly: true
           type: string
-        testKey:
-          example: 8swdwj9080edejhj
-          readOnly: true
-          type: string
         responseCachingEnabled:
           example: true
           type: boolean
         cacheTimeout:
           example: 300
           type: integer
-        destinationStatsEnabled:
-          example: Disabled
-          type: string
         hasThumbnail:
           example: false
           type: boolean
@@ -15221,11 +15211,6 @@ components:
         enableSchemaValidation:
           example: false
           type: boolean
-        enableStore:
-          example: true
-          type: boolean
-          x-otherScopes:
-          - apim:api_publish
         type:
           default: HTTP
           description: The api creation type to be used. Accepted values are HTTP,
@@ -15862,7 +15847,6 @@ components:
         lastUpdatedTime: lastUpdatedTime
         id: 01234567-0123-0123-0123-012345678901
         state: CREATED
-        testKey: 8swdwj9080edejhj
         categories: []
         revisionedApiProductId: 01234567-0123-0123-0123-012345678901
         accessControlRoles: []
@@ -15876,7 +15860,6 @@ components:
         - food
         revisionId: 1
         visibleTenants: []
-        enableStore: true
         cacheTimeout: 300
         apis:
         - name: PizzaShackAPI
@@ -15953,13 +15936,6 @@ components:
         enableSchemaValidation:
           example: false
           type: boolean
-        enableStore:
-          example: true
-          type: boolean
-        testKey:
-          example: 8swdwj9080edejhj
-          readOnly: true
-          type: string
         isRevision:
           example: false
           type: boolean
