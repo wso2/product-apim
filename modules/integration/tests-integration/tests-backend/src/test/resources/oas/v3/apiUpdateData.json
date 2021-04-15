@@ -22,7 +22,6 @@
   "visibility": "PUBLIC",
   "visibleRoles": [],
   "visibleTenants": [],
-  "endpointSecurity": null,
   "gatewayEnvironments": ["Default"],
   "mediationPolicies": [],
   "subscriptionAvailability": "ALL_TENANTS",

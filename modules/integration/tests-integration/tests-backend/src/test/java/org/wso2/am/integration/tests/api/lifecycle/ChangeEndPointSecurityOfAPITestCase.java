@@ -29,7 +29,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -112,7 +111,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        apiCreationRequestBean.setEndpointType(APIEndpointSecurityDTO.TypeEnum.BASIC.getValue());
+        apiCreationRequestBean.setEndpointType("basic");
         apiCreationRequestBean.setEpUsername(endpointUsername);
         apiCreationRequestBean.setEpPassword(endpointPassword);
         apiCreationRequestBean.setTier(TIER_UNLIMITED);

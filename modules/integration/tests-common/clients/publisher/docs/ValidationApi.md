@@ -7,7 +7,7 @@ Method | HTTP request | Description
 [**validateAPI**](ValidationApi.md#validateAPI) | **POST** /apis/validate | Check Given API Context Name already Exists
 [**validateAsyncAPISpecification**](ValidationApi.md#validateAsyncAPISpecification) | **POST** /apis/validate-asyncapi | Validate an AsyncAPI Specification
 [**validateEndpoint**](ValidationApi.md#validateEndpoint) | **POST** /apis/validate-endpoint | Check Whether Given Endpoint URL is Valid
-[**validateGraphQLSchema**](ValidationApi.md#validateGraphQLSchema) | **POST** /apis/validate-graphql-schema | Validate GraphQL API Definition and Retrieve a Summary
+[**validateGraphQLSchema**](ValidationApi.md#validateGraphQLSchema) | **POST** /apis/validate-graphql-schema | Validate a GraphQL SDL
 [**validateOpenAPIDefinition**](ValidationApi.md#validateOpenAPIDefinition) | **POST** /apis/validate-openapi | Validate an OpenAPI Definition
 [**validateWSDLDefinition**](ValidationApi.md#validateWSDLDefinition) | **POST** /apis/validate-wsdl | Validate a WSDL Definition
 
@@ -230,7 +230,7 @@ Name | Type | Description  | Notes
 # **validateGraphQLSchema**
 > GraphQLValidationResponseDTO validateGraphQLSchema(file)
 
-Validate GraphQL API Definition and Retrieve a Summary
+Validate a GraphQL SDL
 
 This operation can be used to validate a graphQL definition and retrieve a summary. 
 
@@ -297,7 +297,7 @@ Name | Type | Description  | Notes
 
 <a name="validateOpenAPIDefinition"></a>
 # **validateOpenAPIDefinition**
-> OpenAPIDefinitionValidationResponseDTO validateOpenAPIDefinition(returnContent, url, file)
+> OpenAPIDefinitionValidationResponseDTO validateOpenAPIDefinition(returnContent, url, file, inlineAPIDefinition)
 
 Validate an OpenAPI Definition
 
@@ -326,8 +326,9 @@ public class Example {
     Boolean returnContent = false; // Boolean | Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation 
     String url = "url_example"; // String | OpenAPI definition url
     File file = new File("/path/to/file"); // File | OpenAPI definition as a file
+    String inlineAPIDefinition = "inlineAPIDefinition_example"; // String | Inline content of the OpenAPI definition
     try {
-      OpenAPIDefinitionValidationResponseDTO result = apiInstance.validateOpenAPIDefinition(returnContent, url, file);
+      OpenAPIDefinitionValidationResponseDTO result = apiInstance.validateOpenAPIDefinition(returnContent, url, file, inlineAPIDefinition);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ValidationApi#validateOpenAPIDefinition");
@@ -347,6 +348,7 @@ Name | Type | Description  | Notes
  **returnContent** | **Boolean**| Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation  | [optional] [default to false]
  **url** | **String**| OpenAPI definition url | [optional]
  **file** | **File**| OpenAPI definition as a file | [optional]
+ **inlineAPIDefinition** | **String**| Inline content of the OpenAPI definition | [optional]
 
 ### Return type
 

@@ -8,7 +8,7 @@ info:
     This document specifies a **RESTful API** for WSO2 **API Manager** - **Publisher**.
 
     # Authentication
-    Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking
+    The Publisher REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking
     the the API you need to obtain an access token with the required scopes. This guide will walk you through the steps
     that you will need to follow to obtain an access token.
     First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types
@@ -56,11 +56,11 @@ info:
     ```
     curl -k -d "grant_type=password&username=<admin_username>&password=<admin_passowrd&scope=<scopes seperated by space>"
     \ -H "Authorization: Basic base64(cliet_id:client_secret)"
-    \ https://<host>:<gateway_port>/token
+    \ https://<host>:<servlet_port>/oauth2/token
     ```
     **Sample request**
     ```
-    curl https://localhost:8243/token -k \
+    curl https://localhost:9443/oauth2/token -k \
     -H "Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h" \
     -d "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create"
     ```
@@ -143,14 +143,13 @@ paths:
           "provider:wso2" will match an API if the provider of the API contains "wso2".
           "provider:"wso2"" will match an API if the provider of the API is exactly "wso2".
           "status:PUBLISHED" will match an API if the API is in PUBLISHED state.
-          "label:external" will match an API if it contains a Microgateway label called "external".
 
           Also you can use combined modifiers
           Eg.
           name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.
 
           Supported attribute modifiers are [**version, context, name, status,
-          description, subcontext, doc, provider, label**]
+          description, doc, provider**]
 
           If no advanced attribute modifier has been specified,  the API names containing
           the search term will be returned as a result.
@@ -833,9 +832,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_create
       summary: Update the Service that is used to create the API
       tags:
       - APIs
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/ecb5b300-422d-4ee8-88d2-364a0a122238/reimport-service"'
       x-accepts: application/json
   /apis/{apiId}/swagger:
     get:
@@ -2514,15 +2520,16 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
         - apim:api_import_export
-      summary: List available revisions of an API
+      summary: List Revisions
       tags:
       - API Revisions
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions?query=deployed:true"'
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions?query=deployed:true"'
       x-accepts: application/json
     post:
       description: |
@@ -2581,15 +2588,16 @@ paths:
             one of the preconditions is not met.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
         - apim:api_import_export
-      summary: Create a new API revision
+      summary: Create API Revision
       tags:
       - API Revisions
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions"'
       x-contentType: application/json
       x-accepts: application/json
   /apis/{apiId}/revisions/{revisionId}:
@@ -2643,15 +2651,16 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
         - apim:api_import_export
-      summary: Delete a revision of an API
+      summary: Delete Revision
       tags:
       - API Revisions
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
       x-accepts: application/json
     get:
       description: |
@@ -2699,16 +2708,17 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
-      summary: Retrieve a revision of an API
+      summary: Retrieve Revision
       tags:
       - API Revisions
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
       x-accepts: application/json
-  /apis/{apiId}/deploy-revision:
+  /apis/{apiId}/deployments:
     get:
       description: |
         List available deployed revision deployment details of an API
@@ -2746,15 +2756,81 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
-      summary: List available deployed revision deployment details of an API
+      summary: List Deployments
       tags:
       - API Revisions
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision"'
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deployments"'
       x-accepts: application/json
+  /apis/{apiId}/deployments/{deploymentId}:
+    put:
+      description: |
+        Update deployment devportal visibility
+      operationId: updateAPIDeployment
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Base64 URL encoded value of the name of an environment
+        explode: false
+        in: path
+        name: deploymentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIRevisionDeployment'
+        description: Deployment object that needs to be updated
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevisionDeployment'
+          description: |
+            Created.
+            Successful response with the newly updated APIRevisionDeployment List object as the entity in the body.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_publish
+      summary: Update Deployment
+      tags:
+      - API Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -d @data.json "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deployments/UHJvZHVjdGlvbiBhbmQgU2FuZGJveA"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /apis/{apiId}/deploy-revision:
     post:
       description: |
         Deploy a revision
@@ -2788,9 +2864,6 @@ paths:
         description: Deployment object that needs to be added
       responses:
         "200":
-          description: |
-            OK.
-        "201":
           content:
             application/json:
               schema:
@@ -2800,6 +2873,18 @@ paths:
           description: |
             Created.
             Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
         "404":
           content:
             application/json:
@@ -2814,20 +2899,21 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
-      summary: Deploy a revision
+      summary: Deploy Revision
       tags:
       - API Revisions
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
       x-contentType: application/json
       x-accepts: application/json
   /apis/{apiId}/undeploy-revision:
     post:
       description: |
-        Un-Deploy a revision
+        UnDeploy a revision
       operationId: undeployAPIRevision
       parameters:
       - description: |
@@ -2887,6 +2973,18 @@ paths:
           description: |
             Created.
             Successful response with the newly undeployed APIRevisionDeploymentList object as the entity in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
         "404":
           content:
             application/json:
@@ -2901,21 +2999,22 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
         - apim:api_import_export
-      summary: Un-Deploy a revision
+      summary: UnDeploy Revision
       tags:
       - API Revisions
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/undeploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/undeploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
       x-contentType: application/json
       x-accepts: application/json
   /apis/{apiId}/restore-revision:
     post:
       description: |
-        Restore a revision to the working copy of the API
+        Restore a revision to the current API of the API
       operationId: restoreAPIRevision
       parameters:
       - description: |
@@ -2959,14 +3058,15 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
-      summary: Restore a revision
+      summary: Restore API Revision
       tags:
       - API Revisions
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
       x-accepts: application/json
   /apis/import-service:
     post:
@@ -2975,6 +3075,7 @@ paths:
       operationId: importServiceFromCatalog
       parameters:
       - description: ID of service that should be imported from Service Catalog
+        example: Pizzashack-1.0.0
         explode: true
         in: query
         name: serviceKey
@@ -3037,9 +3138,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_create
       summary: Import a Service from Service Catalog
       tags:
       - APIs
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v2/apis/import-service?serviceKey=Pizzashack-1.0.0"'
       x-contentType: application/json
       x-accepts: application/json
   /apis/{apiId}/comments:
@@ -3106,30 +3214,31 @@ paths:
           description: |
             OK.
             Comments list is returned.
-        "401":
+        "404":
           content:
             application/json:
               example:
-                code: 401
-                message: Unauthorized
-                description: The user is not authorized
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
                 moreInfo: ""
                 error: []
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Unauthorized. The user is not authorized.
-        "406":
+          description: Not Found. The specified resource does not exist.
+        "500":
           content:
             application/json:
               example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
                 moreInfo: ""
                 error: []
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Not Acceptable. The requested media type is not supported.
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:comment_view
@@ -3171,6 +3280,7 @@ paths:
                   description: |
                     Content of the comment
                   example: This is a comment
+                  maxLength: 512
                   type: string
                 category:
                   description: |
@@ -3233,6 +3343,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Unauthorized. The user is not authorized.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
         "415":
           content:
             application/json:
@@ -3246,6 +3368,19 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Unsupported Media Type. The entity of the request was not in
             a supported format.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:comment_write
@@ -3309,6 +3444,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Unauthorized. The user is not authorized.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
         "404":
           content:
             application/json:
@@ -3321,6 +3470,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
+        "405":
+          content: {}
+          description: |
+            MethodNotAllowed.
+            Request method is known by the server but is not supported by the target resource.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:comment_write
@@ -3432,11 +3599,6 @@ paths:
               schema:
                 type: string
               style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource.
         "401":
           content:
             application/json:
@@ -3473,6 +3635,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:comment_view
@@ -3516,6 +3691,7 @@ paths:
                   description: |
                     Content of the comment
                   example: This is a comment
+                  maxLength: 512
                   type: string
                 category:
                   description: |
@@ -3575,6 +3751,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Unauthorized. The user is not authorized.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
         "404":
           content:
             application/json:
@@ -3600,6 +3790,19 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Unsupported Media Type. The entity of the request was not in
             a supported format.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:comment_write
@@ -3608,7 +3811,7 @@ paths:
       - Comments
       x-code-samples:
       - lang: Curl
-        source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        source: 'curl -k -X PATCH -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
       x-contentType: application/json
       x-accepts: application/json
@@ -3712,11 +3915,6 @@ paths:
               schema:
                 type: string
               style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource.
         "401":
           content:
             application/json:
@@ -3753,6 +3951,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:comment_view
@@ -3761,7 +3972,7 @@ paths:
       - Comments
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+        source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"
       x-accepts: application/json
   /apis/import-openapi:
     post:
@@ -3786,6 +3997,9 @@ paths:
                 additionalProperties:
                   description: Additional attributes specified as a stringified JSON
                     with API's schema
+                  type: string
+                inlineAPIDefinition:
+                  description: Inline content of the OpenAPI definition
                   type: string
       responses:
         "201":
@@ -4068,7 +4282,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
-      summary: Import API Definition
+      summary: Import a GraphQL SDL
       tags:
       - APIs
       x-code-samples:
@@ -4106,6 +4320,9 @@ paths:
                 file:
                   description: OpenAPI definition as a file
                   format: binary
+                  type: string
+                inlineAPIDefinition:
+                  description: Inline content of the OpenAPI definition
                   type: string
       responses:
         "200":
@@ -4455,7 +4672,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
-      summary: Validate GraphQL API Definition and Retrieve a Summary
+      summary: Validate a GraphQL SDL
       tags:
       - Validation
       x-code-samples:
@@ -7671,6 +7888,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_import_export
+        - apim:admin
       summary: Import an API
       tags:
       - Import Export
@@ -8220,6 +8438,94 @@ paths:
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/api"'
       x-accepts: application/json
+  /throttling-policies/streaming/subscription:
+    get:
+      description: |
+        This operation can be used to list the available streaming subscription policies
+      operationId: getSubscriptionThrottlingPolicies
+      parameters:
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resource.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPolicyList'
+          description: |
+            OK.
+            List of subscription policies returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+      summary: Get streaming throttling policies
+      tags:
+      - Throttling Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/subscription?tierQuotaType=RequestCountLimit"'
+      x-accepts: application/json
   /throttling-policies/{policyLevel}/{policyName}:
     get:
       description: |
@@ -8329,94 +8635,6 @@ paths:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/api/Platinum"'
-      x-accepts: application/json
-  /throttling-policies/streaming/subscription:
-    get:
-      description: |
-        This operation can be used to list the available streaming subscription policies
-      operationId: getSubscriptionThrottlingPolicies
-      parameters:
-      - description: |
-          Maximum size of resource array to return.
-        explode: true
-        in: query
-        name: limit
-        required: false
-        schema:
-          default: 25
-          type: integer
-        style: form
-      - description: |
-          Starting point within the complete list of items qualified.
-        explode: true
-        in: query
-        name: offset
-        required: false
-        schema:
-          default: 0
-          type: integer
-        style: form
-      - description: |
-          Validator for conditional requests; based on the ETag of the formerly retrieved
-          variant of the resource.
-        explode: false
-        in: header
-        name: If-None-Match
-        required: false
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SubscriptionPolicyList'
-          description: |
-            OK.
-            List of subscription policies returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-        "406":
-          content:
-            application/json:
-              example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Acceptable. The requested media type is not supported.
-      security:
-      - OAuth2Security:
-        - apim:api_view
-      summary: Get streaming throttling policies
-      tags:
-      - Throttling Policies
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/streaming/subscription"'
       x-accepts: application/json
   /mediation-policies:
     get:
@@ -11626,9 +11844,10 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
         - apim:api_product_import_export
-      summary: List available revisions of an API Product
+      summary: List Revisions
       tags:
       - API Product Revisions
       x-code-samples:
@@ -11695,6 +11914,7 @@ paths:
             one of the preconditions is not met.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
       summary: Create a new API Product revision
       tags:
@@ -11758,8 +11978,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
-      summary: Delete a revision of an API Product
+      summary: Delete Revision
       tags:
       - API Product Revisions
       x-code-samples:
@@ -11815,8 +12036,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
-      summary: Retrieve a revision of an API Product
+      summary: Retrieve Revision
       tags:
       - API Product Revisions
       x-code-samples:
@@ -11824,7 +12046,7 @@ paths:
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
       x-accepts: application/json
-  /api-products/{apiProductId}/deploy-revision:
+  /api-products/{apiProductId}/deployments:
     get:
       description: |
         List available deployed revision deployment details of an API Product
@@ -11864,18 +12086,86 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
-      summary: List available deployed revision deployment details of an API Product
+      summary: List Deployments
       tags:
       - API Product Revisions
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision"'
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deployments"'
       x-accepts: application/json
+  /api-products/{apiProductId}/deployments/{deploymentId}:
+    put:
+      description: |
+        Update deployment devportal visibility
+      operationId: updateAPIProductDeployment
+      parameters:
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.
+        explode: false
+        in: path
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+          x-encoded: true
+        style: simple
+        x-encoded: true
+      - description: |
+          Base64 URL encoded value of the name of an environment
+        explode: false
+        in: path
+        name: deploymentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIRevisionDeployment'
+        description: Deployment object that needs to be updated
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevisionDeployment'
+          description: |
+            Created.
+            Successful response with the newly updated APIRevisionDeployment List object as the entity in the body.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_publish
+      summary: Update Deployment
+      tags:
+      - API Product Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -d @data.json "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deployments/UHJvZHVjdGlvbiBhbmQgU2FuZGJveA"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /api-products/{apiProductId}/deploy-revision:
     post:
       description: |
-        Deploy a revision
+        Deploy an API Product Revision
       operationId: deployAPIProductRevision
       parameters:
       - description: |
@@ -11920,6 +12210,18 @@ paths:
           description: |
             Created.
             Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
         "404":
           content:
             application/json:
@@ -11934,8 +12236,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
-      summary: Deploy a revision
+      summary: Deploy Revision
       tags:
       - API Product Revisions
       x-code-samples:
@@ -11947,7 +12250,7 @@ paths:
   /api-products/{apiProductId}/undeploy-revision:
     post:
       description: |
-        Un-Deploy a revision
+        UnDeploy an API Product Revision
       operationId: undeployAPIProductRevision
       parameters:
       - description: |
@@ -12009,6 +12312,18 @@ paths:
           description: |
             Created.
             Successful response with the newly undeployed APIRevisionDeploymentList object as the entity in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
         "404":
           content:
             application/json:
@@ -12023,9 +12338,10 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
         - apim:api_product_import_export
-      summary: Un-Deploy a revision
+      summary: UnDeploy Revision
       tags:
       - API Product Revisions
       x-code-samples:
@@ -12037,7 +12353,7 @@ paths:
   /api-products/{apiProductId}/restore-revision:
     post:
       description: |
-        Restore a revision to the working copy of the API Product
+        Restore a revision to the Current API of the API Product
       operationId: restoreAPIProductRevision
       parameters:
       - description: |
@@ -12083,8 +12399,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_create
         - apim:api_publish
-      summary: Restore a revision
+      summary: Restore Revision
       tags:
       - API Product Revisions
       x-code-samples:
@@ -12654,457 +12971,6 @@ paths:
       x-examples:
         $ref: docs/examples/tenants/tenants.yaml
       x-accepts: application/json
-  /alert-types:
-    get:
-      description: |
-        This operation is used to get the list of supportd alert types for the 'publisher' agent.
-      operationId: getPublisherAlertTypes
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertTypesList'
-          description: |
-            OK.
-            The list of publisher alert types are returned.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:pub_alert_manage
-      summary: |
-        Get the list of API Publisher alert types.
-      tags:
-      - Alerts
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/alert-types"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts.yaml#/get
-      x-accepts: application/json
-  /alert-subscriptions:
-    delete:
-      description: |
-        This operation is used to unsubscribe the respective user from all the alert types.
-      operationId: unsubscribeAllAlerts
-      responses:
-        "200":
-          content: {}
-          description: |
-            OK.
-            The user is unsubscribed from the alerts successfully.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:pub_alert_manage
-      summary: |
-        Unsubscribe User from All the Alert Types
-      tags:
-      - Alert Subscriptions
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/delete
-      x-accepts: application/json
-    get:
-      description: |
-        This operation is used to get the list of subscribed alert types by the user.
-      operationId: getSubscribedAlertTypes
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertsInfo'
-          description: |
-            OK.
-            The list of subscribed alert types are returned.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:pub_alert_manage
-      summary: |
-        Get the List of API Publisher Alert Types Subscribed by the User
-      tags:
-      - Alert Subscriptions
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/get
-      x-accepts: application/json
-    put:
-      description: |
-        This operation is used to get the list of subscribed alert types by the user.
-      operationId: subscribeToAlerts
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AlertsInfo'
-        description: The alerts list and the email list to subscribe.
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertsInfoResponse'
-          description: |
-            OK.
-            Successful response with the newly subscribed alerts.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "400":
-          content:
-            application/json:
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Bad Request. Invalid request or validation error.
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:pub_alert_manage
-      summary: |
-        Subscribe to the Selected Tlert types by the User
-      tags:
-      - Alert Subscriptions
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/put
-      x-contentType: application/json
-      x-accepts: application/json
-  /alerts/{alertType}/configurations:
-    get:
-      description: |
-        This operation is used to get all configurations of the AbnormalRequestsPerMin alert type.
-      operationId: getAllAlertConfigs
-      parameters:
-      - description: The alert type.
-        explode: false
-        in: path
-        name: alertType
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertConfigList'
-          description: |
-            OK.
-            The Developer Portal alert configuration.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:pub_alert_manage
-      summary: |
-        Get All AbnormalRequestsPerMin Alert Configurations
-      tags:
-      - Alert Configuration
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/alerts/{alertType}/configurations"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/get
-      x-accepts: application/json
-  /alerts/{alertType}/configurations/{configurationId}:
-    delete:
-      description: |
-        This operation is used to delete configuration from the AbnormalRequestsPerMin alert type.
-      operationId: deleteAlertConfig
-      parameters:
-      - description: The alert type.
-        explode: false
-        in: path
-        name: alertType
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The alert configuration id.
-        explode: false
-        in: path
-        name: configurationId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content: {}
-          description: |
-            OK.
-            The alert config is deleted successfully.
-        "400":
-          content:
-            application/json:
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Bad Request. Invalid request or validation error.
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:pub_alert_manage
-      summary: |
-        Delete the Selected Configuration from AbnormalRequestsPerMin Alert Type.
-      tags:
-      - Alert Configuration
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/delete
-      x-accepts: application/json
-    put:
-      description: |
-        This operation is used to add configuration for the AbnormalRequestsPerMin alert type.
-      operationId: addAlertConfig
-      parameters:
-      - description: The alert type.
-        explode: false
-        in: path
-        name: alertType
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: The alert configuration id.
-        explode: false
-        in: path
-        name: configurationId
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AlertConfigInfo'
-        description: Configuration for AbnormalRequestCount alert type
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertConfig'
-          description: |
-            Created.
-            Successful response with newly created object as entity.
-            Location header contains URL of newly created entity.
-          headers:
-            Location:
-              description: |
-                The location of the newly created entity.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "400":
-          content:
-            application/json:
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Bad Request. Invalid request or validation error.
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:pub_alert_manage
-      summary: |
-        Add AbnormalRequestsPerMin Alert Configurations.
-      tags:
-      - Alert Configuration
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/put
-      x-contentType: application/json
-      x-accepts: application/json
-  /labels:
-    get:
-      description: |
-        Get all registered Labels
-      operationId: getLabels
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LabelList'
-          description: |
-            OK.
-            Labels returned
-      security:
-      - OAuth2Security:
-        - apim:api_view
-      summary: Get all Registered Labels
-      tags:
-      - Label Collection
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/labels"'
-      x-accepts: application/json
   /api-categories:
     get:
       description: |
@@ -13555,158 +13421,6 @@ paths:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/key-managers"'
-      x-accepts: application/json
-  /deployments:
-    get:
-      description: |
-        This operation can be used to retrieve cloud clusters information defines in tenant-conf.json file.
-
-        With that you can deploy an API to selected cloud environments.
-      operationId: deploymentsGet
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeploymentList'
-          description: |
-            OK. Successful response with the list of deployment environments information in the body.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "400":
-          content:
-            application/json:
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Bad Request. Invalid request or validation error.
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:api_view
-      summary: Retrieve Deployment Environments Details
-      tags:
-      - Deployments
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/deployments"'
-      x-accepts: application/json
-  /apis/{apiId}/deployments:
-    get:
-      description: |
-        This operation can be used to retrieve the status of deployments in cloud clusters.
-
-        With that you can get the status of the deployed APIs in cloud environments.
-      operationId: deploymentsGetStatus
-      parameters:
-      - description: |
-          **API ID** consisting of the **UUID** of the API.
-        explode: false
-        in: path
-        name: apiId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeploymentStatusList'
-          description: |
-            OK. Successful response with the list of deployment environments information in the body.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "400":
-          content:
-            application/json:
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Bad Request. Invalid request or validation error.
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:api_view
-      summary: Retrieve Deployment Status Details
-      tags:
-      - DeploymentStatus
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/apis/92bc1330-1848-4fe8-b992-c792186c212e/deployments/"'
       x-accepts: application/json
   /apis/validate-asyncapi:
     post:
@@ -14344,6 +14058,16 @@ components:
       schema:
         type: string
       style: form
+    deploymentId:
+      description: |
+        Base64 URL encoded value of the name of an environment
+      explode: false
+      in: path
+      name: deploymentId
+      required: true
+      schema:
+        type: string
+      style: simple
     policyName:
       description: |
         Tier name
@@ -14730,14 +14454,18 @@ components:
           type: string
         category:
           default: general
+          example: general
+          readOnly: true
           type: string
         parentCommentId:
           example: 6f38aea2-f41e-4ac9-b3f2-a9493d00ba97
+          readOnly: true
           type: string
         entryPoint:
           enum:
           - devPortal
           - publisher
+          readOnly: true
           type: string
         commenterInfo:
           $ref: '#/components/schemas/CommenterInfo'
@@ -14786,10 +14514,12 @@ components:
           description: |
             Number of Comments returned.
           example: 1
+          readOnly: true
           type: integer
         list:
           items:
             $ref: '#/components/schemas/Comment'
+          readOnly: true
           type: array
         pagination:
           $ref: '#/components/schemas/Pagination'
@@ -14821,39 +14551,35 @@ components:
           limit: 1
         count: 1
         list:
-        - hasThumbnail: true
-          provider: admin
+        - updatedTime: 2021-02-11 09:57:25
+          hasThumbnail: true
           workflowStatus: APPROVED
+          description: A calculator API that supports basic operations
+          type: HTTP
+          version: 1.0.0
+          provider: admin
           securityScheme:
           - securityScheme
           - securityScheme
-          websubSubscriptionConfiguration:
-            signingAlgorithm: signingAlgorithm
-            signatureHeader: signatureHeader
-            secret: secret
           name: CalculatorAPI
           context: CalculatorAPI
-          description: A calculator API that supports basic operations
+          createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
-          type: HTTP
-          version: 1.0.0
           lifeCycleStatus: CREATED
-        - hasThumbnail: true
-          provider: admin
+        - updatedTime: 2021-02-11 09:57:25
+          hasThumbnail: true
           workflowStatus: APPROVED
+          description: A calculator API that supports basic operations
+          type: HTTP
+          version: 1.0.0
+          provider: admin
           securityScheme:
           - securityScheme
           - securityScheme
-          websubSubscriptionConfiguration:
-            signingAlgorithm: signingAlgorithm
-            signatureHeader: signatureHeader
-            secret: secret
           name: CalculatorAPI
           context: CalculatorAPI
-          description: A calculator API that supports basic operations
+          createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
-          type: HTTP
-          version: 1.0.0
           lifeCycleStatus: CREATED
       properties:
         count:
@@ -14886,22 +14612,20 @@ components:
       type: object
     APIInfo:
       example:
+        updatedTime: 2021-02-11 09:57:25
         hasThumbnail: true
-        provider: admin
         workflowStatus: APPROVED
+        description: A calculator API that supports basic operations
+        type: HTTP
+        version: 1.0.0
+        provider: admin
         securityScheme:
         - securityScheme
         - securityScheme
-        websubSubscriptionConfiguration:
-          signingAlgorithm: signingAlgorithm
-          signatureHeader: signatureHeader
-          secret: secret
         name: CalculatorAPI
         context: CalculatorAPI
-        description: A calculator API that supports basic operations
+        createdTime: 2021-02-11 09:57:25
         id: 01234567-0123-0123-0123-012345678901
-        type: HTTP
-        version: 1.0.0
         lifeCycleStatus: CREATED
       properties:
         id:
@@ -14940,8 +14664,12 @@ components:
           items:
             type: string
           type: array
-        websubSubscriptionConfiguration:
-          $ref: '#/components/schemas/APIInfo_websubSubscriptionConfiguration'
+        createdTime:
+          example: 2021-02-11 09:57:25
+          type: string
+        updatedTime:
+          example: 2021-02-11 09:57:25
+          type: string
       title: API Info object with basic API details.
       type: object
     Topic:
@@ -14955,7 +14683,7 @@ components:
           example: PizzaShackAPI
           maxLength: 50
           minLength: 1
-          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+]*$)
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+\[\]\/]*$)
           type: string
         mode:
           example: This is a simple API for Pizza Shack online pizza delivery store.
@@ -15004,30 +14732,27 @@ components:
         createdTime: createdTime
         id: 01234567-0123-0123-0123-012345678901
         wsdlUrl: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
-        deploymentEnvironments:
-        - clusterName:
-          - minikube
-          type: Kubernetes
-        - clusterName:
-          - minikube
-          type: Kubernetes
         accessControlRoles: []
         visibility: PUBLIC
         version: 1.0.0
         tags:
         - pizza
         - food
-        labels: []
         visibleTenants: []
         cacheTimeout: 300
         isDefaultVersion: false
         apiThrottlingPolicy: Unlimited
         websubSubscriptionConfiguration:
           signingAlgorithm: signingAlgorithm
+          enable: false
           signatureHeader: signatureHeader
           secret: secret
         name: PizzaShackAPI
         revisionedApiId: 01234567-0123-0123-0123-012345678901
+        advertiseInfo:
+          apiOwner: admin
+          advertised: true
+          originalDevPortalUrl: https://localhost:9443/devportal
         additionalProperties:
         - display: true
           name: name
@@ -15097,16 +14822,8 @@ components:
         transport:
         - http
         - https
-        endpointSecurity:
-          password: password
-          type: BASIC
-          username: admin
         revisionId: 1
-        businessInformation:
-          technicalOwnerEmail: technicalowner@wso2.com
-          businessOwnerEmail: businessowner@wso2.com
-          businessOwner: businessowner
-          technicalOwner: technicalowner
+        businessInformation: ""
         securityScheme:
         - oauth2
         keyManagers: '{}'
@@ -15150,7 +14867,7 @@ components:
           example: PizzaShackAPI
           maxLength: 50
           minLength: 1
-          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+]*$)
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+\[\]\/]*$)
           type: string
         description:
           example: This is a simple API for Pizza Shack online pizza delivery store.
@@ -15165,7 +14882,7 @@ components:
           example: 1.0.0
           maxLength: 30
           minLength: 1
-          pattern: ^[^~!@#;:%^*()+={}|\\<>"',&/$]+$
+          pattern: ^[^~!@#;:%^*()+={}|\\<>"',&/$\[\]\s+\/]+$
           type: string
         provider:
           description: |
@@ -15263,6 +14980,7 @@ components:
             Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified
             in tenant or system level will be used.
           example: Authorization
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+]*$)
           type: string
         securityScheme:
           description: |
@@ -15301,8 +15019,6 @@ components:
           items:
             type: string
           type: array
-        endpointSecurity:
-          $ref: '#/components/schemas/APIEndpointSecurity'
         gatewayEnvironments:
           description: |
             List of gateway environments the API is available
@@ -15313,21 +15029,6 @@ components:
           type: array
           x-otherScopes:
           - apim:api_publish
-        deploymentEnvironments:
-          description: |
-            List of selected deployment environments and clusters
-          items:
-            $ref: '#/components/schemas/DeploymentEnvironments'
-          type: array
-          x-otherScopes:
-          - apim:api_publish
-        labels:
-          description: |
-            Labels of micro-gateway environments attached to the API.
-          example: []
-          items:
-            type: string
-          type: array
         mediationPolicies:
           example:
           - name: json_to_xml_in_message
@@ -15384,7 +15085,10 @@ components:
             type: string
           type: array
         businessInformation:
-          $ref: '#/components/schemas/APIBusinessInformation'
+          allOf:
+          - $ref: '#/components/schemas/APIBusinessInformation'
+          x-otherScopes:
+          - apim:api_publish
         corsConfiguration:
           $ref: '#/components/schemas/APICorsConfiguration'
         websubSubscriptionConfiguration:
@@ -15536,6 +15240,8 @@ components:
           type: object
         serviceInfo:
           $ref: '#/components/schemas/API_serviceInfo'
+        advertiseInfo:
+          $ref: '#/components/schemas/AdvertiseInfo'
       required:
       - context
       - name
@@ -15567,20 +15273,26 @@ components:
       properties:
         displayName:
           example: REVISION 1
+          readOnly: true
           type: string
         id:
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+          readOnly: true
           type: string
         description:
           example: removed a post resource
+          maxLength: 255
+          minLength: 0
           type: string
         createdTime:
+          readOnly: true
           type: string
         apiInfo:
           $ref: '#/components/schemas/APIRevisionAPIInfo'
         deploymentInfo:
           items:
             $ref: '#/components/schemas/APIRevisionDeployment'
+          readOnly: true
           type: array
       title: API Info object with basic API details
     APIRevisionAPIInfo:
@@ -15670,9 +15382,13 @@ components:
       properties:
         revisionUuid:
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
+          maxLength: 255
+          minLength: 0
           type: string
         name:
           example: default
+          maxLength: 255
+          minLength: 1
           type: string
         vhost:
           example: mg.wso2.com
@@ -15684,6 +15400,7 @@ components:
           example: true
           type: boolean
         deployedTime:
+          readOnly: true
           type: string
       title: APIRevisionDeployment Info object with basic API deployment details
     AuditReport:
@@ -16777,6 +16494,34 @@ components:
       - unitTime
       title: Tier
       type: object
+    SubscriptionPolicyList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 1
+        list:
+        - null
+        - null
+      properties:
+        count:
+          description: |
+            Number of Tiers returned.
+          example: 1
+          type: integer
+        list:
+          description: |
+            Array of SubscriptionPolicies
+          items:
+            $ref: '#/components/schemas/SubscriptionPolicy'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Subscription policy list
+      type: object
     SubscriptionList:
       example:
         pagination:
@@ -16856,6 +16601,54 @@ components:
       - throttlingPolicy
       title: Subscription
       type: object
+    ThrottlePolicy:
+      discriminator:
+        propertyName: type
+      properties:
+        policyId:
+          description: Id of policy
+          example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+          readOnly: true
+          type: string
+        policyName:
+          description: Name of policy
+          example: 30PerMin
+          maxLength: 60
+          minLength: 1
+          type: string
+        displayName:
+          description: Display name of the policy
+          example: 30PerMin
+          maxLength: 512
+          type: string
+        description:
+          description: Description of the policy
+          example: Allows 30 request per minute
+          maxLength: 1024
+          type: string
+        isDeployed:
+          default: false
+          description: Indicates whether the policy is deployed successfully or not.
+          type: boolean
+        type:
+          description: Indicates the type of throttle policy
+          type: string
+      required:
+      - policyName
+      title: Generic Throttling Policy
+      type: object
+    GraphQLQuery:
+      properties:
+        graphQLMaxComplexity:
+          description: Maximum Complexity of the GraphQL query
+          example: 400
+          type: integer
+        graphQLMaxDepth:
+          description: Maximum Depth of the GraphQL query
+          example: 10
+          type: integer
+      title: GraphQL Query
+      type: object
     ThrottleLimitBase:
       properties:
         timeUnit:
@@ -16929,34 +16722,6 @@ components:
       - $ref: '#/components/schemas/ThrottleLimitBase'
       - $ref: '#/components/schemas/EventCountLimit_allOf'
       title: Event Count Limit object
-    SubscriptionPolicyList:
-      example:
-        pagination:
-          next: next
-          total: 10
-          offset: 0
-          previous: previous
-          limit: 1
-        count: 1
-        list:
-        - null
-        - null
-      properties:
-        count:
-          description: |
-            Number of Tiers returned.
-          example: 1
-          type: integer
-        list:
-          description: |
-            Array of SubscriptionPolicies
-          items:
-            $ref: '#/components/schemas/SubscriptionPolicy'
-          type: array
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-      title: Subscription policy list
-      type: object
     SubscriptionPolicy:
       allOf:
       - $ref: '#/components/schemas/SubscriptionPolicy_allOf'
@@ -17088,11 +16853,6 @@ components:
       type: object
     Environment:
       example:
-        endpoints:
-          wss: https://localhost:8099
-          http: http://localhost:8280
-          https: https://localhost:8243
-          ws: http://localhost:9099
         showInApiConsole: true
         displayName: Default
         serverUrl: https://localhost:9443/services/
@@ -17127,8 +16887,6 @@ components:
         showInApiConsole:
           example: true
           type: boolean
-        endpoints:
-          $ref: '#/components/schemas/EnvironmentEndpoints'
         vhosts:
           items:
             $ref: '#/components/schemas/VHost'
@@ -17153,31 +16911,6 @@ components:
             $ref: '#/components/schemas/Environment'
           type: array
       title: Environment List
-      type: object
-    EnvironmentEndpoints:
-      example:
-        wss: https://localhost:8099
-        http: http://localhost:8280
-        https: https://localhost:8243
-        ws: http://localhost:9099
-      properties:
-        http:
-          description: HTTP environment URL
-          example: http://localhost:8280
-          type: string
-        https:
-          description: HTTPS environment URL
-          example: https://localhost:8243
-          type: string
-        ws:
-          description: WS environment URL
-          example: http://localhost:9099
-          type: string
-        wss:
-          description: WSS environment URL
-          example: https://localhost:8099
-          type: string
-      title: Environment Endpoints
       type: object
     VHost:
       example:
@@ -17238,32 +16971,7 @@ components:
           format: int64
           type: integer
       type: object
-    APIEndpointSecurity:
-      example:
-        password: password
-        type: BASIC
-        username: admin
-      properties:
-        type:
-          description: Accepts one of the following, basic or digest.
-          enum:
-          - BASIC
-          - DIGEST
-          example: BASIC
-          type: string
-        username:
-          example: admin
-          type: string
-        password:
-          example: password
-          type: string
-      type: object
     APIBusinessInformation:
-      example:
-        technicalOwnerEmail: technicalowner@wso2.com
-        businessOwnerEmail: businessowner@wso2.com
-        businessOwner: businessowner
-        technicalOwner: technicalowner
       properties:
         businessOwner:
           example: businessowner
@@ -17284,9 +16992,14 @@ components:
     WebsubSubscriptionConfiguration:
       example:
         signingAlgorithm: signingAlgorithm
+        enable: false
         signatureHeader: signatureHeader
         secret: secret
       properties:
+        enable:
+          default: false
+          description: Toggle enable WebSub subscription configuration
+          type: boolean
         secret:
           description: Secret key to be used for subscription
           type: string
@@ -17862,57 +17575,6 @@ components:
           type: string
       title: Client certificate meta data
       type: object
-    Label:
-      example:
-        name: marketing_store
-        access_urls: https://localhost:9095
-        description: Public microgateway for marketing
-      properties:
-        name:
-          example: marketing_store
-          type: string
-        description:
-          example: Public microgateway for marketing
-          type: string
-        access_urls:
-          example: https://localhost:9095
-          items:
-            type: string
-          type: array
-      required:
-      - name
-      title: Label
-      type: object
-    LabelList:
-      example:
-        pagination:
-          next: next
-          total: 10
-          offset: 0
-          previous: previous
-          limit: 1
-        count: 1
-        list:
-        - name: marketing_store
-          access_urls: https://localhost:9095
-          description: Public microgateway for marketing
-        - name: marketing_store
-          access_urls: https://localhost:9095
-          description: Public microgateway for marketing
-      properties:
-        count:
-          description: |
-            Number of Labels returned.
-          example: 1
-          type: integer
-        list:
-          items:
-            $ref: '#/components/schemas/Label'
-          type: array
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-      title: Label List
-      type: object
     LifecycleState:
       example:
         state: Created
@@ -18472,12 +18134,7 @@ components:
         devportalUrl: https://localhost:9443/devportal
         externalStoresEnabled: true
         environment:
-        - endpoints:
-            wss: https://localhost:8099
-            http: http://localhost:8280
-            https: https://localhost:8243
-            ws: http://localhost:9099
-          showInApiConsole: true
+        - showInApiConsole: true
           displayName: Default
           serverUrl: https://localhost:9443/services/
           name: default
@@ -18495,12 +18152,7 @@ components:
             wsPort: 9099
             host: mg.wso2.com
             httpsPort: 443
-        - endpoints:
-            wss: https://localhost:8099
-            http: http://localhost:8280
-            https: https://localhost:8243
-            ws: http://localhost:9099
-          showInApiConsole: true
+        - showInApiConsole: true
           displayName: Default
           serverUrl: https://localhost:9443/services/
           name: default
@@ -18518,31 +18170,6 @@ components:
             wsPort: 9099
             host: mg.wso2.com
             httpsPort: 443
-        deployments:
-        - name: Kubernetes
-          clusters:
-          - accessURL: https://api.com
-            displayName: kubernetes-minikube
-            clusterName: minikube
-            properties:
-              key: properties
-          - accessURL: https://api.com
-            displayName: kubernetes-minikube
-            clusterName: minikube
-            properties:
-              key: properties
-        - name: Kubernetes
-          clusters:
-          - accessURL: https://api.com
-            displayName: kubernetes-minikube
-            clusterName: minikube
-            properties:
-              key: properties
-          - accessURL: https://api.com
-            displayName: kubernetes-minikube
-            clusterName: minikube
-            properties:
-              key: properties
         crossTenantSubscriptionEnabled: false
         securityAuditProperties: '{}'
         scopes:
@@ -18590,10 +18217,6 @@ components:
             Is Cross Tenant Subscriptions Enabled
           example: false
           type: boolean
-        deployments:
-          items:
-            $ref: '#/components/schemas/Deployments'
-          type: array
       title: SettingsDTO
       type: object
     SecurityAuditAttribute:
@@ -18729,251 +18352,22 @@ components:
           $ref: '#/components/schemas/Pagination'
       title: Tenant list
       type: object
-    AlertTypesList:
+    AdvertiseInfo:
       example:
-        alerts:
-        - name: AbnormalRequestTime
-          id: 1
-          requireConfiguration: true
-        - name: AbnormalRequestTime
-          id: 1
-          requireConfiguration: true
-        count: 3
+        apiOwner: admin
+        advertised: true
+        originalDevPortalUrl: https://localhost:9443/devportal
       properties:
-        count:
-          description: The number of alerts
-          example: 3
-          type: integer
-        alerts:
-          items:
-            $ref: '#/components/schemas/AlertType'
-          type: array
-      title: Alert Types List
-      type: object
-    AlertType:
-      example:
-        name: AbnormalRequestTime
-        id: 1
-        requireConfiguration: true
-      properties:
-        id:
-          description: The alert Id
-          example: 1
-          type: integer
-        name:
-          description: The name of the alert.
-          example: AbnormalRequestTime
-          type: string
-        requireConfiguration:
-          description: Whether the alert type require additional configurations.
+        advertised:
           example: true
           type: boolean
-      title: Alert Type
-      type: object
-    Alert:
-      example:
-        configuration:
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestConunt: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestConunt: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-        name: AbnormalRequestsPerMin
-        id: 1
-      properties:
-        id:
-          description: The alert Id
-          example: 1
-          type: integer
-        name:
-          description: The name of the alert.
-          example: AbnormalRequestsPerMin
+        originalDevPortalUrl:
+          example: https://localhost:9443/devportal
           type: string
-        configuration:
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-          type: array
-      title: Alert
-      type: object
-    AlertsInfo:
-      example:
-        alerts:
-        - configuration:
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestConunt: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestConunt: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          name: AbnormalRequestsPerMin
-          id: 1
-        - configuration:
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestConunt: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestConunt: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          name: AbnormalRequestsPerMin
-          id: 1
-        emailList:
-        - emailList
-        - emailList
-      properties:
-        alerts:
-          items:
-            $ref: '#/components/schemas/Alert'
-          type: array
-        emailList:
-          items:
-            type: string
-          type: array
-      title: Alerts Info
-      type: object
-    AlertsInfoResponse:
-      example:
-        alerts:
-        - configuration:
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestConunt: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestConunt: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          name: AbnormalRequestsPerMin
-          id: 1
-        - configuration:
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestConunt: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestConunt: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          name: AbnormalRequestsPerMin
-          id: 1
-        emailList:
-        - emailList
-        - emailList
-        failedConfigurations:
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestConunt: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestConunt: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-      properties:
-        alerts:
-          items:
-            $ref: '#/components/schemas/Alert'
-          type: array
-        emailList:
-          items:
-            type: string
-          type: array
-        failedConfigurations:
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-          type: array
-      title: Alerts Info Response
-      type: object
-    AlertConfigList:
-      example:
-        count: 1
-        list:
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestConunt: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestConunt: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-      properties:
-        count:
-          example: 1
-          type: integer
-        list:
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-          type: array
-      title: Alert Configuration List
-      type: object
-    AlertConfig:
-      example:
-        configuration:
-          apiName: PizzaShackAPI
-          apiVersion: 1.0.0
-          applicationName: DefaultApplication
-          requestConunt: "12"
-        configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-      properties:
-        configurationId:
-          description: The alert config subscription id.
-          example: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
+        apiOwner:
+          example: admin
           type: string
-        configuration:
-          additionalProperties:
-            type: string
-          description: The config parameters.
-          example:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestConunt: "12"
-          type: object
-      title: Alert Configuration
-      type: object
-    AlertConfigInfo:
-      additionalProperties:
-        type: string
-      description: The config parameters.
-      example:
-        apiName: PizzaShackAPI
-        apiVersion: 1.0.0
-        applicationName: DefaultApplication
-        requestConunt: "12"
-      title: Alert Configuration Info
+      title: API Advertise info object with advertise details
       type: object
     APICategory:
       example:
@@ -19107,278 +18501,6 @@ components:
           type: integer
       title: API Key details to invoke APIs
       type: object
-    DeploymentList:
-      example:
-        count: 1
-        list:
-        - name: Kubernetes
-          clusters:
-          - accessURL: https://api.com
-            displayName: kubernetes-minikube
-            clusterName: minikube
-            properties:
-              key: properties
-          - accessURL: https://api.com
-            displayName: kubernetes-minikube
-            clusterName: minikube
-            properties:
-              key: properties
-        - name: Kubernetes
-          clusters:
-          - accessURL: https://api.com
-            displayName: kubernetes-minikube
-            clusterName: minikube
-            properties:
-              key: properties
-          - accessURL: https://api.com
-            displayName: kubernetes-minikube
-            clusterName: minikube
-            properties:
-              key: properties
-      properties:
-        count:
-          description: |
-            Number of deployment clusters returned.
-          example: 1
-          type: integer
-        list:
-          items:
-            $ref: '#/components/schemas/Deployments'
-          type: array
-      title: Deployment List
-      type: object
-    Deployments:
-      example:
-        name: Kubernetes
-        clusters:
-        - accessURL: https://api.com
-          displayName: kubernetes-minikube
-          clusterName: minikube
-          properties:
-            key: properties
-        - accessURL: https://api.com
-          displayName: kubernetes-minikube
-          clusterName: minikube
-          properties:
-            key: properties
-      properties:
-        name:
-          example: Kubernetes
-          type: string
-        clusters:
-          items:
-            $ref: '#/components/schemas/DeploymentClusterInfo'
-          type: array
-      required:
-      - clusters
-      - name
-      title: Deployments
-      type: object
-    DeploymentClusterInfo:
-      example:
-        accessURL: https://api.com
-        displayName: kubernetes-minikube
-        clusterName: minikube
-        properties:
-          key: properties
-      properties:
-        clusterName:
-          example: minikube
-          type: string
-        accessURL:
-          example: https://api.com
-          type: string
-        displayName:
-          example: kubernetes-minikube
-          type: string
-        properties:
-          additionalProperties:
-            type: string
-          type: object
-      required:
-      - accessURL
-      - clusterName
-      - displayName
-      - properties
-      title: DeploymentClusterInfo
-      type: object
-    DeploymentStatusList:
-      example:
-        count: 1
-        list:
-        - type: Kubernetes
-          clusters:
-          - podsRunning: 0
-            healthStatus:
-            - ready: 1/1
-              name: petStore-677bb7cc65-shb2f
-              creationTimestamp: 2020-05-12T06:12:00Z
-              status: running
-            - ready: 1/1
-              name: petStore-677bb7cc65-shb2f
-              creationTimestamp: 2020-05-12T06:12:00Z
-              status: running
-            clusterName: Minikube
-          - podsRunning: 0
-            healthStatus:
-            - ready: 1/1
-              name: petStore-677bb7cc65-shb2f
-              creationTimestamp: 2020-05-12T06:12:00Z
-              status: running
-            - ready: 1/1
-              name: petStore-677bb7cc65-shb2f
-              creationTimestamp: 2020-05-12T06:12:00Z
-              status: running
-            clusterName: Minikube
-        - type: Kubernetes
-          clusters:
-          - podsRunning: 0
-            healthStatus:
-            - ready: 1/1
-              name: petStore-677bb7cc65-shb2f
-              creationTimestamp: 2020-05-12T06:12:00Z
-              status: running
-            - ready: 1/1
-              name: petStore-677bb7cc65-shb2f
-              creationTimestamp: 2020-05-12T06:12:00Z
-              status: running
-            clusterName: Minikube
-          - podsRunning: 0
-            healthStatus:
-            - ready: 1/1
-              name: petStore-677bb7cc65-shb2f
-              creationTimestamp: 2020-05-12T06:12:00Z
-              status: running
-            - ready: 1/1
-              name: petStore-677bb7cc65-shb2f
-              creationTimestamp: 2020-05-12T06:12:00Z
-              status: running
-            clusterName: Minikube
-      properties:
-        count:
-          description: |
-            Status of the deployments returned.
-          example: 1
-          type: integer
-        list:
-          items:
-            $ref: '#/components/schemas/DeploymentStatus'
-          type: array
-      title: DeploymentStatus List
-      type: object
-    DeploymentStatus:
-      example:
-        type: Kubernetes
-        clusters:
-        - podsRunning: 0
-          healthStatus:
-          - ready: 1/1
-            name: petStore-677bb7cc65-shb2f
-            creationTimestamp: 2020-05-12T06:12:00Z
-            status: running
-          - ready: 1/1
-            name: petStore-677bb7cc65-shb2f
-            creationTimestamp: 2020-05-12T06:12:00Z
-            status: running
-          clusterName: Minikube
-        - podsRunning: 0
-          healthStatus:
-          - ready: 1/1
-            name: petStore-677bb7cc65-shb2f
-            creationTimestamp: 2020-05-12T06:12:00Z
-            status: running
-          - ready: 1/1
-            name: petStore-677bb7cc65-shb2f
-            creationTimestamp: 2020-05-12T06:12:00Z
-            status: running
-          clusterName: Minikube
-      properties:
-        type:
-          example: Kubernetes
-          type: string
-        clusters:
-          items:
-            $ref: '#/components/schemas/DeploymentClusterStatus'
-          type: array
-      required:
-      - clusters
-      - type
-      title: DeploymentStatus
-      type: object
-    DeploymentClusterStatus:
-      example:
-        podsRunning: 0
-        healthStatus:
-        - ready: 1/1
-          name: petStore-677bb7cc65-shb2f
-          creationTimestamp: 2020-05-12T06:12:00Z
-          status: running
-        - ready: 1/1
-          name: petStore-677bb7cc65-shb2f
-          creationTimestamp: 2020-05-12T06:12:00Z
-          status: running
-        clusterName: Minikube
-      properties:
-        clusterName:
-          example: Minikube
-          type: string
-        podsRunning:
-          type: integer
-        healthStatus:
-          items:
-            $ref: '#/components/schemas/PodStatus'
-          type: array
-      required:
-      - clusterName
-      - healthStatus
-      - podsRunning
-      title: DeploymentClusterStatus
-      type: object
-    DeploymentEnvironments:
-      example:
-        clusterName:
-        - minikube
-        type: Kubernetes
-      properties:
-        type:
-          example: Kubernetes
-          type: string
-        clusterName:
-          example:
-          - minikube
-          items:
-            type: string
-          type: array
-      required:
-      - clusterName
-      - type
-      title: DeploymentEnvironments
-      type: object
-    PodStatus:
-      example:
-        ready: 1/1
-        name: petStore-677bb7cc65-shb2f
-        creationTimestamp: 2020-05-12T06:12:00Z
-        status: running
-      properties:
-        name:
-          example: petStore-677bb7cc65-shb2f
-          type: string
-        ready:
-          example: 1/1
-          type: string
-        status:
-          example: running
-          type: string
-        creationTimestamp:
-          example: 2020-05-12T06:12:00Z
-          type: string
-      required:
-      - name
-      - ready
-      - status
-      title: PodStatus
-      type: object
     AsyncAPISpecificationValidationResponse:
       example:
         isValid: true
@@ -19391,6 +18513,7 @@ components:
           description: description
           message: message
         info:
+          protocol: WEBSUB
           endpoints:
           - https://localhost:9443/am/sample/pizzashack/v1/api/
           - https://localhost:9443/am/sample/pizzashack/v1/api/
@@ -19427,6 +18550,7 @@ components:
           description: |
             Content of the comment
           example: This is a comment
+          maxLength: 512
           type: string
         category:
           description: |
@@ -19443,6 +18567,7 @@ components:
           description: |
             Content of the comment
           example: This is a comment
+          maxLength: 512
           type: string
         category:
           description: |
@@ -19451,18 +18576,6 @@ components:
           type: string
       title: Patch request body
       type: object
-    APIInfo_websubSubscriptionConfiguration:
-      example:
-        signingAlgorithm: signingAlgorithm
-        signatureHeader: signatureHeader
-        secret: secret
-      properties:
-        secret:
-          type: string
-        signingAlgorithm:
-          type: string
-        signatureHeader:
-          type: string
     API_additionalProperties:
       example:
         display: true
@@ -19865,6 +18978,7 @@ components:
           - INLINE
           - URL
           - FILE
+          - MARKDOWN
           example: INLINE
           type: string
         sourceUrl:
@@ -19896,6 +19010,7 @@ components:
     AsyncAPISpecificationValidationResponse_info:
       description: API definition information
       example:
+        protocol: WEBSUB
         endpoints:
         - https://localhost:9443/am/sample/pizzashack/v1/api/
         - https://localhost:9443/am/sample/pizzashack/v1/api/
@@ -19922,6 +19037,9 @@ components:
         asyncAPIVersion:
           example: "2.0"
           type: string
+        protocol:
+          example: WEBSUB
+          type: string
         endpoints:
           description: contains host/servers specified in the AsyncAPI file/URL
           items:
@@ -19940,7 +19058,6 @@ components:
             apim:api_publish: Publish API
             apim:subscription_view: View Subscription
             apim:subscription_block: Block Subscription
-            apim:external_services_discover: Discover External Services
             apim:threat_protection_policy_create: Create threat protection policies
             apim:threat_protection_policy_manage: Update and delete threat protection
               policies

@@ -34,10 +34,7 @@ Name | Type | Description | Notes
 **visibility** | [**VisibilityEnum**](#VisibilityEnum) | The visibility level of the API. Accepts one of the following. PUBLIC, PRIVATE, RESTRICTED. |  [optional]
 **visibleRoles** | **List&lt;String&gt;** | The user roles that are able to access the API in Developer Portal |  [optional]
 **visibleTenants** | **List&lt;String&gt;** |  |  [optional]
-**endpointSecurity** | [**APIEndpointSecurityDTO**](APIEndpointSecurityDTO.md) |  |  [optional]
 **gatewayEnvironments** | **List&lt;String&gt;** | List of gateway environments the API is available  |  [optional]
-**deploymentEnvironments** | [**List&lt;DeploymentEnvironmentsDTO&gt;**](DeploymentEnvironmentsDTO.md) | List of selected deployment environments and clusters  |  [optional]
-**labels** | **List&lt;String&gt;** | Labels of micro-gateway environments attached to the API.  |  [optional]
 **mediationPolicies** | [**List&lt;MediationPolicyDTO&gt;**](MediationPolicyDTO.md) |  |  [optional]
 **subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS. |  [optional]
 **subscriptionAvailableTenants** | **List&lt;String&gt;** |  |  [optional]
@@ -59,6 +56,7 @@ Name | Type | Description | Notes
 **categories** | **List&lt;String&gt;** | API categories  |  [optional]
 **keyManagers** | [**Object**](.md) | API Key Managers  |  [optional] [readonly]
 **serviceInfo** | [**APIServiceInfoDTO**](APIServiceInfoDTO.md) |  |  [optional]
+**advertiseInfo** | [**AdvertiseInfoDTO**](AdvertiseInfoDTO.md) |  |  [optional]
 
 
 
