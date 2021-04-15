@@ -121,6 +121,7 @@
   "synapse_properties.'synapse.xpath.func.extensions'": "org.wso2.carbon.mediation.security.vault.xpath.SecureVaultLookupXPathFunctionProvider",
   "synapse_properties.'synapse.carbon.ext.tenant.info'": "org.wso2.carbon.mediation.initializer.handler.CarbonTenantInfoConfigurator",
   "synapse_properties.'synapse.carbon.ext.tenant.info.initiator'": "org.wso2.carbon.mediation.initializer.handler.CarbonTenantInfoInitiator",
+  "synapse_properties.'inbound.port.offset.enable'": true,
   "passthru_http.'http.socket.timeout'": "180000",
   "passthru_http.'worker_pool_size_core'": "400",
   "passthru_http.'worker_pool_size_max'": "500",
