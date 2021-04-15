@@ -48,7 +48,6 @@ import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
@@ -79,7 +78,6 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
@@ -1017,7 +1015,7 @@ public class RestAPIPublisherImpl {
 
     public OpenAPIDefinitionValidationResponseDTO validateOASDefinition(File oasDefinition) throws ApiException {
         ApiResponse<OpenAPIDefinitionValidationResponseDTO> response =
-                validationApi.validateOpenAPIDefinitionWithHttpInfo(null,  null, oasDefinition);
+                validationApi.validateOpenAPIDefinitionWithHttpInfo(null, null, oasDefinition, null);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
     }
@@ -1032,7 +1030,8 @@ public class RestAPIPublisherImpl {
     }
 
     public APIDTO importOASDefinition(File file, String properties) throws ApiException {
-        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties);
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties,
+                null);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
@@ -1112,11 +1111,10 @@ public class RestAPIPublisherImpl {
         sandUrl.put("url", apiCreationRequestBean.getEndpointUrl().toString());
         jsonObject.put("sandbox_endpoints", sandUrl);
         jsonObject.put("production_endpoints", sandUrl);
-        if (APIEndpointSecurityDTO.TypeEnum.BASIC.getValue()
-                .equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
+        if ("basic".equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
             JSONObject endpointSecurityGlobal = new JSONObject();
             endpointSecurityGlobal.put("enabled", true);
-            endpointSecurityGlobal.put("type", APIEndpointSecurityDTO.TypeEnum.BASIC.getValue());
+            endpointSecurityGlobal.put("type", "basic");
             endpointSecurityGlobal.put("username", apiCreationRequestBean.getEpUsername());
             endpointSecurityGlobal.put("password", apiCreationRequestBean.getEpPassword());
             JSONObject endpointSecurity = new JSONObject();
@@ -1381,7 +1379,8 @@ public class RestAPIPublisherImpl {
             apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
         try {
-            ApiResponse<Void> httpInfo = apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionDeploymentDTOList);
+            ApiResponse<List<APIRevisionDeploymentDTO>> httpInfo =
+                    apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionDeploymentDTOList);
             Assert.assertEquals(201, httpInfo.getStatusCode());
             //apiRevisionDeploymentDTOResponseList = httpInfo.getData();
         } catch (ApiException e) {
@@ -1417,8 +1416,8 @@ public class RestAPIPublisherImpl {
         apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionDeployRequest.isDisplayOnDevportal());
         apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
         try {
-            ApiResponse<Void> httpInfo = apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID,
-                    apiRevisionDeploymentDTOList);
+            ApiResponse<List<APIRevisionDeploymentDTO>> httpInfo =
+                    apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionDeploymentDTOList);
             Assert.assertEquals(201, httpInfo.getStatusCode());
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {

@@ -14,7 +14,6 @@ Name | Type | Description | Notes
 **externalStoresEnabled** | **Boolean** | Is External Stores configuration enabled  |  [optional]
 **docVisibilityEnabled** | **Boolean** | Is Document Visibility configuration enabled  |  [optional]
 **crossTenantSubscriptionEnabled** | **Boolean** | Is Cross Tenant Subscriptions Enabled  |  [optional]
-**deployments** | [**List&lt;DeploymentsDTO&gt;**](DeploymentsDTO.md) |  |  [optional]
 
 
 

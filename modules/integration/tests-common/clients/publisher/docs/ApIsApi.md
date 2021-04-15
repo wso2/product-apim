@@ -21,7 +21,7 @@ Method | HTTP request | Description
 [**getWSDLInfoOfAPI**](ApIsApi.md#getWSDLInfoOfAPI) | **GET** /apis/{apiId}/wsdl-info | Get WSDL Meta Information
 [**getWSDLOfAPI**](ApIsApi.md#getWSDLOfAPI) | **GET** /apis/{apiId}/wsdl | Get WSDL definition
 [**importAsyncAPISpecification**](ApIsApi.md#importAsyncAPISpecification) | **POST** /apis/import-asyncapi | import an AsyncAPI Specification
-[**importGraphQLSchema**](ApIsApi.md#importGraphQLSchema) | **POST** /apis/import-graphql-schema | Import API Definition
+[**importGraphQLSchema**](ApIsApi.md#importGraphQLSchema) | **POST** /apis/import-graphql-schema | Import a GraphQL SDL
 [**importOpenAPIDefinition**](ApIsApi.md#importOpenAPIDefinition) | **POST** /apis/import-openapi | Import an OpenAPI Definition
 [**importServiceFromCatalog**](ApIsApi.md#importServiceFromCatalog) | **POST** /apis/import-service | Import a Service from Service Catalog
 [**importWSDLDefinition**](ApIsApi.md#importWSDLDefinition) | **POST** /apis/import-wsdl | Import a WSDL Definition
@@ -941,7 +941,7 @@ public class Example {
     Integer limit = 25; // Integer | Maximum size of resource array to return. 
     Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
     String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
-    String query = "query_example"; // String | **Search condition**.  You can search in attributes by using an **\"<attribute>:\"** modifier.  Eg. \"provider:wso2\" will match an API if the provider of the API contains \"wso2\". \"provider:\"wso2\"\" will match an API if the provider of the API is exactly \"wso2\". \"status:PUBLISHED\" will match an API if the API is in PUBLISHED state. \"label:external\" will match an API if it contains a Microgateway label called \"external\".  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl) 
+    String query = "query_example"; // String | **Search condition**.  You can search in attributes by using an **\"<attribute>:\"** modifier.  Eg. \"provider:wso2\" will match an API if the provider of the API contains \"wso2\". \"provider:\"wso2\"\" will match an API if the provider of the API is exactly \"wso2\". \"status:PUBLISHED\" will match an API if the API is in PUBLISHED state.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, doc, provider**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl) 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     Boolean expand = true; // Boolean | Defines whether the returned response should contain full details of API 
     String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
@@ -966,7 +966,7 @@ Name | Type | Description  | Notes
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
  **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
- **query** | **String**| **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  | [optional]
+ **query** | **String**| **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, doc, provider**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  | [optional]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
  **expand** | **Boolean**| Defines whether the returned response should contain full details of API  | [optional]
  **accept** | **String**| Media types acceptable for the response. Default is application/json.  | [optional] [default to &quot;application/json&quot;]
@@ -1280,7 +1280,7 @@ Name | Type | Description  | Notes
 # **importGraphQLSchema**
 > APIDTO importGraphQLSchema(ifMatch, type, file, additionalProperties)
 
-Import API Definition
+Import a GraphQL SDL
 
 This operation can be used to create api from api definition.APIMgtDAOTest  API definition is GraphQL Schema 
 
@@ -1353,7 +1353,7 @@ Name | Type | Description  | Notes
 
 <a name="importOpenAPIDefinition"></a>
 # **importOpenAPIDefinition**
-> APIDTO importOpenAPIDefinition(file, url, additionalProperties)
+> APIDTO importOpenAPIDefinition(file, url, additionalProperties, inlineAPIDefinition)
 
 Import an OpenAPI Definition
 
@@ -1382,8 +1382,9 @@ public class Example {
     File file = new File("/path/to/file"); // File | Definition to upload as a file
     String url = "url_example"; // String | Definition url
     String additionalProperties = "additionalProperties_example"; // String | Additional attributes specified as a stringified JSON with API's schema
+    String inlineAPIDefinition = "inlineAPIDefinition_example"; // String | Inline content of the OpenAPI definition
     try {
-      APIDTO result = apiInstance.importOpenAPIDefinition(file, url, additionalProperties);
+      APIDTO result = apiInstance.importOpenAPIDefinition(file, url, additionalProperties, inlineAPIDefinition);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApIsApi#importOpenAPIDefinition");
@@ -1403,6 +1404,7 @@ Name | Type | Description  | Notes
  **file** | **File**| Definition to upload as a file | [optional]
  **url** | **String**| Definition url | [optional]
  **additionalProperties** | **String**| Additional attributes specified as a stringified JSON with API&#39;s schema | [optional]
+ **inlineAPIDefinition** | **String**| Inline content of the OpenAPI definition | [optional]
 
 ### Return type
 
@@ -1452,7 +1454,7 @@ public class Example {
     OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
 
     ApIsApi apiInstance = new ApIsApi(defaultClient);
-    String serviceKey = "serviceKey_example"; // String | ID of service that should be imported from Service Catalog
+    String serviceKey = Pizzashack-1.0.0; // String | ID of service that should be imported from Service Catalog
     APIDTO APIDTO = new APIDTO(); // APIDTO | 
     try {
       APIDTO result = apiInstance.importServiceFromCatalog(serviceKey, APIDTO);

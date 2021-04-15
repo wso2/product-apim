@@ -4,21 +4,22 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**createAPIRevision**](ApiRevisionsApi.md#createAPIRevision) | **POST** /apis/{apiId}/revisions | Create a new API revision
-[**deleteAPIRevision**](ApiRevisionsApi.md#deleteAPIRevision) | **DELETE** /apis/{apiId}/revisions/{revisionId} | Delete a revision of an API
-[**deployAPIRevision**](ApiRevisionsApi.md#deployAPIRevision) | **POST** /apis/{apiId}/deploy-revision | Deploy a revision
-[**getAPIRevision**](ApiRevisionsApi.md#getAPIRevision) | **GET** /apis/{apiId}/revisions/{revisionId} | Retrieve a revision of an API
-[**getAPIRevisionDeployments**](ApiRevisionsApi.md#getAPIRevisionDeployments) | **GET** /apis/{apiId}/deploy-revision | List available deployed revision deployment details of an API
-[**getAPIRevisions**](ApiRevisionsApi.md#getAPIRevisions) | **GET** /apis/{apiId}/revisions | List available revisions of an API
-[**restoreAPIRevision**](ApiRevisionsApi.md#restoreAPIRevision) | **POST** /apis/{apiId}/restore-revision | Restore a revision
-[**undeployAPIRevision**](ApiRevisionsApi.md#undeployAPIRevision) | **POST** /apis/{apiId}/undeploy-revision | Un-Deploy a revision
+[**createAPIRevision**](ApiRevisionsApi.md#createAPIRevision) | **POST** /apis/{apiId}/revisions | Create API Revision
+[**deleteAPIRevision**](ApiRevisionsApi.md#deleteAPIRevision) | **DELETE** /apis/{apiId}/revisions/{revisionId} | Delete Revision
+[**deployAPIRevision**](ApiRevisionsApi.md#deployAPIRevision) | **POST** /apis/{apiId}/deploy-revision | Deploy Revision
+[**getAPIRevision**](ApiRevisionsApi.md#getAPIRevision) | **GET** /apis/{apiId}/revisions/{revisionId} | Retrieve Revision
+[**getAPIRevisionDeployments**](ApiRevisionsApi.md#getAPIRevisionDeployments) | **GET** /apis/{apiId}/deployments | List Deployments
+[**getAPIRevisions**](ApiRevisionsApi.md#getAPIRevisions) | **GET** /apis/{apiId}/revisions | List Revisions
+[**restoreAPIRevision**](ApiRevisionsApi.md#restoreAPIRevision) | **POST** /apis/{apiId}/restore-revision | Restore API Revision
+[**undeployAPIRevision**](ApiRevisionsApi.md#undeployAPIRevision) | **POST** /apis/{apiId}/undeploy-revision | UnDeploy Revision
+[**updateAPIDeployment**](ApiRevisionsApi.md#updateAPIDeployment) | **PUT** /apis/{apiId}/deployments/{deploymentId} | Update Deployment
 
 
 <a name="createAPIRevision"></a>
 # **createAPIRevision**
 > APIRevisionDTO createAPIRevision(apiId, apIRevisionDTO)
 
-Create a new API revision
+Create API Revision
 
 Create a new API revision 
 
@@ -89,7 +90,7 @@ Name | Type | Description  | Notes
 # **deleteAPIRevision**
 > APIRevisionListDTO deleteAPIRevision(apiId, revisionId)
 
-Delete a revision of an API
+Delete Revision
 
 Delete a revision of an API 
 
@@ -158,9 +159,9 @@ Name | Type | Description  | Notes
 
 <a name="deployAPIRevision"></a>
 # **deployAPIRevision**
-> deployAPIRevision(apiId, revisionId, apIRevisionDeploymentDTO)
+> List&lt;APIRevisionDeploymentDTO&gt; deployAPIRevision(apiId, revisionId, apIRevisionDeploymentDTO)
 
-Deploy a revision
+Deploy Revision
 
 Deploy a revision 
 
@@ -188,7 +189,8 @@ public class Example {
     String revisionId = "revisionId_example"; // String | Revision ID of an API 
     List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO = Arrays.asList(); // List<APIRevisionDeploymentDTO> | Deployment object that needs to be added
     try {
-      apiInstance.deployAPIRevision(apiId, revisionId, apIRevisionDeploymentDTO);
+      List<APIRevisionDeploymentDTO> result = apiInstance.deployAPIRevision(apiId, revisionId, apIRevisionDeploymentDTO);
+      System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApiRevisionsApi#deployAPIRevision");
       System.err.println("Status code: " + e.getCode());
@@ -210,7 +212,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+[**List&lt;APIRevisionDeploymentDTO&gt;**](APIRevisionDeploymentDTO.md)
 
 ### Authorization
 
@@ -224,15 +226,15 @@ null (empty response body)
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK.  |  -  |
-**201** | Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  |  -  |
+**200** | Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  |  -  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 
 <a name="getAPIRevision"></a>
 # **getAPIRevision**
 > APIRevisionDTO getAPIRevision(apiId, revisionId)
 
-Retrieve a revision of an API
+Retrieve Revision
 
 Retrieve a revision of an API 
 
@@ -302,7 +304,7 @@ Name | Type | Description  | Notes
 # **getAPIRevisionDeployments**
 > APIRevisionDeploymentListDTO getAPIRevisionDeployments(apiId)
 
-List available deployed revision deployment details of an API
+List Deployments
 
 List available deployed revision deployment details of an API 
 
@@ -370,7 +372,7 @@ Name | Type | Description  | Notes
 # **getAPIRevisions**
 > APIRevisionListDTO getAPIRevisions(apiId, query)
 
-List available revisions of an API
+List Revisions
 
 List available revisions of an API 
 
@@ -440,9 +442,9 @@ Name | Type | Description  | Notes
 # **restoreAPIRevision**
 > APIDTO restoreAPIRevision(apiId, revisionId)
 
-Restore a revision
+Restore API Revision
 
-Restore a revision to the working copy of the API 
+Restore a revision to the current API of the API 
 
 ### Example
 ```java
@@ -510,9 +512,9 @@ Name | Type | Description  | Notes
 # **undeployAPIRevision**
 > undeployAPIRevision(apiId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO)
 
-Un-Deploy a revision
+UnDeploy Revision
 
-Un-Deploy a revision 
+UnDeploy a revision 
 
 ### Example
 ```java
@@ -580,5 +582,78 @@ null (empty response body)
 |-------------|-------------|------------------|
 **200** | OK.  |  -  |
 **201** | Created. Successful response with the newly undeployed APIRevisionDeploymentList object as the entity in the body.  |  -  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+
+<a name="updateAPIDeployment"></a>
+# **updateAPIDeployment**
+> APIRevisionDeploymentDTO updateAPIDeployment(apiId, deploymentId, apIRevisionDeploymentDTO)
+
+Update Deployment
+
+Update deployment devportal visibility 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApiRevisionsApi apiInstance = new ApiRevisionsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    String deploymentId = "deploymentId_example"; // String | Base64 URL encoded value of the name of an environment 
+    APIRevisionDeploymentDTO apIRevisionDeploymentDTO = new APIRevisionDeploymentDTO(); // APIRevisionDeploymentDTO | Deployment object that needs to be updated
+    try {
+      APIRevisionDeploymentDTO result = apiInstance.updateAPIDeployment(apiId, deploymentId, apIRevisionDeploymentDTO);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApiRevisionsApi#updateAPIDeployment");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **deploymentId** | **String**| Base64 URL encoded value of the name of an environment  |
+ **apIRevisionDeploymentDTO** | [**APIRevisionDeploymentDTO**](APIRevisionDeploymentDTO.md)| Deployment object that needs to be updated | [optional]
+
+### Return type
+
+[**APIRevisionDeploymentDTO**](APIRevisionDeploymentDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Created. Successful response with the newly updated APIRevisionDeployment List object as the entity in the body.  |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 
