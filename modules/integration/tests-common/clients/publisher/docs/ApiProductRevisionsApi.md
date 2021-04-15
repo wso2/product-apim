@@ -5,13 +5,14 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v2*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createAPIProductRevision**](ApiProductRevisionsApi.md#createAPIProductRevision) | **POST** /api-products/{apiProductId}/revisions | Create a new API Product revision
-[**deleteAPIProductRevision**](ApiProductRevisionsApi.md#deleteAPIProductRevision) | **DELETE** /api-products/{apiProductId}/revisions/{revisionId} | Delete a revision of an API Product
-[**deployAPIProductRevision**](ApiProductRevisionsApi.md#deployAPIProductRevision) | **POST** /api-products/{apiProductId}/deploy-revision | Deploy a revision
-[**getAPIProductRevision**](ApiProductRevisionsApi.md#getAPIProductRevision) | **GET** /api-products/{apiProductId}/revisions/{revisionId} | Retrieve a revision of an API Product
-[**getAPIProductRevisionDeployments**](ApiProductRevisionsApi.md#getAPIProductRevisionDeployments) | **GET** /api-products/{apiProductId}/deploy-revision | List available deployed revision deployment details of an API Product
-[**getAPIProductRevisions**](ApiProductRevisionsApi.md#getAPIProductRevisions) | **GET** /api-products/{apiProductId}/revisions | List available revisions of an API Product
-[**restoreAPIProductRevision**](ApiProductRevisionsApi.md#restoreAPIProductRevision) | **POST** /api-products/{apiProductId}/restore-revision | Restore a revision
-[**undeployAPIProductRevision**](ApiProductRevisionsApi.md#undeployAPIProductRevision) | **POST** /api-products/{apiProductId}/undeploy-revision | Un-Deploy a revision
+[**deleteAPIProductRevision**](ApiProductRevisionsApi.md#deleteAPIProductRevision) | **DELETE** /api-products/{apiProductId}/revisions/{revisionId} | Delete Revision
+[**deployAPIProductRevision**](ApiProductRevisionsApi.md#deployAPIProductRevision) | **POST** /api-products/{apiProductId}/deploy-revision | Deploy Revision
+[**getAPIProductRevision**](ApiProductRevisionsApi.md#getAPIProductRevision) | **GET** /api-products/{apiProductId}/revisions/{revisionId} | Retrieve Revision
+[**getAPIProductRevisionDeployments**](ApiProductRevisionsApi.md#getAPIProductRevisionDeployments) | **GET** /api-products/{apiProductId}/deployments | List Deployments
+[**getAPIProductRevisions**](ApiProductRevisionsApi.md#getAPIProductRevisions) | **GET** /api-products/{apiProductId}/revisions | List Revisions
+[**restoreAPIProductRevision**](ApiProductRevisionsApi.md#restoreAPIProductRevision) | **POST** /api-products/{apiProductId}/restore-revision | Restore Revision
+[**undeployAPIProductRevision**](ApiProductRevisionsApi.md#undeployAPIProductRevision) | **POST** /api-products/{apiProductId}/undeploy-revision | UnDeploy Revision
+[**updateAPIProductDeployment**](ApiProductRevisionsApi.md#updateAPIProductDeployment) | **PUT** /api-products/{apiProductId}/deployments/{deploymentId} | Update Deployment
 
 
 <a name="createAPIProductRevision"></a>
@@ -89,7 +90,7 @@ Name | Type | Description  | Notes
 # **deleteAPIProductRevision**
 > APIRevisionListDTO deleteAPIProductRevision(apiProductId, revisionId)
 
-Delete a revision of an API Product
+Delete Revision
 
 Delete a revision of an API Product 
 
@@ -160,9 +161,9 @@ Name | Type | Description  | Notes
 # **deployAPIProductRevision**
 > deployAPIProductRevision(apiProductId, revisionId, apIRevisionDeploymentDTO)
 
-Deploy a revision
+Deploy Revision
 
-Deploy a revision 
+Deploy an API Product Revision 
 
 ### Example
 ```java
@@ -226,13 +227,14 @@ null (empty response body)
 |-------------|-------------|------------------|
 **200** | OK.  |  -  |
 **201** | Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  |  -  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 
 <a name="getAPIProductRevision"></a>
 # **getAPIProductRevision**
 > APIRevisionDTO getAPIProductRevision(apiProductId, revisionId)
 
-Retrieve a revision of an API Product
+Retrieve Revision
 
 Retrieve a revision of an API Product 
 
@@ -302,7 +304,7 @@ Name | Type | Description  | Notes
 # **getAPIProductRevisionDeployments**
 > APIRevisionDeploymentListDTO getAPIProductRevisionDeployments(apiProductId)
 
-List available deployed revision deployment details of an API Product
+List Deployments
 
 List available deployed revision deployment details of an API Product 
 
@@ -370,7 +372,7 @@ Name | Type | Description  | Notes
 # **getAPIProductRevisions**
 > APIRevisionListDTO getAPIProductRevisions(apiProductId, query)
 
-List available revisions of an API Product
+List Revisions
 
 List available revisions of an API Product 
 
@@ -440,9 +442,9 @@ Name | Type | Description  | Notes
 # **restoreAPIProductRevision**
 > APIProductDTO restoreAPIProductRevision(apiProductId, revisionId)
 
-Restore a revision
+Restore Revision
 
-Restore a revision to the working copy of the API Product 
+Restore a revision to the Current API of the API Product 
 
 ### Example
 ```java
@@ -510,9 +512,9 @@ Name | Type | Description  | Notes
 # **undeployAPIProductRevision**
 > undeployAPIProductRevision(apiProductId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO)
 
-Un-Deploy a revision
+UnDeploy Revision
 
-Un-Deploy a revision 
+UnDeploy an API Product Revision 
 
 ### Example
 ```java
@@ -580,5 +582,78 @@ null (empty response body)
 |-------------|-------------|------------------|
 **200** | OK.  |  -  |
 **201** | Created. Successful response with the newly undeployed APIRevisionDeploymentList object as the entity in the body.  |  -  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+
+<a name="updateAPIProductDeployment"></a>
+# **updateAPIProductDeployment**
+> APIRevisionDeploymentDTO updateAPIProductDeployment(apiProductId, deploymentId, apIRevisionDeploymentDTO)
+
+Update Deployment
+
+Update deployment devportal visibility 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApiProductRevisionsApi apiInstance = new ApiProductRevisionsApi(defaultClient);
+    String apiProductId = "apiProductId_example"; // String | **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended. 
+    String deploymentId = "deploymentId_example"; // String | Base64 URL encoded value of the name of an environment 
+    APIRevisionDeploymentDTO apIRevisionDeploymentDTO = new APIRevisionDeploymentDTO(); // APIRevisionDeploymentDTO | Deployment object that needs to be updated
+    try {
+      APIRevisionDeploymentDTO result = apiInstance.updateAPIProductDeployment(apiProductId, deploymentId, apIRevisionDeploymentDTO);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApiProductRevisionsApi#updateAPIProductDeployment");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  |
+ **deploymentId** | **String**| Base64 URL encoded value of the name of an environment  |
+ **apIRevisionDeploymentDTO** | [**APIRevisionDeploymentDTO**](APIRevisionDeploymentDTO.md)| Deployment object that needs to be updated | [optional]
+
+### Return type
+
+[**APIRevisionDeploymentDTO**](APIRevisionDeploymentDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Created. Successful response with the newly updated APIRevisionDeployment List object as the entity in the body.  |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 

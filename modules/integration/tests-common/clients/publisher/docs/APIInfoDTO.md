@@ -17,7 +17,8 @@ Name | Type | Description | Notes
 **workflowStatus** | **String** |  |  [optional]
 **hasThumbnail** | **Boolean** |  |  [optional]
 **securityScheme** | **List&lt;String&gt;** |  |  [optional]
-**websubSubscriptionConfiguration** | [**APIInfoWebsubSubscriptionConfigurationDTO**](APIInfoWebsubSubscriptionConfigurationDTO.md) |  |  [optional]
+**createdTime** | **String** |  |  [optional]
+**updatedTime** | **String** |  |  [optional]
 
 
 
