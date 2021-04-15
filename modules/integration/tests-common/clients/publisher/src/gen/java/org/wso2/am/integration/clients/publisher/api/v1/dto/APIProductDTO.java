@@ -116,14 +116,6 @@ public static StateEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION)
             private Boolean enableSchemaValidation;
 
-        public static final String SERIALIZED_NAME_ENABLE_STORE = "enableStore";
-        @SerializedName(SERIALIZED_NAME_ENABLE_STORE)
-            private Boolean enableStore;
-
-        public static final String SERIALIZED_NAME_TEST_KEY = "testKey";
-        @SerializedName(SERIALIZED_NAME_TEST_KEY)
-            private String testKey;
-
         public static final String SERIALIZED_NAME_IS_REVISION = "isRevision";
         @SerializedName(SERIALIZED_NAME_IS_REVISION)
             private Boolean isRevision;
@@ -613,52 +605,6 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     public void setEnableSchemaValidation(Boolean enableSchemaValidation) {
         this.enableSchemaValidation = enableSchemaValidation;
-    }
-
-
-        public APIProductDTO enableStore(Boolean enableStore) {
-        
-        this.enableStore = enableStore;
-        return this;
-        }
-
-    /**
-        * Get enableStore
-    * @return enableStore
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "true", value = "")
-    
-    public Boolean isEnableStore() {
-        return enableStore;
-    }
-
-
-    public void setEnableStore(Boolean enableStore) {
-        this.enableStore = enableStore;
-    }
-
-
-        public APIProductDTO testKey(String testKey) {
-        
-        this.testKey = testKey;
-        return this;
-        }
-
-    /**
-        * Get testKey
-    * @return testKey
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "8swdwj9080edejhj", value = "")
-    
-    public String getTestKey() {
-        return testKey;
-    }
-
-
-    public void setTestKey(String testKey) {
-        this.testKey = testKey;
     }
 
 
@@ -1346,8 +1292,6 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             Objects.equals(this.hasThumbnail, apIProduct.hasThumbnail) &&
             Objects.equals(this.state, apIProduct.state) &&
             Objects.equals(this.enableSchemaValidation, apIProduct.enableSchemaValidation) &&
-            Objects.equals(this.enableStore, apIProduct.enableStore) &&
-            Objects.equals(this.testKey, apIProduct.testKey) &&
             Objects.equals(this.isRevision, apIProduct.isRevision) &&
             Objects.equals(this.revisionedApiProductId, apIProduct.revisionedApiProductId) &&
             Objects.equals(this.revisionId, apIProduct.revisionId) &&
@@ -1381,7 +1325,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, enableStore, testKey, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
+        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
     }
 
 
@@ -1397,8 +1341,6 @@ sb.append("class APIProductDTO {\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    state: ").append(toIndentedString(state)).append("\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
-    sb.append("    enableStore: ").append(toIndentedString(enableStore)).append("\n");
-    sb.append("    testKey: ").append(toIndentedString(testKey)).append("\n");
     sb.append("    isRevision: ").append(toIndentedString(isRevision)).append("\n");
     sb.append("    revisionedApiProductId: ").append(toIndentedString(revisionedApiProductId)).append("\n");
     sb.append("    revisionId: ").append(toIndentedString(revisionId)).append("\n");

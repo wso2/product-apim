@@ -9,7 +9,6 @@
   "status": "CREATED",
   "responseCaching": "Disabled",
   "cacheTimeout": 300,
-  "destinationStatsEnabled": false,
   "isDefaultVersion": false,
   "type": "HTTP",
   "transport":    [

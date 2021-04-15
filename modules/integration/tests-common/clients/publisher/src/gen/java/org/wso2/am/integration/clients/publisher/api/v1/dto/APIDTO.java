@@ -80,10 +80,6 @@ public class APIDTO {
         @SerializedName(SERIALIZED_NAME_WSDL_URL)
             private String wsdlUrl;
 
-        public static final String SERIALIZED_NAME_TEST_KEY = "testKey";
-        @SerializedName(SERIALIZED_NAME_TEST_KEY)
-            private String testKey;
-
         public static final String SERIALIZED_NAME_RESPONSE_CACHING_ENABLED = "responseCachingEnabled";
         @SerializedName(SERIALIZED_NAME_RESPONSE_CACHING_ENABLED)
             private Boolean responseCachingEnabled;
@@ -91,10 +87,6 @@ public class APIDTO {
         public static final String SERIALIZED_NAME_CACHE_TIMEOUT = "cacheTimeout";
         @SerializedName(SERIALIZED_NAME_CACHE_TIMEOUT)
             private Integer cacheTimeout;
-
-        public static final String SERIALIZED_NAME_DESTINATION_STATS_ENABLED = "destinationStatsEnabled";
-        @SerializedName(SERIALIZED_NAME_DESTINATION_STATS_ENABLED)
-            private String destinationStatsEnabled;
 
         public static final String SERIALIZED_NAME_HAS_THUMBNAIL = "hasThumbnail";
         @SerializedName(SERIALIZED_NAME_HAS_THUMBNAIL)
@@ -119,10 +111,6 @@ public class APIDTO {
         public static final String SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION = "enableSchemaValidation";
         @SerializedName(SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION)
             private Boolean enableSchemaValidation;
-
-        public static final String SERIALIZED_NAME_ENABLE_STORE = "enableStore";
-        @SerializedName(SERIALIZED_NAME_ENABLE_STORE)
-            private Boolean enableStore;
 
             /**
 * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
@@ -714,29 +702,6 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
-        public APIDTO testKey(String testKey) {
-        
-        this.testKey = testKey;
-        return this;
-        }
-
-    /**
-        * Get testKey
-    * @return testKey
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "8swdwj9080edejhj", value = "")
-    
-    public String getTestKey() {
-        return testKey;
-    }
-
-
-    public void setTestKey(String testKey) {
-        this.testKey = testKey;
-    }
-
-
         public APIDTO responseCachingEnabled(Boolean responseCachingEnabled) {
         
         this.responseCachingEnabled = responseCachingEnabled;
@@ -780,29 +745,6 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     public void setCacheTimeout(Integer cacheTimeout) {
         this.cacheTimeout = cacheTimeout;
-    }
-
-
-        public APIDTO destinationStatsEnabled(String destinationStatsEnabled) {
-        
-        this.destinationStatsEnabled = destinationStatsEnabled;
-        return this;
-        }
-
-    /**
-        * Get destinationStatsEnabled
-    * @return destinationStatsEnabled
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "Disabled", value = "")
-    
-    public String getDestinationStatsEnabled() {
-        return destinationStatsEnabled;
-    }
-
-
-    public void setDestinationStatsEnabled(String destinationStatsEnabled) {
-        this.destinationStatsEnabled = destinationStatsEnabled;
     }
 
 
@@ -941,29 +883,6 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     public void setEnableSchemaValidation(Boolean enableSchemaValidation) {
         this.enableSchemaValidation = enableSchemaValidation;
-    }
-
-
-        public APIDTO enableStore(Boolean enableStore) {
-        
-        this.enableStore = enableStore;
-        return this;
-        }
-
-    /**
-        * Get enableStore
-    * @return enableStore
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "true", value = "")
-    
-    public Boolean isEnableStore() {
-        return enableStore;
-    }
-
-
-    public void setEnableStore(Boolean enableStore) {
-        this.enableStore = enableStore;
     }
 
 
@@ -1767,17 +1686,14 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.lifeCycleStatus, API.lifeCycleStatus) &&
             Objects.equals(this.wsdlInfo, API.wsdlInfo) &&
             Objects.equals(this.wsdlUrl, API.wsdlUrl) &&
-            Objects.equals(this.testKey, API.testKey) &&
             Objects.equals(this.responseCachingEnabled, API.responseCachingEnabled) &&
             Objects.equals(this.cacheTimeout, API.cacheTimeout) &&
-            Objects.equals(this.destinationStatsEnabled, API.destinationStatsEnabled) &&
             Objects.equals(this.hasThumbnail, API.hasThumbnail) &&
             Objects.equals(this.isDefaultVersion, API.isDefaultVersion) &&
             Objects.equals(this.isRevision, API.isRevision) &&
             Objects.equals(this.revisionedApiId, API.revisionedApiId) &&
             Objects.equals(this.revisionId, API.revisionId) &&
             Objects.equals(this.enableSchemaValidation, API.enableSchemaValidation) &&
-            Objects.equals(this.enableStore, API.enableStore) &&
             Objects.equals(this.type, API.type) &&
             Objects.equals(this.transport, API.transport) &&
             Objects.equals(this.tags, API.tags) &&
@@ -1816,7 +1732,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, testKey, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableStore, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, gatewayEnvironments, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, gatewayEnvironments, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo);
     }
 
 
@@ -1833,17 +1749,14 @@ sb.append("class APIDTO {\n");
     sb.append("    lifeCycleStatus: ").append(toIndentedString(lifeCycleStatus)).append("\n");
     sb.append("    wsdlInfo: ").append(toIndentedString(wsdlInfo)).append("\n");
     sb.append("    wsdlUrl: ").append(toIndentedString(wsdlUrl)).append("\n");
-    sb.append("    testKey: ").append(toIndentedString(testKey)).append("\n");
     sb.append("    responseCachingEnabled: ").append(toIndentedString(responseCachingEnabled)).append("\n");
     sb.append("    cacheTimeout: ").append(toIndentedString(cacheTimeout)).append("\n");
-    sb.append("    destinationStatsEnabled: ").append(toIndentedString(destinationStatsEnabled)).append("\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    isDefaultVersion: ").append(toIndentedString(isDefaultVersion)).append("\n");
     sb.append("    isRevision: ").append(toIndentedString(isRevision)).append("\n");
     sb.append("    revisionedApiId: ").append(toIndentedString(revisionedApiId)).append("\n");
     sb.append("    revisionId: ").append(toIndentedString(revisionId)).append("\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
-    sb.append("    enableStore: ").append(toIndentedString(enableStore)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");

@@ -14740,7 +14740,6 @@ components:
         - food
         visibleTenants: []
         cacheTimeout: 300
-        enableStore: true
         isDefaultVersion: false
         apiThrottlingPolicy: Unlimited
         websubSubscriptionConfiguration:
@@ -14814,7 +14813,6 @@ components:
             priority: 0
           - policyId: policyId
             priority: 0
-        testKey: 8swdwj9080edejhj
         categories:
         - categories
         - categories
@@ -14828,7 +14826,6 @@ components:
         businessInformation: ""
         securityScheme:
         - oauth2
-        destinationStatsEnabled: Disabled
         keyManagers: '{}'
         gatewayEnvironments:
         - Default
@@ -14904,19 +14901,12 @@ components:
           example: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
           readOnly: true
           type: string
-        testKey:
-          example: 8swdwj9080edejhj
-          readOnly: true
-          type: string
         responseCachingEnabled:
           example: true
           type: boolean
         cacheTimeout:
           example: 300
           type: integer
-        destinationStatsEnabled:
-          example: Disabled
-          type: string
         hasThumbnail:
           example: false
           type: boolean
@@ -14938,11 +14928,6 @@ components:
         enableSchemaValidation:
           example: false
           type: boolean
-        enableStore:
-          example: true
-          type: boolean
-          x-otherScopes:
-          - apim:api_publish
         type:
           default: HTTP
           description: The api creation type to be used. Accepted values are HTTP,
@@ -15270,18 +15255,18 @@ components:
       example:
         displayName: REVISION 1
         description: removed a post resource
-        createdTime: 2000-01-23T04:56:07.000+00:00
+        createdTime: createdTime
         id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         deploymentInfo:
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: 2000-01-23T04:56:07.000+00:00
+          deployedTime: deployedTime
           name: default
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: 2000-01-23T04:56:07.000+00:00
+          deployedTime: deployedTime
           name: default
         apiInfo:
           id: 01234567-0123-0123-0123-012345678901
@@ -15300,7 +15285,6 @@ components:
           minLength: 0
           type: string
         createdTime:
-          format: date-time
           readOnly: true
           type: string
         apiInfo:
@@ -15326,35 +15310,35 @@ components:
         list:
         - displayName: REVISION 1
           description: removed a post resource
-          createdTime: 2000-01-23T04:56:07.000+00:00
+          createdTime: createdTime
           id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           deploymentInfo:
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: 2000-01-23T04:56:07.000+00:00
+            deployedTime: deployedTime
             name: default
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: 2000-01-23T04:56:07.000+00:00
+            deployedTime: deployedTime
             name: default
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
         - displayName: REVISION 1
           description: removed a post resource
-          createdTime: 2000-01-23T04:56:07.000+00:00
+          createdTime: createdTime
           id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           deploymentInfo:
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: 2000-01-23T04:56:07.000+00:00
+            deployedTime: deployedTime
             name: default
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: 2000-01-23T04:56:07.000+00:00
+            deployedTime: deployedTime
             name: default
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
@@ -15375,12 +15359,12 @@ components:
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: 2000-01-23T04:56:07.000+00:00
+          deployedTime: deployedTime
           name: default
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: 2000-01-23T04:56:07.000+00:00
+          deployedTime: deployedTime
           name: default
       properties:
         list:
@@ -15393,7 +15377,7 @@ components:
         revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         vhost: mg.wso2.com
         displayOnDevportal: true
-        deployedTime: 2000-01-23T04:56:07.000+00:00
+        deployedTime: deployedTime
         name: default
       properties:
         revisionUuid:
@@ -15416,7 +15400,6 @@ components:
           example: true
           type: boolean
         deployedTime:
-          format: date-time
           readOnly: true
           type: string
       title: APIRevisionDeployment Info object with basic API deployment details
@@ -15581,7 +15564,6 @@ components:
         lastUpdatedTime: lastUpdatedTime
         id: 01234567-0123-0123-0123-012345678901
         state: CREATED
-        testKey: 8swdwj9080edejhj
         categories: []
         revisionedApiProductId: 01234567-0123-0123-0123-012345678901
         accessControlRoles: []
@@ -15595,7 +15577,6 @@ components:
         - food
         revisionId: 1
         visibleTenants: []
-        enableStore: true
         cacheTimeout: 300
         apis:
         - name: PizzaShackAPI
@@ -15672,13 +15653,6 @@ components:
         enableSchemaValidation:
           example: false
           type: boolean
-        enableStore:
-          example: true
-          type: boolean
-        testKey:
-          example: 8swdwj9080edejhj
-          readOnly: true
-          type: string
         isRevision:
           example: false
           type: boolean
