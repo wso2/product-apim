@@ -24,9 +24,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIAdditionalPropertiesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductBusinessInformationDTO;
@@ -399,7 +398,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
         public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
         @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
-            private Map<String, String> additionalProperties = null;
+            private List<APIAdditionalPropertiesDTO> additionalProperties = null;
 
         public static final String SERIALIZED_NAME_MONETIZATION = "monetization";
         @SerializedName(SERIALIZED_NAME_MONETIZATION)
@@ -1123,7 +1122,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
-        public APIProductDTO additionalProperties(Map<String, String> additionalProperties) {
+        public APIProductDTO additionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
         
         this.additionalProperties = additionalProperties;
         return this;
@@ -1136,12 +1135,12 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
         @javax.annotation.Nullable
       @ApiModelProperty(value = "Map of custom properties of API")
     
-    public Map<String, String> getAdditionalProperties() {
+    public List<APIAdditionalPropertiesDTO> getAdditionalProperties() {
         return additionalProperties;
     }
 
 
-    public void setAdditionalProperties(Map<String, String> additionalProperties) {
+    public void setAdditionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
         this.additionalProperties = additionalProperties;
     }
 

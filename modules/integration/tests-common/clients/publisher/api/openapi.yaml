@@ -15903,7 +15903,12 @@ components:
         gatewayEnvironments:
         - Default
         additionalProperties:
-          key: additionalProperties
+        - display: true
+          name: name
+          value: value
+        - display: true
+          name: name
+          value: value
         scopes: []
         apiType: APIPRODUCT
         subscriptionAvailableTenants: []
@@ -16087,10 +16092,10 @@ components:
           x-otherScopes:
           - apim:api_publish
         additionalProperties:
-          additionalProperties:
-            type: string
           description: Map of custom properties of API
-          type: object
+          items:
+            $ref: '#/components/schemas/API_additionalProperties'
+          type: array
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
         businessInformation:
