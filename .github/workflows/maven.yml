@@ -20,6 +20,12 @@ jobs:
             segment: apim-integration-tests-without-restarts, apim-integration-tests-without-advance-throttling, apim-integration-tests-application-sharing, apim-JWT-integration-tests, apim-urlsafe-JWT-integration-tests, apim-integration-tests-endpoint-security, apim-integration-tests-external-idp, apim-integration-emailusername-login, apim-integration-tests-workflow, apim-streaming-api-tests
       fail-fast: false
     steps:
+    - name: Run hostname
+      run: hostname
+    - name: Fix host entry
+      run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
+    - name: Show hosts
+      run: cat /etc/hosts
     - name: Checkout master
       uses: actions/checkout@v2
     - name: Cache Maven packages
@@ -56,7 +62,7 @@ jobs:
         flags: integration_tests
 
   show-report:
-    if: always()
+    if: ${{ always() && !cancelled() }}
     needs: build
     runs-on: 'ubuntu-latest'
     steps:
