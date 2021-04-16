@@ -761,7 +761,7 @@ The Synapse server name is picked up either from the system property
 failing which the hostname of the machine would be used or
 default to 'localhost'. You can give a name to a Synapse server instance by
 specifiying -DSynapseServerName=&lt;ServerName&gt; property when you execute
-the startup script, i.e. wso2server.bat or wso2server.sh. You can also edit the
+the startup script, i.e. api-manager.bat or api-manager.sh. You can also edit the
 wrapper.conf to do this where Synapse is started as a service. </p>
 
 <p>Each service could define the target for received messages as a named

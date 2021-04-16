@@ -395,9 +395,9 @@
 
 	<h4> Running the setup</h4>
 	
-    <p>After successful configurations, run the wso2server.sh or wso2server.bat of master node based on your platform with '-Dsetup' option for the first time start up
+    <p>After successful configurations, run the api-manager.sh or api-manager.bat of master node based on your platform with '-Dsetup' option for the first time start up
 	to create the database tables, and after creating database tables, do not use '-Dsetup' option when run the server.</p>
-    <pre xml:space="preserve">sh CARBON_HOME/bin/wso2server.sh -Dsetup</pre>
+    <pre xml:space="preserve">sh CARBON_HOME/bin/api-manager.sh -Dsetup</pre>
 	
     <p>You don't need to specify the -Dsetup option for ESB slave node because we have created DB schema in the previous step.</p>
       <p><strong>  Note: </strong> -Dsetup doesn't work with ESB slave node because we share a same database for user manager and  -Dsetup option will try to

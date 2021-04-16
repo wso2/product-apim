@@ -180,8 +180,8 @@
       these logs later using the Management Console. Then go to the &lt;esb-home&gt;/bin
       folder and execute the following command.
     </p>
-<pre xml:space="preserve">Linux: ./wso2server.sh
-Windows: wso2server.bat</pre>
+<pre xml:space="preserve">Linux: ./api-manager.sh
+Windows: api-manager.bat</pre>
     <p>
       You will see the following message on the console to indicate that the
       ESB started successfully.

@@ -1330,14 +1330,14 @@
         </file>
 
         <file>
-            <source>src/main/startup-scripts/wso2server.sh</source>
+            <source>src/main/startup-scripts/api-manager.sh</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
 
         <file>
-            <source>src/main/startup-scripts/wso2server.bat</source>
+            <source>src/main/startup-scripts/api-manager.bat</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
