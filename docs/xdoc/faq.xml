@@ -1040,7 +1040,7 @@
                     How can I change the memory allocation for the WSO2 ESB?
                 </h3>
                 <p>
-                    The memory allocation setting are in the wso2server.sh. The user can change the memory allocation
+                    The memory allocation setting are in the api-manager.sh. The user can change the memory allocation
                     settings by changing the following configuration.
                 </p>
                 <p>

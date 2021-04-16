@@ -88,9 +88,9 @@ Added advance throttling policies in Admin app![](images/image_6.png)![](images/
 
 ### Running the sample
 
-* Start the wso2am-analytics-2.6.0 distribution by executing [ANALYTICS_HOME]/bin/wso2server.sh or [ANALYTICS_HOME]/bin/wso2server.bat
+* Start the wso2am-analytics-2.6.0 distribution by executing [ANALYTICS_HOME]/bin/api-manager.sh or [ANALYTICS_HOME]/bin/api-manager.bat
 
-* Start the wso2am-2.6.0 distribution by executing [APIM_HOME]/bin/wso2server.sh or [APIM_HOME]/bin/wso2server.bat after starting the APIM analytics node.
+* Start the wso2am-2.6.0 distribution by executing [APIM_HOME]/bin/api-manager.sh or [APIM_HOME]/bin/api-manager.bat after starting the APIM analytics node.
 
 * Run the file run.sh in the sample scenarios root directory[APIM_HOME/sample-scenarios] as ./run.sh
 

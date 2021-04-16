@@ -35,7 +35,6 @@ import org.wso2.carbon.integration.common.utils.FileManager;
 
 import java.io.File;
 import java.io.IOException;
-
 import javax.xml.xpath.XPathExpressionException;
 
 public class APIMCarbonServerExtension extends ExecutionListenerExtension {
@@ -91,6 +90,10 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
 
         getParameters().put("-DosgiConsole", APIMTestConstants.OSGI_CONSOLE_TELNET_PORT);
         serverManager = new TestServerManager(getAutomationContext(), null, getParameters()) {
+            @Override
+            public String startServer() throws AutomationFrameworkException, IOException, XPathExpressionException {
+                return super.startServer();
+            }
 
             public void configureServer() throws AutomationFrameworkException {
 
@@ -158,6 +161,7 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                             serverManager.getCarbonHome() + File.separator + "repository" + File.separator + "conf"
                                     + File.separator + "log4j2.properties";
                     FileManager.copyFile(new File(log4jPropertiesFile), log4jPropertiesTargetLocation);
+
                 } catch (IOException e) {
                     throw new AutomationFrameworkException(e.getMessage(), e);
                 }

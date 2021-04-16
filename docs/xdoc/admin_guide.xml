@@ -144,7 +144,7 @@ variable to point to the directory in which Java is installed.
 <h3 id="Standalone">Running WSO2 ESB in Standalone Mode</h3>
 <p>
 Now you are all set to start WSO2 ESB in the standalone mode. Go to ESB_HOME/bin directory and if you are
-on Unix/Linux execute the wso2server.sh shell script or if you are on Windows execute the wso2server.bat
+on Unix/Linux execute the api-manager.sh shell script or if you are on Windows execute the api-manager.bat
 batch file. This will start the ESB and you can see the progress of the startup procedure on the console.
 Please note that server startup may take some time depending on the hardware configuration of your system.
 The very first startup of the ESB can take up a few additional seconds since some first time configuration
@@ -281,7 +281,7 @@ The sample configuration files can be found in the ESB_HOME/repository/samples d
 <p>
 When launching the ESB using the wso2esb-sample.sh/wso2esb-sample.bat scripts a new registry context root
 will be created for storing data and configurations related to that sample. Also note that these launcher
-scripts accept the same set of arguments accepted by the wso2server.sh and wso2server.bat.
+scripts accept the same set of arguments accepted by the api-manager.sh and api-manager.bat.
 </p>
 
 <h2 id="DirHierarchy">WSO2 ESB Directory Hierarchy</h2>
@@ -298,7 +298,7 @@ bin -<br/>
   <br/>
   <ul>
     <li>
-      wso2server.sh/wso2server.bat - Launches WSO2 ESB
+      api-manager.sh/api-manager.bat - Launches WSO2 ESB
     </li>
     <li>
       wso2esb-samples.sh/wso2esb-samples.bat - Launches WSO2 ESB using one of the sample configurations
