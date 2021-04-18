@@ -10215,6 +10215,65 @@ components:
           type: string
       title: Current and new passowrd of the user
       type: object
+    CertificateInfo:
+      properties:
+        status:
+          example: Active
+          type: string
+        validity:
+          $ref: '#/components/schemas/CertificateValidity'
+        version:
+          example: V3
+          type: string
+        subject:
+          example: CN=wso2.com, OU=wso2, O=wso2, L=Colombo, ST=Western, C=LK
+          type: string
+        serialNumber:
+          example: "76292708057987193002565060032465481997"
+          type: string
+      title: Certificate information
+      type: object
+    CertificateValidity:
+      properties:
+        from:
+          example: 12-12-2017
+          type: string
+        to:
+          example: 01-01-2019
+          type: string
+      title: Certificate Valid period
+      type: object
+    ClientCertificates:
+      description: Representation of a list of client certificates
+      properties:
+        count:
+          example: 1
+          type: integer
+        certificates:
+          items:
+            $ref: '#/components/schemas/ClientCertMetadata'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Client Certificates
+      type: object
+    ClientCertMetadata:
+      description: Meta data of certificate
+      properties:
+        name:
+          example: wso2carbon
+          type: string
+        applicationId:
+          example: b3ade481-30b0-4b38-9a67-498a40873a6d
+          type: string
+        type:
+          example: SANDBOX
+          type: string
+        UUID:
+          example: b3ade481-30b0-4b38-9a67-498a40873a6d
+          type: string
+      title: Client certificate meta data
+      type: object
     Post_request_body:
       properties:
         content:

@@ -5633,6 +5633,65 @@ components:
         newPassword:
           type: string
           example: newpassword1234
+    CertificateInfo:
+      title: Certificate information
+      type: object
+      properties:
+        status:
+          type: string
+          example: Active
+        validity:
+          $ref: '#/components/schemas/CertificateValidity'
+        version:
+          type: string
+          example: V3
+        subject:
+          type: string
+          example: CN=wso2.com, OU=wso2, O=wso2, L=Colombo, ST=Western, C=LK
+        serialNumber:
+          type: string
+          example: 76292708057987193002565060032465481997
+    CertificateValidity:
+      title: Certificate Valid period
+      type: object
+      properties:
+        from:
+          type: string
+          example: 12-12-2017
+        to:
+          type: string
+          example: 01-01-2019
+    ClientCertificates:
+      title: Client Certificates
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 1
+        certificates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClientCertMetadata'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      description: Representation of a list of client certificates
+    ClientCertMetadata:
+      title: Client certificate meta data
+      type: object
+      properties:
+        name:
+          type: string
+          example: wso2carbon
+        applicationId:
+          type: string
+          example: b3ade481-30b0-4b38-9a67-498a40873a6d
+        type:
+          type: string
+          example: SANDBOX
+        UUID:
+          type: string
+          example: b3ade481-30b0-4b38-9a67-498a40873a6d
+      description: Meta data of certificate
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
