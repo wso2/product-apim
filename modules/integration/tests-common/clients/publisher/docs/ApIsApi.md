@@ -404,7 +404,7 @@ null (empty response body)
 
 <a name="generateInternalAPIKey"></a>
 # **generateInternalAPIKey**
-> APIKeyDTO generateInternalAPIKey(apiId, ifNoneMatch)
+> APIKeyDTO generateInternalAPIKey(apiId)
 
 Generate internal API Key to invoke APIS.
 
@@ -431,9 +431,8 @@ public class Example {
 
     ApIsApi apiInstance = new ApIsApi(defaultClient);
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
-    String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      APIKeyDTO result = apiInstance.generateInternalAPIKey(apiId, ifNoneMatch);
+      APIKeyDTO result = apiInstance.generateInternalAPIKey(apiId);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApIsApi#generateInternalAPIKey");
@@ -451,7 +450,6 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
 
 ### Return type
 
@@ -472,7 +470,6 @@ Name | Type | Description  | Notes
 **200** | OK. apikey generated.  |  -  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
-**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
 
 <a name="generateMockScripts"></a>
 # **generateMockScripts**
