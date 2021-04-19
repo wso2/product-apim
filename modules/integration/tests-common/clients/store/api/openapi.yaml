@@ -4700,6 +4700,441 @@ paths:
           -F file=@exportedApplication.zip "https://127.0.0.1:9443/api/am/devportal/v2/applications/import?preserveOwner=true&skipSubscriptions=false&appOwner=admin&skipApplicationKeys=false&update=true"'
       x-contentType: multipart/form-data
       x-accepts: application/json
+  /applications/{applicationId}/client-certificates:
+    get:
+      description: |
+        This operation can be used to retrieve and search the uploaded client certificates.
+      parameters:
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertificates'
+          description: OK. Successful response with the list of matching certificate
+            information in the body.
+          headers:
+            Content-Type:
+              description: The content type of the body
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:client_certificates_view
+        - apim:app_manage
+      summary: Retrive Uploaded Client Certificates
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015/client-certificates"'
+      x-accepts: application/json
+    post:
+      description: |
+        This operation can be used to upload a new certificate for an endpoint.
+      parameters:
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                certificate:
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+                  type: string
+                name:
+                  description: Display name for the certificate
+                  maxLength: 30
+                  minLength: 1
+                  type: string
+                type:
+                  description: Type of the Gateway Environment
+                  maxLength: 30
+                  minLength: 1
+                  type: string
+              required:
+              - certificate
+              - name
+              - type
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertMetadata'
+          description: |
+            OK.
+            The Certificate added successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:client_certificates_add
+        - apim:app_manage
+      summary: Upload a New Certificate
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: multipart/form-data" -F certificate=@test.crt -F alias=wso2carbon
+          -F apiId=fea749dd-d548-4a8b-b308-34903b39a34b -F tier=Gold "https://127.0.0.1:9443/api/am/store/v1/applications/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /applications/{applicationId}/client-certificates/{UUID}:
+    delete:
+      description: This operation can be used to delete an uploaded certificate.
+      parameters:
+      - description: The alias of the certificate that should be deleted.
+        explode: false
+        in: path
+        name: UUID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: OK. The Certificate deleted successfully.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - Oauth2Security:
+        - apim:client_certificates_update
+        - apim:app_manage
+      summary: Delete a Certificates
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/devportal/v2/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon"'
+      x-accepts: application/json
+    get:
+      description: |
+        This operation can be used to get the information about a certificate.
+      parameters:
+      - explode: false
+        in: path
+        name: UUID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateInfo'
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:client_certificates_view
+        - apim:app_manage
+      summary: Get the Certificate Information
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/store/v1/applications/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon"'
+      x-accepts: application/json
+  /applications/{applicationId}/client-certificates/{UUID}/content:
+    get:
+      description: |
+        This operation can be used to download a certificate which matches the given alias.
+      parameters:
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: alias
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:client_certificates_view
+        - apim:app_manage
+      summary: Download a Certificate
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/devportal/v1/applications/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon/content"'
+      x-accepts: application/json
   /subscriptions:
     get:
       description: |
@@ -10216,6 +10651,14 @@ components:
       title: Current and new passowrd of the user
       type: object
     CertificateInfo:
+      example:
+        serialNumber: "76292708057987193002565060032465481997"
+        subject: CN=wso2.com, OU=wso2, O=wso2, L=Colombo, ST=Western, C=LK
+        validity:
+          from: 12-12-2017
+          to: 01-01-2019
+        version: V3
+        status: Active
       properties:
         status:
           example: Active
@@ -10234,6 +10677,9 @@ components:
       title: Certificate information
       type: object
     CertificateValidity:
+      example:
+        from: 12-12-2017
+        to: 01-01-2019
       properties:
         from:
           example: 12-12-2017
@@ -10245,6 +10691,23 @@ components:
       type: object
     ClientCertificates:
       description: Representation of a list of client certificates
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        certificates:
+        - name: wso2carbon
+          applicationId: b3ade481-30b0-4b38-9a67-498a40873a6d
+          type: SANDBOX
+          UUID: b3ade481-30b0-4b38-9a67-498a40873a6d
+        - name: wso2carbon
+          applicationId: b3ade481-30b0-4b38-9a67-498a40873a6d
+          type: SANDBOX
+          UUID: b3ade481-30b0-4b38-9a67-498a40873a6d
+        count: 1
       properties:
         count:
           example: 1
@@ -10259,6 +10722,11 @@ components:
       type: object
     ClientCertMetadata:
       description: Meta data of certificate
+      example:
+        name: wso2carbon
+        applicationId: b3ade481-30b0-4b38-9a67-498a40873a6d
+        type: SANDBOX
+        UUID: b3ade481-30b0-4b38-9a67-498a40873a6d
       properties:
         name:
           example: wso2carbon

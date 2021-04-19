@@ -2340,6 +2340,229 @@ paths:
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -F file=@exportedApplication.zip "https://127.0.0.1:9443/api/am/devportal/v2/applications/import?preserveOwner=true&skipSubscriptions=false&appOwner=admin&skipApplicationKeys=false&update=true"'
 
+  /applications/{applicationId}/client-certificates:
+    get:
+      tags:
+        - Client Certificates
+      summary: Retrive Uploaded Client Certificates
+      description: |
+        This operation can be used to retrieve and search the uploaded client certificates.
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/applicationId'
+      responses:
+        200:
+          description: OK. Successful response with the list of matching certificate information in the body.
+          headers:
+            Content-Type:
+              description: The content type of the body
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertificates'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:client_certificates_view
+            - apim:app_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+              "https://localhost:9443/api/am/store/v1/applications/896658a0-b4ee-4535-bbfa-806c894a4015/client-certificates"'
+
+    post:
+      tags:
+        - Client Certificates
+      summary: Upload a New Certificate
+      description: |
+        This operation can be used to upload a new certificate for an endpoint.
+      parameters:
+        - $ref: '#/components/parameters/applicationId'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - name
+                - certificate
+                - type
+              properties:
+                certificate:
+                  type: string
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+                name:
+                  maxLength: 30
+                  minLength: 1
+                  type: string
+                  description: Display name for the certificate
+                type:
+                  maxLength: 30
+                  minLength: 1
+                  type: string
+                  description: Type of the Gateway Environment
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            The Certificate added successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertMetadata'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:client_certificates_add
+            - apim:app_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            -H "Content-Type: multipart/form-data" -F certificate=@test.crt -F alias=wso2carbon
+            -F apiId=fea749dd-d548-4a8b-b308-34903b39a34b -F tier=Gold "https://127.0.0.1:9443/api/am/store/v1/applications/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates"'
+
+  /applications/{applicationId}/client-certificates/{UUID}:
+    get:
+      tags:
+        - Client Certificates
+      summary: Get the Certificate Information
+      description: |
+        This operation can be used to get the information about a certificate.
+      parameters:
+        - name: UUID
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/applicationId'
+      responses:
+        200:
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateInfo'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:client_certificates_view
+            - apim:app_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/store/v1/applications/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon"'
+
+    delete:
+      tags:
+        - Client Certificates
+      summary: Delete a Certificates
+      description: This operation can be used to delete an uploaded certificate.
+      parameters:
+        - name: UUID
+          in: path
+          description: The alias of the certificate that should be deleted.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/applicationId'
+      responses:
+        200:
+          description: OK. The Certificate deleted successfully.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              schema:
+                type: string
+          content: {}
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - Oauth2Security:
+            - apim:client_certificates_update
+            - apim:app_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/devportal/v2/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon"'
+
+  /applications/{applicationId}/client-certificates/{UUID}/content:
+    get:
+      tags:
+        - Client Certificates
+      summary: Download a Certificate
+      description: |
+        This operation can be used to download a certificate which matches the given alias.
+      parameters:
+        - $ref: '#/components/parameters/applicationId'
+        - name: alias
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content: { }
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:client_certificates_view
+            - apim:app_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/devportal/v1/applications/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon/content"'
+
+
   ######################################################
   # The "Subscription Collection" resource APIs
   ######################################################
