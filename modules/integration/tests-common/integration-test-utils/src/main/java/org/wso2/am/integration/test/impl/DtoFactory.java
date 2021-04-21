@@ -16,14 +16,15 @@
 
 package org.wso2.am.integration.test.impl;
 
-import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.APICategoryDTO;
+import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ConditionalGroupDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EventCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.HeaderConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.IPConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.JWTClaimsConditionDTO;
@@ -37,13 +38,12 @@ import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class DtoFactory {
 
     public static APIProductDTO createApiProductDTO(String provider, String name, String context, List<ProductAPIDTO> apis,
-                                                    List<String> polices) {
+            List<String> polices) {
         return new APIProductDTO().
                 accessControl(APIProductDTO.AccessControlEnum.NONE).
                 visibility(APIProductDTO.VisibilityEnum.PUBLIC).
@@ -51,7 +51,6 @@ public class DtoFactory {
                 context(context).
                 name(name).
                 policies(polices).
-                gatewayEnvironments(Arrays.asList("Production and Sandbox")).
                 provider(provider);
     }
 
@@ -95,6 +94,18 @@ public class DtoFactory {
     }
 
     /**
+     * Creates a throttle limit DTO using the given event count limit DTO.
+     *
+     * @param eventCountLimitDTO    Event count limit DTO object.
+     * @return  Created throttle limit DTO.
+     */
+    public static ThrottleLimitDTO createEventCountThrottleLimitDTO(EventCountLimitDTO eventCountLimitDTO) {
+        return new ThrottleLimitDTO().
+                type(ThrottleLimitDTO.TypeEnum.EVENTCOUNTLIMIT).
+                eventCount(eventCountLimitDTO);
+    }
+
+    /**
      * Creates a request count limit DTO using the given parameters.
      *
      * @param timeUnit     Time limit.
@@ -128,6 +139,21 @@ public class DtoFactory {
                 unitTime(unitTime).
                 dataAmount(dataAmount).
                 dataUnit(dataUnit);
+    }
+
+    /**
+     * Creates a event count limit DTO using the given parameters.
+     *
+     * @param timeUnit      Time limit.
+     * @param unitTime      Unit of time.
+     * @param eventCount    Event count limit.
+     * @return  Created event count limit DTO.
+     */
+    public static EventCountLimitDTO createEventCountLimitDTO(String timeUnit, Integer unitTime, Long eventCount) {
+        return new EventCountLimitDTO().
+                timeUnit(timeUnit).
+                unitTime(unitTime).
+                eventCount(eventCount);
     }
 
     /**
@@ -347,7 +373,7 @@ public class DtoFactory {
      * @return Environment DTO object
      */
     public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description,
-                                                      boolean isReadOnly, List<VHostDTO> vhosts) {
+            boolean isReadOnly, List<VHostDTO> vhosts) {
         return new EnvironmentDTO()
                 .name(name)
                 .displayName(displayName)
@@ -368,7 +394,7 @@ public class DtoFactory {
      * @return VHost DTO object
      */
     public static VHostDTO createVhostDTO(String host, String httpContext, Integer httpPort, Integer httpsPort,
-                                          Integer wsPort, Integer wssPort) {
+            Integer wsPort, Integer wssPort) {
         return new VHostDTO().host(host)
                 .httpContext(httpContext)
                 .httpPort(httpPort)

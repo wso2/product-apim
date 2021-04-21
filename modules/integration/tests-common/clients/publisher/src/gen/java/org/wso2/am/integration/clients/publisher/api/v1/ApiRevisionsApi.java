@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Publisher API
- * This document specifies a **RESTful API** for WSO2 **API Manager** - **Publisher**.  # Authentication Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking the the API you need to obtain an access token with the required scopes. This guide will walk you through the steps that you will need to follow to obtain an access token. First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types in the payload. A Sample payload is shown below. ```   {   \"callbackUrl\":\"www.google.lk\",   \"clientName\":\"rest_api_publisher\",   \"owner\":\"admin\",   \"grantType\":\"client_credentials password refresh_token\",   \"saasApp\":true   } ``` Create a file (payload.json) with the above sample payload, and use the cURL shown bellow to invoke the DCR endpoint. Authorization header of this should contain the base64 encoded admin username and password. **Format of the request** ```   curl -X POST -H \"Authorization: Basic Base64(admin_username:admin_password)\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://<host>:<servlet_port>/client-registration/v0.17/register ``` **Sample request** ```   curl -X POST -H \"Authorization: Basic YWRtaW46YWRtaW4=\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://localhost:9443/client-registration/v0.17/register ``` Following is a sample response after invoking the above curl. ``` { \"clientId\": \"fOCi4vNJ59PpHucC2CAYfYuADdMa\", \"clientName\": \"rest_api_publisher\", \"callBackURL\": \"www.google.lk\", \"clientSecret\": \"a4FwHlq0iCIKVs2MPIIDnepZnYMa\", \"isSaasApplication\": true, \"appOwner\": \"admin\", \"jsonString\": \"{\\\"grant_types\\\":\\\"client_credentials password refresh_token\\\",\\\"redirect_uris\\\":\\\"www.google.lk\\\",\\\"client_name\\\":\\\"rest_api123\\\"}\", \"jsonAppAttribute\": \"{}\", \"tokenType\": null } ``` Next you must use the above client id and secret to obtain the access token. We will be using the password grant type for this, you can use any grant type you desire. You also need to add the proper **scope** when getting the access token. All possible scopes for publisher REST API can be viewed in **OAuth2 Security** section of this document and scope for each resource is given in **authorization** section of resource documentation. Following is the format of the request if you are using the password grant type. ``` curl -k -d \"grant_type=password&username=<admin_username>&password=<admin_passowrd&scope=<scopes seperated by space>\" \\ -H \"Authorization: Basic base64(cliet_id:client_secret)\" \\ https://<host>:<gateway_port>/token ``` **Sample request** ``` curl https://localhost:8243/token -k \\ -H \"Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h\" \\ -d \"grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create\" ``` Shown below is a sample response to the above request. ``` { \"access_token\": \"e79bda48-3406-3178-acce-f6e4dbdcbb12\", \"refresh_token\": \"a757795d-e69f-38b8-bd85-9aded677a97c\", \"scope\": \"apim:api_create apim:api_view\", \"token_type\": \"Bearer\", \"expires_in\": 3600 } ``` Now you have a valid access token, which you can use to invoke an API. Navigate through the API descriptions to find the required API, obtain an access token as described above and invoke the API with the authentication header. If you use a different authentication mechanism, this process may change.  # Try out in Postman If you want to try-out the embedded postman collection with \"Run in Postman\" option, please follow the guidelines listed below. * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes. * Make sure you have an API Manager instance up and running. * Update the `basepath` parameter to match the hostname and port of the APIM instance.  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/a09044034b5c3c1b01a9) 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - **Publisher**.  # Authentication The Publisher REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking the the API you need to obtain an access token with the required scopes. This guide will walk you through the steps that you will need to follow to obtain an access token. First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types in the payload. A Sample payload is shown below. ```   {   \"callbackUrl\":\"www.google.lk\",   \"clientName\":\"rest_api_publisher\",   \"owner\":\"admin\",   \"grantType\":\"client_credentials password refresh_token\",   \"saasApp\":true   } ``` Create a file (payload.json) with the above sample payload, and use the cURL shown bellow to invoke the DCR endpoint. Authorization header of this should contain the base64 encoded admin username and password. **Format of the request** ```   curl -X POST -H \"Authorization: Basic Base64(admin_username:admin_password)\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://<host>:<servlet_port>/client-registration/v0.17/register ``` **Sample request** ```   curl -X POST -H \"Authorization: Basic YWRtaW46YWRtaW4=\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://localhost:9443/client-registration/v0.17/register ``` Following is a sample response after invoking the above curl. ``` { \"clientId\": \"fOCi4vNJ59PpHucC2CAYfYuADdMa\", \"clientName\": \"rest_api_publisher\", \"callBackURL\": \"www.google.lk\", \"clientSecret\": \"a4FwHlq0iCIKVs2MPIIDnepZnYMa\", \"isSaasApplication\": true, \"appOwner\": \"admin\", \"jsonString\": \"{\\\"grant_types\\\":\\\"client_credentials password refresh_token\\\",\\\"redirect_uris\\\":\\\"www.google.lk\\\",\\\"client_name\\\":\\\"rest_api123\\\"}\", \"jsonAppAttribute\": \"{}\", \"tokenType\": null } ``` Next you must use the above client id and secret to obtain the access token. We will be using the password grant type for this, you can use any grant type you desire. You also need to add the proper **scope** when getting the access token. All possible scopes for publisher REST API can be viewed in **OAuth2 Security** section of this document and scope for each resource is given in **authorization** section of resource documentation. Following is the format of the request if you are using the password grant type. ``` curl -k -d \"grant_type=password&username=<admin_username>&password=<admin_passowrd&scope=<scopes seperated by space>\" \\ -H \"Authorization: Basic base64(cliet_id:client_secret)\" \\ https://<host>:<servlet_port>/oauth2/token ``` **Sample request** ``` curl https://localhost:9443/oauth2/token -k \\ -H \"Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h\" \\ -d \"grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create\" ``` Shown below is a sample response to the above request. ``` { \"access_token\": \"e79bda48-3406-3178-acce-f6e4dbdcbb12\", \"refresh_token\": \"a757795d-e69f-38b8-bd85-9aded677a97c\", \"scope\": \"apim:api_create apim:api_view\", \"token_type\": \"Bearer\", \"expires_in\": 3600 } ``` Now you have a valid access token, which you can use to invoke an API. Navigate through the API descriptions to find the required API, obtain an access token as described above and invoke the API with the authentication header. If you use a different authentication mechanism, this process may change.  # Try out in Postman If you want to try-out the embedded postman collection with \"Run in Postman\" option, please follow the guidelines listed below. * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes. * Make sure you have an API Manager instance up and running. * Update the `basepath` parameter to match the hostname and port of the APIM instance.  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/a09044034b5c3c1b01a9) 
  *
  * The version of the OpenAPI document: v2
  * Contact: architecture@wso2.com
@@ -119,7 +119,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Create a new API revision
+     * Create API Revision
      * Create a new API revision 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param apIRevisionDTO API object that needs to be added (optional)
@@ -139,7 +139,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Create a new API revision
+     * Create API Revision
      * Create a new API revision 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param apIRevisionDTO API object that needs to be added (optional)
@@ -160,7 +160,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Create a new API revision (asynchronously)
+     * Create API Revision (asynchronously)
      * Create a new API revision 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param apIRevisionDTO API object that needs to be added (optional)
@@ -248,7 +248,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Delete a revision of an API
+     * Delete Revision
      * Delete a revision of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (required)
@@ -268,7 +268,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Delete a revision of an API
+     * Delete Revision
      * Delete a revision of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (required)
@@ -289,7 +289,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Delete a revision of an API (asynchronously)
+     * Delete Revision (asynchronously)
      * Delete a revision of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (required)
@@ -322,8 +322,8 @@ public class ApiRevisionsApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  -  </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
@@ -376,47 +376,50 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Deploy a revision
+     * Deploy Revision
      * Deploy a revision 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (optional)
      * @param apIRevisionDeploymentDTO Deployment object that needs to be added (optional)
+     * @return List&lt;APIRevisionDeploymentDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  -  </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public void deployAPIRevision(String apiId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO) throws ApiException {
-        deployAPIRevisionWithHttpInfo(apiId, revisionId, apIRevisionDeploymentDTO);
+    public List<APIRevisionDeploymentDTO> deployAPIRevision(String apiId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO) throws ApiException {
+        ApiResponse<List<APIRevisionDeploymentDTO>> localVarResp = deployAPIRevisionWithHttpInfo(apiId, revisionId, apIRevisionDeploymentDTO);
+        return localVarResp.getData();
     }
 
     /**
-     * Deploy a revision
+     * Deploy Revision
      * Deploy a revision 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (optional)
      * @param apIRevisionDeploymentDTO Deployment object that needs to be added (optional)
-     * @return ApiResponse&lt;Void&gt;
+     * @return ApiResponse&lt;List&lt;APIRevisionDeploymentDTO&gt;&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  -  </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> deployAPIRevisionWithHttpInfo(String apiId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO) throws ApiException {
+    public ApiResponse<List<APIRevisionDeploymentDTO>> deployAPIRevisionWithHttpInfo(String apiId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO) throws ApiException {
         okhttp3.Call localVarCall = deployAPIRevisionValidateBeforeCall(apiId, revisionId, apIRevisionDeploymentDTO, null);
-        return localVarApiClient.execute(localVarCall);
+        Type localVarReturnType = new TypeToken<List<APIRevisionDeploymentDTO>>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * Deploy a revision (asynchronously)
+     * Deploy Revision (asynchronously)
      * Deploy a revision 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (optional)
@@ -427,15 +430,16 @@ public class ApiRevisionsApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK.  </td><td>  -  </td></tr>
-        <tr><td> 201 </td><td> Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td> Created. Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call deployAPIRevisionAsync(String apiId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call deployAPIRevisionAsync(String apiId, String revisionId, List<APIRevisionDeploymentDTO> apIRevisionDeploymentDTO, final ApiCallback<List<APIRevisionDeploymentDTO>> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = deployAPIRevisionValidateBeforeCall(apiId, revisionId, apIRevisionDeploymentDTO, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
+        Type localVarReturnType = new TypeToken<List<APIRevisionDeploymentDTO>>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
@@ -503,7 +507,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Retrieve a revision of an API
+     * Retrieve Revision
      * Retrieve a revision of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (required)
@@ -522,7 +526,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Retrieve a revision of an API
+     * Retrieve Revision
      * Retrieve a revision of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (required)
@@ -542,7 +546,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Retrieve a revision of an API (asynchronously)
+     * Retrieve Revision (asynchronously)
      * Retrieve a revision of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (required)
@@ -580,7 +584,7 @@ public class ApiRevisionsApi {
         Object localVarPostBody = null;
 
         // create path and map variables
-        String localVarPath = "/apis/{apiId}/deploy-revision"
+        String localVarPath = "/apis/{apiId}/deployments"
             .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
@@ -621,7 +625,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * List available deployed revision deployment details of an API
+     * List Deployments
      * List available deployed revision deployment details of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @return APIRevisionDeploymentListDTO
@@ -639,7 +643,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * List available deployed revision deployment details of an API
+     * List Deployments
      * List available deployed revision deployment details of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @return ApiResponse&lt;APIRevisionDeploymentListDTO&gt;
@@ -658,7 +662,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * List available deployed revision deployment details of an API (asynchronously)
+     * List Deployments (asynchronously)
      * List available deployed revision deployment details of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param _callback The callback to be executed when the API call finishes
@@ -741,7 +745,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * List available revisions of an API
+     * List Revisions
      * List available revisions of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param query  (optional)
@@ -760,7 +764,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * List available revisions of an API
+     * List Revisions
      * List available revisions of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param query  (optional)
@@ -780,7 +784,7 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * List available revisions of an API (asynchronously)
+     * List Revisions (asynchronously)
      * List available revisions of an API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param query  (optional)
@@ -864,8 +868,8 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Restore a revision
-     * Restore a revision to the working copy of the API 
+     * Restore API Revision
+     * Restore a revision to the current API of the API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (optional)
      * @return APIDTO
@@ -883,8 +887,8 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Restore a revision
-     * Restore a revision to the working copy of the API 
+     * Restore API Revision
+     * Restore a revision to the current API of the API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (optional)
      * @return ApiResponse&lt;APIDTO&gt;
@@ -903,8 +907,8 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Restore a revision (asynchronously)
-     * Restore a revision to the working copy of the API 
+     * Restore API Revision (asynchronously)
+     * Restore a revision to the current API of the API 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (optional)
      * @param _callback The callback to be executed when the API call finishes
@@ -939,6 +943,7 @@ public class ApiRevisionsApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK.  </td><td>  -  </td></tr>
         <tr><td> 201 </td><td> Created. Successful response with the newly undeployed APIRevisionDeploymentList object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
@@ -999,8 +1004,8 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Un-Deploy a revision
-     * Un-Deploy a revision 
+     * UnDeploy Revision
+     * UnDeploy a revision 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (optional)
      * @param revisionNumber Revision Number of an API  (optional)
@@ -1012,6 +1017,7 @@ public class ApiRevisionsApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK.  </td><td>  -  </td></tr>
         <tr><td> 201 </td><td> Created. Successful response with the newly undeployed APIRevisionDeploymentList object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
@@ -1020,8 +1026,8 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Un-Deploy a revision
-     * Un-Deploy a revision 
+     * UnDeploy Revision
+     * UnDeploy a revision 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (optional)
      * @param revisionNumber Revision Number of an API  (optional)
@@ -1034,6 +1040,7 @@ public class ApiRevisionsApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK.  </td><td>  -  </td></tr>
         <tr><td> 201 </td><td> Created. Successful response with the newly undeployed APIRevisionDeploymentList object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
@@ -1043,8 +1050,8 @@ public class ApiRevisionsApi {
     }
 
     /**
-     * Un-Deploy a revision (asynchronously)
-     * Un-Deploy a revision 
+     * UnDeploy Revision (asynchronously)
+     * UnDeploy a revision 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (optional)
      * @param revisionNumber Revision Number of an API  (optional)
@@ -1058,6 +1065,7 @@ public class ApiRevisionsApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK.  </td><td>  -  </td></tr>
         <tr><td> 201 </td><td> Created. Successful response with the newly undeployed APIRevisionDeploymentList object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
@@ -1065,6 +1073,135 @@ public class ApiRevisionsApi {
 
         okhttp3.Call localVarCall = undeployAPIRevisionValidateBeforeCall(apiId, revisionId, revisionNumber, allEnvironments, apIRevisionDeploymentDTO, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for updateAPIDeployment
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param deploymentId Base64 URL encoded value of the name of an environment  (required)
+     * @param apIRevisionDeploymentDTO Deployment object that needs to be updated (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Successful response with the newly updated APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPIDeploymentCall(String apiId, String deploymentId, APIRevisionDeploymentDTO apIRevisionDeploymentDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = apIRevisionDeploymentDTO;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/deployments/{deploymentId}"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()))
+            .replaceAll("\\{" + "deploymentId" + "\\}", localVarApiClient.escapeString(deploymentId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call updateAPIDeploymentValidateBeforeCall(String apiId, String deploymentId, APIRevisionDeploymentDTO apIRevisionDeploymentDTO, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling updateAPIDeployment(Async)");
+        }
+        
+        // verify the required parameter 'deploymentId' is set
+        if (deploymentId == null) {
+            throw new ApiException("Missing the required parameter 'deploymentId' when calling updateAPIDeployment(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = updateAPIDeploymentCall(apiId, deploymentId, apIRevisionDeploymentDTO, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Update Deployment
+     * Update deployment devportal visibility 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param deploymentId Base64 URL encoded value of the name of an environment  (required)
+     * @param apIRevisionDeploymentDTO Deployment object that needs to be updated (optional)
+     * @return APIRevisionDeploymentDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Successful response with the newly updated APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIRevisionDeploymentDTO updateAPIDeployment(String apiId, String deploymentId, APIRevisionDeploymentDTO apIRevisionDeploymentDTO) throws ApiException {
+        ApiResponse<APIRevisionDeploymentDTO> localVarResp = updateAPIDeploymentWithHttpInfo(apiId, deploymentId, apIRevisionDeploymentDTO);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Update Deployment
+     * Update deployment devportal visibility 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param deploymentId Base64 URL encoded value of the name of an environment  (required)
+     * @param apIRevisionDeploymentDTO Deployment object that needs to be updated (optional)
+     * @return ApiResponse&lt;APIRevisionDeploymentDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Successful response with the newly updated APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIRevisionDeploymentDTO> updateAPIDeploymentWithHttpInfo(String apiId, String deploymentId, APIRevisionDeploymentDTO apIRevisionDeploymentDTO) throws ApiException {
+        okhttp3.Call localVarCall = updateAPIDeploymentValidateBeforeCall(apiId, deploymentId, apIRevisionDeploymentDTO, null);
+        Type localVarReturnType = new TypeToken<APIRevisionDeploymentDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Update Deployment (asynchronously)
+     * Update deployment devportal visibility 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param deploymentId Base64 URL encoded value of the name of an environment  (required)
+     * @param apIRevisionDeploymentDTO Deployment object that needs to be updated (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Successful response with the newly updated APIRevisionDeployment List object as the entity in the body.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call updateAPIDeploymentAsync(String apiId, String deploymentId, APIRevisionDeploymentDTO apIRevisionDeploymentDTO, final ApiCallback<APIRevisionDeploymentDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = updateAPIDeploymentValidateBeforeCall(apiId, deploymentId, apIRevisionDeploymentDTO, _callback);
+        Type localVarReturnType = new TypeToken<APIRevisionDeploymentDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
 }

@@ -42,23 +42,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
  * A collection of helper methods to aid in setting up and testing APIProducts
  */
 public class ApiProductTestHelper {
+
     private RestAPIPublisherImpl restAPIPublisher;
     private RestAPIStoreImpl restAPIStore;
 
     public ApiProductTestHelper(RestAPIPublisherImpl restAPIPublisher, RestAPIStoreImpl restAPIStore) {
+
         this.restAPIPublisher = restAPIPublisher;
         this.restAPIStore = restAPIStore;
     }
 
     public APIProductDTO createAPIProductInPublisher(String provider, String name, String context,
-                                                     List<APIDTO> apisToBeUsed, List<String> policies)
+            List<APIDTO> apisToBeUsed, List<String> policies)
             throws ApiException {
         // Select resources from APIs to be used by APIProduct
         List<ProductAPIDTO> resourcesForProduct = getResourcesForProduct(apisToBeUsed);
@@ -72,7 +73,7 @@ public class ApiProductTestHelper {
 
         // Validate that APIProduct resources returned in response data are same as originally selected API resources
         List<ProductAPIDTO> responseResources = responseData.getApis();
-        verifyAPIProductDto(responseResources,resourcesForProduct);
+        verifyAPIProductDto(responseResources, resourcesForProduct);
 
         // Validate mandatory fields returned in response data
         Assert.assertEquals(responseData.getProvider(), provider);
@@ -83,8 +84,6 @@ public class ApiProductTestHelper {
             Assert.assertEquals(responseData.getContext(),
                     String.format("/t/%s%s", restAPIPublisher.tenantDomain, context));
         }
-
-
 
         return responseData;
     }
@@ -127,10 +126,11 @@ public class ApiProductTestHelper {
 
         // Validate APIProduct by Id
         APIProductDTO returnedProduct = restAPIPublisher.getApiProduct(responseData.getId());
-        verifyAPIProductDTOFromPublisher(returnedProduct,responseData);
+        verifyAPIProductDTOFromPublisher(returnedProduct, responseData);
     }
 
     private void verifyAPIProductDTOFromPublisher(APIProductDTO returnedProduct, APIProductDTO responseData) {
+
         Assert.assertEquals(returnedProduct.getId(), responseData.getId());
         Assert.assertEquals(returnedProduct.getName(), responseData.getName());
         Assert.assertEquals(returnedProduct.getContext(), responseData.getContext());
@@ -146,7 +146,6 @@ public class ApiProductTestHelper {
         Assert.assertEquals(returnedProduct.getVisibleTenants(), responseData.getVisibleTenants());
         Assert.assertEquals(returnedProduct.getAccessControl(), responseData.getAccessControl());
         Assert.assertEquals(returnedProduct.getAccessControlRoles(), responseData.getAccessControlRoles());
-        Assert.assertEquals(returnedProduct.getGatewayEnvironments(), responseData.getGatewayEnvironments());
         Assert.assertEquals(returnedProduct.getApiType(), responseData.getApiType());
         Assert.assertEquals(returnedProduct.getTransport(), responseData.getTransport());
         Assert.assertEquals(returnedProduct.getTags(), responseData.getTags());
@@ -164,7 +163,7 @@ public class ApiProductTestHelper {
         Assert.assertEquals(returnedProduct.getCreatedTime(), responseData.getCreatedTime());
         Assert.assertEquals(returnedProduct.getLastUpdatedTime(), responseData.getLastUpdatedTime());
         Assert.assertEquals(returnedProduct.getScopes(), responseData.getScopes());
-        verifyProductAPIDto(returnedProduct.getApis(),responseData.getApis());
+        verifyProductAPIDto(returnedProduct.getApis(), responseData.getApis());
     }
 
     private void verifyProductAPIDto(List<ProductAPIDTO> actual, List<ProductAPIDTO> expected) {
@@ -184,6 +183,7 @@ public class ApiProductTestHelper {
     }
 
     private void verifyOperations(List<APIOperationsDTO> actual, List<APIOperationsDTO> expected) {
+
         Assert.assertEquals(actual.size(), expected.size());
         for (APIOperationsDTO actualOperation : actual) {
             APIOperationsDTO matchedOperation = null;
@@ -207,23 +207,30 @@ public class ApiProductTestHelper {
     }
 
     public org.wso2.am.integration.clients.store.api.v1.dto.APIDTO verifyApiProductInPortal(APIProductDTO apiProductDTO)
-            throws org.wso2.am.integration.clients.store.api.ApiException {
+            throws org.wso2.am.integration.clients.store.api.ApiException, InterruptedException {
+
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO responseData = restAPIStore.getAPI(apiProductDTO.getId());
 
         // Validate mandatory fields returned in response data
         verifyApiDtoWithApiProduct(responseData, apiProductDTO);
 
-        APIListDTO apiList = restAPIStore.getAllAPIs();
-
-        List<APIInfoDTO> apiInfos = apiList.getList();
-
         boolean isAPIProductInListing = false;
         int productCount = 0;
-        for (APIInfoDTO apiInfo : apiInfos) {
-            if (apiInfo.getId().equals(apiProductDTO.getId())) {
-                isAPIProductInListing = true;
-                ++productCount;
-                verifyApiInfoDtoWithApiProduct(apiInfo, apiProductDTO);
+        int tries = 0;
+        while (productCount == 0 && tries < 5) {
+            APIListDTO apiList = restAPIStore.getAllAPIs();
+            List<APIInfoDTO> apiInfos = apiList.getList();
+            for (APIInfoDTO apiInfo : apiInfos) {
+                if (apiInfo.getId().equals(apiProductDTO.getId())) {
+                    isAPIProductInListing = true;
+                    ++productCount;
+                    verifyApiInfoDtoWithApiProduct(apiInfo, apiProductDTO);
+                    break;
+                }
+            }
+            tries++;
+            if (productCount == 0) {
+                Thread.sleep(5000);
             }
         }
 
@@ -241,6 +248,7 @@ public class ApiProductTestHelper {
      * @return Collection of API resources to be included in an APIProduct
      */
     private List<ProductAPIDTO> getResourcesForProduct(List<APIDTO> apiDTOs) {
+
         Map<APIDTO, Set<APIOperationsDTO>> selectedApiResourceMapping = new HashMap<>();
 
         // Pick two operations from each API to be used to create the APIProduct.
@@ -255,10 +263,11 @@ public class ApiProductTestHelper {
      * Select all resources from a given API. Resources will be picked sequentially, where the
      * resources itself will be unordered.
      *
-     * @param apiDto API
+     * @param apiDto                     API
      * @param selectedApiResourceMapping Collection for storing the selected resources against the respective API
      */
     private void selectOperationsFromAPI(APIDTO apiDto, Map<APIDTO, Set<APIOperationsDTO>> selectedApiResourceMapping) {
+
         List<APIOperationsDTO> operations = apiDto.getOperations();
 
         Set<APIOperationsDTO> selectedOperations = new HashSet<>();
@@ -274,6 +283,7 @@ public class ApiProductTestHelper {
      * @return Collection of APIProduct resources
      */
     private List<ProductAPIDTO> convertToProductApiResources(Map<APIDTO, Set<APIOperationsDTO>> selectedResources) {
+
         List<ProductAPIDTO> apiResources = new ArrayList<>();
 
         for (Map.Entry<APIDTO, Set<APIOperationsDTO>> entry : selectedResources.entrySet()) {
@@ -290,6 +300,7 @@ public class ApiProductTestHelper {
     }
 
     private void verifyApiProductInfoWithApiProductDto(APIProductInfoDTO apiProductInfoDTO, APIProductDTO apiProductDTO) {
+
         Assert.assertEquals(apiProductInfoDTO.getName(), apiProductDTO.getName());
         Assert.assertEquals(apiProductInfoDTO.getProvider(), apiProductDTO.getProvider());
         Assert.assertEquals(apiProductInfoDTO.getContext(), apiProductDTO.getContext());
@@ -301,12 +312,12 @@ public class ApiProductTestHelper {
     }
 
     private void verifyApiDtoWithApiProduct(org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO, APIProductDTO apiProductDTO) {
+
         Assert.assertEquals(apiDTO.getId(), apiProductDTO.getId());
         Assert.assertEquals(apiDTO.getAdditionalProperties(), apiProductDTO.getAdditionalProperties());
         verifyBusinessInformation(apiDTO.getBusinessInformation(), apiProductDTO.getBusinessInformation());
         Assert.assertEquals(apiDTO.getContext(), apiProductDTO.getContext());
         Assert.assertEquals(apiDTO.getDescription(), apiProductDTO.getDescription());
-        Assert.assertEquals(new HashSet<>(apiDTO.getEnvironmentList()), new HashSet<>(apiProductDTO.getGatewayEnvironments()));
         Assert.assertEquals(apiDTO.getLifeCycleStatus(), apiProductDTO.getState().getValue());
         Assert.assertEquals(apiDTO.getName(), apiProductDTO.getName());
         verifyResources(apiDTO.getOperations(), apiProductDTO.getApis());
@@ -319,6 +330,7 @@ public class ApiProductTestHelper {
     }
 
     private void verifyApiInfoDtoWithApiProduct(APIInfoDTO apiInfo, APIProductDTO apiProductDTO) {
+
         Assert.assertEquals(apiInfo.getContext(), apiProductDTO.getContext());
         Assert.assertEquals(apiInfo.getDescription(), apiProductDTO.getDescription());
         Assert.assertEquals(apiInfo.getId(), apiProductDTO.getId());
@@ -329,7 +341,8 @@ public class ApiProductTestHelper {
     }
 
     private void verifyBusinessInformation(APIBusinessInformationDTO portalBusinessInfo,
-                                           APIProductBusinessInformationDTO publisherBusinessInfo) {
+            APIProductBusinessInformationDTO publisherBusinessInfo) {
+
         Assert.assertEquals(portalBusinessInfo.getBusinessOwner(), publisherBusinessInfo.getBusinessOwner());
         Assert.assertEquals(portalBusinessInfo.getBusinessOwnerEmail(), publisherBusinessInfo.getBusinessOwnerEmail());
         Assert.assertEquals(portalBusinessInfo.getTechnicalOwner(), publisherBusinessInfo.getTechnicalOwner());
@@ -337,7 +350,8 @@ public class ApiProductTestHelper {
     }
 
     private void verifyResources(List<org.wso2.am.integration.clients.store.api.v1.dto.APIOperationsDTO> storeAPIOperations,
-                                 List<ProductAPIDTO> publisherAPIProductOperations) {
+            List<ProductAPIDTO> publisherAPIProductOperations) {
+
         storeAPIOperations.sort((o1, o2) -> {
             if (o1.getTarget().equals(o2.getTarget())) {
                 return o1.getVerb().compareTo(o2.getVerb());
@@ -371,6 +385,7 @@ public class ApiProductTestHelper {
     }
 
     private void verifyScopes(List<ScopeInfoDTO> scopeInfoDTOs, List<APIScopeDTO> apiScopeDTOS) {
+
         scopeInfoDTOs.sort(Comparator.comparing(ScopeInfoDTO::getName));
         List<ScopeDTO> scopeDTOs = apiScopeDTOS.stream().map(APIScopeDTO::getScope).collect(Collectors.toList());
         scopeDTOs.sort(Comparator.comparing(ScopeDTO::getName));
@@ -389,6 +404,7 @@ public class ApiProductTestHelper {
     }
 
     private void verifyPolicies(List<APITiersDTO> apiTiersDTOs, List<String> policies) {
+
         Assert.assertEquals(apiTiersDTOs.size(), policies.size());
 
         apiTiersDTOs.sort(Comparator.comparing(APITiersDTO::getTierName));

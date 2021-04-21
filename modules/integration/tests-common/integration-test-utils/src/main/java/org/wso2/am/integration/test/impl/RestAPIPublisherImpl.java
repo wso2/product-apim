@@ -26,28 +26,28 @@ import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GlobalMediationPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GlobalMediationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
@@ -60,6 +60,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidatio
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
@@ -70,21 +72,24 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.PatchRequestBodyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.PostRequestBodyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
 import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
+import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.am.integration.test.ClientAuthenticator;
 
 import java.io.File;
 import java.io.IOException;
@@ -110,6 +115,7 @@ public class RestAPIPublisherImpl {
     public GraphQlSchemaApi graphQlSchemaApi = new GraphQlSchemaApi();
     public GraphQlSchemaIndividualApi graphQlSchemaIndividualApi = new GraphQlSchemaIndividualApi();
     public ApiLifecycleApi apiLifecycleApi = new ApiLifecycleApi();
+    public CommentsApi commentsApi = new CommentsApi();
     public RolesApi rolesApi = new RolesApi();
     public ValidationApi validationApi = new ValidationApi();
     public SubscriptionsApi subscriptionsApi = new SubscriptionsApi();
@@ -146,7 +152,8 @@ public class RestAPIPublisherImpl {
                                 "apim:client_certificates_view apim:client_certificates_add " +
                                 "apim:client_certificates_update apim:ep_certificates_view " +
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
-                                "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key",
+                                "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
+                                "apim:comment_write",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -156,10 +163,11 @@ public class RestAPIPublisherImpl {
         apiPublisherClient.setConnectTimeout(600000);
         apiPublisherClient.setWriteTimeout(600000);
         apIsApi.setApiClient(apiPublisherClient);
-	    apiProductsApi.setApiClient(apiPublisherClient);
-	    apiRevisionsApi.setApiClient(apiPublisherClient);
-	    apiProductRevisionsApi.setApiClient(apiPublisherClient);
+        apiProductsApi.setApiClient(apiPublisherClient);
+        apiRevisionsApi.setApiClient(apiPublisherClient);
+        apiProductRevisionsApi.setApiClient(apiPublisherClient);
         graphQlSchemaApi.setApiClient(apiPublisherClient);
+        commentsApi.setApiClient(apiPublisherClient);
         graphQlSchemaIndividualApi.setApiClient(apiPublisherClient);
         apiDocumentsApi.setApiClient(apiPublisherClient);
         throttlingPoliciesApi.setApiClient(apiPublisherClient);
@@ -247,16 +255,23 @@ public class RestAPIPublisherImpl {
         body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
-        ArrayList<String> gatewayEnvironments = new ArrayList<>();
-        gatewayEnvironments.add(apiRequest.getEnvironment());
-        body.setGatewayEnvironments(gatewayEnvironments);
         if (apiRequest.getOperationsDTOS() != null) {
             body.setOperations(apiRequest.getOperationsDTOS());
         } else {
             List<APIOperationsDTO> operations = new ArrayList<>();
             APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
-            apiOperationsDTO.setVerb("GET");
-            apiOperationsDTO.setTarget("/*");
+
+            if (isAsyncApi(apiRequest)) {
+                apiOperationsDTO.setVerb("SUBSCRIBE");
+            } else {
+                apiOperationsDTO.setVerb("GET");
+            }
+
+            if ("WEBSUB".equalsIgnoreCase(apiRequest.getType())) {
+                apiOperationsDTO.setTarget("_default");
+            } else {
+                apiOperationsDTO.setTarget("/*");
+            }
             apiOperationsDTO.setAuthType("Application & Application User");
             apiOperationsDTO.setThrottlingPolicy("Unlimited");
             operations.add(apiOperationsDTO);
@@ -293,6 +308,11 @@ public class RestAPIPublisherImpl {
         return httpInfo.getData();
     }
 
+    private boolean isAsyncApi(APIRequest apiRequest) {
+        String type = apiRequest.getType();
+        return "SSE".equalsIgnoreCase(type) || "WS".equalsIgnoreCase(type) || "WEBSUB".equalsIgnoreCase(type);
+    }
+
     /**
      * This method is used to create a new API of the existing API.
      *
@@ -305,7 +325,7 @@ public class RestAPIPublisherImpl {
     public String createNewAPIVersion(String newVersion, String apiId, boolean defaultVersion) throws ApiException {
         String apiLocation =
                 apIsApi.createNewAPIVersionWithHttpInfo(newVersion, apiId, defaultVersion, null).getHeaders()
-                .get("Location").get(0);
+                        .get("Location").get(0);
         String[] splitValues = apiLocation.split("/");
         return splitValues[splitValues.length - 1];
     }
@@ -484,9 +504,6 @@ public class RestAPIPublisherImpl {
         body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
-        ArrayList<String> gatewayEnvironments = new ArrayList<>();
-        gatewayEnvironments.add(apiRequest.getEnvironment());
-        body.setGatewayEnvironments(gatewayEnvironments);
         body.setMediationPolicies(apiRequest.getMediationPolicies());
         if (apiRequest.getOperationsDTOS() != null) {
             body.setOperations(apiRequest.getOperationsDTOS());
@@ -544,7 +561,7 @@ public class RestAPIPublisherImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-             apidto = apIsApi.getAPI(apiId, null, null);
+            apidto = apIsApi.getAPI(apiId, null, null);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
@@ -957,6 +974,15 @@ public class RestAPIPublisherImpl {
 
     }
 
+    public SubscriptionPolicyListDTO getSubscriptionPolicies(String tierQuotaTypes) throws ApiException {
+        SubscriptionPolicyListDTO subscriptionPolicyList
+                = throttlingPoliciesApi.getSubscriptionThrottlingPolicies(null, null, null);
+        if (subscriptionPolicyList.getCount() > 0){
+            return subscriptionPolicyList;
+        }
+        return null;
+    }
+
     /**
      * This method is used to validate roles.
      *
@@ -983,7 +1009,7 @@ public class RestAPIPublisherImpl {
 
     public OpenAPIDefinitionValidationResponseDTO validateOASDefinition(File oasDefinition) throws ApiException {
         ApiResponse<OpenAPIDefinitionValidationResponseDTO> response =
-                validationApi.validateOpenAPIDefinitionWithHttpInfo(null,  null, oasDefinition);
+                validationApi.validateOpenAPIDefinitionWithHttpInfo(null, null, oasDefinition, null);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
     }
@@ -998,7 +1024,8 @@ public class RestAPIPublisherImpl {
     }
 
     public APIDTO importOASDefinition(File file, String properties) throws ApiException {
-        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties);
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties,
+                null);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
@@ -1055,9 +1082,6 @@ public class RestAPIPublisherImpl {
         }});
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
-        ArrayList<String> gatewayEnvironments = new ArrayList<>();
-        gatewayEnvironments.add(apiCreationRequestBean.getEnvironment());
-        body.setGatewayEnvironments(gatewayEnvironments);
         List<APIOperationsDTO> operations = new ArrayList<>();
         for (APIResourceBean resourceBean : apiCreationRequestBean.getResourceBeanList()) {
             APIOperationsDTO dto = new APIOperationsDTO();
@@ -1078,6 +1102,17 @@ public class RestAPIPublisherImpl {
         sandUrl.put("url", apiCreationRequestBean.getEndpointUrl().toString());
         jsonObject.put("sandbox_endpoints", sandUrl);
         jsonObject.put("production_endpoints", sandUrl);
+        if ("basic".equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
+            JSONObject endpointSecurityGlobal = new JSONObject();
+            endpointSecurityGlobal.put("enabled", true);
+            endpointSecurityGlobal.put("type", "basic");
+            endpointSecurityGlobal.put("username", apiCreationRequestBean.getEpUsername());
+            endpointSecurityGlobal.put("password", apiCreationRequestBean.getEpPassword());
+            JSONObject endpointSecurity = new JSONObject();
+            endpointSecurity.put("production", endpointSecurityGlobal);
+            endpointSecurity.put("sandbox", endpointSecurityGlobal);
+            jsonObject.put("endpoint_security", endpointSecurity);
+        }
         body.setEndpointConfig(jsonObject);
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
@@ -1088,14 +1123,6 @@ public class RestAPIPublisherImpl {
             }
         }
         body.setPolicies(tierList);
-        if (APIEndpointSecurityDTO.TypeEnum.BASIC.getValue()
-                .equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
-            APIEndpointSecurityDTO dto = new APIEndpointSecurityDTO();
-            dto.setUsername(apiCreationRequestBean.getEpUsername());
-            dto.setPassword(apiCreationRequestBean.getEpPassword());
-            dto.setType(APIEndpointSecurityDTO.TypeEnum.BASIC);
-            body.setEndpointSecurity(dto);
-        }
         ApiResponse<APIDTO> httpInfo = apIsApi.createAPIWithHttpInfo(body, "v3");
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
@@ -1279,6 +1306,26 @@ public class RestAPIPublisherImpl {
     }
 
     /**
+     * This method is used to create an API Revision.
+     *
+     * @param apiId API Revision create object body
+     * @return HttpResponse
+     * @throws ApiException throws of an error occurred when creating the API Revision.
+     */
+    public APIRevisionDTO addAPIRevision(String apiId) throws ApiException {
+        APIRevisionDTO apiRevisionDTO = new APIRevisionDTO();
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIRevisionDTO> httpInfo = apiRevisionsApi.
+                    createAPIRevisionWithHttpInfo(apiId, apiRevisionDTO);
+            Assert.assertEquals(201, httpInfo.getStatusCode());
+            return httpInfo.getData();
+        } catch (ApiException e) {
+            throw new ApiException(e);
+        }
+    }
+
+    /**
      * Method to get API Revisions per API
      *
      * @param apiUUID - API uuid
@@ -1310,7 +1357,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws of an error occurred when creating the API Revision.
      */
     public HttpResponse deployAPIRevision(String apiUUID, String revisionUUID,
-                                          List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList)
+            List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList)
             throws ApiException {
         Gson gson = new Gson();
         List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOList = new ArrayList<>();
@@ -1323,7 +1370,8 @@ public class RestAPIPublisherImpl {
             apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
         try {
-            ApiResponse<Void> httpInfo = apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionDeploymentDTOList);
+            ApiResponse<List<APIRevisionDeploymentDTO>> httpInfo =
+                    apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionDeploymentDTOList);
             Assert.assertEquals(201, httpInfo.getStatusCode());
             //apiRevisionDeploymentDTOResponseList = httpInfo.getData();
         } catch (ApiException e) {
@@ -1334,9 +1382,42 @@ public class RestAPIPublisherImpl {
         }
         HttpResponse response = null;
         response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
-//        if (StringUtils.isNotEmpty(apiRevisionDeploymentDTOResponseList.toString())) {
-//            response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
-//        }
+        //        if (StringUtils.isNotEmpty(apiRevisionDeploymentDTOResponseList.toString())) {
+        //            response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
+        //        }
+        return response;
+    }
+
+    /**
+     * This method is used to deploy API Revision to Gateways.
+     *
+     * @param apiRevisionDeployRequestList API Revision deploy object body
+     * @return HttpResponse
+     * @throws ApiException throws of an error occurred when creating the API Revision.
+     */
+    public HttpResponse deployAPIRevision(String apiUUID, String revisionUUID,
+            APIRevisionDeployUndeployRequest apiRevisionDeployRequest)
+            throws ApiException {
+        Gson gson = new Gson();
+        List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOList = new ArrayList<>();
+        List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOResponseList = new ArrayList<>();
+        APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
+        apiRevisionDeploymentDTO.setName(apiRevisionDeployRequest.getName());
+        apiRevisionDeploymentDTO.setVhost(apiRevisionDeployRequest.getVhost());
+        apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionDeployRequest.isDisplayOnDevportal());
+        apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
+        try {
+            ApiResponse<List<APIRevisionDeploymentDTO>> httpInfo =
+                    apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionDeploymentDTOList);
+            Assert.assertEquals(201, httpInfo.getStatusCode());
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+            throw new ApiException(e);
+        }
+        HttpResponse response = null;
+        response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
         return response;
     }
 
@@ -1350,7 +1431,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws of an error occurred when undeploying the API Revision.
      */
     public HttpResponse undeployAPIRevision(String apiUUID, String revisionUUID,
-                                            List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList)
+            List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList)
             throws ApiException {
         Gson gson = new Gson();
         List<APIRevisionDeploymentDTO> apiRevisionUnDeploymentDTOList = new ArrayList<>();
@@ -1358,6 +1439,7 @@ public class RestAPIPublisherImpl {
         for (APIRevisionDeployUndeployRequest apiRevisionUndeployRequest : apiRevisionUndeployRequestList) {
             APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
             apiRevisionDeploymentDTO.setName(apiRevisionUndeployRequest.getName());
+            apiRevisionDeploymentDTO.setVhost(apiRevisionUndeployRequest.getVhost());
             apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionUndeployRequest.isDisplayOnDevportal());
             apiRevisionUnDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
@@ -1374,9 +1456,9 @@ public class RestAPIPublisherImpl {
         }
         HttpResponse response = null;
         response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
-//        if (StringUtils.isNotEmpty(apiRevisionUnDeploymentDTOResponseList.toString())) {
-//            response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
-//        }
+        //        if (StringUtils.isNotEmpty(apiRevisionUnDeploymentDTOResponseList.toString())) {
+        //            response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
+        //        }
         return response;
     }
 
@@ -1500,7 +1582,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws of an error occurred when creating the API Revision.
      */
     public HttpResponse deployAPIProductRevision(String apiUUID, String revisionUUID,
-                                          List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList)
+            List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList)
             throws ApiException {
         Gson gson = new Gson();
         List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOList = new ArrayList<>();
@@ -1508,6 +1590,7 @@ public class RestAPIPublisherImpl {
         for (APIRevisionDeployUndeployRequest apiRevisionDeployRequest : apiRevisionDeployRequestList) {
             APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
             apiRevisionDeploymentDTO.setName(apiRevisionDeployRequest.getName());
+            apiRevisionDeploymentDTO.setVhost(apiRevisionDeployRequest.getVhost());
             apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionDeployRequest.isDisplayOnDevportal());
             apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
@@ -1524,9 +1607,9 @@ public class RestAPIPublisherImpl {
         }
         HttpResponse response = null;
         response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
-//        if (StringUtils.isNotEmpty(apiRevisionDeploymentDTOResponseList.toString())) {
-//            response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
-//        }
+        //        if (StringUtils.isNotEmpty(apiRevisionDeploymentDTOResponseList.toString())) {
+        //            response = new HttpResponse(gson.toJson(apiRevisionDeploymentDTOResponseList), 201);
+        //        }
         return response;
     }
 
@@ -1540,7 +1623,7 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws of an error occurred when undeploying the API Revision.
      */
     public HttpResponse undeployAPIProductRevision(String apiUUID, String revisionUUID,
-                                            List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList)
+            List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList)
             throws ApiException {
         Gson gson = new Gson();
         List<APIRevisionDeploymentDTO> apiRevisionUnDeploymentDTOList = new ArrayList<>();
@@ -1548,6 +1631,7 @@ public class RestAPIPublisherImpl {
         for (APIRevisionDeployUndeployRequest apiRevisionUndeployRequest : apiRevisionUndeployRequestList) {
             APIRevisionDeploymentDTO apiRevisionDeploymentDTO = new APIRevisionDeploymentDTO();
             apiRevisionDeploymentDTO.setName(apiRevisionUndeployRequest.getName());
+            apiRevisionDeploymentDTO.setVhost(apiRevisionUndeployRequest.getVhost());
             apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionUndeployRequest.isDisplayOnDevportal());
             apiRevisionUnDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
@@ -1564,9 +1648,9 @@ public class RestAPIPublisherImpl {
         }
         HttpResponse response = null;
         response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
-//        if (StringUtils.isNotEmpty(apiRevisionUnDeploymentDTOResponseList.toString())) {
-//            response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
-//        }
+        //        if (StringUtils.isNotEmpty(apiRevisionUnDeploymentDTOResponseList.toString())) {
+        //            response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
+        //        }
         return response;
     }
 
@@ -1630,5 +1714,167 @@ public class RestAPIPublisherImpl {
 
     public ApiResponse<APIKeyDTO> generateInternalApiKey(String apiId) throws ApiException {
         return apIsApi.generateInternalAPIKeyWithHttpInfo(apiId);
+    }
+
+    /**
+     * Add comment to given API
+     *
+     * @param apiId   - api Id
+     * @param comment - comment to  add
+     * @param category - category of the comment
+     * @param replyTo - comment id of the root comment to add replies
+     * @return - http response of add comment
+     * @throws ApiException - throws if add comment fails
+     */
+
+    public HttpResponse addComment(String apiId, String comment, String category, String replyTo) throws ApiException {
+        PostRequestBodyDTO postRequestBodyDTO = new PostRequestBodyDTO();
+        postRequestBodyDTO.setContent(comment);
+        postRequestBodyDTO.setCategory(category);
+        Gson gson = new Gson();
+        CommentDTO commentDTO = commentsApi.addCommentToAPI(apiId,postRequestBodyDTO,replyTo);
+        HttpResponse response = null;
+        if (commentDTO != null) {
+            response = new HttpResponse(gson.toJson(commentDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get Comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo,
+            Integer limit, Integer offset) throws ApiException {
+        CommentDTO commentDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null,
+                    includeCommentorInfo, limit, offset);
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (StringUtils.isNotEmpty(commentDTO.getId())) {
+            response = new HttpResponse(gson.toJson(commentDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get all the comments from given API
+     *
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getComments(String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit,
+            Integer offset) throws ApiException {
+        CommentListDTO commentListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            commentListDTO = commentsApi.getAllCommentsOfAPI(apiId, tenantDomain, limit, offset, includeCommentorInfo);
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (commentListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(commentListDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get replies of a comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset    - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getReplies(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit, Integer offset)
+            throws ApiException {
+        CommentListDTO commentListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+
+        try {
+            commentListDTO = commentsApi.getRepliesOfComment(commentId, apiId, tenantDomain, limit, offset, null, includeCommentorInfo);
+
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (commentListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(commentListDTO), 200);
+        }
+
+        return response;
+    }
+
+    /**
+     * Get Comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param comment - comment to  add
+     * @param category - category of the comment
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse editComment(String commentId, String apiId, String comment, String category) throws
+            ApiException {
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            PatchRequestBodyDTO patchRequestBodyDTO = new PatchRequestBodyDTO();
+            patchRequestBodyDTO.setCategory(category);
+            patchRequestBodyDTO.setContent(comment);
+
+            CommentDTO editedCommentDTO = commentsApi.editCommentOfAPI(commentId,apiId,patchRequestBodyDTO);
+            if (editedCommentDTO != null) {
+                response = new HttpResponse(gson.toJson(editedCommentDTO), 200);
+            } else {
+                response = new HttpResponse(null, 200);
+            }
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
+    }
+
+    /**
+     * Remove comment in given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @throws ApiException - throws if remove comment fails
+     */
+    public HttpResponse removeComment(String commentId, String apiId) throws ApiException {
+        HttpResponse response;
+        try {
+            commentsApi.deleteComment(commentId, apiId, null);
+            response = new HttpResponse("Successfully deleted the comment", 200);
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            response = new HttpResponse("Failed to delete the comment", e.getCode());
+        }
+        return response;
+    }
+
+    public ApiResponse<APIProductDTO> updateAPIProduct(APIProductDTO apiProductDTO) throws ApiException {
+
+        return apiProductsApi.updateAPIProductWithHttpInfo(apiProductDTO.getId(), apiProductDTO, null);
     }
 }

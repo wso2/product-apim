@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **context** | **String** |  |  [optional]
 **description** | **String** |  |  [optional]
 **asyncAPIVersion** | **String** |  |  [optional]
+**protocol** | **String** |  |  [optional]
 **endpoints** | **List&lt;String&gt;** | contains host/servers specified in the AsyncAPI file/URL |  [optional]
 
 

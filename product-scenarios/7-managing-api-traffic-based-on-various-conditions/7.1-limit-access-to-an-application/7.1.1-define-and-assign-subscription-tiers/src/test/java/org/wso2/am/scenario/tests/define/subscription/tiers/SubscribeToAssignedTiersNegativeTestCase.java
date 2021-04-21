@@ -119,9 +119,6 @@ public class SubscribeToAssignedTiersNegativeTestCase extends ScenarioTestBase {
         jsonObject.put("sandbox_endpoints", sandUrl);
         jsonObject.put("production_endpoints", sandUrl);
         apiDto.setEndpointConfig(jsonObject);
-        ArrayList<String> gatewayEnvironments = new ArrayList<>();
-        gatewayEnvironments.add("Default");
-        apiDto.setGatewayEnvironments(gatewayEnvironments);
         apiDto.setPolicies(null);
         APIDTO response = restAPIPublisher.addAPI(apiDto, "3.0");
         assertNotNull(response.getId());

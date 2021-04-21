@@ -24,7 +24,7 @@ Name | Type | Description | Notes
 **tags** | **List&lt;String&gt;** | Search keywords related to the API |  [optional]
 **tiers** | [**List&lt;APITiersDTO&gt;**](APITiersDTO.md) | The subscription tiers selected for the particular API |  [optional]
 **hasThumbnail** | **Boolean** |  |  [optional]
-**additionalProperties** | **Map&lt;String, String&gt;** | Custom(user defined) properties of API  |  [optional]
+**additionalProperties** | [**List&lt;APIAdditionalPropertiesDTO&gt;**](APIAdditionalPropertiesDTO.md) | Custom(user defined) properties of API  |  [optional]
 **monetization** | [**APIMonetizationInfoDTO**](APIMonetizationInfoDTO.md) |  |  [optional]
 **ingressURLs** | [**List&lt;APIIngressURLsDTO&gt;**](APIIngressURLsDTO.md) |  |  [optional]
 **endpointURLs** | [**List&lt;APIEndpointURLsDTO&gt;**](APIEndpointURLsDTO.md) |  |  [optional]
