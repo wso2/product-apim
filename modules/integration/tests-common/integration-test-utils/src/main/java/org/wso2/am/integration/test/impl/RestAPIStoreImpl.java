@@ -39,6 +39,7 @@ import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.store.api.v1.WebhooksApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
+import org.wso2.am.integration.clients.store.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
@@ -66,6 +67,10 @@ import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.PatchRequestBodyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TopicListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.WebhookSubscriptionListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ClientCertificatesDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ClientCertMetadataDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CertificateInfoDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CertificateValidityDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -73,6 +78,7 @@ import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -103,6 +109,7 @@ public class RestAPIStoreImpl {
     public UsersApi usersApi = new UsersApi();
     public TopicsApi topicsApi = new TopicsApi();
     public WebhooksApi webhooksApi = new WebhooksApi();
+    public ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
     public static final String appName = "Integration_Test_App_Store";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -144,6 +151,7 @@ public class RestAPIStoreImpl {
         commentsApi.setApiClient(apiStoreClient);
         topicsApi.setApiClient(apiStoreClient);
         webhooksApi.setApiClient(apiStoreClient);
+        clientCertificatesApi.setApiClient(apiStoreClient);
         ratingsApi.setApiClient(apiStoreClient);
         tagsApi.setApiClient(apiStoreClient);
         unifiedSearchApi.setApiClient(apiStoreClient);
@@ -1970,4 +1978,73 @@ public class RestAPIStoreImpl {
         }
         return response;
     }
+
+    /**
+    * This method is used to upload certificates
+    *
+    * @param certificate certificate
+    * @param name       name of the certificate
+    * @param type  Gateway type of the certificate
+    * @return
+    * @throws org.wso2.am.integration.clients.store.api.ApiException if an error occurred while uploading the certificate.
+     */
+
+    public HttpResponse uploadCertificate(File certificate, String name, String applicationId, String type) throws ApiException{
+        ClientCertMetadataDTO certMetadataDTO = clientCertificatesApi.applicationsApplicationIdClientCertificatesPost(applicationId, certificate, name, type);
+        HttpResponse response = null;
+        if(StringUtils.isNotEmpty(certMetadataDTO.getUUID())){
+            response = new HttpResponse(certMetadataDTO.getUUID(), 200);
+        }
+        return response;
+    }
+    /**
+     *
+     * This method s used to get all the certificates uploaded against an application
+     * @param applicationId
+     * @return
+     *  @throws org.wso2.am.integration.clients.store.api.ApiException if an error occurred while getting the certificate.
+     * */
+    public HttpResponse getCertificates(String applicationId) throws ApiException{
+        ClientCertificatesDTO certificatesDTO = clientCertificatesApi.applicationsApplicationIdClientCertificatesGet(applicationId, 25, 0);
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        if(certificatesDTO.getCount() > 0){
+            response = new HttpResponse(gson.toJson(certificatesDTO),200);
+        }
+        return response;
+    }
+
+    /**
+     *
+     * This method s used to get all the certificates uploaded against an application
+     * @param applicationId Application ID
+     * @param UUID Unique Identifier of the Certificate
+     * @return
+     *  @throws org.wso2.am.integration.clients.store.api.ApiException if an error occurred while getting the certificate.
+     * */
+    public HttpResponse getCertificateByUUID(String UUID, String applicationId) throws ApiException{
+        CertificateInfoDTO certificateInfoDTO = clientCertificatesApi.applicationsApplicationIdClientCertificatesUUIDGet(UUID, applicationId);
+        HttpResponse response = null;
+
+        if(certificateInfoDTO != null){
+            response = new HttpResponse(certificateInfoDTO.toString(),200);
+        }
+        return response;
+    }
+    /**
+     *
+     * This method is used to delete a certificate
+     * @param applicationId Application ID
+     * @param UUID Unique Identifier of the Certificate
+     * @return
+     *  @throws org.wso2.am.integration.clients.store.api.ApiException if an error occurred while getting the certificate.
+     * */
+    public HttpResponse deleteCertificateByUUID(String UUID, String applicationId) throws ApiException{
+        clientCertificatesApi.applicationsApplicationIdClientCertificatesUUIDDelete(UUID, applicationId);
+        HttpResponse response = null;
+        response = new HttpResponse("Successfully deleted the certificate", 200);
+        return response;
+    }
+
+
 }

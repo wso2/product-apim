@@ -219,7 +219,6 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
-        restAPIPublisher.deleteAPI(apiId);
+        restAPIStore.deleteApplication(applicationId);
     }
 }
