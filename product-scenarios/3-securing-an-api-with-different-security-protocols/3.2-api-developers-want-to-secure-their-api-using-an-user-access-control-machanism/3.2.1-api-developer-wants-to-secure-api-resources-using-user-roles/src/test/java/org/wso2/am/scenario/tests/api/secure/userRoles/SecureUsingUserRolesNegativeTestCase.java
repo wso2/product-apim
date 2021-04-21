@@ -170,9 +170,6 @@ public class SecureUsingUserRolesNegativeTestCase extends ScenarioTestBase {
         jsonObject.put("sandbox_endpoints", sandUrl);
         jsonObject.put("production_endpoints", sandUrl);
         apiDto.setEndpointConfig(jsonObject);
-        ArrayList<String> gatewayEnvironments = new ArrayList<>();
-        gatewayEnvironments.add("Default");
-        apiDto.setGatewayEnvironments(gatewayEnvironments);
         ArrayList<String> policies = new ArrayList<>();
         policies.add(tier);
         apiDto.setPolicies(policies);

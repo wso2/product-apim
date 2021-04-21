@@ -37,7 +37,9 @@ import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
 import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.TagsApi;
+import org.wso2.am.integration.clients.store.api.v1.TopicsApi;
 import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
+import org.wso2.am.integration.clients.store.api.v1.WebhooksApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
@@ -62,13 +64,17 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.PostRequestBodyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.PatchRequestBodyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.TopicListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.WebhookSubscriptionListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 
 import java.io.IOException;
 import java.net.URL;
@@ -84,7 +90,6 @@ import org.wso2.am.integration.clients.store.api.v1.UsersApi;
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIStoreImpl {
-
     private static final Log log = LogFactory.getLog(RestAPIStoreImpl.class);
     private static final long WAIT_TIME = 60 * 1000;
 
@@ -102,6 +107,8 @@ public class RestAPIStoreImpl {
     public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     ApiClient apiStoreClient = new ApiClient();
     public UsersApi usersApi = new UsersApi();
+    public TopicsApi topicsApi = new TopicsApi();
+    public WebhooksApi webhooksApi = new WebhooksApi();
     public static final String appName = "Integration_Test_App_Store";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -141,6 +148,8 @@ public class RestAPIStoreImpl {
         subscriptionIndividualApi.setApiClient(apiStoreClient);
         applicationKeysApi.setApiClient(apiStoreClient);
         commentsApi.setApiClient(apiStoreClient);
+        topicsApi.setApiClient(apiStoreClient);
+        webhooksApi.setApiClient(apiStoreClient);
         ratingsApi.setApiClient(apiStoreClient);
         tagsApi.setApiClient(apiStoreClient);
         unifiedSearchApi.setApiClient(apiStoreClient);
@@ -178,7 +187,7 @@ public class RestAPIStoreImpl {
     }
 
     public HttpResponse createApplication(String appName, String description, String throttleTier,
-                                          ApplicationDTO.TokenTypeEnum tokenType) {
+            ApplicationDTO.TokenTypeEnum tokenType) {
         try {
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
@@ -201,7 +210,7 @@ public class RestAPIStoreImpl {
     }
 
     public HttpResponse createApplicationWithCustomAttribute(String appName, String description, String throttleTier,
-                                          ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute) {
+            ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute) {
         try {
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
@@ -248,8 +257,8 @@ public class RestAPIStoreImpl {
     }
 
     public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
-                                              String throttleTier,
-                                              ApplicationDTO.TokenTypeEnum tokenType){
+            String throttleTier,
+            ApplicationDTO.TokenTypeEnum tokenType){
         try {
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
@@ -314,8 +323,8 @@ public class RestAPIStoreImpl {
     }
 
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
-                                          ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
-                                          List<String> grantTypes)
+            ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
+            List<String> grantTypes)
             throws ApiException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
@@ -357,9 +366,9 @@ public class RestAPIStoreImpl {
     }
 
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
-                                          ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
-                                          List<String> grantTypes,Map<String,Object> additionalProperties,
-                                          String keyManager)
+            ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
+            List<String> grantTypes,Map<String,Object> additionalProperties,
+            String keyManager)
             throws ApiException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
@@ -376,10 +385,10 @@ public class RestAPIStoreImpl {
     }
 
     public ApiResponse<ApplicationKeyDTO> generateKeysWithApiResponse(String applicationId, String validityTime,
-                                                           String callBackUrl,
-                                                       ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
-                                                       List<String> grantTypes, Map<String,Object> additionalProperties,
-                                                       String keyManager)
+            String callBackUrl,
+            ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
+            List<String> grantTypes, Map<String,Object> additionalProperties,
+            String keyManager)
             throws ApiException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
@@ -398,7 +407,7 @@ public class RestAPIStoreImpl {
 
 
     public APIKeyDTO generateAPIKeys(String applicationId, String keyType, int validityPeriod,
-                                     String permittedIP, String permittedReferer) throws ApiException {
+            String permittedIP, String permittedReferer) throws ApiException {
         APIKeyGenerateRequestDTO keyGenerateRequestDTO = new APIKeyGenerateRequestDTO();
         keyGenerateRequestDTO.setValidityPeriod(validityPeriod);
         HashMap additionalProperties = new HashMap<String, String>();
@@ -447,7 +456,7 @@ public class RestAPIStoreImpl {
      * @throws ApiException - throws if consumer secret re-generationx fails.
      */
     public ApiResponse<ApplicationKeyReGenerateResponseDTO> regenerateConsumerSecret(String applicationId,
-                                                                                     String keyType) throws Exception {
+            String keyType) throws Exception {
         return applicationKeysApi
                 .applicationsApplicationIdKeysKeyTypeRegenerateSecretPostWithHttpInfo(applicationId, keyType);
     }
@@ -577,18 +586,18 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getPublishedAPIsByApplication(String applicationName)
             throws APIManagerIntegrationTestException {
-//        try {
-//
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/subscription/subscription-list/ajax/" +
-//                            "subscription-list.jag?action=getSubscriptionByApplication&app=" +
-//                            applicationName, requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve the application -  " + applicationName
-//                    + ". Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doGet(
+        //                    backendURL + "store/site/blocks/subscription/subscription-list/ajax/" +
+        //                            "subscription-list.jag?action=getSubscriptionByApplication&app=" +
+        //                            applicationName, requestHeaders);
+        //
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to retrieve the application -  " + applicationName
+        //                    + ". Error: " + e.getMessage(), e);
+        //        }
         return null;
 
     }
@@ -602,17 +611,17 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getPublishedAPIsByApplicationId(String applicationName, int applicationId)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/subscription/subscription-list/ajax/" +
-//                            "subscription-list.jag?action=getSubscriptionForApplicationById&app=" +
-//                            applicationName + "&appId=" + applicationId, requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve the application -  " + applicationName
-//                    + ". Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doGet(
+        //                    backendURL + "store/site/blocks/subscription/subscription-list/ajax/" +
+        //                            "subscription-list.jag?action=getSubscriptionForApplicationById&app=" +
+        //                            applicationName + "&appId=" + applicationId, requestHeaders);
+        //
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to retrieve the application -  " + applicationName
+        //                    + ". Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -668,18 +677,18 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse removeRatingFromAPI(String apiName, String version, String provider)
             throws APIManagerIntegrationTestException {
-//        try {
-//
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
-//                            "action=removeRating&name=" + apiName + "&version=" + version +
-//                            "&provider=" + provider, requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to remove rating of API -  " + apiName
-//                    + ". Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doGet(
+        //                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
+        //                            "action=removeRating&name=" + apiName + "&version=" + version +
+        //                            "&provider=" + provider, requestHeaders);
+        //
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to remove rating of API -  " + apiName
+        //                    + ". Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -690,15 +699,15 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - Throws if rating status cannot be retrieved
      */
     public HttpResponse isRatingActivated() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
-//                            "action=isRatingActivated", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Rating status cannot be retrieved."
-//                    + " Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doGet(
+        //                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
+        //                            "action=isRatingActivated", requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Rating status cannot be retrieved."
+        //                    + " Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -713,18 +722,18 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getAllDocumentationOfAPI(String apiName, String version, String provider)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
-//                            "action=getAllDocumentationOfApi&name=" + apiName +
-//                            "&version=" + version + "&provider=" + provider, requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve documentation for - " +
-//                    apiName + ". Error: " + e.getMessage(), e);
-//
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doGet(
+        //                    backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
+        //                            "action=getAllDocumentationOfApi&name=" + apiName +
+        //                            "&version=" + version + "&provider=" + provider, requestHeaders);
+        //
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to retrieve documentation for - " +
+        //                    apiName + ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
     }
 
@@ -733,19 +742,19 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getApiEndpointUrls(String apiName, String version, String provider)
             throws APIManagerIntegrationTestException {
-//        try{
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL+ "store/site/blocks/api/api-info/ajax/api-info.jag?"+
-//                            "action=getAPIEndpointURLs&name=" + apiName+
-//                            "&version=" + version + "&provider=" + provider, requestHeaders);
-//
-//
-//        }catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve documentation for - " +
-//                    apiName + ". Error: " + e.getMessage(), e);
-//
-//        }
+        //        try{
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doGet(
+        //                    backendURL+ "store/site/blocks/api/api-info/ajax/api-info.jag?"+
+        //                            "action=getAPIEndpointURLs&name=" + apiName+
+        //                            "&version=" + version + "&provider=" + provider, requestHeaders);
+        //
+        //
+        //        }catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to retrieve documentation for - " +
+        //                    apiName + ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
     }
 
@@ -761,15 +770,15 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getAllPaginatedPublishedAPIs(String tenant, String start, String end)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
-//                    "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
-//                    "&start=" + start + "&end=" + end, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve paginated published APIs for tenant - "
-//                    + tenant + ". Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doGet(backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
+        //                    "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
+        //                    "&start=" + start + "&end=" + end, requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to retrieve paginated published APIs for tenant - "
+        //                    + tenant + ". Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -804,16 +813,16 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getAllPaginatedPublishedAPIs(String tenant, int start, int end)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//
-//            return HTTPSClientUtils.doGet(backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
-//                    "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
-//                    "&start=" + start + "&end=" + end, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve paginated published " +
-//                    "APIs for tenant - " + tenant + ". Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //            checkAuthentication();
+        //
+        //            return HTTPSClientUtils.doGet(backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
+        //                    "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
+        //                    "&start=" + start + "&end=" + end, requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to retrieve paginated published " +
+        //                    "APIs for tenant - " + tenant + ". Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -827,16 +836,16 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getAllPublishedAPIs(String tenant)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" +
-//                            tenant), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve published APIs for tenant - " + tenant
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(
+        //                    new URL(backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" +
+        //                            tenant), "", requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to retrieve published APIs for tenant - " + tenant
+        //                    + ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
     }
 
@@ -873,7 +882,7 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public ApplicationDTO addApplicationWithTokenType(String application, String tier, String callbackUrl,
-                                                    String description, String tokenType)
+            String description, String tokenType)
             throws ApiException {
 
         ApplicationDTO dto = new ApplicationDTO();
@@ -894,15 +903,15 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - throws if applications cannot be retrieved.
      */
     public HttpResponse getApplications() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/application/application-list/ajax/" +
-//                            "application-list.jag?action=getApplications"), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get applications. Error: " + e.getMessage(), e);
-//
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(
+        //                    new URL(backendURL + "store/site/blocks/application/application-list/ajax/" +
+        //                            "application-list.jag?action=getApplications"), "", requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to get applications. Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
     }
 
@@ -933,21 +942,21 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - throws if update application fails
      */
     public HttpResponse updateApplication(String applicationOld, String applicationNew,
-                                          String callbackUrlNew, String descriptionNew, String tier)
+            String callbackUrlNew, String descriptionNew, String tier)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/application/application-update/ajax/application-update.jag?" +
-//                            "action=updateApplication&applicationOld=" + applicationOld + "&applicationNew=" +
-//                            applicationNew + "&callbackUrlNew=" + callbackUrlNew + "&descriptionNew=" +
-//                            descriptionNew + "&tier=" + tier), "", requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to update application - " + applicationOld
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(
+        //                    new URL(backendURL + "store/site/blocks/application/application-update/ajax/application-update.jag?" +
+        //                            "action=updateApplication&applicationOld=" + applicationOld + "&applicationNew=" +
+        //                            applicationNew + "&callbackUrlNew=" + callbackUrlNew + "&descriptionNew=" +
+        //                            descriptionNew + "&tier=" + tier), "", requestHeaders);
+        //
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to update application - " + applicationOld
+        //                    + ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
 
     }
@@ -964,20 +973,20 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - throws if update application fails
      */
     public HttpResponse updateApplicationById(int applicationId, String applicationOld, String applicationNew,
-                                              String callbackUrlNew, String descriptionNew, String tier) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/application/application-update/ajax/application-update.jag?" +
-//                            "action=updateApplicationById&applicationOld=" + applicationOld + "&applicationNew=" +
-//                            applicationNew + "&appId=" + applicationId + "&callbackUrlNew=" + callbackUrlNew + "&descriptionNew=" +
-//                            descriptionNew + "&tier=" + tier), "", requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to update application - " + applicationOld
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
+            String callbackUrlNew, String descriptionNew, String tier) throws APIManagerIntegrationTestException {
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(
+        //                    new URL(backendURL + "store/site/blocks/application/application-update/ajax/application-update.jag?" +
+        //                            "action=updateApplicationById&applicationOld=" + applicationOld + "&applicationNew=" +
+        //                            applicationNew + "&appId=" + applicationId + "&callbackUrlNew=" + callbackUrlNew + "&descriptionNew=" +
+        //                            descriptionNew + "&tier=" + tier), "", requestHeaders);
+        //
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to update application - " + applicationOld
+        //                    + ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
 
     }
@@ -995,22 +1004,22 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException APIManagerIntegrationTestException - throws if update application fail
      */
     public HttpResponse updateClientApplication(String application, String keyType, String authorizedDomains,
-                                                String retryAfterFailure, String jsonParams, String callbackUrl) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(backendURL
-//                            + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?" +
-//                            "action=updateClientApplication&application=" + application + "&keytype=" +
-//                            keyType + "&authorizedDomains=" + authorizedDomains + "&retryAfterFailure=" +
-//                            retryAfterFailure + "&jsonParams=" + URLEncoder.encode(jsonParams, "UTF-8")
-//                            + "&callbackUrl=" + callbackUrl), "",
-//                    requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException(
-//                    "Unable to update application - " + application + ". Error: " + e.getMessage(), e);
-//
-//        }
+            String retryAfterFailure, String jsonParams, String callbackUrl) throws APIManagerIntegrationTestException {
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(new URL(backendURL
+        //                            + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?" +
+        //                            "action=updateClientApplication&application=" + application + "&keytype=" +
+        //                            keyType + "&authorizedDomains=" + authorizedDomains + "&retryAfterFailure=" +
+        //                            retryAfterFailure + "&jsonParams=" + URLEncoder.encode(jsonParams, "UTF-8")
+        //                            + "&callbackUrl=" + callbackUrl), "",
+        //                    requestHeaders);
+        //
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException(
+        //                    "Unable to update application - " + application + ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
     }
 
@@ -1050,15 +1059,15 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse regenerateConsumerSecret(String clientId) throws APIManagerIntegrationTestException {
 
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(backendURL
-//                    + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?" +
-//                    "action=regenerateConsumerSecret&clientId=" + clientId), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to regenerate consumer secrete. "
-//                    + " Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(new URL(backendURL
+        //                    + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?" +
+        //                    "action=regenerateConsumerSecret&clientId=" + clientId), "", requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to regenerate consumer secrete. "
+        //                    + " Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -1085,19 +1094,19 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getSubscribedAPIs(String applicationName) throws
             APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//
-//
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/" +
-//                            "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
-//                            + applicationName), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs"
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
+        //        try {
+        //            checkAuthentication();
+        //
+        //
+        //            return HTTPSClientUtils.doPost(
+        //                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/" +
+        //                            "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
+        //                            + applicationName), "", requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs"
+        //                    + ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
     }
 
@@ -1112,17 +1121,17 @@ public class RestAPIStoreImpl {
 
     public HttpResponse getSubscribedAPIs(String applicationName, String domain) throws
             APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/" +
-//                            "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
-//                            + applicationName + "&tenant="+domain), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs"
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(
+        //                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/" +
+        //                            "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
+        //                            + applicationName + "&tenant="+domain), "", requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs"
+        //                    + ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
     }
 
@@ -1138,19 +1147,19 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - Throws if unsubscription fails
      */
     public HttpResponse removeAPISubscription(String API, String version, String provider,
-                                              String applicationId)
+            String applicationId)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?" +
-//                            "action=removeSubscription&name=" + API + "&version=" + version + "&provider=" + provider +
-//                            "&applicationId=" + applicationId), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get all subscriptions"
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(
+        //                    new URL(backendURL + "store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?" +
+        //                            "action=removeSubscription&name=" + API + "&version=" + version + "&provider=" + provider +
+        //                            "&applicationId=" + applicationId), "", requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to get all subscriptions"
+        //                    + ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
     }
 
@@ -1165,20 +1174,20 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - Throws if unsubscription fails
      */
     public HttpResponse removeAPISubscriptionByApplicationName(String API, String version,
-                                                               String provider,
-                                                               String applicationName)
+            String provider,
+            String applicationName)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?" +
-//                            "action=removeSubscription&name=" + API + "&version=" + version + "&provider=" + provider +
-//                            "&applicationName=" + applicationName), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get all subscriptions"
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(
+        //                    new URL(backendURL + "store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?" +
+        //                            "action=removeSubscription&name=" + API + "&version=" + version + "&provider=" + provider +
+        //                            "&applicationName=" + applicationName), "", requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to get all subscriptions"
+        //                    + ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
     }
 
@@ -1194,21 +1203,21 @@ public class RestAPIStoreImpl {
      */
 
     public HttpResponse removeAPISubscriptionByName(String API, String version, String provider,
-                                                    String appName) throws APIManagerIntegrationTestException {
-//        try{
-//            checkAuthentication();
-//            HttpResponse responseApp = getAllApplications();
-//            String appId = getApplicationId(responseApp.getData(), appName);
-//
-//            return removeAPISubscription(API,version,provider,appId);
-//
-//
-//        } catch(Exception e){
-//            throw new APIManagerIntegrationTestException("Unable to remove subscriptions API:" + API +
-//                    " Version: " + version + "Provider: " + provider + "App Name: "+ appName +
-//                    ". Error: " + e.getMessage(), e);
-//
-//        }
+            String appName) throws APIManagerIntegrationTestException {
+        //        try{
+        //            checkAuthentication();
+        //            HttpResponse responseApp = getAllApplications();
+        //            String appId = getApplicationId(responseApp.getData(), appName);
+        //
+        //            return removeAPISubscription(API,version,provider,appId);
+        //
+        //
+        //        } catch(Exception e){
+        //            throw new APIManagerIntegrationTestException("Unable to remove subscriptions API:" + API +
+        //                    " Version: " + version + "Provider: " + provider + "App Name: "+ appName +
+        //                    ". Error: " + e.getMessage(), e);
+        //
+        //        }
         return null;
     }
 
@@ -1229,17 +1238,168 @@ public class RestAPIStoreImpl {
      *
      * @param apiId   - api Id
      * @param comment - comment to  add
+     * @param category - category of the comment
+     * @param replyTo - comment id of the root comment to add replies
      * @return - http response of add comment
      * @throws ApiException - throws if add comment fails
      */
-    public HttpResponse addComment(String apiId, String comment) throws ApiException {
-        CommentDTO commentDTO = new CommentDTO();
-        commentDTO.setContent(comment);
-        ApiResponse<CommentDTO> apiResponse = commentsApi.addCommentToAPIWithHttpInfo(apiId, commentDTO);
-        Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
+
+    public HttpResponse addComment(String apiId, String comment, String category, String replyTo) throws ApiException {
+        PostRequestBodyDTO postRequestBodyDTO = new PostRequestBodyDTO();
+        postRequestBodyDTO.setContent(comment);
+        postRequestBodyDTO.setCategory(category);
+        Gson gson = new Gson();
+        CommentDTO commentDTO = commentsApi.addCommentToAPI(apiId,postRequestBodyDTO,replyTo);
         HttpResponse response = null;
-        if (apiResponse.getData() != null && StringUtils.isNotEmpty(apiResponse.getData().getId())) {
-            response = new HttpResponse(apiResponse.getData().getId(), 201);
+        if (commentDTO != null) {
+            response = new HttpResponse(gson.toJson(commentDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get Comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo,
+            Integer limit, Integer offset) throws ApiException {
+        CommentDTO commentDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null,
+                    includeCommentorInfo, limit, offset);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (StringUtils.isNotEmpty(commentDTO.getId())) {
+            response = new HttpResponse(gson.toJson(commentDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get all the comments from given API
+     *
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getComments(String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit,
+            Integer offset) throws ApiException {
+        CommentListDTO commentListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            commentListDTO = commentsApi.getAllCommentsOfAPI(apiId, tenantDomain, limit, offset, includeCommentorInfo);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (commentListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(commentListDTO), 200);
+        }
+        return response;
+    }
+
+    public HttpResponse getTopics(String apiId, String tenantDomain) {
+
+        TopicListDTO topicListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            topicListDTO = topicsApi.getAllTopicsOfAPI(apiId, tenantDomain);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (topicListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(topicListDTO), 200);
+        }
+        return response;
+    }
+
+    public HttpResponse getWebhooks(String apiId, String applicationId, String tenantDomain) throws ApiException {
+
+        WebhookSubscriptionListDTO subscriptionListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            subscriptionListDTO = webhooksApi.getAllWebhooksOfAPI(applicationId, apiId, tenantDomain);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (subscriptionListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(subscriptionListDTO), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get replies of a comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param tenantDomain - tenant domain
+     * @param limit     - for pagination
+     * @param offset    - for pagination
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse getReplies(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit, Integer offset)
+            throws ApiException {
+        CommentListDTO commentListDTO;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+
+        try {
+            commentListDTO = commentsApi.getRepliesOfComment(commentId, apiId, tenantDomain, limit, offset, null, includeCommentorInfo);
+
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        if (commentListDTO.getCount() > 0) {
+            response = new HttpResponse(gson.toJson(commentListDTO), 200);
+        }
+
+        return response;
+    }
+
+    /**
+     * Get Comment from given API
+     *
+     * @param commentId - comment Id
+     * @param apiId     - api Id
+     * @param comment - comment to  add
+     * @param category - category of the comment
+     * @return - http response get comment
+     * @throws ApiException - throws if get comment fails
+     */
+    public HttpResponse editComment(String commentId, String apiId, String comment, String category) throws
+            ApiException {
+        HttpResponse response = null;
+        Gson gson = new Gson();
+        try {
+            PatchRequestBodyDTO patchRequestBodyDTO = new PatchRequestBodyDTO();
+            patchRequestBodyDTO.setCategory(category);
+            patchRequestBodyDTO.setContent(comment);
+
+            CommentDTO editedCommentDTO = commentsApi.editCommentOfAPI(commentId,apiId,patchRequestBodyDTO);
+            if (editedCommentDTO != null) {
+                response = new HttpResponse(gson.toJson(editedCommentDTO), 200);
+            } else {
+                response = new HttpResponse(null, 200);
+            }
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
         return response;
     }
@@ -1263,46 +1423,21 @@ public class RestAPIStoreImpl {
     }
 
     /**
-     * Get Comment from given API
-     *
-     * @param commentId - comment Id
-     * @param apiId     - api Id
-     * @param tenantDomain - tenant domain
-     * @return - http response get comment
-     * @throws ApiException - throws if get comment fails
-     */
-    public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo)
-            throws ApiException {
-        CommentDTO commentDTO;
-        HttpResponse response = null;
-        Gson gson = new Gson();
-        try {
-            commentDTO = commentsApi.getCommentOfAPI(commentId, apiId, tenantDomain, null, includeCommentorInfo);
-        } catch (ApiException e) {
-            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
-        }
-        if (StringUtils.isNotEmpty(commentDTO.getId())) {
-            response = new HttpResponse(gson.toJson(commentDTO), 200);
-        }
-        return response;
-    }
-
-    /**
      * Check whether commenting is enabled
      *
      * @return - http response of comment status
      * @throws APIManagerIntegrationTestException - Throws if retrieving comment activation status fails.
      */
     public HttpResponse isCommentActivated() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-//                            "action=isCommentActivated", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Failed to get comment activation status"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doGet(
+        //                    backendURL + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
+        //                            "action=isCommentActivated", requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Failed to get comment activation status"
+        //                    + ". Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -1316,37 +1451,37 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse getRecentlyAddedAPIs(String tenant, String limit)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/api/" +
-//                            "recently-added/ajax/list.jag?action=getRecentlyAddedAPIs&tenant=" +
-//                            tenant + "&limit=" + limit), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Failed to get recently added APIs from tenant - " +
-//                    tenant + ". Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(
+        //                    new URL(backendURL + "store/site/blocks/api/" +
+        //                            "recently-added/ajax/list.jag?action=getRecentlyAddedAPIs&tenant=" +
+        //                            tenant + "&limit=" + limit), "", requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Failed to get recently added APIs from tenant - " +
+        //                    tenant + ". Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
     private String getApplicationId(String jsonStringOfApplications, String applicationName)
             throws APIManagerIntegrationTestException {
-//        String applicationId = null;
-//        JSONObject obj;
-//        try {
-//            obj = new JSONObject(jsonStringOfApplications);
-//            JSONArray arr = obj.getJSONArray("applications");
-//            for (int i = 0; i < arr.length(); i++) {
-//                String appName = arr.getJSONObject(i).getString("name");
-//                if (applicationName.equals(appName)) {
-//                    applicationId = arr.getJSONObject(i).getString("id");
-//                }
-//            }
-//        } catch (JSONException e) {
-//            throw new APIManagerIntegrationTestException("getting application Id failed"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-//        return applicationId;
+        //        String applicationId = null;
+        //        JSONObject obj;
+        //        try {
+        //            obj = new JSONObject(jsonStringOfApplications);
+        //            JSONArray arr = obj.getJSONArray("applications");
+        //            for (int i = 0; i < arr.length(); i++) {
+        //                String appName = arr.getJSONObject(i).getString("name");
+        //                if (applicationName.equals(appName)) {
+        //                    applicationId = arr.getJSONObject(i).getString("id");
+        //                }
+        //            }
+        //        } catch (JSONException e) {
+        //            throw new APIManagerIntegrationTestException("getting application Id failed"
+        //                    + ". Error: " + e.getMessage(), e);
+        //        }
+        //        return applicationId;
         return null;
     }
 
@@ -1403,15 +1538,15 @@ public class RestAPIStoreImpl {
         //This method  do the same functionality as subscribe(), except this method  always returns the response object
         //regardless of the response code. But subscribe() returns the response object only if  the response code is
         // 200 or else it will return an Exception.
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(backendURL +
-//                            "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
-//                    , subscriptionRequest.generateRequestParameters(), requestHeaders);
-//        } catch (Exception ex) {
-//            throw new APIManagerIntegrationTestException("Exception when Subscribing to a API"
-//                    + ". Error: " + ex.getMessage(), ex);
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(new URL(backendURL +
+        //                            "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
+        //                    , subscriptionRequest.generateRequestParameters(), requestHeaders);
+        //        } catch (Exception ex) {
+        //            throw new APIManagerIntegrationTestException("Exception when Subscribing to a API"
+        //                    + ". Error: " + ex.getMessage(), ex);
+        //        }
         return null;
     }
 
@@ -1426,23 +1561,23 @@ public class RestAPIStoreImpl {
         return subscriptionResponse.getData();
     }
 
-//    /**
-//     * Retrieve the API store page as anonymous user.
-//     *
-//     * @param storeTenantDomain - Tenant domain of store that need to  get the page.
-//     * @return HttpResponse - Response with API store page of the provided domain.
-//     * @throws APIManagerIntegrationTestException - IOException throws from HttpRequestUtil.doGet() method call
-//     */
-//
-//    public HttpResponse getAPIStorePageAsAnonymousUser(String storeTenantDomain) throws APIManagerIntegrationTestException {
-//        try {
-//            return HttpRequestUtil.doGet(
-//                    backendURL + "store/?tenant=" + storeTenantDomain, requestHeaders);
-//        } catch (Exception ioE) {
-//            throw new APIManagerIntegrationTestException(
-//                    "Exception when retrieve the API store page as anonymous user", ioE);
-//        }
-//    }
+    //    /**
+    //     * Retrieve the API store page as anonymous user.
+    //     *
+    //     * @param storeTenantDomain - Tenant domain of store that need to  get the page.
+    //     * @return HttpResponse - Response with API store page of the provided domain.
+    //     * @throws APIManagerIntegrationTestException - IOException throws from HttpRequestUtil.doGet() method call
+    //     */
+    //
+    //    public HttpResponse getAPIStorePageAsAnonymousUser(String storeTenantDomain) throws APIManagerIntegrationTestException {
+    //        try {
+    //            return HttpRequestUtil.doGet(
+    //                    backendURL + "store/?tenant=" + storeTenantDomain, requestHeaders);
+    //        } catch (Exception ioE) {
+    //            throw new APIManagerIntegrationTestException(
+    //                    "Exception when retrieve the API store page as anonymous user", ioE);
+    //        }
+    //    }
 
     /**
      *
@@ -1466,13 +1601,13 @@ public class RestAPIStoreImpl {
      * API Store logout
      */
     public HttpResponse logout() throws APIManagerIntegrationTestException {
-//        try{
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(backendURL + "store/site/blocks/user/login/ajax/login.jag"),
-//                    "action=logout", requestHeaders);
-//        }catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Error in store app logout. Error: " + e.getMessage(), e);
-//        }
+        //        try{
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(new URL(backendURL + "store/site/blocks/user/login/ajax/login.jag"),
+        //                    "action=logout", requestHeaders);
+        //        }catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Error in store app logout. Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -1489,13 +1624,13 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse signUp(String userName, String password, String firstName, String lastName, String email) throws
             APIManagerIntegrationTestException {
-//        try {
-//            return HTTPSClientUtils.doPost(new URL(backendURL + "store/site/blocks/user/sign-up/ajax/user-add.jag"),
-//                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" + firstName +
-//                            "|" + lastName + "|" + email, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //            return HTTPSClientUtils.doPost(new URL(backendURL + "store/site/blocks/user/sign-up/ajax/user-add.jag"),
+        //                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" + firstName +
+        //                            "|" + lastName + "|" + email, requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -1510,15 +1645,15 @@ public class RestAPIStoreImpl {
      */
     public HttpResponse signUpforTenant(String userName, String password, String claims) throws
             APIManagerIntegrationTestException {
-//        try {
-//            Map<String, String> requestHeaders = new HashMap<String, String>();
-//            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-//            return HttpRequestUtil.doPost(new URL(backendURL + "/store/site/blocks/user/sign-up/ajax/user-add.jag?tenant=wso2.com"),
-//                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" +
-//                            claims, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //            Map<String, String> requestHeaders = new HashMap<String, String>();
+        //            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+        //            return HttpRequestUtil.doPost(new URL(backendURL + "/store/site/blocks/user/sign-up/ajax/user-add.jag?tenant=wso2.com"),
+        //                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" +
+        //                            claims, requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -1535,14 +1670,14 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException
      */
     public HttpResponse signUpWithOrganization(String userName, String password, String firstName, String lastName, String email,
-                                               String organization) throws APIManagerIntegrationTestException {
-//        try {
-//            return HTTPSClientUtils.doPost(new URL(backendURL + "store/site/blocks/user/sign-up/ajax/user-add.jag"),
-//                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" + firstName
-//                            + "|" + lastName + "|" + organization + "|" + email, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
-//        }
+            String organization) throws APIManagerIntegrationTestException {
+        //        try {
+        //            return HTTPSClientUtils.doPost(new URL(backendURL + "store/site/blocks/user/sign-up/ajax/user-add.jag"),
+        //                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" + firstName
+        //                            + "|" + lastName + "|" + organization + "|" + email, requestHeaders);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -1580,41 +1715,41 @@ public class RestAPIStoreImpl {
      * @throws XPathExpressionException - Throws if Swagger document cannot be found
      */
     public void waitForSwaggerDocument(String userName, String apiName, String apiVersion,
-                                       String expectedResponse, String executionMode)
+            String expectedResponse, String executionMode)
             throws IOException, XPathExpressionException {
 
-//        long currentTime = System.currentTimeMillis();
-//        long waitTime = currentTime + WAIT_TIME;
-//        HttpResponse response = null;
-//
-//        if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
-//
-//            while (waitTime > System.currentTimeMillis()) {
-//
-//                log.info("WAIT for swagger document of API :" + apiName + " with version: " + apiVersion
-//                        + " user :" + userName + " with expected response : " + expectedResponse);
-//
-//                try {
-//                    response = getSwaggerDocument(userName, apiName, apiVersion, executionMode);
-//                } catch (APIManagerIntegrationTestException ignored) {
-//
-//                }
-//                if (response != null) {
-//                    if (response.getData().contains(expectedResponse)) {
-//                        log.info("API :" + apiName + " with version: " + apiVersion +
-//                                " with expected response " + expectedResponse + " found");
-//                        break;
-//                    }
-//                } else {
-//                    try {
-//                        Thread.sleep(500);
-//                    } catch (InterruptedException ignored) {
-//
-//                    }
-//
-//                }
-//            }
-//        }
+        //        long currentTime = System.currentTimeMillis();
+        //        long waitTime = currentTime + WAIT_TIME;
+        //        HttpResponse response = null;
+        //
+        //        if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
+        //
+        //            while (waitTime > System.currentTimeMillis()) {
+        //
+        //                log.info("WAIT for swagger document of API :" + apiName + " with version: " + apiVersion
+        //                        + " user :" + userName + " with expected response : " + expectedResponse);
+        //
+        //                try {
+        //                    response = getSwaggerDocument(userName, apiName, apiVersion, executionMode);
+        //                } catch (APIManagerIntegrationTestException ignored) {
+        //
+        //                }
+        //                if (response != null) {
+        //                    if (response.getData().contains(expectedResponse)) {
+        //                        log.info("API :" + apiName + " with version: " + apiVersion +
+        //                                " with expected response " + expectedResponse + " found");
+        //                        break;
+        //                    }
+        //                } else {
+        //                    try {
+        //                        Thread.sleep(500);
+        //                    } catch (InterruptedException ignored) {
+        //
+        //                    }
+        //
+        //                }
+        //            }
+        //        }
 
     }
 
@@ -1629,23 +1764,23 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - Throws if swagger document GET request fails
      */
     public HttpResponse getSwaggerDocument(String userName, String apiName, String apiVersion,
-                                           String executionMode)
+            String executionMode)
             throws APIManagerIntegrationTestException {
         HttpResponse response = null;
 
-//        if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
-//            try {
-//                checkAuthentication();
-//                String tenant = MultitenantUtils.getTenantDomain(userName);
-//                response = HTTPSClientUtils.doGet(backendURL + "store/api-docs/" + tenant + "/" +
-//                        apiName + "/" + apiVersion, null);
-//            } catch (IOException ex) {
-//                throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag"
-//                        + ". Error: " + ex.getMessage(), ex);
-//            }
-//
-//        }
-//        return response;
+        //        if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
+        //            try {
+        //                checkAuthentication();
+        //                String tenant = MultitenantUtils.getTenantDomain(userName);
+        //                response = HTTPSClientUtils.doGet(backendURL + "store/api-docs/" + tenant + "/" +
+        //                        apiName + "/" + apiVersion, null);
+        //            } catch (IOException ex) {
+        //                throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag"
+        //                        + ". Error: " + ex.getMessage(), ex);
+        //            }
+        //
+        //        }
+        //        return response;
         return null;
     }
 
@@ -1656,19 +1791,19 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - if fails to get application page
      */
     public HttpResponse getApplicationPage() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(backendURL + APIMIntegrationConstants.STORE_APPLICATION_REST_URL), "",
-//                    requestHeaders);
-//        } catch (APIManagerIntegrationTestException e) {
-//            throw new APIManagerIntegrationTestException("No Session Cookie found. Please login first. "
-//                    + "Error: " + e.getMessage(), e);
-//        } catch (MalformedURLException e) {
-//            throw new APIManagerIntegrationTestException("Unable to get application page, URL is not valid. "
-//                    + "Error: " + e.getMessage(), e);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to get application page. Error: " + e.getMessage(), e);
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            return HTTPSClientUtils.doPost(new URL(backendURL + APIMIntegrationConstants.STORE_APPLICATION_REST_URL), "",
+        //                    requestHeaders);
+        //        } catch (APIManagerIntegrationTestException e) {
+        //            throw new APIManagerIntegrationTestException("No Session Cookie found. Please login first. "
+        //                    + "Error: " + e.getMessage(), e);
+        //        } catch (MalformedURLException e) {
+        //            throw new APIManagerIntegrationTestException("Unable to get application page, URL is not valid. "
+        //                    + "Error: " + e.getMessage(), e);
+        //        } catch (Exception e) {
+        //            throw new APIManagerIntegrationTestException("Unable to get application page. Error: " + e.getMessage(), e);
+        //        }
         return null;
     }
 
@@ -1745,24 +1880,24 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public HttpResponse addApplicationWithCustomAttributes(String application, String tier, String callbackUrl,
-                                                           String description, String applicationAttributes)
+            String description, String applicationAttributes)
             throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            String urlAppAttributes = URLEncoder.encode(applicationAttributes, "UTF-8");
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL +
-//                            "store/site/blocks/application/application-add" +
-//                            "/ajax/application-add.jag?action=addApplication&tier=" +
-//                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
-//                            "&application=" + application + "&applicationAttributes=" +
-//                            urlAppAttributes), "", requestHeaders);
-//        } catch (IOException e) {
-//            String message = "Unable to add application - " + application + " with custom attributes. Error: "
-//                    + e.getMessage();
-//            log.error(message);
-//            throw new APIManagerIntegrationTestException(message, e);
-//        }
+        //        try {
+        //            checkAuthentication();
+        //            String urlAppAttributes = URLEncoder.encode(applicationAttributes, "UTF-8");
+        //            return HTTPSClientUtils.doPost(
+        //                    new URL(backendURL +
+        //                            "store/site/blocks/application/application-add" +
+        //                            "/ajax/application-add.jag?action=addApplication&tier=" +
+        //                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
+        //                            "&application=" + application + "&applicationAttributes=" +
+        //                            urlAppAttributes), "", requestHeaders);
+        //        } catch (IOException e) {
+        //            String message = "Unable to add application - " + application + " with custom attributes. Error: "
+        //                    + e.getMessage();
+        //            log.error(message);
+        //            throw new APIManagerIntegrationTestException(message, e);
+        //        }
         return null;
     }
 
@@ -1787,7 +1922,7 @@ public class RestAPIStoreImpl {
      * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if generating APIM access token fails
      */
     public HttpResponse generateUserAccessKey(String consumeKey, String consumerSecret,
-                                              String messageBody, URL tokenEndpointURL)
+            String messageBody, URL tokenEndpointURL)
             throws APIManagerIntegrationTestException {
 
         try {
@@ -1816,7 +1951,7 @@ public class RestAPIStoreImpl {
     }
 
     public ApplicationKeyDTO updateApplicationKeyByKeyMappingId(String applicationId, String keyMappingId,
-                                                                ApplicationKeyDTO applicationKeyDTO)
+            ApplicationKeyDTO applicationKeyDTO)
             throws ApiException {
 
         return applicationKeysApi

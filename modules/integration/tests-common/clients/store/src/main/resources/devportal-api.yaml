@@ -106,7 +106,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: v2
 servers:
-- url: https://apis.wso2.com/api/am/devportal/v2
+  - url: https://apis.wso2.com/api/am/devportal/v2
 ######################################################
 # The "API Collection" resource APIs
 ######################################################
@@ -114,7 +114,7 @@ paths:
   /apis:
     get:
       tags:
-      - APIs
+        - APIs
       summary: |
         Retrieve/Search APIs
       description: |
@@ -128,32 +128,32 @@ paths:
         * By default, this operation retrieves Published APIs. In order to retrieve Prototyped APIs, you need to use **query** parameter and specify **status:PROTOTYPED**.
         * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles.
       parameters:
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/offset'
-      - $ref: '#/components/parameters/requestedTenant'
-      - name: query
-        in: query
-        description: |
-          **Search condition**.
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/requestedTenant'
+        - name: query
+          in: query
+          description: |
+            **Search condition**.
 
-          You can search in attributes by using an **"<attribute>:"** modifier.
+            You can search in attributes by using an **"<attribute>:"** modifier.
 
-          Eg.
-          "provider:wso2" will match an API if the provider of the API is exactly "wso2".
+            Eg.
+            "provider:wso2" will match an API if the provider of the API is exactly "wso2".
 
-          Additionally you can use wildcards.
+            Additionally you can use wildcards.
 
-          Eg.
-          "provider:wso2*" will match an API if the provider of the API starts with "wso2".
+            Eg.
+            "provider:wso2*" will match an API if the provider of the API starts with "wso2".
 
-          Supported attribute modifiers are [**version, context, status,
-          description, subcontext, doc, provider, tag**]
+            Supported attribute modifiers are [**version, context, status,
+            description, subcontext, doc, provider, tag**]
 
-          If no advanced attribute modifier has been specified, search will match the
-          given query string against API Name.
-        schema:
-          type: string
-      - $ref: '#/components/parameters/If-None-Match'
+            If no advanced attribute modifier has been specified, search will match the
+            given query string against API Name.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -166,17 +166,17 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis"
       x-examples:
         $ref: docs/examples/apis/apis.yaml#/get
 
   /apis/{apiId}:
     get:
       tags:
-      - APIs
+        - APIs
       summary: |
         Get Details of an API
       description: |
@@ -187,9 +187,9 @@ paths:
         **NOTE:**
         * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. \n
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -221,15 +221,15 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
 
   /apis/{apiId}/swagger:
     get:
       tags:
-      - APIs
+        - APIs
       summary: |
         Get Swagger Definition
       description: |
@@ -240,12 +240,12 @@ paths:
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's swagger definition, you need to provide Authorization header.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/labelName'
-      - $ref: '#/components/parameters/environmentName'
-      - $ref: '#/components/parameters/clusterName'
-      - $ref: '#/components/parameters/If-None-Match'
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/labelName'
+        - $ref: '#/components/parameters/environmentName'
+        - $ref: '#/components/parameters/clusterName'
+        - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
@@ -291,15 +291,15 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/swagger"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/swagger"
 
   /apis/{apiId}/graphql-schema:
     get:
       tags:
-      - APIs
+        - APIs
       summary: |
         Get GraphQL Definition
       description: |
@@ -310,9 +310,9 @@ paths:
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's swagger definition, you need to provide Authorization header.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/If-None-Match'
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
@@ -341,29 +341,29 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/graphql-schema"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/graphql-schema"
 
   /apis/{apiId}/sdks/{language}:
     get:
       tags:
-      - SDKs
+        - SDKs
       summary: |
         Generate a SDK for an API
       description: |
         This operation can be used to generate SDKs (System Development Kits), for the APIs available in the API Developer Portal, for a requested development language.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - name: language
-        in: path
-        description: |
-          Programming language of the SDK that is required.
-        required: true
-        schema:
-          type: string
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/apiId'
+        - name: language
+          in: path
+          description: |
+            Programming language of the SDK that is required.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
@@ -381,28 +381,28 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
-          > Swagger Petstore_java_1.0.0.zip
+        - lang: Curl
+          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
+            > Swagger Petstore_java_1.0.0.zip
 
   /apis/{apiId}/wsdl:
     get:
       tags:
-      - APIs
+        - APIs
       summary: Get API WSDL definition
       description: |
         This operation can be used to retrieve the swagger definition of an API.
       operationId: getWSDLOfAPI
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/labelName'
-      - $ref: '#/components/parameters/environmentName'
-      - $ref: '#/components/parameters/If-None-Match'
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/labelName'
+        - $ref: '#/components/parameters/environmentName'
+        - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
@@ -431,10 +431,10 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/wsdl"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/wsdl"
       x-examples:
         $ref: docs/examples/apis/wsdl/apiId_wsdl_get.yaml
 
@@ -444,7 +444,7 @@ paths:
   /apis/{apiId}/documents:
     get:
       tags:
-      - API Documents
+        - API Documents
       summary: |
         Get a List of Documents of an API
       description: |
@@ -455,11 +455,11 @@ paths:
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's documents, you need to provide Authorization header.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/offset'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -485,10 +485,10 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
 
   ######################################################
   # The "Individual Document" resource APIs
@@ -496,7 +496,7 @@ paths:
   /apis/{apiId}/documents/{documentId}:
     get:
       tags:
-      - API Documents
+        - API Documents
       summary: |
         Get a Document of an API
       description: |
@@ -507,10 +507,10 @@ paths:
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's document, you need to provide Authorization header.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/documentId'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/documentId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -537,15 +537,15 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
 
   /apis/{apiId}/documents/{documentId}/content:
     get:
       tags:
-      - API Documents
+        - API Documents
       summary: |
         Get the Content of an API Document
       description: |
@@ -565,10 +565,10 @@ paths:
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's document content, you need to provide Authorization header.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/documentId'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/documentId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -609,15 +609,15 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
 
   /apis/{apiId}/thumbnail:
     get:
       tags:
-      - APIs
+        - APIs
       summary: Get Thumbnail Image
       description: |
         This operation can be used to download a thumbnail image of an API.
@@ -627,9 +627,9 @@ paths:
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's thumbnail, you need to provide Authorization header.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -664,25 +664,25 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail"
 
   /apis/{apiId}/ratings:
     get:
       tags:
-      - Ratings
+        - Ratings
       summary: Retrieve API Ratings
       description: |
         This operation can be used to retrieve the list of ratings of an API.
 
         `X-WSO2-Tenant` header can be used to retrieve ratings of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/offset'
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
@@ -695,26 +695,26 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
       x-examples:
         $ref: docs/examples/apis/apis_id_ratings_get.yaml
 
   /apis/{apiId}/user-rating:
     get:
       tags:
-      - Ratings
+        - Ratings
       summary: Retrieve API Rating of User
       description: |
         This operation can be used to get the user rating of an API.
 
         `X-WSO2-Tenant` header can be used to retrieve the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -747,26 +747,26 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+        - lang: Curl
+          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/get
 
     put:
       tags:
-      - Ratings
+        - Ratings
       summary: Add or Update Logged in User's Rating for an API
       description: |
         This operation can be used to add or update an API rating.
 
         `X-WSO2-Tenant` header can be used to add or update the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
       requestBody:
         description: |
           Rating object that should to be added
@@ -795,27 +795,27 @@ paths:
         415:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"'
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/put
 
     delete:
       tags:
-      - Ratings
+        - Ratings
       summary: Delete User API Rating
       description: |
         This operation can be used to delete logged in user API rating.
 
         `X-WSO2-Tenant` header can be used to delete the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-Match'
       responses:
         200:
           description: |
@@ -823,29 +823,29 @@ paths:
             Resource successfully deleted.
           content: {}
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+        - lang: Curl
+          source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/delete
 
   /apis/{apiId}/comments:
     get:
       tags:
-      - Comments
+        - Comments
       summary: Retrieve API Comments
       description: |
         Get a list of Comments that are already added to APIs
       operationId: getAllCommentsOfAPI
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/offset'
-      - $ref: '#/components/parameters/includeCommenterInfo'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/includeCommenterInfo'
       responses:
         200:
           description: |
@@ -860,27 +860,42 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
       x-examples:
         $ref: docs/examples/apis/comments.yaml#/get
 
     post:
       tags:
-      - Comments
+        - Comments
       summary: Add an API Comment
       operationId: addCommentToAPI
       parameters:
-      - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/parentCommentID'
       requestBody:
         description: |
           Comment object that should to be added
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Comment'
+              title: Post request body
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: |
+                    Content of the comment
+                  example: This is a comment
+                category:
+                  type: string
+                  description: |
+                    Category of the comment
+                  example: general
+              required:
+                - content
         required: true
       responses:
         201:
@@ -910,11 +925,11 @@ paths:
         415:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
       x-examples:
         $ref: docs/examples/apis/comments.yaml#/post
@@ -922,17 +937,19 @@ paths:
   /apis/{apiId}/comments/{commentId}:
     get:
       tags:
-      - Comments
+        - Comments
       summary: Get Details of an API Comment
       description: |
         Get the individual comment given by a username for a certain API.
       operationId: getCommentOfAPI
       parameters:
-      - $ref: '#/components/parameters/commentId'
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-None-Match'
-      - $ref: '#/components/parameters/includeCommenterInfo'
+        - $ref: '#/components/parameters/commentId'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/includeCommenterInfo'
+        - $ref: '#/components/parameters/replyLimit'
+        - $ref: '#/components/parameters/replyOffset'
       responses:
         200:
           description: |
@@ -967,24 +984,92 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
       x-examples:
         $ref: docs/examples/apis/comment_id-comments.yaml#/get
 
+    patch:
+      tags:
+        - Comments
+      summary: Edit a comment
+      description: |
+        Edit the individual comment
+      operationId: editCommentOfAPI
+      parameters:
+        - $ref: '#/components/parameters/commentId'
+        - $ref: '#/components/parameters/apiId'
+      requestBody:
+        description: |
+          Comment object that should to be updated
+        content:
+          application/json:
+            schema:
+              title: Patch request body
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: |
+                    Content of the comment
+                  example: This is a comment
+                category:
+                  type: string
+                  description: |
+                    Category of the comment
+                  example: general
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Comment updated.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional request.
+              schema:
+                type: string
+            Location: #???
+              description: |
+                Location to the newly created Comment.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        415:
+          $ref: '#/components/responses/UnsupportedMediaType'
+      security:
+        - OAuth2Security:
+            - apim:subscribe
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/store/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
+      x-examples:
+        $ref: docs/examples/apis/comments.yaml#/post
+
     delete:
       tags:
-      - Comments
+        - Comments
       summary: Delete an API Comment
       description: |
         Remove a Comment
       operationId: deleteComment
       parameters:
-      - $ref: '#/components/parameters/commentId'
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/commentId'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/If-Match'
       responses:
         200:
           description: |
@@ -996,19 +1081,115 @@ paths:
         404:
           $ref: '#/components/responses/NotFound'
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+        - lang: Curl
+          source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
       x-examples:
         $ref: docs/examples/apis/comment_id-comments.yaml#/delete
+
+  /apis/{apiId}/comments/{commentId}/replies:
+    get:
+      tags:
+        - Comments
+      summary: Get replies of a comment
+      description: |
+        Get replies of a comment
+      operationId: getRepliesOfComment
+      parameters:
+        - $ref: '#/components/parameters/commentId'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/includeCommenterInfo'
+      responses:
+        200:
+          description: |
+            OK.
+            Comment returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentList'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource.
+          content: {}
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security: []
+      x-code-samples:
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/store/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+      x-examples:
+        $ref: docs/examples/apis/comment_id-comments.yaml#/get
+
+  /apis/{apiId}/topics:
+    get:
+      tags:
+        - Topics
+      summary: |
+        Get a list of available topics for a given async API
+      description: |
+        This operation will provide a list of topics available for a given Async API, based on the provided API ID.
+      operationId: getAllTopicsOfAPI
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+      responses:
+        200:
+          description: |
+            OK.
+            Topic list returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicList'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security: []
+      x-code-samples:
+        - lang: Curl
+          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://localhost:9443/api/am/store/v1/topics/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"
 
   /apis/{apiId}/subscription-policies:
     get:
       tags:
-      - APIs
+        - APIs
       summary: |
         Get Details of the Subscription Throttling Policies of an API
       description: |
@@ -1016,9 +1197,9 @@ paths:
 
         `X-WSO2-Tenant` header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
-      - $ref: '#/components/parameters/apiId'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -1051,10 +1232,10 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/268c9e55-3dc1-4f47-82e7-977e5343d077/subscription-policies"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/268c9e55-3dc1-4f47-82e7-977e5343d077/subscription-policies"
 
   ######################################################
   # The "Application Collection" resource APIs
@@ -1062,44 +1243,44 @@ paths:
   /applications:
     get:
       tags:
-      - Applications
+        - Applications
       summary: |
         Retrieve/Search Applications
       description: |
         This operation can be used to retrieve list of applications that is belonged to the user associated with the provided access token.
       parameters:
-      - $ref: '#/components/parameters/groupId'
-      - name: query
-        in: query
-        description: |
-          **Search condition**.
+        - $ref: '#/components/parameters/groupId'
+        - name: query
+          in: query
+          description: |
+            **Search condition**.
 
-          You can search for an application by specifying the name as "query" attribute.
+            You can search for an application by specifying the name as "query" attribute.
 
-          Eg.
-          "app1" will match an application if the name is exactly "app1".
+            Eg.
+            "app1" will match an application if the name is exactly "app1".
 
-          Currently this does not support wildcards. Given name must exactly match the application name.
-        schema:
-          type: string
-      - name: sortBy
-        in: query
-        schema:
-          type: string
-          enum:
-          - name
-          - throttlingPolicy
-          - status
-      - name: sortOrder
-        in: query
-        schema:
-          type: string
-          enum:
-          - asc
-          - desc
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/offset'
-      - $ref: '#/components/parameters/If-None-Match'
+            Currently this does not support wildcards. Given name must exactly match the application name.
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - name
+              - throttlingPolicy
+              - status
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -1126,18 +1307,18 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
-        - apim:app_import_export
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
+            - apim:app_import_export
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/applications"'
 
     post:
       tags:
-      - Applications
+        - Applications
       summary: |
         Create a New Application
       description: |
@@ -1192,12 +1373,12 @@ paths:
         415:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications"'
 
   ######################################################
@@ -1206,14 +1387,14 @@ paths:
   /applications/{applicationId}:
     get:
       tags:
-      - Applications
+        - Applications
       summary: |
         Get Details of an Application
       description: |
         This operation can be used to retrieve details of an individual application specifying the application id in the URI.
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -1245,24 +1426,24 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
     put:
       tags:
-      - Applications
+        - Applications
       summary: |
         Update an Application
       description: |
         This operation can be used to update an application. Upon succesfull you will retrieve the updated application as the response.
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/If-Match'
       requestBody:
         description: |
           Application object that needs to be updated
@@ -1304,24 +1485,24 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
     delete:
       tags:
-      - Applications
+        - Applications
       summary: |
         Remove an Application
       description: |
         This operation can be used to remove an application specifying its id.
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/If-Match'
       responses:
         200:
           description: |
@@ -1347,24 +1528,24 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
-        - apim:app_import_export
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
+            - apim:app_import_export
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -X DELETE "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
   /applications/{applicationId}/generate-keys:
     post:
       tags:
-      - Application Keys
+        - Application Keys
       summary: Generate Application Keys
       description: |
         Generate keys (Consumer key/secret) for application
       parameters:
-      - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/applicationId'
       requestBody:
         description: |
           Application key generation request object
@@ -1389,23 +1570,23 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/generate-keys"'
 
   /applications/{applicationId}/map-keys:
     post:
       tags:
-      - Application Keys
+        - Application Keys
       summary: Map Application Keys
       description: |
         Map keys (Consumer key/secret) to an application
       parameters:
-      - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/applicationId'
       requestBody:
         description: |
           Application key mapping request object
@@ -1430,23 +1611,23 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/map-keys"'
 
   /applications/{applicationId}/keys:
     get:
       tags:
-      - Application Keys
+        - Application Keys
       summary: Retrieve All Application Keys
       description: |
         Retrieve keys (Consumer key/secret) of application
       parameters:
-      - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/applicationId'
       responses:
         200:
           description: |
@@ -1464,26 +1645,26 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       deprecated: true
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys"'
 
   /applications/{applicationId}/keys/{keyType}:
     get:
       tags:
-      - Application Keys
+        - Application Keys
       summary: |
         Get Key Details of a Given Type
       description: |
         This operation can be used to retrieve key details of an individual application specifying the key type in the URI.
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyType'
-      - $ref: '#/components/parameters/groupId'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyType'
+        - $ref: '#/components/parameters/groupId'
       responses:
         200:
           description: |
@@ -1501,24 +1682,24 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       deprecated: true
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
 
     put:
       tags:
-      - Application Keys
+        - Application Keys
       summary: |
         Update Grant Types and Callback Url of an Application
       description: |
         This operation can be used to update grant types and callback url of an application. (Consumer Key and Consumer Secret are ignored) Upon succesfull you will retrieve the updated key details as the response.
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyType'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyType'
       requestBody:
         description: |
           Grant types/Callback URL update request object
@@ -1544,25 +1725,25 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       deprecated: true
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
 
   /applications/{applicationId}/keys/{keyType}/regenerate-secret:
     post:
       tags:
-      - Application Keys
+        - Application Keys
       summary: |
         Re-Generate Consumer Secret
       description: |
         This operation can be used to re generate consumer secret for an application for the give key type
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyType'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyType'
       responses:
         200:
           description: |
@@ -1598,25 +1779,25 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       deprecated: true
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/regenerate-secret"'
 
   /applications/{applicationId}/keys/{keyType}/clean-up:
     post:
       tags:
-      - Application Keys
+        - Application Keys
       summary: Clean-Up Application Keys
       description: |
         Clean up keys after failed key generation of an application
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyType'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyType'
+        - $ref: '#/components/parameters/If-Match'
       responses:
         200:
           description: |
@@ -1631,25 +1812,25 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       deprecated: true
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/clean-up"'
 
   /applications/{applicationId}/keys/{keyType}/generate-token:
     post:
       tags:
-      - Application Tokens
+        - Application Tokens
       summary: Generate Application Token
       description: |
         Generate an access token for application by client_credentials grant type
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyType'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyType'
+        - $ref: '#/components/parameters/If-Match'
       requestBody:
         description: |
           Application token generation request object
@@ -1675,23 +1856,23 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       deprecated: true
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/keys/PRODUCTION/generate-token"'
 
   /applications/{applicationId}/oauth-keys:
     get:
       tags:
-      - Application Keys
+        - Application Keys
       summary: Retrieve All Application Keys
       description: |
         Retrieve keys (Consumer key/secret) of application
       parameters:
-      - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/applicationId'
       responses:
         200:
           description: |
@@ -1708,26 +1889,26 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}:
     get:
       tags:
-      - Application Keys
+        - Application Keys
       summary: |
         Get Key Details of a Given Type
       description: |
         This operation can be used to retrieve key details of an individual application specifying the key type in the URI.
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyMappingId'
-      - $ref: '#/components/parameters/groupId'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyMappingId'
+        - $ref: '#/components/parameters/groupId'
       responses:
         200:
           description: |
@@ -1744,24 +1925,24 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
 
     put:
       tags:
-      - Application Keys
+        - Application Keys
       summary: |
         Update Grant Types and Callback URL of an Application
       description: |
         This operation can be used to update grant types and callback url of an application. (Consumer Key and Consumer Secret are ignored) Upon succesfull you will retrieve the updated key details as the response.
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyMappingId'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyMappingId'
       requestBody:
         description: |
           Grant types/Callback URL update request object
@@ -1786,25 +1967,25 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/regenerate-secret:
     post:
       tags:
-      - Application Keys
+        - Application Keys
       summary: |
         Re-Generate Consumer Secret
       description: |
         This operation can be used to re generate consumer secret for an application for the give key type
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyMappingId'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyMappingId'
       responses:
         200:
           description: |
@@ -1839,25 +2020,25 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/regenerate-secret"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/clean-up:
     post:
       tags:
-      - Application Keys
+        - Application Keys
       summary: Clean-Up Application Keys
       description: |
         Clean up keys after failed key generation of an application
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyMappingId'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyMappingId'
+        - $ref: '#/components/parameters/If-Match'
       responses:
         200:
           description: |
@@ -1871,25 +2052,25 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/clean-up"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/generate-token:
     post:
       tags:
-      - Application Tokens
+        - Application Tokens
       summary: Generate Application Token
       description: |
         Generate an access token for application by client_credentials grant type
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyMappingId'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyMappingId'
+        - $ref: '#/components/parameters/If-Match'
       requestBody:
         description: |
           Application token generation request object
@@ -1914,25 +2095,25 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/{keyMappingId}/generate-token"'
 
   /applications/{applicationId}/api-keys/{keyType}/generate:
     post:
       tags:
-      - API Keys
+        - API Keys
       summary: Generate API Key
       description: |
         Generate a self contained API Key for the application
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyType'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyType'
+        - $ref: '#/components/parameters/If-Match'
       requestBody:
         description: |
           API Key generation request object
@@ -1957,26 +2138,26 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
-        - apim:api_key
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
+            - apim:api_key
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/generate"'
 
   /applications/{applicationId}/api-keys/{keyType}/revoke:
     post:
       tags:
-      - API Keys
+        - API Keys
       summary: Revoke API Key
       description: |
         Revoke a self contained API Key for the application
       parameters:
-      - $ref: '#/components/parameters/applicationId'
-      - $ref: '#/components/parameters/keyType'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/keyType'
+        - $ref: '#/components/parameters/If-Match'
       requestBody:
         description: |
           API Key revoke request object
@@ -1996,13 +2177,13 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:app_manage
-        - apim:api_key
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:app_manage
+            - apim:api_key
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/revoke"'
 
   /applications/export:
@@ -2165,7 +2346,7 @@ paths:
   /subscriptions:
     get:
       tags:
-      - Subscriptions
+        - Subscriptions
       summary: |
         Get All Subscriptions
       description: |
@@ -2180,13 +2361,13 @@ paths:
         **IMPORTANT:**
         * It is mandatory to provide either **apiId** or **applicationId**.
       parameters:
-      - $ref: '#/components/parameters/apiId-Q'
-      - $ref: '#/components/parameters/applicationId-Q'
-      - $ref: '#/components/parameters/groupId'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/offset'
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/apiId-Q'
+        - $ref: '#/components/parameters/applicationId-Q'
+        - $ref: '#/components/parameters/groupId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -2211,23 +2392,23 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:sub_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:sub_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/subscriptions?apiId=02e658e7-71c7-4b1d-a623-be145b789340"'
 
     post:
       tags:
-      - Subscriptions
+        - Subscriptions
       summary: |
         Add a New Subscription
       description: |
         This operation can be used to add a new subscription providing the id of the API and the application.
       parameters:
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/requestedTenant'
       requestBody:
         description: |
           Subscription object that should to be added
@@ -2276,24 +2457,24 @@ paths:
         415:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:sub_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:sub_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions"'
 
   /subscriptions/multiple:
     post:
       tags:
-      - Subscriptions
+        - Subscriptions
       summary: |
         Add New Subscriptions
       description: |
         This operation can be used to add a new subscriptions providing the ids of the APIs and the applications.
       parameters:
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/requestedTenant'
       requestBody:
         description: |
           Subscription objects that should to be added
@@ -2331,12 +2512,12 @@ paths:
         415:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:sub_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:sub_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions/multiple"'
 
   ######################################################
@@ -2345,14 +2526,14 @@ paths:
   /subscriptions/{subscriptionId}:
     get:
       tags:
-      - Subscriptions
+        - Subscriptions
       summary: |
         Get Details of a Subscription
       description: |
         This operation can be used to get details of a single subscription.
       parameters:
-      - $ref: '#/components/parameters/subscriptionId'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/subscriptionId'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -2381,24 +2562,24 @@ paths:
         404:
           $ref: '#/components/responses/NotFound'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:sub_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:sub_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"'
 
     put:
       tags:
-      - Subscriptions
+        - Subscriptions
       summary: |
         Update Existing Subscription
       description: |
         This operation can be used to update a subscription providing the subscription id, api id, application Id, status and updated throttling policy tier.
       parameters:
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/subscriptionId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/subscriptionId'
       requestBody:
         description: |
           Subscription object that should to be added
@@ -2460,24 +2641,24 @@ paths:
             The entity of the request was in a not supported format.
           content: {}
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:sub_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:sub_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
 
     delete:
       tags:
-      - Subscriptions
+        - Subscriptions
       summary: |
         Remove a Subscription
       description: |
         This operation can be used to remove a subscription.
       parameters:
-      - $ref: '#/components/parameters/subscriptionId'
-      - $ref: '#/components/parameters/If-Match'
+        - $ref: '#/components/parameters/subscriptionId'
+        - $ref: '#/components/parameters/If-Match'
       responses:
         200:
           description: |
@@ -2503,12 +2684,12 @@ paths:
         412:
           $ref: '#/components/responses/PreconditionFailed'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:sub_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:sub_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X DELETE "https://localhost:9443/api/am/devportal/v2/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
       x-wso2-curl: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
         -X DELETE "https://localhost:9443/api/am/devportal/v2/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"'
@@ -2519,13 +2700,13 @@ paths:
   /subscriptions/{subscriptionId}/usage:
     get:
       tags:
-      - API Monetization
+        - API Monetization
       summary: Get Details of a Pending Invoice for a Monetized Subscription with
         Metered Billing.
       description: |
         This operation can be used to get details of a pending invoice for a monetized subscription with metered billing.
       parameters:
-      - $ref: '#/components/parameters/subscriptionId'
+        - $ref: '#/components/parameters/subscriptionId'
       responses:
         200:
           description: |
@@ -2558,12 +2739,12 @@ paths:
         404:
           $ref: '#/components/responses/NotFound'
       security:
-      - OAuth2Security:
-        - apim:subscribe
-        - apim:sub_manage
+        - OAuth2Security:
+            - apim:subscribe
+            - apim:sub_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9/usage"'
 
   ######################################################
@@ -2572,16 +2753,16 @@ paths:
   /throttling-policies/{policyLevel}:
     get:
       tags:
-      - Throttling Policies
+        - Throttling Policies
       summary: Get All Available Throttling Policies
       description: |
         Get available Throttling Policies
       parameters:
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/offset'
-      - $ref: '#/components/parameters/policyLevel'
-      - $ref: '#/components/parameters/If-None-Match'
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/policyLevel'
+        - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
@@ -2608,10 +2789,10 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/throttling-policies/application"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/throttling-policies/application"
 
   ######################################################
   # The "Individual Throttling Policy" resource APIs
@@ -2619,7 +2800,7 @@ paths:
   /throttling-policies/{policyLevel}/{policyId}:
     get:
       tags:
-      - Throttling Policies
+        - Throttling Policies
       summary: |
         Get Details of a Throttling Policy
       description: |
@@ -2627,10 +2808,10 @@ paths:
 
         `X-WSO2-Tenant` header can be used to retrive throttling policy that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
-      - $ref: '#/components/parameters/policyId'
-      - $ref: '#/components/parameters/policyLevel'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/policyId'
+        - $ref: '#/components/parameters/policyLevel'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -2663,10 +2844,10 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/throttling-policies/application/10PerMin"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/throttling-policies/application/10PerMin"
 
   ######################################################
   # The "Tag Collection" resource API
@@ -2674,7 +2855,7 @@ paths:
   /tags:
     get:
       tags:
-      - Tags
+        - Tags
       summary: |
         Get All Tags
       description: |
@@ -2685,10 +2866,10 @@ paths:
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's tags, you need to provide Authorization header.
       parameters:
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/offset'
-      - $ref: '#/components/parameters/requestedTenant'
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -2715,10 +2896,10 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/tags"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/tags"
 
   ######################################################
   # The "Content Search Results" resource APIs
@@ -2726,24 +2907,24 @@ paths:
   /search:
     get:
       tags:
-      - Unified Search
+        - Unified Search
       summary: |
         Retrieve/Search APIs and API Documents by Content
       description: |
         This operation provides you a list of available APIs and API Documents qualifying the given keyword match.
       parameters:
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/offset'
-      - $ref: '#/components/parameters/requestedTenant'
-      - name: query
-        in: query
-        description: |
-          **Search**.
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/requestedTenant'
+        - name: query
+          in: query
+          description: |
+            **Search**.
 
-          You can search by using providing the search term in the query parameters.
-        schema:
-          type: string
-      - $ref: '#/components/parameters/If-None-Match'
+            You can search by using providing the search term in the query parameters.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -2771,10 +2952,10 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/search?query=PizzaShackAPI"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/search?query=PizzaShackAPI"
 
   ######################################################
   # The "SDK Generation Languages" list resource APIs
@@ -2782,7 +2963,7 @@ paths:
   /sdk-gen/languages:
     get:
       tags:
-      - SDKs
+        - SDKs
       summary: |
         Get a List of Supported SDK Languages
       description: |
@@ -2798,12 +2979,56 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/sdk-gen/languages"
+        - lang: Curl
+          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://localhost:9443/api/am/devportal/v2/sdk-gen/languages"
+
+  ######################################################
+  # The Web hook API topic details
+  ######################################################
+  /webhooks/subscriptions:
+    get:
+      tags:
+        - Webhooks
+      summary: |
+        Get available web hook subscriptions for a given application.
+      description: |
+        This operation will provide a list of web hook topic subscriptions for a given application. If the api id is provided
+        results will be filtered by the api Id.
+      operationId: getAllWebhooksOfAPI
+      parameters:
+        - $ref: '#/components/parameters/applicationId-Q'
+        - $ref: '#/components/parameters/apiId-Q'
+        - $ref: '#/components/parameters/requestedTenant'
+      responses:
+        200:
+          description: |
+            OK.
+            Topic list returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookSubscriptionList'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security: []
+      x-code-samples:
+        - lang: Curl
+          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://localhost:9443/api/am/store/v1/webhooks/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"
 
   ######################################################
   # The Developer Portal settings List
@@ -2811,12 +3036,12 @@ paths:
   /settings:
     get:
       tags:
-      - Settings
+        - Settings
       summary: Retreive Devportal settings
       description: |
         Retreive Devportal Settings
       parameters:
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
@@ -2829,23 +3054,23 @@ paths:
         404:
           $ref: '#/components/responses/NotFound'
       security:
-      - OAuth2Security:
-        - apim:store_settings
+        - OAuth2Security:
+            - apim:store_settings
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/settings"'
 
   /settings/application-attributes:
     get:
       tags:
-      - Settings
+        - Settings
       summary: |
         Get All Application Attributes from Configuration
       description: |
         This operation can be used to retrieve the application attributes from configuration. It will not return hidden attributes.
       parameters:
-      - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/If-None-Match'
       responses:
         200:
           description: |
@@ -2866,11 +3091,11 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/settings/application-attributes"'
 
   ######################################################
@@ -2879,26 +3104,26 @@ paths:
   /tenants:
     get:
       tags:
-      - Tenants
+        - Tenants
       summary: |
         Get Tenants by State
       description: |
         This operation is to get tenants by state
       parameters:
-      - name: state
-        in: query
-        description: |
-          The state represents the current state of the tenant
+        - name: state
+          in: query
+          description: |
+            The state represents the current state of the tenant
 
-          Supported states are [ active, inactive]
-        schema:
-          type: string
-          default: active
-          enum:
-          - active
-          - inactive
-      - $ref: '#/components/parameters/limit'
-      - $ref: '#/components/parameters/offset'
+            Supported states are [ active, inactive]
+          schema:
+            type: string
+            default: active
+            enum:
+              - active
+              - inactive
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
       responses:
         200:
           description: |
@@ -2919,10 +3144,10 @@ paths:
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/tenants"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/tenants"
       x-examples:
         $ref: docs/examples/tenants/tenants.yam
 
@@ -2932,7 +3157,7 @@ paths:
   /recommendations:
     get:
       tags:
-      - Recommendations
+        - Recommendations
       summary: Give API Recommendations for a User
       description: This API can be used to get recommended APIs for a user who logs
         into the API Developer Portal
@@ -2954,11 +3179,11 @@ paths:
         404:
           $ref: '#/components/responses/NotFound'
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/recommendations"'
 
   ####################################################
@@ -2967,7 +3192,7 @@ paths:
   /alert-types:
     get:
       tags:
-      - Alerts
+        - Alerts
       summary: |
         Get the List of API Developer Portal Alert Types.
       description: |
@@ -2991,11 +3216,11 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
+        - OAuth2Security:
+            - apim:sub_alert_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/alert-types"'
       x-examples:
         $ref: docs/examples/alerts/alerts.yaml#/get
@@ -3003,7 +3228,7 @@ paths:
   /alert-subscriptions:
     get:
       tags:
-      - Alert Subscriptions
+        - Alert Subscriptions
       summary: |
         Get the List of API Developer Portal Alert Types Subscribed by the User.
       description: |
@@ -3027,18 +3252,18 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
+        - OAuth2Security:
+            - apim:sub_alert_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
       x-examples:
         $ref: docs/examples/alerts/alerts_subscriptions.yaml#/get
 
     put:
       tags:
-      - Alert Subscriptions
+        - Alert Subscriptions
       summary: |
         Subscribe to the Selected Alert Types by the User.
       description: |
@@ -3074,18 +3299,18 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
+        - OAuth2Security:
+            - apim:sub_alert_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
       x-examples:
         $ref: docs/examples/alerts/alerts_subscriptions.yaml#/put
 
     delete:
       tags:
-      - Alert Subscriptions
+        - Alert Subscriptions
       summary: |
         Unsubscribe User from All the Alert Types.
       description: |
@@ -3106,11 +3331,11 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
+        - OAuth2Security:
+            - apim:sub_alert_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
       x-examples:
         $ref: docs/examples/alerts/alerts_subscriptions.yaml#/delete
@@ -3118,14 +3343,14 @@ paths:
   /alerts/{alertType}/configurations:
     get:
       tags:
-      - Alert Configuration
+        - Alert Configuration
       summary: |
         Get All AbnormalRequestsPerMin Alert Configurations
       description: |
         This operation is used to get all configurations of the AbnormalRequestsPerMin alert type.
       operationId: getAllAlertConfigs
       parameters:
-      - $ref: '#/components/parameters/alertType'
+        - $ref: '#/components/parameters/alertType'
       responses:
         200:
           description: |
@@ -3144,11 +3369,11 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
+        - OAuth2Security:
+            - apim:sub_alert_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations"'
       x-examples:
         $ref: docs/examples/alerts/alerts_config.yaml#/get
@@ -3156,15 +3381,15 @@ paths:
   /alerts/{alertType}/configurations/{configurationId}:
     put:
       tags:
-      - Alert Configuration
+        - Alert Configuration
       summary: |
         Add AbnormalRequestsPerMin Alert Configurations.
       description: |
         This operation is used to add configuration for the AbnormalRequestsPerMin alert type.
       operationId: addAlertConfig
       parameters:
-      - $ref: '#/components/parameters/alertType'
-      - $ref: '#/components/parameters/configurationId'
+        - $ref: '#/components/parameters/alertType'
+        - $ref: '#/components/parameters/configurationId'
       requestBody:
         description: Configuration for AbnormalRequestCount alert type
         content:
@@ -3193,26 +3418,26 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
+        - OAuth2Security:
+            - apim:sub_alert_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations/UGV0c3RvcmUjMS4wI0FwcDE"'
       x-examples:
         $ref: docs/examples/alerts/alerts_config.yaml#/put
 
     delete:
       tags:
-      - Alert Configuration
+        - Alert Configuration
       summary: |
         Delete the Selected Configuration from AbnormalRequestsPerMin Alert Type.
       description: |
         This operation is used to delete configuration from the AbnormalRequestsPerMin alert type.
       operationId: deleteAlertConfig
       parameters:
-      - $ref: '#/components/parameters/alertType'
-      - $ref: '#/components/parameters/configurationId'
+        - $ref: '#/components/parameters/alertType'
+        - $ref: '#/components/parameters/configurationId'
       responses:
         200:
           description: |
@@ -3226,11 +3451,11 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
+        - OAuth2Security:
+            - apim:sub_alert_manage
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations/UGV0c3RvcmUjMS4wI0FwcDE"'
       x-examples:
         $ref: docs/examples/alerts/alerts_config.yaml#/delete
@@ -3241,12 +3466,12 @@ paths:
   /api-categories:
     get:
       tags:
-      - API Category (Collection)
+        - API Category (Collection)
       summary: Get All API Categories
       description: |
         Get all API categories
       parameters:
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
@@ -3257,10 +3482,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/APICategoryList'
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/api-categories"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/api-categories"
 
   ######################################################
   # The "Key Manager Collection" resource API
@@ -3268,12 +3493,12 @@ paths:
   /key-managers:
     get:
       tags:
-      - Key Managers (Collection)
+        - Key Managers (Collection)
       summary: Get All Key Managers
       description: |
         Get all Key managers
       parameters:
-      - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
@@ -3284,11 +3509,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/KeyManagerList'
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/key-managers"'
 
   ######################################################
@@ -3297,12 +3522,12 @@ paths:
   /apis/{apiId}/graphql-policies/complexity:
     get:
       tags:
-      - GraphQL Policies
+        - GraphQL Policies
       summary: Get the Complexity Related Details of an API
       description: |
         This operation can be used to retrieve complexity related details belonging to an API by providing the API id.
       parameters:
-      - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/apiId'
       responses:
         200:
           description: |
@@ -3325,20 +3550,20 @@ paths:
             Requested API does not contain any complexity details.
           content: {}
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity"
 
   /apis/{apiId}/graphql-policies/complexity/types:
     get:
       tags:
-      - GraphQL Policies
+        - GraphQL Policies
       summary: Retrieve Types and Fields of a GraphQL Schema
       description: |
         This operation can be used to retrieve all types and fields of the GraphQL Schema by providing the API id.
       parameters:
-      - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/apiId'
       responses:
         200:
           description: |
@@ -3361,10 +3586,10 @@ paths:
             Retrieving types and fields failed.
           content: {}
       security:
-      - OAuth2Security: []
+        - OAuth2Security: []
       x-code-samples:
-      - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity/types"
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity/types"
 
   ######################################################
   # User resource APIs
@@ -3372,7 +3597,7 @@ paths:
   /me/change-password:
     post:
       tags:
-      - Users
+        - Users
       summary: Change the Password of the user
       description: |
         Using this operation, logged-in user can change their password.
@@ -3392,11 +3617,11 @@ paths:
         400:
           $ref: '#/components/responses/BadRequest'
       security:
-      - OAuth2Security:
-        - apim:subscribe
+        - OAuth2Security:
+            - apim:subscribe
       x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/me/change-password"'
 
 components:
@@ -3419,22 +3644,22 @@ components:
       example:
         count: 2
         list:
-        - id: 01234567-0123-0123-0123-012345678901
-          name: CalculatorAPI
-          description: A calculator API that supports basic operations
-          context: /CalculatorAPI
-          version: 1.0.0
-          provider: admin
-          lifeCycleStatus: PUBLISHED
-          thumbnailUri: /apis/01234567-0123-0123-0123-012345678901/thumbnail
-        - id: 01123567-1233-5453-0212-12353678901
-          name: PizzaShackAPI
-          description: A Pizza ordering API
-          context: /PizzaShackAPI
-          version: 1.0.0
-          provider: admin
-          lifeCycleStatus: PUBLISHED
-          thumbnailUri: /apis/01123567-1233-5453-0212-12353678901/thumbnail
+          - id: 01234567-0123-0123-0123-012345678901
+            name: CalculatorAPI
+            description: A calculator API that supports basic operations
+            context: /CalculatorAPI
+            version: 1.0.0
+            provider: admin
+            lifeCycleStatus: PUBLISHED
+            thumbnailUri: /apis/01234567-0123-0123-0123-012345678901/thumbnail
+          - id: 01123567-1233-5453-0212-12353678901
+            name: PizzaShackAPI
+            description: A Pizza ordering API
+            context: /PizzaShackAPI
+            version: 1.0.0
+            provider: admin
+            lifeCycleStatus: PUBLISHED
+            thumbnailUri: /apis/01123567-1233-5453-0212-12353678901/thumbnail
         pagination:
           offset: 2
           limit: 2
@@ -3482,8 +3707,8 @@ components:
           type: array
           description: List of throttling policies of the API
           example:
-          - Unlimited
-          - Bronze
+            - Unlimited
+            - Bronze
           items:
             type: string
         advertiseInfo:
@@ -3512,11 +3737,11 @@ components:
     API:
       title: API object
       required:
-      - context
-      - lifeCycleStatus
-      - name
-      - provider
-      - version
+        - context
+        - lifeCycleStatus
+        - name
+        - provider
+        - version
       type: object
       properties:
         id:
@@ -3571,8 +3796,8 @@ components:
         transport:
           type: array
           example:
-          - http
-          - https
+            - http
+            - https
           items:
             type: string
             description: |
@@ -3594,16 +3819,16 @@ components:
             Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If
             it is not set OAuth2 will be set as the security for the current API.
           example:
-          - oauth2
-          - oauth_basic_auth_api_key_mandatory
+            - oauth2
+            - oauth_basic_auth_api_key_mandatory
           items:
             type: string
         tags:
           type: array
           description: Search keywords related to the API
           example:
-          - substract
-          - add
+            - substract
+            - add
           items:
             type: string
         tiers:
@@ -3638,9 +3863,16 @@ components:
           example: true
           default: false
         additionalProperties:
-          type: object
-          additionalProperties:
-            type: string
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              display:
+                type: boolean
           description: |
             Custom(user defined) properties of API
           example: {}
@@ -3665,7 +3897,7 @@ components:
             properties:
               environmentName:
                 type: string
-                example: Production and Sandbox
+                example: Default
               environmentType:
                 type: string
                 example: hybrid
@@ -3720,8 +3952,8 @@ components:
           description: The environment list configured with non empty endpoint URLs
             for the particular API.
           example:
-          - PRODUCTION
-          - SANDBOX
+            - PRODUCTION
+            - SANDBOX
           items:
             type: string
         scopes:
@@ -3758,7 +3990,7 @@ components:
     Label:
       title: Label
       required:
-      - name
+        - name
       type: object
       properties:
         name:
@@ -3774,7 +4006,7 @@ components:
     APIMonetizationInfo:
       title: API monetization object
       required:
-      - enabled
+        - enabled
       type: object
       properties:
         enabled:
@@ -3799,8 +4031,8 @@ components:
     Application:
       title: Application
       required:
-      - name
-      - throttlingPolicy
+        - name
+        - throttlingPolicy
       type: object
       properties:
         applicationId:
@@ -3830,8 +4062,8 @@ components:
           example: JWT
           default: JWT
           enum:
-          - OAUTH
-          - JWT
+            - OAUTH
+            - JWT
         status:
           type: string
           readOnly: true
@@ -3923,9 +4155,9 @@ components:
     Document:
       title: Document
       required:
-      - name
-      - sourceType
-      - type
+        - name
+        - sourceType
+        - type
       type: object
       properties:
         documentId:
@@ -3938,13 +4170,13 @@ components:
           type: string
           example: HOWTO
           enum:
-          - HOWTO
-          - SAMPLES
-          - PUBLIC_FORUM
-          - SUPPORT_FORUM
-          - API_MESSAGE_FORMAT
-          - SWAGGER_DOC
-          - OTHER
+            - HOWTO
+            - SAMPLES
+            - PUBLIC_FORUM
+            - SUPPORT_FORUM
+            - API_MESSAGE_FORMAT
+            - SWAGGER_DOC
+            - OTHER
         summary:
           type: string
           example: Summary of Calculator Documentation
@@ -3952,10 +4184,10 @@ components:
           type: string
           example: INLINE
           enum:
-          - INLINE
-          - MARKDOWN
-          - URL
-          - FILE
+            - INLINE
+            - MARKDOWN
+            - URL
+            - FILE
         sourceUrl:
           type: string
           example: ""
@@ -3980,11 +4212,11 @@ components:
     ThrottlingPolicy:
       title: Throttling Policy
       required:
-      - name
-      - requestCount
-      - stopOnQuotaReach
-      - tierPlan
-      - unitTime
+        - name
+        - requestCount
+        - stopOnQuotaReach
+        - tierPlan
+        - unitTime
       type: object
       properties:
         name:
@@ -3997,8 +4229,8 @@ components:
           type: string
           example: subscription
           enum:
-          - application
-          - subscription
+            - application
+            - subscription
         attributes:
           type: object
           additionalProperties:
@@ -4022,8 +4254,8 @@ components:
             This attribute declares whether this tier is available under commercial or free
           example: FREE
           enum:
-          - FREE
-          - COMMERCIAL
+            - FREE
+            - COMMERCIAL
         stopOnQuotaReach:
           type: boolean
           description: |
@@ -4049,6 +4281,71 @@ components:
             $ref: '#/components/schemas/Subscription'
         pagination:
           $ref: '#/components/schemas/Pagination'
+    TopicList:
+      title: Topic List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Topics returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/Topic'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    Topic:
+      title: Topic
+      type: object
+      properties:
+        apiId:
+          type: string
+          example: faae5fcc-cbae-40c4-bf43-89931630d313
+        name:
+          type: string
+          example: orderBooks
+        type:
+          type: string
+          example: publisher
+    WebhookSubscriptionList:
+      title: Subscribed Webhook List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of webhook subscriptions returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookSubscription'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    WebhookSubscription:
+      title: Webhook Subscription
+      type: object
+      properties:
+        apiId:
+          type: string
+          example: faae5fcc-cbae-40c4-bf43-89931630d313
+        appId:
+          type: string
+          example: faae5fcc-cbae-40c4-bf43-89931630d313
+        topic:
+          type: string
+          example: orderBooks
+        callBackUrl:
+          type: string
+          example: www.orderbooksite.com
+        deliveryTime:
+          type: string
+          example: faae5fcc-cbae-40c4-bf43-89931630d313
+        deliveryStatus:
+          type: integer
+          example: 1
     APIBusinessInformation:
       type: object
       properties:
@@ -4067,8 +4364,8 @@ components:
     Subscription:
       title: Subscription
       required:
-      - applicationId
-      - throttlingPolicy
+        - applicationId
+        - throttlingPolicy
       type: object
       properties:
         subscriptionId:
@@ -4098,12 +4395,12 @@ components:
           type: string
           example: UNBLOCKED
           enum:
-          - BLOCKED
-          - PROD_ONLY_BLOCKED
-          - UNBLOCKED
-          - ON_HOLD
-          - REJECTED
-          - TIER_UPDATE_PENDING
+            - BLOCKED
+            - PROD_ONLY_BLOCKED
+            - UNBLOCKED
+            - ON_HOLD
+            - REJECTED
+            - TIER_UPDATE_PENDING
         redirectionParams:
           type: string
           description: A url and other parameters the subscriber can be redirected.
@@ -4137,7 +4434,7 @@ components:
     Rating:
       title: Rating
       required:
-      - rating
+        - rating
       type: object
       properties:
         ratingId:
@@ -4184,7 +4481,7 @@ components:
     Comment:
       title: Comment
       required:
-      - content
+        - content
       type: object
       properties:
         id:
@@ -4198,12 +4495,28 @@ components:
         createdTime:
           type: string
           readOnly: true
+          example : 2021-02-11-09:57:25
         createdBy:
           type: string
           readOnly: true
           example: admin
+        updatedTime:
+          type: string
+          readOnly: true
+          example : 2021-02-12-19:57:25
+        category:
+          type: string
+          default: general
+        parentCommentId:
+          type: string
+          example: 6f38aea2-f41e-4ac9-b3f2-a9493d00ba97
+        entryPoint:
+          type: string
+          enum: [DEVPORTAL, PUBLISHER]
         commenterInfo:
           $ref: '#/components/schemas/CommenterInfo'
+        replies:
+          $ref: '#/components/schemas/CommentList'
     CommentList:
       title: Comments List
       type: object
@@ -4222,8 +4535,8 @@ components:
     Error:
       title: Error object returned with 4XX HTTP status
       required:
-      - code
-      - message
+        - code
+        - message
       type: object
       properties:
         code:
@@ -4250,8 +4563,8 @@ components:
     ErrorListItem:
       title: Description of individual errors that may have occurred during a request.
       required:
-      - code
-      - message
+        - code
+        - message
       type: object
       properties:
         code:
@@ -4272,9 +4585,9 @@ components:
           type: array
           description: Valid comma seperated scopes for the access token
           example:
-          - default
-          - read_api
-          - write_api
+            - default
+            - read_api
+            - write_api
           items:
             type: string
         validityTime:
@@ -4321,8 +4634,8 @@ components:
           type: array
           description: The grant types that are supported by the application
           example:
-          - client_credentials
-          - password
+            - client_credentials
+            - password
           items:
             type: string
         callbackUrl:
@@ -4338,8 +4651,8 @@ components:
           description: Describes to which endpoint the key belongs
           example: PRODUCTION
           enum:
-          - PRODUCTION
-          - SANDBOX
+            - PRODUCTION
+            - SANDBOX
         groupId:
           type: string
           description: Application group id (if any).
@@ -4380,15 +4693,15 @@ components:
     ApplicationKeyGenerateRequest:
       title: Application key generation request object
       required:
-      - grantTypesToBeSupported
-      - keyType
+        - grantTypesToBeSupported
+        - keyType
       type: object
       properties:
         keyType:
           type: string
           enum:
-          - PRODUCTION
-          - SANDBOX
+            - PRODUCTION
+            - SANDBOX
         keyManager:
           type: string
           description: key Manager to Generate Keys
@@ -4397,8 +4710,8 @@ components:
           type: array
           description: Grant types that should be supported by the application
           example:
-          - password
-          - client_credentials
+            - password
+            - client_credentials
           items:
             type: string
         callbackUrl:
@@ -4409,8 +4722,8 @@ components:
           type: array
           description: Allowed scopes for the access token
           example:
-          - am_application_scope
-          - default
+            - am_application_scope
+            - default
           items:
             type: string
         validityTime:
@@ -4435,8 +4748,8 @@ components:
     ApplicationKeyMappingRequest:
       title: Application key provision request object
       required:
-      - consumerKey
-      - keyType
+        - consumerKey
+        - keyType
       type: object
       properties:
         consumerKey:
@@ -4454,8 +4767,8 @@ components:
         keyType:
           type: string
           enum:
-          - PRODUCTION
-          - SANDBOX
+            - PRODUCTION
+            - SANDBOX
     ApplicationTokenGenerateRequest:
       title: Application access token generation request object
       type: object
@@ -4473,7 +4786,7 @@ components:
           type: array
           description: Allowed scopes (space seperated) for the access token
           example:
-          - apim:subscribe
+            - apim:subscribe
           items:
             type: string
         revokeToken:
@@ -4519,8 +4832,8 @@ components:
           type: array
           description: Allowed roles for the scope
           example:
-          - manager
-          - developer
+            - manager
+            - developer
           items:
             type: string
         description:
@@ -4549,14 +4862,14 @@ components:
         type:
           type: string
           enum:
-          - allow
-          - deny
+            - allow
+            - deny
         roles:
           type: array
           description: roles for this permission
           example:
-          - manager
-          - developer
+            - manager
+            - developer
           items:
             type: string
     MonetizationInfo:
@@ -4567,8 +4880,8 @@ components:
           type: string
           example: fixedPrice
           enum:
-          - fixedPrice
-          - dynamicRate
+            - fixedPrice
+            - dynamicRate
         billingCycle:
           type: string
           example: month
@@ -4593,7 +4906,7 @@ components:
     WorkflowResponse:
       title: workflow Response
       required:
-      - workflowStatus
+        - workflowStatus
       type: object
       properties:
         workflowStatus:
@@ -4602,10 +4915,10 @@ components:
             This attribute declares whether this workflow task is approved or rejected.
           example: APPROVED
           enum:
-          - CREATED
-          - APPROVED
-          - REJECTED
-          - REGISTERED
+            - CREATED
+            - APPROVED
+            - REJECTED
+            - REGISTERED
         jsonPayload:
           type: string
           description: |
@@ -4613,11 +4926,11 @@ components:
     User:
       title: User
       required:
-      - email
-      - firstName
-      - lastName
-      - password
-      - username
+        - email
+        - firstName
+        - lastName
+        - password
+        - username
       type: object
       properties:
         username:
@@ -4659,7 +4972,7 @@ components:
     SearchResult:
       title: Search Result
       required:
-      - name
+        - name
       type: object
       properties:
         id:
@@ -4672,8 +4985,8 @@ components:
           type: string
           example: API
           enum:
-          - DOC
-          - API
+            - DOC
+            - API
         transportType:
           type: string
           description: Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
@@ -4682,93 +4995,93 @@ components:
     APISearchResult:
       title: API Result
       allOf:
-      - $ref: '#/components/schemas/SearchResult'
-      - type: object
-        properties:
-          description:
-            type: string
-            description: A brief description about the API
-            example: A calculator API that supports basic operations
-          context:
-            type: string
-            description: A string that represents the context of the user's request
-            example: CalculatorAPI
-          version:
-            type: string
-            description: The version of the API
-            example: 1.0.0
-          provider:
-            type: string
-            description: |
-              If the provider value is notgiven, the user invoking the API will be used as the provider.
-            example: admin
-          status:
-            type: string
-            description: This describes in which status of the lifecycle the API is
-            example: CREATED
-          thumbnailUri:
-            type: string
-            example: /apis/01234567-0123-0123-0123-012345678901/thumbnail
-          businessInformation:
-            $ref: '#/components/schemas/APIBusinessInformation'
-          avgRating:
-            type: string
-            description: Average rating of the API
-            example: "4.5"
+        - $ref: '#/components/schemas/SearchResult'
+        - type: object
+          properties:
+            description:
+              type: string
+              description: A brief description about the API
+              example: A calculator API that supports basic operations
+            context:
+              type: string
+              description: A string that represents the context of the user's request
+              example: CalculatorAPI
+            version:
+              type: string
+              description: The version of the API
+              example: 1.0.0
+            provider:
+              type: string
+              description: |
+                If the provider value is notgiven, the user invoking the API will be used as the provider.
+              example: admin
+            status:
+              type: string
+              description: This describes in which status of the lifecycle the API is
+              example: CREATED
+            thumbnailUri:
+              type: string
+              example: /apis/01234567-0123-0123-0123-012345678901/thumbnail
+            businessInformation:
+              $ref: '#/components/schemas/APIBusinessInformation'
+            avgRating:
+              type: string
+              description: Average rating of the API
+              example: "4.5"
     DocumentSearchResult:
       title: Document Result
       allOf:
-      - $ref: '#/components/schemas/SearchResult'
-      - type: object
-        properties:
-          docType:
-            type: string
-            example: HOWTO
-            enum:
-            - HOWTO
-            - SAMPLES
-            - PUBLIC_FORUM
-            - SUPPORT_FORUM
-            - API_MESSAGE_FORMAT
-            - SWAGGER_DOC
-            - OTHER
-          summary:
-            type: string
-            example: Summary of Calculator Documentation
-          sourceType:
-            type: string
-            example: INLINE
-            enum:
-            - INLINE
-            - URL
-            - FILE
-            - MARKDOWN
-          sourceUrl:
-            type: string
-            example: ""
-          otherTypeName:
-            type: string
-            example: ""
-          visibility:
-            type: string
-            example: API_LEVEL
-            enum:
-            - OWNER_ONLY
-            - PRIVATE
-            - API_LEVEL
-          apiName:
-            type: string
-            description: The name of the associated API
-            example: TestAPI
-          apiVersion:
-            type: string
-            description: The version of the associated API
-            example: 1.0.0
-          apiProvider:
-            type: string
-            example: admin
-          apiUUID:
-            type: string
+        - $ref: '#/components/schemas/SearchResult'
+        - type: object
+          properties:
+            docType:
+              type: string
+              example: HOWTO
+              enum:
+                - HOWTO
+                - SAMPLES
+                - PUBLIC_FORUM
+                - SUPPORT_FORUM
+                - API_MESSAGE_FORMAT
+                - SWAGGER_DOC
+                - OTHER
+            summary:
+              type: string
+              example: Summary of Calculator Documentation
+            sourceType:
+              type: string
+              example: INLINE
+              enum:
+                - INLINE
+                - URL
+                - FILE
+                - MARKDOWN
+            sourceUrl:
+              type: string
+              example: ""
+            otherTypeName:
+              type: string
+              example: ""
+            visibility:
+              type: string
+              example: API_LEVEL
+              enum:
+                - OWNER_ONLY
+                - PRIVATE
+                - API_LEVEL
+            apiName:
+              type: string
+              description: The name of the associated API
+              example: TestAPI
+            apiVersion:
+              type: string
+              description: The version of the associated API
+              example: 1.0.0
+            apiProvider:
+              type: string
+              example: admin
+            apiUUID:
+              type: string
     CommenterInfo:
       type: object
       properties:
@@ -5009,7 +5322,7 @@ components:
         emailList:
           type: array
           example:
-          - abc@gmail.com
+            - abc@gmail.com
           items:
             type: string
     AlertsInfoResponse:
@@ -5023,7 +5336,7 @@ components:
         emailList:
           type: array
           example:
-          - abc@gmail.com
+            - abc@gmail.com
           items:
             type: string
         failedConfigurations:
@@ -5073,7 +5386,7 @@ components:
     APICategory:
       title: API Category
       required:
-      - name
+        - name
       type: object
       properties:
         id:
@@ -5128,8 +5441,8 @@ components:
     KeyManagerInfo:
       title: Key Manager Info
       required:
-      - name
-      - type
+        - name
+        - type
       type: object
       properties:
         id:
@@ -5250,9 +5563,9 @@ components:
     GraphQLCustomComplexityInfo:
       title: GraphQL Custom Complexity Info
       required:
-      - complexityValue
-      - field
-      - type
+        - complexityValue
+        - field
+        - type
       type: object
       properties:
         type:
@@ -5292,15 +5605,15 @@ components:
           description: |
             Array of fields under current type
           example:
-          - code
-          - name
+            - code
+            - name
           items:
             type: string
     APIDeploymentClusterInfo:
       title: API Deployments ClusterInfo object
       required:
-      - clusterName
-      - ingressURL
+        - clusterName
+        - ingressURL
       type: object
       properties:
         clusterName:
@@ -5571,8 +5884,8 @@ components:
       schema:
         type: string
         enum:
-        - application
-        - subscription
+          - application
+          - subscription
     labelName:
       name: labelName
       in: query
@@ -5619,8 +5932,8 @@ components:
       schema:
         type: string
         enum:
-        - PRODUCTION
-        - SANDBOX
+          - PRODUCTION
+          - SANDBOX
     If-None-Match:
       name: If-None-Match
       in: header
@@ -5651,6 +5964,29 @@ components:
         The alert configuration id.
         Base64 encoded value of 'apiName#apiVersion#applicationName'.
       required: true
+      schema:
+        type: string
+    replyLimit:
+      name: replyLimit
+      in: query
+      description: |
+        Maximum size of replies array to return.
+      schema:
+        type: integer
+        default: 25
+    replyOffset:
+      name: replyOffset
+      in: query
+      description: |
+        Starting point within the complete list of replies.
+      schema:
+        type: integer
+        default: 0
+    parentCommentID:
+      name: replyTo
+      in: query
+      description: |
+        ID of the parent comment.
       schema:
         type: string
   securitySchemes:

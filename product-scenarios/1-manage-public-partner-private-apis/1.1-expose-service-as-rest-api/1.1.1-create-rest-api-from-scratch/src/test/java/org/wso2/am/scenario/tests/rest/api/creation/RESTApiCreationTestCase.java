@@ -32,7 +32,6 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -157,10 +156,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiOperationsDTO.setTarget(apiResource);
         apiOperationsDTOs.add(apiOperationsDTO);
 
-        APIEndpointSecurityDTO securityDTO = new APIEndpointSecurityDTO();
-        securityDTO.setType(APIEndpointSecurityDTO.TypeEnum.BASIC);
-        securityDTO.setUsername(epUsername);
-        securityDTO.setPassword(epPassword);
 
         APIBusinessInformationDTO businessDTO = new APIBusinessInformationDTO();
         businessDTO.setBusinessOwner(bizOwner);
@@ -193,7 +188,6 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiCreationDTO.policies(tiersCollectionList);
         apiCreationDTO.setCacheTimeout(Integer.parseInt(cacheTimeout));
         apiCreationDTO.setResponseCachingEnabled(responseCache);
-        apiCreationDTO.setEndpointSecurity(securityDTO);
         apiCreationDTO.setBusinessInformation(businessDTO);
         apiCreationDTO.setSubscriptionAvailableTenants(subscriptionTenants);
         apiCreationDTO.setIsDefaultVersion(default_version_checked);

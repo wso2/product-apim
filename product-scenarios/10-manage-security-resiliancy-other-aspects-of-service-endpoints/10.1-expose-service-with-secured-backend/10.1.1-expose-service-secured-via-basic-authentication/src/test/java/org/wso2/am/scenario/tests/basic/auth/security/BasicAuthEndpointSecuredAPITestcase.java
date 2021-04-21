@@ -27,7 +27,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -105,16 +104,21 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
 
     @Test(description = "10.1.1.1")
     public void testInvokeAPIWithBasicAuthEndpointSecurity() throws Exception {
+
+        String productionEndpointSecurity = "{\n" +
+                "  \"production\":{\n" +
+                "    \"enabled\":true,\n" +
+                "    \"type\":\"BASIC\",\n" +
+                "    \"username\":\"" + epUsername + "\",\n" +
+                "    \"password\":\""+ epPassword +"\"\n" +
+                "  }\n" +
+                "  }";
+
         // Create an API
         APIDTO apiDto = new APIDTO();
         apiDto.setName(apiName);
         apiDto.setContext(TEST_API_1_CONTEXT);
         apiDto.setVersion(apiVersion);
-        APIEndpointSecurityDTO endpointSecurity = new APIEndpointSecurityDTO();
-        endpointSecurity.setType(APIEndpointSecurityDTO.TypeEnum.BASIC);
-        endpointSecurity.setUsername(epUsername);
-        endpointSecurity.setPassword(epPassword);
-        apiDto.setEndpointSecurity(endpointSecurity);
         List<APIOperationsDTO> operations = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setTarget(apiResource);
@@ -129,10 +133,8 @@ public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
         sandUrl.put("url", "http://localhost:9763/" + serviceName);
         jsonObject.put("sandbox_endpoints", sandUrl);
         jsonObject.put("production_endpoints", sandUrl);
+        jsonObject.put("endpoint_security", new org.json.simple.parser.JSONParser().parse(productionEndpointSecurity));
         apiDto.setEndpointConfig(jsonObject);
-        ArrayList<String> gatewayEnvironments = new ArrayList<>();
-        gatewayEnvironments.add("Default");
-        apiDto.setGatewayEnvironments(gatewayEnvironments);
         List<String> policies = new ArrayList<>();
         policies.add("Gold");
         policies.add("Unlimited");
