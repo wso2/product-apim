@@ -27,6 +27,7 @@ import org.testng.annotations.*;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
 import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
@@ -56,6 +57,8 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     private String apiEndPointUrl;
     private String apiId;
     private String revisionUUID;
+    private String invalidApiId;
+    private String invalidRevisionUUID;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -162,15 +165,92 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     public void testRestoreAPIRevision() throws Exception {
         HttpResponse apiRevisionsRestoreResponse = restAPIPublisher.restoreAPIRevision(apiId, revisionUUID);
         assertEquals(apiRevisionsRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
-                "Unable to resotre API Revisions:" + apiRevisionsRestoreResponse.getData());
+                "Unable to restore API Revisions: " + apiRevisionsRestoreResponse.getData());
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test deleting API using created API Revision",
+    @Test(groups = {"wso2.am"}, description = "Test restoring API Revision with invalid API UUID",
             dependsOnMethods = "testRestoreAPIRevision")
+    public void testRestoreAPIRevisionWithInvalidAPIUUID() throws Exception {
+        invalidApiId = "12345678-1234-5678-abcd-abcdefghijkl";
+        HttpResponse apiRevisionsWithInvalidAPIUUIDRestoreResponse = restAPIPublisher
+                .restoreAPIRevision(invalidApiId, revisionUUID);
+        assertEquals(apiRevisionsWithInvalidAPIUUIDRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Unable to get API not found error: " + apiRevisionsWithInvalidAPIUUIDRestoreResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test restoring API Revision with invalid Revision UUID",
+            dependsOnMethods = "testRestoreAPIRevisionWithInvalidAPIUUID")
+    public void testRestoreAPIRevisionWithInvalidRevisionUUID() throws Exception {
+        invalidRevisionUUID = "12345678-1234-5678-abcd-abcdefghijkl";
+        HttpResponse apiRevisionsWithInvalidRevisionUUIDRestoreResponse = restAPIPublisher
+                .restoreAPIRevision(apiId, invalidRevisionUUID);
+        assertEquals(apiRevisionsWithInvalidRevisionUUIDRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Unable to get Revision not found error: " +
+                        apiRevisionsWithInvalidRevisionUUIDRestoreResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deleting API Revision with invalid API UUID",
+            dependsOnMethods = "testRestoreAPIRevisionWithInvalidRevisionUUID")
+    public void testDeleteAPIRevisionWithInvalidAPIUUID() throws Exception {
+        HttpResponse apiRevisionsWithInvalidAPIUUIDDeleteResponse = restAPIPublisher
+                .deleteAPIRevision(invalidApiId, revisionUUID);
+        assertEquals(apiRevisionsWithInvalidAPIUUIDDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Unable to get API not found error: " +
+                        apiRevisionsWithInvalidAPIUUIDDeleteResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deleting API Revision with invalid Revision UUID",
+            dependsOnMethods = "testDeleteAPIRevisionWithInvalidAPIUUID")
+    public void testDeleteAPIRevisionWithInvalidRevisionUUID() throws Exception {
+        HttpResponse apiRevisionsWithInvalidRevisionUUIDDeleteResponse = restAPIPublisher
+                .deleteAPIRevision(apiId, invalidRevisionUUID);
+        assertEquals(apiRevisionsWithInvalidRevisionUUIDDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Unable to get Revision not found error: " +
+                        apiRevisionsWithInvalidRevisionUUIDDeleteResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deleting API Revision having deployments",
+            dependsOnMethods = "testDeleteAPIRevisionWithInvalidRevisionUUID")
+    public void testDeleteAPIRevisionHavingDeployments() throws Exception {
+        // Deploy Revision
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost("localhost");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList);
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to deploy API Revisions: " +apiRevisionsDeployResponse.getData());
+
+        // Delete deployed Revision
+        HttpResponse apiRevisionsHavingDeploymentsDeleteResponse = restAPIPublisher
+                .deleteAPIRevision(apiId, revisionUUID);
+        assertEquals(apiRevisionsHavingDeploymentsDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
+                "Unable to get error for deleting revisions having deployments: " +
+                        apiRevisionsHavingDeploymentsDeleteResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deleting API Revision",
+            dependsOnMethods = "testDeleteAPIRevisionHavingDeployments")
     public void testDeleteAPIRevision() throws Exception {
+        // Undeploy Revision
+        List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionUnDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionUnDeployRequest.setVhost(null);
+        apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
+        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, revisionUUID,
+                apiRevisionUndeployRequestList);
+        assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to undeploy API Revisions: " + apiRevisionsUnDeployResponse.getData());
+
+        // Delete Revision
         HttpResponse apiRevisionsDeleteResponse = restAPIPublisher.deleteAPIRevision(apiId, revisionUUID);
         assertEquals(apiRevisionsDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Unable to delete API Revisions:" + apiRevisionsDeleteResponse.getData());
+                "Unable to delete API Revisions: " + apiRevisionsDeleteResponse.getData());
     }
 
     @AfterClass(alwaysRun = true)

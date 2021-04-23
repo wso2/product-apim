@@ -1480,6 +1480,8 @@ public class RestAPIPublisherImpl {
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
+            } else if (e.getCode() != 0) {
+                return new HttpResponse(null, e.getCode());
             }
             throw new ApiException(e);
         }
@@ -1508,6 +1510,8 @@ public class RestAPIPublisherImpl {
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
+            } else if (e.getCode() != 0) {
+                return new HttpResponse(null, e.getCode());
             }
             throw new ApiException(e);
         }
