@@ -229,7 +229,7 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         int sent = webhookSender.getWebhooksSent();
         int received = callbackServerServlet.getCallbacksReceived();
         Assert.assertEquals(sent, noOfEventsToSend);
-        Assert.assertTrue(sent <= received); // no. of events received = no. of events sent + 1 subscribe event
+        Assert.assertEquals(sent + 1, received); // no. of events received = no. of events sent + 1 subscribe event
 
         callbackServerServlet.setCallbacksReceived(0);
         webhookSender.setWebhooksSent(0);

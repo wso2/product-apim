@@ -111,7 +111,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         JSONArray operations = new JSONArray(arrayToJson);
 
         ArrayList<String> environment = new ArrayList<String>();
-        environment.add("Production and Sandbox");
+        environment.add(Constants.GATEWAY_ENVIRONMENT);
 
         ArrayList<String> policies = new ArrayList<String>();
         policies.add("Unlimited");
@@ -128,7 +128,6 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         endpointConfig.put("sandbox_endpoints", url);
         endpointConfig.put("production_endpoints", url);
         additionalPropertiesObj.put("endpointConfig", endpointConfig);
-        additionalPropertiesObj.put("gatewayEnvironments", environment);
         additionalPropertiesObj.put("policies", policies);
         additionalPropertiesObj.put("operations", operations);
 

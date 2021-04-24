@@ -24,6 +24,7 @@ import org.codehaus.plexus.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.*;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -119,7 +120,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     public void testDeployAPIRevisions() throws Exception {
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionDeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
@@ -145,7 +146,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     public void testUnDeployAPIRevisions() throws Exception {
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionUnDeployRequest.setName("Production and Sandbox");
+        apiRevisionUnDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionUnDeployRequest.setVhost(null);
         apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
         apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);

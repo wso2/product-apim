@@ -187,6 +187,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
             Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
             Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
+            Assert.assertFalse(jsonHeaderObject.has("kid"));
             JSONObject jsonObject = new JSONObject(decodedJWTString);
             log.info("JWT Received ==" + jsonObject.toString());
             // check default claims
@@ -249,6 +250,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
             Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
             Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
+            Assert.assertFalse(jsonHeaderObject.has("kid"));
             JSONObject jsonObject = new JSONObject(decodedJWTString);
 
             // check default claims
@@ -308,6 +310,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
         Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
         Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
+        Assert.assertFalse(jsonHeaderObject.has("kid"));
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
         // check default claims

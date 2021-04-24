@@ -27,6 +27,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -122,7 +123,7 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
     public void testDeployAPIProductRevisions() throws Exception {
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionDeployRequest.setName("Production and Sandbox");
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
@@ -137,7 +138,7 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
     public void testUnDeployAPIProductRevisions() throws Exception {
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
-        apiRevisionUnDeployRequest.setName("Production and Sandbox");
+        apiRevisionUnDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionUnDeployRequest.setVhost(null);
         apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
         apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);

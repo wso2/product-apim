@@ -7452,7 +7452,7 @@ components:
             http: http://localhost:8280/phoneverify/1.0.0
             https: https://localhost:8243/phoneverify/1.0.0
             ws: ws://localhost:9099/phoneverify/1.0.0
-          environmentName: Production and Sandbox
+          environmentName: Default
           environmentType: hybrid
           defaultVersionURLs:
             wss: ws://localhost:9099/phoneverify/
@@ -7464,7 +7464,7 @@ components:
             http: http://localhost:8280/phoneverify/1.0.0
             https: https://localhost:8243/phoneverify/1.0.0
             ws: ws://localhost:9099/phoneverify/1.0.0
-          environmentName: Production and Sandbox
+          environmentName: Default
           environmentType: hybrid
           defaultVersionURLs:
             wss: ws://localhost:9099/phoneverify/
@@ -7631,12 +7631,12 @@ components:
           example: true
           type: boolean
         additionalProperties:
-          additionalProperties:
-            type: string
           description: |
             Custom(user defined) properties of API
           example: {}
-          type: object
+          items:
+            $ref: '#/components/schemas/API_additionalProperties'
+          type: array
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
         ingressURLs:
@@ -10282,6 +10282,14 @@ components:
           type: string
         monetizationAttributes:
           $ref: '#/components/schemas/API_monetizationAttributes'
+    API_additionalProperties:
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+        display:
+          type: boolean
     API_ingressURLs:
       example:
         deploymentEnvironmentName: kubernetes
@@ -10353,7 +10361,7 @@ components:
           http: http://localhost:8280/phoneverify/1.0.0
           https: https://localhost:8243/phoneverify/1.0.0
           ws: ws://localhost:9099/phoneverify/1.0.0
-        environmentName: Production and Sandbox
+        environmentName: Default
         environmentType: hybrid
         defaultVersionURLs:
           wss: ws://localhost:9099/phoneverify/
@@ -10362,7 +10370,7 @@ components:
           ws: ws://localhost:9099/phoneverify/
       properties:
         environmentName:
-          example: Production and Sandbox
+          example: Default
           type: string
         environmentType:
           example: hybrid

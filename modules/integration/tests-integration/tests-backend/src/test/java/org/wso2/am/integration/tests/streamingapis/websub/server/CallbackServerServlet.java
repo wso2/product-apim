@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.streamingapis.websub.server;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -36,6 +37,10 @@ public class CallbackServerServlet extends HttpServlet {
 
     private AtomicInteger callbacksReceived = new AtomicInteger(0);
 
+    private String message;
+
+    private String signature;
+
     public int getCallbacksReceived() {
         return callbacksReceived.get();
     }
@@ -47,6 +52,17 @@ public class CallbackServerServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("Callback Received");
+        message = IOUtils.toString(req.getReader());
+        signature = req.getHeader("x-hub-signature");
         callbacksReceived.incrementAndGet();
     }
+
+    public String getLastReceivedMessage() {
+        return message;
+    }
+
+    public String getLastReceivedSignature() {
+        return signature;
+    }
+
 }

@@ -9,7 +9,7 @@
       "system.parameter.profile": "gateway-worker",
       "apim.key_manager.enable_registration": false
     },
-    "api-key-manager": {
+    "api-key-manager-deprecated": {
       "apim.throttling.enable_policy_deploy": false,
       "apim.throttling.enable_data_publishing": false,
       "apim.throttling.enable_decision_connection": false,
@@ -18,29 +18,29 @@
       "transport.wss.sender.enable": false,
       "indexing.enable": false,
       "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl",
-      "system.parameter.profile": "api-key-manager",
+      "system.parameter.profile": "api-key-manager-deprecated",
       "apim.key_manager.enable_registration": false,
       "apim.key_manager.enable_retriever": false
     },
-    "api-publisher": {
+    "api-publisher-deprecated": {
       "apim.throttling.enable_policy_deploy": true,
       "apim.throttling.enable_data_publishing": true,
       "apim.throttling.enable_decision_connection": false,
       "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
-      "system.parameter.profile": "api-publisher",
+      "system.parameter.profile": "api-publisher-deprecated",
       "apim.key_manager.enable_registration": false,
       "apim.key_manager.enable_retriever": true
     },
-    "api-devportal": {
+    "api-devportal-deprecated": {
       "apim.throttling.enable_policy_deploy": false,
       "apim.throttling.enable_data_publishing": false,
       "apim.throttling.enable_decision_connection": false,
       "apim.throttling.enable_blacklist_condition": false,
       "transport.ws.sender.enable": false,
       "transport.wss.sender.enable": false,
-      "system.parameter.profile": "api-devportal",
+      "system.parameter.profile": "api-devportal-deprecated",
       "apim.key_manager.enable_registration": false,
       "apim.key_manager.enable_retriever": true
     },
@@ -52,6 +52,17 @@
       "apim.throttling.enable_data_publishing": false,
       "apim.throttling.enable_decision_connection": false,
       "apim.throttling.enable_blacklist_condition": false
+    },
+    "control-plane": {
+      "system.parameter.profile": "control-plane",
+      "apim.key_manager.enable_retriever": true,
+      "apim.key_manager.enable_registration": true,
+      "apim.throttling.enable_data_publishing": false,
+      "apim.throttling.enable_decision_connection": false,
+      "apim.throttling.enable_blacklist_condition": false,
+      "transport.ws.sender.enable": false,
+      "transport.wss.sender.enable": false,
+      "apim.sync_runtime_artifacts.gateway.enable": "false"
     },
     "default": {
       "oauth.extensions.token_generator": "org.wso2.carbon.identity.oauth2.token.OauthTokenIssuerImpl"
@@ -136,6 +147,14 @@
       "synapse_handlers.analytics_handler.enabled": true,
       "synapse_handlers.analytics_handler.name": "analytics_handler",
       "synapse_handlers.analytics_handler.class": "$ref{apim.analytics.handler_impl}"
+    }
+  },
+  "server.enable_traffic_management": {
+    "false": {
+      "transport.binary.receiver.enable": false,
+      "transport.thrift.receiver.enable": false,
+      "broker.transport.amqp.enabled": false,
+      "apim.throttling.enable_policy_deployment": false
     }
   }
 }

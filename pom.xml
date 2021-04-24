@@ -1267,20 +1267,20 @@
         <carbon.analytics.common.version>5.2.34</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.0.123</carbon.apimgt.version>
+        <carbon.apimgt.version>9.0.178</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.7.38</carbon.registry.version>
+        <carbon.registry.version>4.7.39</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.8.19</carbon.governance.version>
+        <carbon.governance.version>4.8.21</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.6.1</carbon.kernel.version>
+        <carbon.kernel.version>4.6.2</carbon.kernel.version>
         <apimserver.version>4.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.3</ws.feature.version>
 
@@ -1290,7 +1290,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.95</carbon.mediation.version>
+        <carbon.mediation.version>4.7.99</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.18.187</carbon.identity.version>
@@ -1338,9 +1338,9 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v221</synapse.version>
+        <synapse.version>2.1.7-wso2v227</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v41</axis2.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v63</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
@@ -1378,7 +1378,7 @@
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
 
-        <carbon.automation.version>4.4.7</carbon.automation.version>
+        <carbon.automation.version>4.4.8</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
         <testng.version>6.11</testng.version>
         <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
@@ -1462,13 +1462,13 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.2.8</wso2is.km.version>
+        <wso2is.km.version>1.2.10</wso2is.km.version>
         <okta.keymanager.feature.version>3.0.6</okta.keymanager.feature.version>
-        <keycloak.keymanager.feature.version>2.0.5</keycloak.keymanager.feature.version>
+        <keycloak.keymanager.feature.version>2.0.6</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.1</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.3</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.0.2</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.0.0-BETA2</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.0.1</apim.analytics.publisher.version>
     </properties>
 
 </project>

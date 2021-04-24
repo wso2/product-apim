@@ -84,7 +84,7 @@ StreamProcessor<APIManager>
                  An API deployed on a 'hybrid' type gateway will support both production and sandbox keys. -->
             <!-- api-console element specifies whether the environment should be listed in API Console or not -->
             <Environment type="hybrid" api-console="true">
-                <Name>Production and Sandbox</Name>
+                <Name>Default</Name>
                 <Description>This is a hybrid gateway that handles both production and sandbox token traffic.</Description>
                 <!-- Server URL of the API gateway -->
                 <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}services/</ServerURL>

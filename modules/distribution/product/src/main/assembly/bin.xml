@@ -538,6 +538,7 @@
                 <exclude>authenticationendpoint/includes/product-footer.jsp</exclude>
                 <exclude>authenticationendpoint/includes/product-title.jsp</exclude>
                 <exclude>authenticationendpoint/includes/privacy-policy-content.jsp</exclude>
+                <exclude>authenticationendpoint/login.jsp</exclude>
             </excludes>
         </fileSet>
 
@@ -566,6 +567,7 @@
             </outputDirectory>
             <includes>
                 <include>basicauth.jsp</include>
+                <include>login.jsp</include>
             </includes>
         </fileSet>
 
@@ -587,6 +589,7 @@
                 <exclude>accountrecoveryendpoint/includes/product-footer.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/product-title.jsp</exclude>
                 <exclude>accountrecoveryendpoint/self-registration-username-request.jsp</exclude>
+                <exclude>accountrecoveryendpoint/error.jsp</exclude>
             </excludes>
         </fileSet>
 
@@ -615,6 +618,7 @@
                 <include>self-registration-complete.jsp</include>
                 <include>password-recovery.jsp</include>
                 <include>self-registration-username-request.jsp</include>
+                <include>error.jsp</include>
             </includes>
         </fileSet>
 
@@ -1326,14 +1330,14 @@
         </file>
 
         <file>
-            <source>src/main/startup-scripts/wso2server.sh</source>
+            <source>src/main/startup-scripts/api-manager.sh</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
 
         <file>
-            <source>src/main/startup-scripts/wso2server.bat</source>
+            <source>src/main/startup-scripts/api-manager.bat</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>

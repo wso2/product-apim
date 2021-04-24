@@ -661,7 +661,7 @@ public class API {
    * Comma separated list of gateway environments. 
    * @return gatewayEnvironments
   **/
-  @ApiModelProperty(example = "Production and Sandbox", value = "Comma separated list of gateway environments. ")
+  @ApiModelProperty(example = "Default", value = "Comma separated list of gateway environments. ")
   public String getGatewayEnvironments() {
     return gatewayEnvironments;
   }

@@ -340,7 +340,7 @@ oneWayUploadUsingMTOM saves the request message to the disk. </p>
 <h2 id="config">Starting Sample ESB Configurations </h2>
 
 <p>To start the WSO2 ESB with the sample default configuration, execute the
-wso2server.bat or wso2server.sh script found in the /bin directory. This starts
+api-manager.bat or api-manager.sh script found in the /bin directory. This starts
 up an instance of the ESB using the Synapse and Axis2 configuration files
 located in the conf directory. The repository/samples directory contains
 the sample configurations available as synapse_sample_&lt;n&gt;.xml files. To

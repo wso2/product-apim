@@ -182,7 +182,7 @@ done
 
 #main
 case $1 in
-	-Dprofile=api-key-manager)
+	-Dprofile=api-key-manager-deprecated)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Key Manager profile"
 		removeAxis2BlockingClientXMLFile
@@ -192,7 +192,7 @@ case $1 in
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
-		replaceDeploymentConfiguration api-key-manager $passedSkipConfigOptimizationOption
+		replaceDeploymentConfiguration api-key-manager-deprecated $passedSkipConfigOptimizationOption
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name \
 		'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' \
@@ -219,10 +219,10 @@ case $1 in
 			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
 		done
 		;;
-	-Dprofile=api-publisher)
+	-Dprofile=api-publisher-deprecated)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the API Publisher profile"
-		replaceDeploymentConfiguration api-publisher $passedSkipConfigOptimizationOption
+		replaceDeploymentConfiguration api-publisher-deprecated $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
     replaceAxis2TemplateFile $pathToAxis2PublisherXmlTemplate
@@ -249,10 +249,10 @@ case $1 in
 			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
 		done
 		;;
-	-Dprofile=api-devportal)
+	-Dprofile=api-devportal-deprecated)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Developer Portal profile"
-		replaceDeploymentConfiguration api-devportal $passedSkipConfigOptimizationOption
+		replaceDeploymentConfiguration api-devportal-deprecated $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
     replaceAxis2TemplateFile $pathToAxis2DevportalXmlTemplate
@@ -278,6 +278,13 @@ case $1 in
 			timeStamp
 			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
 		done
+        ;;
+	-Dprofile=control-plane)
+		timeStamp
+		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Control Plane profile"
+		replaceDeploymentConfiguration control-plane $passedSkipConfigOptimizationOption
+		removeWebSocketInboundEndpoint
+		removeSecureWebSocketInboundEndpoint
         ;;
 	-Dprofile=traffic-manager)
 		timeStamp
