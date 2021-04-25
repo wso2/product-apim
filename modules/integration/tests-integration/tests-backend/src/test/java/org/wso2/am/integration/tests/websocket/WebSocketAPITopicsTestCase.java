@@ -73,8 +73,8 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
         QUERY
     }
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private final String apiName = "WebSocketAPI";
-    private final String applicationName = "WebSocketApplication";
+    private final String apiName = "WebSocketTopicsAPI";
+    private final String applicationName = "WebSocketTopicsApplication";
     private String apiEndPoint;
     private String provider;
     private APIRequest apiRequest;
@@ -121,7 +121,7 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
     public void publishWebSocketAPI() throws Exception {
 
         provider = user.getUserName();
-        String apiContext = "echo-topic";
+        String apiContext = "echo-topics";
         String apiVersion = "1.0.0";
 
         URI endpointUri = new URI("ws://" + webSocketServerHost + ":" + webSocketServerPort);
