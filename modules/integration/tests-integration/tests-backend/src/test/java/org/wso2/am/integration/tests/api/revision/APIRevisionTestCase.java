@@ -177,8 +177,60 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments " +
+            "with invalid API UUID", dependsOnMethods = "testDeployAPIRevisions")
+    public void testDeployAPIRevisionsWithInvalidAPI() throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost("localhost");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(INVALID_API_UUID, revisionUUID,
+                apiRevisionDeployRequestList);
+
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invalid response code for deploying API Revision with invalid API UUID:"
+                        + apiRevisionsDeployResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments " +
+            "with invalid Revision UUID", dependsOnMethods = "testDeployAPIRevisionsWithInvalidAPI")
+    public void testDeployAPIRevisionsWithInvalidRevisionUUID() throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost("localhost");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, INVALID_REVISION_UUID,
+                apiRevisionDeployRequestList);
+
+        // TODO
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invalid response code for deploying API Revision with invalid Revision UUID:"
+                        + apiRevisionsDeployResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments with " +
+            "invalid deployment information", dependsOnMethods = "testDeployAPIRevisionsWithInvalidRevisionUUID")
+    public void testDeployAPIRevisionsWithInvalidDeploymentInfo() throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName("us-region");
+        apiRevisionDeployRequest.setVhost("gw.apim.com");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList);
+
+        //TODO
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
+                "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
+    }
+
     @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Revision to gateway environments",
-            dependsOnMethods = "testDeployAPIRevisions")
+            dependsOnMethods = "testDeployAPIRevisionsWithInvalidDeploymentInfo")
     public void testUnDeployAPIRevisions() throws Exception {
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
