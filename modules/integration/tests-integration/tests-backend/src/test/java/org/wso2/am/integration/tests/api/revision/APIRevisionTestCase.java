@@ -200,8 +200,32 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                         apiRevisionsWithInvalidRevisionUUIDRestoreResponse.getData());
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test deleting API Revision",
+    @Test(groups = {"wso2.am"}, description = "Test deleting API Revision having deployments",
             dependsOnMethods = "testRestoreAPIRevisionWithInvalidRevisionUUID")
+    public void testDeleteAPIRevisionHavingDeployments() throws Exception {
+        // Deploy Revision
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost("localhost");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList);
+        assertEquals(apiRevisionDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to deploy API Revisions: " + apiRevisionDeployResponse.getData());
+        waitForAPIDeployment();
+
+        // Delete Revision
+        HttpResponse apiRevisionsHavingDeploymentsDeleteResponse = restAPIPublisher
+                .deleteAPIRevision(apiId, revisionUUID);
+        assertEquals(apiRevisionsHavingDeploymentsDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
+                "Unable to get error for deleting revisions having deployments: " +
+                        apiRevisionsHavingDeploymentsDeleteResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deleting API Revision",
+            dependsOnMethods = "testDeleteAPIRevisionHavingDeployments")
     public void testDeleteAPIRevision() throws Exception {
         // Undeploy Revision
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
@@ -210,10 +234,10 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         apiRevisionUnDeployRequest.setVhost(null);
         apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
         apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
-        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, revisionUUID,
+        HttpResponse apiRevisionUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, revisionUUID,
                 apiRevisionUndeployRequestList);
-        assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
-                "Unable to undeploy API Revisions: " + apiRevisionsUnDeployResponse.getData());
+        assertEquals(apiRevisionUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to undeploy API Revisions: " + apiRevisionUnDeployResponse.getData());
 
         // Delete Revision
         HttpResponse apiRevisionDeleteResponse = restAPIPublisher.deleteAPIRevision(apiId, revisionUUID);
@@ -240,57 +264,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 "Unable to get Revision not found error: " +
                         apiRevisionsWithInvalidRevisionUUIDDeleteResponse.getData());
     }
-//
-//    @Test(groups = {"wso2.am"}, description = "Test deleting API Revision having deployments",
-//            dependsOnMethods = "testDeleteAPIRevisionWithInvalidRevisionUUID")
-//    public void testDeleteAPIRevisionHavingDeployments() throws Exception {
-//        // Get revisionUUID of the un-deployed revision
-//        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
-//        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-//                "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
-//
-//        JSONObject apiRevisionsGetResponseData = new JSONObject(apiRevisionsGetResponse.getData());
-//        JSONArray revisionArray = apiRevisionsGetResponseData.getJSONArray("list");
-//        for (int i = 0; i < revisionArray.length(); i++) {
-//            revisionUUID = revisionArray.getJSONObject(i).getString("id");
-//        }
-//
-//        // Deploy Revision
-//        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
-//        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
-//        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
-//        apiRevisionDeployRequest.setVhost("localhost");
-//        apiRevisionDeployRequest.setDisplayOnDevportal(true);
-//        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
-//        HttpResponse apiRevisionDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
-//                apiRevisionDeployRequestList);
-//        assertEquals(apiRevisionDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
-//                "Unable to deploy API Revisions: " +apiRevisionDeployResponse.getData());
-//
-//        // Delete deployed Revision
-//        HttpResponse apiRevisionsHavingDeploymentsDeleteResponse = restAPIPublisher
-//                .deleteAPIRevision(apiId, revisionUUID);
-//        assertEquals(apiRevisionsHavingDeploymentsDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
-//                "Unable to get error for deleting revisions having deployments: " +
-//                        apiRevisionsHavingDeploymentsDeleteResponse.getData());
-//
-//        // Undeploy Revision
-//        List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
-//        APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
-//        apiRevisionUnDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
-//        apiRevisionUnDeployRequest.setVhost(null);
-//        apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
-//        apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
-//        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, revisionUUID,
-//                apiRevisionUndeployRequestList);
-//        assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
-//                "Unable to undeploy API Revisions: " + apiRevisionsUnDeployResponse.getData());
-//
-//        // Delete Revision
-//        HttpResponse apiRevisionDeleteResponse = restAPIPublisher.deleteAPIRevision(apiId, revisionUUID);
-//        assertEquals(apiRevisionDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-//                "Unable to delete API Revisions: " + apiRevisionDeleteResponse.getData());
-//    }
+
     @Test(groups = {"wso2.am"}, description = "Test invoking API for a new Revision in CREATED lifecycle stage",
             dependsOnMethods = "testDeleteAPIRevisionWithInvalidRevisionUUID")
     public void testInvokeAPIInCreatedLifecycleStage() throws Exception {
@@ -337,6 +311,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleAction.PUBLISH.getAction(), null);
         assertEquals(apiLifecycleChangeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to change lifecycle stage to PUBLISHED: " + apiLifecycleChangeResponse.getData());
+        waitForAPIDeployment();
 
         // Create application and subscribe to API
         ApplicationDTO applicationDTO = restAPIStore.addApplication(APPLICATION_NAME,
@@ -371,6 +346,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleAction.BLOCK.getAction(), null);
         assertEquals(apiLifecycleChangeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to change lifecycle stage to BLOCKED: " + apiLifecycleChangeResponse.getData());
+        waitForAPIDeployment();
 
         // Invoke API using application subscription token
         Map<String, String> invokeAPIRequestHeaders = new HashMap<String, String>();
@@ -390,6 +366,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleAction.DEPRECATE.getAction(), null);
         assertEquals(apiLifecycleChangeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to change lifecycle stage to DEPRECATED: " + apiLifecycleChangeResponse.getData());
+        waitForAPIDeployment();
 
         // Invoke API using application subscription token
         Map<String, String> invokeAPIRequestHeaders = new HashMap<String, String>();
@@ -409,6 +386,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleAction.RETIRE.getAction(), null);
         assertEquals(apiLifecycleChangeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to change lifecycle stage to RETIRED: " + apiLifecycleChangeResponse.getData());
+        waitForAPIDeployment();
 
         // Invoke API using application subscription token
         Map<String, String> invokeAPIRequestHeaders = new HashMap<>();
