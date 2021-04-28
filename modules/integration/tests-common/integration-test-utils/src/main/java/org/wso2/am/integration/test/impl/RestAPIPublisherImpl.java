@@ -83,7 +83,6 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyList
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
-//import org.wso2.am.integration.test.HttpResponse;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
