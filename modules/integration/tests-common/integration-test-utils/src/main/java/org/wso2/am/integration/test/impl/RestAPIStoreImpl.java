@@ -77,6 +77,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -1527,6 +1528,28 @@ public class RestAPIStoreImpl {
                 subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription, this.tenantDomain);
         Assert.assertEquals(HttpStatus.SC_CREATED, subscriptionResponse.getStatusCode());
         return subscriptionResponse.getData();
+    }
+
+    public List<SubscriptionDTO> subscribeToMultipleAPIs(List<String> apiIDList, String appID, List<String> tiers)
+            throws ApiException {
+
+        Iterator apiIdIterator = apiIDList.iterator();
+        Iterator tierIterator = tiers.iterator();
+        List<SubscriptionDTO> subscriptionListDTOList = new ArrayList<>();
+
+        while (apiIdIterator.hasNext() && tierIterator.hasNext()) {
+            SubscriptionDTO subscription = new SubscriptionDTO();
+            subscription.setApplicationId(appID);
+            subscription.setApiId(apiIdIterator.next().toString());
+            subscription.setThrottlingPolicy(tierIterator.next().toString());
+            subscriptionListDTOList.add(subscription);
+        }
+
+        ApiResponse<List<SubscriptionDTO>> multipleSubscriptionResponse =
+                subscriptionIndividualApi.subscriptionsMultiplePostWithHttpInfo(subscriptionListDTOList,
+                        this.tenantDomain);
+        Assert.assertEquals(HttpStatus.SC_CREATED, multipleSubscriptionResponse.getStatusCode());
+        return multipleSubscriptionResponse.getData();
     }
 
 //    /**
