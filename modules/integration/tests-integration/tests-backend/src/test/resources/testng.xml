@@ -85,6 +85,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>
         </classes>
     </test>
 
