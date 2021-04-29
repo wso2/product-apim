@@ -19,6 +19,7 @@
 
 package org.wso2.am.integration.tests.websocket;
 
+import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
@@ -26,6 +27,7 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -57,14 +59,17 @@ import org.wso2.carbon.utils.xml.StringUtils;
 
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertTrue;
 
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL})
 public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
 
     private final Log log = LogFactory.getLog(WebSocketAPITopicsTestCase.class);
@@ -72,9 +77,17 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
         HEADER,
         QUERY
     }
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private static final String TEST_USER = "websocketScopeTestUser";
+    private static final String TEST_USER_PASSWORD = "websocketScopeTestUserPassword";
+    private static final String WEBSOCKET_ROLE = "websocketRole";
+    private static final String GLOBAL_SCOPE = "websocketglobalscope";
+    private static final String LOCAL_SCOPE = "websocketlocalscope";
     private final String apiName = "WebSocketTopicsAPI";
     private final String applicationName = "WebSocketTopicsApplication";
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private String apiContext;
+    private String apiVersion;
+    private URI endpointUri;
     private String apiEndPoint;
     private String provider;
     private APIRequest apiRequest;
@@ -82,17 +95,21 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
     private String webSocketServerHost;
     private ServerConfigurationManager serverConfigurationManager;
     private String websocketAPIID;
-    String appId;
+    private String appId;
+    private Server server;
+    private String sharedScopeId;
+    private WebSocketClient client;
+    private String accessToken;
+    private String consumerKey;
+    private String consumerSecret;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPITopicsTestCase(TestUserMode userMode) {
-
         this.userMode = userMode;
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-
         return new Object[][]{
                 new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
                 new Object[] { TestUserMode.TENANT_ADMIN }
@@ -101,7 +118,6 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
         super.init(userMode);
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         webSocketServerHost = InetAddress.getLocalHost().getHostName();
@@ -119,12 +135,11 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
 
     @Test(description = "Publish WebSocket API")
     public void publishWebSocketAPI() throws Exception {
-
         provider = user.getUserName();
-        String apiContext = "echo-topics";
-        String apiVersion = "1.0.0";
+        apiContext = "echo-topics";
+        apiVersion = "1.0.0";
 
-        URI endpointUri = new URI("ws://" + webSocketServerHost + ":" + webSocketServerPort);
+        endpointUri = new URI("ws://" + webSocketServerHost + ":" + webSocketServerPort);
 
         apiRequest = new APIRequest(apiName, apiContext, endpointUri, endpointUri);
         apiRequest.setVersion(apiVersion);
@@ -229,8 +244,11 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        WebSocketClient client = new WebSocketClient();
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
+
+        client = new WebSocketClient();
 
         // Invoke topics that have mappings. Expected to connect to the endpoint as specified in the mapping.
 
@@ -270,6 +288,262 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
         }
     }
 
+    @Test(description = "Invoke API topics with scopes", dependsOnMethods = "testWebSocketAPITopicsInvocation")
+    public void testWebSocketAPITopicsInvocationWithScopes() throws Exception {
+        userManagementClient.addUser(TEST_USER, TEST_USER_PASSWORD, new String[]{}, null);
+        userManagementClient.addRole(WEBSOCKET_ROLE, new String[]{TEST_USER}, new String[]{});
+
+        List<String> roles = new ArrayList<>();
+        roles.add(WEBSOCKET_ROLE);
+        roles.add("admin");
+
+        // Add the Global Scope
+        ScopeDTO globalScopeDTO = new ScopeDTO();
+        globalScopeDTO.setName(GLOBAL_SCOPE);
+        globalScopeDTO.setDisplayName(GLOBAL_SCOPE);
+        globalScopeDTO.setDescription(GLOBAL_SCOPE);
+        globalScopeDTO.setBindings(roles);
+        ScopeDTO addedScopeDTO = restAPIPublisher.addSharedScope(globalScopeDTO);
+        sharedScopeId = addedScopeDTO.getId();
+        Assert.assertNotNull(sharedScopeId, "The scope ID cannot be null or empty");
+
+        // Set the Local scope
+        ScopeDTO localScopeDTO = new ScopeDTO();
+        localScopeDTO.setName(LOCAL_SCOPE);
+        localScopeDTO.setDisplayName(LOCAL_SCOPE);
+        localScopeDTO.setDescription(LOCAL_SCOPE);
+        localScopeDTO.setBindings(roles);
+        APIScopeDTO apiScopeDTO = new APIScopeDTO();
+        apiScopeDTO.setScope(localScopeDTO);
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(websocketAPIID);
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(createdApiResponse.getData(), APIDTO.class);
+        apidto.setScopes(Collections.singletonList(apiScopeDTO));
+        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, websocketAPIID);
+        Assert.assertNotNull(updatedAPI.getScopes(), "Updated API doesn't have any scopes");
+        Assert.assertTrue(updatedAPI.getScopes().stream().anyMatch(s -> s != null && s.getScope() != null &&
+                        LOCAL_SCOPE.equals(s.getScope().getName())),
+                "Inserted API Scope is not present in the updated API DTO");
+        createAPIRevisionAndDeployUsingRest(websocketAPIID, restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
+
+        // Update the Websocket API with topics
+        String asyncApiDefinition = "{" +
+                "   \"asyncapi\":\"2.0.0\"," +
+                "   \"info\":{" +
+                "      \"title\":\"" + apiRequest.getName() + "\"," +
+                "      \"version\":\"" + apiRequest.getVersion() +
+                "   \"}," +
+                "   \"servers\":{" +
+                "      \"production\":{" +
+                "          \"url\":\"" + endpointUri.toString() + "\"," +
+                "          \"protocol\":\"ws\"" +
+                "      }" +
+                "   }," +
+                "   \"channels\":{" +
+
+                // Topic with both global and local scopes
+                "      \"/globallocal\":{" +
+                "          \"parameters\":{}," +
+                "          \"publish\":{" +
+                "              \"x-uri-mapping\":\"/globallocal\"," +
+                "              \"x-scopes\":[\"" + GLOBAL_SCOPE + "\", \"" + LOCAL_SCOPE + "\"]" +
+                "          }," +
+                "          \"subscribe\":{" +
+                "              \"x-uri-mapping\":\"/globallocal\"," +
+                "              \"x-scopes\":[\"" + GLOBAL_SCOPE + "\", \"" + LOCAL_SCOPE + "\"]" +
+                "          }," +
+                "          \"x-auth-type\":\"Any\"" +
+                "      }," +
+                // Topic with global scope
+                "      \"/global\":{" +
+                "          \"parameters\":{}," +
+                "          \"publish\":{" +
+                "              \"x-uri-mapping\":\"/global\"," +
+                "              \"x-scopes\":[\"" + GLOBAL_SCOPE + "\"]" +
+                "          }," +
+                "          \"subscribe\":{" +
+                "              \"x-uri-mapping\":\"/global\"," +
+                "              \"x-scopes\":[\"" + GLOBAL_SCOPE + "\"]" +
+                "          }," +
+                "          \"x-auth-type\":\"Any\"" +
+                "      }," +
+                // Topic with local scope
+                "      \"/local\":{" +
+                "          \"parameters\":{}," +
+                "          \"publish\":{" +
+                "              \"x-uri-mapping\":\"/local\"," +
+                "              \"x-scopes\":[\"" + LOCAL_SCOPE + "\"]" +
+                "          }," +
+                "          \"subscribe\":{" +
+                "              \"x-uri-mapping\":\"/local\"," +
+                "              \"x-scopes\":[\"" + LOCAL_SCOPE + "\"]" +
+                "          }," +
+                "          \"x-auth-type\":\"Any\"" +
+                "      }," +
+                // Topic without scopes
+                "      \"/test2/{prop}\":{" +
+                "          \"parameters\":{" +
+                "              \"prop\":{\"description\":\"\", \"schema\":{\"type\":\"string\"}}" +
+                "          }," +
+                "          \"publish\":{" +
+                "              \"x-uri-mapping\":\"/test2/{uri.var.prop}\"" +
+                "          }," +
+                "          \"subscribe\":{" +
+                "              \"x-uri-mapping\":\"/test2/{uri.var.prop}\"" +
+                "          }" +
+                "      }" +
+
+                "   }," +
+
+                "   \"components\":{\n" +
+                "      \"securitySchemes\":{\n" +
+                "         \"oauth2\":{\n" +
+                "            \"type\":\"oauth2\",\n" +
+                "            \"flows\":{\n" +
+                "               \"implicit\":{\n" +
+                "                  \"authorizationUrl\":\"http://localhost:9999\",\n" +
+                "                  \"scopes\":{\n" +
+                "                     \"" + GLOBAL_SCOPE + "\":\"\",\n" +
+                "                     \"" + LOCAL_SCOPE + "\":\"\"\n" +
+                "                  },\n" +
+                "                  \"x-scopes-bindings\":{\n" +
+                "                     \"" + GLOBAL_SCOPE + "\":\"" + WEBSOCKET_ROLE + "\",\n" +
+                "                     \"" + LOCAL_SCOPE + "\":\"" + WEBSOCKET_ROLE + "\"\n" +
+                "                  }\n" +
+                "               }\n" +
+                "            }\n" +
+                "         }\n" +
+                "      }\n" +
+                "   }" +
+
+                "}";
+
+        restAPIPublisher.updateAsyncAPI(websocketAPIID, asyncApiDefinition);
+        createAPIRevisionAndDeployUsingRest(websocketAPIID, restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
+
+        // Token without authorized scope
+        String tokenWithoutScopes = accessToken;
+        log.info("Access Token without scope: " + tokenWithoutScopes);
+
+        // Token with global scope
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
+        HttpResponse response;
+        String requestBody;
+        JSONObject accessTokenGenerationResponse;
+        String username = TEST_USER;
+        if (userMode != TestUserMode.SUPER_TENANT_ADMIN) {
+            username = username.concat("@").concat(user.getUserDomain());
+        }
+        requestBody = "grant_type=password&username=" + username + "&password=" + TEST_USER_PASSWORD +
+                "&scope=" + GLOBAL_SCOPE;
+        response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
+        accessTokenGenerationResponse = new JSONObject(response.getData());
+        String tokenWithGlobalScope = accessTokenGenerationResponse.getString("access_token");
+        log.info("Access Token with global scope: " + tokenWithGlobalScope);
+
+        // Token with local scope
+        requestBody = "grant_type=password&username=" + username + "&password=" + TEST_USER_PASSWORD +
+                "&scope=" + LOCAL_SCOPE;
+        response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
+        accessTokenGenerationResponse = new JSONObject(response.getData());
+        String tokenWithLocalScope = accessTokenGenerationResponse.getString("access_token");
+        log.info("Access Token with local scope: " + tokenWithLocalScope);
+
+        // Token with both local and global scopes
+        requestBody = "grant_type=password&username=" + username + "&password=" + TEST_USER_PASSWORD +
+                "&scope=" + LOCAL_SCOPE + " " + GLOBAL_SCOPE;
+        response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
+        accessTokenGenerationResponse = new JSONObject(response.getData());
+        String tokenWithGlobalAndLocalScopes = accessTokenGenerationResponse.getString("access_token");
+        log.info("Access Token with global & local scopes: " + tokenWithGlobalAndLocalScopes);
+
+        // Invoke the topic that has a global scope
+        String endpointWithTopic = apiEndPoint + "/global";
+        try {
+            invokeAPI(client, tokenWithoutScopes, AUTH_IN.HEADER, endpointWithTopic, false);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().toLowerCase().contains("failed to connect"), e.getMessage());
+        }
+        try {
+            invokeAPI(client, tokenWithoutScopes, AUTH_IN.QUERY, endpointWithTopic, false);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().toLowerCase().contains("failed to connect"), e.getMessage());
+        }
+        try {
+            invokeAPI(client, tokenWithLocalScope, AUTH_IN.HEADER, endpointWithTopic, false);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().toLowerCase().contains("failed to connect"), e.getMessage());
+        }
+        try {
+            invokeAPI(client, tokenWithLocalScope, AUTH_IN.QUERY, endpointWithTopic, false);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().toLowerCase().contains("failed to connect"), e.getMessage());
+        }
+        invokeAPI(client, tokenWithGlobalScope, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalScope, AUTH_IN.QUERY, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalAndLocalScopes, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalAndLocalScopes, AUTH_IN.QUERY, endpointWithTopic, false);
+
+        // Invoke the topic that has a local scope
+        endpointWithTopic = apiEndPoint + "/local";
+        try {
+            invokeAPI(client, tokenWithoutScopes, AUTH_IN.HEADER, endpointWithTopic, false);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().toLowerCase().contains("failed to connect"), e.getMessage());
+        }
+        try {
+            invokeAPI(client, tokenWithoutScopes, AUTH_IN.QUERY, endpointWithTopic, false);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().toLowerCase().contains("failed to connect"), e.getMessage());
+        }
+        try {
+            invokeAPI(client, tokenWithGlobalScope, AUTH_IN.HEADER, endpointWithTopic, false);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().toLowerCase().contains("failed to connect"), e.getMessage());
+        }
+        try {
+            invokeAPI(client, tokenWithGlobalScope, AUTH_IN.QUERY, endpointWithTopic, false);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().toLowerCase().contains("failed to connect"), e.getMessage());
+        }
+        invokeAPI(client, tokenWithLocalScope, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithLocalScope, AUTH_IN.QUERY, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalAndLocalScopes, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalAndLocalScopes, AUTH_IN.QUERY, endpointWithTopic, false);
+
+        // Invoke the topic that has both global and local scopes
+        endpointWithTopic = apiEndPoint + "/globallocal";
+        try {
+            invokeAPI(client, tokenWithoutScopes, AUTH_IN.HEADER, endpointWithTopic, false);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().toLowerCase().contains("failed to connect"), e.getMessage());
+        }
+        try {
+            invokeAPI(client, tokenWithoutScopes, AUTH_IN.QUERY, endpointWithTopic, false);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().toLowerCase().contains("failed to connect"), e.getMessage());
+        }
+        invokeAPI(client, tokenWithGlobalScope, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalScope, AUTH_IN.QUERY, endpointWithTopic, false);
+        invokeAPI(client, tokenWithLocalScope, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithLocalScope, AUTH_IN.QUERY, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalAndLocalScopes, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalAndLocalScopes, AUTH_IN.QUERY, endpointWithTopic, false);
+
+        // Invoke the topic that doesn't have a scope
+        endpointWithTopic = apiEndPoint + "/test2/p1";
+        invokeAPI(client, tokenWithoutScopes, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithoutScopes, AUTH_IN.QUERY, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalScope, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalScope, AUTH_IN.QUERY, endpointWithTopic, false);
+        invokeAPI(client, tokenWithLocalScope, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithLocalScope, AUTH_IN.QUERY, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalAndLocalScopes, AUTH_IN.HEADER, endpointWithTopic, false);
+        invokeAPI(client, tokenWithGlobalAndLocalScopes, AUTH_IN.QUERY, endpointWithTopic, false);
+    }
+
     private static void invokeAPI(WebSocketClient client, String accessToken, AUTH_IN in,
                                   String apiEndPoint, boolean isRootTopic) throws Exception {
         String testMessage = "hello";
@@ -306,7 +580,6 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
     }
 
     private static void waitForReply(WebSocketClientImpl clientSocket) {
-
         long currentTime = System.currentTimeMillis();
         long WAIT_TIME = 30 * 1000;
         long waitTime = currentTime + WAIT_TIME;
@@ -319,10 +592,9 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
     }
 
     private void startWebSocketServer(final int serverPort) {
-
         executorService.execute(new Runnable() {
             public void run() {
-                Server server = new Server(serverPort);
+                server = new Server(serverPort);
                 ServletHandler servletHandler = new ServletHandler();
                 server.setHandler(servletHandler);
 
@@ -331,6 +603,9 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
                 servletHandler.addServletWithMapping(topicServletHolder, "/test");
                 servletHandler.addServletWithMapping(topicServletHolder, "/test2/p1");
                 servletHandler.addServletWithMapping(topicServletHolder, "/test2/p2");
+                servletHandler.addServletWithMapping(topicServletHolder, "/globallocal");
+                servletHandler.addServletWithMapping(topicServletHolder, "/global");
+                servletHandler.addServletWithMapping(topicServletHolder, "/local");
 
                 WebSocketRootTopicServlet webSocketRootTopicServlet = new WebSocketRootTopicServlet();
                 ServletHolder rootTopicServletHolder = new ServletHolder(webSocketRootTopicServlet);
@@ -350,7 +625,10 @@ public class WebSocketAPITopicsTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
+        restAPIStore.deleteApplication(appId);
+        undeployAndDeleteAPIRevisionsUsingRest(websocketAPIID, restAPIPublisher);
+        restAPIPublisher.deleteAPI(websocketAPIID);
+        server.stop();
         serverConfigurationManager.restoreToLastConfiguration(false);
         executorService.shutdownNow();
         super.cleanUp();

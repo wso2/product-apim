@@ -273,7 +273,6 @@
             <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
             <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
             <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITopicsTestCase"/>
-            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPIScopesTestCase"/>
         </classes>
     </test>
 
