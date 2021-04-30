@@ -279,6 +279,7 @@
     <test name="apim-streaming-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITopicsTestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.SecretValidationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.streamingapis.websub.FailedWebSubSubscriptionTestCase"/>
