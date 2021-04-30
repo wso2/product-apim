@@ -234,6 +234,16 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         sseReceiver.setReceivedDataEventsCount(0);
     }
 
+    @Test(description = "Invoke SSE API with invalid token", dependsOnMethods = "testInvokeSseApi")
+    public void testInvokeSseApiWithInvalidToken() throws Exception {
+        invokeSseApi("00000000-0000-0000-0000-000000000000", 30000);
+        int received = sseReceiver.getReceivedDataEventsCount();
+        Assert.assertEquals(received, 0);
+
+        sseServlet.setEventsSent(0);
+        sseReceiver.setReceivedDataEventsCount(0);
+    }
+
     public void testSseApiThrottling() throws Exception {
         InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
                 "configFiles" + File.separator + "streamingAPIs" + File.separator + "serverSentEventsTest" +
