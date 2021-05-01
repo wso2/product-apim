@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.am.integration.tests.api.lifecycle;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -32,15 +50,22 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.xml.xpath.XPathExpressionException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
+/**
+ * This testcase contains the test for endpoint Certificates.
+ */
 public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(APIEndpointCertificateTestCase.class);
@@ -185,12 +210,14 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
 
     @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
             "testUploadEndpointCertificate"})
-    public void testSearchEndpointCertificates() throws ApiException {
+    public void testSearchEndpointCertificates() throws ApiException, ParseException {
 
         String endpoint = "https://localhost" + ":" + securedEndpointPort;
         CertificatesDTO endpointCertificates = restAPIPublisher.getEndpointCertificiates(endpoint, null);
         Assert.assertNotNull(endpointCertificates.getCertificates());
         Assert.assertEquals(endpointCertificates.getCertificates().size(), 2);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("IST"));
         for (CertMetadataDTO certificate : endpointCertificates.getCertificates()) {
             Assert.assertEquals(certificate.getEndpoint(), endpoint);
             if ("endpoint-1".equals(certificate.getAlias())) {
@@ -198,8 +225,11 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
                 Assert.assertEquals(certificateInfoDTO.getStatus(), "Active");
                 Assert.assertEquals(certificateInfoDTO.getSubject(), "CN=localhost");
                 Assert.assertEquals(certificateInfoDTO.getVersion(), "3");
-                Assert.assertEquals(certificateInfoDTO.getValidity(), new CertificateValidityDTO().to("Wed Apr 27 " +
-                        "17:14:25 IST 2022").from("Tue Apr 27 17:14:25 IST 2021"));
+                Date to = simpleDateFormat.parse("Wed Apr 27 17:14:25 IST 2022");
+                Date from = simpleDateFormat.parse("Tue Apr 27 17:14:25 IST 2021");
+                SimpleDateFormat convertedSimpleDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+                Assert.assertEquals(certificateInfoDTO.getValidity(),
+                        new CertificateValidityDTO().to(convertedSimpleDateFormat.format(to)).from(convertedSimpleDateFormat.format(from)));
             }
         }
         endpointCertificates = restAPIPublisher.getEndpointCertificiates(null, "endpoint-2");
@@ -213,8 +243,12 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
                 Assert.assertEquals(certificateInfoDTO.getSubject(), "CN=wso2apim, OU=integration, O=WSO2, " +
                         "ST=Colombo, C=LK");
                 Assert.assertEquals(certificateInfoDTO.getVersion(), "3");
-                Assert.assertEquals(certificateInfoDTO.getValidity(), new CertificateValidityDTO().to("Wed Apr 27 " +
-                        "20:15:14 IST 2022").from("Tue Apr 27 20:15:14 IST 2021"));
+                Date to = simpleDateFormat.parse("Wed Apr 27 20:15:14 IST 2022");
+                Date from = simpleDateFormat.parse("Tue Apr 27 20:15:14 IST 2021");
+                SimpleDateFormat convertedSimpleDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+
+                Assert.assertEquals(certificateInfoDTO.getValidity(),
+                        new CertificateValidityDTO().to(convertedSimpleDateFormat.format(to)).from(convertedSimpleDateFormat.format(from)));
             }
         }
         endpointCertificates = restAPIPublisher.getEndpointCertificiates(null, "endpoint-3");
@@ -237,6 +271,37 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         HttpResponse apiResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0),
                 requestHeaders);
         Assert.assertEquals(apiResponse.getResponseCode(), 200);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
+            "testInvokeAPI"})
+    public void testInvokeAPIAfterRemovingCertificate() throws InterruptedException, XPathExpressionException,
+            IOException, ApiException {
+
+        ApiResponse<Void> response = restAPIPublisher.deleteEndpointCertificate("endpoint-1");
+        Assert.assertEquals(response.getStatusCode(), 200);
+        response = restAPIPublisher.deleteEndpointCertificate("endpoint-2");
+        Assert.assertEquals(response.getStatusCode(), 200);
+        Thread.sleep(60500); // Sleep to reload the transport
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "application/json");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+
+        HttpResponse apiResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0),
+                requestHeaders);
+        Assert.assertEquals(apiResponse.getResponseCode(), 500);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {"testInvokeAPI"})
+    public void testDeleteNotAvailableCert() {
+
+        try {
+            restAPIPublisher.deleteEndpointCertificate("endpoint-negative");
+            Assert.fail("Failing due to certificate available");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), 404);
+            ;
+        }
     }
 
     private void startSecureEndpoint(int securedEndpointPort) {
@@ -305,8 +370,6 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
 
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
-        restAPIPublisher.deleteEndpointCertificate("endpoint-1");
-        restAPIPublisher.deleteEndpointCertificate("endpoint-2");
         wireMockServer.stop();
     }
 }

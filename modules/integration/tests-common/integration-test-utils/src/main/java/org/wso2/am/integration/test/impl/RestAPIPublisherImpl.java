@@ -1892,8 +1892,8 @@ public class RestAPIPublisherImpl {
 
     }
 
-    public void deleteEndpointCertificate(String alias) throws ApiException {
-        endpointCertificatesApi.deleteEndpointCertificateByAlias(alias);
+    public ApiResponse<Void> deleteEndpointCertificate(String alias) throws ApiException {
+        return endpointCertificatesApi.deleteEndpointCertificateByAliasWithHttpInfo(alias);
 
     }
 }
