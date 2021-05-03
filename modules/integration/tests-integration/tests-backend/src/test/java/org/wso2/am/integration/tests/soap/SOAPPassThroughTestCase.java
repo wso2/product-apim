@@ -91,12 +91,12 @@ public class SOAPPassThroughTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
 
         // Load request/response body
-        wsdlDefinition = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("soap" + File.separator +
-                "phoneverify.wsdl"), "UTF-8");
-        requestBody = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("soap" + File.separator +
-                "checkPhoneNumberRequestBody.xml"), "UTF-8");
-        responseBody = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("soap" + File.separator +
-                "checkPhoneNumberResponseBody.xml"), "UTF-8");
+        wsdlDefinition = readFile(getAMResourceLocation() + File.separator + "soap" + File.separator +
+                "phoneverify.wsdl");
+        requestBody = readFile(getAMResourceLocation() + File.separator + "soap" + File.separator +
+                "checkPhoneNumberRequestBody.xml");
+        responseBody = readFile(getAMResourceLocation() + File.separator + "soap" + File.separator +
+                "checkPhoneNumberResponseBody.xml");
 
         // Start wiremock server
         startWiremockServer();
