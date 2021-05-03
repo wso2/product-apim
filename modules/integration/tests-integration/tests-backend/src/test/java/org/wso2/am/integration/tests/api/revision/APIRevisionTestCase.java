@@ -378,6 +378,26 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 "Unable to invoke API in DEPRECATED stage using application subscription token");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test invoking API for a new Revision in RETIRED lifecycle stage",
+            dependsOnMethods = "testInvokeAPIInDeprecatedLifecycleStage")
+    public void testInvokeAPIInRetiredLifecycleStage() throws Exception {
+        // Change lifecycle stage from DEPRECATED to RETIRED
+        HttpResponse apiLifecycleChangeResponse = restAPIPublisher.changeAPILifeCycleStatus(apiId,
+                APILifeCycleAction.RETIRE.getAction(), null);
+        assertEquals(apiLifecycleChangeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to change lifecycle stage to RETIRED: " + apiLifecycleChangeResponse.getData());
+        waitForAPIDeployment();
+
+        // Invoke API using application subscription token
+        Map<String, String> invokeAPIRequestHeaders = new HashMap<>();
+        invokeAPIRequestHeaders.put("accept", "*/*");
+        invokeAPIRequestHeaders.put("Authorization", "Bearer " + accessToken);
+        HttpResponse invokeAPIResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, invokeAPIRequestHeaders);
+        assertEquals(invokeAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Unable to get error for invoking API in RETIRED stage using application subscription token");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
