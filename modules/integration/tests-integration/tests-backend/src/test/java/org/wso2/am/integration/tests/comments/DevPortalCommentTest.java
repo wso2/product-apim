@@ -57,6 +57,7 @@ public class DevPortalCommentTest
     Gson getCommentWithRepliesGson;
     List<String> rootComments;
     List<String> replies;
+    String updatedTime;
 
     @Factory(dataProvider = "userModeDataProvider")
     public DevPortalCommentTest(TestUserMode userMode) {
@@ -256,66 +257,54 @@ public class DevPortalCommentTest
                 "Offset value does not captured");
     }
 
+    @DataProvider (name = "input-data-provider")
+    public Object[][] inputDataProviderMethod(){
+        return new Object[][] {
+                //Edit the content only
+                {"Edited root comment", "general"},
+                //Edit the category only
+                {"Edited root comment", "bug fix"},
+                //Edit the category and content
+                {"Edited root comment 1", "general bug fix"}
+        };
+    }
+
     //Edit a comment
-    @Test(dependsOnMethods = {"testDevPortalPaginationOfRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Edit Comment Test Case")
-    public void testDevPortalEditCommentTest() throws Exception {
-        //Edit the content only
+    @Test(dependsOnMethods = {"testDevPortalPaginationOfRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Edit Comment Test Case", dataProvider = "input-data-provider")
+    public void testDevPortalEditCommentTest(String content, String category) throws Exception {
         HttpResponse editCommentResponse = restAPIStore
-                .editComment(rootCommentIdToAddReplies, apiId, "Edited root comment", "general");
+                .editComment(rootCommentIdToAddReplies, apiId, content, category);
         assertNotNull(editCommentResponse, "Error adding comment");
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
         Gson editCommentGson = new Gson();
         CommentDTO editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("devportal", "DEVPORTAL"), CommentDTO.class);
-        assertEquals(editCommentDTO.getContent(), "Edited root comment");
-        assertEquals(editCommentDTO.getCategory(), "general");
+        assertEquals(editCommentDTO.getContent(), content);
+        assertEquals(editCommentDTO.getCategory(), category);
         assertNotEquals(editCommentDTO.getUpdatedTime(), null);
-        String updatedTime = editCommentDTO.getUpdatedTime();
-        //Edit the category only
-        Thread.sleep(1000);
-        editCommentResponse = restAPIStore
-                .editComment(rootCommentIdToAddReplies, apiId, "Edited root comment", "bug fix");
-        assertNotNull(editCommentResponse, "Error adding comment");
-        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched");
-        editCommentGson = new Gson();
-        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("devportal", "DEVPORTAL"), CommentDTO.class);
-        assertEquals(editCommentDTO.getContent(), "Edited root comment");
-        assertEquals(editCommentDTO.getCategory(), "bug fix");
-        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
-        assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+        if (!content.equals("Edited root comment") || !category.equals("general")) {
+            assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+        }
         updatedTime = editCommentDTO.getUpdatedTime();
-        //Edit the category and content
         Thread.sleep(1000);
-        editCommentResponse = restAPIStore
-                .editComment(rootCommentIdToAddReplies, apiId, "Edited root comment 1", "general bug fix");
-        assertNotNull(editCommentResponse, "Error adding comment");
-        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched");
-        editCommentGson = new Gson();
-        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("devportal", "DEVPORTAL"), CommentDTO.class);
-        assertEquals(editCommentDTO.getContent(), "Edited root comment 1");
-        assertEquals(editCommentDTO.getCategory(), "general bug fix");
-        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
-        assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
-        updatedTime = editCommentDTO.getUpdatedTime();
         //Edit - keep the category and content as it is
-        Thread.sleep(1000);
-        editCommentResponse = restAPIStore
-                .editComment(rootCommentIdToAddReplies, apiId, "Edited root comment 1", "general bug fix");
-        assertEquals(editCommentResponse.getData(), null);
-        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched");
-        editCommentResponse = restAPIStore
-                .getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 0);
-        assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Error retrieving comment");
-        editCommentGson = new Gson();
-        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("devportal", "DEVPORTAL"), CommentDTO.class);
-        assertEquals(editCommentDTO.getContent(), "Edited root comment 1");
-        assertEquals(editCommentDTO.getCategory(), "general bug fix");
-        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
-        assertEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+        if (content.equals("Edited root comment 1") && category.equals("general bug fix")) {
+            editCommentResponse = restAPIStore.editComment(rootCommentIdToAddReplies, apiId, content, category);
+            assertEquals(editCommentResponse.getData(), null);
+            assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                    "Response code mismatched");
+            editCommentResponse = restAPIStore
+                    .getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(),
+                            false, 3, 0);
+            assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                    "Error retrieving comment");
+            editCommentGson = new Gson();
+            editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("devportal", "DEVPORTAL"), CommentDTO.class);
+            assertEquals(editCommentDTO.getContent(), content);
+            assertEquals(editCommentDTO.getCategory(), category);
+            assertNotEquals(editCommentDTO.getUpdatedTime(), null);
+            assertEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+        }
     }
 
     @Test(dependsOnMethods = {"testDevPortalEditCommentTest"}, groups = { "wso2.am" }, description = "Delete Comment Test Case")
