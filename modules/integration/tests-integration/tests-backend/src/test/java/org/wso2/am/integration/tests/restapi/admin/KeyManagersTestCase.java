@@ -750,7 +750,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Test get and update key manager",
             dependsOnMethods = "testAddKeyManagerWithForgeRockWithOptionalParams")
-    public void testGetAndUpdateKeyManager() throws Exception {
+    public void testUpdateKeyManager() throws Exception {
         //Get the added Key manager
         String keyManagerId = keyManagerDTO.getId();
         ApiResponse<KeyManagerDTO> retrievedKeyManager = restAPIAdmin.getKeyManager(keyManagerId);
@@ -768,7 +768,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with existing key manager name",
-            dependsOnMethods = "testGetAndUpdateKeyManager")
+            dependsOnMethods = "testUpdateKeyManager")
     public void testAddKeyManagerWithExistingKeyManagerName() throws ApiException {
 
         //Exception occurs when adding a key manager with an existing key manager name. The status code
