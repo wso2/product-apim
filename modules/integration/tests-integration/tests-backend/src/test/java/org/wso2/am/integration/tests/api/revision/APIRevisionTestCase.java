@@ -100,11 +100,10 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         assertTrue(StringUtils.isNotEmpty(apiDto.getData()),
                 "Added Api is not available in APi Publisher. API ID " + apiId);
 
+        // Add the API Revision using the API Publisher
         APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
         apiRevisionRequest.setApiUUID(apiId);
         apiRevisionRequest.setDescription("Test Revision 1");
-
-        // Add the API Revision using the API Publisher
         HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
         assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Create API Response Code is invalid." + apiRevisionResponse.getData());
@@ -127,7 +126,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "API Revision create without description",
             dependsOnMethods = "testCreateAPIRevisionWithInvalidAPI")
     public void testCreateAPIRevisionWithoutDescription() throws Exception {
-        //Add the API Revision using the API Publisher
+        // Add the API Revision using the API Publisher
         APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
         apiRevisionRequest.setApiUUID(apiId);
         HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
@@ -140,7 +139,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     public void testGetAPIRevisions() throws Exception {
         HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
+                "Unable to retrieve revisions: " + apiRevisionsGetResponse.getData());
 
         List<JSONObject> revisionList = new ArrayList<>();
         JSONObject jsonObject = new JSONObject(apiRevisionsGetResponse.getData());
