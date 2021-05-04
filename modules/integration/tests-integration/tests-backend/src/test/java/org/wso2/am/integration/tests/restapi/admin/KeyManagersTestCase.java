@@ -19,6 +19,7 @@ package org.wso2.am.integration.tests.restapi.admin;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.http.HttpStatus;
+import org.checkerframework.checker.units.qual.K;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -27,6 +28,7 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
+import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerCertificatesDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
@@ -34,10 +36,7 @@ import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     private AdminApiTestHelper adminApiTestHelper;
@@ -99,7 +98,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with Auth0 type without a mandatory parameter")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with Auth0 type without a mandatory parameter",
+            dependsOnMethods = "testAddKeyManagerWithAuth0")
     public void testAddKeyManagerWithAuth0WithoutMandatoryParam() throws Exception {
         //Create the key manager DTO with Auth0 key manager type without Connector Configurations (Mandatory parameter)
         String name = "Auth0KeyManagerTwo";
@@ -133,7 +133,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with Auth0 type with mandatory " +
-            "and some optional parameters")
+            "and some optional parameters", dependsOnMethods = "testAddKeyManagerWithAuth0WithoutMandatoryParam")
     public void testAddKeyManagerWithAuth0WithOptionalParams() throws Exception {
         //Create the key manager DTO with Auth0 key manager type with mandatory and some optional parameters
         String name = "Auth0KeyManagerThree";
@@ -180,7 +180,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     //WSO2 IS Key Manager
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with WSO2IS type with only mandatory parameters")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with WSO2IS type with only mandatory parameters",
+            dependsOnMethods = "testAddKeyManagerWithAuth0WithOptionalParams")
     public void testAddKeyManagerWithWso2IS() throws Exception {
         //Create the key manager DTO with WSO2 IS key manager type with only Mandatory parameters
         String name = "Wso2ISKeyManagerOne";
@@ -215,7 +216,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with WSO2IS type without a mandatory parameter")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with WSO2IS type without a mandatory parameter",
+            dependsOnMethods = "testAddKeyManagerWithWso2IS")
     public void testAddKeyManagerWithWso2ISWithoutMandatoryParam() throws Exception {
         //Create the key manager DTO with WSO2 IS key manager type without Connector Configurations (Mandatory parameter)
         String name = "Wso2ISKeyManagerTwo";
@@ -244,7 +246,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with WSO2IS type with mandatory " +
-            "and some optional parameters")
+            "and some optional parameters", dependsOnMethods = "testAddKeyManagerWithWso2ISWithoutMandatoryParam")
     public void testAddKeyManagerWithWso2ISWithOptionalParams() throws Exception {
         //Create the key manager DTO with WSO2 IS key manager type with mandatory and some optional parameters
         String name = "Wso2ISKeyManagerThree";
@@ -288,7 +290,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     //Keycloak Key Manager
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with Keycloak type with only mandatory parameters")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with Keycloak type with only mandatory parameters",
+            dependsOnMethods = "testAddKeyManagerWithWso2ISWithOptionalParams")
     public void testAddKeyManagerWithKeycloak() throws Exception {
         //Create the key manager DTO with Keycloak key manager type with only Mandatory parameters
         String name = "KeycloakKeyManagerOne";
@@ -324,7 +327,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with Keycloak type without a mandatory parameter")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with Keycloak type without a mandatory parameter",
+            dependsOnMethods = "testAddKeyManagerWithKeycloak")
     public void testAddKeyManagerWithKeycloakWithoutMandatoryParam() throws Exception {
         //Create the key manager DTO with Keycloak key manager type without Connector Configurations (Mandatory parameter)
         String name = "KeycloakKeyManagerTwo";
@@ -353,7 +357,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with Keycloak type with mandatory " +
-            "and some optional parameters")
+            "and some optional parameters", dependsOnMethods = "testAddKeyManagerWithKeycloakWithoutMandatoryParam")
     public void testAddKeyManagerWithKeycloakWithOptionalParams() throws Exception {
         //Create the key manager DTO with Keycloak key manager type with mandatory and some optional parameters
         String name = "KeycloakKeyManagerThree";
@@ -396,7 +400,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     //Okta Key Manager
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with Okta type with only mandatory parameters")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with Okta type with only mandatory parameters",
+            dependsOnMethods = "testAddKeyManagerWithKeycloakWithOptionalParams")
     public void testAddKeyManagerWithOkta() throws Exception {
         //Create the key manager DTO with Okta key manager type with only Mandatory parameters
         String name = "OktaKeyManagerOne";
@@ -433,7 +438,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with Okta type without a mandatory parameter")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with Okta type without a mandatory parameter",
+            dependsOnMethods = "testAddKeyManagerWithOkta")
     public void testAddKeyManagerWithOktaWithoutMandatoryParam() throws Exception {
         //Create the key manager DTO with Okta key manager type without Connector Configurations (Mandatory parameter)
         String name = "OktaKeyManagerTwo";
@@ -462,7 +468,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with Okta type with mandatory " +
-            "and some optional parameters")
+            "and some optional parameters", dependsOnMethods = "testAddKeyManagerWithOktaWithoutMandatoryParam")
     public void testAddKeyManagerWithOktaWithOptionalParams() throws Exception {
         //Create the key manager DTO with Okta key manager type with mandatory and some optional parameters
         String name = "OktaKeyManagerThree";
@@ -510,7 +516,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     //PingFederate Key Manager
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with PingFederate type with only mandatory parameters")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with PingFederate type with only mandatory parameters",
+            dependsOnMethods = "testAddKeyManagerWithOktaWithOptionalParams")
     public void testAddKeyManagerWithPingFederate() throws Exception {
         //Create the key manager DTO with PingFederate key manager type with only Mandatory parameters
         String name = "PingFederateKeyManagerOne";
@@ -548,7 +555,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with PingFederate type without a mandatory parameter")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with PingFederate type without a mandatory parameter",
+            dependsOnMethods = "testAddKeyManagerWithPingFederate")
     public void testAddKeyManagerWithPingFederateWithoutMandatoryParam() throws Exception {
         //Create the key manager DTO with PingFederate key manager type without Connector Configurations (Mandatory parameter)
         String name = "PingFederateKeyManagerTwo";
@@ -577,7 +585,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with PingFederate type with mandatory " +
-            "and some optional parameters")
+            "and some optional parameters", dependsOnMethods = "testAddKeyManagerWithPingFederateWithoutMandatoryParam")
     public void testAddKeyManagerWithPingFederateWithOptionalParams() throws Exception {
         //Create the key manager DTO with PingFederate key manager type with mandatory and some optional parameters
         String name = "PingFederateKeyManagerThree";
@@ -626,7 +634,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     //ForgeRock Key Manager
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with ForgeRock type with only mandatory parameters")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with ForgeRock type with only mandatory parameters",
+            dependsOnMethods = "testAddKeyManagerWithPingFederateWithOptionalParams")
     public void testAddKeyManagerWithForgeRock() throws Exception {
         //Create the key manager DTO with ForgeRock key manager type with only Mandatory parameters
         String name = "ForgeRockKeyManagerOne";
@@ -662,7 +671,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with ForgeRock type without a mandatory parameter")
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with ForgeRock type without a mandatory parameter",
+            dependsOnMethods = "testAddKeyManagerWithForgeRock")
     public void testAddKeyManagerWithForgeRockWithoutMandatoryParam() throws Exception {
         //Create the key manager DTO with ForgeRock key manager type without Connector Configurations (Mandatory parameter)
         String name = "ForgeRockKeyManagerTwo";
@@ -691,7 +701,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with ForgeRock type with mandatory " +
-            "and some optional parameters")
+            "and some optional parameters", dependsOnMethods = "testAddKeyManagerWithForgeRockWithoutMandatoryParam")
     public void testAddKeyManagerWithForgeRockWithOptionalParams() throws Exception {
         //Create the key manager DTO with ForgeRock key manager type with mandatory and some optional parameters
         String name = "ForgeRockKeyManagerThree";
@@ -738,12 +748,24 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    /*TODO:
-       Testcase for adding a key manager with existing name
-       Testcase for adding a key manager with a name with space (Eg: Auth0 Keymanager)
-       Update Key manager
-       Delete Key manager
-     */
+    @Test(groups = {"wso2.am"}, description = "Test get and update key manager",
+            dependsOnMethods = "testAddKeyManagerWithForgeRockWithOptionalParams")
+    public void testGetAndUpdateKeyManager() throws Exception {
+        //Get the added Key manager
+        String keyManagerId = keyManagerDTO.getId();
+        ApiResponse<KeyManagerDTO> retrievedKeyManager = restAPIAdmin.getKeyManager(keyManagerId);
+        Assert.assertEquals(retrievedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+        //Update the key manager
+        String updatedDescription = "This is a updated test key manager";
+        keyManagerDTO.setDescription(updatedDescription);
+        ApiResponse<KeyManagerDTO> updatedKeyManager =
+                restAPIAdmin.updateKeyManager(keyManagerId, keyManagerDTO);
+        KeyManagerDTO updatedKeyManagerDTO = updatedKeyManager.getData();
+        Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+
+        //Verify the updated key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+    }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
