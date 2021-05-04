@@ -13,7 +13,7 @@
     </context-param>
     <context-param>
         <param-name>loginURL</param-name>
-        <param-value>http://localhost:8280/token</param-value>
+        <param-value>http://localhost:9763/oauth2/token</param-value>
     </context-param>
     <context-param>
         <param-name>consumerKey</param-name>

@@ -18,5 +18,8 @@
         <parameter name="wss.ssl.key.store.pass">{{apim.wss.keystore.password}}</parameter>
         <parameter name="wss.ssl.cert.pass">{{apim.wss.keystore.key_password}}</parameter>
         <parameter name="wss.ssl.protocols">{{apim.wss.ssl_enabled_protocols}}</parameter>
+        {% if apim.wss.ciphers is defined %}
+        <parameter name="wss.ssl.cipher.suites">{{apim.wss.ciphers}}</parameter>
+        {% endif %}
     </parameters>
 </inboundEndpoint>
