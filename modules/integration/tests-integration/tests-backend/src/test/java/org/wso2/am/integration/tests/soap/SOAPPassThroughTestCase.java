@@ -20,7 +20,6 @@ package org.wso2.am.integration.tests.soap;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
@@ -48,7 +47,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.testng.Assert.*;
 
