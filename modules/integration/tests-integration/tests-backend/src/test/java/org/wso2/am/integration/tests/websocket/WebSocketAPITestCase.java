@@ -38,8 +38,8 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
-import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EventCountLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
@@ -78,6 +78,8 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -99,6 +101,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private final String applicationName = "WebSocketApplication";
     private final String applicationJWTName = "WebSocketJWTTypeApplication";
     private final String testMessage = "Web Socket Test Message";
+    private String apiContext;
+    private String apiVersion;
     private String apiEndPoint;
     private APIPublisherRestClient apiPublisher;
     private String provider;
@@ -118,8 +122,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private String wsRequestEventPublisherSource = "WS_Req_Logger.xml";
     private String wsThrottleOutEventPublisherSource = "WS_Throttle_Out_Logger.xml";
     private String websocketAPIID;
-    String appId;
-    String appJWTId;
+    private String appId;
+    private String throttleAppId;
+    private String appJWTId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPITestCase(TestUserMode userMode) {
@@ -163,8 +168,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     public void publishWebSocketAPI() throws Exception {
 
         provider = user.getUserName();
-        String apiContext = "echo";
-        String apiVersion = "1.0.0";
+        apiContext = "echo";
+        apiVersion = "1.0.0";
 
         URI endpointUri = new URI("ws://" + webSocketServerHost + ":" + webSocketServerPort);
 
@@ -259,8 +264,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appJWTId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        //consumerKey = applicationKeyDTO.getConsumerKey();
-        //consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
             invokeAPI(client, accessToken, AUTH_IN.HEADER);
@@ -272,88 +275,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             client.stop();
         }
     }
-    @Test(description = "Test Throttling for WebSocket API", dependsOnMethods = "testWebSocketAPIInvocation")
-    public void testWebSocketAPIThrottling() throws Exception {
-            // Deploy Throttling policy with throttle limit set as 8 frames. One message is two frames, therefore 4
-        // messages can be sent.
-        InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
-                "configFiles" + File.separator + "webSocketTest" + File.separator + "policy.json");
 
-        //Extract the field values from the input stream
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonMap = mapper.readTree(inputStream);
-        String policyName = jsonMap.get("policyName").textValue();
-        String policyDescription = jsonMap.get("policyDescription").textValue();
-        JsonNode defaultLimitJson = jsonMap.get("defaultLimit");
-        JsonNode requestCountJson = defaultLimitJson.get("requestCount");
-        Long requestCountLimit = Long.valueOf(String.valueOf(requestCountJson.get("requestCount")));
-        String timeUnit = requestCountJson.get("timeUnit").textValue();
-        Integer unitTime = Integer.valueOf(String.valueOf(requestCountJson.get("unitTime")));
-
-        //Create the advanced throttling policy with request count quota type
-        RequestCountLimitDTO requestCountLimitDTO = DtoFactory.createRequestCountLimitDTO(timeUnit, unitTime,
-                requestCountLimit);
-        ThrottleLimitDTO defaultLimit =
-                DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT, requestCountLimitDTO,
-                        null);
-        AdvancedThrottlePolicyDTO bandwidthAdvancedPolicyDTO = DtoFactory
-                .createAdvancedThrottlePolicyDTO(policyName, "", policyDescription, false, defaultLimit,
-                        new ArrayList<>());
-
-        //Add the advanced throttling policy
-        ApiResponse<AdvancedThrottlePolicyDTO> addedPolicy =
-                restAPIAdmin.addAdvancedThrottlingPolicy(bandwidthAdvancedPolicyDTO);
-        //Assert the status code and policy ID
-        Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
-        AdvancedThrottlePolicyDTO addedAdvancedPolicyDTO = addedPolicy.getData();
-        String apiPolicyId = addedAdvancedPolicyDTO.getPolicyId();
-        Assert.assertNotNull(apiPolicyId, "The policy ID cannot be null or empty");
-
-        //Update Throttling policy of the API
-        HttpResponse response = restAPIPublisher.getAPI(websocketAPIID);
-        Gson g = new Gson();
-        APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
-        apidto.setApiThrottlingPolicy("WebSocketTestThrottlingPolicy");
-        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto);
-        createAPIRevisionAndDeployUsingRest(updatedAPI.getId(), restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
-        Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), "WebSocketTestThrottlingPolicy");
-        //Get an Access Token from the user who is logged into the API Store.
-        URL tokenEndpointURL = new URL(getKeyManagerURLHttps() + "/oauth2/token");
-        String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(),
-                user.getPassword());
-        JSONObject subsAccessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret, subsAccessTokenPayload,
-                        tokenEndpointURL).getData());
-
-        String subsRefreshToken = subsAccessTokenGenerationResponse.getString("refresh_token");
-
-        assertFalse(org.apache.commons.lang.StringUtils.isEmpty(subsRefreshToken),
-                "Refresh token of access token generated by subscriber is empty");
-
-        //Obtain user access token
-        String requestBody = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(), user.getPassword());
-        JSONObject accessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                        tokenEndpointURL).getData());
-
-        // get Access Token and Refresh Token
-        String refreshToken = accessTokenGenerationResponse.getString("refresh_token");
-        String getAccessTokenFromRefreshTokenRequestBody =
-                "grant_type=refresh_token&refresh_token=" + refreshToken;
-        accessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                        getAccessTokenFromRefreshTokenRequestBody,
-                        tokenEndpointURL).getData());
-        String userAccessToken = accessTokenGenerationResponse.getString("access_token");
-
-        Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
-        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        testThrottling(tokenJti);
-    }
-
-    @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebSocketAPIThrottling")
+    @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebSocketAPIInvocationWithJWTToken")
     public void testWebSocketAPIInvalidTokenInvocation() throws Exception {
 
         WebSocketClient client = new WebSocketClient();
@@ -368,6 +291,73 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         } finally {
             client.stop();
         }
+    }
+
+    @Test(description = "Test Throttling for WebSocket API", dependsOnMethods = "testWebSocketAPIInvalidTokenInvocation")
+    public void testWebSocketAPIThrottling() throws Exception {
+        InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
+                "configFiles" + File.separator + "webSocketTest" + File.separator + "policy.json");
+
+        //Extract the field values from the input stream
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonMap = mapper.readTree(inputStream);
+        String policyName = jsonMap.get("policyName").textValue();
+        String policyDescription = jsonMap.get("policyDescription").textValue();
+        JsonNode defaultLimitJson = jsonMap.get("defaultLimit");
+        JsonNode requestCountJson = defaultLimitJson.get("requestCount");
+        Long requestCountLimit = Long.valueOf(String.valueOf(requestCountJson.get("requestCount")));
+        String timeUnit = requestCountJson.get("timeUnit").textValue();
+        Integer unitTime = Integer.valueOf(String.valueOf(requestCountJson.get("unitTime")));
+
+        // Create the advanced throttling policy with event count quota type
+        EventCountLimitDTO eventCountLimitDTO = DtoFactory.createEventCountLimitDTO(timeUnit, unitTime,
+                requestCountLimit);
+        ThrottleLimitDTO defaultLimit = DtoFactory.createEventCountThrottleLimitDTO(eventCountLimitDTO);
+        SubscriptionThrottlePolicyDTO subscriptionThrottlingPolicy = DtoFactory
+                .createSubscriptionThrottlePolicyDTO(policyName, policyName, policyDescription, false, defaultLimit,
+                        0, 0, 0, "min", Collections.emptyList(), true, "free", 2);
+
+        // Add the subscription throttle policy
+        ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy =
+                restAPIAdmin.addSubscriptionThrottlingPolicy(subscriptionThrottlingPolicy);
+        // Assert the status code and policy ID
+        Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
+        SubscriptionThrottlePolicyDTO addedSubscriptionPolicyDTO = addedPolicy.getData();
+        String apiPolicyId = addedSubscriptionPolicyDTO.getPolicyId();
+        Assert.assertNotNull(apiPolicyId, "The policy ID cannot be null or empty");
+
+        // Update Throttling policy of the API
+        HttpResponse response = restAPIPublisher.getAPI(websocketAPIID);
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
+        List<String> policies = new ArrayList<>();
+        policies.add(policyName);
+        policies.add("AsyncUnlimited");
+        apidto.setPolicies(policies);
+        restAPIPublisher.updateAPI(apidto, websocketAPIID);
+        createAPIRevisionAndDeployUsingRest(websocketAPIID, restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
+        APIDTO api = restAPIPublisher.getAPIByID(websocketAPIID);
+        Assert.assertNotNull(api.getPolicies());
+        Assert.assertTrue(api.getPolicies().contains(policyName));
+
+        // Subscribe to the API using a new application with custom policy as the tier
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName + "ThrottleTest",
+                "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        throttleAppId = applicationResponse.getData();
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(websocketAPIID, throttleAppId, policyName);
+        // Validate Subscription of the API
+        Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(throttleAppId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        Assert.assertNotNull(applicationKeyDTO.getToken());
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+
+        testThrottling(accessToken);
     }
 
     /**
@@ -428,12 +418,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      * @param accessToken API accessToken
      */
     private void testThrottling(String accessToken) throws Exception {
-
-        /* Prevent API requests getting dispersed into two time units */
+        // Prevent API requests getting dispersed into two time units
         while (LocalDateTime.now().getSecond() > 20) {
             Thread.sleep(5000L);
         }
-        int startingDistinctUnitTime = LocalDateTime.now().getMinute();
 
         int limit = 2;
         WebSocketClient client = new WebSocketClient();
@@ -444,30 +432,26 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         request.setHeader("Authorization", "Bearer " + accessToken);
         client.connect(socket, echoUri, request);
         socket.getLatch().await(3L, TimeUnit.SECONDS);
-        // Send 3 WebSocket messages when throttle limit is 2.
+
+        long startTime = System.currentTimeMillis();
+        long endTime = 0;
+        int receivedCount = 0;
         try {
-            for (int count = 1; count <= limit + 1; count++) {
-                if (count > limit) {
-                    // Set time gap to allow throttle to take place
-                    Thread.sleep(15000L);
-                }
+            // Expected to stop within 1 minute as a result of throttling, or timeouts after 3 minutes.
+            while (endTime == 0 || (endTime - startTime) <= 3 * 60000) {
                 socket.sendMessage(testMessage);
                 waitForReply(socket);
-                log.info("Count :" + count + " Message :" + socket.getResponseMessage());
-                // At the 3rd message check frame is throttled out.
-                if (count > limit) {
-                    //If throttling testing time duration is dispersed into two separate unit times, repeat the test
-                    if (LocalDateTime.now().getMinute() != startingDistinctUnitTime) {
-                        //repeat the test
-                        log.info("Repeating the test as throttling testing time duration is dispersed into two " +
-                                "separate units of time");
-                        testThrottling(accessToken);
-                    }
-                    assertEquals(socket.getResponseMessage(), "Websocket frame throttled out",
-                            "Received response is not matching");
+                String reply = socket.getResponseMessage();
+                endTime = System.currentTimeMillis();
+                if (reply != null && reply.contains("frame throttled out")) {
+                    break;
+                } else {
+                    receivedCount++;
                 }
-                socket.setResponseMessage(null);
             }
+            long duration = endTime - startTime;
+            Assert.assertTrue(duration < 60000);
+            Assert.assertTrue(receivedCount >= limit);
         } catch (Exception ex) {
             log.error("Error occurred while calling API.", ex);
             Assert.fail("Client cannot connect to server");
@@ -559,7 +543,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
         serverConfigurationManager.restoreToLastConfiguration(false);
         executorService.shutdownNow();
         super.cleanUp();
