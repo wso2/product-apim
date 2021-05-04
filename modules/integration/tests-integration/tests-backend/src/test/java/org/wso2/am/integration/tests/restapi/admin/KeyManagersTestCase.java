@@ -767,6 +767,34 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with existing key manager name",
+            dependsOnMethods = "testGetAndUpdateKeyManager")
+    public void testAddKeyManagerWithExistingKeyManagerName() throws ApiException {
+
+        //Exception occurs when adding a key manager with an existing key manager name. The status code
+        //in the Exception object is used to assert this scenario
+        try {
+            restAPIAdmin.addKeyManager(keyManagerDTO);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT);
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test delete key manager",
+            dependsOnMethods = "testAddKeyManagerWithExistingKeyManagerName")
+    public void testDeleteKeyManager() throws Exception {
+        ApiResponse<Void> apiResponse =
+                restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+
+        //Delete non existing key manager - not found
+        try {
+            apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
+        }
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
