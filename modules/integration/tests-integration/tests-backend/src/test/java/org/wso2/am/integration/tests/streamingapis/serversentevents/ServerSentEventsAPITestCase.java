@@ -37,6 +37,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EventCountLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
@@ -76,6 +77,8 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -103,18 +106,19 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     private String applicationName = "SSEApplication";
 
     private ServerConfigurationManager serverConfigurationManager;
+    private String apiContext;
+    private String apiVersion;
     private String provider;
     private APIRequest apiRequest;
     private int sseServerPort;
     private String sseServerHost;
     private String apiId;
     private String appId;
+    private String throttleAppId;
     private SseServlet sseServlet;
     private Server sseServer;
     private SimpleSseReceiver sseReceiver;
     private String apiEndpoint;
-    private String consumerKey;
-    private String consumerSecret;
 
     @Factory(dataProvider = "userModeDataProvider")
     public ServerSentEventsAPITestCase(TestUserMode userMode) {
@@ -154,8 +158,8 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     @Test(description = "Publish SSE API")
     public void testPublishSseApi() throws Exception {
         provider = user.getUserName();
-        String apiContext = "sse";
-        String apiVersion = "1.0.0";
+        apiContext = "sse";
+        apiVersion = "1.0.0";
 
         URI endpointUri = new URI("http://" + sseServerHost + ":" + sseServerPort);
 
@@ -221,8 +225,6 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        consumerKey = applicationKeyDTO.getConsumerKey();
-        consumerSecret = applicationKeyDTO.getConsumerSecret();
         invokeSseApi(accessToken, 30000);
 
         int sent = sseServlet.getEventsSent();
@@ -244,6 +246,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         sseReceiver.setReceivedDataEventsCount(0);
     }
 
+    @Test(description = "Invoke SSE API with custom throttling policy", dependsOnMethods = "testInvokeSseApiWithInvalidToken")
     public void testSseApiThrottling() throws Exception {
         InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
                 "configFiles" + File.separator + "streamingAPIs" + File.separator + "serverSentEventsTest" +
@@ -264,81 +267,66 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         EventCountLimitDTO eventCountLimitDTO = DtoFactory.createEventCountLimitDTO(timeUnit, unitTime,
                 requestCountLimit);
         ThrottleLimitDTO defaultLimit = DtoFactory.createEventCountThrottleLimitDTO(eventCountLimitDTO);
-        AdvancedThrottlePolicyDTO advancedPolicyDTO = DtoFactory
-                .createAdvancedThrottlePolicyDTO(policyName, "", policyDescription, false, defaultLimit,
-                        new ArrayList<>());
+        SubscriptionThrottlePolicyDTO subscriptionThrottlingPolicy = DtoFactory
+                .createSubscriptionThrottlePolicyDTO(policyName, policyName, policyDescription, false, defaultLimit,
+                        0, 0, 0, "min", Collections.emptyList(), true, "free", 2);
 
-        // Add the advanced throttling policy
-        ApiResponse<AdvancedThrottlePolicyDTO> addedPolicy =
-                restAPIAdmin.addAdvancedThrottlingPolicy(advancedPolicyDTO);
+        // Add the subscription throttle policy
+        ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy =
+                restAPIAdmin.addSubscriptionThrottlingPolicy(subscriptionThrottlingPolicy);
         // Assert the status code and policy ID
         Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
-        AdvancedThrottlePolicyDTO addedAdvancedPolicyDTO = addedPolicy.getData();
-        String apiPolicyId = addedAdvancedPolicyDTO.getPolicyId();
+        SubscriptionThrottlePolicyDTO addedSubscriptionPolicyDTO = addedPolicy.getData();
+        String apiPolicyId = addedSubscriptionPolicyDTO.getPolicyId();
         Assert.assertNotNull(apiPolicyId, "The policy ID cannot be null or empty");
 
         // Update Throttling policy of the API
         HttpResponse response = restAPIPublisher.getAPI(apiId);
         Gson g = new Gson();
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
-        apidto.setApiThrottlingPolicy("SSETestThrottlingPolicy");
-        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto);
-        Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), "SSETestThrottlingPolicy");
-        // Get an Access Token from the user who is logged into the API Store.
-        URL tokenEndpointURL = new URL(getKeyManagerURLHttps() + "/oauth2/token");
-        String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(),
-                user.getPassword());
-        JSONObject subsAccessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret, subsAccessTokenPayload,
-                        tokenEndpointURL).getData());
+        List<String> policies = new ArrayList<>();
+        policies.add(policyName);
+        policies.add("AsyncUnlimited");
+        apidto.setPolicies(policies);
+        restAPIPublisher.updateAPI(apidto, apiId);
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
+        APIDTO api = restAPIPublisher.getAPIByID(apiId);
+        Assert.assertNotNull(api.getPolicies());
+        Assert.assertTrue(api.getPolicies().contains(policyName));
 
-        String subsRefreshToken = subsAccessTokenGenerationResponse.getString("refresh_token");
-        assertFalse(org.apache.commons.lang.StringUtils.isEmpty(subsRefreshToken),
-                "Refresh token of access token generated by subscriber is empty");
+        // Subscribe to the API using a new application with custom policy as the tier
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName + "ThrottleTest",
+                "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        throttleAppId = applicationResponse.getData();
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, throttleAppId, policyName);
+        // Validate Subscription of the API
+        Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(throttleAppId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
-        // Obtain user access token
-        String requestBody = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(), user.getPassword());
-        JSONObject accessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                        tokenEndpointURL).getData());
-
-        // Get Access Token and Refresh Token
-        String refreshToken = accessTokenGenerationResponse.getString("refresh_token");
-        String getAccessTokenFromRefreshTokenRequestBody =
-                "grant_type=refresh_token&refresh_token=" + refreshToken;
-        accessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                        getAccessTokenFromRefreshTokenRequestBody,
-                        tokenEndpointURL).getData());
-        String userAccessToken = accessTokenGenerationResponse.getString("access_token");
-
-        Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
-        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        testThrottling(tokenJti);
+        testThrottling(accessToken);
+        sseServlet.setEventsSent(0);
+        sseReceiver.setReceivedDataEventsCount(0);
     }
 
     private void testThrottling(String accessToken) throws Exception {
-        // Attempt to run for 3 minutes. Connection is expected to be closed within 1 minute due to throttle out.
-        startAndStopSseServer(3 * 60000);
+        sseServer.start();
         // Prevent API requests getting dispersed into two time units
-        while (LocalDateTime.now().getSecond() > 40) {
+        while (LocalDateTime.now().getSecond() > 30) {
             Thread.sleep(5000L);
         }
         long startTime = System.currentTimeMillis();
         startSseReceiver(accessToken, null);
         long endTime = System.currentTimeMillis();
-        Assert.assertTrue((endTime - startTime) < 60000);
-
-        // Re-attempt to connect after throttle out. A throttled out event is expected to be received.
-        AtomicBoolean isThrottled = new AtomicBoolean(false);
-        startSseReceiver(accessToken, new Consumer<Boolean>() {
-            @Override
-            public void accept(Boolean aBoolean) {
-                isThrottled.set(aBoolean);
-            }
-        });
-        Thread.sleep(3000L);
-        Assert.assertTrue(isThrottled.get());
+        long connectionAliveDuration = endTime - startTime;
+        Assert.assertTrue(connectionAliveDuration < 60000);
+        Assert.assertTrue(connectionAliveDuration > 0);
     }
 
     private void initializeSseServer(int port) {
@@ -390,6 +378,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterTest(alwaysRun = true)
     public void destroy() throws Exception {
+        sseServer.stop();
         serverConfigurationManager.restoreToLastConfiguration(false);
         executorService.shutdownNow();
         super.cleanUp();
