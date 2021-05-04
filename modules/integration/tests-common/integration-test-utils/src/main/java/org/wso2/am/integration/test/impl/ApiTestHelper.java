@@ -243,7 +243,8 @@ public class ApiTestHelper {
         ApplicationDTO applicationDTO = restAPIStore.addApplication(applicationName,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "http://localhost", "");
 
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiDTO.getId(),
+        SubscriptionDTO subscriptionDTO = null;
+        subscriptionDTO = restAPIStore.subscribeToAPI(apiDTO.getId(),
                 applicationDTO.getApplicationId(), subscriptionPolicy);
 
         Assert.assertEquals(subscriptionDTO.getApiId(), apiDTO.getId());
