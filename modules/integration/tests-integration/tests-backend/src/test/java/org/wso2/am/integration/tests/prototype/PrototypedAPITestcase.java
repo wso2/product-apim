@@ -34,12 +34,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -48,8 +48,8 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
@@ -57,31 +57,37 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
     private String apiProvider;
     private String apiName;
     private String apiEndPointUrl;
-    private String apiID;
     private APIIdentifier apiIdentifier;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public PrototypedAPITestcase(TestUserMode userMode) {
+
+        this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN}
+        };
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws APIManagerIntegrationTestException, XPathExpressionException {
 
-        super.init();
+        super.init(userMode);
+        apiProvider = user.getUserName();
 
         String apiPrototypeEndpointPostfixUrl = "am/sample/pizzashack/v1/api/menu";
         apiEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + apiPrototypeEndpointPostfixUrl;
-
-        restAPIPublisher = new RestAPIPublisherImpl(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword(),
-                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
-
-        restAPIStore = new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword(),
-                storeContext.getContextTenant().getDomain(), storeURLHttps);
-
-        apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API with a prototype endpoint and invoke")
     public void testPrototypedAPIEndpoint() throws Exception {
 
+        String apiID;
         apiName = "APIMPrototypedEndpointAPI1";
         String apiContext = "pizzashack-prototype";
         String apiTags = "pizza, order, pizza-menu";
@@ -94,6 +100,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         apiRequest.setDescription(apiDescription);
         apiRequest.setTags(apiTags);
         apiRequest.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest.setProvider(apiProvider);
 
         HttpResponse addAPIResponse = restAPIPublisher.addAPI(apiRequest);
         assertEquals(addAPIResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
@@ -133,7 +140,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
         //Check whether Prototype API is available under the Prototyped API
         org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO prototypedAPIs = restAPIStore
-                .getPrototypedAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                .getPrototypedAPIs(user.getUserDomain());
         assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, prototypedAPIs),
                 apiName + " is not visible as Prototyped API");
 
@@ -146,11 +153,15 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
                         "", requestHeaders);
         Assert.assertEquals(response1.getResponseCode(), 200);
         Assert.assertTrue(response1.getData().contains("BBQ Chicken Bacon"));
+
+        restAPIPublisher.changeAPILifeCycleStatus(apiID, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
+        restAPIPublisher.deleteAPI(apiID);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Create an API with a prototype endpoint, demote to created and invoke")
+    @Test(groups = {"wso2.am"}, description = "Create an API with a prototype endpoint, demote to created and invoke", dependsOnMethods = {"testPrototypedAPIEndpoint"})
     public void testDemotedPrototypedEndpointAPItoCreated() throws Exception {
 
+        String apiID;
         apiName = "APIMPrototypedEndpointAPI2";
         String apiContext = "pizzashack-prototype2";
         String apiTags = "pizza, order, pizza-menu";
@@ -163,6 +174,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         apiRequest.setDescription(apiDescription);
         apiRequest.setTags(apiTags);
         apiRequest.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest.setProvider(apiProvider);
 
         HttpResponse addAPIResponse = restAPIPublisher.addAPI(apiRequest);
         assertEquals(addAPIResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
@@ -203,7 +215,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
         //Check whether Prototype API is available under the Prototyped API
         org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO prototypedAPIs = restAPIStore
-                .getPrototypedAPIs(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                .getPrototypedAPIs(user.getUserDomain());
         assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, prototypedAPIs),
                 apiName + " is not visible as Prototyped API");
 
@@ -211,9 +223,9 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         restAPIPublisher.changeAPILifeCycleStatus(apiID, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
         assertTrue(APILifeCycleState.CREATED.getState().equals(restAPIPublisher.getLifecycleStatus(apiID).getData()),
                 apiName + "status not updated as CREATED");
+
         //Wait for the changes to be applied after demoting to Created.
         Thread.sleep(15000);
-
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
 
@@ -221,8 +233,8 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         HttpResponse response2 = HTTPSClientUtils
                 .doGet(getAPIInvocationURLHttps(apiContext, apiVersion) +
                         "", requestHeaders);
-
         Assert.assertEquals(response2.getResponseCode(), 401, "User was able to invoke the API demoted to CREATED from PROTOTYPE");
-    }
 
+        restAPIPublisher.deleteAPI(apiID);
+    }
 }
