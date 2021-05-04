@@ -45,42 +45,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.PatchRequestBodyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.PostRequestBodyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -1019,6 +984,7 @@ public class RestAPIPublisherImpl {
         Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
+
     public APIDTO getAPIByID(String apiId) throws ApiException {
         return  apIsApi.getAPI(apiId, tenantDomain, null);
     }
@@ -1028,6 +994,26 @@ public class RestAPIPublisherImpl {
                 null);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
+    }
+
+    public WSDLValidationResponseDTO validateWSDLDefinition(String url, File wsdlDefinition) throws ApiException {
+        ApiResponse<WSDLValidationResponseDTO> response = validationApi
+                .validateWSDLDefinitionWithHttpInfo(url, wsdlDefinition);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
+    public APIDTO importWSDLDefinition(File file, String url, String additionalProperties, String implementationType)
+            throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi
+                .importWSDLDefinitionWithHttpInfo(file, url, additionalProperties, implementationType);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    public HttpResponse getWSDLDefinition(String apiId) throws ApiException {
+        ApiResponse<Void> wsdlDefinitionResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId, null);
+        return new HttpResponse(null, wsdlDefinitionResponse.getStatusCode());
     }
 
     public GraphQLValidationResponseDTO validateGraphqlSchemaDefinition(File schemaDefinition) throws ApiException {

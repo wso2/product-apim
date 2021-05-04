@@ -1939,6 +1939,12 @@ public class RestAPIStoreImpl {
         return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid,applicationKeyMappingRequestDTO);
     }
 
+    public HttpResponse getWSDLDefinition(String apiId) throws ApiException {
+        ApiResponse<Void> wsdlDefinitionResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,
+                null, null, null, null);
+        return new HttpResponse(null, wsdlDefinitionResponse.getStatusCode());
+    }
+
     /**
      * Method to retrieve the GraphQL Complexity Details
      * @param apiId apiId of the API
