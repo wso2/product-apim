@@ -240,7 +240,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     public void testInvokeSseApiWithInvalidToken() throws Exception {
         invokeSseApi("00000000-0000-0000-0000-000000000000", 30000);
         int received = sseReceiver.getReceivedDataEventsCount();
-        Assert.assertEquals(received, 0);
+        Assert.assertEquals(received, 0, "Messages were received when invoking with an invalid token");
 
         sseServlet.setEventsSent(0);
         sseReceiver.setReceivedDataEventsCount(0);
@@ -263,7 +263,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         String timeUnit = requestCountJson.get("timeUnit").textValue();
         Integer unitTime = Integer.valueOf(String.valueOf(requestCountJson.get("unitTime")));
 
-        // Create the advanced throttling policy with request count quota type
+        // Create the advanced throttling policy with event count quota type
         EventCountLimitDTO eventCountLimitDTO = DtoFactory.createEventCountLimitDTO(timeUnit, unitTime,
                 requestCountLimit);
         ThrottleLimitDTO defaultLimit = DtoFactory.createEventCountThrottleLimitDTO(eventCountLimitDTO);
@@ -308,6 +308,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(throttleAppId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        Assert.assertNotNull(applicationKeyDTO.getToken());
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         testThrottling(accessToken);
@@ -316,7 +317,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
     }
 
     private void testThrottling(String accessToken) throws Exception {
-        sseServer.start();
+        startAndStopSseServer(3 * 60000);
         // Prevent API requests getting dispersed into two time units
         while (LocalDateTime.now().getSecond() > 30) {
             Thread.sleep(5000L);
@@ -324,9 +325,30 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
         long startTime = System.currentTimeMillis();
         startSseReceiver(accessToken, null);
         long endTime = System.currentTimeMillis();
-        long connectionAliveDuration = endTime - startTime;
-        Assert.assertTrue(connectionAliveDuration < 60000);
-        Assert.assertTrue(connectionAliveDuration > 0);
+        int receivedEvents = sseReceiver.getReceivedDataEventsCount();
+
+        if (sseServer.isRunning()) {
+            // SSE Receiver has been closed due to throttling, and the server is still running.
+            // Re-attempt to connect, and a throttled out event is expected to be received.
+            AtomicBoolean isThrottled = new AtomicBoolean(false);
+            startSseReceiver(accessToken, new Consumer<Boolean>() {
+                @Override
+                public void accept(Boolean aBoolean) {
+                    isThrottled.set(aBoolean);
+                }
+            });
+            while (sseServer.isRunning()) {
+                Thread.sleep(5000); // Wait until the server is stopped
+            }
+            long connectionAliveDuration = endTime - startTime;
+            Assert.assertTrue(connectionAliveDuration < 60000, "Throttle out did not occur within 1 minute");
+            Assert.assertTrue(connectionAliveDuration > 0, "Connection was not created before throttle out");
+            Assert.assertTrue(receivedEvents >= 4, "Throttle out occurred before the specified limit");
+            Assert.assertTrue(isThrottled.get(), "Did not receive a throttled out event after throttling");
+        } else if (TestUserMode.TENANT_ADMIN != userMode) {
+            // TENANT_ADMIN user mode has been skipped due to https://github.com/wso2/product-apim/issues/11179
+            Assert.fail("Throttle out did not occur within one minute. SSE Receiver closed due to timeout");
+        }
     }
 
     private void initializeSseServer(int port) {
