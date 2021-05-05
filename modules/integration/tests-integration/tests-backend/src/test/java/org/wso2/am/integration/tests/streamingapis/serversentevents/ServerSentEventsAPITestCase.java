@@ -345,8 +345,7 @@ public class ServerSentEventsAPITestCase extends APIMIntegrationBaseTest {
             Assert.assertTrue(connectionAliveDuration > 0, "Connection was not created before throttle out");
             Assert.assertTrue(receivedEvents >= 4, "Throttle out occurred before the specified limit");
             Assert.assertTrue(isThrottled.get(), "Did not receive a throttled out event after throttling");
-        } else if (TestUserMode.TENANT_ADMIN != userMode) {
-            // TENANT_ADMIN user mode has been skipped due to https://github.com/wso2/product-apim/issues/11179
+        } else {
             Assert.fail("Throttle out did not occur within one minute. SSE Receiver closed due to timeout");
         }
     }
