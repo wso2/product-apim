@@ -21,9 +21,9 @@ import org.apache.commons.lang.StringUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
@@ -169,10 +169,10 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
                 keyManagerContext.getContextTenant().getDomain(), publisherURLHttps);
 
         apiStorePubSubUser = new RestAPIStoreImpl(PUB_SUB_USER, USER_PASSWORD,
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps,restAPIGateway);
 
         apiStoreSubUser = new RestAPIStoreImpl(SUBSCRIBER_USER, USER_PASSWORD,
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps,restAPIGateway);
 
 
         restAPIPublisher = new RestAPIPublisherImpl(
@@ -182,7 +182,7 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
         restAPIStore =
                 new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                         storeContext.getContextTenant().getContextUser().getPassword(),
-                        storeContext.getContextTenant().getDomain(), storeURLHttps);
+                        storeContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
     }
 
     @Test(groups = "wso2.am", description = "This test case tests the retrieval of API which was added with a access "

@@ -118,7 +118,8 @@ public class RestAPIStoreImpl {
 
     private String accessToken;
 
-    public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
+    public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL,
+                            RestAPIGatewayImpl restAPIGateway) {
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
         String dcrURL = storeURL + "client-registration/v0.17/register";
@@ -152,6 +153,7 @@ public class RestAPIStoreImpl {
         apiStoreClient.setDebugging(true);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
+        this.restAPIGateway = restAPIGateway;
     }
 
 
@@ -169,13 +171,7 @@ public class RestAPIStoreImpl {
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
-
-    public RestAPIStoreImpl(String userNameWithoutDomain, String password, String domain, String storeURLHttps,
-                            RestAPIGatewayImpl restAPIGateway) {
-
-        this(userNameWithoutDomain, password, domain, storeURLHttps);
-        this.restAPIGateway = restAPIGateway;
-    }
+    
 
     public String getAccessToken() {
         return accessToken;

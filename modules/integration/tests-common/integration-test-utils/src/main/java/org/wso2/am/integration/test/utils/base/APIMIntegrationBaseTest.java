@@ -727,8 +727,10 @@ public class APIMIntegrationBaseTest {
         return new RestAPIPublisherImpl(user, pass, tenantDomain, publisherURLHttps);
     }
 
-    protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain) {
-        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps);
+    protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain,
+                                                      RestAPIGatewayImpl restAPIGateway) {
+
+        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps, restAPIGateway);
     }
 
     protected RestAPIStoreImpl getRestAPIStoreForAnonymousUser(String tenantDomain) {
