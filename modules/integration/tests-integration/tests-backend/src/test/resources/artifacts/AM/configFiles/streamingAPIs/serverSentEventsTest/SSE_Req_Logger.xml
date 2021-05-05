@@ -4,6 +4,6 @@
   <from streamName="org.wso2.throttle.request.stream" version="1.0.0"/>
   <mapping customMapping="disable" type="text"/>
   <to eventAdapterType="logger">
-    <property name="uniqueId">WS =================&gt;</property>
+    <property name="uniqueId">SSE =================&gt;</property>
   </to>
 </eventPublisher>
