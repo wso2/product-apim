@@ -21,48 +21,9 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.clients.admin.ApiClient;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.AdvancedPolicyCollectionApi;
-import org.wso2.am.integration.clients.admin.api.AdvancedPolicyIndividualApi;
-import org.wso2.am.integration.clients.admin.api.ApiCategoryIndividualApi;
-import org.wso2.am.integration.clients.admin.api.ApiCategoryCollectionApi;
-import org.wso2.am.integration.clients.admin.api.ApplicationApi;
-import org.wso2.am.integration.clients.admin.api.ApplicationCollectionApi;
-import org.wso2.am.integration.clients.admin.api.ApplicationPolicyCollectionApi;
-import org.wso2.am.integration.clients.admin.api.ApplicationPolicyIndividualApi;
-import org.wso2.am.integration.clients.admin.api.CustomRulesCollectionApi;
-import org.wso2.am.integration.clients.admin.api.CustomRulesIndividualApi;
-import org.wso2.am.integration.clients.admin.api.DenyPoliciesCollectionApi;
-import org.wso2.am.integration.clients.admin.api.DenyPolicyIndividualApi;
-import org.wso2.am.integration.clients.admin.api.EnvironmentApi;
-import org.wso2.am.integration.clients.admin.api.EnvironmentCollectionApi;
-import org.wso2.am.integration.clients.admin.api.KeyManagerCollectionApi;
-import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
-import org.wso2.am.integration.clients.admin.api.LabelApi;
-import org.wso2.am.integration.clients.admin.api.LabelCollectionApi;
-import org.wso2.am.integration.clients.admin.api.SettingsApi;
-import org.wso2.am.integration.clients.admin.api.WorkflowCollectionApi;
-import org.wso2.am.integration.clients.admin.api.WorkflowsIndividualApi;
+import org.wso2.am.integration.clients.admin.api.*;
 
-import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyCollectionApi;
-import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyIndividualApi;
-import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
-import org.wso2.am.integration.clients.admin.api.dto.APICategoryDTO;
-import org.wso2.am.integration.clients.admin.api.dto.APICategoryListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ApplicationListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
-import org.wso2.am.integration.clients.admin.api.dto.BlockingConditionDTO;
-import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
-import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
-import org.wso2.am.integration.clients.admin.api.dto.EnvironmentListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
-import org.wso2.am.integration.clients.admin.api.dto.KeyManagerListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
-import org.wso2.am.integration.clients.admin.api.dto.LabelListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
-import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
-import org.wso2.am.integration.clients.admin.api.dto.WorkflowDTO;
-import org.wso2.am.integration.clients.admin.api.dto.WorkflowInfoDTO;
-import org.wso2.am.integration.clients.admin.api.dto.WorkflowListDTO;
+import org.wso2.am.integration.clients.admin.api.dto.*;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.HttpResponse;
@@ -91,6 +52,7 @@ public class RestAPIAdminImpl {
     private AdvancedPolicyIndividualApi advancedPolicyIndividualApi = new AdvancedPolicyIndividualApi();
     private AdvancedPolicyCollectionApi advancedPolicyCollectionApi = new AdvancedPolicyCollectionApi();
     private ApplicationCollectionApi applicationCollectionApi = new ApplicationCollectionApi();
+    private SystemScopesApi systemScopesApi = new SystemScopesApi();
     private ApplicationApi applicationApi = new ApplicationApi();
     private LabelApi labelApi = new LabelApi();
     private LabelCollectionApi labelCollectionApi = new LabelCollectionApi();
@@ -173,6 +135,7 @@ public class RestAPIAdminImpl {
         workflowsIndividualApi.setApiClient(apiAdminClient);
         apiCategoryCollectionApi.setApiClient(apiAdminClient);
         apiCategoryIndividualApi.setApiClient(apiAdminClient);
+        systemScopesApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -223,6 +186,31 @@ public class RestAPIAdminImpl {
     public ApiResponse<Void> deleteApiCategory(String uuid) throws ApiException {
 
         return apiCategoryIndividualApi.apiCategoriesApiCategoryIdDeleteWithHttpInfo(uuid, null, null);
+    }
+
+    /***
+     * This method is used to put an system scopes mapping.
+     *
+     * @param roleAliasListDTO Role Alias DTO to be updated
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while adding the new API category.
+     */
+
+    public ApiResponse<RoleAliasListDTO> putRoleAliases(RoleAliasListDTO roleAliasListDTO) throws ApiException {
+
+        return systemScopesApi.systemScopesRoleAliasesPutWithHttpInfo(roleAliasListDTO);
+    }
+
+    /***
+     * This method is used to get role aliases.
+     *
+     * @return API response returned by the API call.
+     * @throws ApiException Throws if an error occurred while adding the new API category.
+     */
+
+    public ApiResponse<RoleAliasListDTO> getRoleAliases() throws ApiException {
+
+        return systemScopesApi.systemScopesRoleAliasesGetWithHttpInfo();
     }
 
     public ApiResponse<KeyManagerDTO> addKeyManager(KeyManagerDTO keyManagerDTO) throws ApiException {
@@ -433,6 +421,23 @@ public class RestAPIAdminImpl {
 
         return denyPolicyCollectionApi
                 .throttlingDenyPoliciesPostWithHttpInfo(Constants.APPLICATION_JSON, denyPolicyDTO);
+    }
+
+    /**
+     * Updates an deny throttling policy.
+     *
+     * @param conditionId policy id of the deny throttling policy to be updated.
+     * @param conditionType condition type of the deny throttling policy to be.
+     * @param blockingConditionStatusDTO deny throttling policy status DTO to be updated.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while creating the deny throttling policy.
+     */
+    public ApiResponse<BlockingConditionDTO> updateDenyThrottlingPolicy(String conditionId, String conditionType, BlockingConditionStatusDTO blockingConditionStatusDTO) throws ApiException {
+
+        return denyPolicyIndividualApi
+                .throttlingDenyPolicyConditionIdPatchWithHttpInfo(conditionId,conditionType,blockingConditionStatusDTO,
+                        null,
+                        null);
     }
 
     /**
