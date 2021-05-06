@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.tests.restapi.admin;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,12 +34,14 @@ import org.wso2.am.integration.clients.admin.api.dto.EnvironmentListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIEndpointURLsDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
 import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -88,8 +91,145 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper = new AdminApiTestHelper();
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add gateway environment")
-    public void testAddGatewayEnvironment() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Test add gateway environment without VHost")
+    public void testAddGatewayEnvironmentWithoutVHost() throws Exception {
+        //Create the environment DTO
+        String name = "asia-region";
+        String displayName = "Asia Region";
+        String description = "Gateway environment deployed in Asia region";
+        List<VHostDTO> vHostDTOList = new ArrayList<>();
+        environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, false, vHostDTOList);
+
+        //Add the environment
+        try {
+            restAPIAdmin.addEnvironment(environmentDTO);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
+        }
+    }
+
+
+    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment name with special characters",
+            dependsOnMethods = "testAddGatewayEnvironmentWithoutVHost")
+    public void testAddingGatewayEnvironmentNameWithSpecialCharacters() throws Exception {
+        //Create the environment DTO
+        String name = "asia-region#$";
+        String displayName = "Asia Region #$";
+        String description = "Gateway environment deployed in Asia region";
+        List<VHostDTO> vHostDTOList = new ArrayList<>();
+        vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods",
+                8280, 8243, 9099, 8099));
+        environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, false, vHostDTOList);
+        //Add the environment
+        try {
+            restAPIAdmin.addEnvironment(environmentDTO);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment without displayName",
+            dependsOnMethods = "testAddingGatewayEnvironmentNameWithSpecialCharacters")
+    public void testAddingGatewayEnvironmentWithoutDisplayName() throws Exception {
+        //Create the environment DTO
+        String name = "asia-region";
+        String displayName = null;
+        String description = "Gateway environment deployed in Asia region";
+        List<VHostDTO> vHostDTOList = new ArrayList<>();
+        vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods",
+                8280, 8243, 9099, 8099));
+        environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, false, vHostDTOList);
+        //Able to add the environment successfully
+        ApiResponse<EnvironmentDTO> addedEnvironments = restAPIAdmin.addEnvironment(environmentDTO);
+
+        //Assert the status code and environment ID
+        Assert.assertEquals(addedEnvironments.getStatusCode(), HttpStatus.SC_CREATED);
+        EnvironmentDTO addedEnvironmentDTO = addedEnvironments.getData();
+        String environmentId = addedEnvironmentDTO.getId();
+        Assert.assertNotNull(environmentId, "The environment ID cannot be null or empty");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with multiple Vhosts with same hostname",
+            dependsOnMethods = "testAddingGatewayEnvironmentWithoutDisplayName")
+    public void testAddingGatewayEnvironmentWithMultipleVhostsWithSameHostName() throws Exception {
+        //Create the environment DTO
+        String name = "asia-region";
+        String displayName = "Asia Region";
+        String description = "Gateway environment deployed in Asia region";
+        List<VHostDTO> vHostDTOList = new ArrayList<>();
+        vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods",
+                8280, 8243, 9099, 8099));
+        vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods",
+                8280, 8243, 9099, 8099));
+        environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, false, vHostDTOList);
+        //Add the environment
+        try {
+            restAPIAdmin.addEnvironment(environmentDTO);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with vhost hostname having special characters",
+            dependsOnMethods = "testAddingGatewayEnvironmentWithMultipleVhostsWithSameHostName")
+    public void testAddingGatewayEnvironmentWithVhostsHavingSpecialCharacters() throws Exception {
+        //Create the environment DTO
+        String name = "asia-region";
+        String displayName = "Asia Region";
+        String description = "Gateway environment deployed in Asia region";
+        List<VHostDTO> vHostDTOList = new ArrayList<>();
+        vHostDTOList.add(DtoFactory.createVhostDTO("foods.com#$%?", "zfoods",
+                8280, 8243, 9099, 8099));
+        environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, false, vHostDTOList);
+        //Add the environment
+        try {
+            restAPIAdmin.addEnvironment(environmentDTO);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test add gateway environment with single VHost",
+            dependsOnMethods = "testAddingGatewayEnvironmentWithVhostsHavingSpecialCharacters")
+    public void testAddGatewayEnvironmentSingleVHost() throws Exception {
+        //Create the environment DTO
+        String name = "europe-region";
+        String displayName = "Europe Region";
+        String description = "Gateway environment deployed in Europe region";
+        List<VHostDTO> vHostDTOList = new ArrayList<>();
+        vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods",
+                8280, 8243, 9099, 8099));
+        environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, false, vHostDTOList);
+
+        //Add the environment
+        ApiResponse<EnvironmentDTO> addedEnvironments = restAPIAdmin.addEnvironment(environmentDTO);
+
+        //Assert the status code and environment ID
+        Assert.assertEquals(addedEnvironments.getStatusCode(), HttpStatus.SC_CREATED);
+        EnvironmentDTO addedEnvironmentDTO = addedEnvironments.getData();
+        String environmentId = addedEnvironmentDTO.getId();
+        Assert.assertNotNull(environmentId, "The environment ID cannot be null or empty");
+
+        environmentDTO.setId(environmentId);
+        //Verify the created label DTO
+        adminApiTestHelper.verifyEnvironmentDTO(environmentDTO, addedEnvironmentDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test add already existing gateway environment",
+            dependsOnMethods = "testAddGatewayEnvironmentSingleVHost")
+    public void testAddAlreadyExistingEnvironment() throws Exception {
+        //Add already existing environment - bad request
+        EnvironmentDTO configuredGatewayEnvironment = getConfiguredGatewayEnvironment();
+        try {
+            restAPIAdmin.addEnvironment(configuredGatewayEnvironment);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test add gateway environment with multiple VHosts",
+            dependsOnMethods = "testAddAlreadyExistingEnvironment")
+    public void testAddGatewayEnvironmentMultipleVHosts() throws Exception {
         //Create the environment DTO
         String name = "us-region";
         String displayName = "US Region";
@@ -122,7 +262,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test get all gateway environments",
-            dependsOnMethods = "testAddGatewayEnvironment")
+            dependsOnMethods = "testAddGatewayEnvironmentMultipleVHosts")
     public void testGetGatewayEnvironments() throws Exception {
         //Retrieve all Environments
         ApiResponse<EnvironmentListDTO> retrievedEnvs = restAPIAdmin.getEnvironments();
@@ -139,7 +279,9 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
             if (configuredGatewayEnvironment.getName().equals(environment.getName())) {
                 adminApiTestHelper.verifyEnvironmentDTO(configuredGatewayEnvironment, environment);
             } else {
-                adminApiTestHelper.verifyEnvironmentDTO(environmentDTO, environment);
+                if (StringUtils.equals(environmentDTO.getName(), environment.getName())) {
+                    adminApiTestHelper.verifyEnvironmentDTO(environmentDTO, environment);
+                }
             }
         }
     }
@@ -191,8 +333,28 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
                 "Unable to deploy API Product Revisions:" + apiRevisionsDeployResponse.getData());
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test update gateway environment",
+    @Test(groups = {"wso2.am"}, description = "Test validate Devportal API and Swagger Response",
             dependsOnMethods = "testDeployApiRevisionWithVhost")
+    public void testValidateDevportalAPIAndSwaggerResponse() throws Exception {
+        String tenantDomain = gatewayContextMgt.getContextTenant().getDomain();
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiResponse = restAPIStore.getAPI(apiTwoId);
+        String swagger = restAPIStore.getSwaggerByID(apiTwoId, tenantDomain);
+        Assert.assertNotNull(apiResponse);
+        List<APIEndpointURLsDTO> apiEndpointURLsDTOS = apiResponse.getEndpointURLs();
+        for (APIEndpointURLsDTO apiEndpointUrlDTP: apiEndpointURLsDTOS) {
+            if (StringUtils.equalsIgnoreCase(apiEndpointUrlDTP.getEnvironmentName(),"us-region")) {
+                Assert.assertEquals(apiEndpointUrlDTP.getEnvironmentName(),"us-region");
+            } else {
+                Assert.assertEquals(apiEndpointUrlDTP.getEnvironmentName(),"Default");
+            }
+        }
+        Assert.assertNotNull(swagger);
+        JSONObject jsonObject = new JSONObject(swagger);
+        Assert.assertNotNull(jsonObject.getString("servers"));
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test update gateway environment",
+            dependsOnMethods = "testValidateDevportalAPIAndSwaggerResponse")
     public void testUpdateEnvironment() throws Exception {
         //Update the dynamic environment
         environmentDTO.setDisplayName("US Gateway Environment");
@@ -218,7 +380,25 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test delete environment", dependsOnMethods = "testUpdateEnvironment")
+    @Test(groups = {"wso2.am"}, description = "Test update gateway environment by removing exisiting Vhost and adding new Vhost",
+            dependsOnMethods = "testUpdateEnvironment")
+    public void testUpdateEnvironmentByRemovingVHost() throws Exception {
+        //Remove VHost from the gateway environment
+        List<VHostDTO> vHostDTOList = environmentDTO.getVhosts();
+        vHostDTOList.remove(0);
+        vHostDTOList.add(DtoFactory.createVhostDTO("new.com", "zfoods",
+                8280, 8243, 9099, 8099));
+
+        ApiResponse<EnvironmentDTO> updatedEnvironment = restAPIAdmin.updateEnvironment(environmentDTO.getId(), environmentDTO);
+        EnvironmentDTO updatedEnvironmentDTO = updatedEnvironment.getData();
+        Assert.assertEquals(updatedEnvironment.getStatusCode(), HttpStatus.SC_OK);
+
+        //Verify the updated label DTO
+        adminApiTestHelper.verifyEnvironmentDTO(environmentDTO, updatedEnvironmentDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test delete environment",
+            dependsOnMethods = "testUpdateEnvironmentByRemovingVHost")
     public void testDeleteEnvironment() throws Exception {
         //Delete dynamic environment
         ApiResponse<Void> apiResponse = restAPIAdmin.deleteEnvironment(environmentDTO.getId());
@@ -309,6 +489,9 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         apiRevisionRequest.setApiUUID(apiTwoId);
         apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
         apiTwoRevisionId = extractRevisionId(apiRevisionResponse);
+        apiTwo.setPolicies(policies);
+        restAPIPublisher.updateAPI(apiTwo);
+        restAPIPublisher.changeAPILifeCycleStatus(apiTwoId, APILifeCycleAction.PUBLISH.getAction());
 
         //Add the API Revision using the API publisher.
         apiProductId = apiProductDTO.getId();
