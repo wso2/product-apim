@@ -85,6 +85,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>
         </classes>
     </test>
 
@@ -113,8 +114,8 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.PublisherCommentTest"/>
+            <class name="org.wso2.am.integration.tests.comments.DevPortalCommentTest"/>
+            <class name="org.wso2.am.integration.tests.comments.PublisherCommentTest"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
@@ -279,6 +280,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.websub.ThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.SecretValidationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.streamingapis.websub.FailedWebSubSubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.MultipleWebSubSubcriptionTestCase"/>

@@ -16,7 +16,7 @@
  *under the License.
  */
 
-package org.wso2.am.integration.tests.other;
+package org.wso2.am.integration.tests.comments;
 
 import com.google.gson.Gson;
 import org.json.JSONArray;
@@ -39,7 +39,6 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
@@ -51,7 +50,12 @@ import static org.testng.Assert.assertNotEquals;
 public class PublisherCommentTest
         extends APIMIntegrationBaseTest {
 
-    private String apiId;
+    String apiId;
+    String rootCommentIdToAddReplies;
+    HttpResponse getCommentWithRepliesResponse;
+    List<String> rootComments;
+    List<String> replies;
+    String updatedTime;
 
     @Factory(dataProvider = "userModeDataProvider")
     public PublisherCommentTest(TestUserMode userMode) {
@@ -73,8 +77,8 @@ public class PublisherCommentTest
         super.init(userMode);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Comment Rating Test case")
-    public void testPublisherCommentTest() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Deploy and Verify API for Comments Test Cases")
+    public void testPublisherDeployAPITest() throws Exception {
         String APIName = "CommentRatingAPI";
         String APIContext = "commentRating";
         String tags = "youtube, video, media";
@@ -108,7 +112,6 @@ public class PublisherCommentTest
         for (int i = 0; i < tagsList.length(); i++) {
             assertTrue(tags.contains(tagsList.getString(i)), "API tag data mismatched");
         }
-
         //-------------------------Test Comments------------------------------------------
         /* *
             In some databases(mysql, oracle), the timestamp format do not store milliseconds.
@@ -117,28 +120,28 @@ public class PublisherCommentTest
         * */
 
         // Test add two root comments
-        List<String> rootComments = new ArrayList<String>();
+        rootComments = new ArrayList<String>();
         for (Integer i = 1; i < 3; i++) {
-            HttpResponse addRootCommentResponse = restAPIPublisher.addComment(apiId, "This is root comment " +
-                    i.toString(), "general", null);
+            HttpResponse addRootCommentResponse = restAPIPublisher
+                    .addComment(apiId, "This is root comment " + i.toString(), "general", null);
             assertNotNull(addRootCommentResponse, "Error adding comment");
             assertEquals(addRootCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
             Gson getCommentsGson = new Gson();
-            CommentDTO addedRootCommentDTO = getCommentsGson.fromJson(addRootCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+            CommentDTO addedRootCommentDTO = getCommentsGson
+                    .fromJson(addRootCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
             String rootCommentId = addedRootCommentDTO.getId();
             assertNotNull(rootCommentId, "Comment Id is null");
             rootComments.add(rootCommentId);
             Thread.sleep(1000);
         }
-
-        String rootCommentIdToAddReplies = rootComments.get(0);
+        rootCommentIdToAddReplies = rootComments.get(0);
 
         // Test add another three replies to above root comment
-        List<String> replies = new ArrayList<String>();
+        replies = new ArrayList<String>();
         for (Integer i = 1; i < 4; i++) {
-            HttpResponse addReplyCommentResponse = restAPIPublisher.addComment(apiId, "This is a reply " +
-                    i.toString(), "general", rootCommentIdToAddReplies);
+            HttpResponse addReplyCommentResponse = restAPIPublisher
+                    .addComment(apiId, "This is a reply " + i.toString(), "general", rootCommentIdToAddReplies);
             assertNotNull(addReplyCommentResponse, "Error adding comment");
             assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
@@ -150,16 +153,13 @@ public class PublisherCommentTest
             Thread.sleep(1000);
         }
 
-        // Verify added comment with it's replies
-        HttpResponse getCommentWithRepliesResponse = restAPIPublisher.getComment(rootCommentIdToAddReplies, apiId,
-                gatewayContextWrk.getContextTenant().getDomain(), false, 3, 0);
+        getCommentWithRepliesResponse = restAPIPublisher
+                .getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 0);
         assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getCommentWithRepliesGson = new Gson();
-        CommentDTO commentWithRepliesCommentDTO = getCommentWithRepliesGson.fromJson(getCommentWithRepliesResponse
-                .getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
-        assertEquals(commentWithRepliesCommentDTO.getContent(), "This is root comment 1",
-                "Comments do not match");
+        CommentDTO commentWithRepliesCommentDTO = getCommentWithRepliesGson.fromJson(getCommentWithRepliesResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+        assertEquals(commentWithRepliesCommentDTO.getContent(), "This is root comment 1", "Comments do not match");
         assertEquals(commentWithRepliesCommentDTO.getCategory(), "general", "Comments do not match");
         assertEquals(commentWithRepliesCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.PUBLISHER,
                 "Comments do not match");
@@ -169,23 +169,28 @@ public class PublisherCommentTest
             assertEquals(reply.getParentCommentId(), rootCommentIdToAddReplies, "Comments do not match");
             assertEquals(replies.contains(reply.getId()), true, "Comments do not match");
         }
-
-        // Verify Pagination of replies list of a comment
         assertEquals(commentWithRepliesCommentDTO.getReplies().getList().size(), 3, "Replies limit does not match");
-        HttpResponse getCommentToVerifyPagination = restAPIPublisher.getComment(rootCommentIdToAddReplies, apiId,
-                gatewayContextWrk.getContextTenant().getDomain(), false, 3, 1);
+    }
+
+    @Test(dependsOnMethods = {"testPublisherDeployAPITest"}, groups = { "wso2.am" }, description = "Verify Pagination of Replies List of a Comment Test Case")
+    public void testPublisherPaginatedCommentListTest() throws Exception {
+        HttpResponse getCommentToVerifyPagination = restAPIPublisher
+                .getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 1);
         assertEquals(getCommentToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getCommentToVerifyPaginationGson = new Gson();
-        CommentDTO getCommentToVerifyPaginationCommentDTO = getCommentToVerifyPaginationGson.fromJson(getCommentToVerifyPagination
-                .getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
-        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().size(), 2, "Replies limit does not match");
-        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(0).getContent(), "This is a reply 2", "Offset value does not captured");
-        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(1).getContent(), "This is a reply 3", "Offset value does not captured");
+        CommentDTO getCommentToVerifyPaginationCommentDTO = getCommentToVerifyPaginationGson.fromJson(getCommentToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().size(), 2,
+                "Replies limit does not match");
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(0).getContent(),
+                "This is a reply 2", "Offset value does not captured");
+        assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().get(1).getContent(),
+                "This is a reply 3", "Offset value does not captured");
+    }
 
-        // Get  all the comments of  API
-        HttpResponse getCommentsResponse = restAPIPublisher.getComments(apiId, gatewayContextWrk.getContextTenant()
-                .getDomain(), false, 5, 0);
+    @Test(dependsOnMethods = {"testPublisherPaginatedCommentListTest"}, groups = { "wso2.am" }, description = "Get  all comments Test Case")
+    public void testPublisherGetAllCommentsTest() throws Exception {
+        HttpResponse getCommentsResponse = restAPIPublisher.getComments(apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 5, 0);
         assertEquals(getCommentsResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getCommentsGson = new Gson();
@@ -193,26 +198,28 @@ public class PublisherCommentTest
         assertEquals(commentListDTO.getCount().intValue(), 2, "Root comments count do not match");
         for (CommentDTO rootCommentDTO : commentListDTO.getList()) {
             assertEquals(rootCommentDTO.getCategory(), "general", "Comments do not match");
-            assertEquals(rootCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.PUBLISHER,
-                    "Comments do not match");
+            assertEquals(rootCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.PUBLISHER, "Comments do not match");
             assertEquals(rootCommentDTO.getParentCommentId(), null, "Comments do not match");
             assertEquals(rootComments.contains(rootCommentDTO.getId()), true, "Comments do not match");
         }
+    }
 
-        // Verify Pagination of root comment list
-        HttpResponse getRootCommentsToVerifyPagination = restAPIPublisher.getComments(apiId, gatewayContextWrk.getContextTenant()
-                .getDomain(), false, 3, 1);
+    @Test(dependsOnMethods = {"testPublisherGetAllCommentsTest"}, groups = { "wso2.am" }, description = "Verify Pagination of Root Comment List Test Case")
+    public void testPublisherPaginatedRootCommentsTest() throws Exception {
+        HttpResponse getRootCommentsToVerifyPagination = restAPIPublisher.getComments(apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 1);
         assertEquals(getRootCommentsToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getRootCommentsToVerifyPaginationGson = new Gson();
-        CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getRootCommentsToVerifyPaginationGson.fromJson(getRootCommentsToVerifyPagination
-                .getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
+        CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getRootCommentsToVerifyPaginationGson
+                .fromJson(getRootCommentsToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().size(), 1, "Comments limit does not match");
         assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(0).getContent(), "This is root comment 1", "Offset value does not captured");
+    }
 
-        // Get all the replies of a given comment
-        HttpResponse getRepliesResponse = restAPIPublisher.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
-                .getContextTenant().getDomain(), false, 5, 0);
+    @Test(dependsOnMethods = {"testPublisherPaginatedRootCommentsTest"}, groups = { "wso2.am" }, description = "Get All Replies of Comment Test Case")
+    public void testPublisherGetRepliesOfCommentTest() throws Exception {
+        HttpResponse getRepliesResponse = restAPIPublisher
+                .getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 5, 0);
         assertEquals(getRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getRepliesGson = new Gson();
@@ -224,80 +231,77 @@ public class PublisherCommentTest
             assertEquals(replyDTO.getParentCommentId(), rootCommentIdToAddReplies, "Comments do not match");
             assertEquals(replies.contains(replyDTO.getId()), true, "Comments do not match");
         }
+    }
 
-        // Verify Pagination of replies list of a comment
-        HttpResponse getRepliesToVerifyPagination = restAPIPublisher.getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk
-                .getContextTenant().getDomain(), false, 3, 1);
+    @Test(dependsOnMethods = {"testPublisherGetRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Verify Pagination of Replies List of Comment Test Case")
+    public void testPublisherPaginationOfRepliesOfCommentTest() throws Exception {
+        HttpResponse getRepliesToVerifyPagination = restAPIPublisher
+                .getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 1);
         assertEquals(getRepliesToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getRepliesToVerifyPaginationGson = new Gson();
-        CommentListDTO getRepliesToVerifyPaginationCommenListDTO = getRepliesToVerifyPaginationGson.fromJson(getRepliesToVerifyPagination
-                .getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
+        CommentListDTO getRepliesToVerifyPaginationCommenListDTO = getRepliesToVerifyPaginationGson
+                .fromJson(getRepliesToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().size(), 2, "Comments limit does not match");
-        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(0).getContent(), "This is a reply 2", "Offset value does not captured");
-        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(1).getContent(), "This is a reply 3", "Offset value does not captured");
+        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(0).getContent(), "This is a reply 2",
+                "Offset value does not captured");
+        assertEquals(getRepliesToVerifyPaginationCommenListDTO.getList().get(1).getContent(), "This is a reply 3",
+                "Offset value does not captured");
+    }
 
-        //Edit a comment
-        //Edit the content only
-        HttpResponse editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId,
-                "Edited root comment", "general");
+    @DataProvider (name = "input-data-provider")
+    public Object[][] inputDataProviderMethod(){
+        return new Object[][] {
+                //Edit the content only
+                {"Edited root comment", "general"},
+                //Edit the category only
+                {"Edited root comment", "bug fix"},
+                //Edit the category and content
+                {"Edited root comment 1", "general bug fix"}
+        };
+    }
+
+    //Edit a comment
+    @Test(dependsOnMethods = {"testPublisherPaginationOfRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Edit Comment Test Case", dataProvider = "input-data-provider")
+        public void testPublisherEditCommentTest(String content, String category) throws Exception {
+        HttpResponse editCommentResponse = restAPIPublisher
+                .editComment(rootCommentIdToAddReplies, apiId, content, category);
         assertNotNull(editCommentResponse, "Error adding comment");
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
         Gson editCommentGson = new Gson();
-        CommentDTO editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
-        assertEquals(editCommentDTO.getContent(), "Edited root comment");
-        assertEquals(editCommentDTO.getCategory(), "general");
+        CommentDTO editCommentDTO = editCommentGson
+                .fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+        assertEquals(editCommentDTO.getContent(), content);
+        assertEquals(editCommentDTO.getCategory(), category);
         assertNotEquals(editCommentDTO.getUpdatedTime(), null);
-        String updatedTime = editCommentDTO.getUpdatedTime();
-        //Edit the category only
-        Thread.sleep(1000);
-        editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment",
-                "bug fix");
-        assertNotNull(editCommentResponse, "Error adding comment");
-        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched");
-        editCommentGson = new Gson();
-        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
-        assertEquals(editCommentDTO.getContent(), "Edited root comment");
-        assertEquals(editCommentDTO.getCategory(), "bug fix");
-        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
-        assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+        if (!content.equals("Edited root comment") || !category.equals("general")) {
+            assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+        }
         updatedTime = editCommentDTO.getUpdatedTime();
-        //Edit the category and content
         Thread.sleep(1000);
-        editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment 1",
-                "general bug fix");
-        assertNotNull(editCommentResponse, "Error adding comment");
-        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched");
-        editCommentGson = new Gson();
-        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
-        assertEquals(editCommentDTO.getContent(), "Edited root comment 1");
-        assertEquals(editCommentDTO.getCategory(), "general bug fix");
-        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
-        assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
-        updatedTime = editCommentDTO.getUpdatedTime();
         //Edit - keep the category and content as it is
-        Thread.sleep(1000);
-        editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId, "Edited root comment 1",
-                "general bug fix");
-        assertEquals(editCommentResponse.getData(), null);
-        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched");
-        editCommentResponse = restAPIPublisher.getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk
-                .getContextTenant().getDomain(), false, 3, 0);
-        assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Error retrieving comment");
-        editCommentGson = new Gson();
-        editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
-        assertEquals(editCommentDTO.getContent(), "Edited root comment 1");
-        assertEquals(editCommentDTO.getCategory(), "general bug fix");
-        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
-        assertEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+        if (content.equals("Edited root comment 1") && category.equals("general bug fix")) {
+            editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId, content, category);
+            assertEquals(editCommentResponse.getData(), null);
+            assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                    "Response code mismatched");
+            editCommentResponse = restAPIPublisher
+                    .getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(),
+                            false, 3, 0);
+            assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                    "Error retrieving comment");
+            editCommentGson = new Gson();
+            editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+            assertEquals(editCommentDTO.getContent(), content);
+            assertEquals(editCommentDTO.getCategory(), category);
+            assertNotEquals(editCommentDTO.getUpdatedTime(), null);
+            assertEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+        }
+    }
 
-
-        // Test delete comments
+    @Test(dependsOnMethods = {"testPublisherEditCommentTest"}, groups = { "wso2.am" }, description = "Delete Comment Test Case")
+    public void testPublisherDeleteCommentTest() throws Exception {
         HttpResponse deleteResponse = restAPIPublisher.removeComment(rootCommentIdToAddReplies, apiId);
         assertEquals(deleteResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
