@@ -19,7 +19,6 @@ package org.wso2.am.integration.tests.restapi.admin;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.http.HttpStatus;
-import org.checkerframework.checker.units.qual.K;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -28,7 +27,6 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerCertificatesDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
@@ -36,7 +34,11 @@ import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     private AdminApiTestHelper adminApiTestHelper;
@@ -59,7 +61,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper = new AdminApiTestHelper();
     }
 
-    //Auth0 Key Manager
+    //1. Auth0 Key Manager
     @Test(groups = {"wso2.am"}, description = "Test add key manager with Auth0 type with only mandatory parameters")
     public void testAddKeyManagerWithAuth0() throws Exception {
         //Create the key manager DTO with Auth0 key manager type with only Mandatory parameters
@@ -95,6 +97,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
+        adminApiTestHelper.verifyKeyManagerAdditionalProperties(keyManagerDTO.getAdditionalProperties(),
+                addedKeyManagerDTO.getAdditionalProperties());
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
@@ -179,9 +183,60 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    //WSO2 IS Key Manager
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with WSO2IS type with only mandatory parameters",
+    @Test(groups = {"wso2.am"}, description = "Test get key manager with Auth0 type",
             dependsOnMethods = "testAddKeyManagerWithAuth0WithOptionalParams")
+    public void testGetKeyManagerWithAuth0() throws Exception {
+        //Get the added Key manager
+        String keyManagerId = keyManagerDTO.getId();
+        ApiResponse<KeyManagerDTO> retrievedKeyManager = restAPIAdmin.getKeyManager(keyManagerId);
+        KeyManagerDTO retrievedKeyManagerDTO = retrievedKeyManager.getData();
+        Assert.assertEquals(retrievedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("client_id", "clientIdValue");
+        jsonObject.addProperty("client_secret", "*****");
+        jsonObject.addProperty("audience", "audienceValue");
+        jsonObject.addProperty("self_validate_jwt", true);
+        Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
+        //Verify the added key manager additional properties
+        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+                retrievedKeyManagerDTO.getAdditionalProperties());
+        //Verify the added key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test update key manager with Auth0 type",
+            dependsOnMethods = "testGetKeyManagerWithAuth0")
+    public void testUpdateKeyManagerWithAuth0() throws Exception {
+        //Update the key manager
+        String updatedDescription = "This is a updated test key manager";
+        keyManagerDTO.setDescription(updatedDescription);
+        ApiResponse<KeyManagerDTO> updatedKeyManager =
+                restAPIAdmin.updateKeyManager(keyManagerDTO.getId(), keyManagerDTO);
+        KeyManagerDTO updatedKeyManagerDTO = updatedKeyManager.getData();
+        Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+
+        //Verify the updated key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test delete key manager with Auth0 type",
+            dependsOnMethods = "testUpdateKeyManagerWithAuth0")
+    public void testDeleteKeyManagerWithAuth0() throws Exception {
+        ApiResponse<Void> apiResponse =
+                restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+
+        //Delete non existing key manager - not found
+        try {
+            apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
+        }
+    }
+
+    //2. WSO2 IS Key Manager
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with WSO2IS type with only mandatory parameters",
+            dependsOnMethods = "testDeleteKeyManagerWithAuth0")
     public void testAddKeyManagerWithWso2IS() throws Exception {
         //Create the key manager DTO with WSO2 IS key manager type with only Mandatory parameters
         String name = "Wso2ISKeyManagerOne";
@@ -289,9 +344,59 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    //Keycloak Key Manager
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with Keycloak type with only mandatory parameters",
+    @Test(groups = {"wso2.am"}, description = "Test get key manager with Wso2IS type",
             dependsOnMethods = "testAddKeyManagerWithWso2ISWithOptionalParams")
+    public void testGetKeyManagerWithWso2IS() throws Exception {
+        //Get the added Key manager
+        String keyManagerId = keyManagerDTO.getId();
+        ApiResponse<KeyManagerDTO> retrievedKeyManager = restAPIAdmin.getKeyManager(keyManagerId);
+        KeyManagerDTO retrievedKeyManagerDTO = retrievedKeyManager.getData();
+        Assert.assertEquals(retrievedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("Username", "admin");
+        jsonObject.addProperty("Password", "*****");
+        jsonObject.addProperty("self_validate_jwt", true);
+        Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
+        //Verify the added key manager additional properties
+        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+                retrievedKeyManagerDTO.getAdditionalProperties());
+        //Verify the added key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test update key manager With Wso2IS type",
+            dependsOnMethods = "testGetKeyManagerWithWso2IS")
+    public void testUpdateKeyManagerWithWso2IS() throws Exception {
+        //Update the key manager
+        String updatedDescription = "This is a updated test key manager";
+        keyManagerDTO.setDescription(updatedDescription);
+        ApiResponse<KeyManagerDTO> updatedKeyManager =
+                restAPIAdmin.updateKeyManager(keyManagerDTO.getId(), keyManagerDTO);
+        KeyManagerDTO updatedKeyManagerDTO = updatedKeyManager.getData();
+        Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+
+        //Verify the updated key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test delete key manager With Wso2IS type",
+            dependsOnMethods = "testUpdateKeyManagerWithWso2IS")
+    public void testDeleteKeyManagerWithWso2IS() throws Exception {
+        ApiResponse<Void> apiResponse =
+                restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+
+        //Delete non existing key manager - not found
+        try {
+            apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
+        }
+    }
+
+    //3. Keycloak Key Manager
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with Keycloak type with only mandatory parameters",
+            dependsOnMethods = "testDeleteKeyManagerWithWso2IS")
     public void testAddKeyManagerWithKeycloak() throws Exception {
         //Create the key manager DTO with Keycloak key manager type with only Mandatory parameters
         String name = "KeycloakKeyManagerOne";
@@ -399,9 +504,59 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    //Okta Key Manager
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with Okta type with only mandatory parameters",
+    @Test(groups = {"wso2.am"}, description = "Test get key manager with Keycloak type",
             dependsOnMethods = "testAddKeyManagerWithKeycloakWithOptionalParams")
+    public void testGetKeyManagerWithKeycloak() throws Exception {
+        //Get the added Key manager
+        String keyManagerId = keyManagerDTO.getId();
+        ApiResponse<KeyManagerDTO> retrievedKeyManager = restAPIAdmin.getKeyManager(keyManagerId);
+        KeyManagerDTO retrievedKeyManagerDTO = retrievedKeyManager.getData();
+        Assert.assertEquals(retrievedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("client_id", "clientIdValue");
+        jsonObject.addProperty("client_secret", "*****");
+        jsonObject.addProperty("self_validate_jwt", true);
+        Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
+        //Verify the added key manager additional properties
+        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+                retrievedKeyManagerDTO.getAdditionalProperties());
+        //Verify the added key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test update key manager with Keycloak type",
+            dependsOnMethods = "testGetKeyManagerWithKeycloak")
+    public void testUpdateKeyManagerWithKeycloak() throws Exception {
+        //Update the key manager
+        String updatedDescription = "This is a updated test key manager";
+        keyManagerDTO.setDescription(updatedDescription);
+        ApiResponse<KeyManagerDTO> updatedKeyManager =
+                restAPIAdmin.updateKeyManager(keyManagerDTO.getId(), keyManagerDTO);
+        KeyManagerDTO updatedKeyManagerDTO = updatedKeyManager.getData();
+        Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+
+        //Verify the updated key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test delete key manager With Keycloak type",
+            dependsOnMethods = "testUpdateKeyManagerWithKeycloak")
+    public void testDeleteKeyManagerWithKeycloak() throws Exception {
+        ApiResponse<Void> apiResponse =
+                restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+
+        //Delete non existing key manager - not found
+        try {
+            apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
+        }
+    }
+
+    //4. Okta Key Manager
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with Okta type with only mandatory parameters",
+            dependsOnMethods = "testDeleteKeyManagerWithKeycloak")
     public void testAddKeyManagerWithOkta() throws Exception {
         //Create the key manager DTO with Okta key manager type with only Mandatory parameters
         String name = "OktaKeyManagerOne";
@@ -515,9 +670,60 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    //PingFederate Key Manager
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with PingFederate type with only mandatory parameters",
+    @Test(groups = {"wso2.am"}, description = "Test get key manager with Okta type",
             dependsOnMethods = "testAddKeyManagerWithOktaWithOptionalParams")
+    public void testGetKeyManagerWithOkta() throws Exception {
+        //Get the added Key manager
+        String keyManagerId = keyManagerDTO.getId();
+        ApiResponse<KeyManagerDTO> retrievedKeyManager = restAPIAdmin.getKeyManager(keyManagerId);
+        KeyManagerDTO retrievedKeyManagerDTO = retrievedKeyManager.getData();
+        Assert.assertEquals(retrievedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("apiKey", "*****");
+        jsonObject.addProperty("client_id", "clientIdValue");
+        jsonObject.addProperty("client_secret", "*****");
+        jsonObject.addProperty("self_validate_jwt", true);
+        Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
+        //Verify the added key manager additional properties
+        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+                retrievedKeyManagerDTO.getAdditionalProperties());
+        //Verify the added key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test update key manager with Okta type",
+            dependsOnMethods = "testGetKeyManagerWithOkta")
+    public void testUpdateKeyManagerWithOkta() throws Exception {
+        //Update the key manager
+        String updatedDescription = "This is a updated test key manager";
+        keyManagerDTO.setDescription(updatedDescription);
+        ApiResponse<KeyManagerDTO> updatedKeyManager =
+                restAPIAdmin.updateKeyManager(keyManagerDTO.getId(), keyManagerDTO);
+        KeyManagerDTO updatedKeyManagerDTO = updatedKeyManager.getData();
+        Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+
+        //Verify the updated key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test delete key manager With Okta type",
+            dependsOnMethods = "testUpdateKeyManagerWithOkta")
+    public void testDeleteKeyManagerWithOkta() throws Exception {
+        ApiResponse<Void> apiResponse =
+                restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+
+        //Delete non existing key manager - not found
+        try {
+            apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
+        }
+    }
+
+    //5. PingFederate Key Manager
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with PingFederate type with only mandatory parameters",
+            dependsOnMethods = "testDeleteKeyManagerWithOkta")
     public void testAddKeyManagerWithPingFederate() throws Exception {
         //Create the key manager DTO with PingFederate key manager type with only Mandatory parameters
         String name = "PingFederateKeyManagerOne";
@@ -633,9 +839,61 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    //ForgeRock Key Manager
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with ForgeRock type with only mandatory parameters",
+    @Test(groups = {"wso2.am"}, description = "Test get key manager with PingFederate type",
             dependsOnMethods = "testAddKeyManagerWithPingFederateWithOptionalParams")
+    public void testGetKeyManagerWithPingFederate() throws Exception {
+        //Get the added Key manager
+        String keyManagerId = keyManagerDTO.getId();
+        ApiResponse<KeyManagerDTO> retrievedKeyManager = restAPIAdmin.getKeyManager(keyManagerId);
+        KeyManagerDTO retrievedKeyManagerDTO = retrievedKeyManager.getData();
+        Assert.assertEquals(retrievedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("username", "admin");
+        jsonObject.addProperty("password", "*****");
+        jsonObject.addProperty("client_id", "clientIdValue");
+        jsonObject.addProperty("client_secret", "*****");
+        jsonObject.addProperty("self_validate_jwt", true);
+        Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
+        //Verify the added key manager additional properties
+        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+                retrievedKeyManagerDTO.getAdditionalProperties());
+        //Verify the added key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test update key manager with PingFederate type",
+            dependsOnMethods = "testGetKeyManagerWithPingFederate")
+    public void testUpdateKeyManagerWithPingFederate() throws Exception {
+        //Update the key manager
+        String updatedDescription = "This is a updated test key manager";
+        keyManagerDTO.setDescription(updatedDescription);
+        ApiResponse<KeyManagerDTO> updatedKeyManager =
+                restAPIAdmin.updateKeyManager(keyManagerDTO.getId(), keyManagerDTO);
+        KeyManagerDTO updatedKeyManagerDTO = updatedKeyManager.getData();
+        Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+
+        //Verify the updated key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test delete key manager with PingFederate type",
+            dependsOnMethods = "testUpdateKeyManagerWithPingFederate")
+    public void testDeleteKeyManagerWithPingFederate() throws Exception {
+        ApiResponse<Void> apiResponse =
+                restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+
+        //Delete non existing key manager - not found
+        try {
+            apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
+        }
+    }
+
+    //6. ForgeRock Key Manager
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with ForgeRock type with only mandatory parameters",
+            dependsOnMethods = "testDeleteKeyManagerWithPingFederate")
     public void testAddKeyManagerWithForgeRock() throws Exception {
         //Create the key manager DTO with ForgeRock key manager type with only Mandatory parameters
         String name = "ForgeRockKeyManagerOne";
@@ -748,18 +1006,34 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test get and update key manager",
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with ForgeRock type with only mandatory parameters",
             dependsOnMethods = "testAddKeyManagerWithForgeRockWithOptionalParams")
-    public void testUpdateKeyManager() throws Exception {
+    public void testGetKeyManagerWithForgeRock() throws Exception {
         //Get the added Key manager
         String keyManagerId = keyManagerDTO.getId();
         ApiResponse<KeyManagerDTO> retrievedKeyManager = restAPIAdmin.getKeyManager(keyManagerId);
+        KeyManagerDTO retrievedKeyManagerDTO = retrievedKeyManager.getData();
         Assert.assertEquals(retrievedKeyManager.getStatusCode(), HttpStatus.SC_OK);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("client_id", "clientIdValue");
+        jsonObject.addProperty("client_secret", "*****");
+        jsonObject.addProperty("self_validate_jwt", true);
+        Object expectedAdditionalProperties = new Gson().fromJson(jsonObject, Map.class);
+        //Verify the added key manager additional properties
+        adminApiTestHelper.verifyKeyManagerAdditionalProperties(expectedAdditionalProperties,
+                retrievedKeyManagerDTO.getAdditionalProperties());
+        //Verify the added key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, retrievedKeyManagerDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test update key manager with ForgeRock type",
+            dependsOnMethods = "testGetKeyManagerWithForgeRock")
+    public void testUpdateKeyManagerWithForgeRock() throws Exception {
         //Update the key manager
         String updatedDescription = "This is a updated test key manager";
         keyManagerDTO.setDescription(updatedDescription);
         ApiResponse<KeyManagerDTO> updatedKeyManager =
-                restAPIAdmin.updateKeyManager(keyManagerId, keyManagerDTO);
+                restAPIAdmin.updateKeyManager(keyManagerDTO.getId(), keyManagerDTO);
         KeyManagerDTO updatedKeyManagerDTO = updatedKeyManager.getData();
         Assert.assertEquals(updatedKeyManager.getStatusCode(), HttpStatus.SC_OK);
 
@@ -767,22 +1041,9 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test add key manager with existing key manager name",
-            dependsOnMethods = "testUpdateKeyManager")
-    public void testAddKeyManagerWithExistingKeyManagerName() throws ApiException {
-
-        //Exception occurs when adding a key manager with an existing key manager name. The status code
-        //in the Exception object is used to assert this scenario
-        try {
-            restAPIAdmin.addKeyManager(keyManagerDTO);
-        } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT);
-        }
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Test delete key manager",
-            dependsOnMethods = "testAddKeyManagerWithExistingKeyManagerName")
-    public void testDeleteKeyManager() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Test delete key manager with ForgeRock type",
+            dependsOnMethods = "testUpdateKeyManagerWithForgeRock")
+    public void testDeleteKeyManagerWithForgeRock() throws Exception {
         ApiResponse<Void> apiResponse =
                 restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
@@ -792,6 +1053,18 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
             apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test add key manager with existing key manager name",
+            dependsOnMethods = "testDeleteKeyManagerWithForgeRock")
+    public void testAddKeyManagerWithExistingKeyManagerName() throws ApiException {
+        //Exception occurs when adding a key manager with an existing key manager name. The status code
+        //in the Exception object is used to assert this scenario
+        try {
+            restAPIAdmin.addKeyManager(keyManagerDTO);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT);
         }
     }
 

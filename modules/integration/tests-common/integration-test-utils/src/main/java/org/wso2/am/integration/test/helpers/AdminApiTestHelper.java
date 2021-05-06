@@ -259,9 +259,20 @@ public class AdminApiTestHelper {
         Assert.assertEquals(actualKeyManager.getAvailableGrantTypes(), expectedKeyManager.getAvailableGrantTypes(),
                 "Key Manager available grant types does not match with the expected Key Manager " +
                         "available grant types");
-        Assert.assertEquals(actualKeyManager.getAdditionalProperties(), expectedKeyManager.getAdditionalProperties(),
+    }
+
+    /**
+     * Verify whether the additional properties values of the key manager DTO contains the expected values.
+     *
+     * @param expectedAdditionalProperties Expected key manager which contains the expected field values.
+     * @param actualAdditionalProperties   Key manager object of which the field values should be verified.
+     */
+    public void verifyKeyManagerAdditionalProperties(Object expectedAdditionalProperties,
+                                                     Object actualAdditionalProperties) {
+        Assert.assertEquals(actualAdditionalProperties, expectedAdditionalProperties,
                 "Key Manager additional properties does not match with the expected Key Manager " +
                         "additional properties");
+
     }
 
 }
