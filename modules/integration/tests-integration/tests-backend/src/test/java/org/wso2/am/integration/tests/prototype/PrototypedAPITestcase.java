@@ -23,6 +23,9 @@ package org.wso2.am.integration.tests.prototype;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +33,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
 
 import com.google.gson.Gson;
+import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
@@ -40,6 +44,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -57,6 +62,8 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
     private String apiProvider;
     private String apiName;
     private String apiEndPointUrl;
+    private String resourcePath;
+    private String apiID;
     private APIIdentifier apiIdentifier;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -70,7 +77,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN}
+//                new Object[]{TestUserMode.TENANT_ADMIN}
         };
     }
 
@@ -79,7 +86,6 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
         super.init(userMode);
         apiProvider = user.getUserName();
-
         String apiPrototypeEndpointPostfixUrl = "am/sample/pizzashack/v1/api/menu";
         apiEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + apiPrototypeEndpointPostfixUrl;
     }
@@ -87,7 +93,6 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Create an API with a prototype endpoint and invoke")
     public void testPrototypedAPIEndpoint() throws Exception {
 
-        String apiID;
         apiName = "APIMPrototypedEndpointAPI1";
         String apiContext = "pizzashack-prototype";
         String apiTags = "pizza, order, pizza-menu";
@@ -127,7 +132,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
         assertTrue(lcChangeResponse.getLifecycleState().getState().equals("Prototyped"),
                 apiName + "  status not updated as Prototyped");
-        Thread.sleep(15000);
+        waitForAPIDeployment();
 
         // Create a revision and Deploy the API
         createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
@@ -136,7 +141,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         APIListDTO getAllAPIsResponse = restAPIPublisher.getAllAPIs();
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllAPIsResponse),
                 "Implemented" + apiName + " Api is not visible in API Publisher.");
-        Thread.sleep(15000);
+        waitForAPIDeployment();
 
         //Check whether Prototype API is available under the Prototyped API
         org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO prototypedAPIs = restAPIStore
@@ -161,7 +166,6 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Create an API with a prototype endpoint, demote to created and invoke", dependsOnMethods = {"testPrototypedAPIEndpoint"})
     public void testDemotedPrototypedEndpointAPItoCreated() throws Exception {
 
-        String apiID;
         apiName = "APIMPrototypedEndpointAPI2";
         String apiContext = "pizzashack-prototype2";
         String apiTags = "pizza, order, pizza-menu";
@@ -197,44 +201,105 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         JSONObject endpoint = (JSONObject) parser.parse(endPointString);
         apidto.setEndpointConfig(endpoint);
 
-        //Update the API with Prototype endpoint
+        // Update the API with Prototype endpoint
         restAPIPublisher.updateAPI(apidto);
 
         assertTrue(lcChangeResponse.getLifecycleState().getState().equals("Prototyped"),
                 apiName + "  status not updated as Prototyped");
-        Thread.sleep(15000);
+        waitForAPIDeployment();
 
         // Create a revision and Deploy the API
         createAPIRevisionAndDeployUsingRest(apiID, restAPIPublisher);
 
-        //Check whether Prototype API is available in publisher
+        // Check whether Prototype API is available in publisher
         APIListDTO getAllAPIsResponse = restAPIPublisher.getAllAPIs();
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, getAllAPIsResponse),
                 "Implemented" + apiName + " Api is not visible in API Publisher.");
-        Thread.sleep(15000);
+        waitForAPIDeployment();
 
-        //Check whether Prototype API is available under the Prototyped API
+        // Check whether Prototype API is available under the Prototyped API
         org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO prototypedAPIs = restAPIStore
                 .getPrototypedAPIs(user.getUserDomain());
         assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, prototypedAPIs),
                 apiName + " is not visible as Prototyped API");
 
-        //Change the status PROTOTYPED to CREATED
+        // Change the status PROTOTYPED to CREATED
         restAPIPublisher.changeAPILifeCycleStatus(apiID, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
         assertTrue(APILifeCycleState.CREATED.getState().equals(restAPIPublisher.getLifecycleStatus(apiID).getData()),
                 apiName + "status not updated as CREATED");
 
-        //Wait for the changes to be applied after demoting to Created.
-        Thread.sleep(15000);
+        // Wait for the changes to be applied after demoting to Created.
+        waitForAPIDeployment();
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
 
-        //Invoke the Prototype endpoint
+        // Invoke the Prototype endpoint
         HttpResponse response2 = HTTPSClientUtils
                 .doGet(getAPIInvocationURLHttps(apiContext, apiVersion) +
                         "", requestHeaders);
         Assert.assertEquals(response2.getResponseCode(), 401, "User was able to invoke the API demoted to CREATED from PROTOTYPE");
 
         restAPIPublisher.deleteAPI(apiID);
+    }
+
+
+    @Test(groups = { "wso2.am" }, description = "Create an inline protoype API with OAS3 and Generate mock")
+    public void testInlinePrototypeWithMock() throws Exception {
+
+        resourcePath = "oas" + File.separator + "v3" + File.separator;
+        String originalDefinition = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath +"prototype" + File.separator + "oas_import.json"),
+                "UTF-8");
+        String additionalProperties = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath +"prototype" + File.separator + "additionalProperties.json"),
+                "UTF-8");
+        String updatedMock = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath +"prototype" + File.separator + "updatedMockOas.json"),
+                "UTF-8");
+        org.json.JSONObject additionalPropertiesObj = new org.json.JSONObject(additionalProperties);
+        additionalPropertiesObj.put("provider", user.getUserName());
+        org.json.JSONObject updatedMockObj = new org.json.JSONObject(updatedMock);
+        updatedMockObj.put("provider", user.getUserName());
+        File file = geTempFileWithContent(originalDefinition);
+        // Create an api by importing OAS3 file
+        APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
+        String apiImportId = apidto.getId();
+
+        // Change the lifecycle status to Prototype
+        restAPIPublisher.changeAPILifeCycleStatus(apiImportId, Constants.DEPLOY_AS_PROTOTYPE);
+
+        // Generate mock Script for Prototype Implementation
+        HttpResponse mockgenResponse = restAPIPublisher.generateMockScript(apiImportId);
+        Assert.assertEquals( mockgenResponse.getResponseCode(), 200);
+
+        // Retrieve and validate the generated mock script
+        HttpResponse mockedGetResponse = restAPIPublisher.getGenerateMockScript(apiImportId);
+        Assert.assertTrue(mockedGetResponse.getData().contains("/pets"));
+        Assert.assertTrue(mockedGetResponse.getData().contains("/pets/{petId}"));
+        Assert.assertTrue(mockedGetResponse.getData().contains("/oldpets"));
+
+        // Create a revision and Deploy the API
+        createAPIRevisionAndDeployUsingRest(apiImportId, restAPIPublisher);
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "application/json");
+        waitForAPIDeployment();
+        //Invoke the Prototype endpoint and validate
+        HttpResponse response1 = HTTPSClientUtils
+                .doGet(getAPIInvocationURLHttps("SwaggerPetstorev3import", "1.0.0") +
+                        "/pets/1", requestHeaders);
+        Assert.assertEquals(response1.getResponseCode(), 200);
+
+        restAPIPublisher.changeAPILifeCycleStatus(apiImportId, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
+        restAPIPublisher.deleteAPI(apiImportId);
+    }
+
+    private File geTempFileWithContent(String swagger) throws Exception {
+        File temp = File.createTempFile("swagger", ".json");
+        temp.deleteOnExit();
+        BufferedWriter out = new BufferedWriter(new FileWriter(temp));
+        out.write(swagger);
+        out.close();
+        return temp;
     }
 }
