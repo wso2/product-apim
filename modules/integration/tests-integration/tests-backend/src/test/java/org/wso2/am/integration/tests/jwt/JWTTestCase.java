@@ -91,6 +91,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     private String apiKeyApplicationId;
     private String apiId;
     URL tokenEndpointURL;
+    ApplicationKeyDTO clientCredentialsGrantAppKeyDTO;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -138,7 +139,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         //generate keys
         restAPIStore.generateKeys(oauthApplicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        restAPIStore.generateKeys(jwtApplicationId, "36000", "",
+        clientCredentialsGrantAppKeyDTO = restAPIStore.generateKeys(jwtApplicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         restAPIStore.generateAPIKeys(apiKeyApplicationId,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
@@ -333,6 +334,44 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         assertTrue("JWT claim received is invalid", bExceptionOccured);
     }
 
+    @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation with Client Credentials Grant Type")
+    public void testBackendJWTWithClientCredentialsGrant() throws Exception {
+        String accessToken = generateTokenWithClientCredentialsGrant(clientCredentialsGrantAppKeyDTO.getConsumerKey(),
+                clientCredentialsGrantAppKeyDTO.getConsumerSecret(), new String[] { "default" });
+        log.info("Access Token Generated in JWT ==" + accessToken);
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
+        get.addHeader("Authorization", "Bearer " + accessToken);
+        HttpResponse response = httpclient.execute(get);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation");
+
+        Header[] responseHeaders = response.getAllHeaders();
+        Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
+        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
+
+        //check the jwt header
+        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
+        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
+        log.debug("Decoded JWTString = " + decodedJWTString);
+
+        String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+        byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
+        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+        assertTrue("JWT signature verification failed", isSignatureValid);
+        log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
+        JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
+        Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
+        Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
+        Assert.assertFalse(jsonHeaderObject.has("kid"));
+        JSONObject jsonObject = new JSONObject(decodedJWTString);
+
+        // check default claims
+        checkDefaultUserClaims(jsonObject, jwtApplicationName);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
@@ -458,5 +497,15 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         JSONObject accessTokenGenerationResponse = new JSONObject(httpResponse.getData());
         return accessTokenGenerationResponse.getString("access_token");
 
+    }
+
+    private String generateTokenWithClientCredentialsGrant(String consumerKey, String consumerSecret, String[] scopes)
+            throws APIManagerIntegrationTestException, JSONException {
+
+        String requestBody = "grant_type=client_credentials" + "&scope=" + Strings.join(" ", scopes);
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse = restAPIStore
+                .generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
+        JSONObject accessTokenGenerationResponse = new JSONObject(httpResponse.getData());
+        return accessTokenGenerationResponse.getString("access_token");
     }
 }
