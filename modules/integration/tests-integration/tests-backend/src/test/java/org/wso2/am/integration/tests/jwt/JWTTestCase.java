@@ -91,7 +91,6 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     private String apiKeyApplicationId;
     private String apiId;
     URL tokenEndpointURL;
-    ApplicationKeyDTO clientCredentialsGrantAppKeyDTO;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -139,7 +138,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         //generate keys
         restAPIStore.generateKeys(oauthApplicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        clientCredentialsGrantAppKeyDTO = restAPIStore.generateKeys(jwtApplicationId, "36000", "",
+        restAPIStore.generateKeys(jwtApplicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         restAPIStore.generateAPIKeys(apiKeyApplicationId,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
@@ -336,8 +335,11 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation with Client Credentials Grant Type")
     public void testBackendJWTWithClientCredentialsGrant() throws Exception {
-        String accessToken = generateTokenWithClientCredentialsGrant(clientCredentialsGrantAppKeyDTO.getConsumerKey(),
-                clientCredentialsGrantAppKeyDTO.getConsumerSecret(), new String[] { "default" });
+        ApiResponse<ApplicationKeyDTO> applicationKeysByKeyType = restAPIStore
+                .getApplicationKeysByKeyType(jwtApplicationId, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
+        ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
+        String accessToken = generateTokenWithClientCredentialsGrant(applicationKeyDTO.getConsumerKey(),
+                applicationKeyDTO.getConsumerSecret(), new String[] { "default" });
         log.info("Access Token Generated in JWT ==" + accessToken);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
