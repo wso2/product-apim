@@ -401,8 +401,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         checkDefaultUserClaims(jsonObject, jwtApplicationName);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Backend JWT Token Generation with Client Credentials Grant Type",
-            dependsOnMethods = "testEnableJWTAndClaimsForJWTApp")
+    @Test(groups = { "wso2.am" }, description = "Backend JWT Token Generation with Auth Code Grant Type")
     public void testBackendJWTWithAuthCodeGrant() throws Exception {
 
         ApiResponse<ApplicationKeyDTO> applicationKeysByKeyType = restAPIStore
