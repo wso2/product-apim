@@ -396,58 +396,59 @@ public class PublisherCommentTest
                 "Offset value does not captured");
     }
 
-    @DataProvider (name = "input-data-provider")
-    public Object[][] inputDataProviderMethod() {
-        return new Object[][] {
-                //Edit the content only
-                {"Edited root comment", "general"},
-                //Edit the category only
-                {"Edited root comment", "bug fix"},
-                //Edit the category and content
-                {"Edited root comment 1", "general bug fix"}
-        };
-    }
+    // This should uncomment once the changes have been done in REST API level, whether it allows users to edit comments their own comments
+//    @DataProvider (name = "input-data-provider")
+//    public Object[][] inputDataProviderMethod() {
+//        return new Object[][] {
+//                //Edit the content only
+//                {"Edited root comment", "general"},
+//                //Edit the category only
+//                {"Edited root comment", "bug fix"},
+//                //Edit the category and content
+//                {"Edited root comment 1", "general bug fix"}
+//        };
+//    }
+//
+//    //Edit a comment
+//    @Test(dependsOnMethods = {"testVerifyDevPortalPaginationOfRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Edit Comment Test Case", dataProvider = "input-data-provider")
+//        public void testPublisherEditCommentTest(String content, String category) throws Exception {
+//        HttpResponse editCommentResponse = restAPIPublisher
+//                .editComment(rootCommentIdToAddReplies, apiId, content, category);
+//        assertNotNull(editCommentResponse, "Error adding comment");
+//        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+//                "Response code mismatched");
+//        Gson editCommentGson = new Gson();
+//        CommentDTO editCommentDTO = editCommentGson
+//                .fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+//        assertEquals(editCommentDTO.getContent(), content);
+//        assertEquals(editCommentDTO.getCategory(), category);
+//        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
+//        if (!content.equals("Edited root comment") || !category.equals("general")) {
+//            assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+//        }
+//        updatedTime = editCommentDTO.getUpdatedTime();
+//        //Edit - keep the category and content as it is
+//        if (content.equals("Edited root comment 1") && category.equals("general bug fix")) {
+//            Thread.sleep(1000);
+//            editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId, content, category);
+//            assertNull(editCommentResponse.getData());
+//            assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+//                    "Response code mismatched");
+//            editCommentResponse = restAPIPublisher
+//                    .getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(),
+//                            false, 3, 0);
+//            assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+//                    "Error retrieving comment");
+//            editCommentGson = new Gson();
+//            editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+//            assertEquals(editCommentDTO.getContent(), content);
+//            assertEquals(editCommentDTO.getCategory(), category);
+//            assertNotEquals(editCommentDTO.getUpdatedTime(), null);
+//            assertEquals(editCommentDTO.getUpdatedTime(), updatedTime);
+//        }
+//    }
 
-    //Edit a comment
-    @Test(dependsOnMethods = {"testVerifyDevPortalPaginationOfRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Edit Comment Test Case", dataProvider = "input-data-provider")
-        public void testPublisherEditCommentTest(String content, String category) throws Exception {
-        HttpResponse editCommentResponse = restAPIPublisher
-                .editComment(rootCommentIdToAddReplies, apiId, content, category);
-        assertNotNull(editCommentResponse, "Error adding comment");
-        assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched");
-        Gson editCommentGson = new Gson();
-        CommentDTO editCommentDTO = editCommentGson
-                .fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
-        assertEquals(editCommentDTO.getContent(), content);
-        assertEquals(editCommentDTO.getCategory(), category);
-        assertNotEquals(editCommentDTO.getUpdatedTime(), null);
-        if (!content.equals("Edited root comment") || !category.equals("general")) {
-            assertNotEquals(editCommentDTO.getUpdatedTime(), updatedTime);
-        }
-        updatedTime = editCommentDTO.getUpdatedTime();
-        //Edit - keep the category and content as it is
-        if (content.equals("Edited root comment 1") && category.equals("general bug fix")) {
-            Thread.sleep(1000);
-            editCommentResponse = restAPIPublisher.editComment(rootCommentIdToAddReplies, apiId, content, category);
-            assertNull(editCommentResponse.getData());
-            assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Response code mismatched");
-            editCommentResponse = restAPIPublisher
-                    .getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(),
-                            false, 3, 0);
-            assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Error retrieving comment");
-            editCommentGson = new Gson();
-            editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
-            assertEquals(editCommentDTO.getContent(), content);
-            assertEquals(editCommentDTO.getCategory(), category);
-            assertNotEquals(editCommentDTO.getUpdatedTime(), null);
-            assertEquals(editCommentDTO.getUpdatedTime(), updatedTime);
-        }
-    }
-
-    @Test(dependsOnMethods = {"testPublisherEditCommentTest"}, groups = { "wso2.am" }, description = "Delete Comment Test Case")
+    @Test(dependsOnMethods = {"testVerifyDevPortalPaginationOfRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Delete Comment Test Case")
     public void testPublisherDeleteCommentTest() throws Exception {
         HttpResponse deleteResponse = restAPIPublisher.removeComment(rootCommentIdToAddReplies, apiId);
         assertEquals(deleteResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -508,24 +509,25 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testPublisherEditCommentByNonOwnerNonAdminUserTest"}, groups = { "wso2.am" }, description = "Edit Comment by Non Owner Admin User Test Case")
-    public void testPublisherEditCommentByNonOwnerAdminUserTest() throws Exception {
-        if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
-            HttpResponse editCommentResponse = apiPublisherClientCarbonSuperNewAdmin
-                    .editComment(rootCommentIdToAddReplies, apiId, "Edited root comment by non owner admin user",
-                            "new_general");
-            assertNotNull(editCommentResponse, "Error adding comment");
-            assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Response code mismatched");
-            Gson editCommentGson = new Gson();
-            CommentDTO editCommentDTO = editCommentGson
-                    .fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
-            assertEquals(editCommentDTO.getContent(), "Edited root comment by non owner admin user");
-            assertEquals(editCommentDTO.getCategory(), "new_general");
-        }
-    }
+    // This should uncomment once the changes have been done in REST API level, whether it allows non owners to edit comments
+//    @Test(dependsOnMethods = {"testPublisherEditCommentByNonOwnerNonAdminUserTest"}, groups = { "wso2.am" }, description = "Edit Comment by Non Owner Admin User Test Case")
+//    public void testPublisherEditCommentByNonOwnerAdminUserTest() throws Exception {
+//        if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
+//            HttpResponse editCommentResponse = apiPublisherClientCarbonSuperNewAdmin
+//                    .editComment(rootCommentIdToAddReplies, apiId, "Edited root comment by non owner admin user",
+//                            "new_general");
+//            assertNotNull(editCommentResponse, "Error adding comment");
+//            assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+//                    "Response code mismatched");
+//            Gson editCommentGson = new Gson();
+//            CommentDTO editCommentDTO = editCommentGson
+//                    .fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+//            assertEquals(editCommentDTO.getContent(), "Edited root comment by non owner admin user");
+//            assertEquals(editCommentDTO.getCategory(), "new_general");
+//        }
+//    }
 
-    @Test(dependsOnMethods = { "testPublisherEditCommentByNonOwnerAdminUserTest" }, groups = { "wso2.am" }, description = "Add New Comment by Non Admin User Test Case")
+    @Test(dependsOnMethods = { "testPublisherEditCommentByNonOwnerNonAdminUserTest" }, groups = { "wso2.am" }, description = "Add New Comment by Non Admin User Test Case")
     public void testPublisherAddCommentByNonAdminUserTest() throws Exception {
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             Thread.sleep(1000);
