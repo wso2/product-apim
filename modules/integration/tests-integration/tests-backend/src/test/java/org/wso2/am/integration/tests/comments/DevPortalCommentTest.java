@@ -53,16 +53,16 @@ import static org.testng.Assert.assertNull;
 public class DevPortalCommentTest
         extends APIMIntegrationBaseTest {
 
-    String apiId;
-    String rootCommentIdToAddReplies;
-    String rootCommentIdForPublisherTest;
-    HttpResponse getCommentWithRepliesResponse;
-    List<String> rootComments;
-    List<String> replies;
-    String replyToRootComment;
-    String updatedTime;
-    String replyToTestPublisherVisibility;
-    String commentFromNonAdminUser;
+    private String apiId;
+    private String rootCommentIdToAddReplies;
+    private String rootCommentIdForPublisherTest;
+    private HttpResponse getCommentWithRepliesResponse;
+    private List<String> rootComments;
+    private List<String> replies;
+    private String replyToRootComment;
+    private String updatedTime;
+    private String replyToTestPublisherVisibility;
+    private String commentFromNonAdminUser;
     private RestAPIStoreImpl apiStoreClientCarbonSuperNewAdmin;
     private RestAPIStoreImpl apiStoreClientCarbonSuperNonAdminUser;
     private RestAPIPublisherImpl apiPublisherClientCarbonSuperNonAdminUser;
@@ -85,8 +85,8 @@ public class DevPortalCommentTest
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        User non_admin_user;
-        String non_admin_username;
+        User nonAdminUser;
+        String nonAdminUsername;
 
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             // Login to API Publisher and Store with CarbonSuper admin
@@ -98,12 +98,12 @@ public class DevPortalCommentTest
 
             //Login to API Publisher adn Store with CarbonSuper normal user1
             String USER_KEY_NON_ADMIN_USER = "userKey1";
-            non_admin_user = publisherContext.getContextTenant().getTenantUser(USER_KEY_NON_ADMIN_USER);
-            non_admin_username = non_admin_user.getUserNameWithoutDomain();
-            apiPublisherClientCarbonSuperNonAdminUser = new RestAPIPublisherImpl(non_admin_username,
-                    non_admin_user.getPassword(), apiCreatorPublisherDomain, publisherURLHttps);
-            apiStoreClientCarbonSuperNonAdminUser = new RestAPIStoreImpl(non_admin_username,
-                    non_admin_user.getPassword(), apiCreatorStoreDomain, storeURLHttps);
+            nonAdminUser = publisherContext.getContextTenant().getTenantUser(USER_KEY_NON_ADMIN_USER);
+            nonAdminUsername = nonAdminUser.getUserNameWithoutDomain();
+            apiPublisherClientCarbonSuperNonAdminUser = new RestAPIPublisherImpl(nonAdminUsername,
+                    nonAdminUser.getPassword(), apiCreatorPublisherDomain, publisherURLHttps);
+            apiStoreClientCarbonSuperNonAdminUser = new RestAPIStoreImpl(nonAdminUsername,
+                    nonAdminUser.getPassword(), apiCreatorStoreDomain, storeURLHttps);
         }
     }
 
