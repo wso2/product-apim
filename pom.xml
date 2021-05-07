@@ -1171,6 +1171,11 @@
                 <version>${carbon.identity.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.idp.mgt.stub</artifactId>
+                <version>${carbon.identity.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.config.mapper</groupId>
                 <artifactId>config-mapper</artifactId>
                 <version>${config.mapper.version}</version>
