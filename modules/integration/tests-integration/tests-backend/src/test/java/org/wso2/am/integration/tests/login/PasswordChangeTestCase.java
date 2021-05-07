@@ -72,7 +72,8 @@ public class PasswordChangeTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Change devportal user password")
     public void testChangeSubscriberUserPassword() throws Exception {
         String tenantDomain = storeContext.getContextTenant().getDomain();
-        restAPIStore = new RestAPIStoreImpl(USER_NAME, CURRENT_USER_PASSWORD, tenantDomain, "https://localhost:9943/");
+        restAPIStore = new RestAPIStoreImpl(USER_NAME, CURRENT_USER_PASSWORD, tenantDomain, "https://localhost:9943/"
+                , restAPIGateway);
         //change password
         HttpResponse changePasswordResponse = restAPIStore.changePassword(CURRENT_USER_PASSWORD, NEW_USER_PASSWORD);
         assertEquals(changePasswordResponse.getResponseCode(), 200, "Error in making the subscriber user " +
@@ -80,7 +81,7 @@ public class PasswordChangeTestCase extends APIManagerLifecycleBaseTest {
 
         // test whether the password change has been effected correctly
         try {
-            new RestAPIStoreImpl(USER_NAME, NEW_USER_PASSWORD, tenantDomain, "https://localhost:9943/");
+                new RestAPIStoreImpl(USER_NAME, NEW_USER_PASSWORD, tenantDomain, "https://localhost:9943/", restAPIGateway);
         } catch (RuntimeException e) {
             Assert.fail("Password change has not been executed correctly. New password is not honored. Error "
                                             + "occurred: " + e.getMessage());

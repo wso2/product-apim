@@ -22,9 +22,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
@@ -36,9 +36,9 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.User;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.net.URL;
 import java.util.List;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -111,7 +111,7 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
                         , publisherURLHttps);
         apiStoreClientUser1 =
                 new RestAPIStoreImpl(user.getUserNameWithoutDomain(), user.getPassword(), user.getUserDomain(),
-                        storeURLHttps);
+                        storeURLHttps,restAPIGateway);
 
         apiCreatorStoreDomain = storeContext.getContextTenant().getDomain();
 
@@ -136,11 +136,11 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
         apiPublisherClientUser2 = new RestAPIPublisherImpl(username2, user2.getPassword(), apiCreatorStoreDomain,
                 publisherURLHttps);
         apiStoreClientUser2 = new RestAPIStoreImpl(username2, user2.getPassword(), apiCreatorStoreDomain,
-                storeURLHttps);
+                storeURLHttps,restAPIGateway);
 
         //Login to API Publisher adn Store with CarbonSuper normal user2
         apiStoreClientAnotherUserSameDomain = new RestAPIStoreImpl(username3, user3.getPassword(),
-                apiCreatorStoreDomain, storeURLHttps);
+                apiCreatorStoreDomain, storeURLHttps,restAPIGateway);
         apiPublisherClientUserAnotherUserSameDomain = new RestAPIPublisherImpl(username3, user3.getPassword(),
                 apiCreatorStoreDomain, publisherURLHttps);
 
@@ -155,7 +155,7 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
         otherDomain = storeContext.getContextTenant().getDomain();
         //Login to the API Publisher adn Store as Tenant user
         apiStoreClientAnotherUserOtherDomain = new RestAPIStoreImpl(otherDomainUser2.getUserNameWithoutDomain(),
-                otherDomainUser2.getPassword(), otherDomain, publisherURLHttps);
+                otherDomainUser2.getPassword(), otherDomain, publisherURLHttps, restAPIGateway);
         apiPublisherClientAnotherUserOtherDomain = new RestAPIPublisherImpl(otherDomainUser2.getUserNameWithoutDomain(),
                 otherDomainUser2.getPassword(), otherDomain, publisherURLHttps);
 
@@ -163,7 +163,8 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
         apiStoreClientAdminOtherDomain =
                 new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                         storeContext.getContextTenant().getContextUser().getPassword(),
-                        storeContext.getContextTenant().getContextUser().getUserDomain(), publisherURLHttps);
+                        storeContext.getContextTenant().getContextUser().getUserDomain(), publisherURLHttps,
+                        restAPIGateway);
         apiPublisherClientAdminOtherDomain = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getContextUser().getPassword(),
