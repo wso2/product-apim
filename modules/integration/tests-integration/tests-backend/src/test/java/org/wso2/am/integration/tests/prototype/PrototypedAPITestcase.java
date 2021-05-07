@@ -242,19 +242,18 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         restAPIPublisher.deleteAPI(apiID);
     }
 
-
-    @Test(groups = { "wso2.am" }, description = "Create an inline protoype API with OAS3 and Generate mock")
+    @Test(groups = {"wso2.am"}, description = "Create an inline protoype API with OAS3 and Generate mock")
     public void testInlinePrototypeWithMock() throws Exception {
 
         resourcePath = "oas" + File.separator + "v3" + File.separator;
         String originalDefinition = IOUtils.toString(
-                getClass().getClassLoader().getResourceAsStream(resourcePath +"prototype" + File.separator + "oas_import.json"),
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "prototype" + File.separator + "oas_import.json"),
                 "UTF-8");
         String additionalProperties = IOUtils.toString(
-                getClass().getClassLoader().getResourceAsStream(resourcePath +"prototype" + File.separator + "additionalProperties.json"),
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "prototype" + File.separator + "additionalProperties.json"),
                 "UTF-8");
         String updatedMock = IOUtils.toString(
-                getClass().getClassLoader().getResourceAsStream(resourcePath +"prototype" + File.separator + "updatedMockOas.json"),
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "prototype" + File.separator + "updatedMockOas.json"),
                 "UTF-8");
         org.json.JSONObject additionalPropertiesObj = new org.json.JSONObject(additionalProperties);
         additionalPropertiesObj.put("provider", user.getUserName());
@@ -270,7 +269,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
         // Generate mock Script for Prototype Implementation
         HttpResponse mockgenResponse = restAPIPublisher.generateMockScript(apiImportId);
-        Assert.assertEquals( mockgenResponse.getResponseCode(), 200);
+        Assert.assertEquals(mockgenResponse.getResponseCode(), 200);
 
         // Retrieve and validate the generated mock script
         HttpResponse mockedGetResponse = restAPIPublisher.getGenerateMockScript(apiImportId);
@@ -295,6 +294,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
     }
 
     private File geTempFileWithContent(String swagger) throws Exception {
+
         File temp = File.createTempFile("swagger", ".json");
         temp.deleteOnExit();
         BufferedWriter out = new BufferedWriter(new FileWriter(temp));
