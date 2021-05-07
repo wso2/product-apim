@@ -243,7 +243,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an inline protoype API with OAS3 and Generate mock")
-    public void testInlinePrototypeWithMock() throws Exception {
+    public void testOAS3InlinePrototypeWithMock() throws Exception {
 
         resourcePath = "oas" + File.separator + "v3" + File.separator;
         String originalDefinition = IOUtils.toString(
@@ -286,6 +286,54 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         //Invoke the Prototype endpoint and validate
         HttpResponse response1 = HTTPSClientUtils
                 .doGet(getAPIInvocationURLHttps("SwaggerPetstorev3import", "1.0.0") +
+                        "/pets/1", requestHeaders);
+        Assert.assertEquals(response1.getResponseCode(), 200);
+
+        restAPIPublisher.changeAPILifeCycleStatus(apiImportId, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
+        restAPIPublisher.deleteAPI(apiImportId);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Create an inline protoype API with OAS2 and Generate mock")
+    public void testOAS2InlinePrototypeWithMock() throws Exception {
+
+        resourcePath = "oas" + File.separator + "v2" + File.separator;
+        String originalDefinition = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "prototype" + File.separator + "oas_import.json"),
+                "UTF-8");
+        String additionalProperties = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "prototype" + File.separator + "additionalProperties.json"),
+                "UTF-8");
+
+        org.json.JSONObject additionalPropertiesObj = new org.json.JSONObject(additionalProperties);
+        additionalPropertiesObj.put("provider", user.getUserName());
+
+        File file = geTempFileWithContent(originalDefinition);
+        // Create an api by importing OAS3 file
+        APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
+        String apiImportId = apidto.getId();
+
+        // Change the lifecycle status to Prototype
+        restAPIPublisher.changeAPILifeCycleStatus(apiImportId, Constants.DEPLOY_AS_PROTOTYPE);
+
+        // Generate mock Script for Prototype Implementation
+        HttpResponse mockgenResponse = restAPIPublisher.generateMockScript(apiImportId);
+        Assert.assertEquals(mockgenResponse.getResponseCode(), 200);
+
+        // Retrieve and validate the generated mock script
+        HttpResponse mockedGetResponse = restAPIPublisher.getGenerateMockScript(apiImportId);
+        Assert.assertTrue(mockedGetResponse.getData().contains("/pets"));
+        Assert.assertTrue(mockedGetResponse.getData().contains("/pets/{petId}"));
+        Assert.assertTrue(mockedGetResponse.getData().contains("/oldpets"));
+
+        // Create a revision and Deploy the API
+        createAPIRevisionAndDeployUsingRest(apiImportId, restAPIPublisher);
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "application/json");
+        waitForAPIDeployment();
+        //Invoke the Prototype endpoint and validate
+        HttpResponse response1 = HTTPSClientUtils
+                .doGet(getAPIInvocationURLHttps("SwaggerPetstorev2import", "1.0.0") +
                         "/pets/1", requestHeaders);
         Assert.assertEquals(response1.getResponseCode(), 200);
 
