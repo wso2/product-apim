@@ -59,6 +59,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CertificatesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
@@ -181,6 +182,7 @@ public class RestAPIPublisherImpl {
         unifiedSearchApi.setApiClient(apiPublisherClient);
         sharedScopesApi.setApiClient(apiPublisherClient);
         globalMediationPoliciesApi.setApiClient(apiPublisherClient);
+        endpointCertificatesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -956,17 +958,13 @@ public class RestAPIPublisherImpl {
      * @return
      * @throws ApiException if an error occurred while uploading the certificate.
      */
-    public HttpResponse uploadEndpointCertificate(File certificate, String alias, String endpoint) throws ApiException {
+    public ApiResponse<CertMetadataDTO> uploadEndpointCertificate(File certificate, String alias, String endpoint) throws ApiException {
 
-        CertMetadataDTO certificateDTO = endpointCertificatesApi.addEndpointCertificate(certificate, alias, endpoint);
-        HttpResponse response = null;
-        if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
-            response = new HttpResponse("Successfully uploaded the certificate", 200);
-        }
-        return response;
+        ApiResponse<CertMetadataDTO> certificateDTO =
+                endpointCertificatesApi.addEndpointCertificateWithHttpInfo(certificate, alias, endpoint);
+        return certificateDTO;
 
     }
-
 
     /**
      * This method is used to get all throttling tiers.
@@ -1306,6 +1304,8 @@ public class RestAPIPublisherImpl {
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
+            } else if (e.getCode() != 0) {
+                return new HttpResponse(null, e.getCode());
             }
             throw new ApiException(e);
         }
@@ -1388,6 +1388,8 @@ public class RestAPIPublisherImpl {
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
+            } else if (e.getCode() != 0) {
+                return new HttpResponse(null, e.getCode());
             }
             throw new ApiException(e);
         }
@@ -1424,6 +1426,8 @@ public class RestAPIPublisherImpl {
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
+            } else if (e.getCode() != 0) {
+                return new HttpResponse(null, e.getCode());
             }
             throw new ApiException(e);
         }
@@ -1462,14 +1466,13 @@ public class RestAPIPublisherImpl {
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
+            } else if (e.getCode() != 0) {
+                return new HttpResponse(null, e.getCode());
             }
             throw new ApiException(e);
         }
         HttpResponse response = null;
         response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
-//        if (StringUtils.isNotEmpty(apiRevisionUnDeploymentDTOResponseList.toString())) {
-//            response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
-//        }
         return response;
     }
 
@@ -1887,5 +1890,21 @@ public class RestAPIPublisherImpl {
     public ApiResponse<APIProductDTO> updateAPIProduct(APIProductDTO apiProductDTO) throws ApiException {
 
         return apiProductsApi.updateAPIProductWithHttpInfo(apiProductDTO.getId(), apiProductDTO, null);
+    }
+
+    public CertificatesDTO getEndpointCertificiates(String endpoint, String alias) throws ApiException {
+
+        return endpointCertificatesApi.getEndpointCertificates(Integer.MAX_VALUE, 0, alias, endpoint);
+    }
+
+    public org.wso2.am.integration.clients.publisher.api.v1.dto.CertificateInfoDTO getendpointCertificateContent(String alias) throws ApiException {
+
+        return endpointCertificatesApi.getEndpointCertificateByAlias(alias);
+
+    }
+
+    public ApiResponse<Void> deleteEndpointCertificate(String alias) throws ApiException {
+        return endpointCertificatesApi.deleteEndpointCertificateByAliasWithHttpInfo(alias);
+
     }
 }

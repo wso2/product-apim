@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Gateway
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Gateway. Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.5.176/components/apimgt/org.wso2.carbon.apimgt.rest.api.admin/src/main/resources/admin-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Gateway. Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/master/components/apimgt/org.wso2.carbon.apimgt.rest.api.gateway/src/main/resources/gateway-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
  *
  * OpenAPI spec version: v2
  * Contact: architecture@wso2.com
@@ -56,7 +56,7 @@ public class UndeployApiApi {
     }
 
     /**
-     * Build call for undeployApiPost
+     * Build call for undeployAPI
      * @param apiName Name of the API  (required)
      * @param version version of the API  (required)
      * @param tenantDomain Tenant Domain of the API  (optional)
@@ -65,7 +65,7 @@ public class UndeployApiApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call undeployApiPostCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call undeployAPICall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -113,20 +113,20 @@ public class UndeployApiApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call undeployApiPostValidateBeforeCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call undeployAPIValidateBeforeCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'apiName' is set
         if (apiName == null) {
-            throw new ApiException("Missing the required parameter 'apiName' when calling undeployApiPost(Async)");
+            throw new ApiException("Missing the required parameter 'apiName' when calling undeployAPI(Async)");
         }
         
         // verify the required parameter 'version' is set
         if (version == null) {
-            throw new ApiException("Missing the required parameter 'version' when calling undeployApiPost(Async)");
+            throw new ApiException("Missing the required parameter 'version' when calling undeployAPI(Async)");
         }
         
 
-        com.squareup.okhttp.Call call = undeployApiPostCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = undeployAPICall(apiName, version, tenantDomain, progressListener, progressRequestListener);
         return call;
 
     }
@@ -140,8 +140,8 @@ public class UndeployApiApi {
      * @return DeployResponseDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public DeployResponseDTO undeployApiPost(String apiName, String version, String tenantDomain) throws ApiException {
-        ApiResponse<DeployResponseDTO> resp = undeployApiPostWithHttpInfo(apiName, version, tenantDomain);
+    public DeployResponseDTO undeployAPI(String apiName, String version, String tenantDomain) throws ApiException {
+        ApiResponse<DeployResponseDTO> resp = undeployAPIWithHttpInfo(apiName, version, tenantDomain);
         return resp.getData();
     }
 
@@ -154,8 +154,8 @@ public class UndeployApiApi {
      * @return ApiResponse&lt;DeployResponseDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<DeployResponseDTO> undeployApiPostWithHttpInfo(String apiName, String version, String tenantDomain) throws ApiException {
-        com.squareup.okhttp.Call call = undeployApiPostValidateBeforeCall(apiName, version, tenantDomain, null, null);
+    public ApiResponse<DeployResponseDTO> undeployAPIWithHttpInfo(String apiName, String version, String tenantDomain) throws ApiException {
+        com.squareup.okhttp.Call call = undeployAPIValidateBeforeCall(apiName, version, tenantDomain, null, null);
         Type localVarReturnType = new TypeToken<DeployResponseDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -170,7 +170,7 @@ public class UndeployApiApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call undeployApiPostAsync(String apiName, String version, String tenantDomain, final ApiCallback<DeployResponseDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call undeployAPIAsync(String apiName, String version, String tenantDomain, final ApiCallback<DeployResponseDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -191,7 +191,7 @@ public class UndeployApiApi {
             };
         }
 
-        com.squareup.okhttp.Call call = undeployApiPostValidateBeforeCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = undeployAPIValidateBeforeCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<DeployResponseDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;

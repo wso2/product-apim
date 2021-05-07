@@ -49,10 +49,13 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
             Response.Status.SERVICE_UNAVAILABLE.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_TOO_MANY_REQUESTS = 429; // Define manually since value is not available in enum
     protected static final int HTTP_RESPONSE_CODE_FORBIDDEN = Response.Status.FORBIDDEN.getStatusCode();
+    protected static final int HTTP_RESPONSE_CODE_INTERNAL_SERVER_ERROR = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
     private final String API_NAME = "RevisionTestAPI";
     private final String API_CONTEXT = "revisiontestapi";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String INVALID_API_UUID = "2C0q51h4-621g-3163-7eip-as246v8x681m";
+    private final String INVALID_REVISION_UUID = "4bm28320-l75v-3895-70ks-025294jd85a5";
     private String apiEndPointUrl;
     private String apiId;
     private String revisionUUID;
@@ -74,7 +77,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        //Add the API using the API publisher.
+        //Add the API using the API Publisher.
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = apiResponse.getData();
 
@@ -89,7 +92,32 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
         apiRevisionRequest.setApiUUID(apiId);
         apiRevisionRequest.setDescription("Test Revision 1");
+        //Add the API Revision using the API Publisher.
+        HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
+
+        assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Create API Response Code is invalid." + apiRevisionResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "API Revision create with invalid API UUID",
+    dependsOnMethods = "testAddingAPIRevision")
+    public void testAddingAPIRevisionWithInvalidAPI() throws Exception {
+        APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
+        apiRevisionRequest.setApiUUID(INVALID_API_UUID);
+        apiRevisionRequest.setDescription("Test Revision 1");
         //Add the API Revision using the API publisher.
+        HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
+
+        assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_INTERNAL_SERVER_ERROR,
+                "Invalid response code for API Revision with invalid API.");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "API Revision create without description",
+            dependsOnMethods = "testAddingAPIRevisionWithInvalidAPI")
+    public void testAddingAPIRevisionWithoutDescription() throws Exception {
+        APIRevisionRequest apiRevisionRequest = new APIRevisionRequest();
+        apiRevisionRequest.setApiUUID(apiId);
+        //Add the API Revision using the API Publisher.
         HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
 
         assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
@@ -97,7 +125,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Check the availability of API Revision in publisher before deploying.",
-            dependsOnMethods = "testAddingAPIRevision")
+            dependsOnMethods = "testAddingAPIRevisionWithoutDescription")
     public void testGetAPIRevisions() throws Exception {
         HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -115,8 +143,27 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         assertNotNull(revisionUUID, "Unable to retrieve revision UUID");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments",
+    @Test(groups = {"wso2.am"}, description = "Check the availability of API Revision in publisher after deploying.",
             dependsOnMethods = "testGetAPIRevisions")
+    public void testGetDeployedAPIRevisions() throws Exception {
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,"deployed:true");
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
+        List<JSONObject> revisionList = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject(apiRevisionsGetResponse.getData());
+
+        JSONArray arrayList = jsonObject.getJSONArray("list");
+        for (int i = 0, l = arrayList.length(); i < l; i++) {
+            revisionList.add(arrayList.getJSONObject(i));
+        }
+        for (JSONObject revision :revisionList) {
+            revisionUUID = revision.getString("id");
+        }
+        assertNotNull(revisionUUID, "Unable to retrieve deployed revision UUID");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments",
+            dependsOnMethods = "testGetDeployedAPIRevisions")
     public void testDeployAPIRevisions() throws Exception {
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
@@ -128,21 +175,60 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 apiRevisionDeployRequestList);
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
-//        List<JSONObject> deploymentList = new ArrayList<>();
-//        JSONArray jsonArray = new JSONArray(apiRevisionsDeployResponse.getData());
-//
-//        for (int i = 0, l = jsonArray.length(); i < l; i++) {
-//            deploymentList.add(jsonArray.getJSONObject(i));
-//        }
-//        String deploymentName = null;
-//        for (JSONObject deployment :deploymentList) {
-//            deploymentName = deployment.getString("name");
-//        }
-//        assertNotNull(deploymentName, "Unable to retrieve deployed deployment name");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments " +
+            "with invalid API UUID", dependsOnMethods = "testDeployAPIRevisions")
+    public void testDeployAPIRevisionsWithInvalidAPI() throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost("localhost");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(INVALID_API_UUID, revisionUUID,
+                apiRevisionDeployRequestList);
+
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invalid response code for deploying API Revision with invalid API UUID:"
+                        + apiRevisionsDeployResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments " +
+            "with invalid Revision UUID", dependsOnMethods = "testDeployAPIRevisionsWithInvalidAPI")
+    public void testDeployAPIRevisionsWithInvalidRevisionUUID() throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost("localhost");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, INVALID_REVISION_UUID,
+                apiRevisionDeployRequestList);
+
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invalid response code for deploying API Revision with invalid Revision UUID:"
+                        + apiRevisionsDeployResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments with " +
+            "invalid deployment information", dependsOnMethods = "testDeployAPIRevisionsWithInvalidRevisionUUID")
+    public void testDeployAPIRevisionsWithInvalidDeploymentInfo() throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName("us-region");
+        apiRevisionDeployRequest.setVhost("gw.apim.com");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList);
+
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
+                "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Revision to gateway environments",
-            dependsOnMethods = "testDeployAPIRevisions")
+            dependsOnMethods = "testDeployAPIRevisionsWithInvalidDeploymentInfo")
     public void testUnDeployAPIRevisions() throws Exception {
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
@@ -157,8 +243,63 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test restoring API using created API Revision",
+    @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Revision with invalid API UUID to gateway environments",
             dependsOnMethods = "testUnDeployAPIRevisions")
+    public void testUnDeployAPIRevisionsWithInvalidAPI() throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionUnDeployRequest.setName("us-region");
+        apiRevisionUnDeployRequest.setVhost("gw.apim.com");
+        apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
+        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(INVALID_API_UUID, revisionUUID,
+                apiRevisionUndeployRequestList);
+
+        assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invalid Response Code for Undeploy API Revisions with Invalid Deployment Information:"
+                        + apiRevisionsUnDeployResponse.getData());
+
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Revision with invalid Revision UUID to gateway environments",
+            dependsOnMethods = "testUnDeployAPIRevisionsWithInvalidAPI")
+    public void testUnDeployAPIRevisionsWithInvalidRevisionUUID() throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionUnDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionUnDeployRequest.setVhost(null);
+        apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
+        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, INVALID_REVISION_UUID,
+                apiRevisionUndeployRequestList);
+
+        assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invalid Response Code for Undeploy API Revisions with Invalid Revision UUID:" +
+                        apiRevisionsUnDeployResponse.getData());
+
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Revision with invalid Deployment Information" +
+            " to gateway environments",
+            dependsOnMethods = "testUnDeployAPIRevisionsWithInvalidRevisionUUID")
+    public void testUnDeployAPIRevisionsWithInvalidDeploymentInfo() throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionUnDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionUnDeployRequest.setVhost(null);
+        apiRevisionUnDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
+        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, INVALID_REVISION_UUID,
+                apiRevisionUndeployRequestList);
+
+        assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invalid Response Code for Undeploy API Revisions with Invalid Revision UUID:" +
+                        apiRevisionsUnDeployResponse.getData());
+
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test restoring API using created API Revision",
+            dependsOnMethods = "testUnDeployAPIRevisionsWithInvalidDeploymentInfo")
     public void testRestoreAPIRevision() throws Exception {
         HttpResponse apiRevisionsRestoreResponse = restAPIPublisher.restoreAPIRevision(apiId, revisionUUID);
         assertEquals(apiRevisionsRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,

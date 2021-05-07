@@ -116,7 +116,6 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
                 storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(applicaitionName);
-        restAPIStore.subscribeToAPI(subscriptionRequest);
 
         ApplicationKeyDTO applicationKeyDTO = restAPIStore
                 .generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,

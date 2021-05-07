@@ -218,7 +218,8 @@ public class MultipleWebSubSubcriptionTestCase extends APIMIntegrationBaseTest {
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
                 "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
         appId = applicationResponse.getData();
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, appId,
+        SubscriptionDTO subscriptionDTO = null;
+        subscriptionDTO = restAPIStore.subscribeToAPI(apiId, appId,
                 APIMIntegrationConstants.API_TIER.ASYNC_WH_UNLIMITED);
         // Validate Subscription of the API
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);

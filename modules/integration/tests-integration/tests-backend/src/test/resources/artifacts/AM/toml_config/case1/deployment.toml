@@ -278,6 +278,7 @@ enable = true
 
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
+passthru_https.sender.ssl_profile.interval = 6000
 
 [apim.sync_runtime_artifacts.gateway.skip_list]
 apis = ["admin--git2231head_v1.0.0.xml","admin--PizzaShackAPI_v1.0.0.xml","admin--ScriptMediatorAPI_v1.0.xml",

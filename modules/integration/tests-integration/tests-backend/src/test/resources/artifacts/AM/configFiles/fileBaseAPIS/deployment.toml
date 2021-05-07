@@ -228,6 +228,7 @@ subscriptions=["POST_ADD_USER"]
 
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
+passthru_https.sender.ssl_profile.interval = 6000
 
 [security_audit]
 api_token="b57973cf-b74c-4ade-921d-ece83251eceb"
