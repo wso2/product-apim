@@ -91,7 +91,7 @@ public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
         adminApiTestHelper.verifyApiCategoryDTO(apiCategoryDTO, addedApiCategoryDTO);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API category without Name")
+    @Test(groups = { "wso2.am" }, description = "Test add API category without Name", dependsOnMethods = "testAddAPICategory")
     public void testAddAPICategoryWithoutName() {
 
         //Create the API Category DTO
@@ -108,7 +108,7 @@ public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API category Name With Special Characters")
+    @Test(groups = { "wso2.am" }, description = "Test add API category Name With Special Characters", dependsOnMethods = "testAddAPICategoryWithoutName")
     public void testAddAPICategoryNameWithSpecialCharacters() {
 
         //Create the API Category DTO
@@ -128,7 +128,7 @@ public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Test add API category with duplicate name", dependsOnMethods = {
-            "testAddAPICategory" })
+            "testAddAPICategoryNameWithSpecialCharacters" })
     public void addAPICategoryWithDuplicateName() {
 
         try {
