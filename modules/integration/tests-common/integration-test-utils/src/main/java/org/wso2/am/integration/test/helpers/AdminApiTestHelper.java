@@ -18,7 +18,16 @@
 package org.wso2.am.integration.test.helpers;
 
 import org.testng.Assert;
-import org.wso2.am.integration.clients.admin.api.dto.*;
+import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.APICategoryDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
+import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
+import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
+import org.wso2.am.integration.clients.admin.api.dto.RoleAliasListDTO;
+import org.wso2.am.integration.clients.admin.api.dto.RoleAliasDTO;
 
 /**
  * A collection of helper methods to aid Admin REST API related tests
