@@ -56,12 +56,22 @@ public class JWTGeneratorUtil {
 
     public static String generatedJWT(File privateKeyFile,String kid,String keyAlias, String keyStorePassword,
                                       String keyPassword,
-                                      String subject,String issuer, Map<String, String> attributes)
+                                      String subject,String issuer, Map<String, Object> attributes)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
+            UnrecoverableKeyException, JOSEException {
+
+        return generatedJWT(privateKeyFile, kid, keyAlias, keyStorePassword, keyPassword, subject,
+                issuer, System.currentTimeMillis(), attributes);
+    }
+
+    public static String generatedJWT(File privateKeyFile, String kid, String keyAlias, String keyStorePassword,
+                                      String keyPassword, String subject, String issuer, long notBeforeTimeMillis,
+                                      Map<String, Object> attributes)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
             UnrecoverableKeyException, JOSEException {
 
         JWSHeader header = buildHeader(privateKeyFile,kid ,keyAlias, keyStorePassword);
-        JWTClaimsSet jwtClaimsSet = buildBody(issuer, subject, attributes);
+        JWTClaimsSet jwtClaimsSet = buildBody(issuer, subject, notBeforeTimeMillis, attributes);
         return signJWT(header, jwtClaimsSet, privateKeyFile, keyAlias, keyStorePassword, keyPassword);
     }
 
@@ -81,15 +91,16 @@ public class JWTGeneratorUtil {
         return signedJWT.serialize();
     }
 
-    private static JWTClaimsSet buildBody(String issuer,String subject, Map<String, String> attributes) {
+    private static JWTClaimsSet buildBody(String issuer, String subject, long notBeforeTimeMillis,
+                                          Map<String, Object> attributes) {
 
         JWTClaimsSet.Builder jwtClaimSetBuilder = new JWTClaimsSet.Builder();
         jwtClaimSetBuilder.issuer(issuer);
         jwtClaimSetBuilder.issueTime(new Date(System.currentTimeMillis()));
         jwtClaimSetBuilder.jwtID(UUID.randomUUID().toString());
         jwtClaimSetBuilder.subject(subject);
-        jwtClaimSetBuilder.notBeforeTime(new Date(System.currentTimeMillis()));
-        jwtClaimSetBuilder.expirationTime(new Date(System.currentTimeMillis() + 15 * 60*1000));
+        jwtClaimSetBuilder.notBeforeTime(new Date(notBeforeTimeMillis));
+        jwtClaimSetBuilder.expirationTime(new Date(notBeforeTimeMillis + 15 * 60*1000));
         attributes.forEach((key, value) -> {
             jwtClaimSetBuilder.claim(key, value);
         });
