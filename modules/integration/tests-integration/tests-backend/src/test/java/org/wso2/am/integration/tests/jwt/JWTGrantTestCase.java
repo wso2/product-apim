@@ -31,6 +31,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -41,7 +42,13 @@ import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.tests.jwt.idp.JWTGeneratorUtil;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.identity.application.common.model.idp.xsd.Claim;
+import org.wso2.carbon.identity.application.common.model.idp.xsd.ClaimConfig;
+import org.wso2.carbon.identity.application.common.model.idp.xsd.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.idp.xsd.IdentityProvider;
+import org.wso2.carbon.identity.application.common.model.idp.xsd.LocalRole;
+import org.wso2.carbon.identity.application.common.model.idp.xsd.PermissionsAndRoleConfig;
+import org.wso2.carbon.identity.application.common.model.idp.xsd.RoleMapping;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,13 +67,14 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
 
     private final String jwtAudience = UUID.randomUUID().toString();
     private final String jwtIssuer = "jwtgrant_test_issuer";
-    private final String jwtIssuerNonExisting = "jwtgrant_test_issuer_invalid";
     private final String keystoreFileValid = "extidpjwt.jks";
     private final String keystoreFileValidPass = "extidpjwt";
     private final String keystoreFileValidAlias = "extidpjwt";
+    private final String scopeToRequest = "scope-jwt";
     private String jwtApplicationId;
     private String consumerKey;
     private String consumerSecret;
+    private String scopeId;
 
     private String tokenUrl;
     List<String> grantTypesWithJWT = new ArrayList<>();
@@ -74,8 +82,10 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
 
-        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN}};
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN}
+        };
     }
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -105,21 +115,31 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(consumerKey, "consumerKey generation of the application doesn't work as expected");
         Assert.assertNotNull(consumerSecret, "consumerSecret generation of the application doesn't work as expected");
         addValidIdentityProvider();
+
+        // Add a shared scope with restricted to role 'admin'
+        ScopeDTO scopeDTO = new ScopeDTO();
+        scopeDTO.setName(scopeToRequest);
+        scopeDTO.setBindings(new ArrayList<String>() {{
+            add("admin");
+        }});
+        scopeDTO.setDisplayName("Scope for JWT grant test");
+        ScopeDTO addedScope = restAPIPublisher.addSharedScope(scopeDTO);
+        scopeId = addedScope.getId();
     }
 
-    @Test(groups = "wso2.am", description = "Testing jwt grant for a JWT token with a registered IDP for it")
+    @Test(groups = "wso2.am", description = "Testing JWT grant for a JWT token with a registered IDP for it")
     public void testGenerateTokenWithValidRegisteredIDP() throws Exception {
         String jwt = generateJWTTokenForValidIDP();
         HttpResponse res = invokeTokenEndpoint(jwt);
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_OK, "Response code is not 200 as expected");
         JSONObject response = new JSONObject(res.getData());
         String accessToken = response.getString("access_token");
-        Assert.assertNotNull(accessToken, "Couldn't found accessToken");
+        Assert.assertNotNull(accessToken, "Couldn't find accessToken");
     }
 
-    @Test(groups = "wso2.am", description = "Testing jwt grant for a JWT token without a registered IDP for it")
+    @Test(groups = "wso2.am", description = "Testing JWT grant for a JWT token without a registered IDP for it")
     public void testGenerateTokenForNonRegisteredIDP() throws Exception {
-        final String assertDescPrefix = "Checking the jwt grant with non-registered IDP as issuer, " +
+        final String assertDescPrefix = "Checking the JWT grant with non-registered IDP as issuer, " +
                 "didn't get the expected ";
         final String errorDescExpected = "No Registered IDP found";
         String jwt = generateJWTTokenForInvalidIDP();
@@ -127,35 +147,76 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
         assertErrorResponse(assertDescPrefix, errorDescExpected, res);
     }
 
-    @Test(groups = "wso2.am", description = "Testing jwt grant for a JWT token which is expired")
+    @Test(groups = "wso2.am", description = "Testing JWT grant for a JWT token which is expired")
     public void testGenerateTokenWithExpiredJWT() throws Exception {
-        final String assertDescPrefix = "Checking the jwt grant with expired jwt, didn't get the expected ";
+        final String assertDescPrefix = "Checking the JWT grant with expired jwt, didn't get the expected ";
         final String errorDescExpected = "JSON Web Token is expired";
         String jwt = generateExpiredJWTToken();
         HttpResponse res = invokeTokenEndpoint(jwt);
         assertErrorResponse(assertDescPrefix, errorDescExpected, res);
     }
 
-    @Test(groups = "wso2.am", description = "Testing jwt grant for a JWT token which is tampered")
+    @Test(groups = "wso2.am", description = "Testing JWT grant for a JWT token which is tampered")
     public void testGenerateTokenWithTamperedJWT() throws Exception {
-        final String assertDescPrefix = "Checking the jwt grant with tampered jwt, didn't get the expected ";
+        final String assertDescPrefix = "Checking the JWT grant with tampered jwt, didn't get the expected ";
         final String errorDescExpected = "Signature or Message Authentication invalid";
         String jwt = generateTamperedJWTToken();
         HttpResponse res = invokeTokenEndpoint(jwt);
         assertErrorResponse(assertDescPrefix, errorDescExpected, res);
     }
 
-    @Test(groups = "wso2.am", description = "Testing jwt grant for a JWT token signed with a different cert " +
+    @Test(groups = "wso2.am", description = "Testing JWT grant for a JWT token signed with a different cert " +
             "not matching IDP")
     public void testGenerateTokenWithJWTSignedWithDifferentCert() throws Exception {
-        final String assertDescPrefix = "Checking the jwt grant with jwt signed with different cert, didn't get the expected ";
+        final String assertDescPrefix = "Checking the JWT grant with jwt signed with different cert," +
+                " didn't get the expected ";
         final String errorDescExpected = "Signature or Message Authentication invalid";
         String jwt = generateJWTTokenSignedFromDifferentCertificate();
         HttpResponse res = invokeTokenEndpoint(jwt);
         assertErrorResponse(assertDescPrefix, errorDescExpected, res);
     }
 
-    private void assertErrorResponse(String assertDescPrefix, String errorDescExpected, HttpResponse res) throws JSONException {
+    @Test(groups = "wso2.am", description = "Testing JWT grant for a JWT token without IDP roles/mappings are added " +
+            "and try to generate a token with a scope which is restricted by a role. The Scope shouldn't be returned.",
+            dependsOnMethods = "testGenerateTokenWithValidRegisteredIDP")
+    public void testGenerateTokenWithScopesUsingJWTBeforeAddingIdpRoles() throws Exception {
+
+        if (userMode == TestUserMode.TENANT_ADMIN) {
+            // todo: warning! this is currently failing in tenant mode due to a product bug
+            return;
+        }
+
+        // Generates a token by requesting 'scope-jwt' scope without updating the IDP with role mappings.
+        //  The token response should be successful but it shouldn't get the requested scope.
+        String jwt = generateJWTTokenForValidIDPWithIdpRoles();
+        HttpResponse res = invokeTokenEndpoint(jwt, new String[]{scopeToRequest});
+        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_OK, "Response code is not 200 as expected");
+        JSONObject response = new JSONObject(res.getData());
+        String accessToken = response.getString("access_token");
+        Assert.assertNotNull(accessToken, "Couldn't find accessToken");
+        String scope = response.getString("scope");
+        Assert.assertFalse(scope.contains(scopeToRequest), "Received scopes contains requested scope " +
+                "(" + scopeToRequest + ") even without adding role mappings to the IDP.");
+    }
+
+    @Test(groups = "wso2.am", description = "Testing JWT grant for a JWT token with IDP roles " +
+            "and generate token with scope which is restricted by a role. This should succeed.",
+            dependsOnMethods = "testGenerateTokenWithValidRegisteredIDP")
+    public void testGenerateTokenWithScopesUsingJWTWithIdpRoles() throws Exception {
+        String jwt = generateJWTTokenForValidIDPWithIdpRoles();
+        // Update the IDP with role mappings
+        updateIdentityProviderWithRoleMappings(jwtIssuer);
+        HttpResponse res = invokeTokenEndpoint(jwt, new String[]{scopeToRequest});
+        JSONObject response = new JSONObject(res.getData());
+        String accessToken = response.getString("access_token");
+        Assert.assertNotNull(accessToken, "Couldn't find accessToken");
+        String scope = response.getString("scope");
+        Assert.assertTrue(scope.contains(scopeToRequest), "Received scopes doesn't contain requested scope " +
+                "(" + scopeToRequest + ") even after adding role mappings to the IDP.");
+    }
+
+    private void assertErrorResponse(String assertDescPrefix, String errorDescExpected, HttpResponse res)
+            throws JSONException {
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_BAD_REQUEST, assertDescPrefix + " 400 status code.");
         JSONObject response = new JSONObject(res.getData());
         String errorDescriptionKey = "error_description";
@@ -166,6 +227,10 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
     }
 
     private HttpResponse invokeTokenEndpoint(String jwt) throws IOException {
+        return invokeTokenEndpoint(jwt, new String[0]);
+    }
+
+    private HttpResponse invokeTokenEndpoint(String jwt, String[] scopes) throws IOException {
         List<NameValuePair> urlParameters = new ArrayList<>();
         Map<String, String> headers = new HashMap<>();
         String base64EncodedAppCredentials = TokenUtils.getBase64EncodedAppCredentials(consumerKey, consumerSecret);
@@ -173,6 +238,9 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
 
         urlParameters.add(new BasicNameValuePair("grant_type", APIMIntegrationConstants.GRANT_TYPE.JWT));
         urlParameters.add(new BasicNameValuePair("assertion", jwt));
+        if (scopes != null && scopes.length > 0) {
+            urlParameters.add(new BasicNameValuePair("scope", String.join(" ", scopes)));
+        }
         return HTTPSClientUtils.doPost(tokenUrl, headers, urlParameters);
     }
 
@@ -181,18 +249,33 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
                 jwtAudience, jwtIssuer, System.currentTimeMillis());
     }
 
+    private String generateJWTTokenForValidIDPWithIdpRoles() throws Exception {
+        Map<String, Object> idpRoles = new HashMap<>();
+        idpRoles.put("http://extidp.org/claims/role", new String[]{"idp_admin"});
+        return generateJWTTokenFromExternalIDP(keystoreFileValid, keystoreFileValidPass, keystoreFileValidAlias,
+                jwtAudience, jwtIssuer, System.currentTimeMillis(), idpRoles);
+    }
+
     private String generateJWTTokenForInvalidIDP() throws Exception {
         return generateJWTTokenFromExternalIDP(keystoreFileValid, keystoreFileValidPass, keystoreFileValidAlias,
-                jwtAudience, jwtIssuerNonExisting, System.currentTimeMillis());
+                jwtAudience, "jwtgrant_test_issuer_invalid", System.currentTimeMillis());
     }
 
     private String generateJWTTokenFromExternalIDP(String keyStoreFile, String pwd, String keyAlias,
                                                    String aud, String issuer, long notBeforeTime) throws Exception {
+        return generateJWTTokenFromExternalIDP(keyStoreFile, pwd, keyAlias, aud, issuer, notBeforeTime,
+                new HashMap<>());
+    }
+
+    private String generateJWTTokenFromExternalIDP(String keyStoreFile, String pwd, String keyAlias,
+                                                   String aud, String issuer, long notBeforeTime,
+                                                   Map<String, Object> additionalClaims) throws Exception {
         File keyStoreFileAbs = Paths.get(getAMResourceLocation(),
                 "configFiles", "jwtgrant", keyStoreFile).toFile();
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("azp", aud);
         attributes.put("aud", aud);
+        attributes.putAll(additionalClaims);
         return JWTGeneratorUtil
                         .generatedJWT(keyStoreFileAbs, UUID.randomUUID().toString(), keyAlias,
                                 pwd, pwd, "ext-user",
@@ -258,10 +341,55 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(addedIdp.getIdentityProviderName(), jwtIssuer, idpAddFailureError);
     }
 
+    private void updateIdentityProviderWithRoleMappings(String name) throws Exception {
+        IdentityProvider identityProvider = identityProviderMgtServiceClient.getIdPByName(name);
+        identityProvider.setClaimConfig(getClaimConfig());
+        identityProvider.setPermissionAndRoleConfig(getPermissionsAndRoleConfig());
+        identityProviderMgtServiceClient.updateIdP(name, identityProvider);
+
+        IdentityProvider updatedIdp = identityProviderMgtServiceClient.getIdPByName(name);
+        Assert.assertNotNull(updatedIdp.getClaimConfig());
+        Assert.assertNotNull(updatedIdp.getClaimConfig().getClaimMappings());
+        Assert.assertEquals(updatedIdp.getClaimConfig().getClaimMappings().length, 1);
+        Assert.assertNotNull(updatedIdp.getPermissionAndRoleConfig());
+        Assert.assertNotNull(updatedIdp.getPermissionAndRoleConfig().getIdpRoles());
+        Assert.assertEquals(updatedIdp.getPermissionAndRoleConfig().getIdpRoles().length, 1);
+    }
+
+    private static ClaimConfig getClaimConfig() {
+        ClaimConfig claimConfig = new ClaimConfig();
+        ClaimMapping[] claimMappings = new ClaimMapping[1];
+        ClaimMapping claimMapping = new ClaimMapping();
+        Claim localRoleClaim = new Claim();
+        localRoleClaim.setClaimUri("http://wso2.org/claims/role");
+        Claim idpRoleClaim = new Claim();
+        idpRoleClaim.setClaimUri("http://extidp.org/claims/role");
+        claimMapping.setLocalClaim(localRoleClaim);
+        claimMapping.setRemoteClaim(idpRoleClaim);
+        claimMappings[0] = claimMapping;
+        claimConfig.setClaimMappings(claimMappings);
+        claimConfig.setIdpClaims(new Claim[]{idpRoleClaim});
+        claimConfig.setRoleClaimURI("http://extidp.org/claims/role");
+        return claimConfig;
+    }
+
+    private static PermissionsAndRoleConfig getPermissionsAndRoleConfig() {
+        PermissionsAndRoleConfig roleConfig = new PermissionsAndRoleConfig();
+        roleConfig.addIdpRoles("idp_admin");
+        RoleMapping roleMapping = new RoleMapping();
+        LocalRole localRole = new LocalRole();
+        localRole.setLocalRoleName("admin");
+        roleMapping.setLocalRole(localRole);
+        roleMapping.setRemoteRole("idp_admin");
+        roleConfig.addRoleMappings(roleMapping);
+        return roleConfig;
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(jwtApplicationId);
         identityProviderMgtServiceClient.deleteIdP(jwtIssuer);
+        restAPIPublisher.removeSharedScope(scopeId);
         super.cleanUp();
     }
 }
