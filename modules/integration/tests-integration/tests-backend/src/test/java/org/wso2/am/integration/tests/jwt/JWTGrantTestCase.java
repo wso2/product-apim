@@ -201,7 +201,7 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = "wso2.am", description = "Testing JWT grant for a JWT token with IDP roles " +
             "and generate token with scope which is restricted by a role. This should succeed.",
-            dependsOnMethods = "testGenerateTokenWithValidRegisteredIDP")
+            dependsOnMethods = "testGenerateTokenWithScopesUsingJWTBeforeAddingIdpRoles")
     public void testGenerateTokenWithScopesUsingJWTWithIdpRoles() throws Exception {
         String jwt = generateJWTTokenForValidIDPWithIdpRoles();
         // Update the IDP with role mappings
