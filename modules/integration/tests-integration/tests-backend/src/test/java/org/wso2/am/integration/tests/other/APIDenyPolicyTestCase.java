@@ -8,21 +8,20 @@ import org.testng.annotations.*;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.BlockingConditionDTO;
-import org.wso2.am.integration.clients.admin.api.dto.BlockingConditionListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.BlockingConditionStatusDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
     private final Log log = LogFactory.getLog(APIDenyPolicyTestCase.class);
@@ -31,6 +30,10 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
     private BlockingConditionDTO blockingConditionDTO;
     private List<String> addedPolicyIds = new ArrayList<>();
 
+    private String invokingAPIId;
+    private String invokingApplicationId;
+    private ApplicationKeyDTO applicationKeyDTO;
+
     @Factory(dataProvider = "userModeDataProvider")
     public APIDenyPolicyTestCase(TestUserMode userMode) {
         this.userMode = userMode;
@@ -38,8 +41,8 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.SUPER_TENANT_EMAIL_USER }};
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.SUPER_TENANT_EMAIL_USER}};
     }
 
     @BeforeClass(alwaysRun = true)
@@ -49,7 +52,7 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
     }
 
     //api context test case
-    @Test(groups = { "wso2.am" }, description = "Test add API deny policy")
+    @Test(groups = {"wso2.am"}, description = "Test add API deny policy")
     public void testAddAPIDenyPolicy() throws Exception {
 
         //Add API
@@ -85,15 +88,15 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         blockingConditionDTO.setConditionId(policyId);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test get API deny policy")
+    @Test(groups = {"wso2.am"}, description = "Test get API deny policy")
     public void testGetAddedDenyPolicy() throws ApiException {
         ApiResponse<BlockingConditionDTO> response = restAPIAdmin.getDenyThrottlingPolicy(blockingConditionDTO.getConditionId());
         String retrievedConditionId = response.getData().getConditionId();
 
-        Assert.assertEquals(blockingConditionDTO.getConditionId(),retrievedConditionId);
+        Assert.assertEquals(blockingConditionDTO.getConditionId(), retrievedConditionId);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API deny policy with non existing context")
+    @Test(groups = {"wso2.am"}, description = "Test add API deny policy with non existing context")
     public void testAddDenyPolicyWithNonExistingContext() {
 
         //create Deny Policy
@@ -112,7 +115,7 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API deny policy with the same name", dependsOnMethods = "testAddAPIDenyPolicy")
+    @Test(groups = {"wso2.am"}, description = "Test add API deny policy with the same name", dependsOnMethods = "testAddAPIDenyPolicy")
     public void testAddAPIDenyPolicyWithTheSameContext() {
 
         //create Deny Policy
@@ -133,7 +136,7 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test update API deny policy", dependsOnMethods = "testAddAPIDenyPolicy")
+    @Test(groups = {"wso2.am"}, description = "Test update API deny policy", dependsOnMethods = "testAddAPIDenyPolicy")
     public void testUpdateAPIDenyPolicyStatus() throws ApiException {
 
         String denyPolicyId = blockingConditionDTO.getConditionId();
@@ -144,14 +147,14 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         blockingConditionStatusDTO.setConditionStatus(conditionStatus);
         blockingConditionStatusDTO.setConditionId(denyPolicyId);
 
-       ApiResponse<BlockingConditionDTO> updatedCondition =  restAPIAdmin.updateDenyThrottlingPolicy(denyPolicyId,conditionType, blockingConditionStatusDTO);
-       Assert.assertEquals(updatedCondition.getStatusCode(), HttpStatus.SC_OK);
+        ApiResponse<BlockingConditionDTO> updatedCondition = restAPIAdmin.updateDenyThrottlingPolicy(denyPolicyId, conditionType, blockingConditionStatusDTO);
+        Assert.assertEquals(updatedCondition.getStatusCode(), HttpStatus.SC_OK);
 
-       BlockingConditionDTO updatedBlockedCondition = updatedCondition.getData();
-       Assert.assertEquals(updatedBlockedCondition.isConditionStatus().booleanValue(), conditionStatus);
+        BlockingConditionDTO updatedBlockedCondition = updatedCondition.getData();
+        Assert.assertEquals(updatedBlockedCondition.isConditionStatus().booleanValue(), conditionStatus);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test delete API deny policy", dependsOnMethods = "testUpdateAPIDenyPolicyStatus")
+    @Test(groups = {"wso2.am"}, description = "Test delete API deny policy", dependsOnMethods = "testUpdateAPIDenyPolicyStatus")
     public void testDeleteAPIDenyPolicy() throws ApiException {
         String denyPolicyId = blockingConditionDTO.getConditionId();
 
@@ -159,7 +162,7 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API Application Vise deny policy")
+    @Test(groups = {"wso2.am"}, description = "Test add API Application Vise deny policy")
     public void testAddAPIDenyPolicyApplicationVise() throws Exception {
 
         //create application
@@ -182,10 +185,10 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         String policyId = addedBlockingConditionDTO.getConditionId();
         Assert.assertNotNull(policyId, "The deny policy ID cannot be null or empty");
 
-        addedPolicyIds.add(policyId);
+        restAPIAdmin.deleteDenyThrottlingPolicy(policyId);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API Deny Policy to Non Existing Application")
+    @Test(groups = {"wso2.am"}, description = "Test add API Deny Policy to Non Existing Application")
     public void testAddAPIDenyPolicyToNonExistingApplication() {
 
         boolean conditionStatus = true;
@@ -204,7 +207,7 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API User Vise deny policy", dependsOnMethods = "testAddAPIDenyPolicyApplicationVise")
+    @Test(groups = {"wso2.am"}, description = "Test add API User Vise deny policy", dependsOnMethods = "testAddAPIDenyPolicyApplicationVise")
     public void testAddAPIDenyPolicyUserVise() throws Exception {
 
         boolean conditionStatus = true;
@@ -222,11 +225,11 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         String policyId = addedBlockingConditionDTO.getConditionId();
         Assert.assertNotNull(policyId, "The deny policy ID cannot be null or empty");
 
-        addedPolicyIds.add(policyId);
+        restAPIAdmin.deleteDenyThrottlingPolicy(policyId);
 
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API Deny Policy to Invalid User", dependsOnMethods = "testAddAPIDenyPolicyApplicationVise")
+    @Test(groups = {"wso2.am"}, description = "Test add API Deny Policy to Invalid User", dependsOnMethods = "testAddAPIDenyPolicyApplicationVise")
     public void testAddAPIDenyPolicyWithInvalidUser() {
 
         boolean conditionStatus = true;
@@ -246,13 +249,13 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
 
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API IP Address Vise deny policy", dependsOnMethods = "testAddAPIDenyPolicyApplicationVise")
+    @Test(groups = {"wso2.am"}, description = "Test add API IP Address Vise deny policy", dependsOnMethods = "testAddAPIDenyPolicyApplicationVise")
     public void testAddAPIDenyPolicyIPAddressWise() throws Exception {
 
         boolean conditionStatus = true;
         Map<String, Object> valueMap = new LinkedHashMap<>();
         valueMap.put("invert", false);
-        valueMap.put("fixedIp","127.0.0.1");
+        valueMap.put("fixedIp", "127.0.0.1");
 
         BlockingConditionDTO blockingConditionDTO = new BlockingConditionDTO();
         blockingConditionDTO.setConditionStatus(conditionStatus);
@@ -266,16 +269,16 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         String policyId = addedBlockingConditionDTO.getConditionId();
         Assert.assertNotNull(policyId, "The deny policy ID cannot be null or empty");
 
-        addedPolicyIds.add(policyId);
+        restAPIAdmin.deleteDenyThrottlingPolicy(policyId);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API deny policy with invalid IP Address", dependsOnMethods = "testAddAPIDenyPolicyApplicationVise")
+    @Test(groups = {"wso2.am"}, description = "Test add API deny policy with invalid IP Address", dependsOnMethods = "testAddAPIDenyPolicyApplicationVise")
     public void testAddAPIDenyPolicyInvalidIPAddress() {
 
         boolean conditionStatus = true;
         Map<String, Object> valueMap = new LinkedHashMap<>();
         valueMap.put("invert", false);
-        valueMap.put("fixedIp","127..0.0.1");
+        valueMap.put("fixedIp", "127..0.0.1");
 
         BlockingConditionDTO blockingConditionDTO = new BlockingConditionDTO();
         blockingConditionDTO.setConditionStatus(conditionStatus);
@@ -291,14 +294,14 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
 
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API IP Address Range Vise deny policy", dependsOnMethods = "testAddAPIDenyPolicyIPAddressWise")
+    @Test(groups = {"wso2.am"}, description = "Test add API IP Address Range Vise deny policy", dependsOnMethods = "testAddAPIDenyPolicyIPAddressWise")
     public void testAddAPIDenyPolicyIPRangeWise() throws Exception {
 
         boolean conditionStatus = true;
         Map<String, Object> valueMap = new LinkedHashMap<>();
         valueMap.put("invert", false);
-        valueMap.put("startingIp","127.0.0.1");
-        valueMap.put("endingIp","127.0.0.5");
+        valueMap.put("startingIp", "127.0.0.1");
+        valueMap.put("endingIp", "127.0.0.5");
 
 
         BlockingConditionDTO blockingConditionDTO = new BlockingConditionDTO();
@@ -313,16 +316,16 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
         String policyId = addedBlockingConditionDTO.getConditionId();
         Assert.assertNotNull(policyId, "The deny policy ID cannot be null or empty");
 
-        addedPolicyIds.add(policyId);
+        restAPIAdmin.deleteDenyThrottlingPolicy(policyId);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test add API deny policy with invalid Ip Address range", dependsOnMethods = "testAddAPIDenyPolicyApplicationVise")
+    @Test(groups = {"wso2.am"}, description = "Test add API deny policy with invalid Ip Address range", dependsOnMethods = "testAddAPIDenyPolicyApplicationVise")
     public void testAddAPIDenyPolicyInvalidIPAddressRange() {
 
         boolean conditionStatus = true;
         Map<String, Object> valueMap = new LinkedHashMap<>();
-        valueMap.put("startingIp","127..0.0.1");
-        valueMap.put("endingIp","127.0.0.5");
+        valueMap.put("startingIp", "127..0.0.1");
+        valueMap.put("endingIp", "127.0.0.5");
 
         BlockingConditionDTO blockingConditionDTO = new BlockingConditionDTO();
         blockingConditionDTO.setConditionStatus(conditionStatus);
@@ -338,9 +341,97 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
 
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test add API deny policy with invalid Ip Address range", dependsOnMethods = "testAddAPIDenyPolicy")
+    public void testInvokeContextDeniedAPI() throws Exception {
+        String API_NAME = "DenyInvokeTestAPI";
+        String API_CONTEXT = "DenyInvokeContext";
+        String API_END_POINT_METHOD = "/customers/123";
+
+        String API_VERSION_1_0_0 = "1.0.0";
+
+        String APPLICATION_NAME = "TestApplicationForCheckingDenyPolicy";
+
+        String apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
+        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
+
+        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setProvider(publisherContext.getContextTenant().getContextUser().getUserName());
+
+        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.JWT);
+        invokingApplicationId = applicationResponse.getData();
+
+        invokingAPIId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, invokingApplicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        //create Deny Policy
+        boolean conditionStatus = true;
+        Map<String, Object> valueMap = new LinkedHashMap<>();
+        valueMap.put("invert", false);
+        valueMap.put("fixedIp", "127.0.0.1");
+
+        BlockingConditionDTO blockingConditionDTO = new BlockingConditionDTO();
+        blockingConditionDTO.setConditionStatus(conditionStatus);
+        blockingConditionDTO.setConditionValue(valueMap);
+        blockingConditionDTO.setConditionType(BlockingConditionDTO.ConditionTypeEnum.IP);
+
+        ApiResponse<BlockingConditionDTO> addedPolicy = restAPIAdmin.addDenyThrottlingPolicy(blockingConditionDTO);
+
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        applicationKeyDTO = restAPIStore
+                .generateKeys(invokingApplicationId, "36000", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
+                        grantTypes);
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Bearer " + applicationKeyDTO.getToken().getAccessToken());
+
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        HttpResponse invokeResponse =
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeaders);
+        Assert.assertEquals(invokeResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN,
+                "Response code mismatched when denied API was invoked");
+        restAPIAdmin.deleteDenyThrottlingPolicy(addedPolicy.getData().getConditionId());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test add API deny policy with invalid Ip Address range", dependsOnMethods = "testInvokeContextDeniedAPI")
+    public void testInvokeInverseContextDeniedAPI() throws Exception {
+        String API_CONTEXT = "DenyInvokeContext";
+        String API_VERSION_1_0_0 = "1.0.0";
+
+        boolean conditionStatus = true;
+        Map<String, Object> valueMap = new LinkedHashMap<>();
+        valueMap.put("invert", true);
+        valueMap.put("fixedIp", "127.0.0.1");
+
+        BlockingConditionDTO blockingConditionDTO = new BlockingConditionDTO();
+        blockingConditionDTO.setConditionStatus(conditionStatus);
+        blockingConditionDTO.setConditionValue(valueMap);
+        blockingConditionDTO.setConditionType(BlockingConditionDTO.ConditionTypeEnum.IP);
+
+        ApiResponse<BlockingConditionDTO> addedPolicy = restAPIAdmin.addDenyThrottlingPolicy(blockingConditionDTO);
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Bearer " + applicationKeyDTO.getToken().getAccessToken());
+
+        HttpResponse invokeResponse =
+                HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0), requestHeaders);
+        Assert.assertNotEquals(invokeResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN,
+                "Incorrect response code when inverted deny policy was invoked");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        for (String conditionId :addedPolicyIds) {
+        for (String conditionId : addedPolicyIds) {
             restAPIAdmin.deleteDenyThrottlingPolicy(conditionId);
         }
         super.cleanUp();
