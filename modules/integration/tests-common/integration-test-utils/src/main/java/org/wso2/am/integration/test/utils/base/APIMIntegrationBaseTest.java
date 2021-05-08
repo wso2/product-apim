@@ -45,6 +45,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.RestAPIInternalImpl;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
+import org.wso2.am.integration.test.impl.RestAPIGatewayImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -75,9 +76,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
-
 import javax.ws.rs.core.Response;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
@@ -106,6 +110,7 @@ public class APIMIntegrationBaseTest {
     protected RestAPIPublisherImpl restAPIPublisher;
     protected RestAPIStoreImpl restAPIStore;
     protected RestAPIAdminImpl restAPIAdmin;
+    protected RestAPIGatewayImpl restAPIGateway;
     protected UserManagementClient userManagementClient;
     protected RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
     protected ClaimMetaDataMgtAdminClient remoteClaimMetaDataMgtAdminClient;
@@ -196,6 +201,9 @@ public class APIMIntegrationBaseTest {
                     new RestAPIInternalImpl(superTenantKeyManagerContext.getContextTenant().getContextUser().getUserName(),
                             superTenantKeyManagerContext.getContextTenant().getContextUser().getPassword(),
                             user.getUserDomain());
+            restAPIGateway = new RestAPIGatewayImpl(superTenantKeyManagerContext.getContextTenant().getContextUser().getUserName(),
+                    superTenantKeyManagerContext.getContextTenant().getContextUser().getPassword(),
+                    user.getUserDomain());
             keymanagerSessionCookie = createSession(keyManagerContext);
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
@@ -216,7 +224,7 @@ public class APIMIntegrationBaseTest {
             restAPIStore =
                     new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getContextUser().getPassword(),
-                            storeContext.getContextTenant().getDomain(), storeURLHttps);
+                            storeContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
             restAPIAdmin = new RestAPIAdminImpl(publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
                     publisherContext.getContextTenant().getDomain(), publisherURLHttps);
@@ -719,8 +727,10 @@ public class APIMIntegrationBaseTest {
         return new RestAPIPublisherImpl(user, pass, tenantDomain, publisherURLHttps);
     }
 
-    protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain) {
-        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps);
+    protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain,
+                                                      RestAPIGatewayImpl restAPIGateway) {
+
+        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps, restAPIGateway);
     }
 
     protected RestAPIStoreImpl getRestAPIStoreForAnonymousUser(String tenantDomain) {

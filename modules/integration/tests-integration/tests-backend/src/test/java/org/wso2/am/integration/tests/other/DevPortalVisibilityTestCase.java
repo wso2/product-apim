@@ -165,16 +165,16 @@ public class DevPortalVisibilityTestCase extends APIManagerLifecycleBaseTest {
         pubSubUserPublisher = new RestAPIPublisherImpl(PUB_SUB_USER, USER_PASSWORD,
                 keyManagerContext.getContextTenant().getDomain(), publisherURLHttps);
         pubSubUserStore = new RestAPIStoreImpl(PUB_SUB_USER, USER_PASSWORD,
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps,restAPIGateway);
 
         devUser1 = new RestAPIStoreImpl(DEV_USER_A, USER_PASSWORD, keyManagerContext.getContextTenant().getDomain(),
-                storeURLHttps);
+                storeURLHttps,restAPIGateway);
 
         devUser2 = new RestAPIStoreImpl(DEV_USER_B, USER_PASSWORD, keyManagerContext.getContextTenant().getDomain(),
-                storeURLHttps);
+                storeURLHttps,restAPIGateway);
 
         devUser3 = new RestAPIStoreImpl(DEV_USER_C, USER_PASSWORD, keyManagerContext.getContextTenant().getDomain(),
-                storeURLHttps);
+                storeURLHttps,restAPIGateway);
 
     }
 

@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Gateway
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Gateway. Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.5.176/components/apimgt/org.wso2.carbon.apimgt.rest.api.admin/src/main/resources/admin-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Gateway. Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/master/components/apimgt/org.wso2.carbon.apimgt.rest.api.gateway/src/main/resources/gateway-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
  *
  * OpenAPI spec version: v2
  * Contact: architecture@wso2.com
@@ -59,7 +59,7 @@ public class GetApiArtifactsApi {
     }
 
     /**
-     * Build call for apiArtifactGet
+     * Build call for getAPIArtifacts
      * @param apiName Name of the API  (required)
      * @param version version of the API  (required)
      * @param tenantDomain Tenant Domain of the API  (optional)
@@ -68,7 +68,7 @@ public class GetApiArtifactsApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call apiArtifactGetCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call getAPIArtifactsCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -116,20 +116,20 @@ public class GetApiArtifactsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call apiArtifactGetValidateBeforeCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call getAPIArtifactsValidateBeforeCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'apiName' is set
         if (apiName == null) {
-            throw new ApiException("Missing the required parameter 'apiName' when calling apiArtifactGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiName' when calling getAPIArtifacts(Async)");
         }
         
         // verify the required parameter 'version' is set
         if (version == null) {
-            throw new ApiException("Missing the required parameter 'version' when calling apiArtifactGet(Async)");
+            throw new ApiException("Missing the required parameter 'version' when calling getAPIArtifacts(Async)");
         }
         
 
-        com.squareup.okhttp.Call call = apiArtifactGetCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getAPIArtifactsCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
         return call;
 
     }
@@ -143,8 +143,8 @@ public class GetApiArtifactsApi {
      * @return APIArtifactDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public APIArtifactDTO apiArtifactGet(String apiName, String version, String tenantDomain) throws ApiException {
-        ApiResponse<APIArtifactDTO> resp = apiArtifactGetWithHttpInfo(apiName, version, tenantDomain);
+    public APIArtifactDTO getAPIArtifacts(String apiName, String version, String tenantDomain) throws ApiException {
+        ApiResponse<APIArtifactDTO> resp = getAPIArtifactsWithHttpInfo(apiName, version, tenantDomain);
         return resp.getData();
     }
 
@@ -157,8 +157,8 @@ public class GetApiArtifactsApi {
      * @return ApiResponse&lt;APIArtifactDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<APIArtifactDTO> apiArtifactGetWithHttpInfo(String apiName, String version, String tenantDomain) throws ApiException {
-        com.squareup.okhttp.Call call = apiArtifactGetValidateBeforeCall(apiName, version, tenantDomain, null, null);
+    public ApiResponse<APIArtifactDTO> getAPIArtifactsWithHttpInfo(String apiName, String version, String tenantDomain) throws ApiException {
+        com.squareup.okhttp.Call call = getAPIArtifactsValidateBeforeCall(apiName, version, tenantDomain, null, null);
         Type localVarReturnType = new TypeToken<APIArtifactDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -173,7 +173,7 @@ public class GetApiArtifactsApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call apiArtifactGetAsync(String apiName, String version, String tenantDomain, final ApiCallback<APIArtifactDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call getAPIArtifactsAsync(String apiName, String version, String tenantDomain, final ApiCallback<APIArtifactDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -194,13 +194,13 @@ public class GetApiArtifactsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = apiArtifactGetValidateBeforeCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getAPIArtifactsValidateBeforeCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<APIArtifactDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
     /**
-     * Build call for endPointsGet
+     * Build call for getEndpoints
      * @param apiName Name of the API  (required)
      * @param version version of the API  (required)
      * @param tenantDomain Tenant Domain of the API  (optional)
@@ -209,7 +209,7 @@ public class GetApiArtifactsApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call endPointsGetCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call getEndpointsCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -257,20 +257,20 @@ public class GetApiArtifactsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call endPointsGetValidateBeforeCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call getEndpointsValidateBeforeCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'apiName' is set
         if (apiName == null) {
-            throw new ApiException("Missing the required parameter 'apiName' when calling endPointsGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiName' when calling getEndpoints(Async)");
         }
         
         // verify the required parameter 'version' is set
         if (version == null) {
-            throw new ApiException("Missing the required parameter 'version' when calling endPointsGet(Async)");
+            throw new ApiException("Missing the required parameter 'version' when calling getEndpoints(Async)");
         }
         
 
-        com.squareup.okhttp.Call call = endPointsGetCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getEndpointsCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
         return call;
 
     }
@@ -284,8 +284,8 @@ public class GetApiArtifactsApi {
      * @return EndpointsDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public EndpointsDTO endPointsGet(String apiName, String version, String tenantDomain) throws ApiException {
-        ApiResponse<EndpointsDTO> resp = endPointsGetWithHttpInfo(apiName, version, tenantDomain);
+    public EndpointsDTO getEndpoints(String apiName, String version, String tenantDomain) throws ApiException {
+        ApiResponse<EndpointsDTO> resp = getEndpointsWithHttpInfo(apiName, version, tenantDomain);
         return resp.getData();
     }
 
@@ -298,8 +298,8 @@ public class GetApiArtifactsApi {
      * @return ApiResponse&lt;EndpointsDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<EndpointsDTO> endPointsGetWithHttpInfo(String apiName, String version, String tenantDomain) throws ApiException {
-        com.squareup.okhttp.Call call = endPointsGetValidateBeforeCall(apiName, version, tenantDomain, null, null);
+    public ApiResponse<EndpointsDTO> getEndpointsWithHttpInfo(String apiName, String version, String tenantDomain) throws ApiException {
+        com.squareup.okhttp.Call call = getEndpointsValidateBeforeCall(apiName, version, tenantDomain, null, null);
         Type localVarReturnType = new TypeToken<EndpointsDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -314,7 +314,7 @@ public class GetApiArtifactsApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call endPointsGetAsync(String apiName, String version, String tenantDomain, final ApiCallback<EndpointsDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call getEndpointsAsync(String apiName, String version, String tenantDomain, final ApiCallback<EndpointsDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -335,13 +335,13 @@ public class GetApiArtifactsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = endPointsGetValidateBeforeCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getEndpointsValidateBeforeCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<EndpointsDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
     /**
-     * Build call for localEntryGet
+     * Build call for getLocalEntries
      * @param apiName Name of the API  (required)
      * @param version version of the API  (required)
      * @param tenantDomain Tenant Domain of the API  (optional)
@@ -350,7 +350,7 @@ public class GetApiArtifactsApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call localEntryGetCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call getLocalEntriesCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -398,20 +398,20 @@ public class GetApiArtifactsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call localEntryGetValidateBeforeCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call getLocalEntriesValidateBeforeCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'apiName' is set
         if (apiName == null) {
-            throw new ApiException("Missing the required parameter 'apiName' when calling localEntryGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiName' when calling getLocalEntries(Async)");
         }
         
         // verify the required parameter 'version' is set
         if (version == null) {
-            throw new ApiException("Missing the required parameter 'version' when calling localEntryGet(Async)");
+            throw new ApiException("Missing the required parameter 'version' when calling getLocalEntries(Async)");
         }
         
 
-        com.squareup.okhttp.Call call = localEntryGetCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getLocalEntriesCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
         return call;
 
     }
@@ -425,8 +425,8 @@ public class GetApiArtifactsApi {
      * @return LocalEntryDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public LocalEntryDTO localEntryGet(String apiName, String version, String tenantDomain) throws ApiException {
-        ApiResponse<LocalEntryDTO> resp = localEntryGetWithHttpInfo(apiName, version, tenantDomain);
+    public LocalEntryDTO getLocalEntries(String apiName, String version, String tenantDomain) throws ApiException {
+        ApiResponse<LocalEntryDTO> resp = getLocalEntriesWithHttpInfo(apiName, version, tenantDomain);
         return resp.getData();
     }
 
@@ -439,8 +439,8 @@ public class GetApiArtifactsApi {
      * @return ApiResponse&lt;LocalEntryDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<LocalEntryDTO> localEntryGetWithHttpInfo(String apiName, String version, String tenantDomain) throws ApiException {
-        com.squareup.okhttp.Call call = localEntryGetValidateBeforeCall(apiName, version, tenantDomain, null, null);
+    public ApiResponse<LocalEntryDTO> getLocalEntriesWithHttpInfo(String apiName, String version, String tenantDomain) throws ApiException {
+        com.squareup.okhttp.Call call = getLocalEntriesValidateBeforeCall(apiName, version, tenantDomain, null, null);
         Type localVarReturnType = new TypeToken<LocalEntryDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -455,7 +455,7 @@ public class GetApiArtifactsApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call localEntryGetAsync(String apiName, String version, String tenantDomain, final ApiCallback<LocalEntryDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call getLocalEntriesAsync(String apiName, String version, String tenantDomain, final ApiCallback<LocalEntryDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -476,13 +476,13 @@ public class GetApiArtifactsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = localEntryGetValidateBeforeCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getLocalEntriesValidateBeforeCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<LocalEntryDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
     /**
-     * Build call for sequenceGet
+     * Build call for getSequences
      * @param apiName Name of the API  (required)
      * @param version version of the API  (required)
      * @param tenantDomain Tenant Domain of the API  (optional)
@@ -491,7 +491,7 @@ public class GetApiArtifactsApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call sequenceGetCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call getSequencesCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -539,20 +539,20 @@ public class GetApiArtifactsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call sequenceGetValidateBeforeCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call getSequencesValidateBeforeCall(String apiName, String version, String tenantDomain, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         
         // verify the required parameter 'apiName' is set
         if (apiName == null) {
-            throw new ApiException("Missing the required parameter 'apiName' when calling sequenceGet(Async)");
+            throw new ApiException("Missing the required parameter 'apiName' when calling getSequences(Async)");
         }
         
         // verify the required parameter 'version' is set
         if (version == null) {
-            throw new ApiException("Missing the required parameter 'version' when calling sequenceGet(Async)");
+            throw new ApiException("Missing the required parameter 'version' when calling getSequences(Async)");
         }
         
 
-        com.squareup.okhttp.Call call = sequenceGetCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getSequencesCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
         return call;
 
     }
@@ -566,8 +566,8 @@ public class GetApiArtifactsApi {
      * @return SequencesDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public SequencesDTO sequenceGet(String apiName, String version, String tenantDomain) throws ApiException {
-        ApiResponse<SequencesDTO> resp = sequenceGetWithHttpInfo(apiName, version, tenantDomain);
+    public SequencesDTO getSequences(String apiName, String version, String tenantDomain) throws ApiException {
+        ApiResponse<SequencesDTO> resp = getSequencesWithHttpInfo(apiName, version, tenantDomain);
         return resp.getData();
     }
 
@@ -580,8 +580,8 @@ public class GetApiArtifactsApi {
      * @return ApiResponse&lt;SequencesDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<SequencesDTO> sequenceGetWithHttpInfo(String apiName, String version, String tenantDomain) throws ApiException {
-        com.squareup.okhttp.Call call = sequenceGetValidateBeforeCall(apiName, version, tenantDomain, null, null);
+    public ApiResponse<SequencesDTO> getSequencesWithHttpInfo(String apiName, String version, String tenantDomain) throws ApiException {
+        com.squareup.okhttp.Call call = getSequencesValidateBeforeCall(apiName, version, tenantDomain, null, null);
         Type localVarReturnType = new TypeToken<SequencesDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -596,7 +596,7 @@ public class GetApiArtifactsApi {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call sequenceGetAsync(String apiName, String version, String tenantDomain, final ApiCallback<SequencesDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call getSequencesAsync(String apiName, String version, String tenantDomain, final ApiCallback<SequencesDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -617,7 +617,7 @@ public class GetApiArtifactsApi {
             };
         }
 
-        com.squareup.okhttp.Call call = sequenceGetValidateBeforeCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = getSequencesValidateBeforeCall(apiName, version, tenantDomain, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<SequencesDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;

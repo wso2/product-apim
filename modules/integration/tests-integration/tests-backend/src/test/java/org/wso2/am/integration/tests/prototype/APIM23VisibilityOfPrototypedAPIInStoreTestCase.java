@@ -38,9 +38,9 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
+import java.net.URL;
 import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
-import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -72,7 +72,7 @@ public class APIM23VisibilityOfPrototypedAPIInStoreTestCase extends APIMIntegrat
 
         restAPIStore = new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword(),
-                storeContext.getContextTenant().getDomain(), storeURLHttps);
+                storeContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
 
         apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
 

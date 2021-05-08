@@ -100,8 +100,8 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
         //signup of user two
         UserManagementUtils.signupUser(USER_TWO, PASSWORD, FIRST_NAME, ORGANIZATION);
 
-        restAPIStoreClientUser1 = new RestAPIStoreImpl(USER_ONE, PASSWORD, SUPER_TENANT_DOMAIN, storeURLHttps);
-        restAPIStoreClientUser2 = new RestAPIStoreImpl(USER_TWO, PASSWORD, SUPER_TENANT_DOMAIN, storeURLHttps);
+        restAPIStoreClientUser1 = new RestAPIStoreImpl(USER_ONE, PASSWORD, SUPER_TENANT_DOMAIN, storeURLHttps,restAPIGateway);
+        restAPIStoreClientUser2 = new RestAPIStoreImpl(USER_TWO, PASSWORD, SUPER_TENANT_DOMAIN, storeURLHttps,restAPIGateway);
 
         // Create Application for user one
         HttpResponse appCreationResponse1 = restAPIStoreClientUser1.createApplication(APPLICATION_NAME,

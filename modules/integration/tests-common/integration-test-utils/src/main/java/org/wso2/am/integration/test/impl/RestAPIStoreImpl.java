@@ -19,6 +19,8 @@ package org.wso2.am.integration.test.impl;
 import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
@@ -29,6 +31,7 @@ import org.wso2.am.integration.clients.store.api.v1.ApiKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
+import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.store.api.v1.KeyManagersCollectionApi;
 import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
 import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
@@ -36,9 +39,9 @@ import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.TagsApi;
 import org.wso2.am.integration.clients.store.api.v1.TopicsApi;
 import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
+import org.wso2.am.integration.clients.store.api.v1.UsersApi;
 import org.wso2.am.integration.clients.store.api.v1.WebhooksApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
@@ -52,24 +55,23 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyMappingReq
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLQueryComplexityInfoDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.KeyManagerListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.PatchRequestBodyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.PostRequestBodyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.PostRequestBodyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.PatchRequestBodyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TopicListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.WebhookSubscriptionListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -79,14 +81,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.xpath.XPathExpressionException;
-import org.wso2.am.integration.clients.store.api.v1.UsersApi;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIStoreImpl {
+
+    private static final Log log = LogFactory.getLog(RestAPIStoreImpl.class);
+    private  RestAPIGatewayImpl restAPIGateway;
     public ApIsApi apIsApi = new ApIsApi();
     public ApplicationsApi applicationsApi = new ApplicationsApi();
     public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
@@ -115,12 +118,8 @@ public class RestAPIStoreImpl {
 
     private String accessToken;
 
-    @Deprecated
-    public RestAPIStoreImpl() {
-        this(username, password, "", "https://localhost:9943");
-    }
-
-    public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
+    public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL,
+                            RestAPIGatewayImpl restAPIGateway) {
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
         String dcrURL = storeURL + "client-registration/v0.17/register";
@@ -154,6 +153,7 @@ public class RestAPIStoreImpl {
         apiStoreClient.setDebugging(true);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
+        this.restAPIGateway = restAPIGateway;
     }
 
 
@@ -171,6 +171,7 @@ public class RestAPIStoreImpl {
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
+    
 
     public String getAccessToken() {
         return accessToken;
@@ -287,6 +288,12 @@ public class RestAPIStoreImpl {
             if (StringUtils.isNotEmpty(subscriptionResponse.getSubscriptionId())) {
                 response = new HttpResponse(subscriptionResponse.getSubscriptionId(), 200);
             }
+            try {
+                waitForSubscriptionAvailableInGateway(subscriptionResponse);
+            } catch (org.wso2.am.integration.clients.gateway.api.ApiException e) {
+                log.error("Error while verifying  in-memory data store", e);
+            }
+
             return response;
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
@@ -1493,32 +1500,8 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-    /**
-     * Subscribe and API. This method return the response of the subscription server REST call.
-     *
-     * @param subscriptionRequest -SubscriptionRequest request instance  with API subscription information.
-     * @return HttpResponse - Response f the subscription server REST call
-     * @throws APIManagerIntegrationTestException - Exception throws when check the Authentication and
-     *                                            HTTPSClientUtils.doPost() method call.
-     */
-    public HttpResponse subscribeToAPI(SubscriptionRequest subscriptionRequest)
-            throws APIManagerIntegrationTestException {
-        //This method  do the same functionality as subscribe(), except this method  always returns the response object
-        //regardless of the response code. But subscribe() returns the response object only if  the response code is
-        // 200 or else it will return an Exception.
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(backendURL +
-//                            "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
-//                    , subscriptionRequest.generateRequestParameters(), requestHeaders);
-//        } catch (Exception ex) {
-//            throw new APIManagerIntegrationTestException("Exception when Subscribing to a API"
-//                    + ". Error: " + ex.getMessage(), ex);
-//        }
-        return null;
-    }
-
     public SubscriptionDTO subscribeToAPI(String apiID, String appID, String tier) throws ApiException {
+
         SubscriptionDTO subscription = new SubscriptionDTO();
         subscription.setApplicationId(appID);
         subscription.setApiId(apiID);
@@ -1526,26 +1509,15 @@ public class RestAPIStoreImpl {
         ApiResponse<SubscriptionDTO> subscriptionResponse =
                 subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription, this.tenantDomain);
         Assert.assertEquals(HttpStatus.SC_CREATED, subscriptionResponse.getStatusCode());
-        return subscriptionResponse.getData();
+        SubscriptionDTO data = subscriptionResponse.getData();
+        try {
+            waitForSubscriptionAvailableInGateway(data);
+        } catch (org.wso2.am.integration.clients.gateway.api.ApiException e) {
+            log.error("Error while verifying  inmemory data store", e);
+        }
+        return data;
     }
 
-//    /**
-//     * Retrieve the API store page as anonymous user.
-//     *
-//     * @param storeTenantDomain - Tenant domain of store that need to  get the page.
-//     * @return HttpResponse - Response with API store page of the provided domain.
-//     * @throws APIManagerIntegrationTestException - IOException throws from HttpRequestUtil.doGet() method call
-//     */
-//
-//    public HttpResponse getAPIStorePageAsAnonymousUser(String storeTenantDomain) throws APIManagerIntegrationTestException {
-//        try {
-//            return HttpRequestUtil.doGet(
-//                    backendURL + "store/?tenant=" + storeTenantDomain, requestHeaders);
-//        } catch (Exception ioE) {
-//            throw new APIManagerIntegrationTestException(
-//                    "Exception when retrieve the API store page as anonymous user", ioE);
-//        }
-//    }
 
     /**
      *
@@ -1965,9 +1937,46 @@ public class RestAPIStoreImpl {
         HttpResponse response = null;
         ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi.
                 apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
-        if(graphQLSchemaTypeListDTOApiResponse.getStatusCode() == 200){
+        if (graphQLSchemaTypeListDTOApiResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully get the GraphQL Schema Type List", 200);
         }
         return response;
+    }
+
+    private void waitForSubscriptionAvailableInGateway(SubscriptionDTO subscribedDto)
+            throws org.wso2.am.integration.clients.gateway.api.ApiException {
+
+        org.wso2.am.integration.clients.gateway.api.v2.dto.SubscriptionDTO subscriptionDTO =
+                restAPIGateway.retrieveSubscription(subscribedDto.getApiId(), subscribedDto.getApplicationId());
+        if (subscriptionDTO != null) {
+            Assert.assertEquals(subscriptionDTO.getApplicationUUID(), subscribedDto.getApplicationId());
+            Assert.assertEquals(subscriptionDTO.getApiUUID(), subscribedDto.getApiId());
+            Assert.assertEquals(subscriptionDTO.getPolicyId(), subscribedDto.getThrottlingPolicy());
+            Assert.assertEquals(subscriptionDTO.getSubscriptionUUID(), subscribedDto.getSubscriptionId());
+            log.info("Subscription Available in inmemory== " + subscriptionDTO.toString());
+            if (!"ON_HOLD".equals(subscriptionDTO.getSubscriptionState())) {
+                return;
+            }
+        }
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + 6000;
+        while (waitTime > System.currentTimeMillis()) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
+            subscriptionDTO =
+                    restAPIGateway.retrieveSubscription(subscribedDto.getApiId(), subscribedDto.getApplicationId());
+            if (subscriptionDTO != null) {
+                log.info("Subscription Available in inmemory== " + subscriptionDTO.toString());
+                Assert.assertEquals(subscriptionDTO.getApplicationUUID(), subscribedDto.getApplicationId());
+                Assert.assertEquals(subscriptionDTO.getApiUUID(), subscribedDto.getApiId());
+                Assert.assertEquals(subscriptionDTO.getPolicyId(), subscribedDto.getThrottlingPolicy());
+                Assert.assertEquals(subscriptionDTO.getSubscriptionUUID(), subscribedDto.getSubscriptionId());
+                if (!"ON_HOLD".equals(subscriptionDTO.getSubscriptionState())) {
+                    break;
+                }
+            }
+        }
     }
 }
