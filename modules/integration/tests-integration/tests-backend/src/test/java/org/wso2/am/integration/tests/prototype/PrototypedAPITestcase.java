@@ -37,6 +37,7 @@ import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -55,6 +56,7 @@ import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
@@ -77,7 +79,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-//                new Object[]{TestUserMode.TENANT_ADMIN}
+                new Object[]{TestUserMode.TENANT_USER}
         };
     }
 
@@ -158,9 +160,6 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
                         "", requestHeaders);
         Assert.assertEquals(response1.getResponseCode(), 200);
         Assert.assertTrue(response1.getData().contains("BBQ Chicken Bacon"));
-
-        restAPIPublisher.changeAPILifeCycleStatus(apiID, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
-        restAPIPublisher.deleteAPI(apiID);
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API with a prototype endpoint, demote to created and invoke", dependsOnMethods = {"testPrototypedAPIEndpoint"})
@@ -238,13 +237,12 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
                 .doGet(getAPIInvocationURLHttps(apiContext, apiVersion) +
                         "", requestHeaders);
         Assert.assertEquals(response2.getResponseCode(), 401, "User was able to invoke the API demoted to CREATED from PROTOTYPE");
-
-        restAPIPublisher.deleteAPI(apiID);
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an inline protoype API with OAS3 and Generate mock")
     public void testOAS3InlinePrototypeWithMock() throws Exception {
 
+        String context = "/SwaggerPetstorev3import";
         resourcePath = "oas" + File.separator + "v3" + File.separator;
         String originalDefinition = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream(resourcePath + "prototype" + File.separator + "oas_import.json"),
@@ -257,6 +255,10 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
                 "UTF-8");
         org.json.JSONObject additionalPropertiesObj = new org.json.JSONObject(additionalProperties);
         additionalPropertiesObj.put("provider", user.getUserName());
+        if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(user.getUserDomain())) {
+            context = "/t/" + user.getUserDomain() + context;
+        }
+        additionalPropertiesObj.put("context", context);
         org.json.JSONObject updatedMockObj = new org.json.JSONObject(updatedMock);
         updatedMockObj.put("provider", user.getUserName());
         File file = geTempFileWithContent(originalDefinition);
@@ -287,15 +289,14 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         HttpResponse response1 = HTTPSClientUtils
                 .doGet(getAPIInvocationURLHttps("SwaggerPetstorev3import", "1.0.0") +
                         "/pets/1", requestHeaders);
-        Assert.assertEquals(response1.getResponseCode(), 200);
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiImportId, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
-        restAPIPublisher.deleteAPI(apiImportId);
+        Assert.assertEquals(response1.getResponseCode(), 200);
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an inline protoype API with OAS2 and Generate mock")
     public void testOAS2InlinePrototypeWithMock() throws Exception {
 
+        String context = "/SwaggerPetstorev2import";
         resourcePath = "oas" + File.separator + "v2" + File.separator;
         String originalDefinition = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream(resourcePath + "prototype" + File.separator + "oas_import.json"),
@@ -303,12 +304,15 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         String additionalProperties = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream(resourcePath + "prototype" + File.separator + "additionalProperties.json"),
                 "UTF-8");
-
+        if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(user.getUserDomain())) {
+            context = "/t/" + user.getUserDomain() + context;
+        }
         org.json.JSONObject additionalPropertiesObj = new org.json.JSONObject(additionalProperties);
         additionalPropertiesObj.put("provider", user.getUserName());
+        additionalPropertiesObj.put("context", context);
 
         File file = geTempFileWithContent(originalDefinition);
-        // Create an api by importing OAS3 file
+        // Create an api by importing OAS2 file
         APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
         String apiImportId = apidto.getId();
 
@@ -336,9 +340,12 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
                 .doGet(getAPIInvocationURLHttps("SwaggerPetstorev2import", "1.0.0") +
                         "/pets/1", requestHeaders);
         Assert.assertEquals(response1.getResponseCode(), 200);
+    }
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiImportId, APILifeCycleAction.DEMOTE_TO_CREATE.getAction());
-        restAPIPublisher.deleteAPI(apiImportId);
+    @AfterClass(alwaysRun = true)
+    public void destroyAPIs() throws Exception {
+
+        super.cleanUp();
     }
 
     private File geTempFileWithContent(String swagger) throws Exception {
