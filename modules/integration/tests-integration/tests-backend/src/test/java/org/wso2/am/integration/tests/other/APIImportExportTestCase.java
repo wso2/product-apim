@@ -72,7 +72,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
@@ -167,8 +166,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
                 .addUser(publisherUser, String.valueOf(PUBLISHER_USER_PASS), new String[] { ADMIN_ROLE }, null);
 
         allowedStoreUser = new RestAPIStoreImpl(allowedUser, String.valueOf(ALLOWED_USER_PASS),
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
-
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
 
         if (!keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
             allowedUser = allowedUser + "@" + keyManagerContext.getContextTenant().getDomain();

@@ -62,7 +62,7 @@ public class ApplicationConsumerSecretRegenerateTestCase extends APIMIntegration
     public void setEnvironment() throws Exception {
         super.init(userMode);
         restAPIStore = new RestAPIStoreImpl(user.getUserName(), user.getPassword(),
-                publisherContext.getContextTenant().getDomain(), storeUrls.getWebAppURLHttps());
+                publisherContext.getContextTenant().getDomain(), storeUrls.getWebAppURLHttps(), restAPIGateway);
     }
 
     @Test(groups = { "wso2.am" }, description = "Sample Application creation")

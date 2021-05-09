@@ -87,7 +87,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIManagerLifecycleB
                     .addUser(FIRST_USER, USER_PASSWORD, new String[] { INTERNAL_SUBSCRIBER, FIRST_ROLE }, FIRST_USER);
 
             apiStoreSubUser = new RestAPIStoreImpl(FIRST_USER, USER_PASSWORD,
-                    keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
+                    keyManagerContext.getContextTenant().getDomain(), storeURLHttps,restAPIGateway);
 
         } catch (APIManagerIntegrationTestException e) {
             assertTrue(false, "Error occurred while initializing testcase: " + e.getCause());

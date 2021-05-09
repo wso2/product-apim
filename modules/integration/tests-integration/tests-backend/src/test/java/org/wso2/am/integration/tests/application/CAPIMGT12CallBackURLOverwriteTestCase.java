@@ -69,9 +69,9 @@ public class CAPIMGT12CallBackURLOverwriteTestCase extends APIManagerLifecycleBa
         storeURLHttp = storeUrls.getWebAppURLHttp();
 
         user1ApiStore = new RestAPIStoreImpl(TEST_USER_1, TEST_USER_1_PASSWORD,
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps,restAPIGateway);
         user2ApiStore = new RestAPIStoreImpl(TEST_USER_2, TEST_USER_2_PASSWORD,
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps,restAPIGateway);
 
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
