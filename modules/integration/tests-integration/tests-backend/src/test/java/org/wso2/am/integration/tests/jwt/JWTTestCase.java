@@ -205,37 +205,17 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
             log.debug("Decoded JWTString = " + decodedJWTString);
             //Do the signature verification for super tenant as tenant key store not there accessible
-            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
-            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-            assertTrue("JWT signature verification failed", isSignatureValid);
+            BackendJWTUtil.verifySignature(jwtheader);
             log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-            JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
-            Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
-            Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
-            Assert.assertFalse(jsonHeaderObject.has("kid"));
+            BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
             JSONObject jsonObject = new JSONObject(decodedJWTString);
             log.info("JWT Received ==" + jsonObject.toString());
             // check default claims
             checkDefaultUserClaims(jsonObject, oauthApplicationName);
             // check user profile info claims
-            String claim = jsonObject.getString("http://wso2.org/claims/givenname");
-            assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name".concat(endUser)));
-            claim = jsonObject.getString("http://wso2.org/claims/lastname");
-            assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name".concat(endUser)));
-            claim = jsonObject.getString("http://wso2.org/claims/mobile");
-            assertTrue("JWT claim mobile  not received" + claim, claim.contains("94123456987"));
-            claim = jsonObject.getString("http://wso2.org/claims/organization");
-            assertTrue("JWT claim mobile  not received" + claim, claim.contains("ABC".concat(endUser)));
-
-            boolean bExceptionOccured = false;
-            try {
-                jsonObject.getString("http://wso2.org/claims/wrongclaim");
-            } catch (JSONException e) {
-                bExceptionOccured = true;
-            }
-            assertTrue("JWT claim received is invalid", bExceptionOccured);
+            verifyUserProfileInfoClaims(jsonObject, endUser);
+            // check wrong claims
+            BackendJWTUtil.verifyWrongClaims(jsonObject);
         }
     }
 
@@ -268,16 +248,10 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
             log.debug("Decoded JWTString = " + decodedJWTString);
 
-            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
-            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-            assertTrue("JWT signature verification failed", isSignatureValid);
+            //Do the signature verification
+            BackendJWTUtil.verifySignature(jwtheader);
             log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-            JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
-            Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
-            Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
-            Assert.assertFalse(jsonHeaderObject.has("kid"));
+            BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
             JSONObject jsonObject = new JSONObject(decodedJWTString);
 
             // check default claims
@@ -292,15 +266,8 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             assertTrue("JWT claim mobile  not received" + claim, claim.contains("94123456987"));
             claim = jsonObject.getString("organization");
             assertTrue("JWT claim mobile  not received" + claim, claim.contains("ABC".concat(endUser)));
-
-            boolean bExceptionOccured = false;
-            try {
-                jsonObject.getString("http://wso2.org/claims/wrongclaim");
-            } catch (JSONException e) {
-                bExceptionOccured = true;
-            }
-            assertTrue("JWT claim received is invalid", bExceptionOccured);
-
+            // verify wrong claims
+            BackendJWTUtil.verifyWrongClaims(jsonObject);
         }
     }
 
@@ -328,16 +295,10 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
         log.debug("Decoded JWTString = " + decodedJWTString);
 
-        String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-        byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
-        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-        assertTrue("JWT signature verification failed", isSignatureValid);
+        //Do the signature verification
+        BackendJWTUtil.verifySignature(jwtheader);
         log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-        JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
-        Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
-        Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
-        Assert.assertFalse(jsonHeaderObject.has("kid"));
+        BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
         // check default claims
@@ -350,14 +311,8 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         assertTrue("JWT claim API version not received " + claim, claim.contains(apiVersion));
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
         assertTrue("JWT claim API context not received " + claim, claim.contains(apiContext));
-
-        boolean bExceptionOccured = false;
-        try {
-            jsonObject.getString("http://wso2.org/claims/wrongclaim");
-        } catch (JSONException e) {
-            bExceptionOccured = true;
-        }
-        assertTrue("JWT claim received is invalid", bExceptionOccured);
+        // verify wrong claims
+        BackendJWTUtil.verifyWrongClaims(jsonObject);
     }
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation with Client Credentials Grant Type")
@@ -385,16 +340,10 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
         log.debug("Decoded JWTString = " + decodedJWTString);
 
-        String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-        byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
-        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-        assertTrue("JWT signature verification failed", isSignatureValid);
+        //Do the signature verification
+        BackendJWTUtil.verifySignature(jwtheader);
         log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-        JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
-        Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
-        Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
-        Assert.assertFalse(jsonHeaderObject.has("kid"));
+        BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
         // check default claims
@@ -430,38 +379,19 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
             log.debug("Decoded JWTString = " + decodedJWTString);
 
-            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
-            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
-            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
-            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
-            assertTrue("JWT signature verification failed", isSignatureValid);
+            //Do the signature verification
+            BackendJWTUtil.verifySignature(jwtheader);
             log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-            JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
-            Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
-            Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
-            Assert.assertFalse(jsonHeaderObject.has("kid"));
+            BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
             JSONObject jsonObject = new JSONObject(decodedJWTString);
 
             // check default claims
             checkDefaultUserClaims(jsonObject, authCodeApplicationName);
             // check user profile info claims
             log.info("JWT Received ==" + jsonObject.toString());
-            String claim = jsonObject.getString("http://wso2.org/claims/givenname");
-            assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name".concat(endUser)));
-            claim = jsonObject.getString("http://wso2.org/claims/lastname");
-            assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name".concat(endUser)));
-            claim = jsonObject.getString("http://wso2.org/claims/mobile");
-            assertTrue("JWT claim mobile  not received" + claim, claim.contains("94123456987"));
-            claim = jsonObject.getString("http://wso2.org/claims/organization");
-            assertTrue("JWT claim mobile  not received" + claim, claim.contains("ABC".concat(endUser)));
-
-            boolean bExceptionOccured = false;
-            try {
-                jsonObject.getString("http://wso2.org/claims/wrongclaim");
-            } catch (JSONException e) {
-                bExceptionOccured = true;
-            }
-            assertTrue("JWT claim received is invalid", bExceptionOccured);
+            verifyUserProfileInfoClaims(jsonObject, endUser);
+            // verify wrong claims
+            BackendJWTUtil.verifyWrongClaims(jsonObject);
         }
     }
 
@@ -693,5 +623,24 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             // error ignored
         }
         return null;
+    }
+
+    /**
+     * verify user profile info claims from decoded JWT JSON Object
+     *
+     * @param decodedJWTJSONObject decoded JWT JSON Object
+     * @param endUser username of end user
+     * @throws JSONException if JSON payload is malformed
+     */
+    private void verifyUserProfileInfoClaims(JSONObject decodedJWTJSONObject, String endUser) throws JSONException {
+
+        String claim = decodedJWTJSONObject.getString("http://wso2.org/claims/givenname");
+        assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name".concat(endUser)));
+        claim = decodedJWTJSONObject.getString("http://wso2.org/claims/lastname");
+        assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name".concat(endUser)));
+        claim = decodedJWTJSONObject.getString("http://wso2.org/claims/mobile");
+        assertTrue("JWT claim mobile  not received" + claim, claim.contains("94123456987"));
+        claim = decodedJWTJSONObject.getString("http://wso2.org/claims/organization");
+        assertTrue("JWT claim mobile  not received" + claim, claim.contains("ABC".concat(endUser)));
     }
 }
