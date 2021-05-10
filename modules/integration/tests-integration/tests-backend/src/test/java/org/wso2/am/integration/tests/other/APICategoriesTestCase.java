@@ -34,6 +34,7 @@ import org.wso2.am.integration.clients.admin.api.dto.APICategoryListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
@@ -44,7 +45,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
+public class APICategoriesTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APICategoriesTestCase.class);
     private AdminApiTestHelper adminApiTestHelper;
     private APICategoryDTO apiCategoryDTO;
