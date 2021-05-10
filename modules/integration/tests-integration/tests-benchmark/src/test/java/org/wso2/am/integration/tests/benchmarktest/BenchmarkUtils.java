@@ -1,0 +1,264 @@
+/*
+ *Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *WSO2 Inc. licenses this file to you under the Apache License,
+ *Version 2.0 (the "License"); you may not use this file except
+ *in compliance with the License.
+ *You may obtain a copy of the License at
+ *
+ *http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *Unless required by applicable law or agreed to in writing,
+ *software distributed under the License is distributed on an
+ *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *KIND, either express or implied.  See the License for the
+ *specific language governing permissions and limitations
+ *under the License.
+ */
+
+package org.wso2.am.integration.tests.benchmarktest;
+
+import static junit.framework.Assert.assertFalse;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.frameworkutils.enums.OperatingSystems;
+
+public class BenchmarkUtils extends APIMIntegrationBaseTest {
+
+    private static final int PORT_OFFSET = 500;
+    private static final String APIM_URL_SYSTEM_PROPERTY = "apim.url";
+    private static final String APIM_HOME = System.getProperty("carbon.home");
+    private static final String IN_FILE_PATH = APIM_HOME + "/repository/logs/correlation.log";
+    private static final String OUT_FILE_PATH = "logs/benchmark-tests/";
+    public static String apimUrl;
+    static String[] excludedLines = {"select um_id, um_domain_name, um_email, um_created_date, um_active from um_tenant order by um_id|jdbc:h2:./repository/database/wso2shared_db",
+            "select reg_path, reg_user_id, reg_logged_time, reg_action, reg_action_data from reg_log where reg_logged_time>? and reg_logged_time<? and reg_tenant_id=? order by reg_logged_time desc|jdbc:h2:./repository/database/"};
+    private static String gateway_Url;
+    private static final String RESTFUL_API_VERSION = "v1";
+    private static final String SUPER_TENANT = "superTenant";
+    private static final String HTTP_PROTOCOL = "https://";
+    public static String tenant;
+
+    public static String setActivityID() {
+
+        Date date = new Date();
+        String CorellationID = "benchmark_correlationID_" + (new Timestamp(date.getTime())) + "_";
+        return CorellationID;
+    }
+
+    public static int extractCountsFromLog(String logFile, String testType, LocalTime startTime, String provider)
+            throws InterruptedException {
+        String tenantName;
+        String correlationID = System.getProperty("testName");
+        if(correlationID==null){
+            correlationID = "";
+        }else{
+            correlationID = correlationID.toLowerCase();
+        }
+        if(tenant!=SUPER_TENANT){
+            tenantName = provider;
+        }
+        else {  tenantName=tenant;
+        }
+        String logAttribute = null;
+        File directory = new File(OUT_FILE_PATH);
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        if (testType == "http") {
+            logAttribute = "http-in-request";
+        } else {
+            logAttribute = testType;
+        }
+        int noOfLinesExecuted = 0;
+        int loop = 0;
+        int previous;
+        do {
+            loop++;
+            previous = readlines(startTime,logAttribute,correlationID);
+            Thread.sleep(2000);
+        } while(previous != readlines(startTime,logAttribute,correlationID) && loop<10);
+
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(IN_FILE_PATH));
+    // lines executed are logged in to a file starting with test method name,
+             Writer writer = new BufferedWriter(
+                     new OutputStreamWriter(new FileOutputStream(OUT_FILE_PATH + logFile + "_" + testType +"_"+tenantName+".log"), "utf-8"))
+        ) {
+            String readLine;
+            while ((readLine = bufferedReader.readLine()) != null) {
+                String logLine = readLine.toLowerCase();
+    // lines executed will be captured with log Attribute
+                if (logLine.contains("|" + logAttribute + "|")) {
+                    String regex = "(\\d{2}:\\d{2}:\\d{2})";
+                    Matcher matcher = Pattern.compile(regex).matcher(logLine);
+                    if (matcher.find()) {
+                        LocalTime logtime = LocalTime.parse(matcher.group(1));
+                        if (logtime.isAfter(startTime)) {
+                            logLine.substring(logLine.indexOf("|" + logAttribute + "|") + 3, logLine.length());
+                            if (logLine.contains("|"+correlationID+"|") && !logLine.contains(excludedLines[0]) && !logLine.contains(excludedLines[1])) {
+                                noOfLinesExecuted++;
+                                writer.write(logLine);
+                                writer.write(System.lineSeparator());
+                            }
+                        }
+                    }
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return noOfLinesExecuted;
+    }
+
+    public static int readlines(LocalTime startTime,String logAttribute, String correlationID) {
+        int noOfLinesExecuted=0;
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(IN_FILE_PATH));)
+     {
+         String readLine;
+         while ((readLine = bufferedReader.readLine()) != null) {
+             String logLine = readLine.toLowerCase();
+             // lines executed will be captured with log Attribute
+             if (logLine.contains("|" + logAttribute + "|")) {
+                 String regex = "(\\d{2}:\\d{2}:\\d{2})";
+                 Matcher matcher = Pattern.compile(regex).matcher(logLine);
+                 if (matcher.find()) {
+                     LocalTime logtime = LocalTime.parse(matcher.group(1));
+                     if (logtime.isAfter(startTime)) {
+                         logLine.substring(logLine.indexOf("|" + logAttribute + "|") + 3, logLine.length());
+                         if (logLine.contains("|"+correlationID+"|") && !logLine.contains(excludedLines[0]) && !logLine.contains(excludedLines[1])) {
+                             noOfLinesExecuted++;
+                         }
+                     }
+                 }
+             }
+         }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return noOfLinesExecuted;
+    }
+
+
+    public static LocalTime getCurrentTimeStampAndSetCorrelationID(String testName) throws InterruptedException {
+        Thread.sleep(1500);
+        LocalDateTime ldt = LocalDateTime.now();
+        LocalTime currentTime = LocalTime.parse(DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ENGLISH).format(ldt));
+        Thread.sleep(1000);
+        System.setProperty("testName", testName + "_" + currentTime);
+        return currentTime;
+    }
+
+    public static void validateBenchmark(int benchmark, int actualCount) {
+
+        boolean exceedsLimit = false;
+
+        benchmark = (int) (benchmark + (benchmark * 0.01));
+    // Validate if No. of statements executed exceeds the benchmark
+        if (actualCount > benchmark) {
+            exceedsLimit = false;
+        }
+        assertFalse(
+                "Exceeds limit! " + actualCount + " were Executed, but the Benchmark value is " + benchmark,
+                exceedsLimit);
+    }
+
+    public static String getSystemResourceLocation() {
+
+        String resourceLocation;
+        if (System.getProperty("os.name").toLowerCase().contains(OperatingSystems.WINDOWS.name().toLowerCase())) {
+            resourceLocation = System.getProperty("framework.resource.location").replace("/", "\\");
+        } else {
+            resourceLocation = System.getProperty("framework.resource.location").replace("/", "/");
+        }
+
+        return resourceLocation;
+    }
+
+    public static int getBenchmark(String testType, String scenario) throws IOException, ParseException {
+
+        String benchmarkValue = null;
+        String resourceLocation;
+        String tenantName;
+        if(tenant!=SUPER_TENANT){
+            tenantName = "tenant";
+        }
+        else {  tenantName=tenant;
+        }
+        resourceLocation = getSystemResourceLocation() + "benchmark-values" + File.separator + "benchmark-values-" + testType +"-"+ tenantName +".json";
+        JSONParser parser = new JSONParser();
+        JSONArray a = (JSONArray) parser.parse(new FileReader(resourceLocation));
+
+        for (Object o : a) {
+            JSONObject values = (JSONObject) o;
+            benchmarkValue = (String) values.get(scenario);
+        }
+        return Integer.parseInt(benchmarkValue);
+    }
+
+    public static void writeResultsToFile(String fileName, String testName, int actual, int benchmark, String provider) throws IOException {
+        String tenantName;
+        if(tenant!=SUPER_TENANT){
+            tenantName = provider;
+        }
+        else {  tenantName= tenant;
+        }
+        String outputFile = OUT_FILE_PATH + "Results_" + fileName + ".log";
+        File f = new File(outputFile);
+        if (!f.exists()) {
+            f.createNewFile();
+        }
+        BufferedWriter bw = new BufferedWriter(new FileWriter(f, true));
+        bw.append(testName +"  :  "+ tenantName +"  :  Actual count is " + actual + "   Benchmark is  " + benchmark);
+        bw.newLine();
+        bw.close();
+    }
+
+    public static void setTenancy(TestUserMode userMode) throws InterruptedException {
+        if (userMode == TestUserMode.TENANT_ADMIN) {
+    tenant = userMode.name();
+    } else {
+    tenant = SUPER_TENANT;
+    }
+    }
+
+    public static void validateBenchmarkResults(String testName, String testType, LocalTime startTime, String scenario,String provider)
+        throws InterruptedException, IOException, ParseException {
+
+        int benchmark = getBenchmark(testType,scenario);
+        int actualCount = extractCountsFromLog(testName, testType, startTime, provider);
+        writeResultsToFile(testType, testName, actualCount, benchmark, provider);
+        validateBenchmark(benchmark, actualCount);
+    }
+
+
+
+
+
+}

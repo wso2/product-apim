@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <api xmlns="http://ws.apache.org/ns/synapse"
+         name="JWKS-Backend"
+         context="/jwks/1.0">
+        <resource methods="GET" url-mapping="/" faultSequence="fault">
+            <inSequence>
+                        <payloadFactory media-type="json">
+                            <format>{
+                                "keys":[
+                                {
+                                "kty":"RSA",
+                                "x5t#S256":"7VaDCl5oRMVuRkzsdJVXyhB6XfQShbm_lu4l7gWoFv0",
+                                "e":"AQAB",
+                                "kid":"idp2certificate",
+                                "x5c":[
+                                "MIIDVzCCAj+gAwIBAgIEGYT8nzANBgkqhkiG9w0BAQsFADBcMQswCQYDVQQGEwJMSzEQMA4GA1UECBMHV2VzdGVybjEQMA4GA1UEBxMHQ09MT01CTzELMAkGA1UEChMCYWExDDAKBgNVBAsTA2FiYzEOMAwGA1UEAxMFYWJjZGUwHhcNMjAwMjE3MDcxODIxWhcNMjAwNTE3MDcxODIxWjBcMQswCQYDVQQGEwJMSzEQMA4GA1UECBMHV2VzdGVybjEQMA4GA1UEBxMHQ09MT01CTzELMAkGA1UEChMCYWExDDAKBgNVBAsTA2FiYzEOMAwGA1UEAxMFYWJjZGUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCwhKAMWl4fcrKojkQwWb7pbJaQTR+3NeiJP7O\/UgLvizejntlSTVnjYOVWl\/CjaNoNIvrqMfVhqX9bToNHabiV4qeK+izWnNzcW7zCI2e4fcFvIZtr9D3vFLixYo1+qC6ZxZ3AIYYP+kjRrXtW5pxynJYfx3di5IHUUZ\/hcvLpNz3FhIp0BZFoW\/Qlfoa39o8KBn5Xd6K62oxKoDQzaJhGa+wHra4uKV7XehEvXWjbnBvaP3gAm4MfZD\/pbllby7nrdXxRUsx1Qb3Q9vb1uNCvZefa3lOnsIkFXPhY5UkffFySZ5PEPRLi\/xpRZMVm5ZiJ24Lq7bQBDtAgJLNGXf29AgMBAAGjITAfMB0GA1UdDgQWBBRfvJ7POXXy77q3tj9YSzJelzlOgzANBgkqhkiG9w0BAQsFAAOCAQEAQdFeGneEGFjvCjTtZr9tbFtkwFtkeVjtR8ObSwnztu5XMAF27O9tIEsA8Jv6IfM7o\/GbX1bHOPh6+kc+KQrfaI7Ptcrhvj2PNPkeV2KCDvZSpqnjpLKBuga0midFD5pn4rfk8RhV9fUYpGXFJm8w9RvjAB61MpFha0q50n+aO0xscRbvtX6572vocPLcXgV9VLTK7sA7YMQdanaRoQH4uaJkgKflyiFYKGP1FnIVnAaHP8fH1QNngMqLLOQBA\/SAAkKZycladJ\/gytMSJ4x707Ajl7MYccOm+m3VG523xfG33A\/c+y19K9xzOHE1AFOoWMmOMC0A0r5drFimPQRFkQ=="
+                                ],
+                                "n":"sISgDFpeH3KyqI5EMFm-6WyWkE0ftzXoiT-zv1IC74s3o57ZUk1Z42DlVpfwo2jaDSL66jH1Yal_W06DR2m4leKnivos1pzc3Fu8wiNnuH3BbyGba_Q97xS4sWKNfqgumcWdwCGGD_pI0a17VuaccpyWH8d3YuSB1FGf4XLy6Tc9xYSKdAWRaFv0JX6Gt_aPCgZ-V3eiutqMSqA0M2iYRmvsB62uLile13oRL11o25wb2j94AJuDH2Q_6W5ZW8u563V8UVLMdUG90Pb29bjQr2Xn2t5Tp7CJBVz4WOVJH3xckmeTxD0S4v8aUWTFZuWYiduC6u20AQ7QICSzRl39vQ"
+                                }
+                                ]
+                                }</format>
+                        </payloadFactory>
+                <property name="messageType" value="application/json" scope="axis2"/>
+                <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+                <respond/>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+    </api>
+
