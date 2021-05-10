@@ -338,7 +338,7 @@
   "qpid.queue.auto_register": true,
   "qpid.queue.view_message_counts": false,
   "qpid.status_updates": "ON",
-  "config_endpoint": "https://localhost:8080/auth/v1",
+  "config_endpoint": "https://analytics-event-auth.choreo.dev/auth/v1",
   "governance.comparators": [
     "org.wso2.carbon.governance.comparator.text.TextComparator",
     "org.wso2.carbon.governance.comparator.wsdl.WSDLComparator"
