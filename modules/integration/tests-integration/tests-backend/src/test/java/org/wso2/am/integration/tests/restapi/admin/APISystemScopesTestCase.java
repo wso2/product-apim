@@ -8,6 +8,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.testng.annotations.AfterClass;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.RoleAliasDTO;
@@ -93,6 +94,11 @@ public class APISystemScopesTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
 
         adminApiTestHelper.verifyRoleAliasListDTO(response.getData(), updatedRoleAliasListDTO);
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        super.cleanUp();
     }
 
 }
