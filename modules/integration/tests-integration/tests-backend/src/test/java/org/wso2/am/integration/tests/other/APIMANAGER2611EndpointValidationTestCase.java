@@ -72,10 +72,8 @@ public class APIMANAGER2611EndpointValidationTestCase extends APIManagerLifecycl
         apiId = restAPIPublisher.addAPI(apiRequest).getData();
         HttpResponse response = restAPIPublisher.checkValidEndpoint(endPointToValidate, apiId);
         int statusCode = response.getResponseCode();
+        // Now code will check the response status hence response message remove
         Assert.assertEquals(statusCode, HttpStatus.SC_OK, "response code mismatched");
-        String responseString = response.getData();
-        Assert.assertTrue(responseString.contains("OK"), "Invalid end point " + endPointToValidate
-                + ":" + responseString);
     }
 
     @AfterClass(alwaysRun = true)
