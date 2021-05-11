@@ -1,9 +1,0 @@
-[
-  {
-    "API_CREATE":"951",
-    "API_PUBLISH" : "1146",
-    "RETRIEVE_ALL_PUBLISHER" : "275",
-    "RETRIEVE_ALL_STORE" : "303",
-    "CREATE_APPLICATION" : "295"
-  }
-]

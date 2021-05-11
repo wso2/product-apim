@@ -1342,6 +1342,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse addAPIRevision(APIRevisionRequest apiRevisionRequest) throws ApiException {
 
+        setActivityID();
         APIRevisionDTO apiRevisionDTO = new APIRevisionDTO();
         apiRevisionDTO.setDescription(apiRevisionRequest.getDescription());
         Gson gson = new Gson();
@@ -1421,6 +1422,7 @@ public class RestAPIPublisherImpl {
                                           List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList)
             throws ApiException {
 
+        setActivityID();
         Gson gson = new Gson();
         List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOList = new ArrayList<>();
         List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOResponseList = new ArrayList<>();

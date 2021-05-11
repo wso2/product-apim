@@ -9,6 +9,7 @@
     "CREATE_APPLICATION" : "401",
     "SUBSCRIBE_TO_API" : "47",
     "GENERATE_JWT_TOKEN" : "137",
-    "INVOKE_API" :"7"
+    "INVOKE_API" :"7",
+    "CREATE_REVISION_AND_DEPLOY" :"320"
   }
 ]
