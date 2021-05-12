@@ -45,8 +45,7 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.SUPER_TENANT_EMAIL_USER}};
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN}};
     }
 
     @BeforeClass(alwaysRun = true)
@@ -350,107 +349,6 @@ public class APIDenyPolicyTestCase extends APIManagerLifecycleBaseTest {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR);
         }
 
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Test add API deny policy with invalid Ip Address range", dependsOnMethods = "testAddAPIDenyPolicyInvalidIPAddressRange")
-    public void testInvokeContextDeniedAPI() throws Exception {
-        String API_NAME = "DenyInvokeTestAPI";
-        String API_CONTEXT = "DenyInvokeContext";
-        String API_END_POINT_METHOD = "/customers/123";
-
-        String API_VERSION_1_0_0 = "1.0.0";
-
-        String APPLICATION_NAME = "TestApplicationForCheckingDenyPolicy";
-
-        String apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
-        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
-
-        apiRequest.setVersion(API_VERSION_1_0_0);
-        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiRequest.setProvider(publisherContext.getContextTenant().getContextUser().getUserName());
-
-        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
-                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.JWT);
-        String applicationId = applicationResponse.getData();
-
-        invokingAPIId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
-
-        //create Deny Policy
-        boolean conditionStatus = true;
-        Map<String, Object> valueMap = new LinkedHashMap<>();
-        valueMap.put("invert", false);
-        valueMap.put("fixedIp", "127.0.0.1");
-
-        BlockingConditionDTO blockingConditionDTO = new BlockingConditionDTO();
-        blockingConditionDTO.setConditionStatus(conditionStatus);
-        blockingConditionDTO.setConditionValue(valueMap);
-        blockingConditionDTO.setConditionType(BlockingConditionDTO.ConditionTypeEnum.IP);
-
-        ApiResponse<BlockingConditionDTO> addedPolicy = restAPIAdmin.addDenyThrottlingPolicy(blockingConditionDTO);
-
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore
-                .generateKeys(applicationId, "36000", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
-                        grantTypes);
-
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("accept", "text/xml");
-        requestHeaders.put("Authorization", "Bearer " + applicationKeyDTO.getToken().getAccessToken());
-
-        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
-
-        HttpResponse invokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeaders);
-        Assert.assertEquals(invokeResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN,
-                "Response code mismatched when denied API was invoked");
-
-        restAPIAdmin.deleteDenyThrottlingPolicy(addedPolicy.getData().getConditionId());
-        restAPIStore.deleteApplication(applicationId);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Test add API deny policy with invalid Ip Address range", dependsOnMethods = "testInvokeContextDeniedAPI")
-    public void testInvokeInverseContextDeniedAPI() throws Exception {
-        String API_CONTEXT = "DenyInvokeContext";
-        String API_VERSION_1_0_0 = "1.0.0";
-
-        HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
-                "Test Application Inverted", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.JWT);
-        String applicationId = applicationResponse.getData();
-
-        HttpResponse inverseDenyPolicyApplicationResponse = subscribeToAPIUsingRest(invokingAPIId, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
-
-        boolean conditionStatus = true;
-        Map<String, Object> valueMap = new LinkedHashMap<>();
-        valueMap.put("invert", true);
-        valueMap.put("fixedIp", "127.0.0.1");
-
-        BlockingConditionDTO blockingConditionDTO = new BlockingConditionDTO();
-        blockingConditionDTO.setConditionStatus(conditionStatus);
-        blockingConditionDTO.setConditionValue(valueMap);
-        blockingConditionDTO.setConditionType(BlockingConditionDTO.ConditionTypeEnum.IP);
-
-        ApiResponse<BlockingConditionDTO> addedPolicy = restAPIAdmin.addDenyThrottlingPolicy(blockingConditionDTO);
-
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore
-                .generateKeys(applicationId, "36000", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
-                        grantTypes);
-
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("accept", "text/xml");
-        requestHeaders.put("Authorization", "Bearer " + applicationKeyDTO.getToken().getAccessToken());
-
-        HttpResponse invokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0), requestHeaders);
-        Assert.assertNotEquals(invokeResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN,
-                "Incorrect response code when inverted deny policy was invoked");
-
-        restAPIAdmin.deleteDenyThrottlingPolicy(addedPolicy.getData().getConditionId());
-        restAPIStore.deleteApplication(applicationId);
     }
 
     @AfterClass(alwaysRun = true)
