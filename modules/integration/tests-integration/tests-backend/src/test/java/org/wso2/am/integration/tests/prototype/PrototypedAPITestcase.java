@@ -261,7 +261,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         additionalPropertiesObj.put("context", context);
         org.json.JSONObject updatedMockObj = new org.json.JSONObject(updatedMock);
         updatedMockObj.put("provider", user.getUserName());
-        File file = geTempFileWithContent(originalDefinition);
+        File file = getTempFileWithContent(originalDefinition);
         // Create an api by importing OAS3 file
         APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
         String apiImportId = apidto.getId();
@@ -311,7 +311,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         additionalPropertiesObj.put("provider", user.getUserName());
         additionalPropertiesObj.put("context", context);
 
-        File file = geTempFileWithContent(originalDefinition);
+        File file = getTempFileWithContent(originalDefinition);
         // Create an api by importing OAS2 file
         APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
         String apiImportId = apidto.getId();
@@ -348,7 +348,7 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         super.cleanUp();
     }
 
-    private File geTempFileWithContent(String swagger) throws Exception {
+    private File getTempFileWithContent(String swagger) throws Exception {
 
         File temp = File.createTempFile("swagger", ".json");
         temp.deleteOnExit();
