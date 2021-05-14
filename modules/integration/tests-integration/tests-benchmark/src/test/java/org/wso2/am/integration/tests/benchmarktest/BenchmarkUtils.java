@@ -52,8 +52,6 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
     private static final String OUT_FILE_PATH = "logs/benchmark-tests/";
     private static final String SUPER_TENANT = "superTenant";
     public static String tenant;
-    static String[] excludedLines = {"select um_id, um_domain_name, um_email, um_created_date, um_active from um_tenant order by um_id|jdbc:h2:./repository/database/wso2shared_db",
-            "select reg_path, reg_user_id, reg_logged_time, reg_action, reg_action_data from reg_log where reg_logged_time>? and reg_logged_time<? and reg_tenant_id=? order by reg_logged_time desc|jdbc:h2:./repository/database/"};
 
     public static int extractCountsFromLog(String logFile, String testType, LocalTime startTime, String provider)
             throws InterruptedException {
@@ -106,7 +104,7 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
                         LocalTime logtime = LocalTime.parse(matcher.group(1));
                         if (logtime.isAfter(startTime)) {
                             logLine.substring(logLine.indexOf("|" + logAttribute + "|") + 3, logLine.length());
-                            if (logLine.contains("|" + correlationID + "|") && !logLine.contains(excludedLines[0]) && !logLine.contains(excludedLines[1])) {
+                            if (logLine.contains("|" + correlationID + "|")) {
                                 noOfLinesExecuted++;
                                 writer.write(logLine);
                                 writer.write(System.lineSeparator());
@@ -137,7 +135,7 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
                         LocalTime logtime = LocalTime.parse(matcher.group(1));
                         if (logtime.isAfter(startTime)) {
                             logLine.substring(logLine.indexOf("|" + logAttribute + "|") + 3, logLine.length());
-                            if (logLine.contains("|" + correlationID + "|") && !logLine.contains(excludedLines[0]) && !logLine.contains(excludedLines[1])) {
+                            if (logLine.contains("|" + correlationID + "|")) {
                                 noOfLinesExecuted++;
                             }
                         }
@@ -232,7 +230,7 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
         bw.close();
     }
 
-    public static void setTenancy(TestUserMode userMode) throws InterruptedException {
+    public static void setTenancy(TestUserMode userMode) {
 
         if (userMode == TestUserMode.TENANT_ADMIN) {
             tenant = userMode.name();
