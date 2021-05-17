@@ -81,7 +81,7 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
         int noOfLinesExecuted = 0;
         int loop = 0;
         int previous;
-        if(testType=="jdbc") {
+        if (testType == "jdbc") {
             // Wait till all the correlation logs are printed
             do {
                 loop++;
@@ -114,7 +114,6 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
                     }
                 }
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -165,7 +164,7 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
 
         boolean exceedsLimit = false;
         String message = "External API requests";
-        if(testType=="jdbc"){
+        if (testType == "jdbc") {
             message = "SQL Queries executed";
         }
         // Validate if No. of statements executed exceeds the benchmark
@@ -173,7 +172,7 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
             exceedsLimit = true;
         }
         assertFalse(
-                "Exceeded the Benchmark value of "+message+"! Benchmark value is " + benchmark  +" But "+ actualCount + " were Executed",
+                "Exceeded the Benchmark value of " + message + "! Benchmark value is " + benchmark + " But " + actualCount + " were Executed",
                 exceedsLimit);
     }
 
@@ -185,7 +184,6 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
         } else {
             resourceLocation = resourceLocation.replace("/", "/");
         }
-
         return resourceLocation;
     }
 
@@ -202,7 +200,6 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
         resourceLocation = getSystemResourceLocation() + "benchmark-values" + File.separator + "benchmark-values-" + testType + "-" + tenantName + ".json";
         JSONParser parser = new JSONParser();
         JSONArray a = (JSONArray) parser.parse(new FileReader(resourceLocation));
-
         for (Object o : a) {
             JSONObject values = (JSONObject) o;
             benchmarkValue = (String) values.get(scenario);

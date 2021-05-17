@@ -131,7 +131,6 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
                 .changeAPILifeCycleStatus(apiUUID, APILifeCycleAction.PUBLISH.getAction(), null);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "API publish Response code is invalid " + apiUUID);
-
 //        Validate the JDBC query counts executed from correlation log
         benchmarkUtils.validateBenchmarkResults(testName, JDBC_METRIC, startTime, scenario, providerName);
 //        Validate external api request counts executed from correlation log
@@ -149,7 +148,6 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
         BenchmarkUtils.setTenancy(userMode);
         int noOfAPISCreated = 20;
         int noOfAPISRetrieved = 10;
-
         for (int i = 0; i < noOfAPISCreated; i++) {
             apiUUID = createAnApi(testName + i, testName + "_context" + i);
             HttpResponse response = restAPIPublisher
@@ -219,7 +217,6 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
         startTime = benchmarkUtils.getCurrentTimeStampAndSetCorrelationID(testName);
         APIDTO apidto = restAPIStore.getAPI(apiUUID);
         assertTrue(StringUtils.isNotEmpty(apidto.getId()));
-
 //        Validate the JDBC query counts executed from correlation log
         benchmarkUtils.validateBenchmarkResults(testName, JDBC_METRIC, startTime, scenario, providerName);
 //        Validate external api request counts executed from correlation log
@@ -261,7 +258,6 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
         applicationID = applicationResponse.getData();
-
         startTime = benchmarkUtils.getCurrentTimeStampAndSetCorrelationID(testName);
         restAPIStore.subscribeToAPI(apiUUID, applicationID, TIER_UNLIMITED);
 //        Validate the JDBC query counts executed from correlation log
@@ -282,11 +278,9 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         testName = method.getName();
         benchmarkUtils.setTenancy(userMode);
-
         apiUUID = createAnApi(testName, testName + "_context");
         restAPIPublisher
                 .changeAPILifeCycleStatus(apiUUID, APILifeCycleAction.PUBLISH.getAction(), null);
-
         HttpResponse applicationResponse = restAPIStore.createApplication("Application_" + testName,
                 "Test Application For Benchmark",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
@@ -297,7 +291,6 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
         ApplicationKeyDTO apiKeyDTO = restAPIStore
                 .generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
                         grantTypes);
-
 //        Validate the JDBC query counts executed from correlation log
         benchmarkUtils.validateBenchmarkResults(testName, JDBC_METRIC, startTime, scenario, providerName);
 //        Validate external api request counts executed from correlation log
@@ -319,7 +312,6 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
         context = "context_" + testName;
         apiUUID = createAnApi(testName, context);
         apiIdList.add(apiUUID);
-
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         restAPIPublisher.changeAPILifeCycleStatus(apiUUID, APILifeCycleAction.PUBLISH.getAction(), null);
         createAPIRevisionAndDeployUsingRest(apiUUID, restAPIPublisher);
@@ -342,7 +334,6 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttps(context, API_VERSION_1_0_0) + "", requestHeaders);
         assertEquals(invokeResponse.getResponseCode(),
                 200, "Response code mismatched");
-
 //        Validate the JDBC query counts executed from correlation log
         benchmarkUtils.validateBenchmarkResults(testName, JDBC_METRIC, startTime, scenario, providerName);
 //        Validate external api request counts executed from correlation log
@@ -362,13 +353,11 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
         context = "context_" + testName;
         apiUUID = createAnApi(testName, context);
         apiIdList.add(apiUUID);
-
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         restAPIPublisher.changeAPILifeCycleStatus(apiUUID, APILifeCycleAction.PUBLISH.getAction(), null);
         startTime = benchmarkUtils.getCurrentTimeStampAndSetCorrelationID(testName);
         String revisionUUID = createAPIRevisionAndDeployUsingRest(apiUUID, restAPIPublisher);
         Assert.notNull(revisionUUID);
-
 //        Validate the JDBC query counts executed from correlation log
         benchmarkUtils.validateBenchmarkResults(testName, JDBC_METRIC, startTime, scenario, providerName);
 //        Validate external api request counts executed from correlation log
@@ -399,7 +388,6 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
         //Add the API using the API publisher.
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
         apiUUID = apiResponse.getData();
-
         assertEquals(apiResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
                 "Create API Response Code is invalid." + apiUUID);
         idList.add(apiUUID);
