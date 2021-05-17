@@ -81,13 +81,14 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
         int noOfLinesExecuted = 0;
         int loop = 0;
         int previous;
-        // Wait till all the correlation logs are printed
-        do {
-            loop++;
-            previous = fetchNoOflines(startTime, logAttribute, correlationID);
-            Thread.sleep(2000);
-        } while (previous != fetchNoOflines(startTime, logAttribute, correlationID) && loop < 10);
-
+        if(testType=="jdbc") {
+            // Wait till all the correlation logs are printed
+            do {
+                loop++;
+                previous = fetchNoOflines(startTime, logAttribute, correlationID);
+                Thread.sleep(2000);
+            } while (previous != fetchNoOflines(startTime, logAttribute, correlationID) && loop < 10);
+        }
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(IN_FILE_PATH));
              // lines executed are logged in to a file starting with test method name,
              Writer writer = new BufferedWriter(
@@ -160,17 +161,19 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
         return currentTime;
     }
 
-    public static void validateBenchmark(int benchmark, int actualCount) {
+    public static void validateBenchmark(int benchmark, int actualCount, String testType) {
 
         boolean exceedsLimit = false;
-
-        benchmark = (int) (benchmark + (benchmark * 0.01));
+        String message = "External API requests";
+        if(testType=="jdbc"){
+            message = "SQL Queries executed";
+        }
         // Validate if No. of statements executed exceeds the benchmark
         if (actualCount > benchmark) {
             exceedsLimit = true;
         }
         assertFalse(
-                "Exceeds limit! " + actualCount + " were Executed, but the Benchmark value is " + benchmark,
+                "Exceeded the Benchmark value of "+message+"! Benchmark value is " + benchmark  +" But "+ actualCount + " were Executed",
                 exceedsLimit);
     }
 
@@ -245,7 +248,7 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
         int benchmark = getBenchmark(testType, scenario);
         int actualCount = extractCountsFromLog(testName, testType, startTime, provider);
         writeResultsToFile(testType, testName, actualCount, benchmark, provider);
-        validateBenchmark(benchmark, actualCount);
+        validateBenchmark(benchmark, actualCount, testType);
     }
 
 }
