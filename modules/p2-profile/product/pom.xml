@@ -312,6 +312,9 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.ui.portals:${carbon.apimgt.ui.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.internal.service.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
@@ -2929,12 +2932,12 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.store.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
+                                    <id>org.wso2.carbon.apimgt.ui.devportal.feature.group</id>
+                                    <version>${carbon.apimgt.ui.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.admin.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
+                                    <id>org.wso2.carbon.apimgt.ui.admin.feature.group</id>
+                                    <version>${carbon.apimgt.ui.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.tokenmgt.feature.group</id>
@@ -3452,8 +3455,8 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.publisher.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
+                                    <id>org.wso2.carbon.apimgt.ui.publisher.feature.group</id>
+                                    <version>${carbon.apimgt.ui.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
