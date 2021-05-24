@@ -1,7 +1,0 @@
-<placeOrder xmlns="http://services.samples">
-  <order>
-     <price>50</price>
-     <quantity>10</quantity>
-     <symbol>IBM</symbol>
-  </order>
-</placeOrder>

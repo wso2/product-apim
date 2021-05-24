@@ -128,55 +128,55 @@
                     </user>
                 </admin>
                 <users>
-                    <user key="userKey1">
-                        <userName>testu1</userName>
-                        <password>testu1pass</password>
-                    </user>
-                    <user key="userKey2">
-                        <userName>testu2</userName>
-                        <password>testu2pass</password>
-                    </user>
-                    <user key="userKey3">
-                        <userName>testu3</userName>
-                        <password>testu3pass</password>
-                    </user>
-                    <user key="emailUser">
-                        <userName>test@gmail.com</userName>
-                        <password>testuser31</password>
-                        <roles>
-                            <role>Internal/publisher</role>
-                            <role>Internal/creator</role>
-                            <role>Internal/subscriber</role>
-                            <role>admin</role>
-                        </roles>
-                    </user>
-                    <user key="emailUser2">
-                        <userName>test2@gmail.com</userName>
-                        <password>testuser31</password>
-                        <roles>
-                            <role>Internal/publisher</role>
-                            <role>Internal/creator</role>
-                            <role>Internal/subscriber</role>
-                        </roles>
-                    </user>
-                    <user key="emailUser3">
-                        <userName>test3@gmail.com</userName>
-                        <password>testuser31</password>
-                        <roles>
-                            <role>Internal/publisher</role>
-                            <role>Internal/creator</role>
-                            <role>Internal/subscriber</role>
-                        </roles>
-                    </user>
-                    <user key="userStoreUser">
-                        <userName>secondary/secondaryuser</userName>
-                        <password>testuser31</password>
-                        <roles>
-                            <role>Internal/publisher</role>
-                            <role>Internal/creator</role>
-                            <role>Internal/subscriber</role>
-                        </roles>
-                    </user>
+<!--                    <user key="userKey1">-->
+<!--                        <userName>testu1</userName>-->
+<!--                        <password>testu1pass</password>-->
+<!--                    </user>-->
+<!--                    <user key="userKey2">-->
+<!--                        <userName>testu2</userName>-->
+<!--                        <password>testu2pass</password>-->
+<!--                    </user>-->
+<!--                    <user key="userKey3">-->
+<!--                        <userName>testu3</userName>-->
+<!--                        <password>testu3pass</password>-->
+<!--                    </user>-->
+<!--                    <user key="emailUser">-->
+<!--                        <userName>test@gmail.com</userName>-->
+<!--                        <password>testuser31</password>-->
+<!--                        <roles>-->
+<!--                            <role>Internal/publisher</role>-->
+<!--                            <role>Internal/creator</role>-->
+<!--                            <role>Internal/subscriber</role>-->
+<!--                            <role>admin</role>-->
+<!--                        </roles>-->
+<!--                    </user>-->
+<!--                    <user key="emailUser2">-->
+<!--                        <userName>test2@gmail.com</userName>-->
+<!--                        <password>testuser31</password>-->
+<!--                        <roles>-->
+<!--                            <role>Internal/publisher</role>-->
+<!--                            <role>Internal/creator</role>-->
+<!--                            <role>Internal/subscriber</role>-->
+<!--                        </roles>-->
+<!--                    </user>-->
+<!--                    <user key="emailUser3">-->
+<!--                        <userName>test3@gmail.com</userName>-->
+<!--                        <password>testuser31</password>-->
+<!--                        <roles>-->
+<!--                            <role>Internal/publisher</role>-->
+<!--                            <role>Internal/creator</role>-->
+<!--                            <role>Internal/subscriber</role>-->
+<!--                        </roles>-->
+<!--                    </user>-->
+<!--                    <user key="userStoreUser">-->
+<!--                        <userName>secondary/secondaryuser</userName>-->
+<!--                        <password>testuser31</password>-->
+<!--                        <roles>-->
+<!--                            <role>Internal/publisher</role>-->
+<!--                            <role>Internal/creator</role>-->
+<!--                            <role>Internal/subscriber</role>-->
+<!--                        </roles>-->
+<!--                    </user>-->
                 </users>
             </tenant>
         </superTenant>
@@ -189,80 +189,45 @@
                     </user>
                 </admin>
                 <users>
-                    <user key="user1">
-                        <userName>testuser11</userName>
-                        <password>testuser11</password>
-                    </user>
-                    <user key="user2">
-                        <userName>testuser21</userName>
-                        <password>testuser21</password>
-                    </user>
-                    <user key="emailUser">
-                        <userName>test@gmail.com</userName>
-                        <password>testuser31</password>
-                        <roles>
-                            <role>Internal/publisher</role>
-                            <role>Internal/creator</role>
-                            <role>Internal/subscriber</role>
-                            <role>admin</role>
-                        </roles>
-                    </user>
-                    <user key="emailUser2">
-                        <userName>test2@gmail.com</userName>
-                        <password>testuser31</password>
-                        <roles>
-                            <role>Internal/publisher</role>
-                            <role>Internal/creator</role>
-                            <role>Internal/subscriber</role>
-                        </roles>
-                    </user>
-                    <user key="emailUser3">
-                        <userName>test3@gmail.com</userName>
-                        <password>testuser31</password>
-                        <roles>
-                            <role>Internal/publisher</role>
-                            <role>Internal/creator</role>
-                            <role>Internal/subscriber</role>
-                        </roles>
-                    </user>
+<!--                    <user key="user1">-->
+<!--                        <userName>testuser11</userName>-->
+<!--                        <password>testuser11</password>-->
+<!--                    </user>-->
+<!--                    <user key="user2">-->
+<!--                        <userName>testuser21</userName>-->
+<!--                        <password>testuser21</password>-->
+<!--                    </user>-->
+<!--                    <user key="emailUser">-->
+<!--                        <userName>test@gmail.com</userName>-->
+<!--                        <password>testuser31</password>-->
+<!--                        <roles>-->
+<!--                            <role>Internal/publisher</role>-->
+<!--                            <role>Internal/creator</role>-->
+<!--                            <role>Internal/subscriber</role>-->
+<!--                            <role>admin</role>-->
+<!--                        </roles>-->
+<!--                    </user>-->
+<!--                    <user key="emailUser2">-->
+<!--                        <userName>test2@gmail.com</userName>-->
+<!--                        <password>testuser31</password>-->
+<!--                        <roles>-->
+<!--                            <role>Internal/publisher</role>-->
+<!--                            <role>Internal/creator</role>-->
+<!--                            <role>Internal/subscriber</role>-->
+<!--                        </roles>-->
+<!--                    </user>-->
+<!--                    <user key="emailUser3">-->
+<!--                        <userName>test3@gmail.com</userName>-->
+<!--                        <password>testuser31</password>-->
+<!--                        <roles>-->
+<!--                            <role>Internal/publisher</role>-->
+<!--                            <role>Internal/creator</role>-->
+<!--                            <role>Internal/subscriber</role>-->
+<!--                        </roles>-->
+<!--                    </user>-->
                 </users>
             </tenant>
-            <!--<tenant domain="abc.com" key="abcDomainKey">-->
-                <!--<admin>-->
-                    <!--<user key="admin">-->
-                        <!--<userName>admin</userName>-->
-                        <!--<password>admin</password>-->
-                    <!--</user>-->
-                <!--</admin>-->
-                <!--<users>-->
-                    <!--<user key="user1">-->
-                        <!--<userName>testuser11</userName>-->
-                        <!--<password>testuser11</password>-->
-                    <!--</user>-->
-                    <!--<user key="user2">-->
-                        <!--<userName>testuser21</userName>-->
-                        <!--<password>testuser21</password>-->
-                    <!--</user>-->
-                <!--</users>-->
-            <!--</tenant>-->
-            <!--<tenant domain="malintha.com" key="malinthaDomainKey">-->
-                <!--<admin>-->
-                    <!--<user key="admin">-->
-                        <!--<userName>admin</userName>-->
-                        <!--<password>admin</password>-->
-                    <!--</user>-->
-                <!--</admin>-->
-                <!--<users>-->
-                    <!--<user key="userm1">-->
-                        <!--<userName>testuse11</userName>-->
-                        <!--<password>testuse11</password>-->
-                    <!--</user>-->
-                    <!--<user key="userm2">-->
-                        <!--<userName>testuse21</userName>-->
-                        <!--<password>testuse21</password>-->
-                    <!--</user>-->
-                <!--</users>-->
-            <!--</tenant>-->
+
         </tenants>
         <roles>
             <role name="role1">
@@ -370,7 +335,7 @@
             <extentionClasses>
                 <class>
                     <!--<name>org.wso2.carbon.automation.extensions.servers.carbonserver.CarbonServerExtension</name>-->
-                    <name>org.wso2.am.framework.extensions.APIMCarbonServerExtension</name>
+                    <name>org.wso2.am.integration.tests.util.APIMCarbonServerExtension</name>
                     <parameter name="-DportOffset" value="500"/>
                     <parameter name="-DenableCorrelationLogs" value="true"/>
                <!--                    <parameter name="-Dsetup" value="true"/>-->

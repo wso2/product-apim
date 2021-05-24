@@ -345,24 +345,24 @@ under the License.
 
     <build>
         <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-thirdparty-km-jar</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.basedir}/src/test/resources/artifacts/AM/configFiles/idpjwt
-                            </outputDirectory>
-                            <includeTypes>jar</includeTypes>
-                            <includeArtifactIds>org.wso2.am.thirdparty.km</includeArtifactIds>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <artifactId>maven-dependency-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>copy-thirdparty-km-jar</id>-->
+<!--                        <phase>compile</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>copy-dependencies</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <outputDirectory>${project.basedir}/src/test/resources/artifacts/AM/configFiles/idpjwt-->
+<!--                            </outputDirectory>-->
+<!--                            <includeTypes>jar</includeTypes>-->
+<!--                            <includeArtifactIds>org.wso2.am.thirdparty.km</includeArtifactIds>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
         <resources>
             <resource>
@@ -422,6 +422,13 @@ under the License.
                     <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>
+            <version>4.0.1-SNAPSHOT</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

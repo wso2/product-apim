@@ -1,2 +1,0 @@
-apiDocumentation -
-APIM2-626:Add documentation to an API [ Support Forum | File ] through the publisher REST api
