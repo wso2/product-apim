@@ -101,6 +101,7 @@
             <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.JWTBandwidthThrottlingTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.BurstControlTestCase"/>
         </classes>
     </test>
 
