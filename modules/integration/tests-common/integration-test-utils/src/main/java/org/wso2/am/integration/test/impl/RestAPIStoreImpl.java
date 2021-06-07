@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
+import org.apache.synapse.unittest.testcase.data.classes.AssertNotNull;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
@@ -2012,6 +2013,26 @@ public class RestAPIStoreImpl {
                 }
             }
         }
+    }
+
+    /**
+     * Wait until the subscription removal is successfully synced with gateway
+     */
+    public void waitForSubscriptionRemovedFromGateway(SubscriptionDTO removedSubscriptionDTO)
+                                    throws org.wso2.am.integration.clients.gateway.api.ApiException {
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + 6000;
+        org.wso2.am.integration.clients.gateway.api.v2.dto.SubscriptionDTO subscriptionDTO = null;
+        while (waitTime > System.currentTimeMillis()) {
+            subscriptionDTO = restAPIGateway.retrieveSubscription(removedSubscriptionDTO.getApiId(),
+                                            removedSubscriptionDTO.getApplicationId());
+            if (subscriptionDTO == null) {
+                break;
+            }
+        }
+        Assert.assertNull(subscriptionDTO, "Subscription of API " + removedSubscriptionDTO.getApiInfo().getName()
+                                        + " with Application " + removedSubscriptionDTO.getApplicationInfo().getName()
+                                        + " has not been successfully removed");
     }
 
     private void setActivityID() {
