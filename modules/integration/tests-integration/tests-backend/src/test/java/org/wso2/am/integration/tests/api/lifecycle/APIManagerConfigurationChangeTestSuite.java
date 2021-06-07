@@ -18,33 +18,15 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
-import org.wso2.am.integration.test.ClientAuthenticator;
-import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
-import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APIMURLBean;
-import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
+import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.rmi.RemoteException;
-
-import javax.xml.xpath.XPathExpressionException;
 
 /**
  * Deploy jaxrs_basic webApp and monitoring webApp required to run tests
