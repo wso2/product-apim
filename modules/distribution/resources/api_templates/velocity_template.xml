@@ -198,6 +198,7 @@
     <implementation type="memory" maxSize="500"/>
     <onCacheHit>
         <property name="api.analytics.cacheHit" value="true" scope="default"/>
+        <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtResponseHandler"/>
         <respond/>
     </onCacheHit>
 </cache>
