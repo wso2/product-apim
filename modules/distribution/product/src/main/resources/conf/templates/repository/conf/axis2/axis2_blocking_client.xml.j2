@@ -21,6 +21,10 @@
     <!-- ================================================= -->
     <!-- Parameters -->
     <!-- ================================================= -->
+    {% for parameter_key,parameter_value in axis2_blocking_client.parameters.items() %}
+    <parameter name="{{parameter_key}}">{{parameter_value}}</parameter>
+    {% endfor %}
+    
     <parameter name="hotdeployment">true</parameter>
     <parameter name="hotupdate">false</parameter>
     <parameter name="enableMTOM">false</parameter>
