@@ -21,6 +21,21 @@
     <!-- ================================================= -->
     <!-- Parameters -->
     <!-- ================================================= -->
+    {% for parameter_key,parameter_value in axis2_blocking_client.parameters.items() %}
+    <parameter name="{{parameter_key}}">{{parameter_value}}</parameter>
+    {% endfor %}
+
+    {% if axis2_blocking_client.proxy is defined %}
+    <parameter name="Proxy">
+        <parameters>
+            <ProxyHost>{{axis2_blocking_client.proxy.host}}</ProxyHost>
+            <ProxyPort>{{axis2_blocking_client.proxy.port}}</ProxyPort>
+            <ProxyUser>{{axis2_blocking_client.proxy.username}}</ProxyUser>
+            <ProxyPassword>{{axis2_blocking_client.proxy.password}}</ProxyPassword>
+        <parameters>
+    </parameter>
+    {% endif %}
+    
     <parameter name="hotdeployment">true</parameter>
     <parameter name="hotupdate">false</parameter>
     <parameter name="enableMTOM">false</parameter>
