@@ -40,6 +40,13 @@
 <%@ page import="org.wso2.carbon.identity.core.ServiceURLBuilder" %>
 
 <jsp:directive.include file="includes/init-loginform-action-url.jsp"/>
+<%
+    String proxyContextPath = ServerConfiguration.getInstance().getFirstProperty(IdentityCoreConstants
+            .PROXY_CONTEXT_PATH);
+    if (proxyContextPath == null) {
+        proxyContextPath = "";
+    }
+%>
 <script>
     function goBack() {
         window.history.back();
@@ -59,15 +66,23 @@
 
                     var userName = document.getElementById("username");
                     var usernameUserInput = document.getElementById("usernameUserInput");
+                    var tenantName = getParameterByName("tenantDomain");
 
                     if (usernameUserInput) {
                         userName.value = usernameUserInput.value.trim();
                     }
 
                     if (userName.value) {
+                         let contextPath = "<%=proxyContextPath%>"
+                        if (contextPath !== "") {
+                            contextPath = contextPath.startsWith('/') ? contextPath : "/" + contextPath
+                            contextPath = contextPath.endsWith('/') ?
+                                contextPath.substring(0, contextPath.length - 1) : contextPath
+                        }
                         $.ajax({
                             type: "GET",
-                            url: "<%=loginContextRequestUrl%>",
+                            url: contextPath + "/logincontext?sessionDataKey=" + getParameterByName("sessionDataKey") +
+                                "&relyingParty=" + getParameterByName("relyingParty") + "&tenantDomain=" + tenantName,
                             success: function (data) {
                                 if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {
                                     window.location.href = data.redirectUrl;
@@ -106,11 +121,6 @@
         UserDTO userDTO = AuthenticationEndpointUtil.getUser(resendUsername);
         selfRegistrationRequest.setUser(userDTO);
         String path = config.getServletContext().getInitParameter(Constants.ACCOUNT_RECOVERY_REST_ENDPOINT_URL);
-        String proxyContextPath = ServerConfiguration.getInstance().getFirstProperty(IdentityCoreConstants
-                .PROXY_CONTEXT_PATH);
-        if (proxyContextPath == null) {
-            proxyContextPath = "";
-        }
         String url;
         if (StringUtils.isNotBlank(EndpointConfigManager.getServerOrigin())) {
             url = EndpointConfigManager.getServerOrigin() + proxyContextPath + path;
