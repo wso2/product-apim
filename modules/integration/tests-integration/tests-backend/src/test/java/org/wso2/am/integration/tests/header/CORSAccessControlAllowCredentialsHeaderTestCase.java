@@ -33,6 +33,7 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -49,6 +50,7 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
+import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -170,6 +172,21 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         return accessToken;
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test generation of all supported SDKs", dependsOnMethods = {
+            "CheckAccessControlAllowCredentialsHeadersWithSpecificOrigin"})
+    public void testAllSupportedSDKGeneration() throws Exception {
+
+        String languages[] = new String[]{
+                "android", "java", "csharp", "dart", "flash", "groovy", "javascript", "jmeter", "perl", "php", "python",
+                "ruby", "swift5", "clojure"};
+        for (String language : languages) {
+            ApiResponse<byte[]> sdkGenerationResponse = restAPIStore.generateSDKUpdated(apiId, language,
+                    user.getUserDomain());
+            assertEquals(sdkGenerationResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
+                    "Error when generating SDK for " + language + " language");
+        }
     }
 
 
