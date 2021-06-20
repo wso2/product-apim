@@ -31,6 +31,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class OAS3Utils {
 
@@ -137,7 +138,7 @@ public class OAS3Utils {
             for (Map.Entry<PathItem.HttpMethod, Operation> opEntry : originalOperationMap.entrySet()) {
                 Operation originalOperation = opEntry.getValue();
                 Operation updatedOperation = updatedOperationMap.get(opEntry.getKey());
-                Assert.assertEquals(originalOperation, updatedOperation);
+                Assert.assertTrue(validateOperation(originalOperation, updatedOperation));
             }
         }
     }
@@ -167,6 +168,27 @@ public class OAS3Utils {
                     Assert.assertTrue(originalOperation.getSecurity().get(0).get("default").isEmpty());
                 }
             }
+        }
+    }
+
+    private static boolean validateOperation(Operation original, Operation updated) {
+        if (original == updated) {
+            return true;
+        } else if (original != null && updated != null) {
+            return Objects.equals(original.getTags(), updated.getTags())
+                    && Objects.equals(original.getSummary(), updated.getSummary())
+                    && Objects.equals(original.getDescription(), updated.getDescription())
+                    && Objects.equals(original.getExternalDocs(), updated.getExternalDocs())
+                    && Objects.equals(original.getOperationId(), updated.getOperationId())
+                    && Objects.equals(original.getParameters(), updated.getParameters())
+                    && Objects.equals(original.getRequestBody(), updated.getRequestBody())
+                    && Objects.equals(original.getResponses(), updated.getResponses())
+                    && Objects.equals(original.getCallbacks(), updated.getCallbacks())
+                    && Objects.equals(original.getDeprecated(), updated.getDeprecated())
+                    && Objects.equals(original.getSecurity(), updated.getSecurity())
+                    && Objects.equals(original.getServers(), updated.getServers());
+        } else {
+            return false;
         }
     }
 }
