@@ -152,7 +152,7 @@ public class CustomizeAuthHeaderTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Set a customer Auth header for tenant in the system. (Test ID: 3.1.1.5, 3.1.1.14)")
+    @Test(groups = {"wso2.am"}, description = "Set a invalid global header for tenant in the system. (Test ID: 3.1.1.5, 3.1.1.14)")
     public void testGlobalCustomAuthHeaderNegative2() throws Exception {
         Map<String, String> requestHeaders2 = new HashMap<>();
         requestHeaders2.put("accept", APPLICATION_JSON_CONTENT);
