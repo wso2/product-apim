@@ -65,6 +65,8 @@ public class CustomizeAuthHeaderTestCase extends APIManagerLifecycleBaseTest {
     private String accessToken;
     private String applicationId;
     private String apiId;
+    private String invocationUrl;
+    private static String GLOBAL_AUTHORIZATION_HEADER = "Test-Custom-Header";
 
     @Factory(dataProvider = "userModeDataProvider")
     public CustomizeAuthHeaderTestCase(TestUserMode userMode) {
@@ -92,10 +94,6 @@ public class CustomizeAuthHeaderTestCase extends APIManagerLifecycleBaseTest {
                         APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                         ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Set a customer Auth header for all APIs in the system. (Test ID: 3.1.1.5, 3.1.1.14)")
-    public void testSystemWideCustomAuthHeader() throws Exception {
 
         //Add custom header by editing tenant-conf.json in super tenant registry
         resourceAdminServiceClient =
@@ -114,7 +112,7 @@ public class CustomizeAuthHeaderTestCase extends APIManagerLifecycleBaseTest {
         apiRequest.setVersion(API1_VERSION);
         apiRequest.setProvider(user.getUserName());
         apiRequest.setTiersCollection(TIER_UNLIMITED);
-        String invocationUrl = getAPIInvocationURLHttps(API1_CONTEXT, API1_VERSION) + "/" + API_END_POINT_METHOD;
+        invocationUrl = getAPIInvocationURLHttps(API1_CONTEXT, API1_VERSION) + "/" + API_END_POINT_METHOD;
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
         waitForAPIDeploymentSync(user.getUserName(), API1_NAME, API1_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
@@ -126,9 +124,13 @@ public class CustomizeAuthHeaderTestCase extends APIManagerLifecycleBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         accessToken = applicationKeyDTO.getToken().getAccessToken();
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Set a customer Auth header for tenant in the system. (Test ID: 3.1.1.5, 3.1.1.14)")
+    public void testTenantWiseCustomAuthHeader() throws Exception {
 
         // Test whether a request made with a valid token using the relevant custom auth header should yield the proper
-        // response from the back-end, assuming the application has a valid subscription to the API. (Test ID: 3.1.1.5)
+        // response from the back-end, assuming the application has a valid subscription to the API.
         Map<String, String> requestHeaders1 = new HashMap<>();
         requestHeaders1.put("accept", "application/json");
         requestHeaders1.put(CUSTOM_AUTHORIZATION_HEADER, "Bearer " + accessToken);
@@ -136,11 +138,25 @@ public class CustomizeAuthHeaderTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(apiResponse1.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
 
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke with invalid customer Auth header for tenant in the system. (Test ID: 3.1.1.5, 3.1.1.14)")
+    public void testTenantWiseCustomAuthHeaderNegative1() throws Exception {
         //Test whether the 401 Unauthorized Response will be returned when the default Auth header "Authorization"
-        //is used to invoke the API when the system wide custom Authorization header is configured (Test ID :3.1.1.14))
+        //is used to invoke the API when the system wide custom Authorization header is configured
         Map<String, String> requestHeaders2 = new HashMap<>();
         requestHeaders2.put("accept", APPLICATION_JSON_CONTENT);
         requestHeaders2.put(AUTHORIZATION_KEY, "Bearer " + accessToken);
+        HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
+        assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Set a customer Auth header for tenant in the system. (Test ID: 3.1.1.5, 3.1.1.14)")
+    public void testGlobalCustomAuthHeaderNegative2() throws Exception {
+        Map<String, String> requestHeaders2 = new HashMap<>();
+        requestHeaders2.put("accept", APPLICATION_JSON_CONTENT);
+        requestHeaders2.put(GLOBAL_AUTHORIZATION_HEADER, "Bearer " + accessToken);
         HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
         assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched");
