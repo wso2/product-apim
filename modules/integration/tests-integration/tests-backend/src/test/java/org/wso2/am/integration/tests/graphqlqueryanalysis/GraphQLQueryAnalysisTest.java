@@ -1,4 +1,5 @@
 package org.wso2.am.integration.tests.graphqlqueryanalysis;
+
 import java.io.BufferedWriter;
 import java.io.File;
 
@@ -35,7 +36,7 @@ import static org.testng.Assert.assertEquals;
 
 public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
 
-    private  AdminDashboardRestClient adminDashboardRestClient;
+    private AdminDashboardRestClient adminDashboardRestClient;
     private RestAPIAdminImpl restAPIAdminUser;
     private final String GRAPHQL_API_NAME = "CountriesGraphqlAPIQueryAnalysis";
     private final String API_CONTEXT = "infoS";
@@ -45,6 +46,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
     private String graphqlApiId;
     private String tokenTestApiAppId;
     private String oauthTokenTestApiId;
+    private String keywordTestApiAppId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public GraphQLQueryAnalysisTest(TestUserMode userMode) {
@@ -137,10 +139,11 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         // add GraphQL Complexity Details
         List<GraphQLSchemaTypeDTO> list = graphQLSchemaTypeList.getTypeList();
         System.out.println(list);
-        List<GraphQLCustomComplexityInfoDTO> complexityList = new ArrayList<GraphQLCustomComplexityInfoDTO>();;
+        List<GraphQLCustomComplexityInfoDTO> complexityList = new ArrayList<GraphQLCustomComplexityInfoDTO>();
+        ;
         for (GraphQLSchemaTypeDTO graphQLSchemaTypeDTO : list) {
             List<String> fieldList = graphQLSchemaTypeDTO.getFieldList();
-            for(String field : fieldList) {
+            for (String field : fieldList) {
                 GraphQLCustomComplexityInfoDTO graphQLCustomComplexityInfoDTO = new GraphQLCustomComplexityInfoDTO();
                 graphQLCustomComplexityInfoDTO.setType(graphQLSchemaTypeDTO.getType());
                 graphQLCustomComplexityInfoDTO.setField(field);
@@ -151,7 +154,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         }
         GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO = new GraphQLQueryComplexityInfoDTO();
         graphQLQueryComplexityInfoDTO.setList(complexityList);
-        restAPIPublisher.addGraphQLComplexityDetails(graphQLQueryComplexityInfoDTO,graphqlApiId);
+        restAPIPublisher.addGraphQLComplexityDetails(graphQLQueryComplexityInfoDTO, graphqlApiId);
 
         //Get GraphQLComplexity Details
         HttpResponse complexityResponse = restAPIPublisher.getGraphQLComplexityResponse(graphqlApiId);
@@ -196,7 +199,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
 
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-        requestHeaders.put("Content-Type",  "application/json");
+        requestHeaders.put("Content-Type", "application/json");
 
         JSONObject queryObject = new JSONObject();
         queryObject.put("query", "{languages{code name native rtl}}");
@@ -241,7 +244,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + tokenJti);
-        requestHeaders.put("Content-Type",  "application/json");
+        requestHeaders.put("Content-Type", "application/json");
 
         JSONObject queryObject = new JSONObject();
         queryObject.put("query", "{languages{code name native rtl}}");
@@ -257,16 +260,16 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         HttpResponse serviceResponse2 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject2.toString());
         Assert.assertEquals(serviceResponse2.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
     }
-    
+
     @Test(groups = {"wso2.am"}, description = "API invocation using JWT App")
     public void testComplexitySpecificKeywords() throws Exception {
-        String graphqlOAUTHAppName = "CountriesJWTAPPForQueryAnalysis";
+        String graphqlOAUTHAppName = "CountriesJWTAPPForQueryAnalysisComplex";
 
         //create new JWT Application
         ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType(graphqlOAUTHAppName,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "test-app for JWT",
                 "JWT");
-        tokenTestApiAppId = applicationDTO.getApplicationId();
+        keywordTestApiAppId = applicationDTO.getApplicationId();
 
         //Subscribe to the API
         SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(graphqlApiId, applicationDTO.getApplicationId(),
@@ -285,14 +288,13 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
 
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-        requestHeaders.put("Content-Type",  "application/json");
+        requestHeaders.put("Content-Type", "application/json");
 
         JSONObject queryObject = new JSONObject();
         queryObject.put("query", "{asianCountries(first:6)}");
 
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK);
-
 
         JSONObject queryObject2 = new JSONObject();
         queryObject2.put("query", "{citiesAsia(last:6)}");
@@ -307,7 +309,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         Assert.assertEquals(serviceResponse3.getResponseCode(), HttpStatus.SC_OK);
     }
 
-    public SubscriptionThrottlePolicyDTO createNewSubscriptionPolicyObject(SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO){
+    public SubscriptionThrottlePolicyDTO createNewSubscriptionPolicyObject(SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO) {
         subscriptionThrottlePolicyDTO.setPolicyId("0c6439fd-9b16-3c2e-be6e-1086e0b9aa92");
         subscriptionThrottlePolicyDTO.setPolicyName("Platinum");
         subscriptionThrottlePolicyDTO.setDisplayName("Platinum");
@@ -333,7 +335,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
     }
 
     public SubscriptionThrottlePolicyDTO createNewSubscriptionPolicyComplex(SubscriptionThrottlePolicyDTO
-                                                                                    subscriptionThrottlePolicyDTO){
+                                                                                    subscriptionThrottlePolicyDTO) {
         subscriptionThrottlePolicyDTO.setPolicyId("0c6439fd-9b16-3c2e-be6e-1086e0b9aa93");
         subscriptionThrottlePolicyDTO.setPolicyName("Complex");
         subscriptionThrottlePolicyDTO.setDisplayName("Complex");
@@ -371,6 +373,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(oauthTokenTestApiId);
         restAPIStore.deleteApplication(tokenTestApiAppId);
+        restAPIStore.deleteApplication(keywordTestApiAppId);
         restAPIPublisher.deleteAPI(graphqlApiId);
         super.cleanUp();
     }
