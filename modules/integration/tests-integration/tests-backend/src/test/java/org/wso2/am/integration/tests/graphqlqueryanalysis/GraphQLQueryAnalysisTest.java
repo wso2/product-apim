@@ -67,11 +67,18 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         // add new Subscription throttling policy
         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
         createNewSubscriptionPolicyObject(subscriptionThrottlePolicyDTO);
+
+        SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTOComplex = new SubscriptionThrottlePolicyDTO();
+        createNewSubscriptionPolicyComplex(subscriptionThrottlePolicyDTOComplex);
         restAPIAdminUser = new RestAPIAdminImpl("admin", "admin", "carbon.super",
                 adminURLHttps);
         ApiResponse<SubscriptionThrottlePolicyDTO>
                 response = restAPIAdminUser.addSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO);
         assertEquals(response.getStatusCode(), HttpStatus.SC_CREATED);
+
+        ApiResponse<SubscriptionThrottlePolicyDTO>
+                responseComplex = restAPIAdminUser.addSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTOComplex);
+        assertEquals(responseComplex.getStatusCode(), HttpStatus.SC_CREATED);
 
         //create  and publish GraphQL API
         schemaDefinition = IOUtils.toString(
@@ -88,6 +95,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
 
         ArrayList<String> policies = new ArrayList<String>();
         policies.add("Platinum");
+        policies.add("Complex");
 
         JSONObject additionalPropertiesObj = new JSONObject();
         additionalPropertiesObj.put("name", GRAPHQL_API_NAME);
@@ -249,6 +257,55 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         HttpResponse serviceResponse2 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject2.toString());
         Assert.assertEquals(serviceResponse2.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
     }
+    
+    @Test(groups = {"wso2.am"}, description = "API invocation using JWT App")
+    public void testComplexitySpecificKeywords() throws Exception {
+        String graphqlOAUTHAppName = "CountriesJWTAPPForQueryAnalysis";
+
+        //create new JWT Application
+        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType(graphqlOAUTHAppName,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "test-app for JWT",
+                "JWT");
+        tokenTestApiAppId = applicationDTO.getApplicationId();
+
+        //Subscribe to the API
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(graphqlApiId, applicationDTO.getApplicationId(),
+                "Complex");
+        Assert.assertEquals(true, subscriptionDTO.getThrottlingPolicy().equals("Complex"));
+
+        // generate token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationDTO.getApplicationId(), "36000",
+                "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type",  "application/json");
+
+        JSONObject queryObject = new JSONObject();
+        queryObject.put("query", "{asianCountries(first:6)}");
+
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject.toString());
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK);
+
+
+        JSONObject queryObject2 = new JSONObject();
+        queryObject2.put("query", "{citiesAsia(last:6)}");
+
+        HttpResponse serviceResponse2 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject2.toString());
+        Assert.assertEquals(serviceResponse2.getResponseCode(), HttpStatus.SC_OK);
+
+        JSONObject queryObject3 = new JSONObject();
+        queryObject3.put("query", "{languagesAsia(where:{eq:100})}");
+
+        HttpResponse serviceResponse3 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject3.toString());
+        Assert.assertEquals(serviceResponse3.getResponseCode(), HttpStatus.SC_OK);
+    }
 
     public SubscriptionThrottlePolicyDTO createNewSubscriptionPolicyObject(SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO){
         subscriptionThrottlePolicyDTO.setPolicyId("0c6439fd-9b16-3c2e-be6e-1086e0b9aa92");
@@ -262,6 +319,32 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         subscriptionThrottlePolicyDTO.setIsDeployed(true);
         subscriptionThrottlePolicyDTO.setGraphQLMaxComplexity(4);
         subscriptionThrottlePolicyDTO.setGraphQLMaxDepth(2);
+
+        ThrottleLimitDTO throttleLimitDTO = new ThrottleLimitDTO();
+        throttleLimitDTO.setType(ThrottleLimitDTO.TypeEnum.valueOf("REQUESTCOUNTLIMIT"));
+        RequestCountLimitDTO requestCountLimitDTO = new RequestCountLimitDTO();
+        requestCountLimitDTO.setRequestCount(Long.valueOf(1000));
+        requestCountLimitDTO.setTimeUnit("min");
+        requestCountLimitDTO.setUnitTime(10);
+        throttleLimitDTO.setRequestCount(requestCountLimitDTO);
+
+        subscriptionThrottlePolicyDTO.setDefaultLimit(throttleLimitDTO);
+        return subscriptionThrottlePolicyDTO;
+    }
+
+    public SubscriptionThrottlePolicyDTO createNewSubscriptionPolicyComplex(SubscriptionThrottlePolicyDTO
+                                                                                    subscriptionThrottlePolicyDTO){
+        subscriptionThrottlePolicyDTO.setPolicyId("0c6439fd-9b16-3c2e-be6e-1086e0b9aa93");
+        subscriptionThrottlePolicyDTO.setPolicyName("Complex");
+        subscriptionThrottlePolicyDTO.setDisplayName("Complex");
+        subscriptionThrottlePolicyDTO.setDescription("Complex");
+        subscriptionThrottlePolicyDTO.setRateLimitCount(1000);
+        subscriptionThrottlePolicyDTO.setRateLimitTimeUnit("min");
+        subscriptionThrottlePolicyDTO.setBillingPlan("COMMERCIAL");
+        subscriptionThrottlePolicyDTO.setStopOnQuotaReach(true);
+        subscriptionThrottlePolicyDTO.setIsDeployed(true);
+        subscriptionThrottlePolicyDTO.setGraphQLMaxComplexity(100);
+        subscriptionThrottlePolicyDTO.setGraphQLMaxDepth(5);
 
         ThrottleLimitDTO throttleLimitDTO = new ThrottleLimitDTO();
         throttleLimitDTO.setType(ThrottleLimitDTO.TypeEnum.valueOf("REQUESTCOUNTLIMIT"));
