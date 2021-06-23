@@ -37,8 +37,9 @@ public class GatewayRestAPITestSuite extends APIManagerLifecycleBaseTest {
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "gatewayRestAPITest" + File.separator + "deployment.toml"));
+        serverConfigurationManager.restartGracefully();
     }
 
     @AfterTest(alwaysRun = true)
