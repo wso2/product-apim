@@ -463,7 +463,7 @@ public class ApIsApi {
     /**
      * Build call for apisApiIdResourcePathsGet
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param progressListener Progress listener
@@ -537,7 +537,7 @@ public class ApIsApi {
      * Get Resource Paths of an API
      * This operation can be used to retrieve resource paths defined for a specific api. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @return ResourcePathListDTO
@@ -552,7 +552,7 @@ public class ApIsApi {
      * Get Resource Paths of an API
      * This operation can be used to retrieve resource paths defined for a specific api. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @return ApiResponse&lt;ResourcePathListDTO&gt;
@@ -568,7 +568,7 @@ public class ApIsApi {
      * Get Resource Paths of an API (asynchronously)
      * This operation can be used to retrieve resource paths defined for a specific api. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
      * @param callback The callback to be executed when the API call finishes
@@ -1280,7 +1280,7 @@ public class ApIsApi {
     }
     /**
      * Build call for apisGet
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
@@ -1359,7 +1359,7 @@ public class ApIsApi {
     /**
      * Retrieve/Search APIs 
      * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
@@ -1377,7 +1377,7 @@ public class ApIsApi {
     /**
      * Retrieve/Search APIs 
      * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
@@ -1396,7 +1396,7 @@ public class ApIsApi {
     /**
      * Retrieve/Search APIs  (asynchronously)
      * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state. \&quot;label:external\&quot; will match an API if it contains a Microgateway label called \&quot;external\&quot;.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, subcontext, doc, provider, label**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)

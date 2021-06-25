@@ -38,6 +38,9 @@ public class ProductAPIDTO {
   @SerializedName("apiId")
   private String apiId = null;
 
+  @SerializedName("version")
+  private String version = null;
+
   @SerializedName("operations")
   private List<APIOperationsDTO> operations = null;
 
@@ -75,6 +78,24 @@ public class ProductAPIDTO {
 
   public void setApiId(String apiId) {
     this.apiId = apiId;
+  }
+
+  public ProductAPIDTO version(String version) {
+    this.version = version;
+    return this;
+  }
+
+   /**
+   * Get version
+   * @return version
+  **/
+  @ApiModelProperty(example = "1.0", value = "")
+  public String getVersion() {
+    return version;
+  }
+
+  public void setVersion(String version) {
+    this.version = version;
   }
 
   public ProductAPIDTO operations(List<APIOperationsDTO> operations) {
@@ -115,12 +136,13 @@ public class ProductAPIDTO {
     ProductAPIDTO productAPI = (ProductAPIDTO) o;
     return Objects.equals(this.name, productAPI.name) &&
         Objects.equals(this.apiId, productAPI.apiId) &&
+        Objects.equals(this.version, productAPI.version) &&
         Objects.equals(this.operations, productAPI.operations);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, apiId, operations);
+    return Objects.hash(name, apiId, version, operations);
   }
 
 
@@ -131,6 +153,7 @@ public class ProductAPIDTO {
     
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    apiId: ").append(toIndentedString(apiId)).append("\n");
+    sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    operations: ").append(toIndentedString(operations)).append("\n");
     sb.append("}");
     return sb.toString();

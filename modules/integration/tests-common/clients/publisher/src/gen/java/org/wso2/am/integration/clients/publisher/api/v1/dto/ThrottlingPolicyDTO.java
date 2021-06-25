@@ -97,11 +97,70 @@ public class ThrottlingPolicyDTO {
   @SerializedName("requestCount")
   private Long requestCount = null;
 
+  @SerializedName("dataUnit")
+  private String dataUnit = null;
+
   @SerializedName("unitTime")
   private Long unitTime = null;
 
   @SerializedName("timeUnit")
   private String timeUnit = null;
+
+  @SerializedName("rateLimitCount")
+  private Integer rateLimitCount = null;
+
+  @SerializedName("rateLimitTimeUnit")
+  private String rateLimitTimeUnit = null;
+
+  /**
+   * Default quota limit type
+   */
+  @JsonAdapter(QuotaPolicyTypeEnum.Adapter.class)
+  public enum QuotaPolicyTypeEnum {
+    REQUESTCOUNT("REQUESTCOUNT"),
+    
+    BANDWIDTHVOLUME("BANDWIDTHVOLUME");
+
+    private String value;
+
+    QuotaPolicyTypeEnum(String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    public static QuotaPolicyTypeEnum fromValue(String text) {
+      for (QuotaPolicyTypeEnum b : QuotaPolicyTypeEnum.values()) {
+        if (String.valueOf(b.value).equals(text)) {
+          return b;
+        }
+      }
+      return null;
+    }
+
+    public static class Adapter extends TypeAdapter<QuotaPolicyTypeEnum> {
+      @Override
+      public void write(final JsonWriter jsonWriter, final QuotaPolicyTypeEnum enumeration) throws IOException {
+        jsonWriter.value(enumeration.getValue());
+      }
+
+      @Override
+      public QuotaPolicyTypeEnum read(final JsonReader jsonReader) throws IOException {
+        String value = jsonReader.nextString();
+        return QuotaPolicyTypeEnum.fromValue(String.valueOf(value));
+      }
+    }
+  }
+
+  @SerializedName("quotaPolicyType")
+  private QuotaPolicyTypeEnum quotaPolicyType = null;
 
   /**
    * This attribute declares whether this policy is available under commercial or free 
@@ -275,6 +334,24 @@ public class ThrottlingPolicyDTO {
     this.requestCount = requestCount;
   }
 
+  public ThrottlingPolicyDTO dataUnit(String dataUnit) {
+    this.dataUnit = dataUnit;
+    return this;
+  }
+
+   /**
+   * Unit of data allowed to be transfered. Allowed values are \&quot;KB\&quot;, \&quot;MB\&quot; and \&quot;GB\&quot; 
+   * @return dataUnit
+  **/
+  @ApiModelProperty(example = "KB", value = "Unit of data allowed to be transfered. Allowed values are \"KB\", \"MB\" and \"GB\" ")
+  public String getDataUnit() {
+    return dataUnit;
+  }
+
+  public void setDataUnit(String dataUnit) {
+    this.dataUnit = dataUnit;
+  }
+
   public ThrottlingPolicyDTO unitTime(Long unitTime) {
     this.unitTime = unitTime;
     return this;
@@ -309,6 +386,60 @@ public class ThrottlingPolicyDTO {
 
   public void setTimeUnit(String timeUnit) {
     this.timeUnit = timeUnit;
+  }
+
+  public ThrottlingPolicyDTO rateLimitCount(Integer rateLimitCount) {
+    this.rateLimitCount = rateLimitCount;
+    return this;
+  }
+
+   /**
+   * Burst control request count
+   * @return rateLimitCount
+  **/
+  @ApiModelProperty(example = "10", value = "Burst control request count")
+  public Integer getRateLimitCount() {
+    return rateLimitCount;
+  }
+
+  public void setRateLimitCount(Integer rateLimitCount) {
+    this.rateLimitCount = rateLimitCount;
+  }
+
+  public ThrottlingPolicyDTO rateLimitTimeUnit(String rateLimitTimeUnit) {
+    this.rateLimitTimeUnit = rateLimitTimeUnit;
+    return this;
+  }
+
+   /**
+   * Burst control time unit
+   * @return rateLimitTimeUnit
+  **/
+  @ApiModelProperty(example = "min", value = "Burst control time unit")
+  public String getRateLimitTimeUnit() {
+    return rateLimitTimeUnit;
+  }
+
+  public void setRateLimitTimeUnit(String rateLimitTimeUnit) {
+    this.rateLimitTimeUnit = rateLimitTimeUnit;
+  }
+
+  public ThrottlingPolicyDTO quotaPolicyType(QuotaPolicyTypeEnum quotaPolicyType) {
+    this.quotaPolicyType = quotaPolicyType;
+    return this;
+  }
+
+   /**
+   * Default quota limit type
+   * @return quotaPolicyType
+  **/
+  @ApiModelProperty(example = "REQUESTCOUNT", value = "Default quota limit type")
+  public QuotaPolicyTypeEnum getQuotaPolicyType() {
+    return quotaPolicyType;
+  }
+
+  public void setQuotaPolicyType(QuotaPolicyTypeEnum quotaPolicyType) {
+    this.quotaPolicyType = quotaPolicyType;
   }
 
   public ThrottlingPolicyDTO tierPlan(TierPlanEnum tierPlan) {
@@ -389,8 +520,12 @@ public class ThrottlingPolicyDTO {
         Objects.equals(this.displayName, throttlingPolicy.displayName) &&
         Objects.equals(this.attributes, throttlingPolicy.attributes) &&
         Objects.equals(this.requestCount, throttlingPolicy.requestCount) &&
+        Objects.equals(this.dataUnit, throttlingPolicy.dataUnit) &&
         Objects.equals(this.unitTime, throttlingPolicy.unitTime) &&
         Objects.equals(this.timeUnit, throttlingPolicy.timeUnit) &&
+        Objects.equals(this.rateLimitCount, throttlingPolicy.rateLimitCount) &&
+        Objects.equals(this.rateLimitTimeUnit, throttlingPolicy.rateLimitTimeUnit) &&
+        Objects.equals(this.quotaPolicyType, throttlingPolicy.quotaPolicyType) &&
         Objects.equals(this.tierPlan, throttlingPolicy.tierPlan) &&
         Objects.equals(this.stopOnQuotaReach, throttlingPolicy.stopOnQuotaReach) &&
         Objects.equals(this.monetizationProperties, throttlingPolicy.monetizationProperties);
@@ -398,7 +533,7 @@ public class ThrottlingPolicyDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, description, policyLevel, displayName, attributes, requestCount, unitTime, timeUnit, tierPlan, stopOnQuotaReach, monetizationProperties);
+    return Objects.hash(name, description, policyLevel, displayName, attributes, requestCount, dataUnit, unitTime, timeUnit, rateLimitCount, rateLimitTimeUnit, quotaPolicyType, tierPlan, stopOnQuotaReach, monetizationProperties);
   }
 
 
@@ -413,8 +548,12 @@ public class ThrottlingPolicyDTO {
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    attributes: ").append(toIndentedString(attributes)).append("\n");
     sb.append("    requestCount: ").append(toIndentedString(requestCount)).append("\n");
+    sb.append("    dataUnit: ").append(toIndentedString(dataUnit)).append("\n");
     sb.append("    unitTime: ").append(toIndentedString(unitTime)).append("\n");
     sb.append("    timeUnit: ").append(toIndentedString(timeUnit)).append("\n");
+    sb.append("    rateLimitCount: ").append(toIndentedString(rateLimitCount)).append("\n");
+    sb.append("    rateLimitTimeUnit: ").append(toIndentedString(rateLimitTimeUnit)).append("\n");
+    sb.append("    quotaPolicyType: ").append(toIndentedString(quotaPolicyType)).append("\n");
     sb.append("    tierPlan: ").append(toIndentedString(tierPlan)).append("\n");
     sb.append("    stopOnQuotaReach: ").append(toIndentedString(stopOnQuotaReach)).append("\n");
     sb.append("    monetizationProperties: ").append(toIndentedString(monetizationProperties)).append("\n");

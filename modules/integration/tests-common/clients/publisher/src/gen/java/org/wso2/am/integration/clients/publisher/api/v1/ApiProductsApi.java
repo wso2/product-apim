@@ -996,7 +996,7 @@ public class ApiProductsApi {
     }
     /**
      * Build call for apiProductsGet
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -1069,7 +1069,7 @@ public class ApiProductsApi {
     /**
      * Retrieve/Search API Products 
      * This operation provides you a list of available API Products qualifying under a given search condition.  Each retrieved API Product is represented with a minimal amount of attributes. If you want to get complete details of an API Product, you need to use **Get details of an API Product** operation. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -1085,7 +1085,7 @@ public class ApiProductsApi {
     /**
      * Retrieve/Search API Products 
      * This operation provides you a list of available API Products qualifying under a given search condition.  Each retrieved API Product is represented with a minimal amount of attributes. If you want to get complete details of an API Product, you need to use **Get details of an API Product** operation. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
@@ -1102,7 +1102,7 @@ public class ApiProductsApi {
     /**
      * Retrieve/Search API Products  (asynchronously)
      * This operation provides you a list of available API Products qualifying under a given search condition.  Each retrieved API Product is represented with a minimal amount of attributes. If you want to get complete details of an API Product, you need to use **Get details of an API Product** operation. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)

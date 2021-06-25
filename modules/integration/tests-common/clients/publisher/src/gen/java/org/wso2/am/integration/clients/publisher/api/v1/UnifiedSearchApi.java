@@ -57,7 +57,7 @@ public class UnifiedSearchApi {
 
     /**
      * Build call for searchGet
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query **Search**.  You can search by proving a keyword.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -127,7 +127,7 @@ public class UnifiedSearchApi {
     /**
      * Retrieve/Search APIs and API Documents by content 
      * This operation provides you a list of available APIs and API Documents qualifying the given keyword match. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query **Search**.  You can search by proving a keyword.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -142,7 +142,7 @@ public class UnifiedSearchApi {
     /**
      * Retrieve/Search APIs and API Documents by content 
      * This operation provides you a list of available APIs and API Documents qualifying the given keyword match. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query **Search**.  You can search by proving a keyword.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -158,7 +158,7 @@ public class UnifiedSearchApi {
     /**
      * Retrieve/Search APIs and API Documents by content  (asynchronously)
      * This operation provides you a list of available APIs and API Documents qualifying the given keyword match. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query **Search**.  You can search by proving a keyword.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)

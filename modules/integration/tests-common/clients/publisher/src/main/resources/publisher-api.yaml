@@ -97,6 +97,9 @@ securityDefinitions:
       apim:publisher_settings: Retrieve store settings
       apim:pub_alert_manage: Get/ subscribe/ configure publisher alerts
       apim:shared_scope_manage: Manage shared scopes
+      apim:app_import_export: Import and export applications related operations
+      apim:api_import_export: Import and export APIs related operations
+      apim:api_product_import_export: Import and export API Products related operations
 
 security:
   - OAuth2Security:
@@ -121,6 +124,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_view
+            - apim:api_import_export
       x-examples:
         $ref: docs/examples/apis/apis_get.yaml
       parameters:
@@ -277,6 +281,8 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_view
+            - apim:api_import_export
+            - apim:api_product_import_export
       tags:
         - APIs
       responses:
@@ -412,6 +418,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_delete
+            - apim:api_import_export
       summary: Delete an API
       description: |
         This operation can be used to delete an existing API proving the Id of the API.
@@ -1241,6 +1248,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
+            - apim:api_import_export
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X POST \"https://127.0.0.1:9443/api/am/publisher/v1/apis/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish\""
       x-wso2-request: |
         POST https://127.0.0.1:9443/api/am/publisher/v1/apis/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish
@@ -3447,6 +3455,7 @@ paths:
             The request has not been performed because one of the preconditions is not met.
           schema:
             $ref: '#/definitions/Error'
+
   ######################################################
   # GraphQL "Query Complexity" resource APIs
   ######################################################
@@ -3545,6 +3554,7 @@ paths:
           description: |
             Not Found.
             Retrieving types and fields failed.
+
 
   ######################################################
   # The "Resource Paths" resource
@@ -3772,6 +3782,7 @@ paths:
             - apim:api_publish
             - apim:api_create
       produces:
+        - application/json
         - application/zip
       x-wso2-curl: "curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X GET https://localhost:9443/api/am/publisher/v1/export/api?name=PizzaShackAPI&version=1.0.0&providerName=admin > exportAPI.zip"
       x-wso2-request: |
@@ -3874,7 +3885,7 @@ paths:
         2. Retrieving subscriptions for a specific API.
         `GET https://127.0.0.1:9443/api/am/publisher/v1/subscriptions?apiId=c43a325c-260b-4302-81cb-768eafaa3aed`
       parameters:
-        - $ref: '#/parameters/apiId-Q'
+        - $ref: '#/parameters/apiId-Q-Opt'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/offset'
         - $ref: '#/parameters/If-None-Match'
@@ -5146,6 +5157,8 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_view
+            - apim:api_import_export
+            - apim:api_product_import_export
       produces:
         - application/json
       x-examples:
@@ -5312,6 +5325,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_publish
+            - apim:api_product_import_export
       summary: Delete an API Product
       description: |
         This operation can be used to delete an existing API Product proving the Id of the API Product.
@@ -7054,6 +7068,139 @@ paths:
             Usages for the shared scope does not exist.
           schema:
             $ref: '#/definitions/Error'
+  ######################################################
+  # The "KEY MANAGER" resource API
+  ######################################################
+  /key-managers:
+
+    #-----------------------------------------------------
+    # Retrieve all Key Managers
+    #-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+            - apim:api_create
+      summary: Get all Key Managers
+      description: |
+        Get all Key managers
+      tags:
+        - Key Managers (Collection)
+      responses:
+        200:
+          description: |
+            OK.
+            Categories returned
+          schema:
+            $ref: '#/definitions/KeyManagerList'
+
+  ######################################################
+  # The "Deployments" resource APIs
+  ######################################################
+
+  /deployments:
+    #----------------------------------------------------------
+    # Retrieving the deployments details from tenant-conf.json
+    #----------------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      produces:
+        - application/json
+      x-wso2-curl: "curl -X GET -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" \"https://localhost:9443/api/am/publisher/v1/deployments\""
+      x-wso2-request: "GET https://localhost:9443/api/am/publisher/v1/deployments"
+      x-wso2-response: "HTTP/1.1 200 OK"
+      summary: Retrieve deployment environments details
+      operationId: deploymentsGet
+      description: |
+        This operation can be used to retrieve cloud clusters information defines in tenant-conf.json file.
+
+        With that you can deploy an API to selected cloud environments.
+      tags:
+        - Deployments
+      responses:
+        '200':
+          description: >
+            OK. Successful response with the list of deployment environments
+            information in the body.
+          schema:
+            $ref: '#/definitions/DeploymentList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        '400':
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: |
+            Not Found.
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: |
+            Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+
+  ######################################################
+  # The "deployments status per API" resource APIs
+  ######################################################
+  /apis/{apiId}/deployments:
+    #-----------------------------------------------------
+    # Retrieve the deployment details of an API
+    #-----------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      produces:
+        - application/json
+      x-wso2-curl: "curl -X GET -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" \"https://localhost:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deployments"
+      x-wso2-request: "GET https://localhost:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deployments"
+      x-wso2-response: "HTTP/1.1 200 OK"
+      summary: Retrieve deployment status details
+      operationId: deploymentsGetStatus
+      description: |
+        This operation can be used to retrieve the status of deployments in cloud clusters.
+
+        With that you can get the status of the deployed APIs in cloud environments.
+      parameters:
+        - $ref: '#/parameters/apiId'
+      tags:
+        - DeploymentStatus
+      responses:
+        '200':
+          description: >
+            OK. Successful response with the list of deployment environments
+            information in the body.
+          schema:
+            $ref: '#/definitions/DeploymentStatusList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        '400':
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: |
+            Not Found.
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: |
+            Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
 
 ######################################################
 # Parameters - required by some of the APIs above
@@ -7088,6 +7235,18 @@ parameters:
       The combination of the provider of the API, name of the API and the version is also accepted as a valid API I.
       Should be formatted as **provider-name-version**.
     required: true
+    type: string
+
+  # API Identifier
+  # Specified as part of the query string
+  apiId-Q-Opt:
+    name: apiId
+    in: query
+    description: |
+      **API ID** consisting of the **UUID** of the API.
+      The combination of the provider of the API, name of the API and the version is also accepted as a valid API I.
+      Should be formatted as **provider-name-version**.
+    required: false
     type: string
 
   # Label Type
@@ -7236,7 +7395,7 @@ parameters:
     in: query
     description: |
       Maximum size of resource array to return.
-    default: 25
+    default: 80
     type: integer
 
   # The HTTP Accept header
@@ -7506,11 +7665,16 @@ definitions:
       lifeCycleStatus:  # NEED TO RENAME AS lifeCycleState
         type: string
         example: CREATED
+        x-otherScopes:
+          - apim:api_publish
       wsdlInfo:
         $ref: '#/definitions/WSDLInfo'
       wsdlUrl:
         type: string
         example: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
+      testKey:
+        type: string
+        example: 8swdwj9080edejhj
       responseCachingEnabled:
         type: boolean
         example: true
@@ -7532,6 +7696,8 @@ definitions:
       enableStore:
         type: boolean
         example: true
+        x-otherScopes:
+          - apim:api_publish
       type:
         type: string
         description: The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL
@@ -7618,6 +7784,14 @@ definitions:
         example: ["Production and Sandbox"]
         x-otherScopes:
           - apim:api_publish
+      deploymentEnvironments:
+        description: |
+          List of selected deployment environments and clusters
+        type: array
+        items:
+          $ref: '#/definitions/DeploymentEnvironments'
+        x-otherScopes:
+          - apim:api_publish
       labels:
         description: |
           Labels of micro-gateway environments attached to the API.
@@ -7643,7 +7817,7 @@ definitions:
           - ALL_TENANTS
           - SPECIFIC_TENANTS
         example: CURRENT_TENANT
-        default: ALL_TENANTS
+        default: CURRENT_TENANT
         x-otherScopes:
           - apim:api_publish
       subscriptionAvailableTenants:
@@ -7827,6 +8001,8 @@ definitions:
         items:
           type: string
           example: ["Finance"]
+        x-otherScopes:
+          - apim:api_publish
       keyManagers:
         description: |
           API Key Managers
@@ -7966,6 +8142,9 @@ definitions:
       enableStore:
         type: boolean
         example: true
+      testKey:
+        type: string
+        example: 8swdwj9080edejhj
       responseCachingEnabled:
         type: boolean
         example: true
@@ -8116,6 +8295,9 @@ definitions:
       apiId:
         type: string
         example: 01234567-0123-0123-0123-012345678901
+      version:
+        type: string
+        example: 1.0
       operations:
         type: array
         items:
@@ -8368,7 +8550,6 @@ definitions:
         example: "admin--HackerNewsAPI.graphql"
       schemaDefinition:
         type: string
-
   #-----------------------------------------------------
   # The GraphQL Query Complexity Info resource
   #-----------------------------------------------------
@@ -8435,6 +8616,7 @@ definitions:
         items:
           type: string
         example: ["code","name"]
+
 
   #-----------------------------------------------------
   # The Mediation List resource
@@ -8562,6 +8744,11 @@ definitions:
         type: integer
         format: int64
         example: 50
+      dataUnit:
+        description: |
+          Unit of data allowed to be transfered. Allowed values are "KB", "MB" and "GB"
+        type: string
+        example: KB
       unitTime:
         type: integer
         format: int64
@@ -8569,6 +8756,22 @@ definitions:
       timeUnit:
         type: string
         example: "min"
+      rateLimitCount:
+        type: integer
+        default: 0
+        description: Burst control request count
+        example: 10
+      rateLimitTimeUnit:
+        type: string
+        description: Burst control time unit
+        example: min
+      quotaPolicyType:
+        type: string
+        description: Default quota limit type
+        enum:
+          - REQUESTCOUNT
+          - BANDWIDTHVOLUME
+        example: REQUESTCOUNT
       tierPlan:
         description: |
           This attribute declares whether this policy is available under commercial or free
@@ -8638,6 +8841,7 @@ definitions:
           - UNBLOCKED
           - ON_HOLD
           - REJECTED
+          - TIER_UPDATE_PENDING
         example: BLOCKED
 
   #-----------------------------------------------------
@@ -9802,6 +10006,7 @@ definitions:
               - INLINE
               - URL
               - FILE
+              - MARKDOWN
             example: INLINE
           sourceUrl:
             type: string
@@ -9928,6 +10133,27 @@ definitions:
         description: |
           Is External Stores configuration enabled
         example: true
+      docVisibilityEnabled:
+        type: boolean
+        description: |
+          Is Document Visibility configuration enabled
+        example: false
+      crossTenantSubscriptionEnabled:
+        type: boolean
+        description: |
+          Is Cross Tenant Subscriptions Enabled
+        example: false
+        default: false
+      defaultAdvancePolicy:
+        type: string
+        description: Default Advance Policy.
+      defaultSubscriptionPolicy:
+        type: string
+        description: Default Subscription Policy.
+      deployments:
+        type: array
+        items:
+          $ref: '#/definitions/Deployments'
 
   #-----------------------------------------------------
   # The SecurityAuditAttribute resource
@@ -10216,6 +10442,210 @@ definitions:
         items:
           $ref: '#/definitions/APICategory'
 
+  #-----------------------------------------------------
+  # The KeyManager resource
+  #-----------------------------------------------------
+  KeyManagerInfo:
+    title: Key Manager Info
+    required:
+      - name
+      - type
+    properties:
+      id:
+        type: string
+        example: "01234567-0123-0123-0123-012345678901"
+      name:
+        type: string
+        example: "WSO2 IS"
+      displayName:
+        type: string
+        description: |
+          display name of Keymanager
+        example: Keymanager1
+      type:
+        type: string
+        example: "IS"
+      description:
+        type: string
+        example: "This is a key manager for Developers"
+      enabled:
+        type: boolean
+        example: true
+      additionalProperties:
+        type: array
+        items:
+          type: object
+
+  #-----------------------------------------------------
+  # The KeyManager List resource
+  #-----------------------------------------------------
+  KeyManagerList:
+    title: Key Manager List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Key managers returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/KeyManagerInfo'
+
+  #-----------------------------------------------------
+  # The Deployment List resource
+  #-----------------------------------------------------
+  DeploymentList:
+    title: Deployment List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of deployment clusters returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/Deployments'
+
+  #-----------------------------------------------------
+  # The Deployment resource
+  #-----------------------------------------------------
+  Deployments:
+    title: Deployments
+    required:
+      - name
+      - clusters
+    properties:
+      name:
+        type: string
+        example: Kubernetes
+      clusters:
+        type: array
+        items:
+          $ref: '#/definitions/DeploymentClusterInfo'
+
+  #-----------------------------------------------------
+  # The DeploymentClusterInfo resource
+  #-----------------------------------------------------
+  DeploymentClusterInfo:
+    title: DeploymentClusterInfo
+    required:
+      - clusterName
+      - displayName
+      - accessURL
+      - properties
+    properties:
+      clusterName:
+        type: string
+        example: minikube
+      accessURL:
+        type: string
+        example: "https://api.com"
+      displayName:
+        type: string
+        example: "kubernetes-minikube"
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+
+
+  #-----------------------------------------------------
+  # The DeploymentStatus List resource
+  #-----------------------------------------------------
+  DeploymentStatusList:
+    title: DeploymentStatus List
+    properties:
+      count:
+        type: integer
+        description: |
+          Status of the deployments returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/DeploymentStatus'
+
+  #-----------------------------------------------------
+  # The DeploymentStatus resource
+  #-----------------------------------------------------
+  DeploymentStatus:
+    title: DeploymentStatus
+    required:
+      - type
+      - clusters
+    properties:
+      type:
+        type: string
+        example: Kubernetes
+      clusters:
+        type: array
+        items:
+          $ref: '#/definitions/DeploymentClusterStatus'
+
+  #-----------------------------------------------------
+  # The DeploymentClusterStatus resource
+  #-----------------------------------------------------
+  DeploymentClusterStatus:
+    title: DeploymentClusterStatus
+    required:
+      - clusterName
+      - podsRunning
+      - healthStatus
+    properties:
+      clusterName:
+        type: string
+        example: Minikube
+      podsRunning:
+        type: integer
+        default: 0
+      healthStatus:
+        type: array
+        items:
+          $ref: '#/definitions/PodStatus'
+
+  #-----------------------------------------------------
+  # The DeploymentEnvironments resource
+  #-----------------------------------------------------
+  DeploymentEnvironments:
+    title: DeploymentEnvironments
+    required:
+      - type
+      - clusterName
+    properties:
+      type:
+        type: string
+        example: Kubernetes
+      clusterName:
+        type: array
+        items:
+          type: string
+        example: ["minikube"]
+
+  #-----------------------------------------------------
+  # The PodStatus resource
+  #-----------------------------------------------------
+  PodStatus:
+    title: PodStatus
+    required:
+      - name
+      - ready
+      - status
+      - age
+    properties:
+      name:
+        type: string
+        example: petStore-677bb7cc65-shb2f
+      ready:
+        type: string
+        example: 1/1
+      status:
+        type: string
+        example: running
+      creationTimestamp:
+        type: string
+        example: 2020-05-12T06:12:00Z
 #-----------------------------------------------------
 # END-OF-FILE
 #-----------------------------------------------------

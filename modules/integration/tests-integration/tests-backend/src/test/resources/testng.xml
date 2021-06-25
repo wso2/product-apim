@@ -337,4 +337,11 @@
             <class name="org.wso2.am.integration.tests.restapi.GatewayRestAPITestCase"/>
         </classes>
     </test>
+    <test name="apim-unlimited-tier-disabled-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.UnlimitedTierDisabledConfig"/>
+            <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.UnlimitedTierDisabledTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.ConfigurableDefaultPolicyTestCase"/>
+        </classes>
+    </test>
 </suite>

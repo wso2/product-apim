@@ -112,6 +112,9 @@ public class APIProductDTO {
   @SerializedName("enableStore")
   private Boolean enableStore = null;
 
+  @SerializedName("testKey")
+  private String testKey = null;
+
   @SerializedName("responseCachingEnabled")
   private Boolean responseCachingEnabled = null;
 
@@ -495,6 +498,24 @@ public class APIProductDTO {
 
   public void setEnableStore(Boolean enableStore) {
     this.enableStore = enableStore;
+  }
+
+  public APIProductDTO testKey(String testKey) {
+    this.testKey = testKey;
+    return this;
+  }
+
+   /**
+   * Get testKey
+   * @return testKey
+  **/
+  @ApiModelProperty(example = "8swdwj9080edejhj", value = "")
+  public String getTestKey() {
+    return testKey;
+  }
+
+  public void setTestKey(String testKey) {
+    this.testKey = testKey;
   }
 
   public APIProductDTO responseCachingEnabled(Boolean responseCachingEnabled) {
@@ -1088,6 +1109,7 @@ public class APIProductDTO {
         Objects.equals(this.state, apIProduct.state) &&
         Objects.equals(this.enableSchemaValidation, apIProduct.enableSchemaValidation) &&
         Objects.equals(this.enableStore, apIProduct.enableStore) &&
+        Objects.equals(this.testKey, apIProduct.testKey) &&
         Objects.equals(this.responseCachingEnabled, apIProduct.responseCachingEnabled) &&
         Objects.equals(this.cacheTimeout, apIProduct.cacheTimeout) &&
         Objects.equals(this.visibility, apIProduct.visibility) &&
@@ -1118,7 +1140,7 @@ public class APIProductDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, enableStore, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
+    return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, enableStore, testKey, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
   }
 
 
@@ -1136,6 +1158,7 @@ public class APIProductDTO {
     sb.append("    state: ").append(toIndentedString(state)).append("\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
     sb.append("    enableStore: ").append(toIndentedString(enableStore)).append("\n");
+    sb.append("    testKey: ").append(toIndentedString(testKey)).append("\n");
     sb.append("    responseCachingEnabled: ").append(toIndentedString(responseCachingEnabled)).append("\n");
     sb.append("    cacheTimeout: ").append(toIndentedString(cacheTimeout)).append("\n");
     sb.append("    visibility: ").append(toIndentedString(visibility)).append("\n");

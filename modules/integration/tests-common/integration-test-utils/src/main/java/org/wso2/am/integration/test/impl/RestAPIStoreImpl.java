@@ -29,14 +29,15 @@ import org.wso2.am.integration.clients.store.api.v1.ApiKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
+import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.store.api.v1.KeyManagersCollectionApi;
 import org.wso2.am.integration.clients.store.api.v1.RatingsApi;
 import org.wso2.am.integration.clients.store.api.v1.SdKsApi;
 import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.TagsApi;
 import org.wso2.am.integration.clients.store.api.v1.UnifiedSearchApi;
+import org.wso2.am.integration.clients.store.api.v1.UsersApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyGenerateRequestDTO;
@@ -49,14 +50,14 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyMappingReq
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.KeyManagerListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.RatingDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.TagListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.GraphQLSchemaTypeListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -69,9 +70,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.xpath.XPathExpressionException;
-import org.wso2.am.integration.clients.store.api.v1.UsersApi;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -177,6 +176,17 @@ public class RestAPIStoreImpl {
             }
         }
         return null;
+    }
+
+    public ApiResponse<ApplicationDTO> createApplicationWithHttpInfo(String appName, String description, String throttleTier,
+                                                                     ApplicationDTO.TokenTypeEnum tokenType) throws ApiException {
+
+        ApplicationDTO application = new ApplicationDTO();
+        application.setName(appName);
+        application.setDescription(description);
+        application.setThrottlingPolicy(throttleTier);
+        application.setTokenType(tokenType);
+        return applicationsApi.applicationsPostWithHttpInfo(application);
     }
 
     public HttpResponse createApplicationWithCustomAttribute(String appName, String description, String throttleTier,
@@ -1803,9 +1813,15 @@ public class RestAPIStoreImpl {
         HttpResponse response = null;
         ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi.
                 apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
-        if(graphQLSchemaTypeListDTOApiResponse.getStatusCode() == 200){
+        if (graphQLSchemaTypeListDTOApiResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully get the GraphQL Schema Type List", 200);
         }
         return response;
+    }
+
+    public ApplicationListDTO getApplications(String applicationName) throws ApiException {
+
+        return applicationsApi.applicationsGet(null, applicationName, "name", "asc", 10, 0, null);
+
     }
 }

@@ -546,7 +546,7 @@ public class ScopesApi {
     }
     /**
      * Build call for getSharedScopes
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
@@ -610,7 +610,7 @@ public class ScopesApi {
     /**
      * Get all available Shared Scopes
      * This operation can be used to get all the available Shared Scopes. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @return ScopeListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -623,7 +623,7 @@ public class ScopesApi {
     /**
      * Get all available Shared Scopes
      * This operation can be used to get all the available Shared Scopes. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @return ApiResponse&lt;ScopeListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -637,7 +637,7 @@ public class ScopesApi {
     /**
      * Get all available Shared Scopes (asynchronously)
      * This operation can be used to get all the available Shared Scopes. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call

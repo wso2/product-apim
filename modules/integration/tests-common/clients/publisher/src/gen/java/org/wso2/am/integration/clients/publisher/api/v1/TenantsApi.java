@@ -177,7 +177,7 @@ public class TenantsApi {
     /**
      * Build call for getTenantsByState
      * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
@@ -244,7 +244,7 @@ public class TenantsApi {
      * Get get tenants by state 
      * This operation is to get tenants by state 
      * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @return TenantListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -258,7 +258,7 @@ public class TenantsApi {
      * Get get tenants by state 
      * This operation is to get tenants by state 
      * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @return ApiResponse&lt;TenantListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -273,7 +273,7 @@ public class TenantsApi {
      * Get get tenants by state  (asynchronously)
      * This operation is to get tenants by state 
      * @param state The state represents the current state of the tenant  Supported states are [ active, inactive]  (optional, default to active)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call

@@ -16,35 +16,50 @@
  * under the License.
  */
 
-package org.wso2.am.integration.tests.other;
+package org.wso2.am.integration.tests.throttling.unlimitedDisable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.parser.OpenAPIParser;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.apache.commons.io.IOUtils;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseGraphQLInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.test.Constants;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
-import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
 
@@ -52,26 +67,21 @@ import static org.testng.Assert.assertEquals;
  * Publish a API under Unlimited tier and test the invocation , then disable unlimited tier and change the api
  * tier to silver and do a new silver subscription and test invocation under Silver tier.
  */
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE })
-public class UnlimitedTierDisabledTestCase extends APIManagerLifecycleBaseTest {
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
+public class UnlimitedTierDisabledTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(UnlimitedTierDisabledTestCase.class);
     private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private String apiEndPointUrl;
-    private String providerName;
-    private APIPublisherRestClient apiPublisherClientUser1;
-    private boolean isInitialised = false;
-
-    private ServerConfigurationManager serverConfigurationManager;
     private final String GRAPHQL_API_NAME = "CountriesGraphqlAPI";
     private final String END_POINT_URL = "https://localhost:9943/am-graphQL-sample/api/graphql/";
-
+    private String providerName;
     private String schemaDefinition;
     private String graphqlAPIId;
+    private String restAPIId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public UnlimitedTierDisabledTestCase(TestUserMode userMode) {
+
         this.userMode = userMode;
     }
 
@@ -79,7 +89,8 @@ public class UnlimitedTierDisabledTestCase extends APIManagerLifecycleBaseTest {
     public static Object[][] userModeDataProvider() {
 
         return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN}
         };
     }
 
@@ -87,30 +98,13 @@ public class UnlimitedTierDisabledTestCase extends APIManagerLifecycleBaseTest {
     public void setEnvironment() throws Exception {
 
         super.init(userMode);
-        serverConfigurationManager = new ServerConfigurationManager(publisherContext);
-        serverConfigurationManager.applyConfiguration(new File(
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "unlimitedTier"
-                        + File.separator + "deployment.toml"));
-    }
-
-
-    public void initialize() throws Exception {
-        if (!isInitialised) {
-            super.init();
-            apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
-            providerName = user.getUserName();
-            String publisherURLHttp = getPublisherURLHttp();
-            apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-            //Login to API Publisher with  admin
-            apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-            isInitialised = true;
-        }
+        providerName = user.getUserName();
     }
 
     @Test(groups = {"wso2.am"}, description = "Create graphQL API and see if the rate limiting is set to a policy " +
             "other than Unlimited")
     public void testCreateGraphQLAPI() throws Exception {
-        initialize();
+
         schemaDefinition = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream("graphql" + File.separator + "schema.graphql"),
                 "UTF-8");
@@ -141,14 +135,13 @@ public class UnlimitedTierDisabledTestCase extends APIManagerLifecycleBaseTest {
 
         // create Graphql API
         APIDTO apidto = restAPIPublisher.importGraphqlSchemaDefinition(file, additionalPropertiesObj.toString());
-        log.info("graphQLAPI"+ apidto);
         graphqlAPIId = apidto.getId();
         List<APIOperationsDTO> operationsList = apidto.getOperations();
-        log.info("operationsList"+ operationsList);
+        log.info("operationsList" + operationsList);
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlAPIId);
         //get the operation of the API and check whether throttling tier is not unlimited
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode());
-        Assert.assertFalse(operationsList.get(0).getThrottlingPolicy().equalsIgnoreCase(TIER_UNLIMITED),
+        Assert.assertFalse(operationsList.get(0).getThrottlingPolicy().equalsIgnoreCase("Unlimited"),
                 "Throttling policy " + operationsList.get(0).getThrottlingPolicy() + " is applied");
 
     }
@@ -174,19 +167,92 @@ public class UnlimitedTierDisabledTestCase extends APIManagerLifecycleBaseTest {
 
         JSONObject apiProperties = new JSONObject();
         apiProperties.put("name", "TestAPI");
-        apiProperties.put("context", "/" + "test");
+        apiProperties.put("context", "/testAPIwithUnlimitedTierDisabled");
         apiProperties.put("version", "1.0.0");
-        apiProperties.put("provider", "admin");
+        apiProperties.put("provider", providerName);
         apiProperties.put("endpointConfig", endpointConfig);
         apiProperties.put("policies", tierList);
         APIDTO restAPIDTO = restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
-        String apiImportId = restAPIDTO.getId();
-        restAPIPublisher.changeAPILifeCycleStatus(apiImportId, Constants.PUBLISHED);
-        HttpResponse response = restAPIPublisher.getAPI(apiImportId);;
-        assertEquals(Response.Status.OK.getStatusCode(), response.getResponseCode());
+        restAPIId = restAPIDTO.getId();
+        restAPIPublisher.changeAPILifeCycleStatus(restAPIId, Constants.PUBLISHED);
+        APIDTO retrievedDto = restAPIPublisher.getAPIByID(restAPIId);
+        Assert.assertNotNull(retrievedDto);
+        Assert.assertNotNull(retrievedDto.getOperations());
+        for (APIOperationsDTO operation : retrievedDto.getOperations()) {
+            Assert.assertNotEquals(operation.getThrottlingPolicy(), "Unlimited");
+        }
+        String retrievedSwagger = restAPIPublisher.getSwaggerByID(restAPIId);
+        retrievedSwagger = restAPIPublisher.updateSwagger(restAPIId, retrievedSwagger);
+        Assert.assertNotNull(retrievedSwagger);
+        validateThrottlingPolicyNotUnlimited(retrievedSwagger);
+        retrievedDto.getPolicies().add("Unlimited");
+        try {
+            restAPIPublisher.updateAPI(retrievedDto, restAPIId);
+            Assert.fail("API Update Successful with Unlimited Subscription Policy.");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), 400);
+            Assert.assertTrue(e.getResponseBody().contains("Unlimited"));
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Create a REST API with x-throttling tier as Unlimited and check if " +
+            "API gets published successfully")
+    public void createAPIwithThrottlingTierUnlimitedNegative1() throws Exception {
+        //create a REST API
+        String swaggerPath = getAMResourceLocation() + File.separator + "configFiles" + File.separator + "unlimitedTier"
+                + File.separator + "UnlimitedTierAvailableTestAPI.yaml";
+        File definition = new File(swaggerPath);
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", "test");
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.SILVER);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", "TestAPINegative");
+        apiProperties.put("context", "/testAPIwithUnlimitedTierDisabledNegative");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", providerName);
+        apiProperties.put("endpointConfig", endpointConfig);
+        apiProperties.put("policies", tierList);
+        try {
+            restAPIPublisher.importOASDefinitionResponse(definition, apiProperties.toString());
+            Assert.fail("API Imported Successfully with Unlimited Tier");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), 500);
+            Assert.assertTrue(e.getResponseBody().contains("Unlimited"));
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Create Application with Application tier as Unlimited successfully.")
+    public void createApplicationWithUnlimitedTierNegative2() {
+
+        try {
+            restAPIStore.createApplicationWithHttpInfo("UnlimitedNegativeApp", "", "Unlimited",
+                    ApplicationDTO.TokenTypeEnum.JWT);
+            Assert.fail("Application created successfully with Unlimited Tier");
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            Assert.assertEquals(e.getCode(), 400);
+            Assert.assertTrue(e.getResponseBody().contains("Unlimited"));
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Check Setting API not returning Unlimited Tier")
+    public void verifySettingsRestAPIInPublisher() throws ApiException {
+
+        SettingsDTO settings = restAPIPublisher.getSettings();
+        Assert.assertNotEquals(settings.getDefaultAdvancePolicy(), "Unlimited");
+        Assert.assertNotEquals(settings.getDefaultSubscriptionPolicy(), "Unlimited");
     }
 
     private File getTempFileWithContent(String schema) throws Exception {
+
         File temp = File.createTempFile("schema", ".graphql");
         temp.deleteOnExit();
         BufferedWriter out = new BufferedWriter(new FileWriter(temp));
@@ -195,4 +261,27 @@ public class UnlimitedTierDisabledTestCase extends APIManagerLifecycleBaseTest {
         return temp;
     }
 
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+
+        restAPIPublisher.deleteAPIByID(restAPIId);
+        restAPIPublisher.deleteAPIByID(graphqlAPIId);
+    }
+
+    private void validateThrottlingPolicyNotUnlimited(String swaggerContent) throws APIManagementException {
+
+        OpenAPIParser parser = new OpenAPIParser();
+        SwaggerParseResult swaggerParseResult = parser.readContents(swaggerContent, null, null);
+        OpenAPI openAPI = swaggerParseResult.getOpenAPI();
+        Paths paths = openAPI.getPaths();
+        for (String pathKey : paths.keySet()) {
+            Map<PathItem.HttpMethod, Operation> operationsMap = paths.get(pathKey).readOperationsMap();
+            for (Map.Entry<PathItem.HttpMethod, Operation> entry : operationsMap.entrySet()) {
+                Operation operation = entry.getValue();
+                Map<String, Object> extensions = operation.getExtensions();
+                Assert.assertNotNull(extensions.get("x-throttling-tier"));
+                Assert.assertNotEquals(extensions.get("x-throttling-tier"), "Unlimited");
+            }
+        }
+    }
 }

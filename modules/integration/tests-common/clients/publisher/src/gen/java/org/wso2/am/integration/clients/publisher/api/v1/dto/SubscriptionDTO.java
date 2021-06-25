@@ -52,7 +52,9 @@ public class SubscriptionDTO {
     
     ON_HOLD("ON_HOLD"),
     
-    REJECTED("REJECTED");
+    REJECTED("REJECTED"),
+    
+    TIER_UPDATE_PENDING("TIER_UPDATE_PENDING");
 
     private String value;
 

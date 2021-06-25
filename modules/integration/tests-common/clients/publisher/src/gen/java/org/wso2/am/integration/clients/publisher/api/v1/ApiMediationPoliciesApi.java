@@ -60,7 +60,7 @@ public class ApiMediationPoliciesApi {
     /**
      * Build call for apisApiIdMediationPoliciesGet
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -137,7 +137,7 @@ public class ApiMediationPoliciesApi {
      * Get all mediation policies of an API 
      * This operation provides you a list of available mediation policies of an API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -153,7 +153,7 @@ public class ApiMediationPoliciesApi {
      * Get all mediation policies of an API 
      * This operation provides you a list of available mediation policies of an API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -170,7 +170,7 @@ public class ApiMediationPoliciesApi {
      * Get all mediation policies of an API  (asynchronously)
      * This operation provides you a list of available mediation policies of an API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
