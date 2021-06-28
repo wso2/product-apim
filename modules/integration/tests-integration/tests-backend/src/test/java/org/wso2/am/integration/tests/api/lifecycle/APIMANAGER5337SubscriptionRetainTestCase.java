@@ -96,14 +96,10 @@ public class APIMANAGER5337SubscriptionRetainTestCase extends APIManagerLifecycl
             SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationID);
 //            verifyResponse(response);
 
-            if (subsDTO != null) {
-                JSONObject subscriptionJson = new JSONObject(subsDTO);
-                Assert.assertEquals(subscriptionJson.toString().contains("SubscriptionCheckAPI"), true,
-                        "Subscription of the SubscriptionCheckAPI has been removed.");
-            } else {
-                // Since the subscriptions are removed when it is demoted to created
-                Assert.assertTrue(true);
-            }
+
+            JSONObject subscriptionJson = new JSONObject(subsDTO);
+            Assert.assertEquals(subscriptionJson.toString().contains("SubscriptionCheckAPI"), true,
+                    "Subscription of the SubscriptionCheckAPI has been removed.");
 
         } catch (APIManagerIntegrationTestException e) {
             log.error("APIManagerIntegrationTestException " + e.getMessage(), e);
