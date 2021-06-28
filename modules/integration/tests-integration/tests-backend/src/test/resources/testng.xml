@@ -87,7 +87,7 @@
             <class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.RegistryLifeCycleInclusionTest"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.CustomLifeCycleTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIMANAGER5337SubscriptionRetainTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.SubscriptionRetainAndDeletionTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CustomHeaderTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.header.DuplicateHeaderTestCase"/>-->
             <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
