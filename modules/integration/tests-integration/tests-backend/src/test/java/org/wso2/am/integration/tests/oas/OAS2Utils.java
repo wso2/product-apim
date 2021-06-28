@@ -129,7 +129,7 @@ public class OAS2Utils {
             for (Map.Entry<HttpMethod, Operation> opEntry : originalOperationMap.entrySet()) {
                 Operation originalOperation = opEntry.getValue();
                 Operation updatedOperation = updatedOperationMap.get(opEntry.getKey());
-                Assert.assertEquals(originalOperation, updatedOperation);
+                Assert.assertTrue(validateOperation(originalOperation, updatedOperation));
             }
         }
     }
@@ -160,4 +160,109 @@ public class OAS2Utils {
         }
     }
 
+    private static boolean validateOperation(Operation original, Operation updated) {
+
+        if (original == updated) {
+            return true;
+        } else if (original != null && updated != null) {
+            if (original.getConsumes() == null) {
+                if (updated.getConsumes() != null) {
+                    return false;
+                }
+            } else if (!original.getConsumes().equals(updated.getConsumes())) {
+                return false;
+            }
+
+            if (original.isDeprecated() == null) {
+                if (updated.isDeprecated() != null) {
+                    return false;
+                }
+            } else if (!original.isDeprecated().equals(updated.isDeprecated())) {
+                return false;
+            }
+
+            if (original.getDescription() == null) {
+                if (updated.getDescription() != null) {
+                    return false;
+                }
+            } else if (!original.getDescription().equals(updated.getDescription())) {
+                return false;
+            }
+
+            if (original.getExternalDocs() == null) {
+                if (updated.getExternalDocs() != null) {
+                    return false;
+                }
+            } else if (!original.getExternalDocs().equals(updated.getExternalDocs())) {
+                return false;
+            }
+
+            if (original.getOperationId() == null) {
+                if (updated.getOperationId() != null) {
+                    return false;
+                }
+            } else if (!original.getOperationId().equals(updated.getOperationId())) {
+                return false;
+            }
+
+            if (original.getParameters() == null) {
+                if (updated.getParameters() != null) {
+                    return false;
+                }
+            } else if (!original.getParameters().equals(updated.getParameters())) {
+                return false;
+            }
+
+            if (original.getProduces() == null) {
+                if (updated.getProduces() != null) {
+                    return false;
+                }
+            } else if (!original.getProduces().equals(updated.getProduces())) {
+                return false;
+            }
+
+            if (original.getResponses() == null) {
+                if (updated.getResponses() != null) {
+                    return false;
+                }
+            } else if (!original.getResponses().equals(updated.getResponses())) {
+                return false;
+            }
+
+            if (original.getSchemes() == null) {
+                if (updated.getSchemes() != null) {
+                    return false;
+                }
+            } else if (!original.getSchemes().equals(updated.getSchemes())) {
+                return false;
+            }
+
+            if (original.getSecurity() == null) {
+                if (updated.getSecurity() != null) {
+                    return false;
+                }
+            } else if (!original.getSecurity().equals(updated.getSecurity())) {
+                return false;
+            }
+
+            if (original.getSummary() == null) {
+                if (updated.getSummary() != null) {
+                    return false;
+                }
+            } else if (!original.getSummary().equals(updated.getSummary())) {
+                return false;
+            }
+
+            if (original.getTags() == null) {
+                if (updated.getTags() != null) {
+                    return false;
+                }
+            } else if (!original.getTags().equals(updated.getTags())) {
+                return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
