@@ -21,8 +21,16 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -34,19 +42,30 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointSecurityD
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
+import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import waffle.util.Base64;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.wso2.am.integration.test.utils.base.APIMIntegrationConstants.SUPER_TENANT_DOMAIN;
 
 /**
  * Change the endpoint security of APi and invoke. Endpoint application was developed to return thr security token in
@@ -61,6 +80,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
     private final String APPLICATION_NAME = "ChangeEndPointSecurityPerTypeTestCase";
     String endpointUsername = "admin";
     String endpointPassword = "admin123";
+    ApplicationKeyBean applicationKeyBeanProduction;
+    ApplicationKeyBean applicationKeyBeanSandbox;
     private HashMap<String, String> requestHeadersGet;
     private String providerName;
     private String apiEndPointUrl;
@@ -87,8 +108,9 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
 
-        super.init();
-        apiEndPointUrl = getAPIInvocationURLHttp("backendSecurity") + "/1.0.0";
+        super.init(userMode);
+        String dcrURL = backEndServerUrl.getWebAppURLHttp()+ "client-registration/v0.17/register";
+        apiEndPointUrl = getGatewayURLNhttp() + "backendSecurity/1.0.0";
         providerName = user.getUserName();
         requestHeadersGet = new HashMap<>();
         requestHeadersGet.put("accept", "text/plain");
@@ -105,7 +127,7 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTier(TIER_UNLIMITED);
         apiCreationRequestBean.setTiersCollection(TIER_UNLIMITED);
-
+        apiCreationRequestBean.setProvider(user.getUserName());
         apiCreationRequestBean.setEndpointType(APIEndpointSecurityDTO.TypeEnum.BASIC.getValue());
         apiCreationRequestBean.setEpUsername(endpointUsername);
         apiCreationRequestBean.setEpPassword(endpointPassword);
@@ -124,6 +146,14 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         sandboxApplication = restAPIStore
                 .generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX,
                         null, grantTypes);
+
+        DCRParamRequest oauthAppProduction = new DCRParamRequest("dummyapp--production", null, null,
+                user.getUserName(), "password client_credentials", dcrURL, user.getUserName(),
+                user.getPassword(), null);
+        DCRParamRequest oauthAppSandbox = new DCRParamRequest("dummyapp--sandbox", null, null, user.getUserName(),
+                "password client_credentials", dcrURL, user.getUserName(), user.getPassword(), null);
+        applicationKeyBeanProduction = ClientAuthenticator.makeDCRRequest(oauthAppProduction);
+        applicationKeyBeanSandbox = ClientAuthenticator.makeDCRRequest(oauthAppSandbox);
 
     }
 
@@ -729,6 +759,202 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
                 .concat(Base64.encode("sandbox1234".concat(":").concat("admin123#prod").getBytes())));
     }
+
+    @Test(groups = {"wso2.am"}, description = "Test Set OAuth Endpoint Security with Client Credentials Grant Type",
+            dependsOnMethods = "testUpdateEndpointSecurityForSandboxAndProduction")
+    public void testUpdateEndpointSecurityForOauthWithClientCredentialsGrantType() throws Exception {
+
+        String endpointSecurity = "{\n" +
+                "  \"production\":{\n" +
+                "    \"enabled\":true,\n" +
+                "    \"type\":\"OAUTH\",\n" +
+                "    \"tokenUrl\":\"https://localhost:9943/oauth2/token\",\n" +
+                "    \"clientId\":\"" + applicationKeyBeanProduction.getConsumerKey() + "\",\n" +
+                "    \"clientSecret\":\"" + applicationKeyBeanProduction.getConsumerSecret() + "\",\n" +
+                "    \"customParameters\":{},\n" +
+                "    \"grantType\":\"CLIENT_CREDENTIALS\"\n" +
+                "  },\n" +
+                "  \"sandbox\":{\n" +
+                "    \"enabled\":true,\n" +
+                "    \"type\":\"OAUTH\",\n" +
+                "    \"tokenUrl\":\"https://localhost:9943/oauth2/token\",\n" +
+                "    \"clientId\":\"" + applicationKeyBeanSandbox.getConsumerKey() + "\",\n" +
+                "    \"clientSecret\":\"" + applicationKeyBeanSandbox.getConsumerSecret() + "\",\n" +
+                "    \"customParameters\":{},\n" +
+                "    \"grantType\":\"CLIENT_CREDENTIALS\"\n" +
+                "  }\n" +
+                "  }";
+        HttpResponse response = restAPIPublisher.getAPI(apiID);
+        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
+        Object endpointConfig = apidto.getEndpointConfig();
+        JSONObject endpointConfigJson = new JSONObject();
+        endpointConfigJson.putAll((Map) endpointConfig);
+        endpointConfigJson.put("endpoint_security", new JSONParser().parse(endpointSecurity));
+        apidto.setEndpointConfig(endpointConfigJson);
+        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
+        Assert.assertNotNull(updatedEndpointConfig.get("endpoint_security"));
+        Map endpointSecurityModel = (Map) updatedEndpointConfig.get("endpoint_security");
+        Assert.assertNotNull(endpointSecurityModel.get("sandbox"));
+        Map sandboxEndpointSecurityModel = (Map) endpointSecurityModel.get("sandbox");
+        Assert.assertTrue((Boolean) sandboxEndpointSecurityModel.get("enabled"));
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("type"), "OAUTH");
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("clientId"), applicationKeyBeanSandbox.getConsumerKey());
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("clientSecret"),
+                applicationKeyBeanSandbox.getConsumerSecret());
+        Assert.assertNotNull(endpointSecurityModel.get("production"));
+        Map productionEndpointSecurityModel = (Map) endpointSecurityModel.get("production");
+        Assert.assertTrue((Boolean) productionEndpointSecurityModel.get("enabled"));
+        Assert.assertEquals(productionEndpointSecurityModel.get("type"), "OAUTH");
+        Assert.assertEquals(productionEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
+        Assert.assertEquals(productionEndpointSecurityModel.get("clientId"),
+                applicationKeyBeanProduction.getConsumerKey());
+        Assert.assertEquals(productionEndpointSecurityModel.get("clientSecret"),
+                applicationKeyBeanProduction.getConsumerSecret());
+
+        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
+        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+        HttpResponse productionResponse =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
+        Assert.assertEquals(productionResponse.getResponseCode(), 200);
+        Map<String, String> headers = productionResponse.getHeaders();
+        String authorization = headers.get("BACKEND_AUTHORIZATION_HEADER");
+        Assert.assertNotNull(authorization);
+        Assert.assertTrue(authorization.contains("Bearer"));
+        String backendToken = authorization.replaceFirst("Bearer ", "");
+        validateIntrospectionResponse(user, backendToken, applicationKeyBeanProduction.getConsumerKey());
+        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
+        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+        HttpResponse sandboxResponse =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
+        Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
+        headers = sandboxResponse.getHeaders();
+        authorization = headers.get("BACKEND_AUTHORIZATION_HEADER");
+        Assert.assertNotNull(authorization);
+        Assert.assertTrue(authorization.contains("Bearer"));
+        backendToken = authorization.replaceFirst("Bearer ", "");
+        validateIntrospectionResponse(user, backendToken, applicationKeyBeanSandbox.getConsumerKey());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test Set OAuth Endpoint Security with Password Grant Type",
+            dependsOnMethods = "testUpdateEndpointSecurityForSandboxAndProduction")
+    public void testUpdateEndpointSecurityForOauthWithPasswordGrantType() throws Exception {
+
+        String username = user.getUserName();
+        String password = user.getPassword();
+        String endpointSecurity = "{\n" +
+                "  \"production\":{\n" +
+                "    \"enabled\":true,\n" +
+                "    \"type\":\"OAUTH\",\n" +
+                "    \"tokenUrl\":\"https://localhost:9943/oauth2/token\",\n" +
+                "    \"clientId\":\"" + applicationKeyBeanProduction.getConsumerKey() + "\",\n" +
+                "    \"clientSecret\":\"" + applicationKeyBeanProduction.getConsumerSecret() + "\",\n" +
+                "    \"customParameters\":{},\n" +
+                "    \"grantType\":\"PASSWORD\"\n" +
+                "    \"username\":\"" + username + "\",\n" +
+                "    \"password\":\"" + password + "\",\n" +
+                "  },\n" +
+                "  \"sandbox\":{\n" +
+                "    \"enabled\":true,\n" +
+                "    \"type\":\"OAUTH\",\n" +
+                "    \"tokenUrl\":\"https://localhost:9943/oauth2/token\",\n" +
+                "    \"clientId\":\"" + applicationKeyBeanSandbox.getConsumerKey() + "\",\n" +
+                "    \"clientSecret\":\"" + applicationKeyBeanSandbox.getConsumerSecret() + "\",\n" +
+                "    \"customParameters\":{},\n" +
+                "    \"grantType\":\"PASSWORD\"\n" +
+                "    \"username\":\"" + username + "\",\n" +
+                "    \"password\":\"" + password + "\",\n" +
+                "  }\n" +
+                "  }";
+        HttpResponse response = restAPIPublisher.getAPI(apiID);
+        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
+        Object endpointConfig = apidto.getEndpointConfig();
+        JSONObject endpointConfigJson = new JSONObject();
+        endpointConfigJson.putAll((Map) endpointConfig);
+        endpointConfigJson.put("endpoint_security", new JSONParser().parse(endpointSecurity));
+        apidto.setEndpointConfig(endpointConfigJson);
+        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, apiID);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        Map updatedEndpointConfig = (Map) updatedAPI.getEndpointConfig();
+        Assert.assertNotNull(updatedEndpointConfig.get("endpoint_security"));
+        Map endpointSecurityModel = (Map) updatedEndpointConfig.get("endpoint_security");
+        Assert.assertNotNull(endpointSecurityModel.get("sandbox"));
+        Map sandboxEndpointSecurityModel = (Map) endpointSecurityModel.get("sandbox");
+        Assert.assertTrue((Boolean) sandboxEndpointSecurityModel.get("enabled"));
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("type"), "OAUTH");
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("clientId"), applicationKeyBeanSandbox.getConsumerKey());
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("clientSecret"),
+                applicationKeyBeanSandbox.getConsumerSecret());
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("username"), username);
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("password"), "");
+        Assert.assertNotNull(endpointSecurityModel.get("production"));
+        Map productionEndpointSecurityModel = (Map) endpointSecurityModel.get("production");
+        Assert.assertTrue((Boolean) productionEndpointSecurityModel.get("enabled"));
+        Assert.assertEquals(productionEndpointSecurityModel.get("type"), "OAUTH");
+        Assert.assertEquals(productionEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
+        Assert.assertEquals(productionEndpointSecurityModel.get("clientId"),
+                applicationKeyBeanProduction.getConsumerKey());
+        Assert.assertEquals(productionEndpointSecurityModel.get("clientSecret"),
+                applicationKeyBeanProduction.getConsumerSecret());
+        Assert.assertEquals(productionEndpointSecurityModel.get("username"), username);
+        Assert.assertEquals(productionEndpointSecurityModel.get("password"), "");
+
+        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
+        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+        HttpResponse productionResponse =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
+        Assert.assertEquals(productionResponse.getResponseCode(), 200);
+        Map<String, String> headers = productionResponse.getHeaders();
+        String authorization = headers.get("BACKEND_AUTHORIZATION_HEADER");
+        Assert.assertNotNull(authorization);
+        Assert.assertTrue(authorization.contains("Bearer"));
+        String backendToken = authorization.replaceFirst("Bearer ", "");
+        validateIntrospectionResponse(user, backendToken, applicationKeyBeanProduction.getConsumerKey());
+        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
+        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+        HttpResponse sandboxResponse =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0), requestHeadersGet);
+        Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
+        headers = sandboxResponse.getHeaders();
+        authorization = headers.get("BACKEND_AUTHORIZATION_HEADER");
+        Assert.assertNotNull(authorization);
+        Assert.assertTrue(authorization.contains("Bearer"));
+        backendToken = authorization.replaceFirst("Bearer ", "");
+        validateIntrospectionResponse(user, backendToken, applicationKeyBeanSandbox.getConsumerKey());
+    }
+
+    private void validateIntrospectionResponse(User user, String accessToken, String clientId)
+            throws UnsupportedEncodingException {
+
+        String introspectionUrl = "https://localhost:9943/oauth2/introspect";
+        if (!SUPER_TENANT_DOMAIN.equals(user.getUserDomain())) {
+            introspectionUrl = "https://localhost:9943/t/" + user.getUserDomain() + "/oauth2/introspect";
+        }
+        CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
+        HttpPost httpPost = new HttpPost();
+        httpPost.addHeader("Authorization",
+                "Basic " + Base64.encode(user.getUserName().concat(":").concat(user.getPassword()).getBytes()));
+        httpPost.setURI(URI.create(introspectionUrl));
+        UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(Arrays.asList(new BasicNameValuePair(
+                "token", accessToken)));
+        httpPost.setEntity(urlEncodedFormEntity);
+        try (CloseableHttpResponse response = closeableHttpClient.execute(httpPost)) {
+            Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
+            HttpEntity entity = response.getEntity();
+            JSONObject jsonPayload = (JSONObject) new JSONParser().parse(new InputStreamReader(entity.getContent()));
+            Assert.assertTrue((Boolean) jsonPayload.get("active"));
+            Assert.assertNotNull(jsonPayload.get("client_id"));
+            Assert.assertEquals(jsonPayload.get("client_id"), clientId);
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 

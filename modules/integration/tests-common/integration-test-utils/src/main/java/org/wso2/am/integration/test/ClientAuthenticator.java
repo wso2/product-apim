@@ -2,7 +2,13 @@ package org.wso2.am.integration.test;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
 import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
@@ -19,7 +25,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -27,6 +33,13 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.DatatypeConverter;
 
 import static org.wso2.am.integration.test.Constants.CHAR_AT;
 
@@ -120,10 +133,8 @@ public class ClientAuthenticator {
 
 
 
-    public static void makeDCRRequest(DCRParamRequest dcrParamRequest) {
+    public static ApplicationKeyBean makeDCRRequest(DCRParamRequest dcrParamRequest) {
         String applicationName = dcrParamRequest.getAppName();
-        URL url;
-        HttpURLConnection urlConn = null;
         try {
             //Create json payload for DCR endpoint
             JsonObject json = new JsonObject();
@@ -149,33 +160,33 @@ public class ClientAuthenticator {
             }
 
             // Calling DCR endpoint
-            url = new URL(dcrParamRequest.getDcrEndpoint());
-            urlConn = (HttpURLConnection) url.openConnection();
-            urlConn.setDoOutput(true);
-            urlConn.setRequestMethod("POST");
-            urlConn.setRequestProperty("Content-Type", "application/json");
-            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded); //temp fix
-            urlConn.getOutputStream().write((json.toString()).getBytes("UTF-8"));
+            CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
+            HttpPost httpPost = new HttpPost();
+            httpPost.setURI(URI.create(dcrParamRequest.getDcrEndpoint()));
 
-            int responseCode = urlConn.getResponseCode();
-            if (responseCode == 200) {  //If the DCR call is success
-                String responseStr = getResponseString(urlConn.getInputStream());
-                ApplicationKeyBean applicationKeyBean = new ApplicationKeyBean();
-                JsonParser parser = new JsonParser();
-                JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
-                applicationKeyBean.setConsumerKey(jObj.getAsJsonPrimitive("clientId").getAsString());
-                applicationKeyBean.setConsumerSecret(jObj.getAsJsonPrimitive("clientSecret").getAsString());
-                applicationKeyMap.put(dcrParamRequest.getAppName(), applicationKeyBean);
-            } else { //If DCR call fails
-                throw new RuntimeException("DCR call failed. Status code: " + responseCode);
+            httpPost.addHeader("Content-Type", "application/json");
+            httpPost.addHeader("Authorization", "Basic " + clientEncoded);
+            httpPost.setEntity(new StringEntity(json.toString()));
+            try (CloseableHttpResponse httpResponse = closeableHttpClient.execute(httpPost)) {
+                int statusCode = httpResponse.getStatusLine().getStatusCode();
+                if (statusCode == 200) {  //If the DCR call is success
+                    try (InputStream content = httpResponse.getEntity().getContent()) {
+                        String responseStr = IOUtils.toString(content);
+                        ApplicationKeyBean applicationKeyBean = new ApplicationKeyBean();
+                        JsonParser parser = new JsonParser();
+                        JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
+                        applicationKeyBean.setConsumerKey(jObj.getAsJsonPrimitive("clientId").getAsString());
+                        applicationKeyBean.setConsumerSecret(jObj.getAsJsonPrimitive("clientSecret").getAsString());
+                        applicationKeyMap.put(dcrParamRequest.getAppName(), applicationKeyBean);
+                        return applicationKeyBean;
+                    }
+                } else { //If DCR call fails
+                    throw new RuntimeException("DCR call failed. Status code: " + statusCode);
+                }
             }
         } catch (IOException e) {
             String errorMsg = "Can not create OAuth application  : " + applicationName;
             throw new RuntimeException(errorMsg, e);
-        } finally {
-            if (urlConn != null) {
-                urlConn.disconnect();
-            }
         }
     }
 
