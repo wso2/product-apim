@@ -1086,6 +1086,10 @@ public class RestAPIPublisherImpl {
         sandUrl.put("url", apiCreationRequestBean.getEndpointUrl().toString());
         jsonObject.put("sandbox_endpoints", sandUrl);
         jsonObject.put("production_endpoints", sandUrl);
+        if (apiCreationRequestBean.getEndpointSecurityConfig() != null) {
+            jsonObject.put("endpoint_security", apiCreationRequestBean.getEndpointSecurityConfig());
+        }
+
         body.setEndpointConfig(jsonObject);
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
