@@ -47,6 +47,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private String httpChecked = "http";
     private String httpsChecked = "https";
     private String mutualSSLChecked = "";
+    private org.json.simple.JSONObject endpointSecurityConfig;
 
     /**
      * To check whether mutual ssl option is enabled.
@@ -627,10 +628,6 @@ public class APICreationRequestBean extends AbstractRequest {
         return name;
     }
 
-    public JSONObject getEndpointConfig() {
-        return endpoint;
-    }
-
     public String getContext() {
         return context;
     }
@@ -813,5 +810,13 @@ public class APICreationRequestBean extends AbstractRequest {
 
     public void setEndpointUrl(URL endpointUrl) {
         this.endpointUrl = endpointUrl;
+    }
+
+    public void setEndpointSecurityConfig(org.json.simple.JSONObject endpointSecurityConfig) {
+        this.endpointSecurityConfig = endpointSecurityConfig;
+    }
+
+    public org.json.simple.JSONObject getEndpointSecurityConfig() {
+        return endpointSecurityConfig;
     }
 }
