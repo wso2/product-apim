@@ -297,11 +297,18 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched when api invocation");
         log.info("Response for testEnableJWTAndClaimsForAPIKeyApp: " + response);
 
-        //check JWT headers
         Header[] responseHeaders = response.getAllHeaders();
         for (Header header : responseHeaders) {
             log.info("Response Header Name: " + header.getName() + ", Response Header Value: " + header.getValue());
         }
+        //check activityId header
+        Header activityId_request_path = pickHeader(responseHeaders, "in_activityid");
+        Header activityId_response_path = pickHeader(responseHeaders, "activityid");
+
+        Assert.assertTrue(activityId_request_path.getValue().equals(activityId_response_path.getValue()),
+                "activityId in request path ( " + activityId_request_path +
+                        ") does not match with the response path ( " + activityId_response_path + " ).");
+        //check JWT headers
         Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
         Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
 
