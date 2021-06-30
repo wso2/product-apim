@@ -30,6 +30,7 @@ import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.store.api.v1.ApiKeysApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationKeysApi;
+import org.wso2.am.integration.clients.store.api.v1.ApplicationTokensApi;
 import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 import org.wso2.am.integration.clients.store.api.v1.CommentsApi;
 import org.wso2.am.integration.clients.store.api.v1.GraphQlPoliciesApi;
@@ -55,6 +56,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyMappingRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationTokenGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
@@ -116,6 +118,7 @@ public class RestAPIStoreImpl {
     public String storeURL;
     public String tenantDomain;
     ApiClient apiStoreClient = new ApiClient();
+    private ApplicationTokensApi applicationTokensApi = new ApplicationTokensApi();
     private RestAPIGatewayImpl restAPIGateway;
     private String accessToken;
 
@@ -151,6 +154,8 @@ public class RestAPIStoreImpl {
         keyManagersCollectionApi.setApiClient(apiStoreClient);
         graphQlPoliciesApi.setApiClient(apiStoreClient);
         usersApi.setApiClient(apiStoreClient);
+        apiStoreClient.setDebugging(true);
+        applicationTokensApi.setApiClient(apiStoreClient);
         apiStoreClient.setDebugging(true);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
@@ -2038,5 +2043,23 @@ public class RestAPIStoreImpl {
     private void setActivityID() {
 
         apiStoreClient.addDefaultHeader("activityID", System.getProperty(testNameProperty));
+    }
+
+    public org.wso2.am.integration.clients.store.api.v1.dto.ApplicationTokenDTO generateToken(String applicationId,
+                                                                                              String keyType,
+                                                                                              String consumerSecret,
+                                                                                              String revokedToken)
+            throws ApiException {
+
+        if (StringUtils.isNotEmpty(revokedToken)) {
+            return applicationTokensApi.applicationsApplicationIdKeysKeyTypeGenerateTokenPost(applicationId, keyType,
+                    new ApplicationTokenGenerateRequestDTO().consumerSecret(consumerSecret).validityPeriod(3600L)
+                            .revokeToken(revokedToken), null);
+        } else {
+            return applicationTokensApi.applicationsApplicationIdKeysKeyTypeGenerateTokenPost(applicationId, keyType,
+                    new ApplicationTokenGenerateRequestDTO().consumerSecret(consumerSecret).validityPeriod(3600L),
+                    null);
+        }
+
     }
 }
