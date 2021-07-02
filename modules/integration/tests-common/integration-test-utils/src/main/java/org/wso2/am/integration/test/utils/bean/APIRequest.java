@@ -435,6 +435,10 @@ public class APIRequest extends AbstractRequest {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public org.json.simple.JSONObject getEndpointConfig() {
         return endpoint;
     }
