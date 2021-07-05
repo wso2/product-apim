@@ -102,7 +102,9 @@ public class DocumentSearchResultDTO extends SearchResultDTO {
     
     URL("URL"),
     
-    FILE("FILE");
+    FILE("FILE"),
+    
+    MARKDOWN("MARKDOWN");
 
     private String value;
 

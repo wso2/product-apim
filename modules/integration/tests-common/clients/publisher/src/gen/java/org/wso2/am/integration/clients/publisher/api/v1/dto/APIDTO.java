@@ -34,6 +34,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoD
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIThreatProtectionPoliciesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DeploymentEnvironmentsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLInfoDTO;
 
@@ -68,6 +69,9 @@ public class APIDTO {
 
   @SerializedName("wsdlUrl")
   private String wsdlUrl = null;
+
+  @SerializedName("testKey")
+  private String testKey = null;
 
   @SerializedName("responseCachingEnabled")
   private Boolean responseCachingEnabled = null;
@@ -231,6 +235,9 @@ public class APIDTO {
   @SerializedName("gatewayEnvironments")
   private List<String> gatewayEnvironments = null;
 
+  @SerializedName("deploymentEnvironments")
+  private List<DeploymentEnvironmentsDTO> deploymentEnvironments = null;
+
   @SerializedName("labels")
   private List<String> labels = null;
 
@@ -287,7 +294,7 @@ public class APIDTO {
   }
 
   @SerializedName("subscriptionAvailability")
-  private SubscriptionAvailabilityEnum subscriptionAvailability = SubscriptionAvailabilityEnum.ALL_TENANTS;
+  private SubscriptionAvailabilityEnum subscriptionAvailability = SubscriptionAvailabilityEnum.CURRENT_TENANT;
 
   @SerializedName("subscriptionAvailableTenants")
   private List<String> subscriptionAvailableTenants = null;
@@ -594,6 +601,24 @@ public class APIDTO {
 
   public void setWsdlUrl(String wsdlUrl) {
     this.wsdlUrl = wsdlUrl;
+  }
+
+  public APIDTO testKey(String testKey) {
+    this.testKey = testKey;
+    return this;
+  }
+
+   /**
+   * Get testKey
+   * @return testKey
+  **/
+  @ApiModelProperty(example = "8swdwj9080edejhj", value = "")
+  public String getTestKey() {
+    return testKey;
+  }
+
+  public void setTestKey(String testKey) {
+    this.testKey = testKey;
   }
 
   public APIDTO responseCachingEnabled(Boolean responseCachingEnabled) {
@@ -1010,6 +1035,32 @@ public class APIDTO {
 
   public void setGatewayEnvironments(List<String> gatewayEnvironments) {
     this.gatewayEnvironments = gatewayEnvironments;
+  }
+
+  public APIDTO deploymentEnvironments(List<DeploymentEnvironmentsDTO> deploymentEnvironments) {
+    this.deploymentEnvironments = deploymentEnvironments;
+    return this;
+  }
+
+  public APIDTO addDeploymentEnvironmentsItem(DeploymentEnvironmentsDTO deploymentEnvironmentsItem) {
+    if (this.deploymentEnvironments == null) {
+      this.deploymentEnvironments = new ArrayList<>();
+    }
+    this.deploymentEnvironments.add(deploymentEnvironmentsItem);
+    return this;
+  }
+
+   /**
+   * List of selected deployment environments and clusters 
+   * @return deploymentEnvironments
+  **/
+  @ApiModelProperty(value = "List of selected deployment environments and clusters ")
+  public List<DeploymentEnvironmentsDTO> getDeploymentEnvironments() {
+    return deploymentEnvironments;
+  }
+
+  public void setDeploymentEnvironments(List<DeploymentEnvironmentsDTO> deploymentEnvironments) {
+    this.deploymentEnvironments = deploymentEnvironments;
   }
 
   public APIDTO labels(List<String> labels) {
@@ -1455,6 +1506,7 @@ public class APIDTO {
         Objects.equals(this.lifeCycleStatus, API.lifeCycleStatus) &&
         Objects.equals(this.wsdlInfo, API.wsdlInfo) &&
         Objects.equals(this.wsdlUrl, API.wsdlUrl) &&
+        Objects.equals(this.testKey, API.testKey) &&
         Objects.equals(this.responseCachingEnabled, API.responseCachingEnabled) &&
         Objects.equals(this.cacheTimeout, API.cacheTimeout) &&
         Objects.equals(this.destinationStatsEnabled, API.destinationStatsEnabled) &&
@@ -1475,6 +1527,7 @@ public class APIDTO {
         Objects.equals(this.visibleTenants, API.visibleTenants) &&
         Objects.equals(this.endpointSecurity, API.endpointSecurity) &&
         Objects.equals(this.gatewayEnvironments, API.gatewayEnvironments) &&
+        Objects.equals(this.deploymentEnvironments, API.deploymentEnvironments) &&
         Objects.equals(this.labels, API.labels) &&
         Objects.equals(this.mediationPolicies, API.mediationPolicies) &&
         Objects.equals(this.subscriptionAvailability, API.subscriptionAvailability) &&
@@ -1499,7 +1552,7 @@ public class APIDTO {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, enableSchemaValidation, enableStore, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers);
+    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, testKey, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, enableSchemaValidation, enableStore, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, deploymentEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers);
   }
 
 
@@ -1517,6 +1570,7 @@ public class APIDTO {
     sb.append("    lifeCycleStatus: ").append(toIndentedString(lifeCycleStatus)).append("\n");
     sb.append("    wsdlInfo: ").append(toIndentedString(wsdlInfo)).append("\n");
     sb.append("    wsdlUrl: ").append(toIndentedString(wsdlUrl)).append("\n");
+    sb.append("    testKey: ").append(toIndentedString(testKey)).append("\n");
     sb.append("    responseCachingEnabled: ").append(toIndentedString(responseCachingEnabled)).append("\n");
     sb.append("    cacheTimeout: ").append(toIndentedString(cacheTimeout)).append("\n");
     sb.append("    destinationStatsEnabled: ").append(toIndentedString(destinationStatsEnabled)).append("\n");
@@ -1537,6 +1591,7 @@ public class APIDTO {
     sb.append("    visibleTenants: ").append(toIndentedString(visibleTenants)).append("\n");
     sb.append("    endpointSecurity: ").append(toIndentedString(endpointSecurity)).append("\n");
     sb.append("    gatewayEnvironments: ").append(toIndentedString(gatewayEnvironments)).append("\n");
+    sb.append("    deploymentEnvironments: ").append(toIndentedString(deploymentEnvironments)).append("\n");
     sb.append("    labels: ").append(toIndentedString(labels)).append("\n");
     sb.append("    mediationPolicies: ").append(toIndentedString(mediationPolicies)).append("\n");
     sb.append("    subscriptionAvailability: ").append(toIndentedString(subscriptionAvailability)).append("\n");

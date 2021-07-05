@@ -87,7 +87,7 @@
             <class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.RegistryLifeCycleInclusionTest"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.CustomLifeCycleTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIMANAGER5337SubscriptionRetainTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.SubscriptionRetainAndDeletionTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CustomHeaderTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.header.DuplicateHeaderTestCase"/>-->
             <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
@@ -343,6 +343,19 @@
         <classes>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.workflow.WorkflowApprovalExecutorTest"/>
+        </classes>
+    </test>
+    <test name="apim-integration-tests-api-gateway" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.restapi.GatewayRestAPITestSuite"/>
+            <class name="org.wso2.am.integration.tests.restapi.GatewayRestAPITestCase"/>
+        </classes>
+    </test>
+    <test name="apim-unlimited-tier-disabled-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.UnlimitedTierDisabledConfig"/>
+            <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.UnlimitedTierDisabledTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.ConfigurableDefaultPolicyTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-mutualssl-test" preserve-order="true" parallel="false" group-by-instances="true">

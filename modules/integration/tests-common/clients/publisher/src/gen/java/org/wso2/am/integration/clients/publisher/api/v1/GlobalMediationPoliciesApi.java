@@ -57,7 +57,7 @@ public class GlobalMediationPoliciesApi {
 
     /**
      * Build call for getAllGlobalMediationPolicies
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -127,7 +127,7 @@ public class GlobalMediationPoliciesApi {
     /**
      * Get all global level mediation policies 
      * This operation provides you a list of available all global level mediation policies. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -142,7 +142,7 @@ public class GlobalMediationPoliciesApi {
     /**
      * Get all global level mediation policies 
      * This operation provides you a list of available all global level mediation policies. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -158,7 +158,7 @@ public class GlobalMediationPoliciesApi {
     /**
      * Get all global level mediation policies  (asynchronously)
      * This operation provides you a list of available all global level mediation policies. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)

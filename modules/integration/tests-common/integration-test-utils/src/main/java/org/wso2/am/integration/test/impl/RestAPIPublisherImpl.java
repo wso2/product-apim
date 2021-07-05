@@ -31,6 +31,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GlobalMediationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
@@ -58,6 +59,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SettingsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
@@ -106,7 +108,9 @@ public class RestAPIPublisherImpl {
     public ApiAuditApi apiAuditApi = new ApiAuditApi();
     public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
+    public GlobalMediationPoliciesApi globalMediationPoliciesApi  = new GlobalMediationPoliciesApi();
     public ScopesApi sharedScopesApi = new ScopesApi();
+    public SettingsApi settingsApi = new SettingsApi();
     public ApiClient apiPublisherClient = new ApiClient();
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
@@ -159,6 +163,8 @@ public class RestAPIPublisherImpl {
         apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
         sharedScopesApi.setApiClient(apiPublisherClient);
+        settingsApi.setApiClient(apiPublisherClient);
+        globalMediationPoliciesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -492,11 +498,7 @@ public class RestAPIPublisherImpl {
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
-        List<String> tierCollection = Arrays.asList(apiRequest.getTiersCollection().split(","));
-        List<String> tierList = new ArrayList<>();
-        for (String tier : tierCollection) {
-            tierList.add(tier);
-        }
+        List<String> tierList = new ArrayList<>(Arrays.asList(apiRequest.getTiersCollection().split(",")));
         if (!tierList.contains(Constants.TIERS_UNLIMITED)) {
             tierList.add(Constants.TIERS_UNLIMITED);
         }
@@ -1010,6 +1012,10 @@ public class RestAPIPublisherImpl {
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
+    public ApiResponse<APIDTO> importOASDefinitionResponse(File file, String properties) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importOpenAPIDefinitionWithHttpInfo(file, null, properties);
+        return apiDtoApiResponse;
+    }
 
     public GraphQLValidationResponseDTO validateGraphqlSchemaDefinition(File schemaDefinition) throws ApiException {
         ApiResponse<GraphQLValidationResponseDTO> response =
@@ -1086,6 +1092,10 @@ public class RestAPIPublisherImpl {
         sandUrl.put("url", apiCreationRequestBean.getEndpointUrl().toString());
         jsonObject.put("sandbox_endpoints", sandUrl);
         jsonObject.put("production_endpoints", sandUrl);
+        if (apiCreationRequestBean.getEndpointSecurityConfig() != null) {
+            jsonObject.put("endpoint_security", apiCreationRequestBean.getEndpointSecurityConfig());
+        }
+
         body.setEndpointConfig(jsonObject);
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
@@ -1251,5 +1261,14 @@ public class RestAPIPublisherImpl {
             response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);
         }
         return response;
+    }
+
+    public MediationListDTO retrieveMediationPolicies() throws ApiException {
+        return globalMediationPoliciesApi.getAllGlobalMediationPolicies(100,0,null,null);
+    }
+
+    public SettingsDTO getSettings() throws ApiException {
+        return settingsApi.settingsGet();
+
     }
 }

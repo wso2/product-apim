@@ -780,7 +780,7 @@ public class ApiProductDocumentsApi {
     /**
      * Build call for apiProductsApiProductIdDocumentsGet
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -857,7 +857,7 @@ public class ApiProductDocumentsApi {
      * Get a list of documents of an API Product
      * This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product. 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -873,7 +873,7 @@ public class ApiProductDocumentsApi {
      * Get a list of documents of an API Product
      * This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product. 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
@@ -890,7 +890,7 @@ public class ApiProductDocumentsApi {
      * Get a list of documents of an API Product (asynchronously)
      * This operation can be used to retrive a list of documents belonging to an API Product by providing the id of the API Product. 
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)

@@ -597,7 +597,7 @@ public class ClientCertificatesApi {
     /**
      * Build call for apisApiIdClientCertificatesGet
      * @param apiId UUID of the API (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param alias Alias for the client certificate (optional)
      * @param progressListener Progress listener
@@ -671,7 +671,7 @@ public class ClientCertificatesApi {
      * Retrieve/ Search uploaded Client Certificates.
      * This operation can be used to retrieve and search the uploaded client certificates. 
      * @param apiId UUID of the API (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param alias Alias for the client certificate (optional)
      * @return ClientCertificatesDTO
@@ -686,7 +686,7 @@ public class ClientCertificatesApi {
      * Retrieve/ Search uploaded Client Certificates.
      * This operation can be used to retrieve and search the uploaded client certificates. 
      * @param apiId UUID of the API (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param alias Alias for the client certificate (optional)
      * @return ApiResponse&lt;ClientCertificatesDTO&gt;
@@ -702,7 +702,7 @@ public class ClientCertificatesApi {
      * Retrieve/ Search uploaded Client Certificates. (asynchronously)
      * This operation can be used to retrieve and search the uploaded client certificates. 
      * @param apiId UUID of the API (required)
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param alias Alias for the client certificate (optional)
      * @param callback The callback to be executed when the API call finishes

@@ -555,7 +555,7 @@ public class EndpointCertificatesApi {
     }
     /**
      * Build call for endpointCertificatesGet
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param alias Alias for the certificate (optional)
      * @param endpoint Endpoint of which the certificate is uploaded (optional)
@@ -625,7 +625,7 @@ public class EndpointCertificatesApi {
     /**
      * Retrieve/Search uploaded certificates.
      * This operation can be used to retrieve and search the uploaded certificates. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param alias Alias for the certificate (optional)
      * @param endpoint Endpoint of which the certificate is uploaded (optional)
@@ -640,7 +640,7 @@ public class EndpointCertificatesApi {
     /**
      * Retrieve/Search uploaded certificates.
      * This operation can be used to retrieve and search the uploaded certificates. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param alias Alias for the certificate (optional)
      * @param endpoint Endpoint of which the certificate is uploaded (optional)
@@ -656,7 +656,7 @@ public class EndpointCertificatesApi {
     /**
      * Retrieve/Search uploaded certificates. (asynchronously)
      * This operation can be used to retrieve and search the uploaded certificates. 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of resource array to return.  (optional, default to 80)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param alias Alias for the certificate (optional)
      * @param endpoint Endpoint of which the certificate is uploaded (optional)
