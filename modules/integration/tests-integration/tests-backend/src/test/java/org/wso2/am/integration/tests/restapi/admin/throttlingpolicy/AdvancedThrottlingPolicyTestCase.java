@@ -18,6 +18,7 @@
 package org.wso2.am.integration.tests.restapi.admin.throttlingpolicy;
 
 import org.apache.http.HttpStatus;
+import org.codehaus.plexus.util.StringUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -36,14 +37,23 @@ import org.wso2.am.integration.clients.admin.api.dto.QueryParameterConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
 
@@ -196,8 +206,36 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyAdvancedThrottlePolicyDTO(requestCountPolicyDTO, updatedPolicyDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test delete advanced throttling policy",
+    @Test(groups = {"wso2.am"}, description = "Test delete already assigned advanced throttling policy",
             dependsOnMethods = "testGetAndUpdatePolicy")
+    public void testDeletePolicyAlreadyExisting() throws Exception {
+        APIRequest apiRequest = new APIRequest("AdvancedThrottlingPolicyTest", "AdvancedThrottlingPolicy",
+                new URL(backEndServerUrl.getWebAppURLHttp() + "jaxrs_basic/services/customers/customerservice/"));
+        apiRequest.setProvider(user.getUserName());
+        apiRequest.setVersion("1.0.0");
+        HttpResponse addResponse = restAPIPublisher.addAPI(apiRequest);
+        String apiID = addResponse.getData();
+
+        apiRequest.setApiTier(requestCountPolicyDTO.getPolicyName());
+        restAPIPublisher.updateAPI(apiRequest, apiID);
+        try {
+            restAPIAdmin.deleteAdvancedThrottlingPolicy(requestCountPolicyDTO.getPolicyId());
+        } catch (ApiException e) {
+            assertEquals(e.getCode(), HttpStatus.SC_FORBIDDEN,
+                    "Advanced throttling policy " + requestCountPolicyDTO.getPolicyName() + ": " + requestCountPolicyDTO
+                            .getPolicyId() + " deleted even it is already assigned to an API.");
+            assertTrue(e.getResponseBody().contains(
+                    "Policy " + requestCountPolicyDTO.getPolicyName() + ": " + requestCountPolicyDTO.getPolicyId()
+                            + " already attached to API/Resource"));
+        } finally {
+            if (apiID != null) {
+                restAPIPublisher.deleteAPI(apiID);
+            }
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test delete advanced throttling policy",
+            dependsOnMethods = "testDeletePolicyAlreadyExisting")
     public void testDeletePolicy() throws Exception {
 
         ApiResponse<Void> apiResponse =
