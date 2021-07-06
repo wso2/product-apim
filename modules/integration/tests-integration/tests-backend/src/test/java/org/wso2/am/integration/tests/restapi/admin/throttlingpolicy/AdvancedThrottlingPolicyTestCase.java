@@ -18,7 +18,6 @@
 package org.wso2.am.integration.tests.restapi.admin.throttlingpolicy;
 
 import org.apache.http.HttpStatus;
-import org.codehaus.plexus.util.StringUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -37,7 +36,6 @@ import org.wso2.am.integration.clients.admin.api.dto.QueryParameterConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
