@@ -21,6 +21,7 @@
                         </payloadFactory>
                     </else>
                 </filter>
+                <property name="in_activityid" expression="$trp:activityid" scope="transport"/>
                 <property name="messageType" value="application/json" scope="axis2"/>
                 <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
                 <respond/>
