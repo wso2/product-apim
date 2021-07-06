@@ -290,6 +290,9 @@ public class RestAPIPublisherImpl {
         body.setEndpointConfig(apiRequest.getEndpointConfig());
         body.setSecurityScheme(apiRequest.getSecurityScheme());
         body.setType(APIDTO.TypeEnum.fromValue(apiRequest.getType()));
+        if (StringUtils.isNotBlank(apiRequest.getApiTier())) {
+            body.setApiThrottlingPolicy(apiRequest.getApiTier());
+        }
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
@@ -543,6 +546,9 @@ public class RestAPIPublisherImpl {
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
+        if (StringUtils.isNotBlank(apiRequest.getApiTier())) {
+            body.setApiThrottlingPolicy(apiRequest.getApiTier());
+        }
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
