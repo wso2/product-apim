@@ -54,6 +54,7 @@ public class APIRequest extends AbstractRequest {
     private String endpointType = "nonsecured";
     private String http_checked = "http";
     private String https_checked = "https";
+    private Boolean responseCachingEnabled = false;
     private String tags = "tags";
     private String tier = "Silver";
     private String thumbUrl = "";
@@ -150,6 +151,14 @@ public class APIRequest extends AbstractRequest {
     public void setKeyManagers(List<String> keyManagers) {
 
         this.keyManagers = keyManagers;
+    }
+
+    public Boolean getResponseCachingEnabled() {
+        return responseCachingEnabled;
+    }
+
+    public void setResponseCachingEnabled(Boolean responseCachingEnabled) {
+        this.responseCachingEnabled = responseCachingEnabled;
     }
 
     /**
@@ -394,6 +403,7 @@ public class APIRequest extends AbstractRequest {
         addParameter("endpointType", getEndpointType());
         addParameter("http_checked", getHttp_checked());
         addParameter("https_checked", getHttps_checked());
+        addParameter("responseCaching", getResponseCachingEnabled().toString());
         addParameter("tags", getTags());
         addParameter("tier", getTier());
         addParameter("thumbUrl", getThumbUrl());
