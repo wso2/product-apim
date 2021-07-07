@@ -218,8 +218,8 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
                     "Advanced throttling policy " + requestCountPolicyDTO.getPolicyName() + ": " + requestCountPolicyDTO
                             .getPolicyId() + " deleted even it is already assigned to an API.");
             Assert.assertTrue(e.getResponseBody().contains(
-                    "Policy " + requestCountPolicyDTO.getPolicyName() + ": " + requestCountPolicyDTO.getPolicyId()
-                            + " already attached to API/Resource"));
+                    "Cannot delete the advanced policy with the name " + requestCountPolicyDTO.getPolicyName()
+                            + " because it is already assigned to an API/Resource"));
         } finally {
             if (apiID != null) {
                 restAPIPublisher.deleteAPI(apiID);
