@@ -109,7 +109,7 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
     public void testAddPolicyWithBandwidthLimit() throws Exception {
 
         //Create the advanced throttling policy DTO with bandwidth limit
-        String policyName = "TestPolicyTwo";
+        String policyName = "TestPolicyTwo_WithUnderscore";
         Long dataAmount = 2L;
         String dataUnit = "KB";
         List<ConditionalGroupDTO> conditionalGroups = new ArrayList<>();
