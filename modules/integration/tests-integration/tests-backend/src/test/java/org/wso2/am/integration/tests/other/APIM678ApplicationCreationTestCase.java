@@ -29,15 +29,16 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.admin.clients.application.ApplicationManagementClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.*;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
+import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -130,6 +131,26 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
                 "Response Code is mismatched in add application " + applicationName);
         assertNotNull(applicationResponse, "Error in Application Creation: "
                 + applicationName);
+
+        //Generate keys for the application
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationId, APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
+                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String consumerKey = applicationKeyDTO.getConsumerKey();
+        String consumerSecret = applicationKeyDTO.getConsumerSecret();
+
+        assertNotNull(consumerKey, "Error in generating keys: " + applicationName);
+
+        //Verify the Service Provider
+        OAuthConsumerAppDTO oAuthApplicationData = oAuthAdminServiceClient.getOAuthApplicationData(consumerKey);
+        String oauthAppName = oAuthApplicationData.getApplicationName();
+        ServiceProvider spApp = applicationManagementClient.getApplication(oauthAppName);
+
+        assertEquals(spApp.getApplicationName(), oauthAppName,
+                "Service Provider verification failed: " + applicationName);
+
         //add applications to a list (for get all applications and deletion purpose when test finished)
         applicationsList.add(applicationResponse.getData());
     }
