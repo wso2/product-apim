@@ -48,7 +48,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
     private Integer unitTime = 1;
     private Integer graphQLMaxComplexity = 400;
     private Integer graphQLMaxDepth = 10;
-    private Integer rateLimitCount = -1;
+    private Integer rateLimitCount = 1;
     private String rateLimitTimeUnit = "NA";
     private boolean stopQuotaOnReach = false;
     private String billingPlan = "COMMERCIAL";
