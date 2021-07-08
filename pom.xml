@@ -1409,7 +1409,7 @@
         <eclipse.version>3.2.0</eclipse.version>
         <ws.seccurity.version>1.5.11-wso2v18</ws.seccurity.version>
         <jacoco.agent.version>0.8.2</jacoco.agent.version>
-        <google.guava.version>27.0-jre</google.guava.version>
+        <google.guava.version>29.0-jre</google.guava.version>
 
         <carbon.metrics.version>1.3.7</carbon.metrics.version>
         <!-- MB Features -->
