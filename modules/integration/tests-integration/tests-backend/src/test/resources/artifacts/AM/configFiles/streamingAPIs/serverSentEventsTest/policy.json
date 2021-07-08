@@ -5,7 +5,7 @@
   "defaultLimit": {
     "type": "EVENTCOUNTLIMIT",
     "requestCount": {
-      "requestCount": 2,
+      "requestCount": 5,
       "timeUnit": "min",
       "unitTime": 1
     }

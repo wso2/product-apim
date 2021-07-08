@@ -23,8 +23,14 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.servlets.EventSource;
 import org.eclipse.jetty.servlets.EventSourceServlet;
 
+import javax.servlet.AsyncContext;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -57,11 +63,33 @@ public class SseServlet extends EventSourceServlet {
                     log.info("Propagating event...");
                     try {
                         Thread.sleep(3000);
-                        emitter.data("new server event " + new Date().toString());
+                        emitData("new server event " + new Date().toString(), emitter);
                         eventsSent.incrementAndGet();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    } catch (InterruptedException | NoSuchFieldException | IllegalAccessException e) {
+                        log.error("Failed to emit data", e);
                     }
+                }
+            }
+
+            private void emitData(String data, Emitter emitter) throws IOException, NoSuchFieldException,
+                    IllegalAccessException {
+                Field outputField = EventSourceServlet.EventSourceEmitter.class.getDeclaredField("output");
+                outputField.setAccessible(true);
+                ServletOutputStream servletOutputStream = (ServletOutputStream) outputField.get(emitter);
+                String delimiter = "\n\n";
+                synchronized (emitter) {
+                    BufferedReader reader = new BufferedReader(new StringReader(data));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        servletOutputStream.write("data: ".getBytes(StandardCharsets.UTF_8));
+                        servletOutputStream.write(line.getBytes(StandardCharsets.UTF_8));
+                        servletOutputStream.write(delimiter.getBytes());
+                    }
+                    servletOutputStream.write(delimiter.getBytes());
+                    Field asyncField = EventSourceServlet.EventSourceEmitter.class.getDeclaredField("async");
+                    asyncField.setAccessible(true);
+                    AsyncContext async = (AsyncContext) asyncField.get(emitter);
+                    async.getResponse().flushBuffer();
                 }
             }
 

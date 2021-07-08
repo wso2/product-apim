@@ -1057,6 +1057,10 @@ public class RestAPIPublisherImpl {
         return apiResponse.getData();
     }
 
+    public String updateAsyncAPI(String apiId, String definition) throws ApiException {
+        return apIsApi.apisApiIdAsyncapiPut(apiId, null, definition, null, null);
+    }
+
     public OpenAPIDefinitionValidationResponseDTO validateOASDefinition(File oasDefinition) throws ApiException {
 
         ApiResponse<OpenAPIDefinitionValidationResponseDTO> response =
