@@ -46,6 +46,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
@@ -118,6 +119,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private String apiId5;
     private String apiId6;
     private String apiId7;
+    private SubscriptionDTO subscriptionDTO;
     private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     String users[] = {"apisecUser", "apisecUser2@wso2.com", "apisecUser2@abc.com"};
     String endUserPassword = "password@123";
@@ -416,8 +418,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         applicationId = applicationResponse.getData();
         restAPIStore.subscribeToAPI(apiId3, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
         restAPIStore.subscribeToAPI(apiId2, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
-        restAPIStore.subscribeToAPI(apiId4, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
-
+        subscriptionDTO = restAPIStore.subscribeToAPI(apiId4, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        assertNotNull(subscriptionDTO, "API Subscription Failed");
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
@@ -1155,6 +1157,46 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         for (Object authType : authTypes) {
             Assert.assertEquals(authType, "Application & Application User", "Incorrect auth type");
         }
+    }
+
+    @Test(description = "Testing the invocation with API Keys after removing subscription", dependsOnMethods =
+            {"testInvokeBasicAuthAfterCredentialsInvalid"})
+    public void testInvocationWithApiKeysWithoutSubscription() throws Exception {
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum
+                .PRODUCTION.toString(), -1, null, null);
+        assertNotNull(apiKeyDTO, "API Key generation failed");
+
+        restAPIStore.removeSubscription(subscriptionDTO);
+
+        Map<String, String> requestHeader = new HashMap<>();
+        requestHeader.put("apikey", apiKeyDTO.getApikey());
+        requestHeader.put("accept", "text/xml");
+
+        boolean isApiKeyValid = true;
+        HttpResponse invocationResponseAfterSubscriptionRemoved;
+        int counter = 1;
+        do {
+            // Wait while the JMS message is received to the related JMS topic
+            Thread.sleep(1000L);
+            invocationResponseAfterSubscriptionRemoved = HTTPSClientUtils.doGet(
+                    getAPIInvocationURLHttps(apiKeySecuredAPI, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                    requestHeader);
+            int responseCode = invocationResponseAfterSubscriptionRemoved.getResponseCode();
+
+            if (responseCode == HTTP_RESPONSE_CODE_FORBIDDEN) {
+                isApiKeyValid = false;
+            } else if (responseCode == HTTP_RESPONSE_CODE_OK) {
+                isApiKeyValid = true;
+            } else {
+                throw new APIManagerIntegrationTestException("Unexpected response received when invoking the API. " +
+                        "Response received :" + invocationResponseAfterSubscriptionRemoved.getData() + ":" +
+                        invocationResponseAfterSubscriptionRemoved.getResponseMessage());
+            }
+            counter++;
+        } while (isApiKeyValid && counter < 5);
+        Assert.assertFalse(isApiKeyValid, "API Key internal subscription validation failed. " +
+                "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_FORBIDDEN +
+                ", but got " + invocationResponseAfterSubscriptionRemoved.getResponseCode());
     }
 
     @AfterClass(alwaysRun = true)
