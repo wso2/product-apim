@@ -155,7 +155,7 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
             restAPIAdmin.deleteAdvancedThrottlingPolicy(this.advancedThrottlePolicyDTO.getPolicyId());
             Assert.fail("Default API Policy get deleted.");
         } catch (org.wso2.am.integration.clients.admin.ApiException e) {
-            Assert.assertEquals(e.getCode(), 500);
+            Assert.assertEquals(e.getCode(), 403);
         }
         try {
             restAPIAdmin.deleteSubscriptionThrottlingPolicy(this.defaultSubscriptionPolicy.getPolicyId());
