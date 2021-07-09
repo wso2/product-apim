@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.admin.clients.application.ApplicationManagementClient;
 import org.wso2.am.admin.clients.claim.ClaimMetaDataMgtAdminClient;
+import org.wso2.am.admin.clients.idp.IdentityProviderMgtClient;
 import org.wso2.am.admin.clients.oauth.OAuthAdminServiceClient;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
@@ -66,6 +67,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -101,6 +103,7 @@ public class APIMIntegrationBaseTest {
     protected UserManagementClient userManagementClient;
     protected RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
     protected ClaimMetaDataMgtAdminClient remoteClaimMetaDataMgtAdminClient;
+    protected IdentityProviderMgtClient identityProviderMgtClient;
     protected OAuthAdminServiceClient oAuthAdminServiceClient;
     protected ApplicationManagementClient applicationManagementClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
@@ -220,6 +223,9 @@ public class APIMIntegrationBaseTest {
                         keymanagerSuperTenantSessionCookie);
                 remoteClaimMetaDataMgtAdminClient =
                         new ClaimMetaDataMgtAdminClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                keymanagerSessionCookie);
+                identityProviderMgtClient =
+                        new IdentityProviderMgtClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                                 keymanagerSessionCookie);
                 oAuthAdminServiceClient =
                         new OAuthAdminServiceClient(keyManagerContext.getContextUrls().getBackEndUrl(),
@@ -751,6 +757,50 @@ public class APIMIntegrationBaseTest {
                     } catch (InterruptedException ignored) {
 
                     }
+                }
+            }
+        }
+    }
+    /**
+     * Find a free port to start backend WebSocket server in given port range
+     *
+     * @param lowerPortLimit from port number
+     * @param upperPortLimit to port number
+     * @return Available Port Number
+     */
+    protected int getAvailablePort(int lowerPortLimit, int upperPortLimit) {
+
+        while (lowerPortLimit < upperPortLimit) {
+            if (isPortFree(lowerPortLimit)) {
+                return lowerPortLimit;
+            }
+            lowerPortLimit += 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Check whether give port is available
+     *
+     * @param port Port Number
+     * @return status
+     */
+    private boolean isPortFree(int port) {
+
+        Socket s = null;
+        try {
+            s = new Socket("localhost", port);
+            // something is using the port and has responded.
+            return false;
+        } catch (IOException e) {
+            //port available
+            return true;
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to close connection ", e);
                 }
             }
         }

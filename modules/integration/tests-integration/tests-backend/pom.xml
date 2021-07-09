@@ -684,6 +684,10 @@ under the License.
             <artifactId>org.wso2.carbon.identity.claim.metadata.mgt.stub</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.idp.mgt.stub</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.andes.wso2</groupId>
             <artifactId>andes</artifactId>
             <version>${andes.version}</version>
@@ -763,6 +767,18 @@ under the License.
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.clients.gateway.api</artifactId>
             <version>3.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.application.common</artifactId>
+            <version>5.19.48</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock-jre8-standalone</artifactId>
+            <version>2.27.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
