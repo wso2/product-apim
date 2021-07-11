@@ -103,9 +103,8 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
     private String apiContext = "jwtTest";
     private String providerName;
     private String apiVersion = "1.0.0";
-    private String oauthApplicationName = "OauthAppForJWTTest";
-    private String jwtApplicationName = "JWTAppForJWTTest";
-    private String apiKeyApplicationName = "ApiKeyAppForJWTTest";
+    private String oauthApplicationName = "FederatedOauthAppForJWTTest";
+    private String jwtApplicationName = "FederatedJWTAppForJWTTest";
     private String endpointURL;
     private String oauthApplicationId;
     private String jwtApplicationId;
@@ -481,13 +480,14 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
+        deleteClaimMapping();
         wireMockServer.stop();
         for (String user : users) {
             userManagementClient.deleteUser(user);
         }
         restAPIStore.deleteApplication(oauthApplicationId);
         restAPIStore.deleteApplication(jwtApplicationId);
+        restAPIPublisher.deleteAPI(apiId);
         identityProviderMgtClient.deleteIdp("federated-idp");
         super.cleanUp();
 
@@ -655,4 +655,10 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
                 .addExternalClaim("http://wso2.org/oidc/claim", "organization", "http://wso2.org/claims/organization");
         oAuthAdminServiceClient.updateScope("openid", new String[]{"organization"}, new String[0]);
     }
+    private void deleteClaimMapping() throws Exception {
+
+        oAuthAdminServiceClient.updateScope("openid", new String[0], new String[]{"organization"});
+        remoteClaimMetaDataMgtAdminClient.removeExternalClaim("http://wso2.org/oidc/claim", "organization");
+    }
+
 }
