@@ -1788,7 +1788,7 @@ public class APIMTestCaseUtils {
         Certificate cert = null;
         MessageDigest sha = null;
         try {
-            sha = MessageDigest.getInstance("SHA-1");
+            sha = MessageDigest.getInstance("SHA-256");
             for (Enumeration e = keyStore.aliases(); e.hasMoreElements();) {
                 String alias = (String) e.nextElement();
                 Certificate[] certs = keyStore.getCertificateChain(alias);
