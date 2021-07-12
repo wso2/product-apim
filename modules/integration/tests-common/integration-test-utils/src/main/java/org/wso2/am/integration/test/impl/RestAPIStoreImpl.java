@@ -1910,6 +1910,12 @@ public class RestAPIStoreImpl {
         }
     }
 
+    public ApiResponse<Void> downloadWSDLSchemaDefinitionOfAPI(String apiId,String environmentName) throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,null,environmentName,null,null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse;
+    }
+
     public KeyManagerListDTO getKeyManagers() throws ApiException {
 
         return keyManagersCollectionApi.keyManagersGet(tenantDomain);

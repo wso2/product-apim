@@ -290,6 +290,9 @@ public class RestAPIPublisherImpl {
         body.setEndpointConfig(apiRequest.getEndpointConfig());
         body.setSecurityScheme(apiRequest.getSecurityScheme());
         body.setType(APIDTO.TypeEnum.fromValue(apiRequest.getType()));
+        if (StringUtils.isNotBlank(apiRequest.getApiTier())) {
+            body.setApiThrottlingPolicy(apiRequest.getApiTier());
+        }
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
@@ -543,6 +546,9 @@ public class RestAPIPublisherImpl {
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
+        if (StringUtils.isNotBlank(apiRequest.getApiTier())) {
+            body.setApiThrottlingPolicy(apiRequest.getApiTier());
+        }
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
@@ -1114,6 +1120,19 @@ public class RestAPIPublisherImpl {
         ApiResponse<Void> schemaDefinitionDTO = graphQlSchemaApi.updateAPIGraphQLSchemaWithHttpInfo
                 (apiId, schemaDefinition, null);
         Assert.assertEquals(HttpStatus.SC_OK, schemaDefinitionDTO.getStatusCode());
+    }
+
+    public APIDTO importWSDLSchemaDefinition(File file,String url, String properties,String type) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importWSDLDefinitionWithHttpInfo( file,url,
+                properties, type);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    public ApiResponse<Void> getWSDLSchemaDefinitionOfAPI(String apiId) throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse;
     }
 
     public APIDTO addAPI(APICreationRequestBean apiCreationRequestBean) throws ApiException {
