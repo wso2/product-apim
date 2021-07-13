@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
+import org.apache.synapse.unittest.testcase.data.classes.AssertNotNull;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
@@ -88,8 +89,15 @@ import javax.xml.xpath.XPathExpressionException;
  */
 public class RestAPIStoreImpl {
 
+    public static final String appName = "Integration_Test_App_Store";
+    public static final String callBackURL = "test.com";
+    public static final String tokenScope = "Production";
+    public static final String appOwner = "admin";
+    public static final String grantType = "password";
+    public static final String username = "admin";
+    public static final String password = "admin";
+    public static final String testNameProperty = "testName";
     private static final Log log = LogFactory.getLog(RestAPIStoreImpl.class);
-    private  RestAPIGatewayImpl restAPIGateway;
     public ApIsApi apIsApi = new ApIsApi();
     public ApplicationsApi applicationsApi = new ApplicationsApi();
     public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
@@ -102,20 +110,13 @@ public class RestAPIStoreImpl {
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
     public KeyManagersCollectionApi keyManagersCollectionApi = new KeyManagersCollectionApi();
     public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
-    ApiClient apiStoreClient = new ApiClient();
     public UsersApi usersApi = new UsersApi();
     public TopicsApi topicsApi = new TopicsApi();
     public WebhooksApi webhooksApi = new WebhooksApi();
-    public static final String appName = "Integration_Test_App_Store";
-    public static final String callBackURL = "test.com";
-    public static final String tokenScope = "Production";
-    public static final String appOwner = "admin";
-    public static final String grantType = "password";
-    public static final String username = "admin";
-    public static final String password = "admin";
     public String storeURL;
     public String tenantDomain;
-
+    ApiClient apiStoreClient = new ApiClient();
+    private RestAPIGatewayImpl restAPIGateway;
     private String accessToken;
 
     public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL,
@@ -156,8 +157,8 @@ public class RestAPIStoreImpl {
         this.restAPIGateway = restAPIGateway;
     }
 
-
     public RestAPIStoreImpl(String tenantDomain, String storeURL) {
+
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
         apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
         apiStoreClient.setDebugging(true);
@@ -171,18 +172,21 @@ public class RestAPIStoreImpl {
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
     }
-    
 
     public String getAccessToken() {
+
         return accessToken;
     }
 
     public void setAccessToken(String accessToken) {
+
         this.accessToken = accessToken;
     }
 
     public HttpResponse createApplication(String appName, String description, String throttleTier,
                                           ApplicationDTO.TokenTypeEnum tokenType) {
+
+        setActivityID();
         try {
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
@@ -205,7 +209,8 @@ public class RestAPIStoreImpl {
     }
 
     public HttpResponse createApplicationWithCustomAttribute(String appName, String description, String throttleTier,
-                                          ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute) {
+                                                             ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute) {
+
         try {
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
@@ -228,8 +233,8 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-
     public HttpResponse deleteApplication(String applicationId) {
+
         try {
             applicationsApi.applicationsApplicationIdDelete(applicationId, null);
             applicationsApi.applicationsApplicationIdGet(applicationId, null);
@@ -245,6 +250,7 @@ public class RestAPIStoreImpl {
     }
 
     public ApplicationListDTO getAllApps() throws ApiException {
+
         ApiResponse<ApplicationListDTO> appResponse = applicationsApi.applicationsGetWithHttpInfo(null,
                 null, null, null, null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, appResponse.getStatusCode());
@@ -253,7 +259,8 @@ public class RestAPIStoreImpl {
 
     public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
                                               String throttleTier,
-                                              ApplicationDTO.TokenTypeEnum tokenType){
+                                              ApplicationDTO.TokenTypeEnum tokenType) {
+
         try {
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
@@ -276,6 +283,7 @@ public class RestAPIStoreImpl {
     }
 
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) {
+
         try {
             SubscriptionDTO subscription = new SubscriptionDTO();
             subscription.setApplicationId(applicationId);
@@ -305,6 +313,7 @@ public class RestAPIStoreImpl {
 
     public SubscriptionListDTO getSubscription(String apiId, String applicationId, String apiType, String groupId)
             throws ApiException {
+
         ApiResponse<SubscriptionListDTO> suscriptionResponse = subscriptionIndividualApi.subscriptionsGetWithHttpInfo
                 (apiId, applicationId, groupId, this.tenantDomain, null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, suscriptionResponse.getStatusCode());
@@ -327,6 +336,8 @@ public class RestAPIStoreImpl {
                                           ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
                                           List<String> grantTypes)
             throws ApiException {
+
+        setActivityID();
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
         applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
@@ -342,9 +353,10 @@ public class RestAPIStoreImpl {
 
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
                                           ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
-                                          List<String> grantTypes,Map<String,Object> additionalProperties,
+                                          List<String> grantTypes, Map<String, Object> additionalProperties,
                                           String keyManager)
             throws ApiException {
+
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
         applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
@@ -360,11 +372,12 @@ public class RestAPIStoreImpl {
     }
 
     public ApiResponse<ApplicationKeyDTO> generateKeysWithApiResponse(String applicationId, String validityTime,
-                                                           String callBackUrl,
-                                                       ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
-                                                       List<String> grantTypes, Map<String,Object> additionalProperties,
-                                                       String keyManager)
+                                                                      String callBackUrl,
+                                                                      ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
+                                                                      List<String> grantTypes, Map<String, Object> additionalProperties,
+                                                                      String keyManager)
             throws ApiException {
+
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
         applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
@@ -380,9 +393,9 @@ public class RestAPIStoreImpl {
         return response;
     }
 
-
     public APIKeyDTO generateAPIKeys(String applicationId, String keyType, int validityPeriod,
                                      String permittedIP, String permittedReferer) throws ApiException {
+
         APIKeyGenerateRequestDTO keyGenerateRequestDTO = new APIKeyGenerateRequestDTO();
         keyGenerateRequestDTO.setValidityPeriod(validityPeriod);
         HashMap additionalProperties = new HashMap<String, String>();
@@ -399,6 +412,7 @@ public class RestAPIStoreImpl {
     }
 
     public void revokeAPIKey(String applicationId, String apiKey) throws ApiException {
+
         APIKeyRevokeRequestDTO revokeRequestDTO = new APIKeyRevokeRequestDTO();
         revokeRequestDTO.setApikey(apiKey);
         ApiResponse response = apiKeysApi.applicationsApplicationIdApiKeysKeyTypeRevokePostWithHttpInfo
@@ -409,16 +423,16 @@ public class RestAPIStoreImpl {
     /**
      * Regenerate consumer secret of an application
      *
-     * @param applicationId - ID of the application
-     * @param keyType       - PRODUCTION or SANDBOX
+     * @param applicationId     - ID of the application
+     * @param keyType           - PRODUCTION or SANDBOX
      * @param applicationKeyDTO - application DTO to be updated
      * @return - APIResponse of update request
      * @throws ApiException - throws if update keys fails.
      */
     public ApiResponse<ApplicationKeyDTO> updateKeys(String applicationId, String keyType,
-            ApplicationKeyDTO applicationKeyDTO) throws Exception{
+                                                     ApplicationKeyDTO applicationKeyDTO) throws Exception {
 
-        return  applicationKeysApi
+        return applicationKeysApi
                 .applicationsApplicationIdKeysKeyTypePutWithHttpInfo(applicationId, keyType, applicationKeyDTO);
     }
 
@@ -432,6 +446,7 @@ public class RestAPIStoreImpl {
      */
     public ApiResponse<ApplicationKeyReGenerateResponseDTO> regenerateConsumerSecret(String applicationId,
                                                                                      String keyType) throws Exception {
+
         return applicationKeysApi
                 .applicationsApplicationIdKeysKeyTypeRegenerateSecretPostWithHttpInfo(applicationId, keyType);
     }
@@ -445,7 +460,8 @@ public class RestAPIStoreImpl {
      * @throws ApiException - throws if get application keys fails.
      */
     public ApiResponse<ApplicationKeyDTO> getApplicationKeysByKeyType(String applicationId,
-            String keyType) throws Exception {
+                                                                      String keyType) throws Exception {
+
         return applicationKeysApi
                 .applicationsApplicationIdKeysKeyTypeGetWithHttpInfo(applicationId, keyType, null);
     }
@@ -457,6 +473,8 @@ public class RestAPIStoreImpl {
      * @throws ApiException - throws if API information retrieval fails.
      */
     public APIDTO getAPI(String apiId) throws ApiException {
+
+        setActivityID();
         return apIsApi.apisApiIdGet(apiId, null, null);
     }
 
@@ -467,6 +485,7 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - throws if getting publish APIs fails
      */
     public APIListDTO getAllPublishedAPIs() throws APIManagerIntegrationTestException {
+
         try {
             return apIsApi.apisGet(null, 0, null, null, null);
         } catch (ApiException e) {
@@ -475,20 +494,20 @@ public class RestAPIStoreImpl {
     }
 
     /**
-     *
      * @return
      * @throws ApiException
      */
     public APIListDTO getAllAPIs() throws ApiException {
+
         return getAllAPIs(this.tenantDomain);
     }
 
     /**
-     *
      * @return
      * @throws ApiException
      */
     public APIListDTO getAllAPIs(String tenantDomain) throws ApiException {
+
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
@@ -502,6 +521,7 @@ public class RestAPIStoreImpl {
      * @throws ApiException
      */
     public SearchResultListDTO searchAPIs(String query) throws ApiException {
+
         ApiResponse<SearchResultListDTO> searchResponse = unifiedSearchApi
                 .searchGetWithHttpInfo(null, null, this.tenantDomain, query, null);
         Assert.assertEquals(HttpStatus.SC_OK, searchResponse.getStatusCode());
@@ -511,12 +531,13 @@ public class RestAPIStoreImpl {
     /**
      * Retrieve the APIs according to the search query in Publisher.
      *
-     * @param query - The query on which the APIs needs to be filtered
+     * @param query        - The query on which the APIs needs to be filtered
      * @param tenantDomain - The tenant domain on which the APIs needs to be filtered
      * @return SearchResultListDTO - The search results of the query
      * @throws ApiException
      */
     public SearchResultListDTO searchAPIs(String query, String tenantDomain) throws ApiException {
+
         ApiResponse<SearchResultListDTO> searchResponse = unifiedSearchApi
                 .searchGetWithHttpInfo(null, null, tenantDomain, query, null);
         Assert.assertEquals(HttpStatus.SC_OK, searchResponse.getStatusCode());
@@ -527,16 +548,17 @@ public class RestAPIStoreImpl {
      * Get APIs for the given limit and offset values
      *
      * @param offset starting position
-     * @param limit maximum number of APIs to return
+     * @param limit  maximum number of APIs to return
      * @return APIs for the given limit and offset values
      * @throws ApiException
      */
     public APIListDTO getAPIs(int offset, int limit) throws ApiException {
+
+        setActivityID();
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(limit, offset, this.tenantDomain, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
-
 
     /**
      * Get application by ID
@@ -545,6 +567,7 @@ public class RestAPIStoreImpl {
      * @throws ApiException - throws if get application fails.
      */
     public ApplicationDTO getApplicationById(String applicationId) throws ApiException {
+
         ApiResponse<ApplicationDTO> applicationDTOApiResponse = applicationsApi.
                 applicationsApplicationIdGetWithHttpInfo(applicationId, null);
         Assert.assertEquals(applicationDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
@@ -610,6 +633,7 @@ public class RestAPIStoreImpl {
      * @throws ApiException - throws if rating of api fails
      */
     public HttpResponse addRating(String apiId, Integer rating, String tenantDomain) throws ApiException {
+
         RatingDTO ratingDTO = new RatingDTO();
         ratingDTO.setRating(rating);
         Gson gson = new Gson();
@@ -631,6 +655,7 @@ public class RestAPIStoreImpl {
      * @throws ApiException - throws if remove rating fails
      */
     public HttpResponse removeRating(String apiId, String tenantDomain) {
+
         HttpResponse response;
         try {
             ratingsApi.apisApiIdUserRatingDelete(apiId, tenantDomain, null);
@@ -733,7 +758,6 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-
     /**
      * Get all paginated published API for a given tenant
      *
@@ -760,8 +784,8 @@ public class RestAPIStoreImpl {
     /**
      * Clean up application registration by ID
      *
-     * @param applicationId   - application ID
-     * @param keyType - key type
+     * @param applicationId - application ID
+     * @param keyType       - key type
      * @return - http response of paginated published APIs
      * @throws APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
      */
@@ -777,7 +801,6 @@ public class RestAPIStoreImpl {
         }
         return response;
     }
-
 
     /**
      * Gell all paginated published apis for a given tenant
@@ -800,7 +823,6 @@ public class RestAPIStoreImpl {
 //        }
         return null;
     }
-
 
     /**
      * Get all published APIs for tenant
@@ -836,6 +858,7 @@ public class RestAPIStoreImpl {
      */
     public ApplicationDTO addApplication(String application, String tier, String callbackUrl, String description)
             throws ApiException {
+
         ApplicationDTO dto = new ApplicationDTO();
         dto.setName(application);
         dto.setThrottlingPolicy(tier);
@@ -857,7 +880,7 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public ApplicationDTO addApplicationWithTokenType(String application, String tier, String callbackUrl,
-                                                    String description, String tokenType)
+                                                      String description, String tokenType)
             throws ApiException {
 
         ApplicationDTO dto = new ApplicationDTO();
@@ -898,6 +921,7 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - throws if remove application fails
      */
     public void removeApplicationById(String applicationId) throws ApiException {
+
         if (applicationId == null) {
             return;
         }
@@ -1001,12 +1025,12 @@ public class RestAPIStoreImpl {
     /**
      * Update given Auth application
      *
-     * @param applicationId       auth application id
-     * @param applicationDTO      DTO of the application
+     * @param applicationId  auth application id
+     * @param applicationDTO DTO of the application
      * @return Http response of the update request
      * @throws APIManagerIntegrationTestException APIManagerIntegrationTestException - throws if update application fail
      */
-    public HttpResponse updateClientApplicationById(String applicationId, ApplicationDTO  applicationDTO) {
+    public HttpResponse updateClientApplicationById(String applicationId, ApplicationDTO applicationDTO) {
 
         try {
             ApplicationDTO responseApplicationDTO = applicationsApi.applicationsApplicationIdPut(applicationId, applicationDTO, null);
@@ -1085,7 +1109,6 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-
     /**
      * Get subscribed APIs for the specific Application
      *
@@ -1109,7 +1132,6 @@ public class RestAPIStoreImpl {
 //        }
         return null;
     }
-
 
     /**
      * Unsubscribe from API
@@ -1203,6 +1225,7 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - throws if get all tags fails
      */
     public TagListDTO getAllTags() throws ApiException {
+
         ApiResponse<TagListDTO> tagsResponse = tagsApi.tagsGetWithHttpInfo(25, 0, tenantDomain, "");
         Assert.assertEquals(HttpStatus.SC_OK, tagsResponse.getStatusCode());
         return tagsResponse.getData();
@@ -1211,20 +1234,21 @@ public class RestAPIStoreImpl {
     /**
      * Add comment to given API
      *
-     * @param apiId   - api Id
-     * @param comment - comment to  add
+     * @param apiId    - api Id
+     * @param comment  - comment to  add
      * @param category - category of the comment
-     * @param replyTo - comment id of the root comment to add replies
+     * @param replyTo  - comment id of the root comment to add replies
      * @return - http response of add comment
      * @throws ApiException - throws if add comment fails
      */
 
     public HttpResponse addComment(String apiId, String comment, String category, String replyTo) throws ApiException {
+
         PostRequestBodyDTO postRequestBodyDTO = new PostRequestBodyDTO();
         postRequestBodyDTO.setContent(comment);
         postRequestBodyDTO.setCategory(category);
         Gson gson = new Gson();
-        CommentDTO commentDTO = commentsApi.addCommentToAPI(apiId,postRequestBodyDTO,replyTo);
+        CommentDTO commentDTO = commentsApi.addCommentToAPI(apiId, postRequestBodyDTO, replyTo);
         HttpResponse response = null;
         if (commentDTO != null) {
             response = new HttpResponse(gson.toJson(commentDTO), 200);
@@ -1235,16 +1259,17 @@ public class RestAPIStoreImpl {
     /**
      * Get Comment from given API
      *
-     * @param commentId - comment Id
-     * @param apiId     - api Id
+     * @param commentId    - comment Id
+     * @param apiId        - api Id
      * @param tenantDomain - tenant domain
-     * @param limit     - for pagination
-     * @param offset - for pagination
+     * @param limit        - for pagination
+     * @param offset       - for pagination
      * @return - http response get comment
      * @throws ApiException - throws if get comment fails
      */
     public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo,
                                    Integer limit, Integer offset) throws ApiException {
+
         CommentDTO commentDTO;
         HttpResponse response = null;
         Gson gson = new Gson();
@@ -1263,15 +1288,16 @@ public class RestAPIStoreImpl {
     /**
      * Get all the comments from given API
      *
-     * @param apiId     - api Id
+     * @param apiId        - api Id
      * @param tenantDomain - tenant domain
-     * @param limit     - for pagination
-     * @param offset - for pagination
+     * @param limit        - for pagination
+     * @param offset       - for pagination
      * @return - http response get comment
      * @throws ApiException - throws if get comment fails
      */
     public HttpResponse getComments(String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit,
                                     Integer offset) throws ApiException {
+
         CommentListDTO commentListDTO;
         HttpResponse response = null;
         Gson gson = new Gson();
@@ -1321,16 +1347,17 @@ public class RestAPIStoreImpl {
     /**
      * Get replies of a comment from given API
      *
-     * @param commentId - comment Id
-     * @param apiId     - api Id
+     * @param commentId    - comment Id
+     * @param apiId        - api Id
      * @param tenantDomain - tenant domain
-     * @param limit     - for pagination
-     * @param offset    - for pagination
+     * @param limit        - for pagination
+     * @param offset       - for pagination
      * @return - http response get comment
      * @throws ApiException - throws if get comment fails
      */
     public HttpResponse getReplies(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit, Integer offset)
             throws ApiException {
+
         CommentListDTO commentListDTO;
         HttpResponse response = null;
         Gson gson = new Gson();
@@ -1353,13 +1380,14 @@ public class RestAPIStoreImpl {
      *
      * @param commentId - comment Id
      * @param apiId     - api Id
-     * @param comment - comment to  add
-     * @param category - category of the comment
+     * @param comment   - comment to  add
+     * @param category  - category of the comment
      * @return - http response get comment
      * @throws ApiException - throws if get comment fails
      */
     public HttpResponse editComment(String commentId, String apiId, String comment, String category) throws
             ApiException {
+
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
@@ -1367,7 +1395,7 @@ public class RestAPIStoreImpl {
             patchRequestBodyDTO.setCategory(category);
             patchRequestBodyDTO.setContent(comment);
 
-            CommentDTO editedCommentDTO = commentsApi.editCommentOfAPI(commentId,apiId,patchRequestBodyDTO);
+            CommentDTO editedCommentDTO = commentsApi.editCommentOfAPI(commentId, apiId, patchRequestBodyDTO);
             if (editedCommentDTO != null) {
                 response = new HttpResponse(gson.toJson(editedCommentDTO), 200);
             } else {
@@ -1387,6 +1415,7 @@ public class RestAPIStoreImpl {
      * @throws ApiException - throws if remove comment fails
      */
     public HttpResponse removeComment(String commentId, String apiId) throws ApiException {
+
         HttpResponse response;
         try {
             commentsApi.deleteComment(commentId, apiId, null);
@@ -1482,13 +1511,13 @@ public class RestAPIStoreImpl {
     /**
      * Get the  web page with filtered API when  click the API Tag link
      *
-     * @param limit - number of APIs needs to be returned
-     * @param offset - offset where the APIs needs to be returned should start
+     * @param limit        - number of APIs needs to be returned
+     * @param offset       - offset where the APIs needs to be returned should start
      * @param tenantDomain - tenant domain of which the APIs to be returned
-     * @param query - query that needs to be passed to the backend
+     * @param query        - query that needs to be passed to the backend
      * @return APIListDTO - The DTO which contains the list of matching APIs
      * @throws ApiException - Exception throws when check the Authentication and
-     *                                            HTTPSClientUtils.sendGetRequest() method call
+     *                      HTTPSClientUtils.sendGetRequest() method call
      */
     public APIListDTO searchPaginatedAPIs(int limit, int offset, String tenantDomain, String query)
             throws ApiException {
@@ -1502,6 +1531,7 @@ public class RestAPIStoreImpl {
 
     public SubscriptionDTO subscribeToAPI(String apiID, String appID, String tier) throws ApiException {
 
+        setActivityID();
         SubscriptionDTO subscription = new SubscriptionDTO();
         subscription.setApplicationId(appID);
         subscription.setApiId(apiID);
@@ -1518,14 +1548,13 @@ public class RestAPIStoreImpl {
         return data;
     }
 
-
     /**
-     *
      * @param tenantDomain
      * @return
      * @throws ApiException
      */
     public APIListDTO getAPIListFromStoreAsAnonymousUser(String tenantDomain) throws ApiException {
+
         ApIsApi apIsApi = new ApIsApi();
         ApiClient apiStoreClient = new ApiClient();
         apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
@@ -1535,7 +1564,6 @@ public class RestAPIStoreImpl {
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
-
 
     /**
      * API Store logout
@@ -1628,6 +1656,7 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException
      */
     public APIListDTO getPrototypedAPIs(String tenant) throws APIManagerIntegrationTestException {
+
         try {
             APIListDTO prototypedAPIs = new APIListDTO();
             APIListDTO apiListDTO = apIsApi.apisGet(null, null, tenant, null, null);
@@ -1643,6 +1672,7 @@ public class RestAPIStoreImpl {
             throw new APIManagerIntegrationTestException("Unable to get prototype APIs. Error: " + e.getMessage(), e);
         }
     }
+
     /**
      * Wait for swagger document until its updated.
      *
@@ -1651,7 +1681,7 @@ public class RestAPIStoreImpl {
      * @param apiVersion       - API Version
      * @param expectedResponse - Expected response of the API
      * @param executionMode    - Mode of the test execution (Standalone or Platform)
-     * @throws IOException                              - Throws if Swagger document cannot be found
+     * @throws IOException              - Throws if Swagger document cannot be found
      * @throws XPathExpressionException - Throws if Swagger document cannot be found
      */
     public void waitForSwaggerDocument(String userName, String apiName, String apiVersion,
@@ -1706,6 +1736,7 @@ public class RestAPIStoreImpl {
     public HttpResponse getSwaggerDocument(String userName, String apiName, String apiVersion,
                                            String executionMode)
             throws APIManagerIntegrationTestException {
+
         HttpResponse response = null;
 
 //        if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
@@ -1750,8 +1781,8 @@ public class RestAPIStoreImpl {
     /**
      * Generate SDK for a given programming language
      *
-     * @param apiId The api id which the sdk should be downloaded.
-     * @param language  The required sdk language.
+     * @param apiId    The api id which the sdk should be downloaded.
+     * @param language The required sdk language.
      * @return org.apache.http.HttpResponse for the SDK generation
      * @throws APIManagerIntegrationTestException if failed to generate the SDK
      */
@@ -1766,8 +1797,8 @@ public class RestAPIStoreImpl {
     /**
      * Generate SDK for a given programming language
      *
-     * @param apiId The api id which the sdk should be downloaded.
-     * @param language  The required sdk language.
+     * @param apiId        The api id which the sdk should be downloaded.
+     * @param language     The required sdk language.
      * @param tenantDomain The tenant domain of the sdk to be generated
      * @return org.apache.http.HttpResponse for the SDK generation
      * @throws APIManagerIntegrationTestException if failed to generate the SDK
@@ -1842,14 +1873,13 @@ public class RestAPIStoreImpl {
     }
 
     public String getSwaggerByID(String apiId, String tenantDomain) throws ApiException {
+
         ApiResponse<String> response =
                 apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, Constants.GATEWAY_ENVIRONMENT,
                         null, null, tenantDomain);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
     }
-
-
 
     /**
      * Generate user access key
@@ -1880,7 +1910,14 @@ public class RestAPIStoreImpl {
         }
     }
 
+    public ApiResponse<Void> downloadWSDLSchemaDefinitionOfAPI(String apiId,String environmentName) throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,null,environmentName,null,null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse;
+    }
+
     public KeyManagerListDTO getKeyManagers() throws ApiException {
+
         return keyManagersCollectionApi.keyManagersGet(tenantDomain);
     }
 
@@ -1908,20 +1945,22 @@ public class RestAPIStoreImpl {
         ApplicationKeyMappingRequestDTO applicationKeyMappingRequestDTO =
                 new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).keyType(
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
-        return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid,applicationKeyMappingRequestDTO);
+        return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid, applicationKeyMappingRequestDTO);
     }
 
     /**
      * Method to retrieve the GraphQL Complexity Details
+     *
      * @param apiId apiId of the API
      * @return HttpResponse response
      * @throws org.wso2.am.integration.clients.store.api.ApiException
      */
     public HttpResponse getGraphQLComplexityResponse(String apiId) throws ApiException {
+
         HttpResponse response = null;
         ApiResponse<GraphQLQueryComplexityInfoDTO> complexityResponse = graphQlPoliciesApi
                 .apisApiIdGraphqlPoliciesComplexityGetWithHttpInfo(apiId);
-        if(complexityResponse.getStatusCode() == 200){
+        if (complexityResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully get the GraphQL Complexity Details", 200);
         }
         return response;
@@ -1929,11 +1968,13 @@ public class RestAPIStoreImpl {
 
     /**
      * Method to retrieve the GraphQL Schema Type List
+     *
      * @param apiId apiId of the API
      * @return HttpResponse response
      * @throws org.wso2.am.integration.clients.store.api.ApiException
      */
     public HttpResponse getGraphQLSchemaTypeListResponse(String apiId) throws ApiException {
+
         HttpResponse response = null;
         ApiResponse<GraphQLSchemaTypeListDTO> graphQLSchemaTypeListDTOApiResponse = graphQlPoliciesApi.
                 apisApiIdGraphqlPoliciesComplexityTypesGetWithHttpInfo(apiId);
@@ -1978,5 +2019,30 @@ public class RestAPIStoreImpl {
                 }
             }
         }
+    }
+
+    /**
+     * Wait until the subscription removal is successfully synced with gateway
+     */
+    public void waitForSubscriptionRemovedFromGateway(SubscriptionDTO removedSubscriptionDTO)
+                                    throws org.wso2.am.integration.clients.gateway.api.ApiException {
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + 6000;
+        org.wso2.am.integration.clients.gateway.api.v2.dto.SubscriptionDTO subscriptionDTO = null;
+        while (waitTime > System.currentTimeMillis()) {
+            subscriptionDTO = restAPIGateway.retrieveSubscription(removedSubscriptionDTO.getApiId(),
+                                            removedSubscriptionDTO.getApplicationId());
+            if (subscriptionDTO == null) {
+                break;
+            }
+        }
+        Assert.assertNull(subscriptionDTO, "Subscription of API " + removedSubscriptionDTO.getApiInfo().getName()
+                                        + " with Application " + removedSubscriptionDTO.getApplicationInfo().getName()
+                                        + " has not been successfully removed");
+    }
+
+    private void setActivityID() {
+
+        apiStoreClient.addDefaultHeader("activityID", System.getProperty(testNameProperty));
     }
 }

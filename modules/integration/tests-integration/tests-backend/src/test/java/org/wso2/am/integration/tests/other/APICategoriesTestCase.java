@@ -34,6 +34,7 @@ import org.wso2.am.integration.clients.admin.api.dto.APICategoryListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
@@ -44,7 +45,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
+public class APICategoriesTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APICategoriesTestCase.class);
     private AdminApiTestHelper adminApiTestHelper;
     private APICategoryDTO apiCategoryDTO;
@@ -58,7 +59,7 @@ public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN }, };
+                new Object[] { TestUserMode.TENANT_ADMIN },};
     }
 
     @BeforeClass(alwaysRun = true)
@@ -89,8 +90,44 @@ public class APICategoriesTestCase extends APIManagerLifecycleBaseTest {
         adminApiTestHelper.verifyApiCategoryDTO(apiCategoryDTO, addedApiCategoryDTO);
     }
 
+    @Test(groups = { "wso2.am" }, description = "Test add API category without Name", dependsOnMethods = "testAddAPICategory")
+    public void testAddAPICategoryWithoutName() {
+
+        //Create the API Category DTO
+        String description = "Marketing Category";
+        APICategoryDTO apiCategoryDTO = DtoFactory.createApiCategoryDTO(null, description);
+        //Add the API Category
+        try {
+            ApiResponse<APICategoryDTO> addedAPICategory = restAPIAdmin.addApiCategory(apiCategoryDTO);
+            Assert.assertNotEquals(addedAPICategory.getStatusCode(), HttpStatus.SC_CREATED,
+                    "API category was added without a name");
+        } catch (ApiException e) {
+            //Assert the Status Code
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
+        }
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test add API category Name With Special Characters", dependsOnMethods = "testAddAPICategoryWithoutName")
+    public void testAddAPICategoryNameWithSpecialCharacters() {
+
+        //Create the API Category DTO
+        String name = "Marketing Category";
+        String description = "This is Marketing Category";
+        APICategoryDTO apiCategoryDTO = DtoFactory.createApiCategoryDTO(name, description);
+
+        //Add the API Category
+        try {
+            ApiResponse<APICategoryDTO> addedAPICategory = restAPIAdmin.addApiCategory(apiCategoryDTO);
+            Assert.assertNotEquals(addedAPICategory.getStatusCode(), HttpStatus.SC_CREATED,
+                    "API category was added with special characters in the name");
+        } catch (ApiException e) {
+            //Assert the Status Code
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
+        }
+    }
+
     @Test(groups = { "wso2.am" }, description = "Test add API category with duplicate name", dependsOnMethods = {
-            "testAddAPICategory" })
+            "testAddAPICategoryNameWithSpecialCharacters" })
     public void addAPICategoryWithDuplicateName() {
 
         try {
