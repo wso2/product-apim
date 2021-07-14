@@ -130,6 +130,7 @@
     <test name="apim-CORS-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderSetup"/>
+            <class name="org.wso2.am.integration.tests.jwt.FederatedUserJWTTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
         </classes>
     </test>
