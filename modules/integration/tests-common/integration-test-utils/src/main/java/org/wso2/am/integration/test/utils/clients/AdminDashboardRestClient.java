@@ -147,6 +147,30 @@ public class AdminDashboardRestClient {
         }
     }
 
+    public HttpResponse addSubscriptionPolicy(String name, int defaultUnitTime, String defaultTimeUnit,
+                                              boolean stopOnQuotaReach, long defaultRequestCount) throws APIManagerIntegrationTestException {
+
+        try {
+            checkAuthentication();
+            requestHeaders.put("Accept", "application/json, text/javascript");
+            requestHeaders.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL
+                            + "admin/site/blocks/policy/subscription/edit/ajax/subscription-policy-edit.jag"),
+                    "action=add&policyName=" + name
+                            + "&description=&defaultQuotaPolicy=requestCount&defaultRequestCount="
+                            + defaultRequestCount + "&defaultBandwidth="
+                            +  "&defaultBandwidthUnit=" +  "&defaultUnitTime="
+                            + defaultUnitTime + "&defaultTimeUnit=" + defaultTimeUnit + "&rateLimitCount" +
+                            "=&rateLimitTimeUnit=sec&stopOnQuotaReach=" + stopOnQuotaReach
+                            + "&tierPlan=FREE&monetizationPlan=FixedRate&fixedRate=&billingCycle=week&pricePerRequest" +
+                            "=&currencyType=&permissionType=allow&roles=Internal%2Feveryone&attributes=%5B%5D",
+                    requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Add new policy failed", e);
+        }
+    }
+
     public HttpResponse deleteSubscriptionPolicy(String name) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
