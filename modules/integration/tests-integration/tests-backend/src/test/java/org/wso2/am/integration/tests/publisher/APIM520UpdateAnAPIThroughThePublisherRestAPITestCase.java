@@ -47,6 +47,8 @@ import static org.testng.Assert.assertTrue;
 public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIntegrationBaseTest {
 
     private final String apiNameTest = "APIM520PublisherTest";
+    private final String apiUpdatedNameTest = "PublisherTestRenameAPI";
+    private final String updatedApiName = "PublisherNewTestRenameAPI";
     private final String apiVersion = "1.0.0";
     private APIPublisherRestClient apiPublisher;
     private String apiProviderName;
@@ -136,6 +138,46 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
         assertTrue(apiUpdateResponsePublisher.getData().contains("Gold"),
                 "Tier Collection of the " + apiNameTest + " is not updated");
 
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Update an API Through the Publisher Rest API after renaming the API")
+    public void testUpdateAnAPIThroughThePublisherRestAfterRename() throws Exception {
+
+        String apiContextTest = "apiRenamingContext";
+        String apiDescription = "This is Test API Created by API Manager Integration Test for API Renaming";
+
+        //Create an API
+        APIRequest apiCreationRequestBean = new APIRequest(apiUpdatedNameTest, apiContextTest,
+                new URL(apiProductionEndPointUrl));
+        apiCreationRequestBean.setVersion(apiVersion);
+        apiCreationRequestBean.setProvider(apiProviderName);
+        apiCreationRequestBean.setDescription(apiDescription);
+        apiCreationRequestBean.setTiersCollection("Gold,Bronze");
+
+        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
+        id = apiCreationResponse.getData();
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                "Response Code miss matched when creating the API");
+
+        //Check availability of the API in publisher
+        HttpResponse apiResponsePublisher = restAPIPublisher.getAPI(id);
+        assertTrue(apiResponsePublisher.getData().contains(apiUpdatedNameTest),
+                apiUpdatedNameTest + " is not visible in publisher");
+
+        //Update API with name change
+        apiCreationRequestBean.setName(updatedApiName);
+
+        HttpResponse apiUpdateResponse = restAPIPublisher.updateAPI(apiCreationRequestBean, id);
+        assertEquals(apiUpdateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code miss matched when creating the API");
+        waitForAPIDeployment();
+
+        // Check whether API is updated from the above request. This API Name should not get updated
+        // when not in a cloud scenario
+        HttpResponse apiUpdateResponsePublisher = restAPIPublisher.getAPI(id);
+
+        assertTrue(apiUpdateResponsePublisher.getData().contains(apiUpdatedNameTest),
+                apiUpdatedNameTest + " is updated");
     }
 
     @AfterClass(alwaysRun = true)
