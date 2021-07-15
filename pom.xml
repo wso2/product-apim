@@ -1340,7 +1340,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v227</synapse.version>
+        <synapse.version>3.0.1</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v63</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
@@ -1386,7 +1386,7 @@
         <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
         <org.apache.axis2.transport.version>2.0.0-wso2v2</org.apache.axis2.transport.version>
         <org.springframework.version>5.1.13.RELEASE</org.springframework.version>
-        <org.apache.tomcat>7.0.96</org.apache.tomcat>
+        <org.apache.tomcat>7.0.107</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.13</org.codehaus.jackson.version>
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
         <rampart.wso2.version>1.6.1-wso2v43</rampart.wso2.version>
@@ -1409,7 +1409,7 @@
         <eclipse.version>3.2.0</eclipse.version>
         <ws.seccurity.version>1.5.11-wso2v18</ws.seccurity.version>
         <jacoco.agent.version>0.8.2</jacoco.agent.version>
-        <google.guava.version>27.0-jre</google.guava.version>
+        <google.guava.version>29.0-jre</google.guava.version>
 
         <carbon.metrics.version>1.3.7</carbon.metrics.version>
         <!-- MB Features -->
@@ -1424,7 +1424,7 @@
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.23</swagger-annotations-version>
         <jersey-version>1.19.4</jersey-version>
-        <jackson-version>2.10.3</jackson-version>
+        <jackson-version>2.10.5.1</jackson-version>
         <jodatime-version>2.10.6</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <log4j.version>1.2.13</log4j.version>
