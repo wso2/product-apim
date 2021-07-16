@@ -311,6 +311,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
+                                <includedFeatureDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.gateway.feature:${carbon.apimgt.version}
+                                </includedFeatureDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt.ui:apim.ui.apps.portals:${carbon.apimgt.ui.version}
                                 </featureArtifactDef>
@@ -1181,6 +1184,10 @@
                                     <id>org.wso2.carbon.apimgt.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
 
                                 <!--Registry Feature-->
                                 <feature>
@@ -1873,6 +1880,10 @@
 
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
 
