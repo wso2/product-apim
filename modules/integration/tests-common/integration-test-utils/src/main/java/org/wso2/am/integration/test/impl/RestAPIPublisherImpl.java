@@ -1094,14 +1094,13 @@ public class RestAPIPublisherImpl {
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiCreationRequestBean.getTags().split(",")));
 
-        if (apiCreationRequestBean.getEndpoint() != null) {
+        if (apiCreationRequestBean.getSetEndpointSecurityDirectlyToEndpoint()) {
             try {
                 body.setEndpointConfig(new JSONParser().parse(apiCreationRequestBean.getEndpoint().toString()));
             } catch (ParseException e) {
                 throw new ApiException(e);
             }
         } else {
-            JSONParser parser = new JSONParser();
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("endpoint_type", "http");
             JSONObject sandUrl = new JSONObject();

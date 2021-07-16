@@ -152,6 +152,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         apiCreationRequestBean.setTier(TIER_UNLIMITED);
         apiCreationRequestBean.setTiersCollection(TIER_UNLIMITED);
         apiCreationRequestBean.setProvider(user.getUserName());
+        apiCreationRequestBean.setSetEndpointSecurityDirectlyToEndpoint(Boolean.TRUE);
         apiIdentifier = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_UNLIMITED);
         String productionEndpointSecurity = "{\n" +
@@ -162,11 +163,9 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
                 "    \"password\":\"admin123#QA\"\n" +
                 "  }\n" +
                 "  }";
-
         org.json.JSONObject endpointConfig = apiCreationRequestBean.getEndpoint();
         endpointConfig.put("endpoint_security", new JSONParser().parse(productionEndpointSecurity));
         apiCreationRequestBean.setEndpoint(endpointConfig);
-
         APIDTO apidto =
                 createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher, restAPIStore,
                         applicationID, TIER_UNLIMITED);
@@ -209,6 +208,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         apiCreationRequestBean.setTier(TIER_UNLIMITED);
         apiCreationRequestBean.setTiersCollection(TIER_UNLIMITED);
         apiCreationRequestBean.setProvider(user.getUserName());
+        apiCreationRequestBean.setSetEndpointSecurityDirectlyToEndpoint(Boolean.TRUE);
         apiIdentifier = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_UNLIMITED);
         String sandboxEndpointSecurity = "{\n" +
@@ -219,11 +219,9 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
                 "    \"password\":\"admin123#QA\"\n" +
                 "  }\n" +
                 "  }";
-
         org.json.JSONObject endpointConfig = apiCreationRequestBean.getEndpoint();
         endpointConfig.put("endpoint_security", new JSONParser().parse(sandboxEndpointSecurity));
         apiCreationRequestBean.setEndpoint(endpointConfig);
-
         APIDTO apidto =
                 createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher, restAPIStore,
                         applicationID, TIER_UNLIMITED);
@@ -266,6 +264,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         apiCreationRequestBean.setTier(TIER_UNLIMITED);
         apiCreationRequestBean.setTiersCollection(TIER_UNLIMITED);
         apiCreationRequestBean.setProvider(user.getUserName());
+        apiCreationRequestBean.setSetEndpointSecurityDirectlyToEndpoint(Boolean.TRUE);
         apiIdentifier = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_UNLIMITED);
         String productionAndSandboxEndpointSecurity = "{\n" +
@@ -282,11 +281,9 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
                 "    \"password\":\"admin123#prod\"\n" +
                 "  }\n" +
                 "  }";
-
         org.json.JSONObject endpointConfig = apiCreationRequestBean.getEndpoint();
         endpointConfig.put("endpoint_security", new JSONParser().parse(productionAndSandboxEndpointSecurity));
         apiCreationRequestBean.setEndpoint(endpointConfig);
-
         APIDTO apidto =
                 createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher, restAPIStore,
                         applicationID, TIER_UNLIMITED);
@@ -342,6 +339,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         apiCreationRequestBean.setTier(TIER_UNLIMITED);
         apiCreationRequestBean.setTiersCollection(TIER_UNLIMITED);
         apiCreationRequestBean.setProvider(user.getUserName());
+        apiCreationRequestBean.setSetEndpointSecurityDirectlyToEndpoint(Boolean.TRUE);
         apiIdentifier = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_UNLIMITED);
         String endpointSecurity = "{\n" +
@@ -364,11 +362,9 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
                 "    \"grantType\":\"CLIENT_CREDENTIALS\"\n" +
                 "  }\n" +
                 "  }";
-
         org.json.JSONObject endpointConfig = apiCreationRequestBean.getEndpoint();
         endpointConfig.put("endpoint_security", new JSONParser().parse(endpointSecurity));
         apiCreationRequestBean.setEndpoint(endpointConfig);
-
         APIDTO apidto =
                 createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher, restAPIStore,
                         applicationID, TIER_UNLIMITED);
@@ -434,6 +430,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         apiCreationRequestBean.setTier(TIER_UNLIMITED);
         apiCreationRequestBean.setTiersCollection(TIER_UNLIMITED);
         apiCreationRequestBean.setProvider(user.getUserName());
+        apiCreationRequestBean.setSetEndpointSecurityDirectlyToEndpoint(Boolean.TRUE);
         apiIdentifier = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_UNLIMITED);
         String username = user.getUserName();
@@ -462,11 +459,9 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
                 "    \"password\":\"" + password + "\",\n" +
                 "  }\n" +
                 "  }";
-
         org.json.JSONObject endpointConfig = apiCreationRequestBean.getEndpoint();
         endpointConfig.put("endpoint_security", new JSONParser().parse(endpointSecurity));
         apiCreationRequestBean.setEndpoint(endpointConfig);
-
         APIDTO apidto =
                 createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher, restAPIStore,
                         applicationID, TIER_UNLIMITED);
