@@ -21,6 +21,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
@@ -1175,24 +1177,33 @@ public class RestAPIPublisherImpl {
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiCreationRequestBean.getTags().split(",")));
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("endpoint_type", "http");
-        JSONObject sandUrl = new JSONObject();
-        sandUrl.put("url", apiCreationRequestBean.getEndpointUrl().toString());
-        jsonObject.put("sandbox_endpoints", sandUrl);
-        jsonObject.put("production_endpoints", sandUrl);
-        if ("basic".equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
-            JSONObject endpointSecurityGlobal = new JSONObject();
-            endpointSecurityGlobal.put("enabled", true);
-            endpointSecurityGlobal.put("type", "basic");
-            endpointSecurityGlobal.put("username", apiCreationRequestBean.getEpUsername());
-            endpointSecurityGlobal.put("password", apiCreationRequestBean.getEpPassword());
-            JSONObject endpointSecurity = new JSONObject();
-            endpointSecurity.put("production", endpointSecurityGlobal);
-            endpointSecurity.put("sandbox", endpointSecurityGlobal);
-            jsonObject.put("endpoint_security", endpointSecurity);
+        if (apiCreationRequestBean.getSetEndpointSecurityDirectlyToEndpoint()) {
+            try {
+                body.setEndpointConfig(new JSONParser().parse(apiCreationRequestBean.getEndpoint().toString()));
+            } catch (ParseException e) {
+                throw new ApiException(e);
+            }
+        } else {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("endpoint_type", "http");
+            JSONObject sandUrl = new JSONObject();
+            sandUrl.put("url", apiCreationRequestBean.getEndpointUrl().toString());
+            jsonObject.put("sandbox_endpoints", sandUrl);
+            jsonObject.put("production_endpoints", sandUrl);
+            if ("basic".equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
+                JSONObject endpointSecurityGlobal = new JSONObject();
+                endpointSecurityGlobal.put("enabled", true);
+                endpointSecurityGlobal.put("type", "basic");
+                endpointSecurityGlobal.put("username", apiCreationRequestBean.getEpUsername());
+                endpointSecurityGlobal.put("password", apiCreationRequestBean.getEpPassword());
+                JSONObject endpointSecurity = new JSONObject();
+                endpointSecurity.put("production", endpointSecurityGlobal);
+                endpointSecurity.put("sandbox", endpointSecurityGlobal);
+                jsonObject.put("endpoint_security", endpointSecurity);
+            }
+            body.setEndpointConfig(jsonObject);
         }
-        body.setEndpointConfig(jsonObject);
+
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         if (apiCreationRequestBean.getSubPolicyCollection() != null) {
