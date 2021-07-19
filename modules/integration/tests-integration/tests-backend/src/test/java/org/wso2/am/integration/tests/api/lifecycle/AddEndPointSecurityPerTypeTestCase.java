@@ -532,8 +532,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         validateIntrospectionResponse(user, backendToken, applicationKeyBeanSandbox.getConsumerKey());
     }
 
-    private void validateIntrospectionResponse(User user, String accessToken, String clientId)
-            throws UnsupportedEncodingException {
+    private void validateIntrospectionResponse(User user, String accessToken, String clientId) throws Exception {
 
         String introspectionUrl = "https://localhost:9943/oauth2/introspect";
         if (!SUPER_TENANT_DOMAIN.equals(user.getUserDomain())) {
@@ -555,7 +554,8 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
             Assert.assertNotNull(jsonPayload.get("client_id"));
             Assert.assertEquals(jsonPayload.get("client_id"), clientId);
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new Exception(e);
         }
     }
 
