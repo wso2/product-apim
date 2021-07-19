@@ -140,7 +140,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
 
 
     @Test(groups = {
-            "wso2.am"}, description = "Add Endpoint Security for production")
+            "wso2.am"}, description = "Add Endpoint Security for Production")
     public void testAddEndpointSecurityForProduction() throws Exception {
 
         // Create an API
@@ -192,10 +192,17 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         Map<String, String> headers = productionResponse.getHeaders();
         Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
                 .concat(Base64.encode("admin1234".concat(":").concat("admin123#QA").getBytes())));
+        String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
+        requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
+        HttpResponse sandboxResponse =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
+        Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
+        headers = sandboxResponse.getHeaders();
+        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "");
        }
 
     @Test(groups = {
-            "wso2.am"}, description = "Add endpoint Security for Sandbox", dependsOnMethods =
+            "wso2.am"}, description = "Add Endpoint Security for Sandbox", dependsOnMethods =
             "testAddEndpointSecurityForProduction")
     public void testAddEndpointSecurityForSandbox() throws Exception {
 
@@ -240,18 +247,25 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         Assert.assertTrue("basic".equalsIgnoreCase((String) endpointSecurityModel.get("type")));
         waitForAPIDeploymentSync(user.getUserName(), apiName, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
+        String prodAppTokenJti = TokenUtils.getJtiOfJwtToken(productionApplication.getToken().getAccessToken());
+        requestHeadersGet.put("Authorization", "Bearer " + prodAppTokenJti);
+        HttpResponse productionResponse =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
+        Assert.assertEquals(productionResponse.getResponseCode(), 200);
+        Map<String, String> headers = productionResponse.getHeaders();
+        Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "");
         String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
         requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
         HttpResponse sandboxResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
         Assert.assertEquals(sandboxResponse.getResponseCode(), 200);
-        Map<String, String> headers = sandboxResponse.getHeaders();
+        headers = sandboxResponse.getHeaders();
         Assert.assertEquals(headers.get("BACKEND_AUTHORIZATION_HEADER"), "Basic".concat(" ")
                 .concat(Base64.encode("sandboxusername".concat(":").concat("admin123#QA").getBytes())));
     }
 
     @Test(groups = {
-            "wso2.am"}, description = "Add Endpoint Security for production and sandbox", dependsOnMethods =
+            "wso2.am"}, description = "Add Endpoint Security for Production and Sandbox", dependsOnMethods =
             "testAddEndpointSecurityForSandbox")
     public void testAddEndpointSecurityForSandboxAndProduction() throws Exception {
 
