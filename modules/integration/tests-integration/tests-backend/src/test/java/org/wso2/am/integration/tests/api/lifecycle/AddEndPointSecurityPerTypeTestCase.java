@@ -447,7 +447,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         super.cleanUp();
     }
 
-    private void validateIntrospectionResponse(User user, String accessToken, String clientId) throws UnsupportedEncodingException {
+    private void validateIntrospectionResponse(User user, String accessToken, String clientId) throws Exception {
 
         String introspectionUrl = "https://localhost:9943/oauth2/introspect";
         if (!"carbon.super".equals(user.getUserDomain())) {
@@ -469,7 +469,8 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
             Assert.assertNotNull(jsonPayload.get("client_id"));
             Assert.assertEquals(jsonPayload.get("client_id"), clientId);
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new Exception(e);
         }
     }
 }
