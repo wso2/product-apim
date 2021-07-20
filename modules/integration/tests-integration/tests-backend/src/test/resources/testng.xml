@@ -324,6 +324,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityPerTypeTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AddEndPointSecurityPerTypeTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-external-idp" preserve-order="true" parallel="false"
