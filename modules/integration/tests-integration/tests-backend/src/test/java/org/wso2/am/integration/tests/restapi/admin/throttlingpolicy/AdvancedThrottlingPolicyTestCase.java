@@ -17,6 +17,12 @@
 
 package org.wso2.am.integration.tests.restapi.admin.throttlingpolicy;
 
+import io.swagger.parser.OpenAPIParser;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -26,27 +32,25 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
-import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ConditionalGroupDTO;
-import org.wso2.am.integration.clients.admin.api.dto.HeaderConditionDTO;
-import org.wso2.am.integration.clients.admin.api.dto.IPConditionDTO;
-import org.wso2.am.integration.clients.admin.api.dto.JWTClaimsConditionDTO;
-import org.wso2.am.integration.clients.admin.api.dto.QueryParameterConditionDTO;
-import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
+import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
@@ -63,6 +67,12 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
     private AdvancedThrottlePolicyDTO bandwidthPolicyDTO;
     private AdvancedThrottlePolicyDTO conditionalGroupsPolicyDTO;
     private AdminApiTestHelper adminApiTestHelper;
+    private final String ADMIN_ROLE = "admin";
+    private final String ADMIN1_USERNAME = "admin1";
+    private final String ADMIN2_USERNAME = "admin2";
+    private final String PASSWORD = "admin1";
+    private String apiId1;
+    private String apiId2;
 
     @Factory(dataProvider = "userModeDataProvider")
     public AdvancedThrottlingPolicyTestCase(TestUserMode userMode) {
@@ -79,6 +89,13 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
         adminApiTestHelper = new AdminApiTestHelper();
+        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
+        userManagementClient
+                .addUser(ADMIN1_USERNAME, PASSWORD, new String[] { ADMIN_ROLE }, ADMIN1_USERNAME);
+        userManagementClient
+                .addUser(ADMIN2_USERNAME, PASSWORD, new String[] { ADMIN_ROLE }, ADMIN2_USERNAME);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add advanced throttling policy with request count limit")
@@ -269,6 +286,216 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
         }
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test delete advanced throttling policy created with a different " +
+            "admin user ", dependsOnMethods = "testAddPolicyWithExistingPolicyName")
+    public void testDeleteAdvancedPolicyWithDifferentAdminUser() throws Exception {
+        restAPIAdmin = new RestAPIAdminImpl(ADMIN1_USERNAME, PASSWORD, user.getUserDomain(),
+                adminURLHttps);
+
+        requestCountPolicyDTO = createThrottlingPolicy("TestPolicyAdmin1");
+
+        //Add the advanced throttling policy
+        ApiResponse<AdvancedThrottlePolicyDTO> addedPolicy =
+                restAPIAdmin.addAdvancedThrottlingPolicy(requestCountPolicyDTO);
+
+        //Assert the status code and policy ID
+        Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
+        AdvancedThrottlePolicyDTO addedPolicyDTO = addedPolicy.getData();
+        String policyId = addedPolicyDTO.getPolicyId();
+        Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
+
+        requestCountPolicyDTO.setPolicyId(policyId);
+        requestCountPolicyDTO.setIsDeployed(true);
+        //Verify the created advanced throttling policy DTO
+        adminApiTestHelper.verifyAdvancedThrottlePolicyDTO(requestCountPolicyDTO, addedPolicyDTO);
+
+        restAPIAdmin = new RestAPIAdminImpl(ADMIN2_USERNAME, PASSWORD, user.getUserDomain(),
+                adminURLHttps);
+        //Delete the policy from a different admin user
+        ApiResponse<Void> apiResponse =
+                restAPIAdmin.deleteAdvancedThrottlingPolicy(policyId);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test delete advanced throttling policy assigned to API created with a" +
+            " different admin user ", dependsOnMethods = "testDeleteAdvancedPolicyWithDifferentAdminUser")
+    public void testDeleteAssignedAPILevelAdvancedPolicyWithDifferentAdminUser() throws Exception {
+
+        restAPIAdmin = new RestAPIAdminImpl(ADMIN1_USERNAME, PASSWORD, user.getUserDomain(),
+                adminURLHttps);
+
+        requestCountPolicyDTO = createThrottlingPolicy("TestPolicyAdmin2");
+        //Add the advanced throttling policy
+        ApiResponse<AdvancedThrottlePolicyDTO> addedPolicy =
+                restAPIAdmin.addAdvancedThrottlingPolicy(requestCountPolicyDTO);
+
+        //Assert the status code and policy ID
+        Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
+        AdvancedThrottlePolicyDTO addedPolicyDTO = addedPolicy.getData();
+        String policyId = addedPolicyDTO.getPolicyId();
+        Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
+
+        requestCountPolicyDTO.setPolicyId(policyId);
+        requestCountPolicyDTO.setIsDeployed(true);
+        //Verify the created advanced throttling policy DTO
+        adminApiTestHelper.verifyAdvancedThrottlePolicyDTO(requestCountPolicyDTO, addedPolicyDTO);
+
+        restAPIPublisher = new RestAPIPublisherImpl(ADMIN1_USERNAME, PASSWORD,
+                user.getUserDomain(), publisherURLHttps);
+
+        //Create API and assign policy to API
+        APIRequest apiRequest = new APIRequest("AdvancedThrottlingPolicyTestAPI2",
+                "AdvancedThrottlingPolicyTestAPI2", new URL(backEndServerUrl.getWebAppURLHttp() +
+                "jaxrs_basic/services/customers/customerservice/"));
+        apiRequest.setProvider(user.getUserName());
+        apiRequest.setVersion("1.0.0");
+        HttpResponse addResponse = restAPIPublisher.addAPI(apiRequest);
+        String apiID = addResponse.getData();
+        apiRequest.setApiTier(requestCountPolicyDTO.getPolicyName());
+        restAPIPublisher.updateAPI(apiRequest, apiID);
+
+        restAPIAdmin = new RestAPIAdminImpl(ADMIN2_USERNAME, PASSWORD, user.getUserDomain(),
+                adminURLHttps);
+        try {
+            restAPIAdmin.deleteAdvancedThrottlingPolicy(policyId);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_FORBIDDEN);
+        } finally {
+            if (apiID != null) {
+                restAPIPublisher.deleteAPI(apiID);
+            }
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test delete advanced throttling policy assigned to a resource created " +
+            "with a different admin user ", dependsOnMethods = "testDeleteAssignedAPILevelAdvancedPolicyWithDifferentAdminUser")
+    public void testDeleteAssignedResourceLevelAdvancedPolicyWithDifferentAdminUser() throws Exception {
+
+        restAPIAdmin = new RestAPIAdminImpl(ADMIN1_USERNAME, PASSWORD, user.getUserDomain(),
+                adminURLHttps);
+        requestCountPolicyDTO = createThrottlingPolicy("TestPolicyAdmin3");
+        //Add the advanced throttling policy
+        ApiResponse<AdvancedThrottlePolicyDTO> addedPolicy =
+                restAPIAdmin.addAdvancedThrottlingPolicy(requestCountPolicyDTO);
+
+        //Assert the status code and policy ID
+        Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
+        AdvancedThrottlePolicyDTO addedPolicyDTO = addedPolicy.getData();
+        String policyId = addedPolicyDTO.getPolicyId();
+        Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
+
+        requestCountPolicyDTO.setPolicyId(policyId);
+        requestCountPolicyDTO.setIsDeployed(true);
+        //Verify the created advanced throttling policy DTO
+        adminApiTestHelper.verifyAdvancedThrottlePolicyDTO(requestCountPolicyDTO, addedPolicyDTO);
+
+        //Create API and assign policy to resource
+        APIRequest apiRequest = new APIRequest("AdvancedThrottlingPolicyTestAPI3",
+                "AdvancedThrottlingPolicyTestAPI3", new URL(backEndServerUrl.getWebAppURLHttp() +
+                "jaxrs_basic/services/customers/customerservice/"));
+        apiRequest.setProvider(user.getUserName());
+        apiRequest.setVersion("1.0.0");
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget("/customers/{id}");
+        apiOperationsDTO.setAuthType("None");
+        apiOperationsDTO.setThrottlingPolicy(requestCountPolicyDTO.getPolicyName());
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO);
+        apiRequest.setOperationsDTOS(operationsDTOS);
+
+        HttpResponse addResponse = restAPIPublisher.addAPI(apiRequest);
+        String apiID = addResponse.getData();
+        Assert.assertNotNull(apiID);
+
+        restAPIAdmin = new RestAPIAdminImpl(ADMIN2_USERNAME, PASSWORD, user.getUserDomain(),
+                adminURLHttps);
+        try {
+            restAPIAdmin.deleteAdvancedThrottlingPolicy(policyId);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_FORBIDDEN);
+        } finally {
+            if (apiID != null) {
+                restAPIPublisher.deleteAPI(apiID);
+            }
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test change throttling policy from API level to Operation level ",
+            dependsOnMethods = "testDeleteAssignedResourceLevelAdvancedPolicyWithDifferentAdminUser")
+    public void testChangePolicyAPILevelToOperationLevel() throws Exception {
+
+        restAPIPublisher = new RestAPIPublisherImpl(ADMIN1_USERNAME, PASSWORD,
+                user.getUserDomain(), publisherURLHttps);
+
+        //Create API and assign policy
+        APIRequest apiRequest = new APIRequest("AdvancedThrottlingPolicyTestAPI4",
+                "AdvancedThrottlingPolicyTestAPI4", new URL(backEndServerUrl.getWebAppURLHttp() +
+                "jaxrs_basic/services/customers/customerservice/"));
+        apiRequest.setProvider(user.getUserName());
+        apiRequest.setVersion("1.0.0");
+        apiRequest.setApiTier(requestCountPolicyDTO.getPolicyName());
+
+        HttpResponse addResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId1 = addResponse.getData();
+        APIDTO apidto = restAPIPublisher.getAPIByID(apiId1);
+        Assert.assertEquals(apidto.getApiThrottlingPolicy(), requestCountPolicyDTO.getPolicyName());
+
+        List<APIOperationsDTO> operationsDTOS = apidto.getOperations();
+        operationsDTOS.get(0).setThrottlingPolicy(requestCountPolicyDTO.getPolicyName());
+        apiRequest.setOperationsDTOS(operationsDTOS);
+        restAPIPublisher.updateAPI(apiRequest, apiId1);
+
+        //Verifying the change in swagger
+        String retrievedSwagger;
+        List<Object> resourceThrottlingTiers;
+        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId1);
+        resourceThrottlingTiers = getResourceThrottlingPolicies(retrievedSwagger);
+        Assert.assertEquals(resourceThrottlingTiers.get(0), requestCountPolicyDTO.getPolicyName());
+    }
+
+
+    @Test(groups = {"wso2.am"}, description = "Test change throttling policy from Operation level to API level ",
+            dependsOnMethods = "testDeleteAssignedResourceLevelAdvancedPolicyWithDifferentAdminUser")
+    public void testChangePolicyOperationLevelToAPILevel() throws Exception {
+
+        restAPIPublisher = new RestAPIPublisherImpl(ADMIN1_USERNAME, PASSWORD,
+                user.getUserDomain(), publisherURLHttps);
+        APIRequest apiRequest = new APIRequest("AdvancedThrottlingPolicyTestAPI5",
+                "AdvancedThrottlingPolicyTestAPI5", new URL(backEndServerUrl.getWebAppURLHttp() +
+                "jaxrs_basic/services/customers/customerservice/"));
+        apiRequest.setProvider(user.getUserName());
+        apiRequest.setVersion("1.0.0");
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget("/customers/{id}");
+        apiOperationsDTO.setAuthType("None");
+        apiOperationsDTO.setThrottlingPolicy("Unlimited");
+        APIOperationsDTO apiOperationsDTO2 = new APIOperationsDTO();
+        apiOperationsDTO2.setVerb("GET");
+        apiOperationsDTO2.setTarget("/customers/{id}");
+        apiOperationsDTO2.setAuthType("None");
+        apiOperationsDTO2.setThrottlingPolicy(requestCountPolicyDTO.getPolicyName());
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO);
+        operationsDTOS.add(apiOperationsDTO2);
+        apiRequest.setOperationsDTOS(operationsDTOS);
+
+        HttpResponse addResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId2 = addResponse.getData();
+
+        apiRequest.setApiTier(requestCountPolicyDTO.getPolicyName());
+        restAPIPublisher.updateAPI(apiRequest, apiId2);
+
+        //Verifying the change in swagger
+        String retrievedSwagger;
+        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId2);
+        OpenAPIParser parser = new OpenAPIParser();
+        SwaggerParseResult swaggerParseResult = parser.readContents(retrievedSwagger, null, null);
+        OpenAPI openAPI = swaggerParseResult.getOpenAPI();
+        Assert.assertEquals(openAPI.getExtensions().get("x-throttling-tier"), requestCountPolicyDTO.getPolicyName());
+    }
+
     /**
      * Creates a conditional group with a list of conditions
      *
@@ -332,9 +559,53 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
         return throttleConditions;
     }
 
+    /**
+     * Creates an Advanced Throttling Policy
+     *
+     * @return Created Advanced Throttling Policy
+     */
+    public AdvancedThrottlePolicyDTO createThrottlingPolicy(String policyName) {
+        AdvancedThrottlePolicyDTO advancedThrottlePolicyDTO;
+        Long requestCount = 50L;
+        List<ConditionalGroupDTO> conditionalGroups = new ArrayList<>();
+        RequestCountLimitDTO requestCountLimit =
+                DtoFactory.createRequestCountLimitDTO(timeUnit, unitTime, requestCount);
+        ThrottleLimitDTO defaultLimit =
+                DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT, requestCountLimit, null);
+        advancedThrottlePolicyDTO = DtoFactory
+                .createAdvancedThrottlePolicyDTO(policyName, displayName, description, false, defaultLimit,
+                        conditionalGroups);
+        return  advancedThrottlePolicyDTO;
+    }
+
+    /**
+     * Gets Throttling policies of resources
+     *
+     * @return List of Throttling policies
+     */
+    private List<Object> getResourceThrottlingPolicies(String swaggerContent) throws APIManagementException {
+        OpenAPIParser parser = new OpenAPIParser();
+        SwaggerParseResult swaggerParseResult = parser.readContents(swaggerContent, null, null);
+        OpenAPI openAPI = swaggerParseResult.getOpenAPI();
+        Paths paths = openAPI.getPaths();
+        List<Object> throttlingPolicies = new ArrayList<>();
+        for (String pathKey : paths.keySet()) {
+            Map<PathItem.HttpMethod, Operation> operationsMap = paths.get(pathKey).readOperationsMap();
+            for (Map.Entry<PathItem.HttpMethod, Operation> entry : operationsMap.entrySet()) {
+                Operation operation = entry.getValue();
+                Map<String, Object> extensions = operation.getExtensions();
+                Assert.assertNotNull(extensions.get("x-throttling-tier"));
+                throttlingPolicies.add(extensions.get("x-throttling-tier"));
+            }
+        }
+        return throttlingPolicies;
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIAdmin.deleteAdvancedThrottlingPolicy(bandwidthPolicyDTO.getPolicyId());
         restAPIAdmin.deleteAdvancedThrottlingPolicy(conditionalGroupsPolicyDTO.getPolicyId());
+        restAPIPublisher.deleteAPI(apiId1);
+        restAPIPublisher.deleteAPI(apiId2);
     }
 }
