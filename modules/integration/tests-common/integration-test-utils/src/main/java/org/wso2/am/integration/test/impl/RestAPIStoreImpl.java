@@ -1725,7 +1725,11 @@ public class RestAPIStoreImpl {
         return response.getData();
     }
 
-
+    public ApiResponse<Void> downloadWSDLSchemaDefinitionOfAPI(String apiId,String environmentName) throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,null,environmentName,null,null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse;
+    }
 
     /**
      * Generate user access key

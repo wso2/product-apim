@@ -1039,6 +1039,19 @@ public class RestAPIPublisherImpl {
         return apiDtoApiResponse.getData();
     }
 
+    public APIDTO importWSDLSchemaDefinition(File file,String url, String properties,String type) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importWSDLDefinitionWithHttpInfo( file,url,
+                properties, type);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    public ApiResponse<Void> getWSDLSchemaDefinitionOfAPI(String apiId) throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse;
+    }
+
     public GraphQLSchemaDTO getGraphqlSchemaDefinition(String apiId) throws ApiException {
         ApiResponse<GraphQLSchemaDTO> schemaDefinitionDTO = graphQlSchemaIndividualApi.
                 apisApiIdGraphqlSchemaGetWithHttpInfo(apiId, "application/json", null);
