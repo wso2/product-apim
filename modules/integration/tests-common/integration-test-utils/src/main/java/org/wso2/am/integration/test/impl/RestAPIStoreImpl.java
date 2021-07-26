@@ -178,6 +178,30 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public HttpResponse createApplicationWithOrganization(String appName, String description, String throttleTier,
+                                                          ApplicationDTO.TokenTypeEnum tokenType, List<String> groups) {
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setTokenType(tokenType);
+            application.setGroups(groups);
+
+            ApplicationDTO createdApp = applicationsApi.applicationsPost(application);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                response = new HttpResponse(createdApp.getApplicationId(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     public ApiResponse<ApplicationDTO> createApplicationWithHttpInfo(String appName, String description, String throttleTier,
                                                                      ApplicationDTO.TokenTypeEnum tokenType) throws ApiException {
 
@@ -258,6 +282,32 @@ public class RestAPIStoreImpl {
             }
         }
         return null;
+    }
+
+    /**
+     * Update shared Application by ID with the organization
+     */
+    public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
+                                              String throttleTier,
+                                              ApplicationDTO.TokenTypeEnum tokenType, List<String> groups) {
+        HttpResponse response = null;
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setTokenType(tokenType);
+            application.setGroups(groups);
+
+            ApplicationDTO createdApp = applicationsApi.applicationsApplicationIdPut(applicationId, application, null);
+            if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                response = new HttpResponse(createdApp.toString(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            response = new HttpResponse(e.getResponseBody(), e.getCode());
+            return response;
+        }
     }
 
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) {
