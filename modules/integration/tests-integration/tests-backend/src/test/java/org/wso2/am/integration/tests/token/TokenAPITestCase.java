@@ -130,6 +130,19 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         String accessToken = productionApplicationKeyDTO.getToken().getAccessToken();
         String consumerKey = productionApplicationKeyDTO.getConsumerKey();
         String consumerSecret = productionApplicationKeyDTO.getConsumerSecret();
+
+        Thread.sleep(2000);
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        //Check Application Access Token
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        requestHeaders.put("accept", "text/xml");
+        HttpResponse youTubeResponseWithApplicationToken = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
+        assertEquals(youTubeResponseWithApplicationToken.getResponseCode(),
+                Response.Status.OK.getStatusCode(), "Response code mismatched");
+        assertTrue(youTubeResponseWithApplicationToken.getData().contains("John"), "Response data mismatched");
+        assertTrue(youTubeResponseWithApplicationToken.getData().contains("<name"), "Response data mismatched");
+        assertTrue(youTubeResponseWithApplicationToken.getData().contains("<Customer>"), "Response data mismatched");
+
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=" +
@@ -139,33 +152,31 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
                 consumerSecret, requestBody, tokenEndpointURL);
         JSONObject accessTokenGenerationResponse = new JSONObject(httpAccessTokenGenerationResponse.getData());
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        //Check User Access Token
-        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
-        requestHeaders.put("accept", "text/xml");
 
         Thread.sleep(2000);
+        //Check User Access Token
+        requestHeaders.clear();
+        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
+        requestHeaders.put("accept", "text/xml");
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("John"), "Response data mismatched");
         assertTrue(youTubeResponse.getData().contains("<name"), "Response data mismatched");
         assertTrue(youTubeResponse.getData().contains("<Customer>"), "Response data mismatched");
 
-        //Check Application Access Token
+        //Check Application Access Token (Should have been revoked by now)
         requestHeaders.clear();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         requestHeaders.put("accept", "text/xml");
-        HttpResponse youTubeResponseWithApplicationToken = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
-        assertEquals(youTubeResponseWithApplicationToken.getResponseCode(), Response.Status.OK.getStatusCode(),
+        HttpResponse youTubeResponseWithRevokedApplicationToken = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
+        assertEquals(youTubeResponseWithRevokedApplicationToken.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched");
-        assertTrue(youTubeResponseWithApplicationToken.getData().contains("John"), "Response data mismatched");
-        assertTrue(youTubeResponseWithApplicationToken.getData().contains("<name>"), "Response data mismatched");
-        assertTrue(youTubeResponseWithApplicationToken.getData().contains("<Customer>"), "Response data mismatched");
         //Invoke Https end point
         HttpResponse youTubeResponseWithApplicationTokenHttps = HttpRequestUtil
                 .doGet(gatewayUrl, requestHeaders);
         log.info("Response " + youTubeResponseWithApplicationTokenHttps);
-        assertEquals(youTubeResponseWithApplicationTokenHttps.getResponseCode(), 200, "Response code mismatched");
+        assertEquals(youTubeResponseWithApplicationTokenHttps.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched");
 
         HttpResponse errorResponse = null;
         errorResponse = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
