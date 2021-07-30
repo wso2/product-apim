@@ -119,7 +119,7 @@ replaceAxis2TemplateFile(){
 		mv $pathToAxis2XMLTemplate $pathToAxis2TXmlTemplateBackup
 		timeStamp
 		echo "[${timestamp}] INFO - Renamed the existing $pathToAxis2XMLTemplate file as axis2.xml.j2.backup"
-		mv $pathToNewAxis2TemplateXml $pathToAxis2XMLTemplate
+		cp $pathToNewAxis2TemplateXml $pathToAxis2XMLTemplate
 		timeStamp
 		echo "[${timestamp}] INFO - Renamed the existing $pathToNewAxis2TemplateXml file as axis2.xml.j2"
 	fi
@@ -132,7 +132,7 @@ replaceTenantAxis2TemplateFile(){
 		mv $pathToTenantAxis2XMLTemplate $pathToTenantAxis2TXmlTemplateBackup
 		timeStamp
 		echo "[${timestamp}] INFO - Renamed the existing $pathToTenantAxis2XMLTemplate file as tenant-axis2.xml.j2.backup"
-		mv $pathToNewAxis2TemplateXml $pathToTenantAxis2XMLTemplate
+		cp $pathToNewAxis2TemplateXml $pathToTenantAxis2XMLTemplate
 		timeStamp
 		echo "[${timestamp}] INFO - Renamed the existing $pathToNewAxis2TemplateXml file as tenant-axis2.xml.j2"
 	fi
@@ -144,7 +144,7 @@ replaceRegistryXMLTemplateFile(){
 	  mv $pathToRegistryTemplate $pathToRegistryTemplateBackup
 		timeStamp
 		echo "[${timestamp}] INFO - Renamed the existing $pathToRegistryTemplate file as registry.backup"
-		mv $pathToRegistryTMTemplate $pathToRegistryTemplate
+		cp $pathToRegistryTMTemplate $pathToRegistryTemplate
 		timeStamp
 		echo "[${timestamp}] INFO - Renamed the existing $pathToRegistryTMTemplate file as registry.xml.j2"
 	fi
