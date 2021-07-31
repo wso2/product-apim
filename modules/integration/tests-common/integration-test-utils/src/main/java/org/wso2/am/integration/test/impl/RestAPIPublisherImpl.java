@@ -1214,6 +1214,13 @@ public class RestAPIPublisherImpl {
         return apiResponse.getData();
     }
 
+    public APIProductDTO updateApiProduct(APIProductDTO apiProductDTO, String apiProductId) throws ApiException {
+        ApiResponse<APIProductDTO> apiResponse = apiProductsApi.apiProductsApiProductIdPutWithHttpInfo(apiProductId,
+                apiProductDTO, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return apiResponse.getData();
+    }
+
     public void deleteApiProduct(String apiProductId) throws ApiException {
         ApiResponse<Void> apiResponse = apiProductsApi.apiProductsApiProductIdDeleteWithHttpInfo(apiProductId, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
