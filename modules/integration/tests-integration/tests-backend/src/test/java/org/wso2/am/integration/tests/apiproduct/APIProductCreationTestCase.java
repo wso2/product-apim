@@ -17,11 +17,13 @@
 package org.wso2.am.integration.tests.apiproduct;
 
 import org.apache.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
+import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -31,6 +33,7 @@ import org.wso2.am.integration.test.impl.InvocationStatusCodes;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.junit.Assert.*;
+
 public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     private static final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
     private static final String RESTRICTED_SUBSCRIBER = "restricted_user";
@@ -46,6 +51,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     private static final String PASSWORD = "$3213#@sd";
     private static final String RESTRICTED_ROLE = "restricted_role";
     private static final String SCOPE = "restricted_scope";
+    private static final List<APIDTO> apisToBeUsed = new ArrayList<>();
     private ApiTestHelper apiTestHelper;
     private ApiProductTestHelper apiProductTestHelper;
 
@@ -94,7 +100,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
-                apisToBeUsed, policies);
+                apisToBeUsed, policies, null);
 
         waitForAPIDeployment();
 
@@ -156,7 +162,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
-                apisToBeUsed, policies);
+                apisToBeUsed, policies, null);
 
         waitForAPIDeployment();
 
@@ -217,7 +223,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
-                apisToBeUsed, policies);
+                apisToBeUsed, policies, null);
 
         waitForAPIDeployment();
 
@@ -279,7 +285,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
-                apisToBeUsed, policies);
+                apisToBeUsed, policies, null);
 
         waitForAPIDeployment();
 
@@ -345,7 +351,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
-                apisToBeUsed, policies);
+                apisToBeUsed, policies, null);
 
         waitForAPIDeployment();
 
@@ -392,6 +398,50 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         // Step 8 : Invoke API Product
         apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, requestBody,
                 expectedResponse, headers);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test creation of API product and change lifecycle state",
+            dependsOnMethods = "testCreateAndInvokeApiProduct")
+    public void testCreateApiProductAndChangeLifecycleChange() throws Exception {
+        // Step 1 : Create APIProduct in Created State
+        final String provider = UUID.randomUUID().toString();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID();
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+                apisToBeUsed, policies, APIProductDTO.StateEnum.CREATED);
+        waitForAPIDeployment();
+
+        apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+        try {
+            restAPIStore.getAPI(apiProductDTO.getId());
+            fail("API Product is already PUBLISHED to developer portal");
+        } catch (ApiException e) {
+            assertEquals(Response.Status.FORBIDDEN.getStatusCode(),e.getCode());
+        }
+
+        apiProductDTO.state(APIProductDTO.StateEnum.PUBLISHED);
+        APIProductDTO publishedApiProductDTO = restAPIPublisher.updateApiProduct(apiProductDTO, apiProductDTO.getId());
+        Assert.assertEquals(publishedApiProductDTO.getState(), APIProductDTO.StateEnum.PUBLISHED);
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
+                apiProductTestHelper.verifyApiProductInPortal(publishedApiProductDTO);
+
+        ApplicationDTO applicationDTO = apiTestHelper.verifySubscription(apiDTO, UUID.randomUUID().toString(),
+                TIER_UNLIMITED);
+
+        // Generate Production and Sandbox keys and Application Access tokens without scopes
+        List<String> grantTypes = Arrays.asList("client_credentials", "password");
+        ApplicationKeyDTO productionAppKey = apiTestHelper.verifyKeyGeneration(applicationDTO,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, new ArrayList<>(), grantTypes);
+
+        ApplicationKeyDTO sandboxAppKey = apiTestHelper.verifyKeyGeneration(applicationDTO,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, new ArrayList<>(), grantTypes);
+
+        // Invoke API Product with Application Access tokens
+        InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
+        apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
+                sandboxAppKey.getToken().getAccessToken(), invocationStatusCodes);
     }
 
     @AfterClass(alwaysRun = true)
