@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -14,13 +15,6 @@ import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
 import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import javax.xml.bind.DatatypeConverter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,7 +92,7 @@ public class ClientAuthenticator {
                 postParams = "grant_type=client_credentials";
             }
             if (!scopeList.isEmpty()) {
-                postParams += "&scope=" + scopeList+" device_"+count;
+                postParams += "&scope=" + scopeList + " device_" + RandomStringUtils.randomAlphanumeric(5, 10);
             }
             urlConn.setHostnameVerifier(new HostnameVerifier() {
 
