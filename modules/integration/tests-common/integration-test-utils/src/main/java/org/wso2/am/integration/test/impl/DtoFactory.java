@@ -40,8 +40,9 @@ import java.util.List;
 public class DtoFactory {
 
     public static APIProductDTO createApiProductDTO(String provider, String name, String context, List<ProductAPIDTO> apis,
-                                                    List<String> polices) {
+                                                    List<String> polices, APIProductDTO.StateEnum state) {
         return new APIProductDTO().
+                state(state).
                 accessControl(APIProductDTO.AccessControlEnum.NONE).
                 visibility(APIProductDTO.VisibilityEnum.PUBLIC).
                 apis(apis).

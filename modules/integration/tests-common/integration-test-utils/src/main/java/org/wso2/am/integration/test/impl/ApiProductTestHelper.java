@@ -58,14 +58,18 @@ public class ApiProductTestHelper {
     }
 
     public APIProductDTO createAPIProductInPublisher(String provider, String name, String context,
-                                                     List<APIDTO> apisToBeUsed, List<String> policies)
+                                                     List<APIDTO> apisToBeUsed, List<String> policies,
+                                                     APIProductDTO.StateEnum state)
             throws ApiException {
         // Select resources from APIs to be used by APIProduct
         List<ProductAPIDTO> resourcesForProduct = getResourcesForProduct(apisToBeUsed);
 
         // Generate APIProductDTO
+        if (state == null) {
+            state = APIProductDTO.StateEnum.PUBLISHED;
+        }
         APIProductDTO apiProductDTO = DtoFactory.createApiProductDTO(provider, name, context,
-                resourcesForProduct, policies);
+                resourcesForProduct, policies, state);
 
         // Create APIProduct and validate response code
         APIProductDTO responseData = restAPIPublisher.addApiProduct(apiProductDTO);
