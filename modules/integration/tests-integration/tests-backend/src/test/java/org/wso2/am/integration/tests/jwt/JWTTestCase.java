@@ -348,6 +348,15 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
 
         // check default claims
         checkDefaultUserClaims(jsonObject, jwtApplicationName);
+
+        //check activityid header
+        Header activityId_request_path = pickHeader(responseHeaders, "in_activityid");
+        Header activityId_response_path = pickHeader(responseHeaders, "activityid");
+
+        Assert.assertTrue(activityId_request_path.getValue().equals(activityId_response_path.getValue()),
+                "activityid in request path ( " + activityId_request_path +
+                ") does not match with the response path ( " + activityId_response_path + " ).");
+
     }
 
     @Test(groups = { "wso2.am" }, description = "Backend JWT Token Generation with Auth Code Grant Type")

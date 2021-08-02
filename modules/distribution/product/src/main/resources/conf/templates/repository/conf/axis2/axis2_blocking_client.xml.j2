@@ -21,6 +21,21 @@
     <!-- ================================================= -->
     <!-- Parameters -->
     <!-- ================================================= -->
+    {% for parameter in transport.blocking.parameters %}
+    <parameter name="{{parameter.name}}" locked="false">{{parameter.value}}</parameter>
+    {% endfor %}
+
+    {% if transport.blocking.proxy is defined %}
+    <parameter name="Proxy">
+        <parameters>
+            <ProxyHost>{{transport.blocking.proxy.host}}</ProxyHost>
+            <ProxyPort>{{transport.blocking.proxy.port}}</ProxyPort>
+            <ProxyUser>{{transport.blocking.proxy.username}}</ProxyUser>
+            <ProxyPassword>{{transport.blocking.proxy.password}}</ProxyPassword>
+        <parameters>
+    </parameter>
+    {% endif %}
+    
     <parameter name="hotdeployment">true</parameter>
     <parameter name="hotupdate">false</parameter>
     <parameter name="enableMTOM">false</parameter>

@@ -20,8 +20,11 @@ package org.wso2.am.integration.tests.other;
 
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -33,6 +36,8 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -48,6 +53,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
@@ -68,10 +74,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
@@ -130,6 +139,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private String preservePublisherApiId;
     private String notPreservePublisherApiId;
     private ArrayList<String> grantTypes;
+    private final String testEPSecurityUser = "test_ep_user";
+    private final String testEPSecurityPassword  = "test_ep_password";
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIImportExportTestCase(TestUserMode userMode) {
@@ -185,6 +196,9 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         apiCreationRequestBean.setTags(tags);
         apiCreationRequestBean.setDescription(DESCRIPTION);
         apiCreationRequestBean.setSubPolicyCollection(tierCollection);
+        apiCreationRequestBean.setEndpointType("basic");
+        apiCreationRequestBean.setEpUsername(testEPSecurityUser);
+        apiCreationRequestBean.setEpPassword(testEPSecurityPassword);
 
         //define resources
         resList = new ArrayList<APIResourceBean>();
@@ -226,7 +240,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
 
     }
 
-    @Test(groups = { "wso2.am" }, description = "Exported Sample API")
+    @Test(groups = { "wso2.am" }, description = "Exported Sample API with endpoint security enabled")
     public void testAPIExport() throws Exception {
 
         //construct export API url
@@ -240,6 +254,44 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
         exportArtifact(exportRequest, apiZip);
+
+        // Test whether exported API archive contains the endpoint security password in plain text
+        String extractedAPIDir = apiZip.getParent();
+        try {
+            ZipFile zipFile = new ZipFile(apiZip);
+            zipFile.extractAll(apiZip.getParent());
+        } catch (ZipException e) {
+            throw new APIManagerIntegrationTestException("Error in extracting the exported API archive.", e);
+        }
+
+        String apiJsonFilePath = extractedAPIDir + File.separator + API_NAME + "-" + API_VERSION + File.separator
+                                        + "api.json";
+        StringBuilder contentBuilder = new StringBuilder();
+        try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(apiJsonFilePath), StandardCharsets.UTF_8)) {
+            stream.forEach(s -> contentBuilder.append(s).append("\n"));
+        } catch (IOException e) {
+            throw new APIManagerIntegrationTestException("Error in reading from extracted api file " + apiJsonFilePath, e);
+        }
+
+        String exportedApiFileContent = contentBuilder.toString();
+        JSONParser parser = new JSONParser();
+        JSONObject exportedApiJson = (JSONObject) parser.parse(exportedApiFileContent);
+        String ep_security_production_password = String
+                                        .valueOf(((JSONObject) ((JSONObject) (((JSONObject) ((JSONObject) exportedApiJson
+                                                                        .get("data")).get("endpointConfig"))
+                                                                        .get("endpoint_security"))).get("production"))
+                                                                        .get("password"));
+        String ep_security_sandbox_password = String
+                                        .valueOf(((JSONObject) ((JSONObject) (((JSONObject) ((JSONObject) exportedApiJson
+                                                                        .get("data")).get("endpointConfig"))
+                                                                        .get("endpoint_security"))).get("sandbox"))
+                                                                        .get("password"));
+        Assert.assertTrue(ep_security_production_password.isEmpty(),
+                                        "Production Endpoint password is not empty. Plain text password exported:"
+                                                                        + ep_security_production_password);
+        Assert.assertTrue(ep_security_sandbox_password.isEmpty(),
+                                        "Sandbox Endpoint password is not empty. Plain text password exported:"
+                                                                        + ep_security_sandbox_password);
     }
 
     @Test(groups = { "wso2.am" }, description = "Importing exported API", dependsOnMethods = "testAPIExport")
@@ -708,7 +760,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         deleteStatus = notPreservePublisherApiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
-        deleteStatus = zipTempDir.delete();
+        FileUtils.deleteDirectory(zipTempDir);
         Assert.assertTrue(deleteStatus, "temp directory delete not successful");
         super.cleanUp();
     }
