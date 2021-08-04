@@ -163,13 +163,13 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         String wsdlDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl"
                 + File.separator + "Sample.wsdl";
         File file = new File(wsdlDefinitionPath);
-        APIDTO apidto = restAPIPublisher
+        APIDTO wsdlFileApidto = restAPIPublisher
                 .importWSDLSchemaDefinition(file, null, additionalPropertiesObj.toString(), "SOAP");
 
         // Make sure API is created properly
-        assertEquals(apidto.getName(), WSDL_FILE_API_NAME);
-        assertEquals(apidto.getContext(), "/" + WSDL_FILE_API_CONTEXT);
-        wsdlFileApiId = apidto.getId();
+        assertEquals(wsdlFileApidto.getName(), WSDL_FILE_API_NAME);
+        assertEquals(wsdlFileApidto.getContext(), "/" + WSDL_FILE_API_CONTEXT);
+        wsdlFileApiId = wsdlFileApidto.getId();
 
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(wsdlFileApiId, restAPIPublisher);
@@ -186,13 +186,13 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         String wsdlZipDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl"
                 + File.separator + "Sample.zip";
         File zipFile = new File(wsdlZipDefinitionPath);
-        APIDTO zipApidto = restAPIPublisher
+        APIDTO zipFileApidto = restAPIPublisher
                 .importWSDLSchemaDefinition(zipFile, null, additionalPropertiesObj.toString(), "SOAP");
 
         // Make sure API is created properly
-        assertEquals(zipApidto.getName(), WSDL_ZIP_API_NAME);
-        assertEquals(zipApidto.getContext(), "/" + WSDL_ZIP_API_CONTEXT);
-        zipFileApiId = zipApidto.getId();
+        assertEquals(zipFileApidto.getName(), WSDL_ZIP_API_NAME);
+        assertEquals(zipFileApidto.getContext(), "/" + WSDL_ZIP_API_CONTEXT);
+        zipFileApiId = zipFileApidto.getId();
 
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(zipFileApiId, restAPIPublisher);
@@ -206,19 +206,19 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         additionalPropertiesObj.put("context", WSDL_URL_API_CONTEXT);
 
         // Create API by WSDL URL
-        APIDTO urlApidto = restAPIPublisher
+        APIDTO wsdlUrlApidto = restAPIPublisher
                 .importWSDLSchemaDefinition(null, wsdlURL, additionalPropertiesObj.toString(), "SOAP");
 
         // Make sure API is created properly
-        assertEquals(urlApidto.getName(), WSDL_URL_API_NAME);
-        assertEquals(urlApidto.getContext(), "/" + WSDL_URL_API_CONTEXT);
-        wsdlUrlApiId = zipApidto.getId();
+        assertEquals(wsdlUrlApidto.getName(), WSDL_URL_API_NAME);
+        assertEquals(wsdlUrlApidto.getContext(), "/" + WSDL_URL_API_CONTEXT);
+        wsdlUrlApiId = wsdlUrlApidto.getId();
 
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(wsdlUrlApiId, restAPIPublisher);
         waitForAPIDeploymentSync(userName, WSDL_URL_API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
         restAPIPublisher.changeAPILifeCycleStatus(wsdlUrlApiId, Constants.PUBLISHED);
-        HttpResponse createdApiResponse3 = restAPIPublisher.getAPI(zipFileApiId);
+        HttpResponse createdApiResponse3 = restAPIPublisher.getAPI(wsdlUrlApiId);
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse3.getResponseCode());
 
         // Create application and subscribe to API
@@ -261,19 +261,19 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         String environmentName = Constants.GATEWAY_ENVIRONMENT;
 
         // wsdl definition of the API created with .wsdl file from the store
-        org.wso2.am.integration.clients.store.api.ApiResponse<Void> response = restAPIStore
+        org.wso2.am.integration.clients.store.api.ApiResponse<Void> wsdlFileFlowResponse = restAPIStore
                 .downloadWSDLSchemaDefinitionOfAPI(wsdlFileApiId, environmentName);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode());
+        assertEquals(Response.Status.OK.getStatusCode(), wsdlFileFlowResponse.getStatusCode());
 
         // wsdl definition of the API created with .zip file from the store
-        org.wso2.am.integration.clients.store.api.ApiResponse<Void> zipFlowResponse = restAPIStore
+        org.wso2.am.integration.clients.store.api.ApiResponse<Void> zipFileFlowResponse = restAPIStore
                 .downloadWSDLSchemaDefinitionOfAPI(zipFileApiId, environmentName);
-        assertEquals(Response.Status.OK.getStatusCode(), zipFlowResponse.getStatusCode());
+        assertEquals(Response.Status.OK.getStatusCode(), zipFileFlowResponse.getStatusCode());
 
         // wsdl definition of the API created with wsdl url from the store
-        org.wso2.am.integration.clients.store.api.ApiResponse<Void> urlFlowResponse = restAPIStore
+        org.wso2.am.integration.clients.store.api.ApiResponse<Void> wsdlUrlFlowResponse = restAPIStore
                 .downloadWSDLSchemaDefinitionOfAPI(wsdlUrlApiId, environmentName);
-        assertEquals(Response.Status.OK.getStatusCode(), urlFlowResponse.getStatusCode());
+        assertEquals(Response.Status.OK.getStatusCode(), wsdlUrlFlowResponse.getStatusCode());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test invoking Check Phone Number method",
