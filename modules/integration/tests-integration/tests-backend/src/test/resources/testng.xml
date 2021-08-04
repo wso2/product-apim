@@ -373,9 +373,4 @@
             <class name="org.wso2.am.integration.tests.workflow.WorkflowApprovalExecutorTest"/>
         </classes>
     </test>
-    <test name="apim-integration-tests-soap" preserve-order="true" parallel="false" group-by-instances="true">
-        <classes>
-            <class name="org.wso2.am.integration.tests.other.WSDLImportTestCase"/>
-        </classes>
-    </test>
 </suite>
