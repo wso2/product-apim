@@ -260,7 +260,7 @@ if exist %pathToAxis2XMLTemplate% (
 		ren %pathToAxis2XMLTemplate% %axis2XMLBackupTemplate%
 		call :Timestamp value
 		echo %value% INFO - Rename the existing %pathToAxis2XMLTemplate% file as %axis2XMLBackupTemplate%
-		copy %pathToNewAxis2TemplateXml% %axis2XMLTemplate%
+		copy %pathToNewAxis2TemplateXml% %pathToAxis2XMLTemplate%
 		call :Timestamp value
 		echo %value% INFO - Rename the existing %pathToAxis2TMXmlTemplate% file as %axis2XMLTemplate%
 	)
@@ -273,7 +273,7 @@ if exist %pathToRegistryTemplate% (
         ren %pathToRegistryTemplate% %registryBackupTemplate%
         call :Timestamp value
         echo %value% INFO - Rename the existing %pathToRegistryTemplate% file as %registryBackupTemplate%
-        copy  %pathToRegistryTMTemplate% %registryXMLTemplate%
+        copy  %pathToRegistryTMTemplate% %pathToRegistryTemplate%
         call :Timestamp value
         echo %value% INFO - Rename the existing %pathToRegistryTMTemplate% file as %registryXMLTemplate%
 	)
@@ -323,7 +323,7 @@ if exist %pathToTenantAxis2XMLTemplate% (
 		ren %pathToTenantAxis2XMLTemplate% %tenantAxis2TXmlTemplateBackup%
 		call :Timestamp value
 		echo %value% INFO - Renamed the existing %pathToTenantAxis2XMLTemplate% file as %tenantAxis2TXmlTemplateBackup%
-		copy %pathToNewTenantAxis2TemplateXml% %tenantAxis2XMLTemplate%
+		copy %pathToNewTenantAxis2TemplateXml% %pathToTenantAxis2XMLTemplate%
 		call :Timestamp value
 		echo %value% INFO - Renamed the existing %pathToNewTenantAxis2TemplateXml% file as %tenantAxis2XMLTemplate%
 	)
