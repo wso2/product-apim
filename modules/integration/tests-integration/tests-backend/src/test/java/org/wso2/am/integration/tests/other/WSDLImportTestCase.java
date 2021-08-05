@@ -165,7 +165,30 @@ import static org.testng.Assert.assertEquals;
         assertEquals(Response.Status.OK.getStatusCode(), zipFlowResponse.getStatusCode());
     }
 
-    @Test(groups = {"wso2.am" }, description = "Download WSDL API definition of the created API from the store", dependsOnMethods = "testGetWsdlDefinitions")
+    @Test(groups = {"wso2.am"}, description = "Update WSDL API definition of the created API",
+            dependsOnMethods = "testGetWsdlDefinitions")
+    public void testUpdateWSDLDefinitionOfAPI() throws Exception {
+
+        String wsdlDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl" + File.separator
+                + "Sample.wsdl";
+
+        File file = new File(wsdlDefinitionPath);
+        // update wsdl definition of the API created with .wsdl file
+        ApiResponse<Void> response = restAPIPublisher.updateWSDLOfAPI(importApiId, file, null);
+        assertEquals(response.getStatusCode(), Response.Status.OK.getStatusCode());
+
+        String wsdlZipDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl"
+                + File.separator + "Sample.zip";
+
+        File zipFile = new File(wsdlZipDefinitionPath);
+
+        // update wsdl definition of the API created with .zip file
+        ApiResponse<Void> zipFlowResponse = restAPIPublisher.updateWSDLOfAPI(importZipApiId, zipFile, null);
+        assertEquals(zipFlowResponse.getStatusCode(), Response.Status.OK.getStatusCode());
+    }
+
+    @Test(groups = {"wso2.am" }, description = "Download WSDL API definition of the created API from the store",
+            dependsOnMethods = "testUpdateWSDLDefinitionOfAPI")
     public void testDownloadWsdlDefinitionsFromStore()throws Exception {
         log.info("testDownloadWsdlDefinitionFromStore  Initiated");
 
