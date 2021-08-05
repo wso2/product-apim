@@ -18,7 +18,7 @@
  *
  */
 
-package org.wso2.am.integration.tests.soaptorest;
+package org.wso2.am.integration.tests.other;
 
 import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
@@ -35,6 +35,8 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -45,6 +47,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -61,9 +64,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertEqualsNoOrder;
 
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
-public class SoapToRestTestCase extends APIMIntegrationBaseTest {
+public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(SoapToRestTestCase.class);
 
     private final String SOAPTOREST_API_NAME = "PhoneVerification";
@@ -80,6 +84,8 @@ public class SoapToRestTestCase extends APIMIntegrationBaseTest {
     private String testAppId1;
     private String testAppId2;
     private String testAppId3;
+    private String testAppId4;
+    private String testAppId5;
     private String payload = "{\n" + "   \"CheckPhoneNumber\":{\n" + "      \"PhoneNumber\":\"18006785432\",\n"
             + "      \"LicenseKey\":\"0\"\n" + "   }\n" + "}";
     private String resourceName = "/checkPhoneNumber";
@@ -94,9 +100,8 @@ public class SoapToRestTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
         userManagementClient.addUser(SOAPTOREST_TEST_USER, SOAPTOREST_TEST_USER_PASSWORD, new String[]{}, null);
         userManagementClient.addRole(SOAPTOREST_ROLE, new String[]{SOAPTOREST_TEST_USER}, new String[]{});
-        wsdlDefinition = IOUtils.toString(
-                getClass().getClassLoader().getResourceAsStream("soap" + File.separator + "phoneverify.wsdl"),
-                "UTF-8");
+        wsdlDefinition = readFile(getAMResourceLocation() + File.separator + "soap" + File.separator
+                + "phoneverify.wsdl");
 
         File file = getTempFileWithContent(wsdlDefinition);
         restAPIPublisher.validateWsdlDefinition(null, file);
@@ -122,12 +127,11 @@ public class SoapToRestTestCase extends APIMIntegrationBaseTest {
         endpointConfig.put("production_endpoints", endpointObject);
 
         additionalPropertiesObj.put("endpointConfig", endpointConfig);
-        additionalPropertiesObj.put("gatewayEnvironments", environment);
         additionalPropertiesObj.put("policies", policies);
 
         // Create SOAPTOREST API
         APIDTO apidto = restAPIPublisher
-                .importWSDLDefinition(file, null, additionalPropertiesObj.toString(), "SOAPTOREST");
+                .importWSDLSchemaDefinition(file, null, additionalPropertiesObj.toString(), "SOAPTOREST");
         soapToRestAPIId = apidto.getId();
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(soapToRestAPIId);
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
@@ -140,17 +144,119 @@ public class SoapToRestTestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
 
+    @Test(groups = { "wso2.com" }, description = "Created API resources validation test case")
+    public void testValidateCreatedResources()
+            throws Exception {
+
+        String[] expectedResources = {"/checkPhoneNumbers", "/checkPhoneNumber"};
+
+        HttpResponse response = restAPIPublisher.getAPI(soapToRestAPIId);
+        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
+        List<APIOperationsDTO> operations = apidto.getOperations();
+        String[] actualResources = new String[operations.size()];
+        int index;
+        for (index = 0; index < operations.size(); index++) {
+            String resource = operations.get(index).getTarget();
+            actualResources[index] = resource;
+        }
+
+        // Check the number of resources
+        assertEquals(actualResources.length, expectedResources.length,
+                "Unexpected number of resources in the created API");
+
+        // Check all resources validity
+        assertEqualsNoOrder(actualResources, expectedResources, "Invalid set of resources");
+    }
+
+    @Test(groups = "wso2.am", description = "In/Out sequence validation test case", dependsOnMethods = {
+            "testValidateCreatedResources" })
+    public void testValidateInOutSequence()
+            throws Exception {
+
+        // Validate in-sequence
+        String inSequence = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
+                "artifacts" + File.separator + "AM" + File.separator + "soap" + File.separator
+                        + "in-sequence-check-phone-numbers.xml"), "UTF-8");
+        ResourcePolicyListDTO resourcePolicyInListDTO = restAPIPublisher
+                .getApiResourcePolicies(soapToRestAPIId, "in", "checkPhoneNumbers", "post");
+        List<ResourcePolicyInfoDTO> resourcePoliciesIn = resourcePolicyInListDTO.getList();
+        resourcePoliciesIn.forEach((item) -> {
+            assertEquals(item.getContent(), inSequence, "Invalid In-Sequence");
+        });
+
+        // Validate out-sequence
+        String outSequence = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
+                "artifacts" + File.separator + "AM" + File.separator + "soap" + File.separator
+                        + "out-sequence-check-phone-numbers.xml"), "UTF-8");
+        ResourcePolicyListDTO resourcePolicyOutListDTO = restAPIPublisher
+                .getApiResourcePolicies(soapToRestAPIId, "out", "checkPhoneNumbers", "post");
+        List<ResourcePolicyInfoDTO> resourcePoliciesOut = resourcePolicyOutListDTO.getList();
+        resourcePoliciesOut.forEach((item) -> {
+            assertEquals(item.getContent(), outSequence, "Invalid Out-Sequence");
+        });
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invocation of default API",
+            dependsOnMethods = {"testValidateCreatedResources"}) public void testDefaultAPIInvocation()
+            throws Exception {
+
+        String soapToRestAppName = "PhoneVerificationDefaultApp";
+        testAppId1 = createSoapToRestAppAndSubscribeToAPI(soapToRestAppName, "OAUTH");
+
+        // Generate token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(testAppId1, "36000", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
+                        grantTypes);
+
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT) + resourceName;
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type", "application/json");
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, payload);
+
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invocation of a revisioned and deployed API",
+            dependsOnMethods = {"testDefaultAPIInvocation"}) public void testRevisionedAPIInvocation()
+            throws Exception {
+        createAPIRevisionAndDeployUsingRest(soapToRestAPIId, restAPIPublisher);
+
+        String soapToRestAppName = "PhoneVerificationRevisionedApp";
+        testAppId2 = createSoapToRestAppAndSubscribeToAPI(soapToRestAppName, "OAUTH");
+
+        // Generate token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(testAppId2, "36000", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
+                        grantTypes);
+
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + resourceName;
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type", "application/json");
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, payload);
+
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+    }
 
     @Test(groups = {"wso2.am"}, description = "API invocation using JWT App")
     public void testInvokeSoapToRestAPIUsingJWTApplication() throws Exception {
         String graphqlJwtAppName = "PhoneVerificationJWTAPP";
-        testAppId1 = createSoapToRestAppAndSubscribeToAPI(graphqlJwtAppName, "JWT");
+        testAppId3 = createSoapToRestAppAndSubscribeToAPI(graphqlJwtAppName, "JWT");
 
         // Generate token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(testAppId1, "36000", "",
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(testAppId3, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
 
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
@@ -163,18 +269,17 @@ public class SoapToRestTestCase extends APIMIntegrationBaseTest {
 
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Response code is not as expected");
-
     }
 
     @Test(groups = {"wso2.am"}, description = "API invocation using oauth App")
     public void testInvokeSoapToRestAPIUsingOAuthApplication() throws Exception {
         String soapToRestOAUTHAppName = "PhoneVerificationOauthAPP";
-        testAppId2 = createSoapToRestAppAndSubscribeToAPI(soapToRestOAUTHAppName, "OAUTH");
+        testAppId4 = createSoapToRestAppAndSubscribeToAPI(soapToRestOAUTHAppName, "OAUTH");
 
         // Generate token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(testAppId2, "36000", "",
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(testAppId4, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
 
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
@@ -231,7 +336,7 @@ public class SoapToRestTestCase extends APIMIntegrationBaseTest {
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(soapToRestAPIId, restAPIPublisher);
 
-        testAppId3 = createSoapToRestAppAndSubscribeToAPI("testOperationalLevelOAuthScopesForSoapToRest", "OAUTH");
+        testAppId5 = createSoapToRestAppAndSubscribeToAPI("testOperationalLevelOAuthScopesForSoapToRest", "OAUTH");
         // Keep sufficient time to update map
         Thread.sleep(10000);
         waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
@@ -247,7 +352,7 @@ public class SoapToRestTestCase extends APIMIntegrationBaseTest {
         requestHeaders.put("Content-Type", "application/json");
 
         // Invoke api without authorized scope
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(testAppId3, "36000", "",
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(testAppId5, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
         String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
@@ -317,8 +422,6 @@ public class SoapToRestTestCase extends APIMIntegrationBaseTest {
         // Invoke api without security
         String accessToken = "";
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-        boolean status = false;
-        long waitTime = System.currentTimeMillis() + WAIT_TIME;
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, payload);
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
                 "Response code is not as expected");
@@ -357,6 +460,8 @@ public class SoapToRestTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(testAppId1);
         restAPIStore.deleteApplication(testAppId2);
         restAPIStore.deleteApplication(testAppId3);
+        restAPIStore.deleteApplication(testAppId4);
+        restAPIStore.deleteApplication(testAppId5);
         undeployAndDeleteAPIRevisionsUsingRest(soapToRestAPIId, restAPIPublisher);
         restAPIPublisher.deleteAPI(soapToRestAPIId);
         super.cleanUp();

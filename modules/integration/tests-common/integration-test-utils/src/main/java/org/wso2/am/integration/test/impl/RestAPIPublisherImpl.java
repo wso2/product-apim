@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
@@ -78,6 +79,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadL
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PatchRequestBodyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PostRequestBodyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
@@ -120,6 +122,7 @@ public class RestAPIPublisherImpl {
     public ApIsApi apIsApi = new ApIsApi();
     public ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
     public ApiRevisionsApi apiRevisionsApi = new ApiRevisionsApi();
+    public ApiResourcePoliciesApi apiResourcePoliciesApi = new ApiResourcePoliciesApi();
     public ApiProductRevisionsApi apiProductRevisionsApi = new ApiProductRevisionsApi();
     public ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
     public ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
@@ -172,6 +175,7 @@ public class RestAPIPublisherImpl {
         apIsApi.setApiClient(apiPublisherClient);
         apiProductsApi.setApiClient(apiPublisherClient);
         apiRevisionsApi.setApiClient(apiPublisherClient);
+        apiResourcePoliciesApi.setApiClient(apiPublisherClient);
         apiProductRevisionsApi.setApiClient(apiPublisherClient);
         graphQlSchemaApi.setApiClient(apiPublisherClient);
         commentsApi.setApiClient(apiPublisherClient);
@@ -1102,25 +1106,10 @@ public class RestAPIPublisherImpl {
         return response.getData();
     }
 
-    public WSDLValidationResponseDTO validateWsdlDefinition(String url, File wsdlDefinition) throws ApiException {
-        ApiResponse<WSDLValidationResponseDTO> response = validationApi
-                .validateWSDLDefinitionWithHttpInfo(url, wsdlDefinition);
-        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
-        return response.getData();
-    }
-
     public APIDTO importGraphqlSchemaDefinition(File file, String properties) throws ApiException {
 
         ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importGraphQLSchemaWithHttpInfo(null, "GRAPHQL",
                 file, properties);
-        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
-        return apiDtoApiResponse.getData();
-    }
-
-    public APIDTO importWSDLDefinition(File file, String url, String additionalProperties, String implementationType)
-            throws ApiException {
-        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi
-                .importWSDLDefinitionWithHttpInfo(file, url, additionalProperties, implementationType);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
@@ -1140,6 +1129,13 @@ public class RestAPIPublisherImpl {
         Assert.assertEquals(HttpStatus.SC_OK, schemaDefinitionDTO.getStatusCode());
     }
 
+    public WSDLValidationResponseDTO validateWsdlDefinition(String url, File wsdlDefinition) throws ApiException {
+        ApiResponse<WSDLValidationResponseDTO> response = validationApi
+                .validateWSDLDefinitionWithHttpInfo(url, wsdlDefinition);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
     public APIDTO importWSDLSchemaDefinition(File file,String url, String properties,String type) throws ApiException {
         ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importWSDLDefinitionWithHttpInfo( file,url,
                 properties, type);
@@ -1151,6 +1147,14 @@ public class RestAPIPublisherImpl {
         ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,null);
         Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse;
+    }
+
+    public ResourcePolicyListDTO getApiResourcePolicies(String apiId, String sequenceType, String resourcePath,
+            String verb) throws ApiException {
+        ApiResponse<ResourcePolicyListDTO> policyListDTOApiResponse = apiResourcePoliciesApi
+                .getAPIResourcePoliciesWithHttpInfo(apiId, sequenceType, resourcePath, verb, null);
+        Assert.assertEquals(policyListDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return policyListDTOApiResponse.getData();
     }
 
     public APIDTO addAPI(APICreationRequestBean apiCreationRequestBean) throws ApiException {
