@@ -226,9 +226,9 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         apidto.setIsDefaultVersion(true);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, soapToRestAPIId);
         createAPIRevisionAndDeployUsingRest(updatedAPI.getId(), restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
 
         String soapToRestAppName = "PhoneVerificationDefaultApp";
@@ -256,7 +256,7 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = {"testValidateCreatedResources"})
     public void testRevisionedAPIInvocation() throws Exception {
         createAPIRevisionAndDeployUsingRest(soapToRestAPIId, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
 
         String soapToRestAppName = "PhoneVerificationRevisionedApp";
@@ -351,9 +351,9 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         apidto.setScopes(apiScopeList);
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, soapToRestAPIId);
         createAPIRevisionAndDeployUsingRest(soapToRestAPIId, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
 
         ArrayList scope = new ArrayList();
@@ -370,12 +370,12 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         apidto.operations(operations);
         restAPIPublisher.updateAPI(apidto, soapToRestAPIId);
         undeployAndDeleteAPIRevisionsUsingRest(soapToRestAPIId, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
         createAPIRevisionAndDeployUsingRest(soapToRestAPIId, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
 
         testAppId5 = createSoapToRestAppAndSubscribeToAPI("testOperationalLevelOAuthScopesForSoapToRest", "OAUTH",
@@ -450,12 +450,12 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         apidto.operations(operations);
         restAPIPublisher.updateAPI(apidto, soapToRestAPIId);
         undeployAndDeleteAPIRevisionsUsingRest(soapToRestAPIId, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
         createAPIRevisionAndDeployUsingRest(soapToRestAPIId, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         // Generate token
