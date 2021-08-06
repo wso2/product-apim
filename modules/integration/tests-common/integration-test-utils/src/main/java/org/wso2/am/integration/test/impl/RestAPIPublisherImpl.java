@@ -79,6 +79,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadL
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PatchRequestBodyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PostRequestBodyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
@@ -1136,9 +1137,9 @@ public class RestAPIPublisherImpl {
         return response.getData();
     }
 
-    public APIDTO importWSDLSchemaDefinition(File file,String url, String properties,String type) throws ApiException {
-        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importWSDLDefinitionWithHttpInfo( file,url,
-                properties, type);
+    public APIDTO importWSDLSchemaDefinition(File file, String url, String properties, String type)
+            throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importWSDLDefinitionWithHttpInfo(file, url, properties, type);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse.getData();
     }
@@ -1155,6 +1156,15 @@ public class RestAPIPublisherImpl {
                 .getAPIResourcePoliciesWithHttpInfo(apiId, sequenceType, resourcePath, verb, null);
         Assert.assertEquals(policyListDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
         return policyListDTOApiResponse.getData();
+    }
+
+    public ResourcePolicyInfoDTO updateApiResourcePolicies(String apiId, String resourcePolicyId, String resourcePath,
+            ResourcePolicyInfoDTO resourcePolicyInfoDTO, String verb) throws ApiException {
+
+        ApiResponse<ResourcePolicyInfoDTO> response = apiResourcePoliciesApi
+                .updateAPIResourcePoliciesByPolicyIdWithHttpInfo(apiId, resourcePolicyId, resourcePolicyInfoDTO, null);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
     }
 
     public APIDTO addAPI(APICreationRequestBean apiCreationRequestBean) throws ApiException {
