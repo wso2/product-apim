@@ -21,6 +21,7 @@ import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyPermissionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
@@ -58,6 +59,9 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
             + "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
             + "00000000000000000000000000\"}";
     private String app3Id;
+    private final String INTERNAL_EVERYONE= "Internal/everyone";
+    private List<String> roleList = new ArrayList<>();
+    private SubscriptionThrottlePolicyPermissionDTO permissions;
 
     private static final Log log = LogFactory.getLog(JWTBandwidthThrottlingTestCase.class);
 
@@ -80,7 +84,10 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         BandwidthLimitDTO bandwidthLimit = DtoFactory.createBandwidthLimitDTO("min", 1, 1L, "KB");
         ThrottleLimitDTO defaultLimit =
                 DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.BANDWIDTHLIMIT, null, bandwidthLimit);
-
+        roleList.add(INTERNAL_EVERYONE);
+        permissions = DtoFactory.
+                createSubscriptionThrottlePolicyPermissionDTO(SubscriptionThrottlePolicyPermissionDTO.
+                        PermissionTypeEnum.ALLOW, roleList);
         //Create the application level policy with bandwidth quota type
         ApplicationThrottlePolicyDTO bandwidthApplicationPolicyDTO = DtoFactory
                 .createApplicationThrottlePolicyDTO(appPolicyName, "", "", false, defaultLimit);
@@ -97,7 +104,7 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
         SubscriptionThrottlePolicyDTO bandwidthSubscriptionPolicyDTO = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(subPolicyName, "", "", false, defaultLimit,
                         -1, -1, 100, "min", new ArrayList<>(),
-                        true, "");
+                        true, "", permissions);
         ApiResponse<SubscriptionThrottlePolicyDTO> addedSubscriptionPolicy =
                 restAPIAdmin.addSubscriptionThrottlingPolicy(bandwidthSubscriptionPolicyDTO);
 

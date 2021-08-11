@@ -20,12 +20,18 @@
 
 package org.wso2.am.integration.tests.publisher;
 
+import org.apache.http.HttpStatus;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.ApiResponse;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -36,6 +42,7 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -150,6 +157,53 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
 
     }
 
+    @Test(groups = {"wso2.am"}, description = "Import swagger definitions and Create two APIs with same context")
+    public void testImportSwaggerAndCreateAPIWithSameContext() throws Exception {
+        JSONObject apiProperties;
+        String swaggerPath1 = getAMResourceLocation() + File.separator + "swagger" +
+                File.separator + "customer-info-api.yaml";
+        String swaggerPath2 = getAMResourceLocation() + File.separator + "swagger" +
+                File.separator + "leasing-api.yaml";
+
+        try {
+            File definition = new File(swaggerPath1);
+            apiProperties = getAPIDetails("CustomerInfoAPI");
+            ApiResponse<APIDTO> apidto1Response = restAPIPublisher.
+                    importOASDefinitionResponse(definition, apiProperties.toString());
+            Assert.assertEquals(HttpStatus.SC_CREATED, apidto1Response.getStatusCode());
+
+            //Create another API with same context
+            File definition2 = new File(swaggerPath2);
+            apiProperties = getAPIDetails("LeasingAPI");
+            restAPIPublisher.importOASDefinitionResponse(definition2, apiProperties.toString());
+            Assert.fail("API created with same context");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), 400);
+            Assert.assertTrue(e.getResponseBody().contains("A duplicate API context already exists"));
+        }
+
+    }
+
+    private JSONObject getAPIDetails(String apiName) throws JSONException {
+
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", getBackendEndServiceEndPointHttp("wildcard/resources"));
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", apiName);
+        apiProperties.put("context", "/" + "SwaggerAPI1");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", apiProviderName);
+        apiProperties.put("endpointConfig", endpointConfig);
+
+        return apiProperties;
+
+    }
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {

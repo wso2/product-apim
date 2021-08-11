@@ -18,6 +18,13 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import com.google.gson.Gson;
+import io.swagger.parser.OpenAPIParser;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -39,6 +46,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -73,9 +81,13 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String mutualSSLOnlyAPIName = "mutualsslOnlyAPI";
     private final String mutualSSLWithOAuthAPI = "mutualSSLWithOAuthAPI";
     private final String mutualSSLandOauthMandatoryAPI = "mutualSSLandOAuthMandatoryAPI";
+    private final String OauthDisabledAPI = "OauthDisabledAPI";
+    private final String OauthEnabledAPI = "OauthEnabledAPI";
     private final String mutualSSLOnlyAPIContext = "mutualsslOnlyAPI";
     private final String mutualSSLWithOAuthAPIContext = "mutualSSLWithOAuthAPI";
     private final String mutualSSLandOAuthMandatoryAPIContext = "mutualSSLandOAuthMandatoryAPI";
+    private final String OauthDisabledAPIContext = "OauthDisabledAPI";
+    private final String OauthEnabledAPIContext = "OauthEnabledAPI";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
@@ -85,6 +97,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private String applicationId;
     private String apiId1, apiId2;
     private String apiId3;
+    private String apiId4;
+    private String apiId5;
 
     @BeforeClass(alwaysRun = true)
     public void initialize()
@@ -197,12 +211,64 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
 
-
-
-
         //get access token
         accessToken = applicationKeyDTO.getToken().getAccessToken();
         Thread.sleep(120000);
+
+        APIRequest apiRequest4 = new APIRequest(OauthDisabledAPI, OauthDisabledAPIContext,
+                new URL(apiEndPointUrl));
+
+        APIOperationsDTO apiOperationsDTO2 = new APIOperationsDTO();
+        apiOperationsDTO2.setVerb("GET");
+        apiOperationsDTO2.setTarget("/customers/{id}");
+        apiOperationsDTO2.setAuthType("None");
+        apiOperationsDTO2.setThrottlingPolicy("Unlimited");
+        APIOperationsDTO apiOperationsDTO3 = new APIOperationsDTO();
+        apiOperationsDTO3.setVerb("POST");
+        apiOperationsDTO3.setTarget("/customers/{id}");
+        apiOperationsDTO3.setAuthType("None");
+        apiOperationsDTO3.setThrottlingPolicy("Unlimited");
+        List<APIOperationsDTO> operationsDTOS2 = new ArrayList<>();
+        operationsDTOS2.add(apiOperationsDTO2);
+        operationsDTOS2.add(apiOperationsDTO3);
+
+        apiRequest4.setVersion(API_VERSION_1_0_0);
+        apiRequest4.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest4.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest4.setTags(API_TAGS);
+        apiRequest4.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest4.setOperationsDTOS(operationsDTOS2);
+        List<String> securitySchemes4 = new ArrayList<>();
+        securitySchemes4.add("oauth2");
+        apiRequest4.setSecurityScheme(securitySchemes4);
+        apiRequest4.setDefault_version("true");
+        apiRequest4.setHttps_checked("https");
+        apiRequest4.setHttp_checked(null);
+        apiRequest4.setDefault_version_checked("true");
+
+        HttpResponse response4 = restAPIPublisher.addAPI(apiRequest4);
+        apiId4 = response4.getData();
+
+        APIRequest apiRequest5 = new APIRequest(OauthEnabledAPI, OauthEnabledAPIContext,
+                new URL(apiEndPointUrl));
+
+        apiRequest5.setVersion(API_VERSION_1_0_0);
+        apiRequest5.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest5.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest5.setTags(API_TAGS);
+        apiRequest5.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+
+        apiRequest5.setOperationsDTOS(operationsDTOS);
+        apiRequest5.setSecurityScheme(securitySchemes4);
+        apiRequest5.setDefault_version("true");
+        apiRequest5.setHttps_checked("https");
+        apiRequest5.setHttp_checked(null);
+        apiRequest5.setDefault_version_checked("true");
+
+        HttpResponse response5 = restAPIPublisher.addAPI(apiRequest5);
+        apiId5 = response5.getData();
+
+        restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction());
     }
 
     @Test(description = "This test case tests the behaviour of APIs that are protected with mutual SSL and OAuth2 "
@@ -566,12 +632,57 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
+    @Test(description = "Validating the security of API resources", dependsOnMethods = {"testInvocationWithRevokedApiKeys"})
+    public void testValidateSecurityOfResources() throws Exception {
+
+        // Validate for security disabled API
+        HttpResponse response = restAPIPublisher.getAPI(apiId4);
+        String retrievedSwagger;
+
+        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
+        List<APIOperationsDTO> operationsList = apidto.getOperations();
+        // Validate the security of resources in API object
+        for (APIOperationsDTO apiOperation : operationsList) {
+            Assert.assertEquals(apiOperation.getAuthType(), "None", "Incorrect auth type");
+        }
+
+        // Verify the security of API in Swagger
+        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId4);
+        List<Object> authTypes = validateResourceSecurity(retrievedSwagger);
+        for (Object authType : authTypes) {
+            Assert.assertEquals(authType, "None", "Incorrect auth type");
+        }
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        HttpResponse invokeResponse =
+                HttpRequestUtil.doGet(getAPIInvocationURLHttps(OauthDisabledAPIContext, API_VERSION_1_0_0) +
+                        API_END_POINT_METHOD, requestHeaders);
+        assertEquals(invokeResponse.getResponseCode(), HttpStatus.SC_OK);
+
+        // Validate for security enabled API
+        HttpResponse response2 = restAPIPublisher.getAPI(apiId5);
+        apidto = new Gson().fromJson(response2.getData(), APIDTO.class);
+        operationsList = apidto.getOperations();
+        for (APIOperationsDTO apiOperation : operationsList) {
+            Assert.assertEquals(apiOperation.getAuthType(), "Application & Application User", "Incorrect auth type");
+        }
+
+        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId5);
+        authTypes = validateResourceSecurity(retrievedSwagger);
+        for (Object authType : authTypes) {
+            Assert.assertEquals(authType, "Application & Application User", "Incorrect auth type");
+        }
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws IOException, AutomationUtilException, ApiException {
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId1);
         restAPIPublisher.deleteAPI(apiId2);
         restAPIPublisher.deleteAPI(apiId3);
+        restAPIPublisher.deleteAPI(apiId4);
+        restAPIPublisher.deleteAPI(apiId5);
     }
 
     public String generateBase64EncodedCertificate() throws IOException {
@@ -581,5 +692,23 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         String base64EncodedString = IOUtils.toString(new FileInputStream(certOne));
         base64EncodedString = Base64.encodeBase64URLSafeString(base64EncodedString.getBytes());
         return base64EncodedString;
+    }
+
+    private List<Object> validateResourceSecurity(String swaggerContent) throws APIManagementException {
+        OpenAPIParser parser = new OpenAPIParser();
+        SwaggerParseResult swaggerParseResult = parser.readContents(swaggerContent, null, null);
+        OpenAPI openAPI = swaggerParseResult.getOpenAPI();
+        Paths paths = openAPI.getPaths();
+        List<Object> authType = new ArrayList<>();
+        for (String pathKey : paths.keySet()) {
+            Map<PathItem.HttpMethod, Operation> operationsMap = paths.get(pathKey).readOperationsMap();
+            for (Map.Entry<PathItem.HttpMethod, Operation> entry : operationsMap.entrySet()) {
+                Operation operation = entry.getValue();
+                Map<String, Object> extensions = operation.getExtensions();
+                Assert.assertNotNull(extensions.get("x-auth-type"));
+                authType.add(extensions.get("x-auth-type"));
+            }
+        }
+        return authType;
     }
 }

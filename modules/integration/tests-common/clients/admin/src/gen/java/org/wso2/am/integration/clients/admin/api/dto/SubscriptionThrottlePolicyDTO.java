@@ -28,6 +28,7 @@ import java.util.List;
 import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
 import org.wso2.am.integration.clients.admin.api.dto.GraphQLQueryDTO;
 import org.wso2.am.integration.clients.admin.api.dto.MonetizationInfoDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyPermissionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottlePolicyDTO;
 
@@ -77,6 +78,9 @@ public class SubscriptionThrottlePolicyDTO {
 
   @SerializedName("billingPlan")
   private String billingPlan = null;
+
+  @SerializedName("permissions")
+  private SubscriptionThrottlePolicyPermissionDTO permissions = null;
 
   public SubscriptionThrottlePolicyDTO policyId(String policyId) {
     this.policyId = policyId;
@@ -338,6 +342,24 @@ public class SubscriptionThrottlePolicyDTO {
     this.billingPlan = billingPlan;
   }
 
+  public SubscriptionThrottlePolicyDTO permissions(SubscriptionThrottlePolicyPermissionDTO permissions) {
+    this.permissions = permissions;
+    return this;
+  }
+
+   /**
+   * Get permissions
+   * @return permissions
+  **/
+  @ApiModelProperty(value = "")
+  public SubscriptionThrottlePolicyPermissionDTO getPermissions() {
+    return permissions;
+  }
+
+  public void setPermissions(SubscriptionThrottlePolicyPermissionDTO permissions) {
+    this.permissions = permissions;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -361,12 +383,13 @@ public class SubscriptionThrottlePolicyDTO {
         Objects.equals(this.rateLimitTimeUnit, subscriptionThrottlePolicy.rateLimitTimeUnit) &&
         Objects.equals(this.customAttributes, subscriptionThrottlePolicy.customAttributes) &&
         Objects.equals(this.stopOnQuotaReach, subscriptionThrottlePolicy.stopOnQuotaReach) &&
-        Objects.equals(this.billingPlan, subscriptionThrottlePolicy.billingPlan);
+        Objects.equals(this.billingPlan, subscriptionThrottlePolicy.billingPlan) &&
+        Objects.equals(this.permissions, subscriptionThrottlePolicy.permissions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(policyId, policyName, displayName, description, isDeployed, graphQLMaxComplexity, graphQLMaxDepth, defaultLimit, monetization, rateLimitCount, rateLimitTimeUnit, customAttributes, stopOnQuotaReach, billingPlan);
+    return Objects.hash(policyId, policyName, displayName, description, isDeployed, graphQLMaxComplexity, graphQLMaxDepth, defaultLimit, monetization, rateLimitCount, rateLimitTimeUnit, customAttributes, stopOnQuotaReach, billingPlan, permissions);
   }
 
 
@@ -389,6 +412,7 @@ public class SubscriptionThrottlePolicyDTO {
     sb.append("    customAttributes: ").append(toIndentedString(customAttributes)).append("\n");
     sb.append("    stopOnQuotaReach: ").append(toIndentedString(stopOnQuotaReach)).append("\n");
     sb.append("    billingPlan: ").append(toIndentedString(billingPlan)).append("\n");
+    sb.append("    permissions: ").append(toIndentedString(permissions)).append("\n");
     sb.append("}");
     return sb.toString();
   }
