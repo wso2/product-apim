@@ -59,9 +59,6 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
             + "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
             + "00000000000000000000000000\"}";
     private String app3Id;
-    private final String INTERNAL_EVERYONE= "Internal/everyone";
-    private List<String> roleList = new ArrayList<>();
-    private SubscriptionThrottlePolicyPermissionDTO permissions;
 
     private static final Log log = LogFactory.getLog(JWTBandwidthThrottlingTestCase.class);
 
@@ -80,7 +77,9 @@ public class JWTBandwidthThrottlingTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-
+        String INTERNAL_EVERYONE= "Internal/everyone";
+        List<String> roleList = new ArrayList<>();
+        SubscriptionThrottlePolicyPermissionDTO permissions;
         BandwidthLimitDTO bandwidthLimit = DtoFactory.createBandwidthLimitDTO("min", 1, 1L, "KB");
         ThrottleLimitDTO defaultLimit =
                 DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.BANDWIDTHLIMIT, null, bandwidthLimit);

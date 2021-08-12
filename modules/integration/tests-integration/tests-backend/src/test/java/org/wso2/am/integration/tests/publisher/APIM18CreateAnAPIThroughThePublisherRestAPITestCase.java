@@ -186,7 +186,6 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
             Assert.assertEquals(e.getCode(), 400);
             Assert.assertTrue(e.getResponseBody().contains("A duplicate API context already exists"));
         }
-
     }
 
     @Test(groups = {"wso2.am"}, description = "Create APIs with archives with master swagger containing remote references")

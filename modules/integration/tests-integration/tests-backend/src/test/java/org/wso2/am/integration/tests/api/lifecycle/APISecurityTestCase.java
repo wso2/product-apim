@@ -88,6 +88,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String mutualSSLandOAuthMandatoryAPIContext = "mutualSSLandOAuthMandatoryAPI";
     private final String OauthDisabledAPIContext = "OauthDisabledAPI";
     private final String OauthEnabledAPIContext = "OauthEnabledAPI";
+    private final String BasicAuthAPI = "BasicAuthAPI";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
@@ -99,6 +100,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private String apiId3;
     private String apiId4;
     private String apiId5;
+    private String apiId6;
 
     @BeforeClass(alwaysRun = true)
     public void initialize()
@@ -257,7 +259,6 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         apiRequest5.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest5.setTags(API_TAGS);
         apiRequest5.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
-
         apiRequest5.setOperationsDTOS(operationsDTOS);
         apiRequest5.setSecurityScheme(securitySchemes4);
         apiRequest5.setDefault_version("true");
@@ -268,7 +269,27 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response5 = restAPIPublisher.addAPI(apiRequest5);
         apiId5 = response5.getData();
 
+        APIRequest apiRequest6 = new APIRequest(BasicAuthAPI, BasicAuthAPI,
+                new URL(apiEndPointUrl));
+        apiRequest6.setVersion(API_VERSION_1_0_0);
+        apiRequest6.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest6.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest6.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest6.setOperationsDTOS(operationsDTOS);
+
+        List<String> securitySchemes6 = new ArrayList<>();
+        securitySchemes6.add("basic_auth");
+        securitySchemes6.add("oauth_basic_auth_api_key_mandatory");
+        apiRequest6.setSecurityScheme(securitySchemes6);
+        apiRequest6.setDefault_version("true");
+        apiRequest6.setHttps_checked("https");
+        apiRequest6.setHttp_checked(null);
+        apiRequest6.setDefault_version_checked("true");
+        HttpResponse response6 = restAPIPublisher.addAPI(apiRequest6);
+        apiId6 = response6.getData();
+
         restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction());
+        restAPIPublisher.changeAPILifeCycleStatus(apiId6, APILifeCycleAction.PUBLISH.getAction());
     }
 
     @Test(description = "This test case tests the behaviour of APIs that are protected with mutual SSL and OAuth2 "
@@ -675,6 +696,20 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
+    @Test(description = "Invoking Basic Auth API", dependsOnMethods = {"testValidateSecurityOfResources"})
+    public void testInvocationBasicAuthAPI() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        String colonSeparatedHeader = user.getUserName() + ":" + user.getPassword();
+        String authorizationHeader = new String(Base64.encodeBase64(colonSeparatedHeader.getBytes()));
+        requestHeaders.put("Authorization", "Basic " + authorizationHeader);
+
+        HttpResponse invokeResponse =
+                HttpRequestUtil.doGet(getAPIInvocationURLHttps(BasicAuthAPI, API_VERSION_1_0_0) +
+                        API_END_POINT_METHOD, requestHeaders);
+        assertEquals(invokeResponse.getResponseCode(), HttpStatus.SC_OK);
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws IOException, AutomationUtilException, ApiException {
         restAPIStore.deleteApplication(applicationId);
@@ -683,6 +718,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId3);
         restAPIPublisher.deleteAPI(apiId4);
         restAPIPublisher.deleteAPI(apiId5);
+        restAPIPublisher.deleteAPI(apiId6);
     }
 
     public String generateBase64EncodedCertificate() throws IOException {
