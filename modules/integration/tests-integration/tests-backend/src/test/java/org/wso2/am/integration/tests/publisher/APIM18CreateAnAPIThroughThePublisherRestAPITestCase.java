@@ -20,6 +20,10 @@
 
 package org.wso2.am.integration.tests.publisher;
 
+import io.swagger.parser.OpenAPIParser;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +50,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -184,6 +189,76 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
 
     }
 
+    @Test(groups = {"wso2.am"}, description = "Create APIs with archives with master swagger containing remote references")
+    public void testCreateApiWithArchivesWithRemoteReferences() throws Exception {
+        String swaggerPath = getAMResourceLocation() + File.separator + "swagger" + File.separator +
+                "swagger-archive.zip";
+        File definition = new File(swaggerPath);
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", "test");
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.SILVER);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", "TestAPIWithRemoteReferences");
+        apiProperties.put("context", "/TestAPIWithRemoteReferences");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", user.getUserName());
+        apiProperties.put("endpointConfig", endpointConfig);
+        apiProperties.put("policies", tierList);
+
+        ApiResponse<APIDTO> apidtoResponse = restAPIPublisher.
+                importOASDefinitionResponse(definition, apiProperties.toString());
+        Assert.assertEquals(HttpStatus.SC_CREATED, apidtoResponse.getStatusCode());
+        apiId = apidtoResponse.getData().getId();
+
+        String retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId);
+
+        validateRemoteReference(retrievedSwagger);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Create APIs with archives with a random master swagger file name")
+    public void testCreateApiWithArchivesWithRemoteReferencesWithIncorrectSwagger() throws Exception {
+
+        String swaggerPath = getAMResourceLocation() + File.separator + "swagger" + File.separator +
+                "incorrect-swagger-archive.zip";
+        File definition = new File(swaggerPath);
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", "test");
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.SILVER);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", "TestAPIWithRemoteReferencesWithIncorrectSwaggerName");
+        apiProperties.put("context", "/TestAPIWithRemoteReferencesWithIncorrectSwaggerName");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", user.getUserName());
+        apiProperties.put("endpointConfig", endpointConfig);
+        apiProperties.put("policies", tierList);
+
+        try {
+            restAPIPublisher.importOASDefinitionResponse(definition, apiProperties.toString());
+            Assert.fail("API imported successfully with invalid swagger name");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), 500);
+            Assert.assertTrue(e.getResponseBody().contains("validating API Definition"));
+        }
+    }
+
     private JSONObject getAPIDetails(String apiName) throws JSONException {
 
         JSONObject endpoints = new JSONObject();
@@ -205,8 +280,23 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
 
     }
 
+    private void validateRemoteReference(String swaggerContent) {
+        OpenAPIParser parser = new OpenAPIParser();
+        SwaggerParseResult swaggerParseResult = parser.readContents(swaggerContent, null, null);
+        OpenAPI openAPI = swaggerParseResult.getOpenAPI();
+        boolean isRemoteReferenceAvailable = false;
+        Map<String, Schema> schemas = openAPI.getComponents().getSchemas();
+        for (Map.Entry<String, Schema> schema : schemas.entrySet()) {
+            if (schema.getKey().equalsIgnoreCase("dataSetList")) {
+                isRemoteReferenceAvailable = true;
+            }
+        }
+        Assert.assertTrue(isRemoteReferenceAvailable, "Remote reference is not available in the schema list");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
+        restAPIPublisher.deleteAPIByID(apiId);
         super.cleanUp();
     }
 
