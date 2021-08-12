@@ -58,4 +58,34 @@ public class IdentityProviderMgtClient {
 
         identityProviderMgtServiceStub.deleteIdP(idpName);
     }
+
+    /**
+     * Retrieves Identity provider information about a given tenant by Identity Provider name
+     *
+     * @param idPName Unique name of the Identity provider of whose information is requested
+     * @return <code>FederatedIdentityProvider</code> Identity Provider information
+     * @throws Exception Error when getting Identity Provider information by IdP name
+     */
+    public IdentityProvider getIdPByName(String idPName) throws Exception {
+        try {
+            return identityProviderMgtServiceStub.getIdPByName(idPName);
+        } catch (Exception e) {
+            throw new Exception("Error occurred while retrieving information about " + idPName);
+        }
+    }
+
+    /**
+     * Updates a given Identity Provider information
+     *
+     * @param oldIdPName existing IdP name
+     * @param identityProvider <code>FederatedIdentityProvider</code> new IdP information
+     * @throws Exception Error when updating Identity Provider information
+     */
+    public void updateIdP(String oldIdPName, IdentityProvider identityProvider) throws Exception {
+        try {
+            identityProviderMgtServiceStub.updateIdP(oldIdPName, identityProvider);
+        } catch (Exception e) {
+            throw new Exception("Error occurred while deleting Identity Provider " + oldIdPName);
+        }
+    }
 }

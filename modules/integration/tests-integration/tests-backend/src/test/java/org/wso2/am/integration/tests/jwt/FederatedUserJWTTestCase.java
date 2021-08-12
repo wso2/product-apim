@@ -223,7 +223,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         String generatedJWT =
                 JWTGeneratorUtil
                         .generatedJWT(keyStoreFile, "idptest", "idptest", "wso2carbon", "wso2carbon", "userexternal",
-                                "https://localhost.idp.com", attributes);
+                                "https://localhost.idp.com", System.currentTimeMillis(), attributes);
         JSONObject token = new JSONObject();
         token.put("access_token", UUID.randomUUID().toString());
         token.put("refresh_token", UUID.randomUUID().toString());

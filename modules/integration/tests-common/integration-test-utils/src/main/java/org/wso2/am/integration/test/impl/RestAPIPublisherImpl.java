@@ -845,6 +845,17 @@ public class RestAPIPublisherImpl {
     }
 
     /***
+     * Remove a shared scope
+     *
+     * @param id id of the scope to delete
+     * @throws ApiException
+     */
+    public void removeSharedScope(String id) throws ApiException {
+        ApiResponse<Void> httpInfo = sharedScopesApi.deleteSharedScopeWithHttpInfo(id);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    /***
      * Update a shared scopes
      *
      * @param uuid
