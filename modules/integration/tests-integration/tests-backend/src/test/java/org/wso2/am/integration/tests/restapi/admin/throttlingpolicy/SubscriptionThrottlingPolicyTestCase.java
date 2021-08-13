@@ -309,5 +309,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIAdmin.deleteSubscriptionThrottlingPolicy(bandwidthPolicyDTO.getPolicyId());
+        restAPIStore.deleteApplication(appId);
+        restAPIPublisher.deleteAPIByID(apiId);
     }
 }
