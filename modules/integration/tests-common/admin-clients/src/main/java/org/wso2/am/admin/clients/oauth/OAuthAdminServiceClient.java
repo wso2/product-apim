@@ -71,4 +71,12 @@ public class OAuthAdminServiceClient {
         return oAuthAdminServiceStub.getOAuthApplicationData(consumerKey);
     }
 
+    public void registerOAuthApplicationData(OAuthConsumerAppDTO application) throws RemoteException, OAuthAdminServiceIdentityOAuthAdminException {
+        oAuthAdminServiceStub.registerOAuthApplicationData(application);
+    }
+
+    public OAuthConsumerAppDTO getOAuthAppByName(String applicationName) throws Exception {
+        return oAuthAdminServiceStub.getOAuthApplicationDataByAppName(applicationName);
+    }
+
 }
