@@ -192,7 +192,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             JSONObject jsonObject = new JSONObject(decodedJWTString);
             log.info("JWT Received ==" + jsonObject.toString());
             // check default claims
-            checkDefaultUserClaims(jsonObject, oauthApplicationName);
+            checkDefaultUserClaims(jsonObject, oauthApplicationName, endUser);
             // check user profile info claims
             String claim = jsonObject.getString("http://wso2.org/claims/givenname");
             assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name".concat(endUser)));
@@ -258,7 +258,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             JSONObject jsonObject = new JSONObject(decodedJWTString);
 
             // check default claims
-            checkDefaultUserClaims(jsonObject, jwtApplicationName);
+            checkDefaultUserClaims(jsonObject, jwtApplicationName, endUser);
             // check user profile info claims
             log.info("JWT Received ==" + jsonObject.toString());
             String claim = jsonObject.getString("http://wso2.org/claims/givenname");
@@ -328,7 +328,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
         // check default claims
-        checkDefaultUserClaims(jsonObject, apiKeyApplicationName);
+        checkDefaultUserClaims(jsonObject, apiKeyApplicationName, user.getUserName());
         // check API details
         log.info("JWT Received ==" + jsonObject.toString());
         String claim = jsonObject.getString("http://wso2.org/claims/apiname");
@@ -362,10 +362,14 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
 
     }
 
-    private void checkDefaultUserClaims(JSONObject jsonObject, String applicationName) throws JSONException {
+    private void checkDefaultUserClaims(JSONObject jsonObject, String applicationName, String endUser)
+            throws JSONException {
 
         String claim = jsonObject.getString("iss");
         assertTrue("JWT assertion is invalid", claim.contains("wso2.org/products/am"));
+        
+        claim = jsonObject.getString("sub");
+        assertTrue("JWT assertion is invalid", endUser.contains(claim)); // since sub is tenant aware name
 
         claim = jsonObject.getString("http://wso2.org/claims/subscriber");
         assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains(user.getUserName()));
