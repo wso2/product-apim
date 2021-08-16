@@ -216,35 +216,6 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         });
     }
 
-//    @Test(groups = {"wso2.am"}, description = "Invocation of default API",
-//            dependsOnMethods = {"testValidateCreatedResources"})
-    public void testDefaultAPIInvocation() throws Exception {
-
-        apidto.setIsDefaultVersion(true);
-        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto, soapToRestAPIId);
-        waitForAPIDeployment();
-
-        String soapToRestAppName = "PhoneVerificationDefaultApp";
-        testAppId1 = createSoapToRestAppAndSubscribeToAPI(soapToRestAppName, "OAUTH", soapToRestAPIId);
-
-        // Generate token
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore
-                .generateKeys(testAppId1, "36000", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
-                        grantTypes);
-
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT) + resourceName;
-
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-        requestHeaders.put("Content-Type", "application/json");
-        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, payload);
-
-        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
-    }
-
     @Test(groups = {"wso2.am"}, description = "API invocation using JWT App")
     public void testInvokeSoapToRestAPIUsingJWTApplication() throws Exception {
         String graphqlJwtAppName = "PhoneVerificationJWTApp";
