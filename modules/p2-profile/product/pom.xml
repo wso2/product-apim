@@ -678,6 +678,9 @@
                                 <featureArtifactDef>
                                     org.wso2.am.analytics.publisher:org.wso2.am.analytics.publisher.client.feature:${apim.analytics.publisher.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.eventing.hub.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -698,6 +701,7 @@
                             <artifactRepository>file:${basedir}/target/p2-repo</artifactRepository>
                         </configuration>
                     </execution>
+
                     <execution>
                         <id>creating-gateway-worker-profile</id>
                         <phase>package</phase>
@@ -799,6 +803,8 @@
                             <profile>control-plane</profile>
                         </configuration>
                     </execution>
+
+                    <!--Start default profile-->
                     <execution>
                         <id>3-p2-profile-generation</id>
                         <phase>package</phase>
@@ -1485,13 +1491,15 @@
                                     <id>org.wso2.am.analytics.publisher.client.feature.group</id>
                                     <version>${apim.analytics.publisher.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
-
                     <!--End of default profile-->
 
-                    <!--Start Control plane profile-->
                     <!--Start Control plane profile-->
                     <execution>
                         <id>4-p2-profile-generation</id>
@@ -2175,10 +2183,13 @@
                                     <id>org.wso2.am.analytics.publisher.client.feature.group</id>
                                     <version>${apim.analytics.publisher.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
-
                     <!--End of control plane profile-->
 
                     <!--Start of gateway worker profile-->
@@ -3148,6 +3159,10 @@
                                     <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -3546,7 +3561,7 @@
                                     <id>org.wso2.carbon.metrics.server.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
-				            <feature>
+				                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -3648,11 +3663,14 @@
                                     <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
                     <!--End of api publisher profile-->
-
 
                     <!--Start of api key manager profile-->
                     <execution>
