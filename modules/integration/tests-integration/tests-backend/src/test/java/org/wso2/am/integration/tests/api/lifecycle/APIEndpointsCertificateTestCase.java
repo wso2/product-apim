@@ -172,23 +172,6 @@ public class APIEndpointsCertificateTestCase extends APIManagerLifecycleBaseTest
 
     @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
             "testUploadEndpointCertificate"})
-    public void testUploadSameEndpointCertificateInSameAlias() {
-
-        String cert = getAMResourceLocation() + File.separator + "endpointCertificate" + File.separator + "endpoint" +
-                ".cer";
-        File file = new File(cert);
-        try {
-            ApiResponse<CertMetadataDTO> httpResponse = restAPIPublisher.uploadEndpointCertificate(file, "endpoint-1",
-                    "https://localhost" +
-                            ":" + securedEndpointPort);
-            Assert.fail("Certificate insert twice  with same detail");
-        } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), 409);
-        }
-    }
-
-    @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
-            "testUploadEndpointCertificate"})
     public void testUploadExpiredCert() {
 
         String cert = getAMResourceLocation() + File.separator + "endpointCertificate" + File.separator + "expired.cer";
@@ -199,12 +182,28 @@ public class APIEndpointsCertificateTestCase extends APIManagerLifecycleBaseTest
             Assert.fail("Expired Certificate insert ");
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), 400);
-            Assert.assertTrue(e.getResponseBody().contains("Error while adding the certificate. Certificate Expired."), e.getResponseBody());
+            Assert.assertTrue(e.getResponseBody().contains("Error while adding the certificate. Certificate Expired."),
+                    e.getResponseBody());
         }
     }
 
     @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
             "testUploadEndpointCertificate"})
+    public void testUploadSameEndpointCertificateInSameAlias() {
+
+        String cert = getAMResourceLocation() + File.separator + "endpointCertificate" + File.separator + "endpoint.cer";
+        File file = new File(cert);
+        try {
+            ApiResponse<CertMetadataDTO> httpResponse = restAPIPublisher.uploadEndpointCertificate(file, "endpoint-1",
+                    "https://localhost" + ":" + securedEndpointPort);
+            Assert.fail("Certificate insert twice  with same detail");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), 409);
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
+            "testUploadSameEndpointCertificateInSameAlias"})
     public void testSearchEndpointCertificates() throws ApiException, ParseException {
 
         String endpoint = "https://localhost" + ":" + securedEndpointPort;

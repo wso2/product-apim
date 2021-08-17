@@ -173,8 +173,9 @@ public class RestAPIPublisherImpl {
         apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
         sharedScopesApi.setApiClient(apiPublisherClient);
-        settingsApi.setApiClient(apiPublisherClient);
         globalMediationPoliciesApi.setApiClient(apiPublisherClient);
+        settingsApi.setApiClient(apiPublisherClient);
+        endpointCertificatesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
