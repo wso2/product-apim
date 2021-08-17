@@ -20,6 +20,11 @@
 
 package org.wso2.am.integration.test.utils.http;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.BufferedReader;
@@ -276,54 +281,25 @@ public class HttpRequestUtil {
     }
 
     public static HttpResponse doGet(String endpoint, Map<String, String> headers) throws IOException {
-        HttpResponse httpResponse;
-        if (endpoint.startsWith("http://")) {
-            URL url = new URL(endpoint);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setDoOutput(true);
-            conn.setReadTimeout(30000);
-            //setting headers
-            if (headers != null && headers.size() > 0) {
-                Iterator<String> itr = headers.keySet().iterator();
-                while (itr.hasNext()) {
-                    String key = itr.next();
-                    if (key != null) {
-                        conn.setRequestProperty(key, headers.get(key));
-                    }
-                }
-                for (String key : headers.keySet()) {
-                    conn.setRequestProperty(key, headers.get(key));
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpGet httpGet = new HttpGet(endpoint);
+        //setting headers
+        if (headers != null && headers.size() > 0) {
+            for (String key : headers.keySet()) {
+                if (key != null) {
+                    httpGet.addHeader(key, headers.get(key));
                 }
             }
-            conn.connect();
-            // Get the response
-            StringBuilder sb = new StringBuilder();
-            BufferedReader rd = null;
-            try {
-                rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    sb.append(line);
-                }
-                httpResponse = new HttpResponse(sb.toString(), conn.getResponseCode());
-                httpResponse.setResponseMessage(conn.getResponseMessage());
-            } catch (IOException ignored) {
-                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    sb.append(line);
-                }
-                httpResponse = new HttpResponse(sb.toString(), conn.getResponseCode());
-                httpResponse.setResponseMessage(conn.getResponseMessage());
-            } finally {
-                if (rd != null) {
-                    rd.close();
-                }
-            }
-            return httpResponse;
         }
-        return null;
+        org.apache.http.HttpResponse httpResponse = httpClient.execute(httpGet);
+        try (InputStream content = httpResponse.getEntity().getContent()) {
+            Map<String, String> responseHeaders = new HashMap<>();
+            for (Header header : httpResponse.getAllHeaders()) {
+                responseHeaders.put(header.getName(), header.getValue());
+            }
+            return new HttpResponse(IOUtils.toString(content), httpResponse.getStatusLine().getStatusCode(),
+                    responseHeaders);
+        }
     }
 
     /**
