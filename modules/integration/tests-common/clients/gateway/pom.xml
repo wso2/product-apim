@@ -49,6 +49,7 @@
                             <output>.</output>
                             <skipOverwrite>false</skipOverwrite>
                             <modelNameSuffix>DTO</modelNameSuffix>
+                            <generateModelDocumentation>false</generateModelDocumentation>
                         </configuration>
                     </execution>
                 </executions>
