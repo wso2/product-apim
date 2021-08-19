@@ -18,16 +18,23 @@
  */
 package org.wso2.am.integration.tests.other;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -38,6 +45,9 @@ import javax.ws.rs.core.Response;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 import static org.testng.Assert.assertEquals;
@@ -65,12 +75,17 @@ import static org.testng.Assert.assertEquals;
     private String userName;
     private String password;
     private String tenantDomain;
+    private String apiId1;
+    private String apiId2;
+    private String apiId3;
+    private String applicationId;
     private final String KEYSTORE_FILE_PATH_CLIENT =
             TestConfigurationProvider.getResourceLocation() + File.separator + "keystores" + File.separator + "products"
                     + File.separator + "wso2carbon.jks";
     private final String TRUSTSTORE_FILE_PATH_CLIENT =
             TestConfigurationProvider.getResourceLocation() + File.separator + "keystores" + File.separator + "products"
                     + File.separator + "client-truststore.jks";
+    private ApplicationKeyDTO applicationKeyDTO;
 
     @BeforeClass(alwaysRun = true) public void setEnvironment() throws Exception {
         log.info("WSDLImportTestCase  Initiated");
@@ -181,9 +196,195 @@ import static org.testng.Assert.assertEquals;
         assertEquals(Response.Status.OK.getStatusCode(), zipFlowResponse.getStatusCode());
     }
 
-    @AfterClass(alwaysRun = true) void destroy() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Importing WSDL API definition and create API",
+            dependsOnMethods = "testDownloadWsdlDefinitionsFromStore" )
+    public void testCreateSOAPAPIFromFile() throws Exception {
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", "http://ws.cdyne.com/phoneverify/phoneverify.asmx");
+
+        ArrayList<String> environment = new ArrayList<String>();
+        environment.add("Production and Sandbox");
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", "PhoneVerification");
+        apiProperties.put("context", "phoneverify");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", user.getUserName());
+        apiProperties.put("endpointConfig", endpointConfig);
+        apiProperties.put("gatewayEnvironments", environment);
+        apiProperties.put("policies", tierList);
+
+        String wsdlDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl" + File.separator + "PhoneVerification.wsdl";
+
+        File file = new File(wsdlDefinitionPath);
+        APIDTO apidto = restAPIPublisher
+                .importWSDLSchemaDefinition(file, backendEndUrl, apiProperties.toString(), "SOAP");
+
+        //Make sure API is created properly
+        assertEquals(apidto.getName(), "PhoneVerification");
+        apiId1 = apidto.getId();
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId1);
+        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode());
+
+        restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction());
+
+        HttpResponse applicationResponse = restAPIStore.createApplication("TestApp",
+                "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.JWT);
+        applicationId = applicationResponse.getData();
+
+        restAPIStore.subscribeToAPI(apiId1, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        Assert.assertNotNull("Access Token not found ", accessToken);
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Content-Type", "text/xml");
+        requestHeaders.put("accept", "application/json");
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        String invokeURL = getAPIInvocationURLHttp("phoneverify", API_VERSION);
+        String requestBody = "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"> <soap:Body> <CheckPhoneNumber xmlns=\"http://ws.cdyne.com/PhoneVerify/query\"> <PhoneNumber>077383968</PhoneNumber> <LicenseKey>123</LicenseKey> </CheckPhoneNumber> </soap:Body></soap:Envelope>";
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, requestBody);
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "API invocation failed");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Importing WSDL archive and create API",
+            dependsOnMethods = "testCreateSOAPAPIFromFile")
+    public void testCreateSOAPAPIFromArchive() throws Exception {
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", "http://ws.cdyne.com/phoneverify/phoneverify.asmx");
+
+        ArrayList<String> environment = new ArrayList<String>();
+        environment.add("Production and Sandbox");
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", "PhoneVerificationArchive");
+        apiProperties.put("context", "phoneverifyarchive");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", user.getUserName());
+        apiProperties.put("endpointConfig", endpointConfig);
+        apiProperties.put("gatewayEnvironments", environment);
+        apiProperties.put("policies", tierList);
+
+        String wsdlDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl" + File.separator + "PhoneVerification.zip";
+
+        File file = new File(wsdlDefinitionPath);
+        APIDTO apidto = restAPIPublisher
+                .importWSDLSchemaDefinition(file, backendEndUrl, apiProperties.toString(), "SOAP");
+
+        //Make sure API is created properly
+        assertEquals(apidto.getName(), "PhoneVerificationArchive");
+        apiId2 = apidto.getId();
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId2);
+        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode());
+
+        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction());
+        restAPIStore.subscribeToAPI(apiId2, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        Assert.assertNotNull("Access Token not found ", accessToken);
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Content-Type", "text/xml");
+        requestHeaders.put("accept", "application/json");
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        String invokeURL = getAPIInvocationURLHttp("phoneverifyarchive", API_VERSION);
+        String requestBody = "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"> <soap:Body> <CheckPhoneNumber xmlns=\"http://ws.cdyne.com/PhoneVerify/query\"> <PhoneNumber>077383968</PhoneNumber> <LicenseKey>123</LicenseKey> </CheckPhoneNumber> </soap:Body></soap:Envelope>";
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, requestBody);
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "API invocation failed");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Creating SOAP API from URL",
+            dependsOnMethods = "testCreateSOAPAPIFromArchive")
+    public void testCreateSOAPAPIFromURL() throws Exception {
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", "http://ws.cdyne.com/phoneverify/phoneverify.asmx");
+
+        ArrayList<String> environment = new ArrayList<String>();
+        environment.add("Production and Sandbox");
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", "PhoneVerificationURL");
+        apiProperties.put("context", "phoneverifyurl123");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", user.getUserName());
+        apiProperties.put("endpointConfig", endpointConfig);
+        apiProperties.put("gatewayEnvironments", environment);
+        apiProperties.put("policies", tierList);
+
+        APIDTO apidto = restAPIPublisher
+                .importWSDLSchemaDefinition(null,
+                        "http://ws.cdyne.com/phoneverify/phoneverify.asmx?wsdl", apiProperties.toString(), "SOAP");
+
+        //Make sure API is created properly
+        assertEquals(apidto.getName(), "PhoneVerificationURL");
+        apiId3 = apidto.getId();
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId3);
+        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode());
+
+        restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction());
+        restAPIStore.subscribeToAPI(apiId3, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        Assert.assertNotNull("Access Token not found ", accessToken);
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Content-Type", "text/xml");
+        requestHeaders.put("accept", "application/json");
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        String invokeURL = getAPIInvocationURLHttp("phoneverifyurl123", API_VERSION);
+        String requestBody = "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"> <soap:Body> <CheckPhoneNumber xmlns=\"http://ws.cdyne.com/PhoneVerify/query\"> <PhoneNumber>077383968</PhoneNumber> <LicenseKey>123</LicenseKey> </CheckPhoneNumber> </soap:Body></soap:Envelope>";
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, requestBody);
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "API invocation failed");
+    }
+
+    @AfterClass(alwaysRun = true)
+    void destroy() throws Exception {
         restAPIPublisher.deleteAPI(importApiId);
         restAPIPublisher.deleteAPI(importZipApiId);
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPIByID(apiId1);
+        restAPIPublisher.deleteAPIByID(apiId2);
+        restAPIPublisher.deleteAPIByID(apiId3);
     }
 
 }

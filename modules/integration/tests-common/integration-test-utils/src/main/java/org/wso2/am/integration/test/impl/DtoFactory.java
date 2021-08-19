@@ -29,6 +29,7 @@ import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.QueryParameterConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyPermissionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
@@ -128,6 +129,21 @@ public class DtoFactory {
     }
 
     /**
+     * Creates a subscription throttling permission DTO using the given parameters.
+     *
+     * @param permissionType   Permission type.
+     * @param roles   Roles.
+     * @return Created subscription throttle policy DTO.
+     */
+    public static SubscriptionThrottlePolicyPermissionDTO createSubscriptionThrottlePolicyPermissionDTO(
+            SubscriptionThrottlePolicyPermissionDTO.PermissionTypeEnum permissionType, List<String> roles) {
+
+        return new SubscriptionThrottlePolicyPermissionDTO().
+                permissionType(permissionType).
+                roles(roles);
+    }
+
+    /**
      * Creates a subscription throttling policy DTO using the given parameters.
      *
      * @param policyName           Name of the policy.
@@ -145,9 +161,10 @@ public class DtoFactory {
      * @return Created subscription throttling policy DTO.
      */
     public static SubscriptionThrottlePolicyDTO createSubscriptionThrottlePolicyDTO(String policyName,
-            String displayName, String description, boolean isDeployed, ThrottleLimitDTO defaultLimit,
-            int graphQLMaxComplexity, int graphQLMaxDepth, int rateLimitCount, String rateLimitTimeUnit,
-            List<CustomAttributeDTO> customAttributes, boolean stopQuotaOnReach, String billingPlan) {
+                 String displayName, String description, boolean isDeployed, ThrottleLimitDTO defaultLimit,
+                 int graphQLMaxComplexity, int graphQLMaxDepth, int rateLimitCount, String rateLimitTimeUnit,
+                 List<CustomAttributeDTO> customAttributes, boolean stopQuotaOnReach, String billingPlan,
+                 SubscriptionThrottlePolicyPermissionDTO permissions) {
 
         return new SubscriptionThrottlePolicyDTO().
                 policyName(policyName).
@@ -161,7 +178,8 @@ public class DtoFactory {
                 rateLimitTimeUnit(rateLimitTimeUnit).
                 customAttributes(customAttributes).
                 stopOnQuotaReach(stopQuotaOnReach).
-                billingPlan(billingPlan);
+                billingPlan(billingPlan).
+                permissions(permissions);
     }
 
     /**
