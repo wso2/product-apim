@@ -16,25 +16,34 @@
 
 package org.wso2.am.integration.test.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.clients.gateway.api.ApiClient;
 import org.wso2.am.integration.clients.gateway.api.ApiException;
-import org.wso2.am.integration.clients.gateway.api.v1.ReDeployApiApi;
 import org.wso2.am.integration.clients.gateway.api.v1.GetApiArtifactsApi;
+import org.wso2.am.integration.clients.gateway.api.v1.GetApiInfoApi;
+import org.wso2.am.integration.clients.gateway.api.v1.GetApplicationInfoApi;
+import org.wso2.am.integration.clients.gateway.api.v1.GetSubscriptionInfoApi;
+import org.wso2.am.integration.clients.gateway.api.v1.ReDeployApiApi;
 import org.wso2.am.integration.clients.gateway.api.v1.UndeployApiApi;
 import org.wso2.am.integration.clients.gateway.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.gateway.api.v1.dto.EndpointsDTO;
 import org.wso2.am.integration.clients.gateway.api.v1.dto.LocalEntryDTO;
 import org.wso2.am.integration.clients.gateway.api.v1.dto.SequencesDTO;
+import org.wso2.am.integration.clients.gateway.api.v1.dto.SubscriptionDTO;
 
-import javax.xml.bind.DatatypeConverter;
 import java.nio.charset.StandardCharsets;
+import javax.xml.bind.DatatypeConverter;
 
 public class RestAPIGatewayImpl {
+    private static final Log log = LogFactory.getLog(RestAPIGatewayImpl.class);
     private String tenantDomain = null;
     GetApiArtifactsApi getApiArtifactsApi = new GetApiArtifactsApi();
     ReDeployApiApi reDeployApiApi = new ReDeployApiApi();
     UndeployApiApi undeployApiApi = new UndeployApiApi();
-
+    GetApiInfoApi getApiInfoApi = new GetApiInfoApi();
+    GetApplicationInfoApi applicationInfoApi = new GetApplicationInfoApi();
+    GetSubscriptionInfoApi subscriptionInfoApi = new GetSubscriptionInfoApi();
     public RestAPIGatewayImpl(String username, String password, String tenantDomain) {
         ApiClient apiClient = new ApiClient();
         String basicEncoded =
@@ -48,6 +57,9 @@ public class RestAPIGatewayImpl {
         getApiArtifactsApi.setApiClient(apiClient);
         reDeployApiApi.setApiClient(apiClient);
         undeployApiApi.setApiClient(apiClient);
+        getApiInfoApi.setApiClient(apiClient);
+        applicationInfoApi.setApiClient(apiClient);
+        subscriptionInfoApi.setApiClient(apiClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -65,5 +77,15 @@ public class RestAPIGatewayImpl {
 
     public SequencesDTO retrieveSequences(String name, String version) throws ApiException {
         return getApiArtifactsApi.sequenceGet(name, version, tenantDomain);
+    }
+
+    public SubscriptionDTO retrieveSubscription(String apiId, String applicationId)  {
+
+        try {
+            return subscriptionInfoApi.subscriptionsGet(apiId, applicationId, tenantDomain);
+        } catch (ApiException e) {
+            log.error("Error while retrieving subscriptions for API " + apiId + " and Application " + applicationId, e);
+            return null;
+        }
     }
 }

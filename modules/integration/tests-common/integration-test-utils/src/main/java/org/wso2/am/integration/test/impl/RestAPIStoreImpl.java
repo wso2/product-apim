@@ -19,6 +19,8 @@ package org.wso2.am.integration.test.impl;
 import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
@@ -76,6 +78,8 @@ import javax.xml.xpath.XPathExpressionException;
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIStoreImpl {
+
+    private static final Log log = LogFactory.getLog(RestAPIStoreImpl.class);
     public ApIsApi apIsApi = new ApIsApi();
     public ApplicationsApi applicationsApi = new ApplicationsApi();
     public SubscriptionsApi subscriptionIndividualApi = new SubscriptionsApi();
@@ -99,12 +103,7 @@ public class RestAPIStoreImpl {
     public static final String password = "admin";
     public String storeURL;
     public String tenantDomain;
-
-    @Deprecated
-    public RestAPIStoreImpl() {
-        this(username, password, "", "https://localhost:9943");
-    }
-
+    private RestAPIGatewayImpl restAPIGateway;
     public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
@@ -137,6 +136,7 @@ public class RestAPIStoreImpl {
         apiStoreClient.setDebugging(true);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
+        this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
 
 
@@ -323,6 +323,7 @@ public class RestAPIStoreImpl {
             if (StringUtils.isNotEmpty(subscriptionResponse.getSubscriptionId())) {
                 response = new HttpResponse(subscriptionResponse.getSubscriptionId(), 200);
             }
+            waitUntilSubscriptionAvailableInGateway(subscriptionResponse);
             return response;
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
@@ -330,6 +331,35 @@ public class RestAPIStoreImpl {
             }
         }
         return null;
+    }
+
+    private void waitUntilSubscriptionAvailableInGateway(SubscriptionDTO subscribedDto) {
+
+        org.wso2.am.integration.clients.gateway.api.v1.dto.SubscriptionDTO subscriptionDTO =
+                restAPIGateway.retrieveSubscription(subscribedDto.getApiId(), subscribedDto.getApplicationId());
+        if (subscriptionDTO != null) {
+            log.info("Subscription Available in in memory == " + subscriptionDTO.toString());
+
+            if (subscribedDto.getStatus().getValue().equals(subscriptionDTO.getSubscriptionState())) {
+                return;
+            }
+        }
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + 6000;
+        while (waitTime > System.currentTimeMillis()) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
+            subscriptionDTO =
+                    restAPIGateway.retrieveSubscription(subscribedDto.getApiId(), subscribedDto.getApplicationId());
+            if (subscriptionDTO != null) {
+                log.info("Subscription Available in in memory== " + subscriptionDTO.toString());
+                if (subscribedDto.getStatus().getValue().equals(subscriptionDTO.getSubscriptionState())) {
+                    break;
+                }
+            }
+        }
     }
 
     public SubscriptionListDTO getSubscription(String apiId, String applicationId, String apiType, String groupId)
@@ -574,54 +604,6 @@ public class RestAPIStoreImpl {
     }
 
     /**
-     * Get application details by given name
-     *
-     * @param applicationName - application name
-     * @return - http response of get application request
-     * @throws APIManagerIntegrationTestException - throws if get application by name fails
-     */
-    public HttpResponse getPublishedAPIsByApplication(String applicationName)
-            throws APIManagerIntegrationTestException {
-//        try {
-//
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/subscription/subscription-list/ajax/" +
-//                            "subscription-list.jag?action=getSubscriptionByApplication&app=" +
-//                            applicationName, requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve the application -  " + applicationName
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
-
-    }
-
-    /**
-     * Get application details by given name
-     *
-     * @param applicationName - application name
-     * @return - http response of get application request
-     * @throws APIManagerIntegrationTestException - throws if get application by name fails
-     */
-    public HttpResponse getPublishedAPIsByApplicationId(String applicationName, int applicationId)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/subscription/subscription-list/ajax/" +
-//                            "subscription-list.jag?action=getSubscriptionForApplicationById&app=" +
-//                            applicationName + "&appId=" + applicationId, requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve the application -  " + applicationName
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
-
-    /**
      * Add rating into api
      *
      * @param apiId        - api Id
@@ -663,122 +645,6 @@ public class RestAPIStoreImpl {
     }
 
     /**
-     * Remove rating of given API
-     *
-     * @param apiName  - name of api
-     * @param version  - api version
-     * @param provider - provider of api
-     * @return - http response of remove rating request
-     * @throws APIManagerIntegrationTestException - Throws if remove API rating fails
-     */
-    public HttpResponse removeRatingFromAPI(String apiName, String version, String provider)
-            throws APIManagerIntegrationTestException {
-//        try {
-//
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
-//                            "action=removeRating&name=" + apiName + "&version=" + version +
-//                            "&provider=" + provider, requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to remove rating of API -  " + apiName
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
-
-    /**
-     * Check if API rating activated
-     *
-     * @return - http response of rating activated request
-     * @throws APIManagerIntegrationTestException - Throws if rating status cannot be retrieved
-     */
-    public HttpResponse isRatingActivated() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
-//                            "action=isRatingActivated", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Rating status cannot be retrieved."
-//                    + " Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
-
-    /**
-     * Method to retrieve all documents of given api
-     *
-     * @param apiName  - name of api
-     * @param version  - api version
-     * @param provider - provider of api
-     * @return - http response of get all documentation of APIs
-     * @throws APIManagerIntegrationTestException - throws if retrieval of API documentation fails
-     */
-    public HttpResponse getAllDocumentationOfAPI(String apiName, String version, String provider)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
-//                            "action=getAllDocumentationOfApi&name=" + apiName +
-//                            "&version=" + version + "&provider=" + provider, requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve documentation for - " +
-//                    apiName + ". Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
-    }
-
-    /**
-     * Method to retrieve all endpoint urls
-     */
-    public HttpResponse getApiEndpointUrls(String apiName, String version, String provider)
-            throws APIManagerIntegrationTestException {
-//        try{
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL+ "store/site/blocks/api/api-info/ajax/api-info.jag?"+
-//                            "action=getAPIEndpointURLs&name=" + apiName+
-//                            "&version=" + version + "&provider=" + provider, requestHeaders);
-//
-//
-//        }catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve documentation for - " +
-//                    apiName + ". Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
-    }
-
-
-    /**
-     * Get all paginated published API for a given tenant
-     *
-     * @param tenant - tenant name
-     * @param start  - starting index
-     * @param end    - closing  index
-     * @return - http response of paginated published APIs
-     * @throws APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
-     */
-    public HttpResponse getAllPaginatedPublishedAPIs(String tenant, String start, String end)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
-//                    "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
-//                    "&start=" + start + "&end=" + end, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve paginated published APIs for tenant - "
-//                    + tenant + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
-
-    /**
      * Clean up application registration by ID
      *
      * @param applicationId   - application ID
@@ -797,52 +663,6 @@ public class RestAPIStoreImpl {
             response = new HttpResponse("Successfully cleaned up the application registration", 200);
         }
         return response;
-    }
-
-
-    /**
-     * Gell all paginated published apis for a given tenant
-     *
-     * @param tenant - tenant name
-     * @param start  - starting index
-     * @param end    - ending index
-     */
-    public HttpResponse getAllPaginatedPublishedAPIs(String tenant, int start, int end)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//
-//            return HTTPSClientUtils.doGet(backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
-//                    "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
-//                    "&start=" + start + "&end=" + end, requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve paginated published " +
-//                    "APIs for tenant - " + tenant + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
-
-
-    /**
-     * Get all published APIs for tenant
-     *
-     * @param tenant - tenant name
-     * @return - http response of published API
-     * @throws APIManagerIntegrationTestException - throws if published API retrieval fails.
-     */
-    public HttpResponse getAllPublishedAPIs(String tenant)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" +
-//                            tenant), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Unable to retrieve published APIs for tenant - " + tenant
-//                    + ". Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
     }
 
     /**
@@ -1188,36 +1008,6 @@ public class RestAPIStoreImpl {
     }
 
     /**
-     * Unsubscribe from API
-     *
-     * @param API      - name of api
-     * @param version  - api version
-     * @param provider - provider name
-     * @param appName  - application name
-     * @return - http response of unsubscription request
-     * @throws APIManagerIntegrationTestException - Throws if unsubscription fails
-     */
-
-    public HttpResponse removeAPISubscriptionByName(String API, String version, String provider,
-                                                    String appName) throws APIManagerIntegrationTestException {
-//        try{
-//            checkAuthentication();
-//            HttpResponse responseApp = getAllApplications();
-//            String appId = getApplicationId(responseApp.getData(), appName);
-//
-//            return removeAPISubscription(API,version,provider,appId);
-//
-//
-//        } catch(Exception e){
-//            throw new APIManagerIntegrationTestException("Unable to remove subscriptions API:" + API +
-//                    " Version: " + version + "Provider: " + provider + "App Name: "+ appName +
-//                    ". Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
-    }
-
-    /**
      * Get all API tags
      *
      * @return - http response of get all api tags
@@ -1289,69 +1079,6 @@ public class RestAPIStoreImpl {
             response = new HttpResponse(gson.toJson(commentDTO), 200);
         }
         return response;
-    }
-
-    /**
-     * Check whether commenting is enabled
-     *
-     * @return - http response of comment status
-     * @throws APIManagerIntegrationTestException - Throws if retrieving comment activation status fails.
-     */
-    public HttpResponse isCommentActivated() throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doGet(
-//                    backendURL + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-//                            "action=isCommentActivated", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Failed to get comment activation status"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
-
-    /**
-     * Get recently added APIs by tenant
-     *
-     * @param tenant - tenant name
-     * @param limit  - limit of result set
-     * @return - http response of recently added API request
-     * @throws APIManagerIntegrationTestException - throws if
-     */
-    public HttpResponse getRecentlyAddedAPIs(String tenant, String limit)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL + "store/site/blocks/api/" +
-//                            "recently-added/ajax/list.jag?action=getRecentlyAddedAPIs&tenant=" +
-//                            tenant + "&limit=" + limit), "", requestHeaders);
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException("Failed to get recently added APIs from tenant - " +
-//                    tenant + ". Error: " + e.getMessage(), e);
-//        }
-        return null;
-    }
-
-    private String getApplicationId(String jsonStringOfApplications, String applicationName)
-            throws APIManagerIntegrationTestException {
-//        String applicationId = null;
-//        JSONObject obj;
-//        try {
-//            obj = new JSONObject(jsonStringOfApplications);
-//            JSONArray arr = obj.getJSONArray("applications");
-//            for (int i = 0; i < arr.length(); i++) {
-//                String appName = arr.getJSONObject(i).getString("name");
-//                if (applicationName.equals(appName)) {
-//                    applicationId = arr.getJSONObject(i).getString("id");
-//                }
-//            }
-//        } catch (JSONException e) {
-//            throw new APIManagerIntegrationTestException("getting application Id failed"
-//                    + ". Error: " + e.getMessage(), e);
-//        }
-//        return applicationId;
-        return null;
     }
 
     /**
@@ -1427,6 +1154,7 @@ public class RestAPIStoreImpl {
         ApiResponse<SubscriptionDTO> subscriptionResponse =
                 subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription, this.tenantDomain);
         Assert.assertEquals(HttpStatus.SC_CREATED, subscriptionResponse.getStatusCode());
+        waitUntilSubscriptionAvailableInGateway(subscriptionResponse.getData());
         return subscriptionResponse.getData();
     }
 
@@ -1733,39 +1461,6 @@ public class RestAPIStoreImpl {
             response = new HttpResponse("Successfully changed user password", 200);
         }
         return response;
-    }
-
-    /**
-     * Add application with custom attributes
-     *
-     * @param application           - application  name
-     * @param tier                  - throttling tier
-     * @param callbackUrl           - callback url
-     * @param description           - description of app
-     * @param applicationAttributes - Json string of custom attributes defined by user
-     * @return - http response of add application
-     * @throws APIManagerIntegrationTestException - if fails to add application
-     */
-    public HttpResponse addApplicationWithCustomAttributes(String application, String tier, String callbackUrl,
-                                                           String description, String applicationAttributes)
-            throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            String urlAppAttributes = URLEncoder.encode(applicationAttributes, "UTF-8");
-//            return HTTPSClientUtils.doPost(
-//                    new URL(backendURL +
-//                            "store/site/blocks/application/application-add" +
-//                            "/ajax/application-add.jag?action=addApplication&tier=" +
-//                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
-//                            "&application=" + application + "&applicationAttributes=" +
-//                            urlAppAttributes), "", requestHeaders);
-//        } catch (IOException e) {
-//            String message = "Unable to add application - " + application + " with custom attributes. Error: "
-//                    + e.getMessage();
-//            log.error(message);
-//            throw new APIManagerIntegrationTestException(message, e);
-//        }
-        return null;
     }
 
     public String getSwaggerByID(String apiId, String tenantDomain) throws ApiException {
