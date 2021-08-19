@@ -361,7 +361,6 @@ public class APIEndpointsCertificateTestCase extends APIManagerLifecycleBaseTest
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws ApiException {
-
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
         wireMockServer.stop();

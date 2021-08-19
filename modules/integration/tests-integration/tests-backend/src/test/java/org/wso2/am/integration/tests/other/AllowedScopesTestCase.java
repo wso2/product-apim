@@ -57,7 +57,8 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
     private String apiEndPointUrl;
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private final String ALLOWED_SCOPES_API = "allowedScopesAPI";
-    private String apiId1;
+    private String apiId;
+    private String applicationId;
     private final String API_END_POINT_METHOD = "/customers/123";
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -120,9 +121,9 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
         apiRequest.setOperationsDTOS(operationsDTOS);
 
         HttpResponse response = restAPIPublisher.addAPI(apiRequest);
-        apiId1 = response.getData();
+        apiId = response.getData();
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction());
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
     }
 
     @Test(description = "Generate access token for white listed scopes and invoke APIs")
@@ -131,10 +132,10 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse applicationResponse = restAPIStore.createApplication("TestAppScope",
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
-        String applicationId = applicationResponse.getData();
+        applicationId = applicationResponse.getData();
 
         // Subscribe to API
-        HttpResponse subscribeResponse = subscribeToAPIUsingRest(apiId1, applicationId,
+        HttpResponse subscribeResponse = subscribeToAPIUsingRest(apiId, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
         assertEquals(subscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful " +
@@ -202,6 +203,8 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

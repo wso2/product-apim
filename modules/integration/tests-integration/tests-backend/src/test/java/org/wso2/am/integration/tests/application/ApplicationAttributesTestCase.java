@@ -51,6 +51,8 @@ public class ApplicationAttributesTestCase extends APIManagerLifecycleBaseTest {
     private String API_NAME = "ApplicationAttributeAPI";
     URL tokenEndpointURL;
     private final String JWT_ASSERTION_HEADER = "X-JWT-Assertion";
+    String applicationId1;
+    String applicationId2;
 
     @Factory(dataProvider = "userModeDataProvider")
     public ApplicationAttributesTestCase(TestUserMode userMode) {
@@ -96,17 +98,17 @@ public class ApplicationAttributesTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse applicationResponse = restAPIStore.createApplicationWithCustomAttribute("JWTAppWithAppAttributes",
                 "JWT Application with application attributes",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT, attribute);
-        String applicationId = applicationResponse.getData();
+        applicationId1 = applicationResponse.getData();
         Assert.assertEquals(applicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK);
-        ApplicationDTO jwtApp = restAPIStore.getApplicationById(applicationId);
+        ApplicationDTO jwtApp = restAPIStore.getApplicationById(applicationId1);
         Assert.assertEquals(jwtApp.getAttributes().get("External Reference Id"), "c1237890");
 
-        restAPIStore.subscribeToAPI(apiId, applicationId, TIER_GOLD);
+        restAPIStore.subscribeToAPI(apiId, applicationId1, TIER_GOLD);
 
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId1, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
         Assert.assertNotNull(accessToken);
@@ -136,17 +138,17 @@ public class ApplicationAttributesTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse applicationResponse = restAPIStore.createApplicationWithCustomAttribute("OauthAppWithAppAttributes",
                 "Oauth Application with application attributes",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH, attribute);
-        String applicationId = applicationResponse.getData();
+        applicationId2 = applicationResponse.getData();
         Assert.assertEquals(applicationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK);
-        ApplicationDTO jwtApp = restAPIStore.getApplicationById(applicationId);
+        ApplicationDTO jwtApp = restAPIStore.getApplicationById(applicationId2);
         Assert.assertEquals(jwtApp.getAttributes().get("External Reference Id"), "c1237890");
 
-        restAPIStore.subscribeToAPI(apiId, applicationId, TIER_GOLD);
+        restAPIStore.subscribeToAPI(apiId, applicationId2, TIER_GOLD);
 
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId2, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
         Assert.assertNotNull(accessToken);
@@ -170,6 +172,9 @@ public class ApplicationAttributesTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationId1);
+        restAPIStore.deleteApplication(applicationId2);
+        restAPIPublisher.deleteAPI(apiId);
         serverConfigurationManager.restoreToLastConfiguration();
     }
 
