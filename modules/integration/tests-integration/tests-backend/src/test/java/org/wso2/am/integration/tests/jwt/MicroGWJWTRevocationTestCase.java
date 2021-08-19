@@ -39,26 +39,29 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicSession;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import java.io.File;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import static org.testng.Assert.assertEquals;
 
@@ -83,7 +86,7 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
     private MessageConsumer consumer;
     private String apiId;
     private String applicationId;
-
+    Topic topic;
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         log.info("MicroGWJWTRevocationTestCase  Initiated");
@@ -147,7 +150,6 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
         String topicName = "tokenRevocation";
         String JMSConnectionURL = "amqp://admin:admin@clientid/carbon?brokerlist='tcp://localhost:6172'";
         TopicConnectionFactory connFactory;
-        Topic topic;
         Properties properties;
         InitialContext ctx;
         properties = new Properties();
@@ -159,8 +161,6 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
         topicConsumerSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
         topic = topicConsumerSession.createTopic(topicName);
         // Consumer subscribes to customerTopic
-        consumer = topicConsumerSession.createSubscriber(topic);
-        topicConnection.start();
     }
 
     @Test(groups = {"wso2.am"}, description = "JWT revocation test")
@@ -186,6 +186,8 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
         //jti = "2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d";
         String input = "token=" + jtiExtracted;
         //Call the revoke Endpoint
+        consumer = topicConsumerSession.createSubscriber(topic);
+        topicConnection.start();
         URL revokeEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "revoke");
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse;
         try {
@@ -252,5 +254,27 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
     void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
+    }
+
+    public static class RevokeListener implements MessageListener {
+        private List<String> revokedArray;
+
+        public RevokeListener(List<String> revokedArray) {
+
+            this.revokedArray = revokedArray;
+        }
+
+        @Override
+        public void onMessage(Message message) {
+            if (message instanceof MapMessage) {
+                MapMessage mapMessage = (MapMessage) message;
+                try {
+                    revokedArray.add(mapMessage.getString("revokedToken"));
+                } catch (JMSException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
     }
 }
