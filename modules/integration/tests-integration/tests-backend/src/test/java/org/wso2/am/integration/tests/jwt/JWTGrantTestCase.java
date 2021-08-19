@@ -316,7 +316,7 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
      */
     private void addIdentityProvider(String alias, String issuer, String keystoreFile, String pwd, String certAlias)
             throws Exception {
-        File keyStoreFile = Paths.get(getAMResourceLocation(), "configFiles", "jwtgrant", keystoreFile).toFile();
+        File keyStoreFile = Paths.get(getAMResourceLocation(), "configFiles", "jwtGrant", keystoreFile).toFile();
 
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         FileInputStream fileInputStream = new FileInputStream(keyStoreFile);
