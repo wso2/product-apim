@@ -268,7 +268,7 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
                                                    String aud, String issuer, long notBeforeTime,
                                                    Map<String, Object> additionalClaims) throws Exception {
         File keyStoreFileAbs = Paths.get(getAMResourceLocation(),
-                "configFiles", "jwtgrant", keyStoreFile).toFile();
+                "configFiles", "jwtGrant", keyStoreFile).toFile();
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("azp", aud);
         attributes.put("aud", aud);
