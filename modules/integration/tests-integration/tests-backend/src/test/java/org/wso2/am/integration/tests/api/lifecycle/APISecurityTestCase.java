@@ -653,7 +653,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(description = "Validating the security of API resources", dependsOnMethods = {"testInvocationWithRevokedApiKeys"})
+    @Test(description = "Validating the security of API resources", dependsOnMethods = {"testInvocationWithApiKeysWithRefererCondition"})
     public void testValidateSecurityOfResources() throws Exception {
 
         // Validate for security disabled API
