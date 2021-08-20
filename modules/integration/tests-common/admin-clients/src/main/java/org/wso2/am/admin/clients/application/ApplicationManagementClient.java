@@ -65,4 +65,14 @@ public class ApplicationManagementClient {
 
         identityApplicationManagementServiceStub.updateApplication(serviceProvider);
     }
+
+    public void createApplication(ServiceProvider serviceProvider)
+            throws RemoteException, IdentityApplicationManagementServiceIdentityApplicationManagementException {
+        identityApplicationManagementServiceStub.createApplication(serviceProvider);
+    }
+
+    public void deleteApplication(String applicationName)
+            throws RemoteException, IdentityApplicationManagementServiceIdentityApplicationManagementException {
+        identityApplicationManagementServiceStub.deleteApplication(applicationName);
+    }
 }
