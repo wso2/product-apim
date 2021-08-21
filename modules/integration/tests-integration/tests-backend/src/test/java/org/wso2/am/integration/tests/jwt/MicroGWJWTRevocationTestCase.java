@@ -22,7 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Assert;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -34,6 +34,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
@@ -51,7 +52,6 @@ import java.util.Properties;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.Topic;
@@ -69,26 +69,30 @@ import static org.testng.Assert.assertEquals;
 public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(MicroGWJWTRevocationTestCase.class);
-    private String consumerKey;
-    private String consumerSecret;
-    private String userName;
-    private String password;
-    private String jti;
-    private String jtiExtracted;
     private final String KEYSTORE_FILE_PATH_CLIENT =
             TestConfigurationProvider.getResourceLocation() + File.separator + "keystores" + File.separator + "products"
                     + File.separator + "wso2carbon.jks";
     private final String TRUSTSTORE_FILE_PATH_CLIENT =
             TestConfigurationProvider.getResourceLocation() + File.separator + "keystores" + File.separator + "products"
                     + File.separator + "client-truststore.jks";
+    Topic topic;
+    private String consumerKey;
+    private String consumerSecret;
+    private String userName;
+    private String password;
+    private String jti;
+    private String jtiExtracted;
     private TopicConnection topicConnection;
     private TopicSession topicConsumerSession;
-    private MessageConsumer consumer;
+    private TopicSubscriber topicSubscriber;
     private String apiId;
     private String applicationId;
-    Topic topic;
+    private List<String> revokedKeys = new ArrayList<>();
+    private String revokedJTIFromClientCredentials;
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+
         log.info("MicroGWJWTRevocationTestCase  Initiated");
         super.init();
 
@@ -123,6 +127,7 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        revokedJTIFromClientCredentials = TokenUtils.getJtiOfJwtToken(applicationKeyDTO.getToken().getAccessToken());
         consumerKey = applicationKeyDTO.getConsumerKey();
         consumerSecret = applicationKeyDTO.getConsumerSecret();
 
@@ -144,6 +149,7 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
      * @throws NamingException Error thrown while creating Initial Context or when look up context
      */
     private void createJMSConnection() throws JMSException, NamingException {
+
         String QPID_ICF = "org.wso2.andes.jndi.PropertiesFileInitialContextFactory";
         String CF_NAME_PREFIX = "connectionfactory.";
         String CF_NAME = "qpidConnectionfactory";
@@ -160,11 +166,16 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
         topicConnection = connFactory.createTopicConnection();
         topicConsumerSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
         topic = topicConsumerSession.createTopic(topicName);
+        topicSubscriber = topicConsumerSession.createSubscriber(topic);
+        topicSubscriber.setMessageListener(new RevokeListener(revokedKeys));
+        topicConnection.start();
+
         // Consumer subscribes to customerTopic
     }
 
     @Test(groups = {"wso2.am"}, description = "JWT revocation test")
     public void revokeRequestTestCase() throws Exception {
+
         log.info("revokeRequestTestCase  Initiated");
         //Retrieve a JWT
         String requestBody = "grant_type=password&username=" + userName + "&password=" + password;
@@ -186,8 +197,6 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
         //jti = "2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d";
         String input = "token=" + jtiExtracted;
         //Call the revoke Endpoint
-        consumer = topicConsumerSession.createSubscriber(topic);
-        topicConnection.start();
         URL revokeEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "revoke");
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse;
         try {
@@ -201,9 +210,11 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "JWT revocation test", dependsOnMethods = "revokeRequestTestCase")
     public void checkETCDForRevokedJTITestCase() throws Exception {
+
         log.info("checkETCDForRevokedJTITTestCase  Initiated");
         String etcdEndpointURLs = "https://localhost:9943/etcdmock/v2/keys/jti/2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d";
-        URL etcdEndpointURL = new URL("https://localhost:9943/etcdmock/v2/keys/jti/2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d");
+        URL etcdEndpointURL = new URL("https://localhost:9943/etcdmock/v2/keys/jti/2f3c1e3a-fe4c-4cd4-b049" +
+                "-156e3c63fc5d");
         Map<String, String> authenticationRequestHeaders = new HashMap<>();
         authenticationRequestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
         String retrievedETCDJTIKey = "";
@@ -238,25 +249,42 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "JWT revocation test", dependsOnMethods = "revokeRequestTestCase")
     public void checkJMSTopicForRevokedJTITestCase() throws Exception {
-        log.info("checkJMSTopicForRevokedJTITTestCase  Initiated");
-        //Checking the message content of the received JMS message
-        Message message = consumer.receive();
-        if (message instanceof MapMessage) {
-            MapMessage mapMessage = (MapMessage) message;
-            assertEquals(mapMessage.getString("revokedToken"), jtiExtracted);
+
+        boolean foundCC = false;
+        boolean foundPassword = false;
+        int retries = 0;
+        while (true) {
+            if (revokedKeys.size() >= 1) {
+                foundCC = revokedKeys.contains(revokedJTIFromClientCredentials);
+            }
+            if (revokedKeys.size() >= 2) {
+                foundPassword = revokedKeys.contains(jtiExtracted);
+                break;
+            }
+            retries++;
+            Thread.sleep(20000);
+            if (retries > 10) {
+                break;
+            }
         }
-        topicConsumerSession.close();
-        topicConnection.close();
-        log.info("checkJMSTopicForRevokedJTITTestCase  Finished");
+        Assert.assertTrue(foundCC,
+                "Revoked Client Credentials Token " + revokedJTIFromClientCredentials + " not available available " +
+                        "tokens " + String.join(",", revokedKeys));
+        Assert.assertTrue(foundPassword, "Revoked Password Token " + jtiExtracted + " not available available tokens "
+                + String.join(",", revokedKeys));
     }
 
     @AfterClass(alwaysRun = true)
     void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
+        topicSubscriber.close();
+        topicConsumerSession.close();
+        topicConnection.close();
     }
 
     public static class RevokeListener implements MessageListener {
+
         private List<String> revokedArray;
 
         public RevokeListener(List<String> revokedArray) {
@@ -266,6 +294,7 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
 
         @Override
         public void onMessage(Message message) {
+
             if (message instanceof MapMessage) {
                 MapMessage mapMessage = (MapMessage) message;
                 try {
