@@ -55,6 +55,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CertificateInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.CertificatesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
@@ -171,8 +173,9 @@ public class RestAPIPublisherImpl {
         apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
         sharedScopesApi.setApiClient(apiPublisherClient);
-        settingsApi.setApiClient(apiPublisherClient);
         globalMediationPoliciesApi.setApiClient(apiPublisherClient);
+        settingsApi.setApiClient(apiPublisherClient);
+        endpointCertificatesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -845,6 +848,17 @@ public class RestAPIPublisherImpl {
     }
 
     /***
+     * Remove a shared scope
+     *
+     * @param id id of the scope to delete
+     * @throws ApiException
+     */
+    public void removeSharedScope(String id) throws ApiException {
+        ApiResponse<Void> httpInfo = sharedScopesApi.deleteSharedScopeWithHttpInfo(id);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    /***
      * Update a shared scopes
      *
      * @param uuid
@@ -952,14 +966,10 @@ public class RestAPIPublisherImpl {
      * @return
      * @throws ApiException if an error occurred while uploading the certificate.
      */
-    public HttpResponse uploadEndpointCertificate(File certificate, String alias, String endpoint) throws ApiException {
-
-        CertMetadataDTO certificateDTO = endpointCertificatesApi.endpointCertificatesPost(certificate, alias, endpoint);
-        HttpResponse response = null;
-        if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
-            response = new HttpResponse("Successfully uploaded the certificate", 200);
-        }
-        return response;
+    public ApiResponse<CertMetadataDTO> uploadEndpointCertificate(File certificate, String alias, String endpoint) throws ApiException {
+        ApiResponse<CertMetadataDTO> certificateDTO =
+                endpointCertificatesApi.endpointCertificatesPostWithHttpInfo(certificate, alias, endpoint);
+        return certificateDTO;
 
     }
 
@@ -1337,5 +1347,18 @@ public class RestAPIPublisherImpl {
     public SettingsDTO getSettings() throws ApiException {
         return settingsApi.settingsGet();
 
+    }
+
+    public CertificatesDTO getEndpointCertificiates(String endpoint, String alias) throws ApiException {
+        return endpointCertificatesApi.endpointCertificatesGet(Integer.MAX_VALUE, 0, alias, endpoint);
+    }
+
+    public CertificateInfoDTO getendpointCertificateContent(String alias) throws ApiException {
+        return endpointCertificatesApi.endpointCertificatesAliasGet(alias);
+
+    }
+
+    public ApiResponse<Void> deleteEndpointCertificate(String alias) throws ApiException {
+        return endpointCertificatesApi.endpointCertificatesAliasDeleteWithHttpInfo(alias);
     }
 }

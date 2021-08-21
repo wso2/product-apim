@@ -44,8 +44,9 @@ show_as_token_endpoint_url = true
 service_url = "https://localhost:${mgt.transport.https.port}/services/"
 username = "admin"
 password = "admin"
-http_endpoint = "ws://wsserverhost:9797"
-https_endpoint = "https://serverhost:9898"
+ws_endpoint = "ws://localhost:9099"
+http_endpoint = "http://localhost:${http.nio.port}"
+https_endpoint = "https://localhost:${https.nio.port}"
 
 [apim.cors]
 allow_origins = "*"
@@ -53,14 +54,31 @@ allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
 allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
 allow_credentials = false
 
+[[event_handler]]
+name="userPostSelfRegistration"
+subscriptions=["POST_ADD_USER"]
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
-passthru_https.sender.ssl_profile.interval = 6000
 
 [apim.certificate_reloader]
 period = "1m"
 
 [database.local]
 url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
-[oauth]
-allowed_scopes = ["^device_.*", "openid"]
+
+# JWT Generation
+[apim.jwt]
+enable = true
+encoding = "base64" # base64,base64url
+#generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+signing_algorithm = "SHA256withRSA"
+#enable_user_claims = true
+#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+
+[[apim.devportal.application_attributes]]
+required=true
+hidden=false
+name="External Reference Id"
+description="External Reference Id"

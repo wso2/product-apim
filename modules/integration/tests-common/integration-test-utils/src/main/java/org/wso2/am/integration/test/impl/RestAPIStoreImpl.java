@@ -1528,10 +1528,10 @@ public class RestAPIStoreImpl {
         return applicationKeysApi.applicationsApplicationIdKeysGet(jwtAppId);
     }
 
-    public ApplicationKeyDTO mapConsumerKeyWithApplication(String consumerKey, String appid, String keyManager) throws ApiException {
+    public ApplicationKeyDTO mapConsumerKeyWithApplication(String consumerKey, String consumerSecret, String appid, String keyManager) throws ApiException {
 
         ApplicationKeyMappingRequestDTO applicationKeyMappingRequestDTO =
-                new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).keyType(
+                new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).consumerSecret(consumerSecret).keyType(
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
         return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid,applicationKeyMappingRequestDTO);
     }

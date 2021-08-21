@@ -114,8 +114,8 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.subscribeToAPI(apiIdOnlyKm1, jwtApplicationId, TIER_GOLD);
         waitForKeyManagerDeployment(user.getUserDomain(), KEY_MANAGER_1);
         waitForKeyManagerDeployment(user.getUserDomain(), KEY_MANAGER_2);
-        restAPIStore.mapConsumerKeyWithApplication(consumerKey1, jwtApplicationId, KEY_MANAGER_1);
-        restAPIStore.mapConsumerKeyWithApplication(consumerKey2, jwtApplicationId, KEY_MANAGER_2);
+        restAPIStore.mapConsumerKeyWithApplication(consumerKey1, null, jwtApplicationId, KEY_MANAGER_1);
+        restAPIStore.mapConsumerKeyWithApplication(consumerKey2, null, jwtApplicationId, KEY_MANAGER_2);
     }
 
     private String createAPI(String apiName, String apiContext, List<String> keyManagers)
@@ -148,7 +148,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         String generatedJWT =
                 JWTGeneratorUtil
                         .generatedJWT(keyStoreFile, "idptest", "idptest", "wso2carbon", "wso2carbon", "userexternal",
-                                ISSUER_1, attributes);
+                                ISSUER_1, System.currentTimeMillis(), attributes);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
         log.info("External IDP JWT Generated: " + generatedJWT);
@@ -202,7 +202,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         String generatedJWT =
                 JWTGeneratorUtil
                         .generatedJWT(keyStoreFile, "idptest", "idptest", "wso2carbon", "wso2carbon", "userexternal",
-                                ISSUER_1, attributes);
+                                ISSUER_1, System.currentTimeMillis(), attributes);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
         get.addHeader("Authorization", "Bearer " + generatedJWT);
@@ -224,7 +224,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         String generatedJWT =
                 JWTGeneratorUtil
                         .generatedJWT(keyStoreFile, "idptest", "idptest", "wso2carbon", "wso2carbon",
-                                "userexternal", ISSUER_2, attributes);
+                                "userexternal", ISSUER_2, System.currentTimeMillis(), attributes);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
         get.addHeader("Authorization", "Bearer " + generatedJWT);
@@ -251,7 +251,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         String generatedJWT =
                 JWTGeneratorUtil
                         .generatedJWT(keyStoreFile, "idp2certificate", "idp1", "wso2carbon", "wso2carbon",
-                                "userexternal", ISSUER_2, attributes);
+                                "userexternal", ISSUER_2, System.currentTimeMillis(), attributes);
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
         log.info("External IDP JWT Generated: " + generatedJWT);
