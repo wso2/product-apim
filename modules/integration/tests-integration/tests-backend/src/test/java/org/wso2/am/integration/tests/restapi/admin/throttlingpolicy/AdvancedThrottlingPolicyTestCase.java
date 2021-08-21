@@ -561,7 +561,6 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
         verifyThrottling("AdvancedThrottlingPolicyTestAPI5", requestHeaders);
     }
 
-
     /**
      * Creates a conditional group with a list of conditions
      *

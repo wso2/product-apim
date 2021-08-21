@@ -1152,7 +1152,6 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationId);

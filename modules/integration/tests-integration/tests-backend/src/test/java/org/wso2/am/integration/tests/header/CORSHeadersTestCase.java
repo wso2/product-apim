@@ -307,7 +307,6 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertTrue(apiCorsConfigurationDTO.isCorsConfigurationEnabled(), "CORS has not been enabled");
     }
 
-
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId);

@@ -140,6 +140,40 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
         assertNotNull(listDTO, "Login to Admin portal with email username failed");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Login with email username for tenant user",
+            dependsOnMethods = "LoginWithEmailUserNameTestCase")
+    public void LoginWithTenantUserEmailUserNameTestCase() throws Exception {
+        String fullUserName = TENANT_ADMIN_USERNAME + "@" + TENANT_DOMAIN;
+
+        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                fullUserName, PASSWORD);
+        //add tenant user
+        userManagementClient.addUser(TENANT_USER_USERNAME, PASSWORD,
+                new String[]{INTERNAL_ROLE_SUBSCRIBER, INTERNAL_ROLE_PUBLISHER, INTERNAL_ROLE_CREATOR}, TENANT_USER_USERNAME);
+
+        restAPIPublisher = new RestAPIPublisherImpl(TENANT_USER_USERNAME, PASSWORD,
+                TENANT_DOMAIN, publisherURLHttps);
+
+        try {
+            apiListDTO = restAPIPublisher.apIsApi.getAllAPIs(null, null, "emailuserdomain.com",
+                    null, null, null, null);
+        } catch (ApiException e) {
+            throw new APIManagerIntegrationTestException("Login to Publisher with email username failed due to " +
+                    e.getMessage(), e);
+        }
+
+        // check for store login with email user name
+        restAPIStore = new RestAPIStoreImpl(TENANT_USER_USERNAME, PASSWORD, TENANT_DOMAIN, storeURLHttps, restAPIGateway);
+        ApplicationListDTO responseData = restAPIStore.getAllApps();
+        assertNotNull(responseData, "Login to Store with email username failed");
+
+        // check for Admin Portal login with email user name
+        restAPIAdmin = new RestAPIAdminImpl(TENANT_USER_USERNAME, PASSWORD, TENANT_DOMAIN, adminURLHttps);
+        ApplicationThrottlePolicyListDTO listDTO =
+                restAPIAdmin.applicationPolicyCollectionApi.throttlingPoliciesApplicationGet(null, null, null);
+        assertNotNull(listDTO, "Login to Admin portal with email username failed");
+    }
+
     /**
      * create a new tenant with email address as the user name.
      *

@@ -156,5 +156,4 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
                 ApplicationDTO.TokenTypeEnum.JWT);
         userTwoApplicationId = appCreationResponse2.getData();
     }
-
 }

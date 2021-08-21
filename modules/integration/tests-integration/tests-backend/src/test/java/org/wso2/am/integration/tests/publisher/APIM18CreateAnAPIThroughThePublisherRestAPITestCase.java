@@ -292,9 +292,6 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
         Assert.assertTrue(isRemoteReferenceAvailable, "Remote reference is not available in the schema list");
     }
 
-
-
-
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
