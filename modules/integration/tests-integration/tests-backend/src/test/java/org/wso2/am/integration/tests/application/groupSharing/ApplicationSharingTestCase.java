@@ -18,13 +18,16 @@
 
 package org.wso2.am.integration.tests.application.groupSharing;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
@@ -34,6 +37,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.testng.Assert.assertFalse;
@@ -42,6 +46,7 @@ import static org.wso2.am.integration.test.utils.base.APIMIntegrationConstants.S
 public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
 
     private static final String APPLICATION_NAME = "TestApplication";
+    private static final String SHARED_APPLICATION_NAME = "SharedApplication";
     private static final String USER_ONE = "userOne";
     private static final String USER_TWO = "userTwo";
     private static final String PASSWORD = "test@123";
@@ -51,9 +56,11 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
     private static final String ORGANIZATION = "Test";
     private String userOneApplicationId;
     private String userTwoApplicationId;
+    private String userOneSharedApplicationId;
     private RestAPIStoreImpl restAPIStoreClientUser1;
     private RestAPIStoreImpl restAPIStoreClientUser2;
     private static final Log log = LogFactory.getLog(ApplicationSharingTestCase.class);
+    List<String> groups = new ArrayList<>();
 
     @Factory(dataProvider = "userModeDataProvider")
     public ApplicationSharingTestCase(TestUserMode userMode) {
@@ -73,6 +80,7 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
 
         super.init(userMode);
         createUsersAndApplications();
+        groups.add(ORGANIZATION);
     }
 
     @Test(groups = "wso2.am", description = "Remove user one's application and check if user two's application also " +
@@ -88,9 +96,42 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
                 "application too");
     }
 
+    @Test(groups = "wso2.am", description = "Edit application by application owner",
+            dependsOnMethods = "testUserTwoApplicationRemoval")
+    public void testEditApplicationByApplicationOwner() throws Exception {
+        HttpResponse serviceResponse = restAPIStoreClientUser1.updateApplicationByID(userOneSharedApplicationId,
+                SHARED_APPLICATION_NAME, "This app has been edited",
+                APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, ApplicationDTO.TokenTypeEnum.JWT, groups);
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
+                "Response code is not as expected");
+        ApplicationDTO applicationDTO = restAPIStoreClientUser1.getApplicationById(userOneSharedApplicationId);
+        Assert.assertEquals(applicationDTO.getDescription(), "This app has been edited");
+        Assert.assertEquals(applicationDTO.getThrottlingPolicy(), APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN);
+    }
+
+    @Test(groups = "wso2.am", description = "Edit application by application by user in application group",
+            dependsOnMethods = "testEditApplicationByApplicationOwner")
+    public void testEditApplicationByUserInApplicationGroup() throws ApiException {
+        //View application by a user in the application group
+        List<ApplicationInfoDTO> user2AllAppsList = restAPIStoreClientUser2.getAllApps().getList();
+        ApplicationDTO applicationDTO = restAPIStoreClientUser2.getApplicationById(userOneSharedApplicationId);
+        Assert.assertNotNull(applicationDTO);
+        Assert.assertEquals(applicationDTO.getName(), SHARED_APPLICATION_NAME);
+
+        //Edit application by a user in application group
+        HttpResponse serviceResponse = restAPIStoreClientUser2.updateApplicationByID(userOneSharedApplicationId,
+                APPLICATION_NAME, "This app has been edited by user1",
+                APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, ApplicationDTO.TokenTypeEnum.JWT, groups);
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStoreClientUser2.removeApplicationById(userTwoApplicationId);
+        HttpResponse appCreationResponse3 = restAPIStoreClientUser1.createApplicationWithOrganization(SHARED_APPLICATION_NAME,
+                "App created by user1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.JWT, groups);
+        userOneSharedApplicationId = appCreationResponse3.getData();
         super.cleanUp();
     }
 
