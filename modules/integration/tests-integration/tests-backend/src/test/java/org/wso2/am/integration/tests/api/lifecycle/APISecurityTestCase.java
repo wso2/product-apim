@@ -315,6 +315,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         apiRequest6.setTags(API_TAGS);
         apiRequest6.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
         apiRequest6.setOperationsDTOS(operationsDTOS2);
+        apiRequest6.setProvider(user.getUserName());
         List<String> securitySchemes6 = new ArrayList<>();
         securitySchemes6.add("oauth2");
         apiRequest6.setSecurityScheme(securitySchemes6);
@@ -326,6 +327,11 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response6 = restAPIPublisher.addAPI(apiRequest6);
         apiId6 = response6.getData();
 
+        createAPIRevisionAndDeployUsingRest(apiId6, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId6, false);
+        waitForAPIDeploymentSync(apiRequest6.getProvider(), apiRequest6.getName(), apiRequest6.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+
         APIRequest apiRequest7 = new APIRequest(OauthEnabledAPI, OauthEnabledAPIContext,
                 new URL(apiEndPointUrl));
 
@@ -334,6 +340,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         apiRequest7.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest7.setTags(API_TAGS);
         apiRequest7.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest7.setProvider(user.getUserName());
 
         apiRequest7.setOperationsDTOS(operationsDTOS);
         apiRequest7.setSecurityScheme(securitySchemes4);
@@ -344,8 +351,6 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         HttpResponse response7 = restAPIPublisher.addAPI(apiRequest7);
         apiId7 = response7.getData();
-
-        restAPIPublisher.changeAPILifeCycleStatus(apiId7, APILifeCycleAction.PUBLISH.getAction());
     }
 
     @Test(description = "This test case tests the behaviour of internal Key token on Created API with authentication " +
@@ -1113,7 +1118,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     public void testValidateSecurityOfResources() throws Exception {
 
         // Validate for security disabled API
-        HttpResponse response = restAPIPublisher.getAPI(apiId4);
+        HttpResponse response = restAPIPublisher.getAPI(apiId6);
         String retrievedSwagger;
 
         APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
@@ -1124,7 +1129,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         }
 
         // Verify the security of API in Swagger
-        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId4);
+        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId6);
         List<Object> authTypes = validateResourceSecurity(retrievedSwagger);
         for (Object authType : authTypes) {
             Assert.assertEquals(authType, "None", "Incorrect auth type");
@@ -1138,14 +1143,14 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(invokeResponse.getResponseCode(), HttpStatus.SC_OK);
 
         // Validate for security enabled API
-        HttpResponse response2 = restAPIPublisher.getAPI(apiId5);
+        HttpResponse response2 = restAPIPublisher.getAPI(apiId7);
         apidto = new Gson().fromJson(response2.getData(), APIDTO.class);
         operationsList = apidto.getOperations();
         for (APIOperationsDTO apiOperation : operationsList) {
             Assert.assertEquals(apiOperation.getAuthType(), "Application & Application User", "Incorrect auth type");
         }
 
-        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId5);
+        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId7);
         authTypes = validateResourceSecurity(retrievedSwagger);
         for (Object authType : authTypes) {
             Assert.assertEquals(authType, "Application & Application User", "Incorrect auth type");
@@ -1161,6 +1166,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId4);
         restAPIPublisher.deleteAPI(apiId5);
         restAPIPublisher.deleteAPI(apiId6);
+        restAPIPublisher.deleteAPI(apiId7);
         removeUsers();
     }
 

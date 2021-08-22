@@ -66,6 +66,7 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
     private String apiProviderName;
     private String apiProductionEndPointUrl;
     private String apiId;
+    private String apiId2;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM18CreateAnAPIThroughThePublisherRestAPITestCase(TestUserMode userMode) {
@@ -183,7 +184,7 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
             restAPIPublisher.importOASDefinition(definition2, apiProperties.toString());
             Assert.fail("API created with same context");
         } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), 400);
+            Assert.assertEquals(e.getCode(), 500);
             Assert.assertTrue(e.getResponseBody().contains("A duplicate API context already exists"));
         }
     }
@@ -216,9 +217,9 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
         APIDTO apidtoResponse = restAPIPublisher.
                 importOASDefinition(definition, apiProperties.toString());
         Assert.assertNotNull(apidtoResponse);
-        apiId = apidtoResponse.getId();
+        apiId2 = apidtoResponse.getId();
 
-        String retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId);
+        String retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId2);
 
         validateRemoteReference(retrievedSwagger);
     }
@@ -294,7 +295,7 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-        restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteAPI(apiId2);
         super.cleanUp();
     }
 
