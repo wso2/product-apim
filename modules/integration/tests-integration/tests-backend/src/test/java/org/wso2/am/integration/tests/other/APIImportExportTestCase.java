@@ -259,13 +259,18 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     public void testRestrictedAPIExportFromUserWithAccessRole() throws Exception {
 
         String provider = user.getUserName();
-        APIRequest brokenApiRequest = new APIRequest("API2", "AccessControl",
+        APIRequest apiRequest = new APIRequest("API2", "AccessControl",
                 new URL(exportUrl));
-        brokenApiRequest.setVersion(API_VERSION);
-        brokenApiRequest.setProvider(provider);
-        brokenApiRequest.setAccessControl(RESTRICTED_ACCESS_CONTROL);
-        brokenApiRequest.setAccessControlRoles(ALLOWED_ROLE);
-        publisherAccessControlAPIId = createAndPublishAPIUsingRest(brokenApiRequest, restAPIPublisher, false);
+        apiRequest.setVersion(API_VERSION);
+        apiRequest.setProvider(provider);
+        apiRequest.setAccessControl(RESTRICTED_ACCESS_CONTROL);
+        apiRequest.setAccessControlRoles(ALLOWED_ROLE);
+        HttpResponse response = restAPIPublisher.addAPI(apiRequest);
+        publisherAccessControlAPIId = response.getData();
+        createAPIRevisionAndDeployUsingRest(publisherAccessControlAPIId, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(publisherAccessControlAPIId, false);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         APIDTO apidto = restAPIPublisher.getAPIByID(publisherAccessControlAPIId);
         Assert.assertEquals(apidto.getAccessControlRoles().get(0), "allowedrole");
 
@@ -294,7 +299,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
         CloseableHttpResponse response = exportAPIRequest(exportRequest, USER_WITHOUT_ACCESS_ROLE, PASSWORD);
-        Assert.assertNotEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_UNAUTHORIZED);
     }
 
     @Test(groups = {"wso2.am"}, description = "Export restricted API from admin user",
@@ -822,6 +827,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(newApiId);
         restAPIPublisher.deleteAPI(preservePublisherApiId);
         restAPIPublisher.deleteAPI(notPreservePublisherApiId);
+        restAPIPublisher.deleteAPI(publisherAccessControlAPIId);
         boolean deleteStatus;
         deleteStatus = apiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
