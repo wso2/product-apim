@@ -128,10 +128,6 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStoreClientUser2.removeApplicationById(userTwoApplicationId);
-        HttpResponse appCreationResponse3 = restAPIStoreClientUser1.createApplicationWithOrganization(SHARED_APPLICATION_NAME,
-                "App created by user1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.JWT, groups);
-        userOneSharedApplicationId = appCreationResponse3.getData();
         super.cleanUp();
     }
 
@@ -155,5 +151,10 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
                 "App created by user2", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
         userTwoApplicationId = appCreationResponse2.getData();
+
+        HttpResponse appCreationResponse3 = restAPIStoreClientUser1.createApplicationWithOrganization(SHARED_APPLICATION_NAME,
+                "App created by user1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.JWT, groups);
+        userOneSharedApplicationId = appCreationResponse3.getData();
     }
 }

@@ -92,6 +92,7 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
             TestConfigurationProvider.getResourceLocation() + File.separator + "keystores" + File.separator + "products"
                     + File.separator + "client-truststore.jks";
     private String applicationId;
+    private String applicationId2;
     private String accessToken;
     private String wsdlDefinition;
     private String requestBody;
@@ -337,7 +338,6 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         apiProperties.put("version", "1.0.0");
         apiProperties.put("provider", user.getUserName());
         apiProperties.put("endpointConfig", endpointConfig);
-        apiProperties.put("gatewayEnvironments", environment);
         apiProperties.put("policies", tierList);
 
         String wsdlDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl" + File.separator + "PhoneVerification.wsdl";
@@ -352,19 +352,22 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId1);
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode());
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction());
+        createAPIRevisionAndDeployUsingRest(apiId1, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId1, false);
+        waitForAPIDeploymentSync(user.getUserName(), "PhoneVerification", "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         HttpResponse applicationResponse = restAPIStore.createApplication("TestApp",
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
-        applicationId = applicationResponse.getData();
+        applicationId2 = applicationResponse.getData();
 
-        restAPIStore.subscribeToAPI(apiId1, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        restAPIStore.subscribeToAPI(apiId1, applicationId2, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
 
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
 
-        applicationKeyDTO = restAPIStore.generateKeys(applicationId, "36000", "",
+        applicationKeyDTO = restAPIStore.generateKeys(applicationId2, "36000", "",
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
 
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
@@ -404,7 +407,6 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         apiProperties.put("version", "1.0.0");
         apiProperties.put("provider", user.getUserName());
         apiProperties.put("endpointConfig", endpointConfig);
-        apiProperties.put("gatewayEnvironments", environment);
         apiProperties.put("policies", tierList);
 
         String wsdlDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl" + File.separator + "PhoneVerification.zip";
@@ -419,8 +421,11 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId2);
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode());
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction());
-        restAPIStore.subscribeToAPI(apiId2, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId2, false);
+        waitForAPIDeploymentSync(user.getUserName(), "PhoneVerificationArchive", "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
+        restAPIStore.subscribeToAPI(apiId2, applicationId2, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
 
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
@@ -462,7 +467,6 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         apiProperties.put("version", "1.0.0");
         apiProperties.put("provider", user.getUserName());
         apiProperties.put("endpointConfig", endpointConfig);
-        apiProperties.put("gatewayEnvironments", environment);
         apiProperties.put("policies", tierList);
 
         APIDTO apidto = restAPIPublisher
@@ -475,8 +479,11 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId3);
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode());
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction());
-        restAPIStore.subscribeToAPI(apiId3, applicationId, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        createAPIRevisionAndDeployUsingRest(apiId3, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId3, false);
+        waitForAPIDeploymentSync(user.getUserName(), "PhoneVerificationURL", "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
+        restAPIStore.subscribeToAPI(apiId3, applicationId2, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
 
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
@@ -539,13 +546,16 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
+        restAPIStore.deleteApplication(applicationId2);
         undeployAndDeleteAPIRevisionsUsingRest(wsdlFileApiId, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(zipFileApiId, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(wsdlUrlApiId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId1, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId2, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId3, restAPIPublisher);
         restAPIPublisher.deleteAPI(wsdlFileApiId);
         restAPIPublisher.deleteAPI(zipFileApiId);
         restAPIPublisher.deleteAPI(wsdlUrlApiId);
-        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId1);
         restAPIPublisher.deleteAPI(apiId2);
         restAPIPublisher.deleteAPI(apiId3);
