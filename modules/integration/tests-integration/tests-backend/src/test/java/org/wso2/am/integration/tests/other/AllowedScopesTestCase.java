@@ -87,23 +87,11 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
                 keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
 
-        restAPIPublisher = new RestAPIPublisherImpl(
-                publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                publisherContext.getContextTenant().getContextUser().getPassword(),
-                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
-
-        restAPIStore = new RestAPIStoreImpl(
-                storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                storeContext.getContextTenant().getContextUser().getPassword(),
-                storeContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
-
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
 
         //Create API
         APIRequest apiRequest = new APIRequest(ALLOWED_SCOPES_API, ALLOWED_SCOPES_API, new URL(apiEndPointUrl));
         apiRequest.setVersion(API_VERSION_1_0_0);
-        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         List<String> scopes = new ArrayList<>();
         scopes.add("scope1");
@@ -119,11 +107,15 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
         List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
         operationsDTOS.add(apiOperationsDTO);
         apiRequest.setOperationsDTOS(operationsDTOS);
+        apiRequest.setProvider(user.getUserName());
 
         HttpResponse response = restAPIPublisher.addAPI(apiRequest);
         apiId = response.getData();
 
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId, false);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(description = "Generate access token for white listed scopes and invoke APIs")
@@ -136,7 +128,7 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
 
         // Subscribe to API
         HttpResponse subscribeResponse = subscribeToAPIUsingRest(apiId, applicationId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
+                APIMIntegrationConstants.API_TIER.GOLD, restAPIStore);
         assertEquals(subscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful " +
                         " API Name:" + ALLOWED_SCOPES_API + " API Version:" + API_VERSION_1_0_0 +
@@ -152,7 +144,7 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
         //Get Consumer Key and Consumer Secret
         String consumerKey = applicationKeyDTO.getConsumerKey();
         String consumerSecret = applicationKeyDTO.getConsumerSecret();
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
 
         // Generate token for scope 1
         String requestBodyForScope1 = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword() + "&scope=scope1";
@@ -161,7 +153,7 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
                         .getData());
         // Validate access token
         Assert.assertNotNull(accessTokenGenerationResponseScope1);
-        Assert.assertTrue(accessTokenGenerationResponseScope1.getString("scope").equals("scope1"));
+        Assert.assertTrue(accessTokenGenerationResponseScope1.getString("scope").contains("scope1"));
         Assert.assertTrue(accessTokenGenerationResponseScope1.getString("expires_in").equals("3600"));
         String accessTokenScope1 = accessTokenGenerationResponseScope1.getString("access_token");
 
@@ -181,7 +173,7 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
                         .getData());
         // Validate access token
         Assert.assertNotNull(accessTokenGenerationResponseScope2);
-        Assert.assertTrue(accessTokenGenerationResponseScope2.getString("scope").equals("scope2"));
+        Assert.assertTrue(accessTokenGenerationResponseScope2.getString("scope").contains("scope2"));
         Assert.assertTrue(accessTokenGenerationResponseScope2.getString("expires_in").equals("3600"));
         String accessTokenScope2 = accessTokenGenerationResponseScope2.getString("access_token");
 
