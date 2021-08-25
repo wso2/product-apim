@@ -208,6 +208,30 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public HttpResponse createApplicationWithOrganization(String appName, String description, String throttleTier,
+                                                          ApplicationDTO.TokenTypeEnum tokenType, List<String> groups) {
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setTokenType(tokenType);
+            application.setGroups(groups);
+
+            ApplicationDTO createdApp = applicationsApi.applicationsPost(application);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                response = new HttpResponse(createdApp.getApplicationId(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     public HttpResponse createApplicationWithCustomAttribute(String appName, String description, String throttleTier,
                                                              ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute) {
 
@@ -280,6 +304,32 @@ public class RestAPIStoreImpl {
             }
         }
         return null;
+    }
+
+    /**
+     * Update shared Application by ID with the organization
+     */
+    public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
+                                              String throttleTier,
+                                              ApplicationDTO.TokenTypeEnum tokenType, List<String> groups) {
+        HttpResponse response = null;
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setTokenType(tokenType);
+            application.setGroups(groups);
+
+            ApplicationDTO createdApp = applicationsApi.applicationsApplicationIdPut(applicationId, application, null);
+            if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                response = new HttpResponse(createdApp.toString(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            response = new HttpResponse(e.getResponseBody(), e.getCode());
+            return response;
+        }
     }
 
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) {
@@ -1910,8 +1960,10 @@ public class RestAPIStoreImpl {
         }
     }
 
-    public ApiResponse<Void> downloadWSDLSchemaDefinitionOfAPI(String apiId,String environmentName) throws ApiException {
-        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,null,environmentName,null,null);
+    public ApiResponse<Void> downloadWSDLSchemaDefinitionOfAPI(String apiId, String environmentName)
+            throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId, null, environmentName,
+                null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse;
     }
@@ -1940,10 +1992,10 @@ public class RestAPIStoreImpl {
         return applicationKeysApi.applicationsApplicationIdKeysGet(jwtAppId);
     }
 
-    public ApplicationKeyDTO mapConsumerKeyWithApplication(String consumerKey, String appid, String keyManager) throws ApiException {
+    public ApplicationKeyDTO mapConsumerKeyWithApplication(String consumerKey, String consumerSecret, String appid, String keyManager) throws ApiException {
 
         ApplicationKeyMappingRequestDTO applicationKeyMappingRequestDTO =
-                new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).keyType(
+                new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).consumerSecret(consumerSecret).keyType(
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
         return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid, applicationKeyMappingRequestDTO);
     }

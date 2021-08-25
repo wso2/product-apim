@@ -26,10 +26,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
-import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
-import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -93,17 +90,24 @@ public class BurstControlTestCase  extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        String INTERNAL_EVERYONE= "Internal/everyone";
+        List<String> roleList = new ArrayList<>();
+        SubscriptionThrottlePolicyPermissionDTO permissions;
         // Add subscription policy - 1
         RequestCountLimitDTO requestCountLimit =
                                         DtoFactory.createRequestCountLimitDTO("min", 1, 1000L);
         ThrottleLimitDTO defaultLimit =
                                         DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT, requestCountLimit, null);
+        roleList.add(INTERNAL_EVERYONE);
+        permissions = DtoFactory.
+                createSubscriptionThrottlePolicyPermissionDTO(SubscriptionThrottlePolicyPermissionDTO.
+                        PermissionTypeEnum.ALLOW, roleList);
         subscriptionThrottlePolicyDTO1 = DtoFactory.createSubscriptionThrottlePolicyDTO(subscriptionTier5RPMburst,
                                         "subscriptionTier5RPMburst",
                                         "1000 request per min with burst of 5 requests per minute",
                                         false, defaultLimit, 0, 0, burstLimit1,
                                         rateLimitTimeUnit, customAttributes, stopQuotaOnReach, billingPlan,
-                                        subscriberCount);
+                                        subscriberCount, permissions);
         ApiResponse<SubscriptionThrottlePolicyDTO> apiResponse =
                                         restAPIAdmin.addSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO1);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_CREATED);
@@ -114,7 +118,7 @@ public class BurstControlTestCase  extends APIManagerLifecycleBaseTest {
                                         "1000 request per min with burst of 25 requests per minute",
                                         false, defaultLimit, 0, 0, burstLimit2,
                                         rateLimitTimeUnit, customAttributes, stopQuotaOnReach, billingPlan,
-                                        subscriberCount);
+                                        subscriberCount, permissions);
         apiResponse = restAPIAdmin.addSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO2);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_CREATED);
 

@@ -32,6 +32,7 @@ import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.QueryParameterConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyPermissionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
@@ -144,6 +145,21 @@ public class DtoFactory {
     }
 
     /**
+     * Creates a subscription throttling permission DTO using the given parameters.
+     *
+     * @param permissionType   Permission type.
+     * @param roles   Roles.
+     * @return Created subscription throttle policy DTO.
+     */
+    public static SubscriptionThrottlePolicyPermissionDTO createSubscriptionThrottlePolicyPermissionDTO(
+            SubscriptionThrottlePolicyPermissionDTO.PermissionTypeEnum permissionType, List<String> roles) {
+
+        return new SubscriptionThrottlePolicyPermissionDTO().
+                permissionType(permissionType).
+                roles(roles);
+    }
+
+    /**
      * Creates a event count limit DTO using the given parameters.
      *
      * @param timeUnit      Time limit.
@@ -179,7 +195,7 @@ public class DtoFactory {
             String displayName, String description, boolean isDeployed, ThrottleLimitDTO defaultLimit,
             int graphQLMaxComplexity, int graphQLMaxDepth, int rateLimitCount, String rateLimitTimeUnit,
             List<CustomAttributeDTO> customAttributes, boolean stopQuotaOnReach, String billingPlan,
-            int subscriberCount) {
+            int subscriberCount, SubscriptionThrottlePolicyPermissionDTO permissions) {
 
         SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
         subscriptionThrottlePolicyDTO.setPolicyName(policyName);
@@ -195,6 +211,7 @@ public class DtoFactory {
         subscriptionThrottlePolicyDTO.setStopOnQuotaReach(stopQuotaOnReach);
         subscriptionThrottlePolicyDTO.setBillingPlan(billingPlan);
         subscriptionThrottlePolicyDTO.setSubscriberCount(subscriberCount);
+        subscriptionThrottlePolicyDTO.setPermissions(permissions);
 
         return subscriptionThrottlePolicyDTO;
     }
