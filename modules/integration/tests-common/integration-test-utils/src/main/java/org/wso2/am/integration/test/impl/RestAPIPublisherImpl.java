@@ -1092,6 +1092,12 @@ public class RestAPIPublisherImpl {
         return apiDtoApiResponse;
     }
 
+    public ApiResponse updateWSDLOfAPI(String apiId, File file, String url) throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.updateWSDLOfAPIWithHttpInfo(apiId, file, url, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse;
+    }
+
     public GraphQLSchemaDTO getGraphqlSchemaDefinition(String apiId) throws ApiException {
         ApiResponse<GraphQLSchemaDTO> schemaDefinitionDTO = graphQlSchemaIndividualApi.
                 apisApiIdGraphqlSchemaGetWithHttpInfo(apiId, "application/json", null);
