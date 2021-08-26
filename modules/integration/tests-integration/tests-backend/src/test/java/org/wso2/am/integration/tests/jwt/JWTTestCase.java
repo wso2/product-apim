@@ -210,6 +210,10 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             BackendJWTUtil.verifyJWTHeader(decodedJWTHeaderString);
             JSONObject jsonObject = new JSONObject(decodedJWTString);
             log.info("JWT Received ==" + jsonObject.toString());
+            //Validate expiry time
+            Long expiry = jsonObject.getLong("exp");
+            Long currentTime = System.currentTimeMillis() / 1000;
+            Assert.assertTrue(currentTime <= expiry, "Token expired");
             // check default claims
             checkDefaultUserClaims(jsonObject, oauthApplicationName);
             // check user profile info claims
