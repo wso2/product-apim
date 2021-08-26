@@ -47,6 +47,7 @@ import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LabelListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyListDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.HttpResponse;
@@ -253,6 +254,18 @@ public class RestAPIAdminImpl {
         return subscriptionPolicyCollectionApi
                 .throttlingPoliciesSubscriptionPostWithHttpInfo(subscriptionThrottlePolicyDTO,
                         Constants.APPLICATION_JSON_CONTENT_TYPE);
+    }
+
+    /**
+     * This method is used to fetch all subscription throttling policies.
+     *
+     * @return Subscription policy list
+     * @throws ApiException Throws if an error occurred while fetching subscription throttling policies.
+     */
+    public SubscriptionThrottlePolicyListDTO getSubscriptionThrottlingPolicies() throws ApiException {
+
+        return subscriptionPolicyCollectionApi
+                .throttlingPoliciesSubscriptionGet(Constants.APPLICATION_JSON_CONTENT_TYPE, null, null);
 
     }
 
