@@ -97,7 +97,7 @@ public class JWTGrantTestCase extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        tokenUrl = getKeyManagerURLHttps() + "/oauth2/token";;
+        tokenUrl = getKeyManagerURLHttps() + "/oauth2/token";
         grantTypesWithJWT.add(APIMIntegrationConstants.GRANT_TYPE.JWT);
         String applicationName = "JWTGrantApp";
         ApplicationDTO applicationDTO =
