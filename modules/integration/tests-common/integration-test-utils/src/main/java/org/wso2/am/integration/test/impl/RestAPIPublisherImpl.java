@@ -21,6 +21,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
@@ -31,6 +33,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
@@ -72,15 +75,19 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationRes
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PatchRequestBodyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PostRequestBodyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
@@ -116,6 +123,7 @@ public class RestAPIPublisherImpl {
     public ApIsApi apIsApi = new ApIsApi();
     public ApiDocumentsApi apiDocumentsApi = new ApiDocumentsApi();
     public ApiRevisionsApi apiRevisionsApi = new ApiRevisionsApi();
+    public ApiResourcePoliciesApi apiResourcePoliciesApi = new ApiResourcePoliciesApi();
     public ApiProductRevisionsApi apiProductRevisionsApi = new ApiProductRevisionsApi();
     public ThrottlingPoliciesApi throttlingPoliciesApi = new ThrottlingPoliciesApi();
     public ClientCertificatesApi clientCertificatesApi = new ClientCertificatesApi();
@@ -168,6 +176,7 @@ public class RestAPIPublisherImpl {
         apIsApi.setApiClient(apiPublisherClient);
         apiProductsApi.setApiClient(apiPublisherClient);
         apiRevisionsApi.setApiClient(apiPublisherClient);
+        apiResourcePoliciesApi.setApiClient(apiPublisherClient);
         apiProductRevisionsApi.setApiClient(apiPublisherClient);
         graphQlSchemaApi.setApiClient(apiPublisherClient);
         commentsApi.setApiClient(apiPublisherClient);
@@ -289,6 +298,9 @@ public class RestAPIPublisherImpl {
         body.setEndpointConfig(apiRequest.getEndpointConfig());
         body.setSecurityScheme(apiRequest.getSecurityScheme());
         body.setType(APIDTO.TypeEnum.fromValue(apiRequest.getType()));
+        if (StringUtils.isNotBlank(apiRequest.getApiTier())) {
+            body.setApiThrottlingPolicy(apiRequest.getApiTier());
+        }
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
@@ -542,6 +554,9 @@ public class RestAPIPublisherImpl {
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiRequest.getTags().split(",")));
         body.setEndpointConfig(apiRequest.getEndpointConfig());
+        if (StringUtils.isNotBlank(apiRequest.getApiTier())) {
+            body.setApiThrottlingPolicy(apiRequest.getApiTier());
+        }
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         body.setPolicies(Arrays.asList(apiRequest.getTiersCollection().split(",")));
@@ -607,6 +622,24 @@ public class RestAPIPublisherImpl {
         HttpResponse response = null;
         if (deleteResponse.getStatusCode() == 200) {
             response = new HttpResponse("Successfully deleted the API", 200);
+        }
+        return response;
+    }
+
+    public HttpResponse generateMockScript(String apiId) throws ApiException {
+        ApiResponse<String> mockResponse = apIsApi.generateMockScriptsWithHttpInfo(apiId, null);
+        HttpResponse response = null;
+        if (mockResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully generated MockScript", 200);
+        }
+        return response;
+    }
+
+    public HttpResponse getGenerateMockScript(String apiId) throws ApiException {
+        ApiResponse<MockResponsePayloadListDTO> mockResponse = apIsApi.getGeneratedMockScriptsOfAPIWithHttpInfo(apiId, null);
+        HttpResponse response = null;
+        if (mockResponse.getStatusCode() == 200) {
+            response = new HttpResponse(mockResponse.getData().toString(), 200);
         }
         return response;
     }
@@ -1097,6 +1130,43 @@ public class RestAPIPublisherImpl {
         Assert.assertEquals(HttpStatus.SC_OK, schemaDefinitionDTO.getStatusCode());
     }
 
+    public WSDLValidationResponseDTO validateWsdlDefinition(String url, File wsdlDefinition) throws ApiException {
+        ApiResponse<WSDLValidationResponseDTO> response = validationApi
+                .validateWSDLDefinitionWithHttpInfo(url, wsdlDefinition);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
+    public APIDTO importWSDLSchemaDefinition(File file, String url, String properties, String type)
+            throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importWSDLDefinitionWithHttpInfo(file, url, properties, type);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    public ApiResponse<Void> getWSDLSchemaDefinitionOfAPI(String apiId) throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse;
+    }
+
+    public ResourcePolicyListDTO getApiResourcePolicies(String apiId, String sequenceType, String resourcePath,
+            String verb) throws ApiException {
+        ApiResponse<ResourcePolicyListDTO> policyListDTOApiResponse = apiResourcePoliciesApi
+                .getAPIResourcePoliciesWithHttpInfo(apiId, sequenceType, resourcePath, verb, null);
+        Assert.assertEquals(policyListDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return policyListDTOApiResponse.getData();
+    }
+
+    public ResourcePolicyInfoDTO updateApiResourcePolicies(String apiId, String resourcePolicyId, String resourcePath,
+            ResourcePolicyInfoDTO resourcePolicyInfoDTO, String verb) throws ApiException {
+
+        ApiResponse<ResourcePolicyInfoDTO> response = apiResourcePoliciesApi
+                .updateAPIResourcePoliciesByPolicyIdWithHttpInfo(apiId, resourcePolicyId, resourcePolicyInfoDTO, null);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        return response.getData();
+    }
+
     public APIDTO addAPI(APICreationRequestBean apiCreationRequestBean) throws ApiException {
 
         APIDTO body = new APIDTO();
@@ -1137,24 +1207,33 @@ public class RestAPIPublisherImpl {
         body.setCorsConfiguration(new APICorsConfigurationDTO());
         body.setTags(Arrays.asList(apiCreationRequestBean.getTags().split(",")));
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("endpoint_type", "http");
-        JSONObject sandUrl = new JSONObject();
-        sandUrl.put("url", apiCreationRequestBean.getEndpointUrl().toString());
-        jsonObject.put("sandbox_endpoints", sandUrl);
-        jsonObject.put("production_endpoints", sandUrl);
-        if ("basic".equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
-            JSONObject endpointSecurityGlobal = new JSONObject();
-            endpointSecurityGlobal.put("enabled", true);
-            endpointSecurityGlobal.put("type", "basic");
-            endpointSecurityGlobal.put("username", apiCreationRequestBean.getEpUsername());
-            endpointSecurityGlobal.put("password", apiCreationRequestBean.getEpPassword());
-            JSONObject endpointSecurity = new JSONObject();
-            endpointSecurity.put("production", endpointSecurityGlobal);
-            endpointSecurity.put("sandbox", endpointSecurityGlobal);
-            jsonObject.put("endpoint_security", endpointSecurity);
+        if (apiCreationRequestBean.getSetEndpointSecurityDirectlyToEndpoint()) {
+            try {
+                body.setEndpointConfig(new JSONParser().parse(apiCreationRequestBean.getEndpoint().toString()));
+            } catch (ParseException e) {
+                throw new ApiException(e);
+            }
+        } else {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("endpoint_type", "http");
+            JSONObject sandUrl = new JSONObject();
+            sandUrl.put("url", apiCreationRequestBean.getEndpointUrl().toString());
+            jsonObject.put("sandbox_endpoints", sandUrl);
+            jsonObject.put("production_endpoints", sandUrl);
+            if ("basic".equalsIgnoreCase(apiCreationRequestBean.getEndpointType())) {
+                JSONObject endpointSecurityGlobal = new JSONObject();
+                endpointSecurityGlobal.put("enabled", true);
+                endpointSecurityGlobal.put("type", "basic");
+                endpointSecurityGlobal.put("username", apiCreationRequestBean.getEpUsername());
+                endpointSecurityGlobal.put("password", apiCreationRequestBean.getEpPassword());
+                JSONObject endpointSecurity = new JSONObject();
+                endpointSecurity.put("production", endpointSecurityGlobal);
+                endpointSecurity.put("sandbox", endpointSecurityGlobal);
+                jsonObject.put("endpoint_security", endpointSecurity);
+            }
+            body.setEndpointConfig(jsonObject);
         }
-        body.setEndpointConfig(jsonObject);
+
         List<String> tierList = new ArrayList<>();
         tierList.add(Constants.TIERS_UNLIMITED);
         if (apiCreationRequestBean.getSubPolicyCollection() != null) {

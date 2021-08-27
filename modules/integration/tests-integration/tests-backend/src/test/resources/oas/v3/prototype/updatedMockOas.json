@@ -1,0 +1,104 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "SwaggerPetstore_v3",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "default": []
+    }
+  ],
+  "paths": {
+    "/pets": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "default": [
+              "SwaggerPetstore_imp_v3"
+            ]
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": null,
+        "x-mediation-script": "var accept = mc.getProperty('AcceptHeader');\nvar responseCode = mc.getProperty('query.param.responseCode');\nvar responseCodeSC;\nvar responses = [];\nif (!responses[200]) {\n  responses[200] = [];\n}\nresponses[200][\"application/json\"] = \"\";\nresponses[200][\"application/xml\"] = \"\";\n\n\nresponses[501] = [];\nresponses[501][\"application/json\"] = {\n\"code\" : 501,\n\"description\" : \"Not Implemented\"}\nresponses[501][\"application/xml\"] = <response><code>501</code><description>Not Implemented</description></response>;\n\nif (responseCode == null) {\n responseCode = 200;\n}\n\nif (!responses[responseCode]) {\n  if (responses[\"default\"]) {\n    responseCode = \"default\"\n  } else {\n    responseCode = 501;\n  }\n}\nif (responseCode === \"default\") {\n  responseCodeSC = mc.getProperty('query.param.responseCode');\n} else {\n  responseCodeSC = responseCode;\n}\nif (accept == null || !responses[responseCode][accept]) {\n accept = \"application/json\";\n}\n\nif (accept == \"application/json\") {\n mc.setProperty('CONTENT_TYPE', 'application/json');\n mc.setProperty('HTTP_SC', responseCodeSC + \"\");\n mc.setPayloadJSON(responses[responseCode][\"application/json\"]);\n} else if (accept == \"application/xml\") {\n mc.setProperty('CONTENT_TYPE', 'application/xml');\n mc.setProperty('HTTP_SC', responseCodeSC + \"\");\n mc.setPayloadXML(responses[responseCode][\"application/xml\"]);\n}"
+      }
+    },
+    "/pets/{petId}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": null,
+        "x-mediation-script": "var accept = mc.getProperty('AcceptHeader');\nvar responseCode = mc.getProperty('query.param.responseCode');\nvar responseCodeSC;\nvar responses = [];\nif (!responses[200]) {\n  responses[200] = [];\n}\nresponses[200][\"application/json\"] = \"\";\nresponses[200][\"application/xml\"] = \"\";\n\n\nresponses[501] = [];\nresponses[501][\"application/json\"] = {\n\"code\" : 501,\n\"description\" : \"Not Implemented\"}\nresponses[501][\"application/xml\"] = <response><code>501</code><description>Not Implemented</description></response>;\n\nif (responseCode == null) {\n responseCode = 200;\n}\n\nif (!responses[responseCode]) {\n  if (responses[\"default\"]) {\n    responseCode = \"default\"\n  } else {\n    responseCode = 501;\n  }\n}\nif (responseCode === \"default\") {\n  responseCodeSC = mc.getProperty('query.param.responseCode');\n} else {\n  responseCodeSC = responseCode;\n}\nif (accept == null || !responses[responseCode][accept]) {\n accept = \"application/json\";\n}\n\nif (accept == \"application/json\") {\n mc.setProperty('CONTENT_TYPE', 'application/json');\n mc.setProperty('HTTP_SC', responseCodeSC + \" Nirons mock Start \");\n mc.setPayloadJSON(responses[responseCode][\"application/json\"]);\n} else if (accept == \"application/xml\") {\n mc.setProperty('CONTENT_TYPE', 'application/xml');\n mc.setProperty('HTTP_SC', responseCodeSC + \"\");\n mc.setPayloadXML(responses[responseCode][\"application/xml\"]);\n}"
+      }
+    },
+    "/oldpets": {
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "default": [
+              "SwaggerPetstore_imp_v3"
+            ]
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": null,
+        "x-mediation-script": "var accept = mc.getProperty('AcceptHeader');\nvar responseCode = mc.getProperty('query.param.responseCode');\nvar responseCodeSC;\nvar responses = [];\nif (!responses[200]) {\n  responses[200] = [];\n}\nresponses[200][\"application/json\"] = \"\";\nresponses[200][\"application/xml\"] = \"\";\n\n\nresponses[501] = [];\nresponses[501][\"application/json\"] = {\n\"code\" : 501,\n\"description\" : \"Not Implemented\"}\nresponses[501][\"application/xml\"] = <response><code>501</code><description>Not Implemented</description></response>;\n\nif (responseCode == null) {\n responseCode = 200;\n}\n\nif (!responses[responseCode]) {\n  if (responses[\"default\"]) {\n    responseCode = \"default\"\n  } else {\n    responseCode = 501;\n  }\n}\nif (responseCode === \"default\") {\n  responseCodeSC = mc.getProperty('query.param.responseCode');\n} else {\n  responseCodeSC = responseCode;\n}\nif (accept == null || !responses[responseCode][accept]) {\n accept = \"application/json\";\n}\n\nif (accept == \"application/json\") {\n mc.setProperty('CONTENT_TYPE', 'application/json');\n mc.setProperty('HTTP_SC', responseCodeSC + \"\");\n mc.setPayloadJSON(responses[responseCode][\"application/json\"]);\n} else if (accept == \"application/xml\") {\n mc.setProperty('CONTENT_TYPE', 'application/xml');\n mc.setProperty('HTTP_SC', responseCodeSC + \"\");\n mc.setPayloadXML(responses[responseCode][\"application/xml\"]);\n}"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "default": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://test.com",
+            "scopes": {
+              "SwaggerPetstore_imp_v3": "SwaggerPetstore_imp_v3"
+            },
+            "x-scopes-bindings": {
+              "SwaggerPetstore_imp_v3": "admin"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -107,6 +107,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private String environment = Constants.GATEWAY_ENVIRONMENT;
     private String productionTps = null;
     private URL endpointUrl = null;
+    private Boolean setEndpointSecurityDirectlyToEndpoint = false;
 
     public String getEnvironment() {
         return environment;
@@ -801,5 +802,13 @@ public class APICreationRequestBean extends AbstractRequest {
 
     public void setEndpointUrl(URL endpointUrl) {
         this.endpointUrl = endpointUrl;
+    }
+
+    public Boolean getSetEndpointSecurityDirectlyToEndpoint() {
+        return setEndpointSecurityDirectlyToEndpoint;
+    }
+
+    public void setSetEndpointSecurityDirectlyToEndpoint(Boolean setEndpointSecurityDirectlyToEndpoint) {
+        this.setEndpointSecurityDirectlyToEndpoint = setEndpointSecurityDirectlyToEndpoint;
     }
 }

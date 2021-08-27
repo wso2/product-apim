@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
+import org.apache.synapse.unittest.testcase.data.classes.AssertNotNull;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
@@ -207,6 +208,30 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public HttpResponse createApplicationWithOrganization(String appName, String description, String throttleTier,
+                                                          ApplicationDTO.TokenTypeEnum tokenType, List<String> groups) {
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setTokenType(tokenType);
+            application.setGroups(groups);
+
+            ApplicationDTO createdApp = applicationsApi.applicationsPost(application);
+            HttpResponse response = null;
+            if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                response = new HttpResponse(createdApp.getApplicationId(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains("already exists")) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     public HttpResponse createApplicationWithCustomAttribute(String appName, String description, String throttleTier,
                                                              ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute) {
 
@@ -279,6 +304,32 @@ public class RestAPIStoreImpl {
             }
         }
         return null;
+    }
+
+    /**
+     * Update shared Application by ID with the organization
+     */
+    public HttpResponse updateApplicationByID(String applicationId, String appName, String description,
+                                              String throttleTier,
+                                              ApplicationDTO.TokenTypeEnum tokenType, List<String> groups) {
+        HttpResponse response = null;
+        try {
+            ApplicationDTO application = new ApplicationDTO();
+            application.setName(appName);
+            application.setDescription(description);
+            application.setThrottlingPolicy(throttleTier);
+            application.setTokenType(tokenType);
+            application.setGroups(groups);
+
+            ApplicationDTO createdApp = applicationsApi.applicationsApplicationIdPut(applicationId, application, null);
+            if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                response = new HttpResponse(createdApp.toString(), 200);
+            }
+            return response;
+        } catch (ApiException e) {
+            response = new HttpResponse(e.getResponseBody(), e.getCode());
+            return response;
+        }
     }
 
     public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) {
@@ -1909,6 +1960,14 @@ public class RestAPIStoreImpl {
         }
     }
 
+    public ApiResponse<Void> downloadWSDLSchemaDefinitionOfAPI(String apiId, String environmentName)
+            throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId, null, environmentName,
+                null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse;
+    }
+
     public KeyManagerListDTO getKeyManagers() throws ApiException {
 
         return keyManagersCollectionApi.keyManagersGet(tenantDomain);
@@ -1933,10 +1992,10 @@ public class RestAPIStoreImpl {
         return applicationKeysApi.applicationsApplicationIdKeysGet(jwtAppId);
     }
 
-    public ApplicationKeyDTO mapConsumerKeyWithApplication(String consumerKey, String appid, String keyManager) throws ApiException {
+    public ApplicationKeyDTO mapConsumerKeyWithApplication(String consumerKey, String consumerSecret, String appid, String keyManager) throws ApiException {
 
         ApplicationKeyMappingRequestDTO applicationKeyMappingRequestDTO =
-                new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).keyType(
+                new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).consumerSecret(consumerSecret).keyType(
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
         return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid, applicationKeyMappingRequestDTO);
     }
@@ -2012,6 +2071,26 @@ public class RestAPIStoreImpl {
                 }
             }
         }
+    }
+
+    /**
+     * Wait until the subscription removal is successfully synced with gateway
+     */
+    public void waitForSubscriptionRemovedFromGateway(SubscriptionDTO removedSubscriptionDTO)
+                                    throws org.wso2.am.integration.clients.gateway.api.ApiException {
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + 6000;
+        org.wso2.am.integration.clients.gateway.api.v2.dto.SubscriptionDTO subscriptionDTO = null;
+        while (waitTime > System.currentTimeMillis()) {
+            subscriptionDTO = restAPIGateway.retrieveSubscription(removedSubscriptionDTO.getApiId(),
+                                            removedSubscriptionDTO.getApplicationId());
+            if (subscriptionDTO == null) {
+                break;
+            }
+        }
+        Assert.assertNull(subscriptionDTO, "Subscription of API " + removedSubscriptionDTO.getApiInfo().getName()
+                                        + " with Application " + removedSubscriptionDTO.getApplicationInfo().getName()
+                                        + " has not been successfully removed");
     }
 
     private void setActivityID() {
