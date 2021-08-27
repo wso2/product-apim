@@ -33,7 +33,9 @@
         </TrustStore>
         <SSLVerifyClient>{{keystore.listener_profile.ssl_verify_client}}</SSLVerifyClient>
         <HttpsProtocols>{{transport.passthru_https.listener.parameters.HttpsProtocols}}</HttpsProtocols>
+        {% if transport.passthru_https.listener.parameters.PreferredCiphers is defined %}
         <PreferredCiphers>{{transport.passthru_https.listener.parameters.PreferredCiphers}}</PreferredCiphers>
+        {% endif %}
     </profile>
 </parameter>
 
