@@ -231,6 +231,7 @@ public class RestAPIPublisherImpl {
         APIDTO body = new APIDTO();
 
         body.setName(apiRequest.getName());
+        body.setSubscriptionAvailability(apiRequest.getSubscriptionAvailability());
         body.setContext(apiRequest.getContext());
         body.setVersion(apiRequest.getVersion());
         if (apiRequest.getVisibility() != null) {
