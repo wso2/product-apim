@@ -30,6 +30,7 @@ import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyPermissionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
@@ -229,6 +230,43 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         ApiResponse<Void> apiResponse =
                 restAPIAdmin.deleteSubscriptionThrottlingPolicy(requestCountPolicyDTO.getPolicyId());
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test fetch subscription policies after deleting a subscription throttling"
+            + " policy")
+    public void testFetchSubscriptionPoliciesAfterDeletePolicy() throws Exception {
+
+        //Create the subscription throttling policy DTO with request count limit
+        String policyName = "TestPolicy11527";
+        List<String> roleList = new ArrayList<>();
+        roleList.add(INTERNAL_CREATOR);
+
+        RequestCountLimitDTO requestCountLimit =
+                DtoFactory.createRequestCountLimitDTO(timeUnit, unitTime, 50L);
+        ThrottleLimitDTO defaultLimit =
+                DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT, requestCountLimit, null);
+        permissions = DtoFactory.
+                createSubscriptionThrottlePolicyPermissionDTO(SubscriptionThrottlePolicyPermissionDTO.
+                        PermissionTypeEnum.ALLOW, roleList);
+        requestCountPolicyDTO = DtoFactory
+                .createSubscriptionThrottlePolicyDTO(policyName, displayName, description, false, defaultLimit,
+                        graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
+                        stopQuotaOnReach, billingPlan, permissions);
+
+        //Add the subscription throttling policy
+        ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy =
+                restAPIAdmin.addSubscriptionThrottlingPolicy(requestCountPolicyDTO);
+
+        SubscriptionThrottlePolicyListDTO policyList = restAPIAdmin.getSubscriptionThrottlingPolicies();
+        Assert.assertNotNull(policyList);
+
+        //Delete Subscription Policy
+        ApiResponse<Void> apiResponse =
+                restAPIAdmin.deleteSubscriptionThrottlingPolicy(addedPolicy.getData().getPolicyId());
+
+        //Fetch subscription policies again
+        policyList = restAPIAdmin.getSubscriptionThrottlingPolicies();
+        Assert.assertNotNull(policyList);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add subscription throttling policy with existing policy name",
