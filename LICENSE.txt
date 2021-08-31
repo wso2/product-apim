@@ -544,7 +544,7 @@ java-property-utils_1.9.0.wso2v1.jar                                            
 org.wso2.carbon.user.core_4.6.2.jar                                                                 bundle         apache2
 org.wso2.carbon.apimgt.keymgt.stub_9.0.178.jar                                                      bundle         apache2
 io.netty.transport_4.1.63.Final.jar                                                                 bundle         apache2
-openapi-generator_4.3.1.wso2v2.jar                                                                  bundle         apache2
+openapi-generator_4.3.1.wso2v3.jar                                                                  bundle         apache2
 commons-io-2.4.jar                                                                                  jarinbundle    apache2
 slf4j-ext-1.7.12.jar                                                                                jarinbundle    mit
 org.wso2.carbon.event.output.adapter.cassandra_5.2.34.jar                                           bundle         apache2

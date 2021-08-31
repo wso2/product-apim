@@ -343,7 +343,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
     @Test(groups = {
             "wso2.am"}, description = "Test Add OAuth Endpoint Security", dependsOnMethods =
             "testAddEndpointSecurityForSandboxAndProduction")
-    public void testUpdateEndpointSecurityForOauth() throws Exception {
+    public void testAddEndpointSecurityForOauth() throws Exception {
 
         // Create an API
         String apiName = API_NAME + "4";

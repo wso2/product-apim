@@ -320,51 +320,6 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         wireMockServer.start();
     }
 
-    /**
-     * Find a free port to start backend WebSocket server in given port range
-     *
-     * @param lowerPortLimit from port number
-     * @param upperPortLimit to port number
-     * @return Available Port Number
-     */
-    private int getAvailablePort(int lowerPortLimit, int upperPortLimit) {
-
-        while (lowerPortLimit < upperPortLimit) {
-            if (isPortFree(lowerPortLimit)) {
-                return lowerPortLimit;
-            }
-            lowerPortLimit += 1;
-        }
-        return -1;
-    }
-
-    /**
-     * Check whether give port is available
-     *
-     * @param port Port Number
-     * @return status
-     */
-    private boolean isPortFree(int port) {
-
-        Socket s = null;
-        try {
-            s = new Socket(securedEndpointHost, port);
-            // something is using the port and has responded.
-            return false;
-        } catch (IOException e) {
-            //port available
-            return true;
-        } finally {
-            if (s != null) {
-                try {
-                    s.close();
-                } catch (IOException e) {
-                    throw new RuntimeException("Unable to close connection ", e);
-                }
-            }
-        }
-    }
-
     @AfterClass(alwaysRun = true)
     public void destroy() throws ApiException {
 

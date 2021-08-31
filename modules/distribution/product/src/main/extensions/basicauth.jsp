@@ -30,6 +30,7 @@
 <%@ page import="javax.ws.rs.core.Response" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isSelfSignUpEPAvailable" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isRecoveryEPAvailable" %>
+<%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isEmailUsernameEnabled" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.getServerURL" %>
 <%@ page import="org.apache.commons.codec.binary.Base64" %>
 <%@ page import="org.apache.commons.text.StringEscapeUtils" %>
@@ -40,6 +41,25 @@
 <%@ page import="org.wso2.carbon.identity.core.ServiceURLBuilder" %>
 
 <jsp:directive.include file="includes/init-loginform-action-url.jsp"/>
+
+<%
+    String emailUsernameEnable = application.getInitParameter("EnableEmailUserName");
+    Boolean isEmailUsernameEnabled = false;
+
+    if (StringUtils.isNotBlank(emailUsernameEnable)) {
+        isEmailUsernameEnabled = Boolean.valueOf(emailUsernameEnable);
+    } else {
+        isEmailUsernameEnabled = isEmailUsernameEnabled();
+    }
+%>
+
+<%
+    String proxyContextPath = ServerConfiguration.getInstance().getFirstProperty(IdentityCoreConstants
+            .PROXY_CONTEXT_PATH);
+    if (proxyContextPath == null) {
+        proxyContextPath = "";
+    }
+%>
 <script>
     function goBack() {
         window.history.back();
@@ -57,17 +77,58 @@
                 } else {
                     e.preventDefault();
 
+                    var isEmailUsernameEnabled = JSON.parse("<%= isEmailUsernameEnabled %>");
+                    var tenantName = getParameterByName("tenantDomain");
                     var userName = document.getElementById("username");
                     var usernameUserInput = document.getElementById("usernameUserInput");
 
                     if (usernameUserInput) {
-                        userName.value = usernameUserInput.value.trim();
+                        var usernameUserInputValue = usernameUserInput.value.trim();
+
+                        if (tenantName && tenantName !== "null") {
+
+                            if (isEmailUsernameEnabled) {
+
+                                if (usernameUserInputValue.split("@").length <= 1) {
+                                    var errorMessage = document.getElementById("error-msg");
+
+                                    errorMessage.innerHTML = "Invalid Username. Username has to be an email address.";
+                                    errorMessage.style.display = "block";
+
+                                    return;
+                                }
+
+                                if (usernameUserInputValue.split("@").length === 2) {
+                                    userName.value = usernameUserInputValue + "@" + tenantName;
+                                }
+                                else {
+                                    userName.value = usernameUserInputValue;
+                                }
+                            } else {
+                                if (usernameUserInputValue.split("@").length > 1) {
+                                    userName.value = usernameUserInputValue;
+                                } else {
+                                    userName.value = usernameUserInputValue + "@" + tenantName;
+                                }
+
+                            }
+                            
+                        } else {
+                            userName.value = usernameUserInputValue;
+                        }
                     }
 
                     if (userName.value) {
+                         let contextPath = "<%=proxyContextPath%>"
+                        if (contextPath !== "") {
+                            contextPath = contextPath.startsWith('/') ? contextPath : "/" + contextPath
+                            contextPath = contextPath.endsWith('/') ?
+                                contextPath.substring(0, contextPath.length - 1) : contextPath
+                        }
                         $.ajax({
                             type: "GET",
-                            url: "<%=loginContextRequestUrl%>",
+                            url: contextPath + "/logincontext?sessionDataKey=" + getParameterByName("sessionDataKey") +
+                                "&relyingParty=" + getParameterByName("relyingParty") + "&tenantDomain=" + tenantName,
                             success: function (data) {
                                 if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {
                                     window.location.href = data.redirectUrl;
@@ -106,11 +167,6 @@
         UserDTO userDTO = AuthenticationEndpointUtil.getUser(resendUsername);
         selfRegistrationRequest.setUser(userDTO);
         String path = config.getServletContext().getInitParameter(Constants.ACCOUNT_RECOVERY_REST_ENDPOINT_URL);
-        String proxyContextPath = ServerConfiguration.getInstance().getFirstProperty(IdentityCoreConstants
-                .PROXY_CONTEXT_PATH);
-        if (proxyContextPath == null) {
-            proxyContextPath = "";
-        }
         String url;
         if (StringUtils.isNotBlank(EndpointConfigManager.getServerOrigin())) {
             url = EndpointConfigManager.getServerOrigin() + proxyContextPath + path;

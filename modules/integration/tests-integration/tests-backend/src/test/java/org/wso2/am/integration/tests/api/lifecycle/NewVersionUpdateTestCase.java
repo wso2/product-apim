@@ -63,8 +63,7 @@ public class NewVersionUpdateTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
-        endpointUrlNew =
-                backEndServerUrl.getWebAppURLHttp() + "https://localhost:9443/am/sample/calculator/v1/api/multiply";
+        endpointUrlNew = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/multiply";
 
     }
 
