@@ -122,7 +122,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         apiPublisherClientCarbonSuperAdmin = new RestAPIPublisherImpl(user.getUserNameWithoutDomain(),
                 user.getPassword(), user.getUserDomain(), publisherURLHttps);
         apiStoreClientCarbonSuperAdmin = new RestAPIStoreImpl(user.getUserNameWithoutDomain(), user.getPassword(),
-                user.getUserDomain(), storeURLHttps,restAPIGateway);
+                user.getUserDomain(), storeURLHttps);
         apiCreatorStoreDomain = storeContext.getContextTenant().getDomain();
 
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
@@ -150,10 +150,10 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
                 apiCreatorStoreDomain, publisherURLHttps);
 
         apiStoreClientCarbonSuperUser1 = new RestAPIStoreImpl(username2, user2.getPassword(), apiCreatorStoreDomain,
-                storeURLHttps,restAPIGateway);
+                storeURLHttps);
 
         apiStoreClientCarbonSuperUser2 = new RestAPIStoreImpl(username3, user3.getPassword(), apiCreatorStoreDomain,
-                storeURLHttps,restAPIGateway);
+                storeURLHttps);
 
         apiPublisherClientCarbonSuperUser2 = new RestAPIPublisherImpl(username3, user3.getPassword(),
                 apiCreatorStoreDomain, publisherURLHttps);
@@ -173,7 +173,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
         apiStoreClientSubscriberUserSameDomain = new RestAPIStoreImpl(CARBON_SUPER_SUBSCRIBER_USERNAME,
                 CARBON_SUPER_SUBSCRIBER_PASSWORD, MultitenantConstants.SUPER_TENANT_DOMAIN_NAME,
-                storeURLHttps,restAPIGateway);
+                storeURLHttps);
 
         //Creating Tenant contexts
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
@@ -187,7 +187,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         otherDomain = storeContext.getContextTenant().getDomain();
         apiStoreClientAnotherUserOtherDomain = new RestAPIStoreImpl(otherTenantUser.getUserNameWithoutDomain(),
                 otherTenantUser.getPassword(), otherDomain,
-                storeURLHttps,restAPIGateway);
+                storeURLHttps);
         apiPublisherClientAnotherUserOtherDomain = new RestAPIPublisherImpl(
                 otherTenantUser.getUserNameWithoutDomain(), otherTenantUser.getPassword(),
                 otherDomain, publisherURLHttps);
@@ -196,7 +196,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         apiStoreClientAdminOtherDomain = new RestAPIStoreImpl(
                 storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                 storeContext.getContextTenant().getContextUser().getPassword(),
-                storeContext.getContextTenant().getContextUser().getUserDomain(), storeURLHttps,restAPIGateway);
+                storeContext.getContextTenant().getContextUser().getUserDomain(), storeURLHttps);
         apiPublisherClientAdminOtherDomain = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getContextUser().getPassword(),
@@ -216,7 +216,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
         apiStoreClientSubscriberUserOtherDomain = new RestAPIStoreImpl(TENANT_SUBSCRIBER_USERNAME,
                 TENANT_SUBSCRIBER_PASSWORD, TENANT_DOMAIN_KEY,
-                storeURLHttps,restAPIGateway);
+                storeURLHttps);
 
     }
 

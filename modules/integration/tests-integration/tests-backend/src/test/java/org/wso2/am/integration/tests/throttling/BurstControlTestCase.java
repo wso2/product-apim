@@ -192,10 +192,9 @@ public class BurstControlTestCase  extends APIManagerLifecycleBaseTest {
 
         // remove previous subscription
         log.info("Old subscription id:" + subscriptionDTO1.getSubscriptionId());
-        HttpResponse httpResponse = restAPIStore.removeSubscription(subscriptionDTO1.getSubscriptionId());
+        HttpResponse httpResponse = restAPIStore.removeSubscription(subscriptionDTO1);
         log.info("httpResponse of removeSubscription ====== : " + httpResponse);
         log.info("AAA= " + subscriptionDTO1);
-        restAPIStore.waitForSubscriptionRemovedFromGateway(subscriptionDTO1);
         Thread.sleep(5000);
 
         // add new subscription

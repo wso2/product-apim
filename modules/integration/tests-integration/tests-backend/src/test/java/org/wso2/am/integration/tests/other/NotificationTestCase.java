@@ -131,7 +131,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         UserManagementUtils.signupUser(STORE_USERNAME, STORE_PASSWORD, FIRST_NAME, ORGANIZATION, USER_EMAIL_ADDRESS);
 
         restAPIStoreClient = new
-                RestAPIStoreImpl(STORE_USERNAME, STORE_PASSWORD, SUPER_TENANT_DOMAIN, storeURLHttp, restAPIGateway);
+                RestAPIStoreImpl(STORE_USERNAME, STORE_PASSWORD, SUPER_TENANT_DOMAIN, storeURLHttp);
 
         // create new application and subscribing
         HttpResponse applicationResponse = restAPIStoreClient.createApplication(APP_NAME,

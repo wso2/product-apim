@@ -102,7 +102,7 @@ public class APITagVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest 
         // add new user with the above role
         userManagementClient.addUser(ALLOWED_USER, ALLOWED_USER_PASS, new String[]{ROLE}, null);
         apiStoreClientAllowedUser = new RestAPIStoreImpl(ALLOWED_USER, ALLOWED_USER_PASS,
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
         //get a rest api client for anonymous user
         anonymousRestAPIImpl = getRestAPIStoreForAnonymousUser(keyManagerContext.getContextTenant().getDomain());
     }

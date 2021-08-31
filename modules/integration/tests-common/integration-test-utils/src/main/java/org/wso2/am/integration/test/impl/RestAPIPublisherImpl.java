@@ -24,6 +24,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.testng.Assert;
+import org.wso2.am.integration.clients.gateway.api.v2.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
@@ -143,6 +144,8 @@ public class RestAPIPublisherImpl {
     public ApiClient apiPublisherClient = new ApiClient();
     public String tenantDomain;
     private ApiProductsApi apiProductsApi = new ApiProductsApi();
+    private RestAPIGatewayImpl restAPIGateway;
+    private String disableVerification = System.getProperty("disableVerification");
 
     @Deprecated
     public RestAPIPublisherImpl() {
@@ -195,6 +198,7 @@ public class RestAPIPublisherImpl {
         globalMediationPoliciesApi.setApiClient(apiPublisherClient);
         endpointCertificatesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
+        this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
 
     /**
@@ -1509,10 +1513,9 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws of an error occurred when creating the API Revision.
      */
     public HttpResponse deployAPIRevision(String apiUUID, String revisionUUID,
-                                          List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList)
-            throws ApiException {
-
-        setActivityID();
+                                          List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList,
+                                          String apiType)
+    throws ApiException, APIManagerIntegrationTestException {
         Gson gson = new Gson();
         List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOList = new ArrayList<>();
         List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOResponseList = new ArrayList<>();
@@ -1527,6 +1530,8 @@ public class RestAPIPublisherImpl {
             ApiResponse<List<APIRevisionDeploymentDTO>> httpInfo =
                     apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionDeploymentDTOList);
             Assert.assertEquals(201, httpInfo.getStatusCode());
+
+            waitForDeployAPI(apiUUID, revisionUUID, apiType);
             //apiRevisionDeploymentDTOResponseList = httpInfo.getData();
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
@@ -1552,9 +1557,8 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws of an error occurred when creating the API Revision.
      */
     public HttpResponse deployAPIRevision(String apiUUID, String revisionUUID,
-                                          APIRevisionDeployUndeployRequest apiRevisionDeployRequest)
-            throws ApiException {
-
+                                          APIRevisionDeployUndeployRequest apiRevisionDeployRequest, String apiType)
+    throws ApiException, APIManagerIntegrationTestException {
         Gson gson = new Gson();
         List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOList = new ArrayList<>();
         List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOResponseList = new ArrayList<>();
@@ -1567,6 +1571,7 @@ public class RestAPIPublisherImpl {
             ApiResponse<List<APIRevisionDeploymentDTO>> httpInfo =
                     apiRevisionsApi.deployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, apiRevisionDeploymentDTOList);
             Assert.assertEquals(201, httpInfo.getStatusCode());
+            waitForDeployAPI(apiUUID,revisionUUID, apiType);
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
@@ -1580,6 +1585,67 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
+    private void waitForDeployAPI(String apiUUID, String revisionUUID, String apiType) throws ApiException,
+            APIManagerIntegrationTestException {
+        if (Boolean.parseBoolean(disableVerification)){
+            return;
+        }
+        String context, version, provider, name;
+        if ("APIProduct".equals(apiType)) {
+            APIProductDTO apiProduct = getApiProduct(revisionUUID);
+            context = apiProduct.getContext();
+            version = "1.0.0";
+            provider = apiProduct.getProvider();
+            name = apiProduct.getName();
+        } else {
+            APIDTO api = getAPIByID(revisionUUID);
+            context = api.getContext();
+            version = api.getVersion();
+            provider = api.getProvider();
+            name = api.getName();
+        }
+        APIInfoDTO apiInfo = restAPIGateway.getAPIInfo(apiUUID);
+        if (apiInfo != null) {
+            if (!"APIProduct".equals(apiType)) {
+                if (context.startsWith("/{version}")) {
+                    Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
+                } else {
+                    Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
+                }
+            } else {
+                Assert.assertEquals(apiInfo.getContext(), context);
+
+            }
+            Assert.assertEquals(apiInfo.getName(), name);
+            Assert.assertEquals(apiInfo.getProvider(), provider);
+            return;
+        }
+        int retries = 0;
+        while (retries <= 20) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
+            apiInfo = restAPIGateway.getAPIInfo(apiUUID);
+            if (apiInfo != null) {
+                if (!"APIProduct".equals(apiType)) {
+                    if (context.startsWith("/{version}")) {
+                        Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
+                    } else {
+                        Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
+                    }
+                } else {
+                    Assert.assertEquals(apiInfo.getContext(), context);
+
+                }
+                Assert.assertEquals(apiInfo.getName(), name);
+                Assert.assertEquals(apiInfo.getProvider(), provider);
+                break;
+            }
+            retries++;
+        }
+    }
+
     /**
      * This method is used to undeploy API Revision to Gateways.
      *
@@ -1591,8 +1657,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse undeployAPIRevision(String apiUUID, String revisionUUID,
                                             List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList)
-            throws ApiException {
-
+            throws ApiException, APIManagerIntegrationTestException {
         Gson gson = new Gson();
         List<APIRevisionDeploymentDTO> apiRevisionUnDeploymentDTOList = new ArrayList<>();
         List<APIRevisionDeploymentDTO> apiRevisionUnDeploymentDTOResponseList = new ArrayList<>();
@@ -1607,6 +1672,7 @@ public class RestAPIPublisherImpl {
             ApiResponse<Void> httpInfo = apiRevisionsApi.undeployAPIRevisionWithHttpInfo(apiUUID, revisionUUID, null,
                     false, apiRevisionUnDeploymentDTOList);
             Assert.assertEquals(201, httpInfo.getStatusCode());
+            waitForUnDeployAPI(apiUUID);
             //apiRevisionUnDeploymentDTOResponseList = httpInfo.getData();
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
@@ -1619,6 +1685,29 @@ public class RestAPIPublisherImpl {
         HttpResponse response = null;
         response = new HttpResponse(gson.toJson(apiRevisionUnDeploymentDTOResponseList), 201);
         return response;
+    }
+
+    private void waitForUnDeployAPI(String apiUUID) throws APIManagerIntegrationTestException {
+
+        if (Boolean.parseBoolean(disableVerification)) {
+            return;
+        }
+        APIInfoDTO apiInfo = restAPIGateway.getAPIInfo(apiUUID);
+        if (apiInfo == null) {
+            return;
+        }
+        int retries = 0;
+        while (retries <= 20) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
+            apiInfo = restAPIGateway.getAPIInfo(apiUUID);
+            if (apiInfo == null) {
+                break;
+            }
+            retries++;
+        }
     }
 
     /**
@@ -1750,9 +1839,9 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws of an error occurred when creating the API Revision.
      */
     public HttpResponse deployAPIProductRevision(String apiUUID, String revisionUUID,
-                                                 List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList)
-            throws ApiException {
-
+                                          List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList,
+                                                 String apiType)
+            throws ApiException, APIManagerIntegrationTestException {
         Gson gson = new Gson();
         List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOList = new ArrayList<>();
         List<APIRevisionDeploymentDTO> apiRevisionDeploymentDTOResponseList = new ArrayList<>();
@@ -1767,6 +1856,7 @@ public class RestAPIPublisherImpl {
             ApiResponse<Void> httpInfo = apiProductRevisionsApi.deployAPIProductRevisionWithHttpInfo(
                     apiUUID, revisionUUID, apiRevisionDeploymentDTOList);
             Assert.assertEquals(201, httpInfo.getStatusCode());
+            waitForDeployAPI(apiUUID, revisionUUID, apiType);
             //apiRevisionDeploymentDTOResponseList = httpInfo.getData();
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
@@ -1792,9 +1882,8 @@ public class RestAPIPublisherImpl {
      * @throws ApiException throws of an error occurred when undeploying the API Revision.
      */
     public HttpResponse undeployAPIProductRevision(String apiUUID, String revisionUUID,
-                                                   List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList)
-            throws ApiException {
-
+                                            List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList)
+            throws ApiException, APIManagerIntegrationTestException {
         Gson gson = new Gson();
         List<APIRevisionDeploymentDTO> apiRevisionUnDeploymentDTOList = new ArrayList<>();
         List<APIRevisionDeploymentDTO> apiRevisionUnDeploymentDTOResponseList = new ArrayList<>();
@@ -1809,6 +1898,7 @@ public class RestAPIPublisherImpl {
             ApiResponse<Void> httpInfo = apiProductRevisionsApi.undeployAPIProductRevisionWithHttpInfo(
                     apiUUID, revisionUUID, null, false, apiRevisionUnDeploymentDTOList);
             Assert.assertEquals(201, httpInfo.getStatusCode());
+            waitForUnDeployAPI(apiUUID);
             //apiRevisionUnDeploymentDTOResponseList = httpInfo.getData();
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {

@@ -40,15 +40,18 @@ import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
 import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import javax.ws.rs.core.Response;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.ws.rs.core.Response;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APIRevisionTestCase.class);
@@ -182,7 +185,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
     }
@@ -197,7 +200,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(INVALID_API_UUID, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Invalid response code for deploying API Revision with invalid API UUID:"
                         + apiRevisionsDeployResponse.getData());
@@ -213,7 +216,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, INVALID_REVISION_UUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Invalid response code for deploying API Revision with invalid Revision UUID:"
                         + apiRevisionsDeployResponse.getData());
@@ -229,7 +232,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
                 "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
     }
@@ -336,7 +339,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"API");
         assertEquals(apiRevisionDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions: " + apiRevisionDeployResponse.getData());
         waitForAPIDeployment();
@@ -411,7 +414,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList, "API");
         assertEquals(apiRevisionDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revision in CREATED stage: " + apiRevisionDeployResponse.getData());
         waitForAPIDeployment();

@@ -108,7 +108,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
                 user.getUserDomain(), publisherURLHttps);
 
         restAPIStoreCarbonSuperAdmin = new RestAPIStoreImpl(user.getUserNameWithoutDomain(), user.getPassword(),
-                user.getUserDomain(), storeURLHttps,restAPIGateway);
+                user.getUserDomain(), storeURLHttps);
 
         apiCreatorStoreDomain = storeContext.getContextTenant().getDomain();
 
@@ -134,14 +134,14 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, publisherURLHttps);
 
         restAPIStoreCarbonSuperUser1 = new RestAPIStoreImpl(username2, user2.getPassword(),
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps,restAPIGateway);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
 
         //Login to API Publisher and Store with CarbonSuper normal user2
         restAPIPublisherCarbonSuperUser2 = new RestAPIPublisherImpl(username3, user3.getPassword(),
                 MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, publisherURLHttps);
 
         restAPIStoreCarbonSuperUser2 = new RestAPIStoreImpl(username3, user3.getPassword(),
-                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps,restAPIGateway);
+                MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, storeURLHttps);
 
         //Creating Tenant contexts
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
@@ -159,7 +159,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
                 otherDomainUser2.getPassword(), otherDomain, publisherURLHttps);
 
         restAPIStoreOtherDomainUser = new RestAPIStoreImpl(otherDomainUser2.getUserNameWithoutDomain(),
-                otherDomainUser2.getPassword(), otherDomain, storeURLHttps,restAPIGateway);
+                otherDomainUser2.getPassword(), otherDomain, storeURLHttps);
 
         //Login to the API Publisher adn Store as Tenant admin
         restAPIPublisherOtherDomainAdmin = new RestAPIPublisherImpl(
@@ -168,7 +168,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
 
         restAPIStoreOtherDomainAdmin = new RestAPIStoreImpl(
                 storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
-                storeContext.getContextTenant().getContextUser().getPassword(), otherDomain, storeURLHttps,restAPIGateway);
+                storeContext.getContextTenant().getContextUser().getPassword(), otherDomain, storeURLHttps);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for API creator ")

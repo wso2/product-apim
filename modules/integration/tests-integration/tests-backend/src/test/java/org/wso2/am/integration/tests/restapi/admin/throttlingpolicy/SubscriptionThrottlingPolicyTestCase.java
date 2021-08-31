@@ -271,7 +271,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
 
         restAPIStore = new RestAPIStoreImpl(SUBSCRIBER_USER, USER_PASSWORD,
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
         //Create an application
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);

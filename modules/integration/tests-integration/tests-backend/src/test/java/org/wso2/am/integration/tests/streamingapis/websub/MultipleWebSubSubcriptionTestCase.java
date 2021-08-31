@@ -214,7 +214,7 @@ public class MultipleWebSubSubcriptionTestCase extends APIMIntegrationBaseTest {
         accessToken2 = subscribeToAPI(applicationName2);
     }
 
-    private String subscribeToAPI(String applicationName) throws ApiException {
+    private String subscribeToAPI(String applicationName) throws ApiException, APIManagerIntegrationTestException {
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
                 "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
         appId = applicationResponse.getData();
