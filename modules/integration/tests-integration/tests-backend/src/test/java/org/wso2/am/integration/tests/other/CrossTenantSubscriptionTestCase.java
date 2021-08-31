@@ -99,7 +99,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
                 new RestAPIStoreImpl(
                         USER_MITCHEL,
                         "mitch123",
-                        "tenantb.com", storeURLHttps);
+                        "tenantb.com", storeURLHttps, restAPIGateway);
 
         // Adding API
         String apiContext = "crossSubAPI";
