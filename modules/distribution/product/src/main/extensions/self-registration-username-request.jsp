@@ -49,6 +49,8 @@
         errorMsg = "Self registration is disabled for tenant - " + user.getTenantDomain();
     } else if (SelfRegistrationStatusCodes.CODE_USER_NAME_INVALID.equalsIgnoreCase(errorCode)) {
         errorMsg = user.getUsername() + " is an invalid user name. Please pick a valid username.";
+    } else if (StringUtils.equalsIgnoreCase(SelfRegistrationStatusCodes.ERROR_CODE_INVALID_EMAIL_USERNAME, errorCode)) {
+        errorMsg = "Username is invalid. Username should be in email format.";
     } else if (errorMsgObj != null) {
         errorMsg = errorMsgObj.toString();
     }
