@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.am.admin.clients.Idp;
+package org.wso2.am.admin.clients.idp;
 
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.client.Options;
