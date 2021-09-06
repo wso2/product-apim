@@ -18,9 +18,7 @@
   -->
 
 <parameter name="SSLProfiles" xmlns:svns="http://org.wso2.securevault/configuration">
-
-
-<profile>
+    <profile>
         <bindAddress>0.0.0.0</bindAddress>
          <KeyStore>
             <Location>repository/resources/security/{{keystore.tls.file_name}}</Location>
@@ -34,6 +32,10 @@
             <Password>{{truststore.password}}</Password>
         </TrustStore>
         <SSLVerifyClient>{{keystore.listener_profile.ssl_verify_client}}</SSLVerifyClient>
+        <HttpsProtocols>{{transport.passthru_https.listener.parameters.HttpsProtocols}}</HttpsProtocols>
+        {% if transport.passthru_https.listener.parameters.PreferredCiphers is defined %}
+        <PreferredCiphers>{{transport.passthru_https.listener.parameters.PreferredCiphers}}</PreferredCiphers>
+        {% endif %}
     </profile>
 </parameter>
 
