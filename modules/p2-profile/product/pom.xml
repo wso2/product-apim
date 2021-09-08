@@ -679,6 +679,9 @@
                                     org.wso2.am.analytics.publisher:org.wso2.am.analytics.publisher.client.feature:${apim.analytics.publisher.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.eventing.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.eventing.hub.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                             </featureArtifacts>
@@ -1492,6 +1495,10 @@
                                     <version>${apim.analytics.publisher.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -2182,6 +2189,10 @@
                                 <feature>
                                     <id>org.wso2.am.analytics.publisher.client.feature.group</id>
                                     <version>${apim.analytics.publisher.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
@@ -3160,6 +3171,10 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -3661,6 +3676,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
