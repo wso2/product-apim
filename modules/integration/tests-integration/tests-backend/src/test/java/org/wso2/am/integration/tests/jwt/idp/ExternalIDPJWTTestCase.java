@@ -394,7 +394,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(description = "test Generate consumer Keys when oauth app creation disable")
-    public void generateKeysNegative() {
+    public void generateKeysNegative() throws APIManagerIntegrationTestException {
 
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse applicationDTO =
                 restAPIStore.createApplication("JWT_NEGATIVE_APP", "JWT Application3",

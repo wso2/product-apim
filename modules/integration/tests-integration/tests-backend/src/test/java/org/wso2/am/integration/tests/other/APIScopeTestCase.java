@@ -132,7 +132,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore =
                 new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                         storeContext.getContextTenant().getContextUser().getPassword(),
-                        storeContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
+                        storeContext.getContextTenant().getDomain(), storeURLHttps);
 
         // Adding API
         String apiContext = "testScopeAPI";

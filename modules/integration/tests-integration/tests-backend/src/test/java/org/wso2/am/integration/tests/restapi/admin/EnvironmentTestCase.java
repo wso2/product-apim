@@ -299,7 +299,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiOneId, apiOneRevisionId,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HttpStatus.SC_CREATED,
                 "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
 
@@ -316,7 +316,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiTwoId, apiTwoRevisionId,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HttpStatus.SC_CREATED,
                 "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
 
@@ -328,7 +328,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiProductId, apiProductRevisionId,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList, "API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HttpStatus.SC_CREATED,
                 "Unable to deploy API Product Revisions:" + apiRevisionsDeployResponse.getData());
     }
