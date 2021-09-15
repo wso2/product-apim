@@ -173,7 +173,7 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
             String apiId, String language, String tenant, String crossTenant) throws Exception {
 
         if (restAPIStore == null) {
-            restAPIStore = new RestAPIStoreImpl(tenantAwareUserName, password, tenant, storeURLHttps,restAPIGateway);
+            restAPIStore = new RestAPIStoreImpl(tenantAwareUserName, password, tenant, storeURLHttps);
         }
         try {
             restAPIStore.getAPI(apiId);

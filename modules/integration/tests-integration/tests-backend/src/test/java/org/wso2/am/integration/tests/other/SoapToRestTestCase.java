@@ -45,6 +45,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.Constants;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
@@ -565,7 +566,7 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    private String createSoapToRestAppAndSubscribeToAPI(String appName, String tokenType, String apiId) throws ApiException {
+    private String createSoapToRestAppAndSubscribeToAPI(String appName, String tokenType, String apiId) throws ApiException, APIManagerIntegrationTestException {
         ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType(appName,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
                 "test app for SOAPTOREST API", tokenType);

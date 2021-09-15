@@ -128,8 +128,8 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
                     e.getMessage(), e);
         }
         // check for store login with email user name
-        restAPIStore = new RestAPIStoreImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN,"https://localhost:9943/",
-                restAPIGateway);
+        restAPIStore = new RestAPIStoreImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN,"https://localhost:9943/"
+        );
         ApplicationListDTO responseData = restAPIStore.getAllApps();
         assertNotNull(responseData, "Login to Store with email username failed");
 
@@ -163,7 +163,7 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
         }
 
         // check for store login with email user name
-        restAPIStore = new RestAPIStoreImpl(TENANT_USER_USERNAME, PASSWORD, TENANT_DOMAIN, storeURLHttps, restAPIGateway);
+        restAPIStore = new RestAPIStoreImpl(TENANT_USER_USERNAME, PASSWORD, TENANT_DOMAIN, storeURLHttps);
         ApplicationListDTO responseData = restAPIStore.getAllApps();
         assertNotNull(responseData, "Login to Store with email username failed");
 

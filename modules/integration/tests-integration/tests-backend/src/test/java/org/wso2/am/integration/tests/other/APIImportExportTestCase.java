@@ -190,7 +190,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
                         new String[]{NOT_ALLOWED_ROLE}, USER_WITHOUT_ACCESS_ROLE);
 
         allowedStoreUser = new RestAPIStoreImpl(allowedUser, String.valueOf(ALLOWED_USER_PASS),
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
 
         if (!keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
             allowedUser = allowedUser + "@" + keyManagerContext.getContextTenant().getDomain();

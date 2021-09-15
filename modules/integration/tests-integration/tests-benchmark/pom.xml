@@ -137,6 +137,7 @@ under the License.
                             </classpathDependencyExcludes>
                             <systemPropertyVariables>
                                 <okHttpLogs>true</okHttpLogs>
+                                <disableVerification>true</disableVerification>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

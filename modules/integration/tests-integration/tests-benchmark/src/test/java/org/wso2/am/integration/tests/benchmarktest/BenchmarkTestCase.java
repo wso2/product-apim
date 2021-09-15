@@ -225,7 +225,7 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
 
     @Test
     public void createAnApplication(Method method)
-            throws InterruptedException, IOException, ParseException {
+            throws InterruptedException, IOException, ParseException, APIManagerIntegrationTestException {
 
         scenario = "CREATE_APPLICATION";
         testName = method.getName();

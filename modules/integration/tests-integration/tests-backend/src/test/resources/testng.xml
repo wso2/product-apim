@@ -120,7 +120,6 @@
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.CrossTenantSubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.GatewayRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.AllowedScopesTestCase"/>
             <class name="org.wso2.am.integration.tests.other.SecondaryUserStoreCaseInsensitiveTestCase"/>

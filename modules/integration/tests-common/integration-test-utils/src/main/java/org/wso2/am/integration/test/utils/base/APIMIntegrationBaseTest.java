@@ -28,10 +28,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.wso2.am.admin.clients.Idp.IdentityProviderMgtServiceClient;
 import org.wso2.am.admin.clients.application.ApplicationManagementClient;
 import org.wso2.am.admin.clients.claim.ClaimMetaDataMgtAdminClient;
 import org.wso2.am.admin.clients.idp.IdentityProviderMgtClient;
+import org.wso2.am.admin.clients.idp.IdentityProviderMgtServiceClient;
 import org.wso2.am.admin.clients.oauth.OAuthAdminServiceClient;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
@@ -47,7 +47,6 @@ import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.RestAPIInternalImpl;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
-import org.wso2.am.integration.test.impl.RestAPIGatewayImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -113,7 +112,6 @@ public class APIMIntegrationBaseTest {
     protected RestAPIPublisherImpl restAPIPublisher;
     protected RestAPIStoreImpl restAPIStore;
     protected RestAPIAdminImpl restAPIAdmin;
-    protected RestAPIGatewayImpl restAPIGateway;
     protected UserManagementClient userManagementClient;
     protected RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
     protected ClaimMetaDataMgtAdminClient remoteClaimMetaDataMgtAdminClient;
@@ -206,9 +204,6 @@ public class APIMIntegrationBaseTest {
                     new RestAPIInternalImpl(superTenantKeyManagerContext.getContextTenant().getContextUser().getUserName(),
                             superTenantKeyManagerContext.getContextTenant().getContextUser().getPassword(),
                             user.getUserDomain());
-            restAPIGateway = new RestAPIGatewayImpl(superTenantKeyManagerContext.getContextTenant().getContextUser().getUserName(),
-                    superTenantKeyManagerContext.getContextTenant().getContextUser().getPassword(),
-                    user.getUserDomain());
             keymanagerSessionCookie = createSession(keyManagerContext);
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
@@ -229,7 +224,7 @@ public class APIMIntegrationBaseTest {
             restAPIStore =
                     new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getContextUser().getPassword(),
-                            storeContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
+                            storeContext.getContextTenant().getDomain(), storeURLHttps);
             restAPIAdmin = new RestAPIAdminImpl(publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
                     publisherContext.getContextTenant().getDomain(), publisherURLHttps);
@@ -530,7 +525,7 @@ public class APIMIntegrationBaseTest {
                     .getAllSubscriptionsOfApplication(applicationInfoDTO.getApplicationId());
             if (subsDTO != null) {
                 for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
-                    restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
+                    restAPIStore.removeSubscription(subscriptionDTO);
                 }
             }
             if (!APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME.equals(applicationInfoDTO.getName())) {
@@ -738,10 +733,9 @@ public class APIMIntegrationBaseTest {
         return new RestAPIPublisherImpl(user, pass, tenantDomain, publisherURLHttps);
     }
 
-    protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain,
-                                                      RestAPIGatewayImpl restAPIGateway) {
+    protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain) {
 
-        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps, restAPIGateway);
+        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps);
     }
 
     protected RestAPIStoreImpl getRestAPIStoreForAnonymousUser(String tenantDomain) {
@@ -796,7 +790,7 @@ public class APIMIntegrationBaseTest {
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String createAPIRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
-            throws ApiException, JSONException {
+            throws ApiException, JSONException, APIManagerIntegrationTestException {
         int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
         int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
         String revisionUUID = null;
@@ -833,7 +827,7 @@ public class APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList, "API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
         return  revisionUUID;
@@ -918,7 +912,7 @@ public class APIMIntegrationBaseTest {
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String createAPIProductRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
-            throws ApiException, JSONException {
+            throws ApiException, JSONException, APIManagerIntegrationTestException {
         int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
         int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
         String revisionUUID = null;
@@ -955,7 +949,7 @@ public class APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"APIProduct");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Product Revisions:" +apiRevisionsDeployResponse.getData());
         //Waiting for API deployment

@@ -81,7 +81,7 @@ public class ClientAuthenticator {
                     (applicationKeyBean.getConsumerKey()
                             + ':' + applicationKeyBean.getConsumerSecret()).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
-            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(tenantDomain) || !username.contains(CHAR_AT)) {
+            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(tenantDomain) || username.contains(CHAR_AT)) {
                 username = username + CHAR_AT + tenantDomain;
             }
             String postParams;

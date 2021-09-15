@@ -195,7 +195,7 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
                 "swagger-archive.zip";
         File definition = new File(swaggerPath);
         JSONObject endpoints = new JSONObject();
-        endpoints.put("url", "test");
+        endpoints.put("url", "https://test.com");
 
         JSONObject endpointConfig = new JSONObject();
         endpointConfig.put("endpoint_type", "http");
@@ -230,7 +230,7 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
                 "incorrect-swagger-archive.zip";
         File definition = new File(swaggerPath);
         JSONObject endpoints = new JSONObject();
-        endpoints.put("url", "test");
+        endpoints.put("url", "https://test.com");
 
         JSONObject endpointConfig = new JSONObject();
         endpointConfig.put("endpoint_type", "http");
