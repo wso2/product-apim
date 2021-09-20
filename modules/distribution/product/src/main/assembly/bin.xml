@@ -834,14 +834,6 @@
             </includes>
         </fileSet>
 
-        <!-- Default Tiers -->
-        <fileSet>
-            <directory>../resources/default-tiers</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/default-tiers</outputDirectory>
-            <includes>
-                <include>**/**.xml</include>
-            </includes>
-        </fileSet>
         <!--End of  API Manager related -->
 
         <!--Multitenancy related file -->
