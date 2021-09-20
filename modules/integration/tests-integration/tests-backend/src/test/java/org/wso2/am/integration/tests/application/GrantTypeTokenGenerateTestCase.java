@@ -40,9 +40,12 @@ import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,6 +89,8 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
     private Map<String, String> headers = new HashMap<String, String>();
     private ArrayList<String> grantTypes = new ArrayList<>();
     private APIRequest apiRequest;
+    private ServerConfigurationManager serverConfigurationManager;
+    private AutomationContext superTenantKeyManagerContext;
 
     @Factory(dataProvider = "userModeDataProvider")
     public GrantTypeTokenGenerateTestCase(TestUserMode userMode) {
@@ -97,8 +102,18 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         super.init(userMode);
         storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
-        tokenURL = getKeyManagerURLHttps() + "/oauth2/token";
-        identityLoginURL = getKeyManagerURLHttps() + "/oauth2/authorize";
+        tokenURL = getKeyManagerURLHttps() + "oauth2/token";
+        identityLoginURL = getKeyManagerURLHttps() + "oauth2/authorize";
+
+        //Apply application consent page related config
+        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                TestUserMode.SUPER_TENANT_ADMIN);
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+
+        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "applicationConsentPage" +
+                File.separator + "deployment.toml"));
 
         //create Application
         HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
@@ -338,12 +353,50 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         Assert.assertTrue(locationHeader.contains("oauthErrorCode"), "Redirection page should be a error page");
     }
 
+    @Test(groups = { "wso2.am" }, description = "Test application display name in consent page",
+            dependsOnMethods = "testApplicationCreation")
+    public void testAuthCodeAppDisplayName() throws Exception {
+
+        //Sending first request to approve grant authorization to app
+        headers.clear();
+        headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
+        String url =
+                identityLoginURL + "?response_type=code&" + "client_id=" + consumerKey + "&scope=PRODUCTION&redirect_uri="
+                        + CALLBACK_URL;
+        HttpResponse res = HTTPSClientUtils.doGet(url, headers);
+        String sessionNonceCookie = res.getHeaders().get(SET_COOKIE_HEADER);
+        String sessionDataKey = getURLParameter(res.getHeaders().get(LOCATION_HEADER), "sessionDataKey");
+
+        //Login to the Identity with user/pass
+        headers.clear();
+        headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
+        headers.put("Cookie", sessionNonceCookie);
+        urlParameters.add(new BasicNameValuePair("username", user.getUserName()));
+        urlParameters.add(new BasicNameValuePair("password", user.getPassword()));
+        urlParameters.add(new BasicNameValuePair("tocommonauth", "true"));
+        urlParameters.add(new BasicNameValuePair("sessionDataKey", sessionDataKey));
+
+        res = HTTPSClientUtils.doPost(identityLoginURL, headers, urlParameters);
+        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
+        String locationHeader = res.getHeaders().get(LOCATION_HEADER);
+        Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
+
+        //Test application display name in consent page
+        res = HTTPSClientUtils.doGet(locationHeader, null);
+        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+        Assert.assertEquals(res.getData().contains(APP_NAME), true,
+                "App display name in consent page is not as expected");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
         restAPIStore.deleteApplication(applicationIdWithoutCallback);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
+
+        //Remove application consent page related config
+        serverConfigurationManager.restoreToLastConfiguration(false);
     }
 
     @DataProvider
