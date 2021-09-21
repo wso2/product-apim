@@ -107,13 +107,12 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
 
         //Apply application consent page related config
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
-                TestUserMode.SUPER_TENANT_ADMIN);
+                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
 
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "applicationConsentPage" +
-                File.separator + "deployment.toml"));
+        serverConfigurationManager.applyConfiguration(new File(
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "applicationConsentPage"
+                        + File.separator + "deployment.toml"));
 
         //create Application
         HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
@@ -360,9 +359,8 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         //Sending first request to approve grant authorization to app
         headers.clear();
         headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
-        String url =
-                identityLoginURL + "?response_type=code&" + "client_id=" + consumerKey + "&scope=PRODUCTION&redirect_uri="
-                        + CALLBACK_URL;
+        String url = identityLoginURL + "?response_type=code&" + "client_id=" + consumerKey
+                + "&scope=PRODUCTION&redirect_uri=" + CALLBACK_URL;
         HttpResponse res = HTTPSClientUtils.doGet(url, headers);
         String sessionNonceCookie = res.getHeaders().get(SET_COOKIE_HEADER);
         String sessionDataKey = getURLParameter(res.getHeaders().get(LOCATION_HEADER), "sessionDataKey");
