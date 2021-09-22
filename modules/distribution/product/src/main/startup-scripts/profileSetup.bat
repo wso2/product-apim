@@ -111,7 +111,7 @@ call :replaceAxis2TemplateFile %pathToAxis2PublisherXmlTemplate%
 call :replaceTenantAxis2TemplateFile %pathToTenantAxis2PublisherXmlTemplate%
 call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war internal#data#v*.war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war internal#data#v.*war"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
@@ -141,7 +141,7 @@ call :replaceDeploymentConfiguration
 call :replaceAxis2TemplateFile %pathToAxis2DevportalXmlTemplate%
 call :replaceTenantAxis2TemplateFile %pathToTenantAxis2DevportalXmlTemplate%
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#devportal#v.*war api#am#devportal.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war  api#identity#recovery#v.*war api#identity#user#v.*war api#identity#consent-mgt#v.*war internal#data#v*.war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#devportal#v.*war api#am#devportal.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war  api#identity#recovery#v.*war api#identity#user#v.*war api#identity#consent-mgt#v.*war internal#data#v.*war"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
@@ -172,7 +172,7 @@ call :removeSecureWebSocketInboundEndpoint
 call :removeSynapseConfigs
 call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "internal#data#v*.war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "internal#data#v.*war"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
