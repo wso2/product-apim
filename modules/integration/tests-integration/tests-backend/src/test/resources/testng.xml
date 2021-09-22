@@ -224,7 +224,6 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5326CustomStatusMsgTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/-->
             <class name="org.wso2.am.integration.tests.admin.OAuthApplicationOwnerUpdateTestCase"/>
-            <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTGrantTestCase"/>
             <class name="org.wso2.am.integration.tests.api.sdk.SDKGenerationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.CAPIMGT12CallBackURLOverwriteTestCase"/>
@@ -234,6 +233,12 @@
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5327KeyGenerationWithPGSQLTestCase"/>-->
+        </classes>
+    </test>
+
+    <test name="apim-grant-type-token-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
         </classes>
     </test>
 
