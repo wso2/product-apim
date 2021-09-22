@@ -169,10 +169,10 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
                 keyManagerContext.getContextTenant().getDomain(), publisherURLHttps);
 
         apiStorePubSubUser = new RestAPIStoreImpl(PUB_SUB_USER, USER_PASSWORD,
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps,restAPIGateway);
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
 
         apiStoreSubUser = new RestAPIStoreImpl(SUBSCRIBER_USER, USER_PASSWORD,
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps,restAPIGateway);
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
 
 
         restAPIPublisher = new RestAPIPublisherImpl(
@@ -182,7 +182,7 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
         restAPIStore =
                 new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                         storeContext.getContextTenant().getContextUser().getPassword(),
-                        storeContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
+                        storeContext.getContextTenant().getDomain(), storeURLHttps);
     }
 
     @Test(groups = "wso2.am", description = "This test case tests the retrieval of API which was added with a access "

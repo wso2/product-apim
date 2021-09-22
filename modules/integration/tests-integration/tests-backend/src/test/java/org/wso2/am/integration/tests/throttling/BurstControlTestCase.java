@@ -21,12 +21,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.dto.*;
+import org.wso2.am.integration.clients.admin.api.dto.CustomAttributeDTO;
+import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyPermissionDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -111,6 +116,7 @@ public class BurstControlTestCase  extends APIManagerLifecycleBaseTest {
         ApiResponse<SubscriptionThrottlePolicyDTO> apiResponse =
                                         restAPIAdmin.addSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO1);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_CREATED);
+        subscriptionThrottlePolicyDTO1 = apiResponse.getData();
 
         // Add subscription policy - 2
         subscriptionThrottlePolicyDTO2 = DtoFactory.createSubscriptionThrottlePolicyDTO(subscriptionTier25RPMburst,
@@ -121,6 +127,7 @@ public class BurstControlTestCase  extends APIManagerLifecycleBaseTest {
                                         subscriberCount, permissions);
         apiResponse = restAPIAdmin.addSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO2);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_CREATED);
+        subscriptionThrottlePolicyDTO2 = apiResponse.getData();
 
         // create api
         backendEP = gatewayUrlsWrk.getWebAppURLNhttp() + "response/";
@@ -185,10 +192,9 @@ public class BurstControlTestCase  extends APIManagerLifecycleBaseTest {
 
         // remove previous subscription
         log.info("Old subscription id:" + subscriptionDTO1.getSubscriptionId());
-        HttpResponse httpResponse = restAPIStore.removeSubscription(subscriptionDTO1.getSubscriptionId());
+        HttpResponse httpResponse = restAPIStore.removeSubscription(subscriptionDTO1);
         log.info("httpResponse of removeSubscription ====== : " + httpResponse);
         log.info("AAA= " + subscriptionDTO1);
-        restAPIStore.waitForSubscriptionRemovedFromGateway(subscriptionDTO1);
         Thread.sleep(5000);
 
         // add new subscription
@@ -229,5 +235,14 @@ public class BurstControlTestCase  extends APIManagerLifecycleBaseTest {
                 }
             }
         }
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationDTO.getApplicationId());
+        restAPIPublisher.deleteAPI(apiId);
+        restAPIAdmin.deleteSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO1.getPolicyId());
+        restAPIAdmin.deleteSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO2.getPolicyId());
+        super.cleanUp();
     }
 }

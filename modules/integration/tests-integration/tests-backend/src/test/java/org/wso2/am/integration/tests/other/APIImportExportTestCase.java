@@ -190,7 +190,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
                         new String[]{NOT_ALLOWED_ROLE}, USER_WITHOUT_ACCESS_ROLE);
 
         allowedStoreUser = new RestAPIStoreImpl(allowedUser, String.valueOf(ALLOWED_USER_PASS),
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
 
         if (!keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
             allowedUser = allowedUser + "@" + keyManagerContext.getContextTenant().getDomain();
@@ -253,67 +253,6 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Export restricted API from user with restricted role")
-    public void testRestrictedAPIExportFromUserWithAccessRole() throws Exception {
-
-        String provider = user.getUserName();
-        APIRequest apiRequest = new APIRequest("API2", "AccessControl",
-                new URL(exportUrl));
-        apiRequest.setVersion(API_VERSION);
-        apiRequest.setProvider(provider);
-        apiRequest.setAccessControl(RESTRICTED_ACCESS_CONTROL);
-        apiRequest.setAccessControlRoles(ALLOWED_ROLE);
-        HttpResponse response = restAPIPublisher.addAPI(apiRequest);
-        publisherAccessControlAPIId = response.getData();
-        createAPIRevisionAndDeployUsingRest(publisherAccessControlAPIId, restAPIPublisher);
-        restAPIPublisher.changeAPILifeCycleStatusToPublish(publisherAccessControlAPIId, false);
-        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
-        APIDTO apidto = restAPIPublisher.getAPIByID(publisherAccessControlAPIId);
-        Assert.assertEquals(apidto.getAccessControlRoles().get(0), "allowedrole");
-
-        URL exportRequest =
-                new URL(exportUrl + "?name=" + "API2" + "&version=" + API_VERSION + "&providerName=" + provider
-                        + "&format=JSON");
-        zipTempDir = Files.createTempDir();
-
-        //set the export file name with tenant prefix
-        String fileName = user.getUserDomain() + "_" + "API2";
-        apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
-        //save the exported API
-        exportArtifact(exportRequest, apiZip, USER_WITH_ACCESS_ROLE, PASSWORD);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Export restricted API from user without restricted role",
-            dependsOnMethods = "testRestrictedAPIExportFromUserWithAccessRole")
-    public void testRestrictedAPIExportFromUserWithoutAccessRole() throws Exception {
-        URL exportRequest =
-                new URL(exportUrl + "?name=" + "API2" + "&version=" + API_VERSION + "&providerName=" +
-                        user.getUserName() + "&format=JSON");
-        zipTempDir = Files.createTempDir();
-
-        //set the export file name with tenant prefix
-        String fileName = user.getUserDomain() + "_" + "API2";
-        apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
-        //save the exported API
-        CloseableHttpResponse response = exportAPIRequest(exportRequest, USER_WITHOUT_ACCESS_ROLE, PASSWORD);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_UNAUTHORIZED);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Export restricted API from admin user",
-            dependsOnMethods = "testRestrictedAPIExportFromUserWithoutAccessRole")
-    public void testRestrictedAPIExportFromAdminUser() throws Exception {
-        URL exportRequest =
-                new URL(exportUrl + "?name=" + "API2" + "&version=" + API_VERSION + "&providerName=" +
-                        user.getUserName() + "&format=JSON");
-        zipTempDir = Files.createTempDir();
-        //set the export file name with tenant prefix
-        String fileName = user.getUserDomain() + "_" + "API2";
-        apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
-        //save the exported API
-        exportArtifact(exportRequest, apiZip, publisherUser, String.valueOf(PUBLISHER_USER_PASS));
     }
 
     @Test(groups = { "wso2.am" }, description = "Exported Sample API with endpoint security enabled")
@@ -817,6 +756,70 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         notPreservePublisherApiId = apiObj.getId();
         provider = apiObj.getProvider();
         assertEquals(provider, publisherUser, "Provider is not as expected when 'preserveProvider'=false");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Export restricted API from user with restricted role",
+            dependsOnMethods = "testPreserveProviderFalseSameProviderApiImport")
+    public void testRestrictedAPIExportFromUserWithAccessRole() throws Exception {
+
+        String provider = user.getUserName();
+        APIRequest apiRequest = new APIRequest("API2", "AccessControl",
+                new URL(exportUrl));
+        apiRequest.setVersion(API_VERSION);
+        apiRequest.setProvider(provider);
+        apiRequest.setAccessControl(RESTRICTED_ACCESS_CONTROL);
+        apiRequest.setAccessControlRoles(ALLOWED_ROLE);
+        HttpResponse response = restAPIPublisher.addAPI(apiRequest);
+        publisherAccessControlAPIId = response.getData();
+
+        createAPIRevisionAndDeployUsingRest(publisherAccessControlAPIId, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(publisherAccessControlAPIId, false);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        APIDTO apidto = restAPIPublisher.getAPIByID(publisherAccessControlAPIId);
+        Assert.assertEquals(apidto.getAccessControlRoles().get(0), "allowedrole");
+
+        URL exportRequest =
+                new URL(exportUrl + "?name=" + "API2" + "&version=" + API_VERSION + "&providerName=" + provider
+                        + "&format=JSON");
+        zipTempDir = Files.createTempDir();
+
+        //set the export file name with tenant prefix
+        String fileName = user.getUserDomain() + "_" + "API2";
+        apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
+        //save the exported API
+        exportArtifact(exportRequest, apiZip, USER_WITH_ACCESS_ROLE, PASSWORD);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Export restricted API from user without restricted role",
+            dependsOnMethods = "testRestrictedAPIExportFromUserWithAccessRole")
+    public void testRestrictedAPIExportFromUserWithoutAccessRole() throws Exception {
+        URL exportRequest =
+                new URL(exportUrl + "?name=" + "API2" + "&version=" + API_VERSION + "&providerName=" +
+                        user.getUserName() + "&format=JSON");
+        zipTempDir = Files.createTempDir();
+
+        //set the export file name with tenant prefix
+        String fileName = user.getUserDomain() + "_" + "API2";
+        apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
+        //save the exported API
+        CloseableHttpResponse response = exportAPIRequest(exportRequest, USER_WITHOUT_ACCESS_ROLE, PASSWORD);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_UNAUTHORIZED);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Export restricted API from admin user",
+            dependsOnMethods = "testRestrictedAPIExportFromUserWithoutAccessRole")
+    public void testRestrictedAPIExportFromAdminUser() throws Exception {
+        URL exportRequest =
+                new URL(exportUrl + "?name=" + "API2" + "&version=" + API_VERSION + "&providerName=" +
+                        user.getUserName() + "&format=JSON");
+        zipTempDir = Files.createTempDir();
+        //set the export file name with tenant prefix
+        String fileName = user.getUserDomain() + "_" + "API2";
+        apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
+        //save the exported API
+        exportArtifact(exportRequest, apiZip, publisherUser, String.valueOf(PUBLISHER_USER_PASS));
     }
 
     @AfterClass(alwaysRun = true)

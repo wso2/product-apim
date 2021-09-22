@@ -14827,8 +14827,6 @@ components:
         securityScheme:
         - oauth2
         keyManagers: '{}'
-        gatewayEnvironments:
-        - Default
         scopes:
         - shared: true
           scope:
@@ -15019,16 +15017,6 @@ components:
           items:
             type: string
           type: array
-        gatewayEnvironments:
-          description: |
-            List of gateway environments the API is available
-          example:
-          - Default
-          items:
-            type: string
-          type: array
-          x-otherScopes:
-          - apim:api_publish
         mediationPolicies:
           example:
           - name: json_to_xml_in_message
@@ -15600,8 +15588,6 @@ components:
         securityScheme:
         - oauth2
         name: PizzaShackAPIProduct
-        gatewayEnvironments:
-        - Default
         additionalProperties:
         - display: true
           name: name
@@ -15707,14 +15693,6 @@ components:
           description: The user roles that are able to view/modify as API Product
             publisher or creator.
           example: []
-          items:
-            type: string
-          type: array
-        gatewayEnvironments:
-          description: |
-            List of gateway environments the API Product is available
-          example:
-          - Default
           items:
             type: string
           type: array

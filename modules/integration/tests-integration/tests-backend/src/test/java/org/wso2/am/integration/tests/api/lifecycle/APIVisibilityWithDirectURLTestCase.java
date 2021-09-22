@@ -148,7 +148,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
             dependsOnMethods = "testDirectLinkAnonymous")
     public void testDirectLink() throws Exception {
         RestAPIStoreImpl apiStore = getRestAPIStoreForUser(CARBON_SUPER_SUBSCRIBER_USERNAME,
-                String.valueOf(CARBON_SUPER_SUBSCRIBER_PASSWORD), user.getUserDomain(), restAPIGateway);
+                String.valueOf(CARBON_SUPER_SUBSCRIBER_PASSWORD), user.getUserDomain());
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apidto = apiStore.getAPI(apiID);
         Assert.assertNotNull(apidto);
     }
@@ -157,7 +157,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
             dependsOnMethods = "testDirectLink")
     public void testDirectLinkWithoutRestrictedRoleUser() throws Exception {
         RestAPIStoreImpl apiStore = getRestAPIStoreForUser(CARBON_SUPER_SUBSCRIBER_1_USERNAME,
-                String.valueOf(CARBON_SUPER_SUBSCRIBER_1_PASSWORD), user.getUserDomain(), restAPIGateway);
+                String.valueOf(CARBON_SUPER_SUBSCRIBER_1_PASSWORD), user.getUserDomain());
         try {
             ApiResponse<?> apiResponse = apiStore.apIsApi.apisApiIdGetWithHttpInfo(apiID, user.getUserDomain(), null);
         } catch (ApiException e) {

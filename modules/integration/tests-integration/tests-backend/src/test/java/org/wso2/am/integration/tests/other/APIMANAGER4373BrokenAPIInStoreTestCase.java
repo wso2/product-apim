@@ -16,7 +16,6 @@
 
 package org.wso2.am.integration.tests.other;
 
-import junit.framework.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -87,7 +86,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIManagerLifecycleB
                     .addUser(FIRST_USER, USER_PASSWORD, new String[] { INTERNAL_SUBSCRIBER, FIRST_ROLE }, FIRST_USER);
 
             apiStoreSubUser = new RestAPIStoreImpl(FIRST_USER, USER_PASSWORD,
-                    keyManagerContext.getContextTenant().getDomain(), storeURLHttps,restAPIGateway);
+                    keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
 
         } catch (APIManagerIntegrationTestException e) {
             assertTrue(false, "Error occurred while initializing testcase: " + e.getCause());
@@ -164,7 +163,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIManagerLifecycleB
 
         SubscriptionListDTO subsDTO = apiStoreSubUser.getAllSubscriptionsOfApplication(appId);
         for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
-            apiStoreSubUser.removeSubscription(subscriptionDTO.getSubscriptionId());
+            apiStoreSubUser.removeSubscription(subscriptionDTO);
         }
 
         apiStoreSubUser.deleteApplication(appId);

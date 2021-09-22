@@ -72,7 +72,7 @@ public class APIM23VisibilityOfPrototypedAPIInStoreTestCase extends APIMIntegrat
 
         restAPIStore = new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword(),
-                storeContext.getContextTenant().getDomain(), storeURLHttps, restAPIGateway);
+                storeContext.getContextTenant().getDomain(), storeURLHttps);
 
         apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
 

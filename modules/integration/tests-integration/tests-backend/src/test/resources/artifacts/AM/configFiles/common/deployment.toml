@@ -59,17 +59,6 @@ ws_endpoint = "ws://localhost:9099"
 http_endpoint = "http://localhost:8282"
 https_endpoint = "https://localhost:8245"
 
-[apim.analytics]
-enable = true
-store_api_url = "https://localhost:9446"
-username = "$ref{super_admin.username}"
-password = "$ref{super_admin.password}"
-
-[[apim.analytics.analytics_node]]
-analytics_url ="tcp://localhost:7614"
-analytics_auth_url ="ssl://localhost:7714"
-type = "failover"
-
 [apim.jwt]
 enable = true
 encoding = "base64" # base64,base64url

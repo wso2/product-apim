@@ -77,12 +77,12 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
                 new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        apiStoreClientUser1 = getRestAPIStoreForUser(user.getUserName(), user.getPassword(), user.getUserDomain(),
-                restAPIGateway);
+        apiStoreClientUser1 = getRestAPIStoreForUser(user.getUserName(), user.getPassword(), user.getUserDomain()
+        );
         apiStoreClientUser2 =
                 getRestAPIStoreForUser(publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
                         publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword(),
-                        publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserDomain(), restAPIGateway);
+                        publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserDomain());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
     }
 

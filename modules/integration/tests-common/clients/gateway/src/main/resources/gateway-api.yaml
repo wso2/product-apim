@@ -66,8 +66,6 @@ paths:
         This operation is used to re deploy an API in the gateway. If the Tenant domain is not provided carbon.super
         will be picked as the Tenant domain.
       operationId: redployAPI
-      tags:
-        - Deploy API
       parameters:
         - $ref: '#/parameters/apiName'
         - $ref: '#/parameters/version'
@@ -108,8 +106,6 @@ paths:
         This operation is used to undeploy an API in the gateway. If the Tenant domain is not provided carbon.super will
         be picked as the Tenant domain.
       operationId: undeployAPI
-      tags:
-        - Undeploy API
       parameters:
         - $ref: '#/parameters/apiName'
         - $ref: '#/parameters/version'
@@ -149,8 +145,6 @@ paths:
         This operation is used to get the local entries, sequences and endpoints from the storage. If the Tenant domain
         is not provided carbon.super will be picked as the Tenant domain.
       operationId: getAPIArtifacts
-      tags:
-        - Get API Artifacts
       parameters:
         - $ref: '#/parameters/apiName'
         - $ref: '#/parameters/version'
@@ -190,8 +184,6 @@ paths:
         This operation is used to get local entry from the storage.If the Tenant domain is not provided carbon.super
         will be picked as the Tenant domain.
       operationId: getLocalEntries
-      tags:
-        - Get API Artifacts
       parameters:
         - $ref: '#/parameters/apiName'
         - $ref: '#/parameters/version'
@@ -230,8 +222,6 @@ paths:
         This operation is used to get the API sequence from the storage. If the Tenant domain is not provided carbon.super
         will be picked as the Tenant domain.
       operationId: getSequences
-      tags:
-        - Get API Artifacts
       parameters:
         - $ref: '#/parameters/apiName'
         - $ref: '#/parameters/version'
@@ -271,8 +261,6 @@ paths:
         This operation is used to get the end-points from the storage. If the Tenant domain is not provided
         carbon.super will be picked as the Tenant domain.
       operationId: getEndpoints
-      tags:
-        - Get API Artifacts
       parameters:
         - $ref: '#/parameters/apiName'
         - $ref: '#/parameters/version'
@@ -301,40 +289,183 @@ paths:
             source: 'curl -k "https://127.0.0.1:9443/api/am/gateway/v2/end-points?apiName=PizzaAPI&version=1.0&tenantDomain=registry.com"
             -H "Authorization: Basic YWRtaW46YWRtaW4="'
 
-  /subscriptions:
+  /apis:
 
     #-----------------------------------------------------
-    # Get Subscriptions.
+    # Get the list of APIS by providing context and version.
     #-----------------------------------------------------
     get:
-      summary: Get Subscriptions stored in in-memory
+      x-code-samples:
+        - lang: Curl
+          source: '"curl -k -X GET "https://127.0.0.1:9443/api/am/gateway/v1/apis?context=/pizza/1.0.0&version=1.0&tenantDomain=registry.com"
+             -H "Authorization: Basic YWRtaW46YWRtaW4="'
+      summary: Get the list of APIS by providing context and version.
+
       description: |
-        This operation is used to get the Subscriptions from the storage. If the Tenant domain is not provided
+        This operation is used to get the API information from storage. If the Tenant domain is not provided
         carbon.super will be picked as the Tenant domain.
-      operationId: getSubscriptions
       parameters:
-        - $ref: '#/parameters/apiUUID'
-        - $ref: '#/parameters/applicationUUID'
-        - $ref: '#/parameters/tenantDomain'
+        - name: context
+          description: |
+            Context of the API
+          in: query
+          type: string
+        - name: version
+          description: |
+            version of the API
+          in: query
+          type: string
+        - name: tenantDomain
+          description: |
+            Tenant Domain of the API
+          in: query
+          type: string
       tags:
-        - Subscriptions
+        - Get API Info
       responses:
         200:
           description: |
             OK.
-            Subscriptions successfully Retrieved From the Storage.
+            APIS successfully retrieved from the storage for the API.
           schema:
-            $ref: '#/definitions/SubscriptionList'
+            $ref: '#/definitions/APIList'
         400:
+          $ref: '#/responses/BadRequest'
+        404:
+          $ref: '#/responses/NotFound'
+
+
+  /apis/{apiId}:
+
+    #-----------------------------------------------------
+    # Get the subscription information of an api by providing the api context and version.
+    #-----------------------------------------------------
+    get:
+      x-code-samples:
+        - lang: Curl
+          source: '"curl -k -X GET "https://127.0.0.1:9443/api/am/gateway/v1/apis/7a2298c4-c905-403f-8fac-38c73301631f?tenantDomain=registry.com"
+             -H "Authorization: Basic YWRtaW46YWRtaW4="'
+      summary: Get the subscription information of an api by providing the api uuid.
+
+      description: |
+        This operation is used to get the subscription information of an API from storage. If the Tenant domain is not provided
+        carbon.super will be picked as the Tenant domain.
+      parameters:
+        - name: apiId
           description: |
-            Bad Request.
-            Invalid request or validation error
+            API ID of the API
+          in: path
+          type: string
+          required: true
+        - name: tenantDomain
+          description: |
+            Tenant Domain of the API
+          in: query
+          type: string
+      tags:
+        - Get API Info
+      responses:
+        200:
+          description: |
+            OK.
+            APIS successfully retrieved from the storage for the API.
           schema:
-            $ref: '#/definitions/Error'
-        x-code-samples:
-          - lang: Curl
-            source: 'curl -k "https://127.0.0.1:9443/api/am/gateway/v2/subscriptions?apiUUID=c43a325c-260b-4302-81cb-768eafaa3aed&applicationUUID=c43a325c-260b-4302-81cb-768eafaa3aed&tenantDomain=registry.com"
-            -H "Authorization: Basic YWRtaW46YWRtaW4="'
+            $ref: '#/definitions/APIInfo'
+        400:
+          $ref: '#/responses/BadRequest'
+        404:
+          $ref: '#/responses/NotFound'
+
+  /applications:
+
+    #-----------------------------------------------------
+    # Get the applications information by providing the application name or uuid.
+    #-----------------------------------------------------
+    get:
+      x-code-samples:
+        - lang: Curl
+          source: '"curl -k -X GET "https://127.0.0.1:9443/api/am/gateway/v1/applications?name=PizzaAPP&tenantDomain=registry.com\"
+             -H "Authorization: Basic YWRtaW46YWRtaW4="'
+      summary: Get the applications information by providing the application name or uuid.
+
+      description: |
+        This operation is used to get the application information from storage. If the Tenant domain is not
+        provided carbon.super will be picked as the Tenant domain.
+      parameters:
+        - name: name
+          description: |
+            Name of the Application
+          in: query
+          type: string
+        - name: uuid
+          description: |
+            UUID of the Application
+          in: query
+          type: string
+        - name: tenantDomain
+          description: |
+            Tenant Domain of the Application
+          in: query
+          type: string
+      tags:
+        - Get Application Info
+      responses:
+        200:
+          description: |
+            OK.
+            Applications successfully retrieved from the storage.
+          schema:
+            $ref: '#/definitions/ApplicationList'
+        400:
+          $ref: '#/responses/BadRequest'
+        404:
+          $ref: '#/responses/NotFound'
+
+  /subscriptions:
+
+    #-----------------------------------------------------
+    # Get the subscriptions meta information of an api by providing the api uuid and application uuid.
+    #-----------------------------------------------------
+    get:
+      x-code-samples:
+        - lang: Curl
+          source: '"curl -k -X GET "https://127.0.0.1:9443/api/am/gateway/v1/subscriptions?apiUUID=d290f1ee-6c54-4b01-90e6-d701748f0851&appUUID=d290f1ee-6c54-4b01-90e6-d701748f0851&tenantDomain=registry.com\"
+             -H "Authorization: Basic YWRtaW46YWRtaW4="'
+      summary: Get the subscriptions meta information of an api by providing the api uuid and application uuid.
+
+      description: |
+        This operation is used to get the subscription information of an API from storage. If the Tenant domain is not provided
+        carbon.super will be picked as the Tenant domain.
+      parameters:
+        - name: apiUUID
+          description: |
+            UUID of the API
+          in: query
+          type: string
+        - name: appUUID
+          description: |
+            UUID of the Application
+          in: query
+          type: string
+        - name: tenantDomain
+          description: |
+            Tenant Domain of the Application
+          in: query
+          type: string
+      tags:
+        - Get Subscription Info
+      responses:
+        200:
+          description: |
+            OK.
+            End-points successfully retrieved from the storage for the API.
+          schema:
+            $ref: '#/definitions/Subscription'
+        400:
+          $ref: '#/responses/BadRequest'
+        404:
+          $ref: '#/responses/NotFound'
+
 
 ######################################################
 # Parameters - required by some of the APIs above
@@ -348,26 +479,6 @@ parameters:
     in: query
     description: |
       Name of the API
-    type: string
-    required: true
-
-  # API UUID
-  # Specified as part of the query string
-  apiUUID:
-    name: apiUUID
-    in: query
-    description: |
-      UUID of the API
-    type: string
-    required: true
-
-  # Application UUID
-  # Specified as part of the query string
-  applicationUUID:
-    name: applicationUUID
-    in: query
-    description: |
-      UUID of the Application
     type: string
     required: true
 
@@ -389,6 +500,38 @@ parameters:
     description: |
       Tenant Domain of the API
     type: string
+
+
+######################################################
+# The response schemas used by the API resources
+######################################################
+responses:
+
+  # Bad Request Error Response Schema
+  BadRequest:
+    description: Bad Request. Invalid request or validation error.
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: 400
+        message: "Bad Request"
+        description: "Invalid request or validation error"
+        moreInfo: ""
+        error: []
+
+  # Not Found Error Response Schema
+  NotFound:
+    description: Not Found. The specified resource does not exist.
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: 404
+        message: "Not Found"
+        description: "The specified resource does not exist"
+        moreInfo: ""
+        error: []
 
 ######################################################
 # The resources used by some of the APIs above within the message body
@@ -520,42 +663,232 @@ definitions:
           Description about individual errors occurred
 
   #-----------------------------------------------------
-  # The Subscription List resource
+  # the Subscription info of API.
   #-----------------------------------------------------
-  SubscriptionList:
+  APIInfo:
+    title: Subscription Information for API.
+    properties:
+      apiUUID:
+        type: string
+        description: UUID of API.
+        example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+      apiId:
+        type: integer
+        example: 1
+      provider:
+        type: string
+        description: API Provider name.
+        example: "admin"
+      name:
+        type: string
+        description: Name of the API
+        example: "PizzaAPI"
+      version:
+        type: string
+        description: Version of the API.
+        example: "v1.0.0"
+      context:
+        type: string
+        description: Context of the API.
+        example: "/pizza/v1.0.0"
+      policy:
+        type: string
+        description: API level throttling policy.
+        example: "Gold"
+      apiType:
+        type: string
+        description: Type of the API.
+        example: "APIProduct"
+      isDefaultVersion:
+        type: boolean
+        description: Whether this is the default version of the API.
+        example: false
+      urlMappings:
+        type: array
+        items:
+          $ref: '#/definitions/URLMapping'
+      subscripitons:
+        type: array
+        items:
+          $ref: '#/definitions/SubscriptionInfo'
+
+  #-----------------------------------------------------
+  # The Subscription Info resource.
+  #-----------------------------------------------------
+  SubscriptionInfo:
+    properties:
+      subscriptionUUID:
+        type: string
+        example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+      subscriptionPolicy:
+        type: string
+        example: "Gold"
+      status:
+        type: string
+        example: "UnBlocked"
+      application:
+        $ref: '#/definitions/ApplicationInfo'
+
+  #-----------------------------------------------------
+  # The Application Info resource.
+  #-----------------------------------------------------
+  ApplicationInfo:
+    properties:
+      uuid:
+        type: string
+        example: "d290f1ee-6c54-4b01-90e6-d701848f0851"
+      id:
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: "PizzaAPP"
+      subName:
+        type: string
+        example: "admin"
+      policy:
+        type: string
+        description: Application level throtting policy.
+        example: "Gold"
+      tokenType:
+        type: string
+        description: type of the token.
+        example: "JWT"
+      attributes:
+        type: object
+        additionalProperties:
+          type: string
+      keys:
+        type: array
+        items:
+          $ref: '#/definitions/ApplicationKeyMapping'
+
+  #-----------------------------------------------------
+  # The Application Key Mapping resource
+  #-----------------------------------------------------
+  ApplicationKeyMapping:
+    properties:
+      consumerKey:
+        type: string
+        example: "d290f1ee-6c54-4b01-90e6-d701848f0851"
+      keyType:
+        type: string
+        example: "Production"
+      keyManager:
+        type: string
+        example: "Resident Key Manager"
+
+  #-----------------------------------------------------
+  # The URL Mapping resource
+  #-----------------------------------------------------
+  URLMapping:
+    properties:
+      authScheme:
+        type: string
+        example: "Application & Application User"
+      throttlingPolicy:
+        type: string
+        example: "Unlimited"
+      httpMethod:
+        type: string
+        example: "GET"
+      urlPattern:
+        type: string
+        example: "/menu"
+      scopes:
+        type: array
+        items:
+          type: string
+          example: "read"
+  #-----------------------------------------------------
+  # The API List resource
+  #-----------------------------------------------------
+  APIList:
+    title: API List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of APIs returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/APIMetaData'
+  #-----------------------------------------------------
+  # The APIMetaData resource
+  #-----------------------------------------------------
+  APIMetaData:
+    properties:
+      apiUUID:
+        type: string
+        description: UUID of API.
+        example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+      apiId:
+        type: integer
+        example: 1
+      provider:
+        type: string
+        description: API Provider name.
+        example: "admin"
+      name:
+        type: string
+        description: Name of the API
+        example: "PizzaAPI"
+      version:
+        type: string
+        description: Version of the API.
+        example: "v1.0.0"
+      context:
+        type: string
+        description: Context of the API.
+        example: "/pizza/v1.0.0"
+      policy:
+        type: string
+        description: API level throttling policy.
+        example: "Gold"
+      apiType:
+        type: string
+        description: Type of the API.
+        example: "APIProduct"
+      isDefaultVersion:
+        type: boolean
+        description: Whether this is the default version of the API.
+        example: false
+
+  #-----------------------------------------------------
+  # The Application List resource
+  #-----------------------------------------------------
+  ApplicationList:
     title: Application List
     properties:
       count:
         type: integer
         description: |
-          Number of Subscriptions returned.
+          Number of Applications returned.
         example: 1
-        default: 0
       list:
         type: array
         items:
-          $ref: '#/definitions/Subscription'
+          $ref: '#/definitions/ApplicationInfo'
+
   #-----------------------------------------------------
   # The Subscription resource
   #-----------------------------------------------------
   Subscription:
     properties:
-      subscriptionUUID:
-        type: string
       subscriptionId:
         type: integer
       policyId:
         type: string
-      apiUUID:
-        type: string
       apiId:
         type: integer
-      applicationUUID:
-        type: string
       appId:
         type: integer
       subscriptionState:
         type: string
+
+
 
 #-----------------------------------------------------
 # END-OF-FILE

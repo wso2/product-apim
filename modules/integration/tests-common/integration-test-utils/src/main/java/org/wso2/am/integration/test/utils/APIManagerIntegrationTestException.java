@@ -41,4 +41,9 @@ public class APIManagerIntegrationTestException extends Exception {
     public APIManagerIntegrationTestException(String message) {
         super(message);
     }
+
+    public APIManagerIntegrationTestException(Throwable cause) {
+
+        super(cause);
+    }
 }

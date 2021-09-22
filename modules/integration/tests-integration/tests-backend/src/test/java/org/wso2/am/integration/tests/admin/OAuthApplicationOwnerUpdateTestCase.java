@@ -116,8 +116,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
 
         // create application in the store using super tenant user john1's credentials
-        restAPIStoreClient1 = new RestAPIStoreImpl(USER_JOHN, USER_JOHN_PWD, SUPER_TENANT_DOMAIN, storeURLHttps,
-                restAPIGateway);
+        restAPIStoreClient1 = new RestAPIStoreImpl(USER_JOHN, USER_JOHN_PWD, SUPER_TENANT_DOMAIN, storeURLHttps
+        );
         ApplicationDTO appOfJohnDTO = restAPIStoreClient1.addApplication(JOHN_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "App of user John");
         appIdOfJohnApp = appOfJohnDTO.getApplicationId();
@@ -127,7 +127,7 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
 
         // create application in the store using super tenant user mary1's credentials
-        restAPIStoreClient2 = new RestAPIStoreImpl(USER_MARY, USER_MARY_PWD, SUPER_TENANT_DOMAIN, storeURLHttps,restAPIGateway);
+        restAPIStoreClient2 = new RestAPIStoreImpl(USER_MARY, USER_MARY_PWD, SUPER_TENANT_DOMAIN, storeURLHttps);
         ApplicationDTO appOfMaryDTO = restAPIStoreClient2.addApplication(MARY_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "App of user Mary");
         appIdOfMaryApp = appOfMaryDTO.getApplicationId();
@@ -144,8 +144,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
 
         // create application in the store using tenant admin user's credentials
-        restAPIStoreClient3 = new RestAPIStoreImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, storeURLHttps,
-                restAPIGateway);
+        restAPIStoreClient3 = new RestAPIStoreImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, storeURLHttps
+        );
         ApplicationDTO appOfTenantAdminDTO = restAPIStoreClient3.addApplication(TENANT_ADMIN_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, "", "App of tenant admin");
         appIdOfTenantAdminApp = appOfTenantAdminDTO.getApplicationId();
@@ -154,8 +154,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
 
         // create application in the store using tenant user user1's credentials
-        restAPIStoreClient4 = new RestAPIStoreImpl(TENANT_USER1, TENANT_USER1_PWD, TENANT_DOMAIN, storeURLHttps,
-                restAPIGateway);
+        restAPIStoreClient4 = new RestAPIStoreImpl(TENANT_USER1, TENANT_USER1_PWD, TENANT_DOMAIN, storeURLHttps
+        );
         ApplicationDTO appOfTenantUser1DTO = restAPIStoreClient4.addApplication(TENANT_USER1_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, "", "App of tenant user 1");
         appIdOfTenantUser1App = appOfTenantUser1DTO.getApplicationId();
@@ -164,8 +164,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
 
         // create application in the store using tenant user user2's credentials
-        restAPIStoreClient5 = new RestAPIStoreImpl(TENANT_USER2, TENANT_USER2_PWD, TENANT_DOMAIN, storeURLHttps,
-                restAPIGateway);
+        restAPIStoreClient5 = new RestAPIStoreImpl(TENANT_USER2, TENANT_USER2_PWD, TENANT_DOMAIN, storeURLHttps
+        );
         ApplicationDTO appOfTenantUser2DTO = restAPIStoreClient5.addApplication(TENANT_USER2_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, "", "App of tenant user 2");
         appIdOfTenantUser2App = appOfTenantUser2DTO.getApplicationId();
@@ -174,8 +174,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
 
         // create application in the store using tenant user user3's credentials
-        restAPIStoreClient6 = new RestAPIStoreImpl(TENANT_USER3, TENANT_USER3_PWD, TENANT_DOMAIN, storeURLHttps,
-                restAPIGateway);
+        restAPIStoreClient6 = new RestAPIStoreImpl(TENANT_USER3, TENANT_USER3_PWD, TENANT_DOMAIN, storeURLHttps
+        );
         ApplicationDTO appOfTenantUser3DTO = restAPIStoreClient6.addApplication(TENANT_USER3_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, "", "App of tenant user 3");
         appIdOfTenantUser3App = appOfTenantUser3DTO.getApplicationId();

@@ -125,8 +125,8 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisherFirstUser = new RestAPIPublisherImpl(user1, password, user.getUserDomain(), publisherURLHttps);
         restAPIPublisherSecondUser = new RestAPIPublisherImpl(user2, password, user.getUserDomain(), publisherURLHttps);
 
-        restAPIStoreFirstUser = new RestAPIStoreImpl(user1, password, user.getUserDomain(), storeURLHttps,restAPIGateway);
-        restAPIStoreSecondUser = new RestAPIStoreImpl(user2, password, user.getUserDomain(), storeURLHttps,restAPIGateway);
+        restAPIStoreFirstUser = new RestAPIStoreImpl(user1, password, user.getUserDomain(), storeURLHttps);
+        restAPIStoreSecondUser = new RestAPIStoreImpl(user2, password, user.getUserDomain(), storeURLHttps);
 
     }
 
