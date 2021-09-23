@@ -73,6 +73,7 @@ public class APISystemScopesTestCase extends APIMIntegrationBaseTest {
         String alias = "testRole";
         int count = 1;
 
+
         roleAliasDTO.setRole(role);
         roleAliasList.add(alias);
         roleAliasDTO.setAliases(roleAliasList);
