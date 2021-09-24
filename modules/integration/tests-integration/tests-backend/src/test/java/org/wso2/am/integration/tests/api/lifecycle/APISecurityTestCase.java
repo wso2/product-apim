@@ -88,6 +88,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String mutualSSLandOAuthMandatoryAPIContext = "mutualSSLandOAuthMandatoryAPI";
     private final String OauthDisabledAPIContext = "OauthDisabledAPI";
     private final String OauthEnabledAPIContext = "OauthEnabledAPI";
+    private final String APIKeyEnabledAPI = "APIKeyEnabledAPI";
+    private final String APIKeyEnabledAPIContext = "APIKeyEnabledAPI";
     private final String BasicAuthAPI = "BasicAuthAPI";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
@@ -101,6 +103,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private String apiId4;
     private String apiId5;
     private String apiId6;
+    private String apiId7;
 
     @BeforeClass(alwaysRun = true)
     public void initialize()
@@ -288,8 +291,29 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response6 = restAPIPublisher.addAPI(apiRequest6);
         apiId6 = response6.getData();
 
+        APIRequest apiRequest7 = new APIRequest(APIKeyEnabledAPI, APIKeyEnabledAPIContext,
+                new URL(apiEndPointUrl));
+
+        apiRequest7.setVersion(API_VERSION_1_0_0);
+        apiRequest7.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest7.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest7.setTags(API_TAGS);
+        apiRequest7.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest7.setOperationsDTOS(operationsDTOS2);
+        List<String> securitySchemes7 = new ArrayList<>();
+        securitySchemes7.add("api_key");
+        apiRequest7.setSecurityScheme(securitySchemes7);
+        apiRequest7.setDefault_version("true");
+        apiRequest7.setHttps_checked("https");
+        apiRequest7.setHttp_checked(null);
+        apiRequest7.setDefault_version_checked("true");
+
+        HttpResponse response7 = restAPIPublisher.addAPI(apiRequest7);
+        apiId7 = response7.getData();
+
         restAPIPublisher.changeAPILifeCycleStatus(apiId4, APILifeCycleAction.PUBLISH.getAction());
         restAPIPublisher.changeAPILifeCycleStatus(apiId6, APILifeCycleAction.PUBLISH.getAction());
+        restAPIPublisher.changeAPILifeCycleStatus(apiId7, APILifeCycleAction.PUBLISH.getAction());
     }
 
     @Test(description = "This test case tests the behaviour of APIs that are protected with mutual SSL and OAuth2 "
@@ -599,6 +623,36 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response5.getResponseCode(), HttpStatus.SC_FORBIDDEN);
     }
 
+    @Test(description = "Testing the invocation for a API key authentication enabled API",
+            dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvocationWithoutResourceSecurity() throws Exception {
+
+        // Validate for security disabled API
+        HttpResponse response = restAPIPublisher.getAPI(apiId7);
+        String retrievedSwagger;
+
+        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
+        List<APIOperationsDTO> operationsList = apidto.getOperations();
+        // Validate the security of resources in API object
+        for (APIOperationsDTO apiOperation : operationsList) {
+            Assert.assertEquals(apiOperation.getAuthType(), "None", "Incorrect auth type");
+        }
+
+        // Verify the security of API in Swagger
+        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId7);
+        List<Object> authTypes = validateResourceSecurity(retrievedSwagger);
+        for (Object authType : authTypes) {
+            Assert.assertEquals(authType, "None", "Incorrect auth type");
+        }
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        HttpResponse invokeResponse =
+                HttpRequestUtil.doGet(getAPIInvocationURLHttps(APIKeyEnabledAPIContext, API_VERSION_1_0_0) +
+                        API_END_POINT_METHOD, requestHeaders);
+        assertEquals(invokeResponse.getResponseCode(), HttpStatus.SC_OK);
+    }
+
     @Test(description = "Testing the invocation with API Keys having Http Referer restriction",
             dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
     public void testInvocationWithApiKeysWithRefererCondition() throws Exception {
@@ -719,6 +773,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId4);
         restAPIPublisher.deleteAPI(apiId5);
         restAPIPublisher.deleteAPI(apiId6);
+        restAPIPublisher.deleteAPI(apiId7);
     }
 
     public String generateBase64EncodedCertificate() throws IOException {
