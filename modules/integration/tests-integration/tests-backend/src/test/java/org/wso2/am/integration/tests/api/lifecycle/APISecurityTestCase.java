@@ -773,6 +773,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId4);
         restAPIPublisher.deleteAPI(apiId5);
         restAPIPublisher.deleteAPI(apiId6);
+        restAPIPublisher.deleteAPI(apiId7);
     }
 
     public String generateBase64EncodedCertificate() throws IOException {
