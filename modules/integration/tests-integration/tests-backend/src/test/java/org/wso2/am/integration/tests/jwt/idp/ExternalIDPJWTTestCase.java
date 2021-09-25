@@ -45,6 +45,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.KeyManagerInfoDTO;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -75,6 +76,8 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(ExternalIDPJWTTestCase.class);
     private static final String KEY_MANAGER_1 = "KeyManager-1";
     private static final String KEY_MANAGER_2 = "KeyManager-2";
+    private static final String KEY_MANAGER_3 = "KeyManager-3";
+    private static final String KEY_MANAGER_4 = "KeyManager-4";
     public static final String ALL_KEY_MANAGER = "all";
     private String apiName = "ExternalJWTTest";
     private String apiNameOnlyKM1 = "ExternalJWTTestOnlyKM1";
@@ -92,6 +95,8 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
     private final String JWT_ASSERTION_HEADER = "X-JWT-Assertion";
     private String keyManager1Id;
     private String keyManager2Id;
+    private String keyManager3Id;
+    private String keyManager4Id;
     private String consumerKey1 = UUID.randomUUID().toString();
     private String consumerKey2 = UUID.randomUUID().toString();
     private String apiIdOnlyKm1;
@@ -297,12 +302,65 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
+    @Test(groups = {"wso2.am"}, description = "validating display token endpoint behavior")
+    public void testIDPDisplaytokenEndpoints() throws Exception  {
+        String token_ep = "http://localhost:9443/oauth/token";
+        String revoke_ep = "http://localhost:9443/oauth/revoke";
+        String display_token_ep = "http://localhost:9443/display/oauth/token";
+        String display_revoke_ep = "http://localhost:9443/display/oauth/revoke";
+
+        // when display token endpoints available
+        KeyManagerDTO keyManagerDTO = new KeyManagerDTO();
+        keyManagerDTO.setType("custom");
+        keyManagerDTO.setName(KEY_MANAGER_3);
+        keyManagerDTO.setDescription("This is Key Manager");
+        keyManagerDTO.setEnabled(true);
+        keyManagerDTO.setTokenEndpoint(token_ep);
+        keyManagerDTO.setRevokeEndpoint(revoke_ep);
+        keyManagerDTO.setDisplayTokenEndpoint(display_token_ep);
+        keyManagerDTO.setRevokeEndpoint(revoke_ep);
+        keyManagerDTO.setDisplayRevokeEndpoint(display_revoke_ep);
+
+        org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
+                keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
+        keyManager3Id = keyManagerDTOApiResponse.getData().getId();
+
+        // when no display token endpoints available
+        KeyManagerDTO keyManagerDTO1 = new KeyManagerDTO();
+        keyManagerDTO1.setType("custom");
+        keyManagerDTO1.setName(KEY_MANAGER_4);
+        keyManagerDTO1.setDescription("This is Key Manager");
+        keyManagerDTO1.setEnabled(true);
+        keyManagerDTO1.setTokenEndpoint(token_ep);
+        keyManagerDTO1.setRevokeEndpoint(revoke_ep);
+        keyManagerDTO1.setDisplayTokenEndpoint("");
+        keyManagerDTO1.setRevokeEndpoint(revoke_ep);
+        keyManagerDTO1.setDisplayRevokeEndpoint("");
+
+        org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
+                keyManagerDTOApiResponse1 = restAPIAdmin.addKeyManager(keyManagerDTO1);
+        keyManager4Id = keyManagerDTOApiResponse1.getData().getId();
+
+        for(KeyManagerInfoDTO keyManager: restAPIStore.getKeyManagers().getList()) {
+            if (keyManager.getName().equals(KEY_MANAGER_3)) {
+                Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
+                Assert.assertEquals(keyManager.getRevokeEndpoint(), display_revoke_ep);
+            }
+            if (keyManager.getName().equals(KEY_MANAGER_4)) {
+                Assert.assertEquals(keyManager.getTokenEndpoint(), token_ep);
+                Assert.assertEquals(keyManager.getRevokeEndpoint(), revoke_ep);
+            }
+        }
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
         restAPIStore.deleteApplication(jwtApplicationId);
         restAPIAdmin.deleteKeyManager(keyManager1Id);
         restAPIAdmin.deleteKeyManager(keyManager2Id);
+        restAPIAdmin.deleteKeyManager(keyManager3Id);
+        restAPIAdmin.deleteKeyManager(keyManager4Id);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         undeployAndDeleteAPIRevisionsUsingRest(apiIdOnlyKm1, restAPIPublisher);

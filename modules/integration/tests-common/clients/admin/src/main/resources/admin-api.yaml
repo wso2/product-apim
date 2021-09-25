@@ -5092,7 +5092,13 @@ components:
         tokenEndpoint:
           type: string
           example: https://localhost:9444/oauth2/token
+        displayTokenEndpoint:
+          type: string
+          example: https://localhost:9444/oauth2/token
         revokeEndpoint:
+          type: string
+          example: https://localhost:9444/oauth2/revoke
+        displayRevokeEndpoint:
           type: string
           example: https://localhost:9444/oauth2/revoke
         userInfoEndpoint:

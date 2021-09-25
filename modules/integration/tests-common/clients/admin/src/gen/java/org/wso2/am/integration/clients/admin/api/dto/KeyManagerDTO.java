@@ -70,9 +70,17 @@ public class KeyManagerDTO {
         @SerializedName(SERIALIZED_NAME_TOKEN_ENDPOINT)
             private String tokenEndpoint;
 
+        public static final String SERIALIZED_NAME_DISPLAY_TOKEN_ENDPOINT = "displayTokenEndpoint";
+        @SerializedName(SERIALIZED_NAME_DISPLAY_TOKEN_ENDPOINT)
+            private String displayTokenEndpoint;
+
         public static final String SERIALIZED_NAME_REVOKE_ENDPOINT = "revokeEndpoint";
         @SerializedName(SERIALIZED_NAME_REVOKE_ENDPOINT)
             private String revokeEndpoint;
+
+        public static final String SERIALIZED_NAME_DISPLAY_REVOKE_ENDPOINT = "displayRevokeEndpoint";
+        @SerializedName(SERIALIZED_NAME_DISPLAY_REVOKE_ENDPOINT)
+            private String displayRevokeEndpoint;
 
         public static final String SERIALIZED_NAME_USER_INFO_ENDPOINT = "userInfoEndpoint";
         @SerializedName(SERIALIZED_NAME_USER_INFO_ENDPOINT)
@@ -352,6 +360,29 @@ public class KeyManagerDTO {
     }
 
 
+        public KeyManagerDTO displayTokenEndpoint(String displayTokenEndpoint) {
+        
+        this.displayTokenEndpoint = displayTokenEndpoint;
+        return this;
+        }
+
+    /**
+        * Get displayTokenEndpoint
+    * @return displayTokenEndpoint
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "https://localhost:9444/oauth2/token", value = "")
+    
+    public String getDisplayTokenEndpoint() {
+        return displayTokenEndpoint;
+    }
+
+
+    public void setDisplayTokenEndpoint(String displayTokenEndpoint) {
+        this.displayTokenEndpoint = displayTokenEndpoint;
+    }
+
+
         public KeyManagerDTO revokeEndpoint(String revokeEndpoint) {
         
         this.revokeEndpoint = revokeEndpoint;
@@ -372,6 +403,29 @@ public class KeyManagerDTO {
 
     public void setRevokeEndpoint(String revokeEndpoint) {
         this.revokeEndpoint = revokeEndpoint;
+    }
+
+
+        public KeyManagerDTO displayRevokeEndpoint(String displayRevokeEndpoint) {
+        
+        this.displayRevokeEndpoint = displayRevokeEndpoint;
+        return this;
+        }
+
+    /**
+        * Get displayRevokeEndpoint
+    * @return displayRevokeEndpoint
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "https://localhost:9444/oauth2/revoke", value = "")
+    
+    public String getDisplayRevokeEndpoint() {
+        return displayRevokeEndpoint;
+    }
+
+
+    public void setDisplayRevokeEndpoint(String displayRevokeEndpoint) {
+        this.displayRevokeEndpoint = displayRevokeEndpoint;
     }
 
 
@@ -807,7 +861,9 @@ public class KeyManagerDTO {
             Objects.equals(this.introspectionEndpoint, keyManager.introspectionEndpoint) &&
             Objects.equals(this.clientRegistrationEndpoint, keyManager.clientRegistrationEndpoint) &&
             Objects.equals(this.tokenEndpoint, keyManager.tokenEndpoint) &&
+            Objects.equals(this.displayTokenEndpoint, keyManager.displayTokenEndpoint) &&
             Objects.equals(this.revokeEndpoint, keyManager.revokeEndpoint) &&
+            Objects.equals(this.displayRevokeEndpoint, keyManager.displayRevokeEndpoint) &&
             Objects.equals(this.userInfoEndpoint, keyManager.userInfoEndpoint) &&
             Objects.equals(this.authorizeEndpoint, keyManager.authorizeEndpoint) &&
             Objects.equals(this.certificates, keyManager.certificates) &&
@@ -830,7 +886,7 @@ public class KeyManagerDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, displayName, type, description, wellKnownEndpoint, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, userInfoEndpoint, authorizeEndpoint, certificates, issuer, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties);
+        return Objects.hash(id, name, displayName, type, description, wellKnownEndpoint, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, displayTokenEndpoint, revokeEndpoint, displayRevokeEndpoint, userInfoEndpoint, authorizeEndpoint, certificates, issuer, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties);
     }
 
 
@@ -847,7 +903,9 @@ sb.append("class KeyManagerDTO {\n");
     sb.append("    introspectionEndpoint: ").append(toIndentedString(introspectionEndpoint)).append("\n");
     sb.append("    clientRegistrationEndpoint: ").append(toIndentedString(clientRegistrationEndpoint)).append("\n");
     sb.append("    tokenEndpoint: ").append(toIndentedString(tokenEndpoint)).append("\n");
+    sb.append("    displayTokenEndpoint: ").append(toIndentedString(displayTokenEndpoint)).append("\n");
     sb.append("    revokeEndpoint: ").append(toIndentedString(revokeEndpoint)).append("\n");
+    sb.append("    displayRevokeEndpoint: ").append(toIndentedString(displayRevokeEndpoint)).append("\n");
     sb.append("    userInfoEndpoint: ").append(toIndentedString(userInfoEndpoint)).append("\n");
     sb.append("    authorizeEndpoint: ").append(toIndentedString(authorizeEndpoint)).append("\n");
     sb.append("    certificates: ").append(toIndentedString(certificates)).append("\n");
