@@ -27,6 +27,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.Response;
@@ -45,9 +46,13 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -67,6 +72,11 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
     private String resourcePath;
     private String apiID;
     private APIIdentifier apiIdentifier;
+    private final String APPLICATION_NAME = "PrototypedAPITestcaseApllication";
+    private String accessToken;
+    String applicationId1;
+    String applicationId2;
+    String applicationId3;
 
     @Factory(dataProvider = "userModeDataProvider")
     public PrototypedAPITestcase(TestUserMode userMode) {
@@ -151,7 +161,22 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifier, prototypedAPIs),
                 apiName + " is not visible as Prototyped API");
 
+        HttpResponse applicationResponse = restAPIStore
+                .createApplication(APPLICATION_NAME + "testPrototypedAPIEndpoint",
+                        "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                        ApplicationDTO.TokenTypeEnum.JWT);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        applicationId1 = applicationResponse.getData();
+        restAPIStore.subscribeToAPI(apiID, applicationId1, "Gold");
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId1, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        //get access token
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+
         Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
         requestHeaders.put("accept", "application/json");
 
         //Invoke the Prototype endpoint and validate
@@ -281,8 +306,22 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
         // Create a revision and Deploy the API
         createAPIRevisionAndDeployUsingRest(apiImportId, restAPIPublisher);
+        HttpResponse applicationResponse = restAPIStore
+                .createApplication(APPLICATION_NAME + "testOAS3InlinePrototypeWithMock",
+                        "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                        ApplicationDTO.TokenTypeEnum.JWT);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        applicationId2 = applicationResponse.getData();
+        restAPIStore.subscribeToAPI(apiImportId, applicationId2, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId2, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        //get access token
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
         requestHeaders.put("accept", "application/json");
         waitForAPIDeployment();
         //Invoke the Prototype endpoint and validate
@@ -332,7 +371,22 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         // Create a revision and Deploy the API
         createAPIRevisionAndDeployUsingRest(apiImportId, restAPIPublisher);
 
+        HttpResponse applicationResponse = restAPIStore
+                .createApplication(APPLICATION_NAME + "testOAS2InlinePrototypeWithMock",
+                        "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                        ApplicationDTO.TokenTypeEnum.JWT);
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        applicationId3 = applicationResponse.getData();
+        restAPIStore.subscribeToAPI(apiImportId, applicationId3, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId3, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        //get access token
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+
         Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
         requestHeaders.put("accept", "application/json");
         waitForAPIDeployment();
         //Invoke the Prototype endpoint and validate
@@ -344,7 +398,9 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-
+        restAPIStore.deleteApplication(applicationId1);
+        restAPIStore.deleteApplication(applicationId2);
+        restAPIStore.deleteApplication(applicationId3);
         super.cleanUp();
     }
 
