@@ -561,30 +561,6 @@
         <!--Need to remove after GA-->
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/conf/identity
-            </directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/resources/conf/templates/repository/conf/identity
-            </outputDirectory>
-            <excludes>
-                <exclude>identity.xml.j2</exclude>
-            </excludes>
-        </fileSet>
-
-        <!--Need to remove after GA-->
-        <fileSet>
-            <directory>
-                src/main/extensions/templates
-            </directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/resources/conf/templates/repository/conf/identity
-            </outputDirectory>
-            <includes>
-                <include>identity.xml.j2</include>
-            </includes>
-        </fileSet>
-
-        <!--Need to remove after GA-->
-        <fileSet>
-            <directory>
                 src/main/extensions/
             </directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/authenticationendpoint/
