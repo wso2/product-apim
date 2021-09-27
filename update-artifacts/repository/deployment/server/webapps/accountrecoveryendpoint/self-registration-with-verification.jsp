@@ -637,13 +637,22 @@
             }
 
             var firstname = $("#firstname").val();
+
+            if (!firstname.trim()) {
+                error_msg.text("<%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
+                        "Invalid.firstname") %> ");
+                error_msg.show();
+                $("html, body").animate({ scrollTop: error_msg.offset().top }, 'slow');
+                return false;
+            }
+
             var lastname = $("#lastname").val();
 
-            if (!firstname.trim() || !lastname.trim()) {
+            if (!lastname.trim()) {
                 error_msg.text("<%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
-                        "Invalid.firstname.or.lastname")%>");
+                        "Invalid.lastname") %> ");
                 error_msg.show();
-                $("html, body").animate({scrollTop: error_msg.offset().top}, 'slow');
+                $("html, body").animate({ scrollTop: error_msg.offset().top }, 'slow');
                 return false;
             }
 
