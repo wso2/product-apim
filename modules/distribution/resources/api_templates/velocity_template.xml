@@ -144,8 +144,13 @@
      version-type="context"
         #if($apiType == 'WS')
         binds-to="WebSocketInboundEndpoint, SecureWebSocketEP"
+        #elseif($apiType == 'GRAPHQL')
+        #if( $isSubscriptionAvailable )
+        binds-to="WebSocketInboundEndpoint, SecureWebSocketEP, default"
+        #end
         #end
         >
+        #set($originalEndPointConfig = $endpoint_config)
         #if($apiIsBlocked)
         ## if API is blocked send the API Block message
 <resource methods="GET POST PUT DELETE PATCH" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
@@ -170,6 +175,8 @@
         ## api not blocked
         #set ($resourceNo = 0)
         #foreach($resource in $resources)
+        #set( $isGQLWSResource = false )
+        #set( $endpoint_config = $originalEndPointConfig)
 
 <resource xmlns="http://ws.apache.org/ns/synapse"
         #if($resource.getUriTemplate().contains("{") ||
@@ -181,10 +188,20 @@
         #set( $topic= "$resource.getUriTemplate()")
         #end
 
+        #if($isSubscriptionAvailable)
+        #if( $resource.getMethodsAsString() == "" )
+        #set( $isGQLWSResource = true )
+        binds-to="WebSocketInboundEndpoint, SecureWebSocketEP"
+        #else
+        binds-to="default"
+        #set( $isGQLWSResource = false )
+        #end
+        #end
+
         #if($apiType == 'SSE')
         ## resources are always GET in SSE
         methods="GET"
-        #elseif($apiType != 'WS')
+        #elseif($apiType != 'WS' && !$isGQLWSResource)
         ## methods are not applicable for WS
         methods="$resource.getMethodsAsString()"
         #end
@@ -210,6 +227,15 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 #end
 #end
 ##############  define the filter based on environment type production only, sandbox only , hybrid ############
+
+##If graphql api
+#if ( $endpoint_config.get("endpoint_type") == "graphql" )
+#if( $isGQLWSResource )
+#set( $endpoint_config = $endpoint_config.get("ws") )
+#else
+#set( $endpoint_config = $endpoint_config.get("http") )
+#end
+#end
 
 #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_config.get("production_endpoints") ))
 #set( $filterRegex = "SANDBOX" )
@@ -239,7 +265,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 <loopback />
 ## AWS Lambda: end
 #else
-#if($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected)
+#if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
@@ -248,7 +274,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         #else
         #draw_endpoint( "production" $endpoint_config )
         #end
-        #if($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected)
+        #if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
     </then>
     <else>
         #if($environmentType !='hybrid')

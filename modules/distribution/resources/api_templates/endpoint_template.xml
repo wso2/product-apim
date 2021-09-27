@@ -103,7 +103,10 @@
 #timeout( $ep.get('config') )
 </http>
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpointUrl)"/>
-        </endpoint>
+#if( $isGQLSubscription )
+<property name="websocket.subprotocol" scope="axis2" value="graphql-ws"/>
+#end
+</endpoint>
         #end
 
         ##macro for address endpoints in failover and load balance types
@@ -128,6 +131,18 @@ optimize="$advance_ep.get("optimize")"
         #macro( draw_endpoint $type $endpoint_config )
 
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
+
+        ##If graphql api
+        #if ( $endpointClass == "graphql" )
+        #if( $websocketResourceKey )
+        #set( $endpoint_config = $endpoint_config.get("ws") )
+        #set( $isGQLSubscription = "true" )
+        #else
+        #set( $endpoint_config = $endpoint_config.get("http") )
+        #end
+        #set( $endpointClass = $endpoint_config.get("endpoint_type") )
+        #end
+
         #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
         #set( $ep_key = "${endpointKey}_API${type}Endpoint")
 
