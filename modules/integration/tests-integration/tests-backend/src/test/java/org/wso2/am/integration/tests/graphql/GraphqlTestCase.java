@@ -141,6 +141,54 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
 
+    @Test(groups = {"wso2.am"}, description = "Create and publish GraphQL APIs by providing GraphQL schema with " +
+            "interface types")
+    public void createAndPublishGraphQLAPIUsingSchemaWithInterfaces() throws Exception {
+
+        String schemaDefinitionWithInterface = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream("graphql" + File.separator
+                        + "schemaWithInterface.graphql"), "UTF-8");
+        File file = getTempFileWithContent(schemaDefinitionWithInterface);
+        GraphQLValidationResponseDTO responseApiDto = restAPIPublisher.validateGraphqlSchemaDefinition(file);
+        GraphQLValidationResponseGraphQLInfoDTO graphQLInfo = responseApiDto.getGraphQLInfo();
+        String arrayToJson = new ObjectMapper().writeValueAsString(graphQLInfo.getOperations());
+        JSONArray operations = new JSONArray(arrayToJson);
+
+        ArrayList<String> environment = new ArrayList<String>();
+        environment.add("Production and Sandbox");
+
+        ArrayList<String> policies = new ArrayList<String>();
+        policies.add("Unlimited");
+
+        JSONObject additionalPropertiesObj = new JSONObject();
+        additionalPropertiesObj.put("name", "GraphQLAPIWithInterface");
+        additionalPropertiesObj.put("context", "interface");
+        additionalPropertiesObj.put("version", API_VERSION_1_0_0);
+
+        JSONObject url = new JSONObject();
+        url.put("url", END_POINT_URL);
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("sandbox_endpoints", url);
+        endpointConfig.put("production_endpoints", url);
+        additionalPropertiesObj.put("endpointConfig", endpointConfig);
+        additionalPropertiesObj.put("gatewayEnvironments", environment);
+        additionalPropertiesObj.put("policies", policies);
+        additionalPropertiesObj.put("operations", operations);
+
+        // create Graphql API
+        APIDTO apidto = restAPIPublisher.importGraphqlSchemaDefinition(file, additionalPropertiesObj.toString());
+        String graphqlAPIId = apidto.getId();
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlAPIId);
+        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
+                GRAPHQL_API_NAME + " API creation is failed");
+
+        // publish api
+        restAPIPublisher.changeAPILifeCycleStatus(graphqlAPIId, Constants.PUBLISHED);
+        waitForAPIDeploymentSync(user.getUserName(), GRAPHQL_API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_EXISTS);
+    }
+
 
     @Test(groups = {"wso2.am"}, description = "test retrieve schemaDefinition at publisher")
     public void testRetrieveSchemaDefinitionAtPublisher() throws Exception {
