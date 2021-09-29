@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
@@ -97,6 +98,24 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         this.userMode = userMode;
     }
 
+    @BeforeTest(alwaysRun = true)
+    public void loadConfiguration() throws Exception {
+
+        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
+
+        try {
+            serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+
+            //Apply application consent page related config
+            serverConfigurationManager.applyConfiguration(new File(
+                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "applicationConsentPage"
+                            + File.separator + "deployment.toml"));
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Error while changing server configuration", e);
+        }
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
@@ -104,15 +123,6 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
         tokenURL = getKeyManagerURLHttps() + "oauth2/token";
         identityLoginURL = getKeyManagerURLHttps() + "oauth2/authorize";
-
-        //Apply application consent page related config
-        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-
-        serverConfigurationManager.applyConfiguration(new File(
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "applicationConsentPage"
-                        + File.separator + "deployment.toml"));
 
         //create Application
         HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
@@ -392,9 +402,13 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         restAPIStore.deleteApplication(applicationIdWithoutCallback);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
+    }
+
+    @AfterTest(alwaysRun = true)
+    public void restoreConfiguration() throws Exception {
 
         //Remove application consent page related config
-        serverConfigurationManager.restoreToLastConfiguration(false);
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 
     @DataProvider
