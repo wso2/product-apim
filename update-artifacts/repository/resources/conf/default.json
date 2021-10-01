@@ -492,6 +492,7 @@
   "apim.jwt.convert_dialect": false,
   "apim.jwt.signing_algorithm": "SHA256withRSA",
   "apim.jwt.claims_extractor_impl": "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever",
+  "apim.jwt.binding_federated_user_claims": true,
   "apim.jwt.gateway_generator.impl": "org.wso2.carbon.apimgt.gateway.handlers.security.jwt.generator.APIMgtGatewayJWTGeneratorImpl",
   "apim.jwt.gateway_generator.enable_claim_retrieval":false,
   "apim.cache.gateway_token.enable": true,
