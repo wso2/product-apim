@@ -28,6 +28,8 @@ import org.wso2.am.integration.clients.admin.api.dto.EventCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.HeaderConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.IPConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.JWTClaimsConditionDTO;
+import org.wso2.am.integration.clients.admin.api.dto.KeyManagerCertificatesDTO;
+import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.QueryParameterConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
@@ -434,5 +436,77 @@ public class DtoFactory {
         return new APICategoryDTO().
                 name(name).
                 description(description);
+    }
+
+    /**
+     * Creates an key manager DTO using the given parameters.
+     *
+     * @param name                       Name of key manager.
+     * @param displayName                Display name of the key manager.
+     * @param description                Description of the key manager.
+     * @param type                       Type of the key manager.
+     * @param issuer                     Issuer of the key manager.
+     * @param clientRegistrationEndpoint Client registration endpoint of the key manager.
+     * @param introspectionEndpoint      Introspection endpoint of the key manager.
+     * @param tokenEndpoint              Token endpoint of the key manager.
+     * @param revokeEndpoint             Revoke endpoint of the key manager.
+     * @param userInfoEndpoint           User info endpoint of the key manager.
+     * @param authorizeEndpoint          Authorize endpoint of the key manager.
+     * @param scopeManagementEndpoint    Scope management endpoint of the key manager.
+     * @param consumerKeyClaim           Consumer key claim URI of the key manager.
+     * @param scopesClaim                Scopes claim URI of the key manager.
+     * @param availableGrantTypes        Available grant types of the key manager.
+     * @param additionalProperties       Additional properties of the key manager.
+     * @param certificates               Certificates of the key manager.
+     * @return Created key manager DTO.
+     */
+    public static KeyManagerDTO createKeyManagerDTO(String name, String description, String type, String displayName,
+                                                    String introspectionEndpoint, String issuer,
+                                                    String clientRegistrationEndpoint, String tokenEndpoint,
+                                                    String revokeEndpoint, String userInfoEndpoint,
+                                                    String authorizeEndpoint, String scopeManagementEndpoint,
+                                                    String consumerKeyClaim, String scopesClaim,
+                                                    List<String> availableGrantTypes, Object additionalProperties,
+                                                    KeyManagerCertificatesDTO certificates) {
+
+        KeyManagerDTO keyManagerDTO = new KeyManagerDTO();
+        keyManagerDTO.setType(type);
+        keyManagerDTO.setName(name);
+        keyManagerDTO.setDescription(description);
+        keyManagerDTO.setDisplayName(displayName);
+        keyManagerDTO.setEnabled(true);
+        keyManagerDTO.setIntrospectionEndpoint(introspectionEndpoint);
+        keyManagerDTO.setRevokeEndpoint(revokeEndpoint);
+        keyManagerDTO.setClientRegistrationEndpoint(clientRegistrationEndpoint);
+        keyManagerDTO.setTokenEndpoint(tokenEndpoint);
+        keyManagerDTO.setUserInfoEndpoint(userInfoEndpoint);
+        keyManagerDTO.setAuthorizeEndpoint(authorizeEndpoint);
+        keyManagerDTO.setScopeManagementEndpoint(scopeManagementEndpoint);
+        keyManagerDTO.setConsumerKeyClaim(consumerKeyClaim);
+        keyManagerDTO.setScopesClaim(scopesClaim);
+        keyManagerDTO.setIssuer(issuer);
+        keyManagerDTO.setCertificates(certificates);
+        keyManagerDTO.setEnableMapOAuthConsumerApps(true);
+        keyManagerDTO.setEnableTokenGeneration(true);
+        keyManagerDTO.setEnableOAuthAppCreation(true);
+        keyManagerDTO.setAvailableGrantTypes(availableGrantTypes);
+        keyManagerDTO.setAdditionalProperties(additionalProperties);
+        return keyManagerDTO;
+    }
+
+    /**
+     * Creates an key manager certificate DTO using the given parameters.
+     *
+     * @param type        Type of the key manager certificate.
+     * @param value       Value of the key manager certificate.
+     * @return Created key manager certificate DTO.
+     */
+    public static KeyManagerCertificatesDTO createKeyManagerCertificatesDTO(KeyManagerCertificatesDTO.TypeEnum type,
+                                                                            String value) {
+
+        KeyManagerCertificatesDTO keyManagerCertificatesDTO =  new KeyManagerCertificatesDTO();
+        keyManagerCertificatesDTO.setType(type);
+        keyManagerCertificatesDTO.setValue(value);
+        return keyManagerCertificatesDTO;
     }
 }
