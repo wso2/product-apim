@@ -223,8 +223,6 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";
         Map<String, String> requestHeaders = new HashMap<String, String>();
         JSONObject queryObject = new JSONObject();
-        queryObject.put("operationName", "{}");
-        queryObject.put("variables", "null");
         queryObject.put("query", "{languages{code name}}");
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         requestHeaders.put("Content-Type",  "application/json");
@@ -251,8 +249,6 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";
         Map<String, String> requestHeaders = new HashMap<String, String>();
         JSONObject queryObject = new JSONObject();
-        queryObject.put("operationName", "{}");
-        queryObject.put("variables", "null");
         queryObject.put("query", "{languages{code name}}");
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         requestHeaders.put("Content-Type",  "application/json");
@@ -308,8 +304,6 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
 
         JSONObject queryObject = new JSONObject();
-        queryObject.put("operationName", "{}");
-        queryObject.put("variables", "null");
         queryObject.put("query", "{languages{code name}}");
         String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";
         Map<String, String> requestHeaders = new HashMap<String, String>();
@@ -381,8 +375,6 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
 
         JSONObject queryObject = new JSONObject();
-        queryObject.put("operationName", "{}");
-        queryObject.put("variables", "null");
         queryObject.put("query", "{languages{code name}}");
 
         String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/";

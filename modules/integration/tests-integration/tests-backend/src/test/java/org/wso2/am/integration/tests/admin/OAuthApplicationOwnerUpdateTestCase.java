@@ -36,7 +36,6 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.util.ArrayList;
@@ -79,7 +78,6 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
     private static final String TENANT_USER4_WITH_DOMAIN = "user4" + "@" + TENANT_DOMAIN;
     private String[] subscriberRole = { APIMIntegrationConstants.APIM_INTERNAL_ROLE.SUBSCRIBER };
 
-    private RestAPIStoreImpl restAPIStoreClient;
     private RestAPIStoreImpl restAPIStoreClient1;
     private RestAPIStoreImpl restAPIStoreClient2;
     private RestAPIStoreImpl restAPIStoreClient3;
@@ -194,7 +192,6 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
     public void updateApplicationOwnerAcrossTenant() {
 
         restAPIAdminClient = new RestAPIAdminImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, publisherURLHttps);
-        restAPIStoreClient = restAPIStoreClient2;
         try {
             updateOwner(appIdOfTenantUser1App, USER_MARY, TENANT_DOMAIN);
         } catch (ApiException e) {
@@ -207,7 +204,6 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
 
         restAPIAdminClient = new RestAPIAdminImpl(user.getUserName(), user.getPassword(), SUPER_TENANT_DOMAIN,
                 publisherURLHttps);
-        restAPIStoreClient = restAPIStoreClient1;
         try {
             updateOwner(appIdOfJohnMaryApp, USER_JOHN, user.getUserDomain());
         } catch (ApiException e) {
@@ -220,12 +216,10 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
         //Update application owner for carbon super
         restAPIAdminClient = new RestAPIAdminImpl(user.getUserName(), user.getPassword(), SUPER_TENANT_DOMAIN,
                 publisherURLHttps);
-        restAPIStoreClient = restAPIStoreClient1;
         updateOwner(appIdOfMaryApp, USER_JOHN, user.getUserDomain());
 
         //Update application Owner for tenant domain
         restAPIAdminClient = new RestAPIAdminImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, publisherURLHttps);
-        restAPIStoreClient = restAPIStoreClient4;
         updateOwner(appIdOfTenantUser2App, TENANT_USER1_WITH_DOMAIN, TENANT_DOMAIN);
     }
 
@@ -273,11 +267,6 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
             if (applicationInfo.getApplicationId().equals(applicationId)) {
                 String owner = applicationInfo.getOwner();
                 Assert.assertEquals(owner, newOwner);
-                HttpResponse serviceResponse = restAPIStoreClient.updateApplicationByID(applicationId,
-                        "applicationNameGold", "This is a sample",
-                        APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.JWT);
-                Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK,
-                        "Response code is not as expected");
                 break;
             }
         }
