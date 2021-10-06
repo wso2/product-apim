@@ -265,7 +265,6 @@ public class RestAPIPublisherImpl {
             operations.add(apiOperationsDTO);
             body.setOperations(operations);
         }
-        body.setResponseCachingEnabled(apiRequest.getResponseCachingEnabled());
         body.setMediationPolicies(apiRequest.getMediationPolicies());
         body.setBusinessInformation(new APIBusinessInformationDTO());
         body.setCorsConfiguration(new APICorsConfigurationDTO());
