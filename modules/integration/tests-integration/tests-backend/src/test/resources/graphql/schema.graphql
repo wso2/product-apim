@@ -43,6 +43,7 @@ type Query {
   country(code: String): Country
   languages: [Language]
   language(code: String): Language
+  limitLanguage(limit: Int where: comparison): String
   asianCountries(first: Int): String
   citiesAsia(last: Int): String
   languagesAsia(where: comparison): String

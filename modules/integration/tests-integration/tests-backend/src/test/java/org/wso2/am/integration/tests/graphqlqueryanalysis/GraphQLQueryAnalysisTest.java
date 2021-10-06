@@ -259,8 +259,7 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         //Maximum query depth exceed, max_query_depth = 2 < query_depth = 3
         HttpResponse serviceResponse2 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject2.toString());
         Assert.assertEquals(serviceResponse2.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
-
-
+        
         JSONObject queryObject3 = new JSONObject();
         queryObject3.put("query", "{limitLanguage(limit:1000, where:{eq:100})}");
 
