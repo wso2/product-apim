@@ -334,7 +334,8 @@ public class DevPortalCommentTest
         assertEquals(getCommentsResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getCommentsGson = new Gson();
-        CommentListDTO commentListDTO = getCommentsGson.fromJson(getCommentsResponse.getData().replace("devPortal", "DEVPORTAL"), CommentListDTO.class);
+        CommentListDTO commentListDTO = getCommentsGson
+                .fromJson(getCommentsResponse.getData().replace("devPortal", "DEVPORTAL"), CommentListDTO.class);
         assertNotNull(commentListDTO.getCount());
         assertEquals(commentListDTO.getCount().intValue(), 2, "Root comments count do not match");
         assertNotNull(commentListDTO.getList());
@@ -353,7 +354,8 @@ public class DevPortalCommentTest
         assertEquals(getCommentToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getCommentToVerifyPaginationGson = new Gson();
-        CommentDTO getCommentToVerifyPaginationCommentDTO = getCommentToVerifyPaginationGson.fromJson(getCommentToVerifyPagination.getData().replace("devPortal", "DEVPORTAL"), CommentDTO.class);
+        CommentDTO getCommentToVerifyPaginationCommentDTO = getCommentToVerifyPaginationGson
+                .fromJson(getCommentToVerifyPagination.getData().replace("devPortal", "DEVPORTAL"), CommentDTO.class);
         assertNotNull(getCommentToVerifyPaginationCommentDTO.getReplies());
         assertNotNull(getCommentToVerifyPaginationCommentDTO.getReplies().getList());
         assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().size(), 2,
@@ -371,7 +373,8 @@ public class DevPortalCommentTest
         assertEquals(getRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
         Gson getRepliesGson = new Gson();
-        CommentListDTO replyListDTO = getRepliesGson.fromJson(getRepliesResponse.getData().replace("devPortal", "DEVPORTAL"), CommentListDTO.class);
+        CommentListDTO replyListDTO = getRepliesGson
+                .fromJson(getRepliesResponse.getData().replace("devPortal", "DEVPORTAL"), CommentListDTO.class);
         assertNotNull(replyListDTO.getCount());
         assertEquals(replyListDTO.getCount().intValue(), 3, "Replies count do not match");
         assertNotNull(replyListDTO.getList());
@@ -421,7 +424,8 @@ public class DevPortalCommentTest
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
         Gson editCommentGson = new Gson();
-        CommentDTO editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("devPortal", "DEVPORTAL"), CommentDTO.class);
+        CommentDTO editCommentDTO = editCommentGson
+                .fromJson(editCommentResponse.getData().replace("devPortal", "DEVPORTAL"), CommentDTO.class);
         assertEquals(editCommentDTO.getContent(), content);
         assertEquals(editCommentDTO.getCategory(), category);
         assertNotEquals(editCommentDTO.getUpdatedTime(), null);
@@ -442,7 +446,8 @@ public class DevPortalCommentTest
             assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Error retrieving comment");
             editCommentGson = new Gson();
-            editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("devPortal", "DEVPORTAL"), CommentDTO.class);
+            editCommentDTO = editCommentGson
+                    .fromJson(editCommentResponse.getData().replace("devPortal", "DEVPORTAL"), CommentDTO.class);
             assertEquals(editCommentDTO.getContent(), content);
             assertEquals(editCommentDTO.getCategory(), category);
             assertNotEquals(editCommentDTO.getUpdatedTime(), null);
