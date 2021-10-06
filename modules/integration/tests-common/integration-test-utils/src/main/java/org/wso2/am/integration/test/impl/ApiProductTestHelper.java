@@ -87,6 +87,29 @@ public class ApiProductTestHelper {
         return responseData;
     }
 
+    public APIProductDTO updateAPIProductResourcesInPublisher(APIProductDTO apiProductDTO,
+            List<APIDTO> apisToBeUsed)
+            throws ApiException {
+        // Select resources from APIs to be used by APIProduct
+        List<ProductAPIDTO> resourcesForProduct = getResourcesForProduct(apisToBeUsed);
+
+        apiProductDTO.setApis(resourcesForProduct);
+
+        // Create APIProduct and validate response code
+        APIProductDTO responseData = restAPIPublisher.updateApiProduct(apiProductDTO, apiProductDTO.getId());
+
+        // Validate that APIProduct resources returned in response data are same as originally selected API resources
+        List<ProductAPIDTO> responseResources = responseData.getApis();
+        verifyAPIProductDto(responseResources, resourcesForProduct);
+
+        // Validate mandatory fields returned in response data
+        Assert.assertEquals(responseData.getProvider(), apiProductDTO.getProvider());
+        Assert.assertEquals(responseData.getName(), apiProductDTO.getName());
+        Assert.assertEquals(responseData.getContext(), apiProductDTO.getContext());
+
+        return responseData;
+    }
+
     private void verifyAPIProductDto(List<ProductAPIDTO> expectedProduct, List<ProductAPIDTO> actualProduct) {
 
         for (ProductAPIDTO expectedAPI : expectedProduct) {
@@ -261,6 +284,10 @@ public class ApiProductTestHelper {
 
         Set<APIOperationsDTO> selectedOperations = new HashSet<>();
         selectedApiResourceMapping.put(apiDto, selectedOperations);
+
+        for (APIOperationsDTO operation: operations) {
+            operation.setUsedProductIds(new ArrayList<>());
+        }
 
         selectedOperations.addAll(operations);
     }
