@@ -37,7 +37,7 @@
         #if($endpointsecurity.enabled)
         #if($isSecureVaultEnabled)
 <property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$endpointsecurity.alias')"/>
-<property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$username',':',get-property('password'))"/>
+<property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$endpointsecurity.username',':',get-property('password'))"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
         #else
         #if($endpointsecurity.type == "digest" || $endpointsecurity.type == "DIGEST")
@@ -200,7 +200,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 <loopback />
 ## AWS Lambda: end
 #else
-#if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
+#if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
@@ -209,7 +209,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         #else
         #draw_endpoint( "production" $endpoint_config )
         #end
-        #if($apiStatus != 'PROTOTYPED' && $apiIsOauthProtected)
+        #if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
     </then>
     <else>
         #if($environmentType !='hybrid')
