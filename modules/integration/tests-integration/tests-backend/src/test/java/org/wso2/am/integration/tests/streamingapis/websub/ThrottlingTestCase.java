@@ -42,6 +42,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.EventCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyPermissionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
@@ -142,6 +143,7 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfigurationWithoutRestart
                 (new File(webSubEventPublisherSource + webSubRequestEventPublisherSource),
@@ -150,6 +152,9 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
                 (new File(webSubEventPublisherSource + webSubThrottleOutEventPublisherSource),
                         new File(webSubEventPublisherTarget + webSubThrottleOutEventPublisherSource), false);
         serverHost = InetAddress.getLocalHost().getHostName();
+        String INTERNAL_EVERYONE= "Internal/everyone";
+        List<String> roleList = new ArrayList<>();
+        SubscriptionThrottlePolicyPermissionDTO permissions;
 
         InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
                 "configFiles" + File.separator + "streamingAPIs" + File.separator + "webSubTest" +
@@ -164,15 +169,18 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         Long requestCountLimit = Long.valueOf(String.valueOf(requestCountJson.get("requestCount")));
         String timeUnit = requestCountJson.get("timeUnit").textValue();
         Integer unitTime = Integer.valueOf(String.valueOf(requestCountJson.get("unitTime")));
-
         // Create the advanced throttling policy with request count quota type
         EventCountLimitDTO eventCountLimitDTO = DtoFactory.createEventCountLimitDTO(timeUnit, unitTime,
                 requestCountLimit);
         ThrottleLimitDTO defaultLimit = DtoFactory.createEventCountThrottleLimitDTO(eventCountLimitDTO);
+        roleList.add(INTERNAL_EVERYONE);
+        permissions = DtoFactory.
+                createSubscriptionThrottlePolicyPermissionDTO(SubscriptionThrottlePolicyPermissionDTO.
+                        PermissionTypeEnum.ALLOW, roleList);
         SubscriptionThrottlePolicyDTO bandwidthSubscriptionPolicyDTO = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(subPolicyName, "", "", false, defaultLimit,
                         -1, -1, 5, "min", new ArrayList<>(),
-                        true, "", 2);
+                        true, "", 2, permissions);
         ApiResponse<SubscriptionThrottlePolicyDTO> addedSubscriptionPolicy =
                 restAPIAdmin.addSubscriptionThrottlingPolicy(bandwidthSubscriptionPolicyDTO);
 

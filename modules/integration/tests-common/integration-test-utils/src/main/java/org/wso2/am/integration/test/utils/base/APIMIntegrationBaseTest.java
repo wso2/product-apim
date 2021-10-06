@@ -30,6 +30,8 @@ import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.admin.clients.application.ApplicationManagementClient;
 import org.wso2.am.admin.clients.claim.ClaimMetaDataMgtAdminClient;
+import org.wso2.am.admin.clients.idp.IdentityProviderMgtClient;
+import org.wso2.am.admin.clients.idp.IdentityProviderMgtServiceClient;
 import org.wso2.am.admin.clients.oauth.OAuthAdminServiceClient;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
@@ -74,10 +76,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.Socket;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
-
 import javax.ws.rs.core.Response;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
@@ -109,8 +115,10 @@ public class APIMIntegrationBaseTest {
     protected UserManagementClient userManagementClient;
     protected RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
     protected ClaimMetaDataMgtAdminClient remoteClaimMetaDataMgtAdminClient;
+    protected IdentityProviderMgtClient identityProviderMgtClient;
     protected OAuthAdminServiceClient oAuthAdminServiceClient;
     protected ApplicationManagementClient applicationManagementClient;
+    protected IdentityProviderMgtServiceClient identityProviderMgtServiceClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected String publisherURLHttp;
     protected String publisherURLHttps;
@@ -233,11 +241,17 @@ public class APIMIntegrationBaseTest {
                 remoteClaimMetaDataMgtAdminClient =
                         new ClaimMetaDataMgtAdminClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                                 keymanagerSessionCookie);
+                identityProviderMgtClient =
+                        new IdentityProviderMgtClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                keymanagerSessionCookie);
                 oAuthAdminServiceClient =
                         new OAuthAdminServiceClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                                 keymanagerSessionCookie);
                 applicationManagementClient =
                         new ApplicationManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                keymanagerSessionCookie);
+                identityProviderMgtServiceClient =
+                        new IdentityProviderMgtServiceClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                                 keymanagerSessionCookie);
             } catch (Exception e) {
                 throw new APIManagerIntegrationTestException(e.getMessage(), e);
@@ -511,7 +525,7 @@ public class APIMIntegrationBaseTest {
                     .getAllSubscriptionsOfApplication(applicationInfoDTO.getApplicationId());
             if (subsDTO != null) {
                 for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
-                    restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
+                    restAPIStore.removeSubscription(subscriptionDTO);
                 }
             }
             if (!APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME.equals(applicationInfoDTO.getName())) {
@@ -720,6 +734,7 @@ public class APIMIntegrationBaseTest {
     }
 
     protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain) {
+
         return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps);
     }
 
@@ -775,7 +790,7 @@ public class APIMIntegrationBaseTest {
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String createAPIRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
-            throws ApiException, JSONException {
+            throws ApiException, JSONException, APIManagerIntegrationTestException {
         int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
         int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
         String revisionUUID = null;
@@ -812,7 +827,7 @@ public class APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList, "API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
         return  revisionUUID;
@@ -897,7 +912,7 @@ public class APIMIntegrationBaseTest {
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String createAPIProductRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
-            throws ApiException, JSONException {
+            throws ApiException, JSONException, APIManagerIntegrationTestException {
         int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
         int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
         String revisionUUID = null;
@@ -934,7 +949,7 @@ public class APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"APIProduct");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Product Revisions:" +apiRevisionsDeployResponse.getData());
         //Waiting for API deployment
@@ -1007,5 +1022,49 @@ public class APIMIntegrationBaseTest {
         //Waiting for API un-deployment
         waitForAPIDeployment();
         return  revisionUUID;
+    }
+    /**
+     * Find a free port to start backend WebSocket server in given port range
+     *
+     * @param lowerPortLimit from port number
+     * @param upperPortLimit to port number
+     * @return Available Port Number
+     */
+    protected int getAvailablePort(int lowerPortLimit, int upperPortLimit) {
+
+        while (lowerPortLimit < upperPortLimit) {
+            if (isPortFree(lowerPortLimit)) {
+                return lowerPortLimit;
+            }
+            lowerPortLimit += 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Check whether give port is available
+     *
+     * @param port Port Number
+     * @return status
+     */
+    private boolean isPortFree(int port) {
+
+        Socket s = null;
+        try {
+            s = new Socket("localhost", port);
+            // something is using the port and has responded.
+            return false;
+        } catch (IOException e) {
+            //port available
+            return true;
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to close connection ", e);
+                }
+            }
+        }
     }
 }

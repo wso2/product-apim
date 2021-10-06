@@ -20,7 +20,7 @@ under the License.
     <parent>
         <artifactId>org.wso2.carbon.am.integration.test</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>4.0.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -699,6 +699,10 @@ under the License.
             <artifactId>org.wso2.carbon.identity.claim.metadata.mgt.stub</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.idp.mgt.stub</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.andes.wso2</groupId>
             <artifactId>andes</artifactId>
             <version>${andes.version}</version>
@@ -787,6 +791,12 @@ under the License.
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.application.common</artifactId>
+            <version>5.19.48</version>
             <scope>test</scope>
         </dependency>
         <dependency>

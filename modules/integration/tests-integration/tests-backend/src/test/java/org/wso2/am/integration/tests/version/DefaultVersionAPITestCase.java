@@ -214,7 +214,8 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
         apiRevisionDeployUndeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
         apiRevisionDeployUndeployRequest.setVhost("localhost");
         apiRevisionDeployUndeployRequest.setDisplayOnDevportal(true);
-        restAPIPublisher.deployAPIRevision(newAPIVersion, apiRevisionDTO.getId(), apiRevisionDeployUndeployRequest);
+        restAPIPublisher.deployAPIRevision(newAPIVersion, apiRevisionDTO.getId(), apiRevisionDeployUndeployRequest,
+                "API");
         APIDTO storeAPIAfterUpdate = restAPIStore.getAPI(apiId);
         endpointURLs = storeAPIAfterUpdate.getEndpointURLs();
         Assert.assertNotNull(endpointURLs);

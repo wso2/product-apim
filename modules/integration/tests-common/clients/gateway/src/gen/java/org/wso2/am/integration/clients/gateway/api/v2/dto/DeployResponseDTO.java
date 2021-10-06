@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Gateway
- * This document specifies a **RESTful API** for WSO2 **API Manager** - Gateway. Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.5.176/components/apimgt/org.wso2.carbon.apimgt.rest.api.admin/src/main/resources/admin-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - Gateway. Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/master/components/apimgt/org.wso2.carbon.apimgt.rest.api.gateway/src/main/resources/gateway-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification. 
  *
  * OpenAPI spec version: v2
  * Contact: architecture@wso2.com
@@ -35,6 +35,8 @@ public class DeployResponseDTO {
   @JsonAdapter(DeployStatusEnum.Adapter.class)
   public enum DeployStatusEnum {
     DEPLOYED("DEPLOYED"),
+    
+    UNDEPLOYED("UNDEPLOYED"),
     
     ERROR("ERROR");
 

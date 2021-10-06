@@ -20,8 +20,11 @@ package org.wso2.am.integration.tests.other;
 
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -33,6 +36,8 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -48,9 +53,11 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
@@ -68,11 +75,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.stream.Stream;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
@@ -129,8 +138,16 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private String applicationId;
     private String newApplicationId;
     private String preservePublisherApiId;
+    private String publisherAccessControlAPIId;
     private String notPreservePublisherApiId;
     private ArrayList<String> grantTypes;
+    private final String testEPSecurityUser = "test_ep_user";
+    private final String testEPSecurityPassword  = "test_ep_password";
+    private String USER_WITH_ACCESS_ROLE = "userWithAccessRole";
+    private String USER_WITHOUT_ACCESS_ROLE = "userWithoutAccessRole";
+    private String PASSWORD = "test123";
+    private static final String RESTRICTED_ACCESS_CONTROL = "restricted";
+    private final String INTERNAL_CREATOR = "Internal/creator";
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIImportExportTestCase(TestUserMode userMode) {
@@ -166,13 +183,20 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         userManagementClient
                 .addUser(publisherUser, String.valueOf(PUBLISHER_USER_PASS), new String[] { ADMIN_ROLE }, null);
 
+        userManagementClient
+                .addUser(USER_WITH_ACCESS_ROLE, PASSWORD, new String[]{INTERNAL_CREATOR, ALLOWED_ROLE}, USER_WITH_ACCESS_ROLE);
+        userManagementClient
+                .addUser(USER_WITHOUT_ACCESS_ROLE, PASSWORD,
+                        new String[]{NOT_ALLOWED_ROLE}, USER_WITHOUT_ACCESS_ROLE);
+
         allowedStoreUser = new RestAPIStoreImpl(allowedUser, String.valueOf(ALLOWED_USER_PASS),
                 keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
-
 
         if (!keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
             allowedUser = allowedUser + "@" + keyManagerContext.getContextTenant().getDomain();
             publisherUser = publisherUser + "@" + keyManagerContext.getContextTenant().getDomain();
+            USER_WITH_ACCESS_ROLE = USER_WITH_ACCESS_ROLE + "@" + keyManagerContext.getContextTenant().getDomain();
+            USER_WITHOUT_ACCESS_ROLE = USER_WITHOUT_ACCESS_ROLE + "@" + keyManagerContext.getContextTenant().getDomain();
         }
 
         createAndPublishAPI();
@@ -187,6 +211,9 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         apiCreationRequestBean.setTags(tags);
         apiCreationRequestBean.setDescription(DESCRIPTION);
         apiCreationRequestBean.setSubPolicyCollection(tierCollection);
+        apiCreationRequestBean.setEndpointType("basic");
+        apiCreationRequestBean.setEpUsername(testEPSecurityUser);
+        apiCreationRequestBean.setEpPassword(testEPSecurityPassword);
 
         //define resources
         resList = new ArrayList<APIResourceBean>();
@@ -228,7 +255,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
 
     }
 
-    @Test(groups = { "wso2.am" }, description = "Exported Sample API")
+    @Test(groups = { "wso2.am" }, description = "Exported Sample API with endpoint security enabled")
     public void testAPIExport() throws Exception {
 
         //construct export API url
@@ -241,7 +268,45 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         String fileName = user.getUserDomain() + "_" + API_NAME;
         apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
-        exportArtifact(exportRequest, apiZip);
+        exportArtifact(exportRequest, apiZip, user.getUserName(), user.getPassword());
+
+        // Test whether exported API archive contains the endpoint security password in plain text
+        String extractedAPIDir = apiZip.getParent();
+        try {
+            ZipFile zipFile = new ZipFile(apiZip);
+            zipFile.extractAll(apiZip.getParent());
+        } catch (ZipException e) {
+            throw new APIManagerIntegrationTestException("Error in extracting the exported API archive.", e);
+        }
+
+        String apiJsonFilePath = extractedAPIDir + File.separator + API_NAME + "-" + API_VERSION + File.separator
+                                        + "api.json";
+        StringBuilder contentBuilder = new StringBuilder();
+        try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(apiJsonFilePath), StandardCharsets.UTF_8)) {
+            stream.forEach(s -> contentBuilder.append(s).append("\n"));
+        } catch (IOException e) {
+            throw new APIManagerIntegrationTestException("Error in reading from extracted api file " + apiJsonFilePath, e);
+        }
+
+        String exportedApiFileContent = contentBuilder.toString();
+        JSONParser parser = new JSONParser();
+        JSONObject exportedApiJson = (JSONObject) parser.parse(exportedApiFileContent);
+        String ep_security_production_password = String
+                                        .valueOf(((JSONObject) ((JSONObject) (((JSONObject) ((JSONObject) exportedApiJson
+                                                                        .get("data")).get("endpointConfig"))
+                                                                        .get("endpoint_security"))).get("production"))
+                                                                        .get("password"));
+        String ep_security_sandbox_password = String
+                                        .valueOf(((JSONObject) ((JSONObject) (((JSONObject) ((JSONObject) exportedApiJson
+                                                                        .get("data")).get("endpointConfig"))
+                                                                        .get("endpoint_security"))).get("sandbox"))
+                                                                        .get("password"));
+        Assert.assertTrue(ep_security_production_password.isEmpty(),
+                                        "Production Endpoint password is not empty. Plain text password exported:"
+                                                                        + ep_security_production_password);
+        Assert.assertTrue(ep_security_sandbox_password.isEmpty(),
+                                        "Sandbox Endpoint password is not empty. Plain text password exported:"
+                                                                        + ep_security_sandbox_password);
     }
 
     @Test(groups = { "wso2.am" }, description = "Importing exported API", dependsOnMethods = "testAPIExport")
@@ -476,7 +541,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         String fileName = user.getUserDomain() + "_" + NEW_API_NAME;
         newApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
-        exportArtifact(exportRequest, newApiZip);
+        exportArtifact(exportRequest, newApiZip, user.getUserName(), user.getPassword());
     }
 
     @Test(groups = { "wso2.am" }, description = "Importing new API", dependsOnMethods = "testNewAPIExport")
@@ -584,7 +649,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         String fileName = user.getUserDomain() + "_" + PRESERVE_PUBLISHER_API_NAME;
         preservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
-        exportArtifact(exportRequest, preservePublisherApiZip);
+        exportArtifact(exportRequest, preservePublisherApiZip, user.getUserName(), user.getPassword());
         undeployAndDeleteAPIRevisionsUsingRest(preservePublisherApiId, restAPIPublisher);
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(preservePublisherApiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
@@ -659,7 +724,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         String fileName = user.getUserDomain() + "_" + NOT_PRESERVE_PUBLISHER_API_NAME;
         notPreservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
-        exportArtifact(exportRequest, notPreservePublisherApiZip);
+        exportArtifact(exportRequest, notPreservePublisherApiZip, user.getUserName(), user.getPassword());
         undeployAndDeleteAPIRevisionsUsingRest(notPreservePublisherApiId, restAPIPublisher);
         HttpResponse serviceResponse = restAPIPublisher.deleteAPI(notPreservePublisherApiId);
         assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
@@ -693,6 +758,70 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(provider, publisherUser, "Provider is not as expected when 'preserveProvider'=false");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Export restricted API from user with restricted role",
+            dependsOnMethods = "testPreserveProviderFalseSameProviderApiImport")
+    public void testRestrictedAPIExportFromUserWithAccessRole() throws Exception {
+
+        String provider = user.getUserName();
+        APIRequest apiRequest = new APIRequest("API2", "AccessControl",
+                new URL(exportUrl));
+        apiRequest.setVersion(API_VERSION);
+        apiRequest.setProvider(provider);
+        apiRequest.setAccessControl(RESTRICTED_ACCESS_CONTROL);
+        apiRequest.setAccessControlRoles(ALLOWED_ROLE);
+        HttpResponse response = restAPIPublisher.addAPI(apiRequest);
+        publisherAccessControlAPIId = response.getData();
+
+        createAPIRevisionAndDeployUsingRest(publisherAccessControlAPIId, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(publisherAccessControlAPIId, false);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        APIDTO apidto = restAPIPublisher.getAPIByID(publisherAccessControlAPIId);
+        Assert.assertEquals(apidto.getAccessControlRoles().get(0), "allowedrole");
+
+        URL exportRequest =
+                new URL(exportUrl + "?name=" + "API2" + "&version=" + API_VERSION + "&providerName=" + provider
+                        + "&format=JSON");
+        zipTempDir = Files.createTempDir();
+
+        //set the export file name with tenant prefix
+        String fileName = user.getUserDomain() + "_" + "API2";
+        apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
+        //save the exported API
+        exportArtifact(exportRequest, apiZip, USER_WITH_ACCESS_ROLE, PASSWORD);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Export restricted API from user without restricted role",
+            dependsOnMethods = "testRestrictedAPIExportFromUserWithAccessRole")
+    public void testRestrictedAPIExportFromUserWithoutAccessRole() throws Exception {
+        URL exportRequest =
+                new URL(exportUrl + "?name=" + "API2" + "&version=" + API_VERSION + "&providerName=" +
+                        user.getUserName() + "&format=JSON");
+        zipTempDir = Files.createTempDir();
+
+        //set the export file name with tenant prefix
+        String fileName = user.getUserDomain() + "_" + "API2";
+        apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
+        //save the exported API
+        CloseableHttpResponse response = exportAPIRequest(exportRequest, USER_WITHOUT_ACCESS_ROLE, PASSWORD);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_UNAUTHORIZED);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Export restricted API from admin user",
+            dependsOnMethods = "testRestrictedAPIExportFromUserWithoutAccessRole")
+    public void testRestrictedAPIExportFromAdminUser() throws Exception {
+        URL exportRequest =
+                new URL(exportUrl + "?name=" + "API2" + "&version=" + API_VERSION + "&providerName=" +
+                        user.getUserName() + "&format=JSON");
+        zipTempDir = Files.createTempDir();
+        //set the export file name with tenant prefix
+        String fileName = user.getUserDomain() + "_" + "API2";
+        apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
+        //save the exported API
+        exportArtifact(exportRequest, apiZip, publisherUser, String.valueOf(PUBLISHER_USER_PASS));
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         allowedStoreUser.deleteApplication(applicationId);
@@ -701,6 +830,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(newApiId);
         restAPIPublisher.deleteAPI(preservePublisherApiId);
         restAPIPublisher.deleteAPI(notPreservePublisherApiId);
+        restAPIPublisher.deleteAPI(publisherAccessControlAPIId);
         boolean deleteStatus;
         deleteStatus = apiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
@@ -710,7 +840,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         deleteStatus = notPreservePublisherApiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
-        deleteStatus = zipTempDir.delete();
+        FileUtils.deleteDirectory(zipTempDir);
         Assert.assertTrue(deleteStatus, "temp directory delete not successful");
         super.cleanUp();
     }
@@ -735,6 +865,16 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         return new String(encodedBytes);
     }
 
+    private CloseableHttpResponse exportAPIRequest(URL exportRequest, String username, String password)
+            throws IOException, URISyntaxException {
+        CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();
+        HttpGet get = new HttpGet(exportRequest.toURI());
+        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Basic " +
+                encodeCredentials(username, password.toCharArray()));
+        CloseableHttpResponse response = client.execute(get);
+        return response;
+    }
+
     /**
      * Save file from a given URL
      *
@@ -743,12 +883,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
      * @throws URISyntaxException throws if URL is malformed
      * @throws IOException        throws if connection issues occurred
      */
-    private void exportArtifact(URL exportRequest, File fileName) throws URISyntaxException, IOException {
-        CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();
-        HttpGet get = new HttpGet(exportRequest.toURI());
-        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
-        CloseableHttpResponse response = client.execute(get);
+    private void exportArtifact(URL exportRequest, File fileName, String username, String password) throws URISyntaxException, IOException {
+        CloseableHttpResponse response = exportAPIRequest(exportRequest, username, password);
         HttpEntity entity = response.getEntity();
         if (entity != null) {
             FileOutputStream outStream = new FileOutputStream(fileName);

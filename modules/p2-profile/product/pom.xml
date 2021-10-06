@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-p2-profile-gen-parent</artifactId>
-        <version>4.0.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -310,6 +310,12 @@
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.gateway.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt.ui:apim.ui.apps.portals:${carbon.apimgt.ui.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.internal.service.feature:${carbon.apimgt.version}
@@ -675,6 +681,12 @@
                                 <featureArtifactDef>
                                     org.wso2.am.analytics.publisher:org.wso2.am.analytics.publisher.client.feature:${apim.analytics.publisher.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.eventing.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.eventing.hub.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -695,6 +707,7 @@
                             <artifactRepository>file:${basedir}/target/p2-repo</artifactRepository>
                         </configuration>
                     </execution>
+
                     <execution>
                         <id>creating-gateway-worker-profile</id>
                         <phase>package</phase>
@@ -796,6 +809,8 @@
                             <profile>control-plane</profile>
                         </configuration>
                     </execution>
+
+                    <!--Start default profile-->
                     <execution>
                         <id>3-p2-profile-generation</id>
                         <phase>package</phase>
@@ -1179,6 +1194,11 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
 
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+
                                 <!--Registry Feature-->
                                 <feature>
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
@@ -1482,13 +1502,19 @@
                                     <id>org.wso2.am.analytics.publisher.client.feature.group</id>
                                     <version>${apim.analytics.publisher.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
-
                     <!--End of default profile-->
 
-                    <!--Start Control plane profile-->
                     <!--Start Control plane profile-->
                     <execution>
                         <id>4-p2-profile-generation</id>
@@ -1506,10 +1532,6 @@
                             </destination>
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                             <features>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.message.tracer.handler.feature.group</id>
-                                    <version>${carbon.analytics.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.jaggeryjs.modules.ws.feature.group</id>
                                     <version>${ws.feature.version}</version>
@@ -1635,57 +1657,16 @@
                                     <id>org.wso2.carbon.event.output.adapter.email.server.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.apache.synapse.wso2.feature.group</id>
-                                    <version>${synapse.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.apache.synapse.transport.nhttp.feature.group</id>
-                                    <version>${synapse.version}</version>
-                                </feature>
-
-                                <feature>
-                                    <id>org.wso2.carbon.task.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.initializer.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.integrator.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.admin.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.inbound.endpoints.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
 
                                 <feature>
                                     <id>org.wso2.carbon.application.mgt.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.application.mgt.synapse.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.application.mgt.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.application.deployer.synapse.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -1741,15 +1722,7 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
 
-                                <feature>
-                                    <id>org.wso2.carbon.mediators.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
 
-                                <feature>
-                                    <id>org.wso2.carbon.relay.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.am.styles.feature.group</id>
                                     <version>${apimserver.version}</version>
@@ -1820,22 +1793,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
                                     <version>${carbon.registry.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.websocket.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.identity.xacml.mediator.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediator.publishevent.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
                                 </feature>
 
                                 <feature>
@@ -1974,10 +1931,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.store.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.rest.api.gateway.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
@@ -2172,10 +2125,17 @@
                                     <id>org.wso2.am.analytics.publisher.client.feature.group</id>
                                     <version>${apim.analytics.publisher.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
-
                     <!--End of control plane profile-->
 
                     <!--Start of gateway worker profile-->
@@ -2466,6 +2426,16 @@
                                 
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
@@ -2929,12 +2899,12 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.store.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
+                                    <id>org.wso2.carbon.apimgt.ui.devportal.feature.group</id>
+                                    <version>${carbon.apimgt.ui.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.admin.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
+                                    <id>org.wso2.carbon.apimgt.ui.admin.feature.group</id>
+                                    <version>${carbon.apimgt.ui.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.tokenmgt.feature.group</id>
@@ -3143,6 +3113,14 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
@@ -3452,8 +3430,8 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.publisher.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
+                                    <id>org.wso2.carbon.apimgt.ui.publisher.feature.group</id>
+                                    <version>${carbon.apimgt.ui.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
@@ -3543,7 +3521,7 @@
                                     <id>org.wso2.carbon.metrics.server.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
-				            <feature>
+				                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -3645,11 +3623,18 @@
                                     <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
                     <!--End of api publisher profile-->
-
 
                     <!--Start of api key manager profile-->
                     <execution>

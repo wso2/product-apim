@@ -24,7 +24,7 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>https://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
@@ -620,6 +620,11 @@
                 <version>${carbon.identity.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.idp.mgt.stub</artifactId>
+                <version>${carbon.identity.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.multitenancy</groupId>
                 <artifactId>org.wso2.carbon.tenant.mgt.stub</artifactId>
                 <version>${carbon.multitenancy.version}</version>
@@ -1171,6 +1176,11 @@
                 <version>${carbon.identity.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.idp.mgt.stub</artifactId>
+                <version>${carbon.identity.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.config.mapper</groupId>
                 <artifactId>config-mapper</artifactId>
                 <version>${config.mapper.version}</version>
@@ -1265,9 +1275,11 @@
 
         <project.scm.id>scm-server</project.scm.id>
         <carbon.analytics.common.version>5.2.34</carbon.analytics.common.version>
+        <!-- APIM Portals Component Version -->
+        <carbon.apimgt.ui.version>9.0.207</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.0.181</carbon.apimgt.version>
+        <carbon.apimgt.version>9.0.359</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1281,7 +1293,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.6.2</carbon.kernel.version>
-        <apimserver.version>4.0.0-SNAPSHOT</apimserver.version>
+        <apimserver.version>4.0.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.3</ws.feature.version>
 
 	    <cipher.tool.version>1.1.15</cipher.tool.version>
@@ -1462,7 +1474,7 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.2.10</wso2is.km.version>
+        <wso2is.km.version>1.2.20</wso2is.km.version>
         <okta.keymanager.feature.version>3.0.6</okta.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.0.6</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.1</auth0.keymanager.feature.version>

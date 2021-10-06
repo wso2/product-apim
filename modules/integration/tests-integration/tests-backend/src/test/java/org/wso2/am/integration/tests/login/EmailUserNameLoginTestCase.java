@@ -34,23 +34,17 @@ import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpClientUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
 import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceStub;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 
-import javax.ws.rs.core.Response;
-import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -58,9 +52,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 
 /**
@@ -72,6 +66,15 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(EmailUserNameLoginTestCase.class);
     private ServerConfigurationManager serverConfigurationManager ;
+    private UserManagementClient userManagementClient = null;
+    private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
+    private final String INTERNAL_ROLE_PUBLISHER = "Internal/publisher";
+    private final String INTERNAL_ROLE_CREATOR = "Internal/creator";
+    private APIListDTO apiListDTO = null;
+    private final String TENANT_ADMIN_USERNAME = "emailuser@email.com";
+    private final String PASSWORD = "emailuser@email.com";
+    private final String TENANT_DOMAIN = "emailuserdomain.com";
+    private final String TENANT_USER_USERNAME = "user1@email.com";
 
 
     @BeforeTest(alwaysRun = true)
@@ -103,14 +106,10 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
             throws APIManagerIntegrationTestException, org.wso2.am.integration.clients.store.api.ApiException,
             XPathExpressionException, org.wso2.am.integration.clients.admin.ApiException {
 
-        String userNameWithEmail = "emailuser@email.com";
-        String password = "email123";
-        String domainName = "emailuserdomain.com";
-        String fullUserName = userNameWithEmail + "@" + domainName;
         boolean isSuccessful = false;
         try {
-            isSuccessful = createTenantWithEmailUserName(userNameWithEmail, password,
-                    domainName, publisherContext.getContextUrls().getBackEndUrl());
+            isSuccessful = createTenantWithEmailUserName(TENANT_ADMIN_USERNAME, PASSWORD,
+                    TENANT_DOMAIN, publisherContext.getContextUrls().getBackEndUrl());
         } catch (XPathExpressionException | RemoteException | TenantMgtAdminServiceExceptionException e) {
            throw new APIManagerIntegrationTestException(e.getMessage(), e);
         }
@@ -121,21 +120,55 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
         } catch (IOException ignored) {
             log.error(ignored);
         }
-        restAPIPublisher = new RestAPIPublisherImpl(userNameWithEmail, password, domainName, "https://localhost:9943/");
-        APIListDTO apiListDTO = null;
+        restAPIPublisher = new RestAPIPublisherImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN, "https://localhost:9943/");
         try {
-            apiListDTO = restAPIPublisher.apIsApi.getAllAPIs(null, null, domainName, null, null, null, null);
+            apiListDTO = restAPIPublisher.apIsApi.getAllAPIs(null, null, TENANT_DOMAIN, null, null, null, null);
         } catch (ApiException e) {
             throw new APIManagerIntegrationTestException("Login to Publisher with email username failed due to " +
                     e.getMessage(), e);
         }
         // check for store login with email user name
-        restAPIStore = new RestAPIStoreImpl(userNameWithEmail, password, domainName,"https://localhost:9943/");
+        restAPIStore = new RestAPIStoreImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN,"https://localhost:9943/"
+        );
         ApplicationListDTO responseData = restAPIStore.getAllApps();
         assertNotNull(responseData, "Login to Store with email username failed");
 
         // check for Admin Portal login with email user name
-        restAPIAdmin = new RestAPIAdminImpl(userNameWithEmail, password, domainName, "https://localhost:9943/");
+        restAPIAdmin = new RestAPIAdminImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN, "https://localhost:9943/");
+        ApplicationThrottlePolicyListDTO listDTO =
+                restAPIAdmin.applicationPolicyCollectionApi.throttlingPoliciesApplicationGet(null, null, null);
+        assertNotNull(listDTO, "Login to Admin portal with email username failed");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Login with email username for tenant user",
+            dependsOnMethods = "LoginWithEmailUserNameTestCase")
+    public void LoginWithTenantUserEmailUserNameTestCase() throws Exception {
+        String fullUserName = TENANT_ADMIN_USERNAME + "@" + TENANT_DOMAIN;
+
+        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                fullUserName, PASSWORD);
+        //add tenant user
+        userManagementClient.addUser(TENANT_USER_USERNAME, PASSWORD,
+                new String[]{INTERNAL_ROLE_SUBSCRIBER, INTERNAL_ROLE_PUBLISHER, INTERNAL_ROLE_CREATOR}, TENANT_USER_USERNAME);
+
+        restAPIPublisher = new RestAPIPublisherImpl(TENANT_USER_USERNAME, PASSWORD,
+                TENANT_DOMAIN, publisherURLHttps);
+
+        try {
+            apiListDTO = restAPIPublisher.apIsApi.getAllAPIs(null, null, "emailuserdomain.com",
+                    null, null, null, null);
+        } catch (ApiException e) {
+            throw new APIManagerIntegrationTestException("Login to Publisher with email username failed due to " +
+                    e.getMessage(), e);
+        }
+
+        // check for store login with email user name
+        restAPIStore = new RestAPIStoreImpl(TENANT_USER_USERNAME, PASSWORD, TENANT_DOMAIN, storeURLHttps);
+        ApplicationListDTO responseData = restAPIStore.getAllApps();
+        assertNotNull(responseData, "Login to Store with email username failed");
+
+        // check for Admin Portal login with email user name
+        restAPIAdmin = new RestAPIAdminImpl(TENANT_USER_USERNAME, PASSWORD, TENANT_DOMAIN, adminURLHttps);
         ApplicationThrottlePolicyListDTO listDTO =
                 restAPIAdmin.applicationPolicyCollectionApi.throttlingPoliciesApplicationGet(null, null, null);
         assertNotNull(listDTO, "Login to Admin portal with email username failed");

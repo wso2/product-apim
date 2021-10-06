@@ -239,11 +239,12 @@ public class ApiTestHelper {
 
     public ApplicationDTO verifySubscription(org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO,
                                              String applicationName, String subscriptionPolicy)
-            throws org.wso2.am.integration.clients.store.api.ApiException {
+            throws org.wso2.am.integration.clients.store.api.ApiException, APIManagerIntegrationTestException {
         ApplicationDTO applicationDTO = restAPIStore.addApplication(applicationName,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "http://localhost", "");
 
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiDTO.getId(),
+        SubscriptionDTO subscriptionDTO = null;
+        subscriptionDTO = restAPIStore.subscribeToAPI(apiDTO.getId(),
                 applicationDTO.getApplicationId(), subscriptionPolicy);
 
         Assert.assertEquals(subscriptionDTO.getApiId(), apiDTO.getId());
@@ -259,7 +260,7 @@ public class ApiTestHelper {
     public ApplicationKeyDTO verifyKeyGeneration(ApplicationDTO applicationDTO,
                                       ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyType,
                                       ArrayList<String> scopes, List<String> grantTypes)
-            throws org.wso2.am.integration.clients.store.api.ApiException {
+            throws org.wso2.am.integration.clients.store.api.ApiException, APIManagerIntegrationTestException {
         final String validityTime = "3600";
         final String callbackUrl = "http://localhost";
 

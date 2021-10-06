@@ -34,7 +34,6 @@ Name | Type | Description | Notes
 **visibility** | [**VisibilityEnum**](#VisibilityEnum) | The visibility level of the API. Accepts one of the following. PUBLIC, PRIVATE, RESTRICTED. |  [optional]
 **visibleRoles** | **List&lt;String&gt;** | The user roles that are able to access the API in Developer Portal |  [optional]
 **visibleTenants** | **List&lt;String&gt;** |  |  [optional]
-**gatewayEnvironments** | **List&lt;String&gt;** | List of gateway environments the API is available  |  [optional]
 **mediationPolicies** | [**List&lt;MediationPolicyDTO&gt;**](MediationPolicyDTO.md) |  |  [optional]
 **subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS. |  [optional]
 **subscriptionAvailableTenants** | **List&lt;String&gt;** |  |  [optional]

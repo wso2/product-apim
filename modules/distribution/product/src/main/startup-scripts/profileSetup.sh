@@ -33,6 +33,8 @@ pathToAxis2PublisherXmlTemplate='../repository/resources/conf/templates/reposito
 pathToTenantAxis2PublisherXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2_Publisher.xml.j2'
 pathToAxis2DevportalXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_Devportal.xml.j2'
 pathToTenantAxis2DevportalXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2_Devportal.xml.j2'
+pathToAxis2ControlPlaneXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_ControlPlane.xml.j2'
+pathToTenantAxis2ControlPlaneXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2_ControlPlane.xml.j2'
 pathToRegistryTMTemplate='../repository/resources/conf/templates/repository/conf/registry_TM.xml.j2'
 pathToAxis2TXmlTemplateBackup='../repository/resources/conf/templates/repository/conf/axis2/axis2.xml.j2.backup'
 pathToTenantAxis2TXmlTemplateBackup='../repository/resources/conf/templates/repository/conf/axis2/tenant-axis2.xml.j2.backup'
@@ -285,6 +287,23 @@ case $1 in
 		replaceDeploymentConfiguration control-plane $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
+		removeSynapseConfigs
+		replaceAxis2TemplateFile $pathToAxis2ControlPlaneXmlTemplate
+		replaceTenantAxis2TemplateFile $pathToTenantAxis2ControlPl  aneXmlTemplate
+		 # removing webbapps which are not required for this profile
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 \( -name 'api#am#gateway#v2.war' \)); do
+			rm -r $i
+			file=`basename "$i"`
+			timeStamp
+			echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
+			folder=`basename $file .war`
+			if [ -d ${pathToWebapps}/$folder ]
+			then
+				rm -r ${pathToWebapps}/$folder
+				timeStamp
+				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
+			fi
+		done
         ;;
 	-Dprofile=traffic-manager)
 		timeStamp

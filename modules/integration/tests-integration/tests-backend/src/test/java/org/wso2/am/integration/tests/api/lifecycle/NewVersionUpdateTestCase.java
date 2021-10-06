@@ -25,6 +25,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -63,8 +64,7 @@ public class NewVersionUpdateTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
-        endpointUrlNew =
-                backEndServerUrl.getWebAppURLHttp() + "https://localhost:9443/am/sample/calculator/v1/api/multiply";
+        endpointUrlNew = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/multiply";
 
     }
 
@@ -117,6 +117,21 @@ public class NewVersionUpdateTestCase extends APIMIntegrationBaseTest {
         APIDTO apidto = g.fromJson(apiResponse.getData(), APIDTO.class);
         String endPointConfig = apidto.getEndpointConfig().toString();
         assertTrue(endPointConfig.contains(endpointUrlNew));
+    }
+
+    @Test(groups = { "wso2.am" },
+            description = "Check the count of the APIs when display multiple versioned APIs option is disabled in "
+                    + "devportal", dependsOnMethods = "testNewVersionAPIUpdate")
+    public void testCheckMultipleVersionedAPIsCount()
+            throws Exception {
+        // Publish the versioned API
+        restAPIPublisher.changeAPILifeCycleStatus(apiId2, APILifeCycleAction.PUBLISH.getAction());
+
+        waitForAPIDeployment();
+
+        APIListDTO restAPIStoreAllAPIs = restAPIStore.getAllAPIs(user.getUserDomain());
+        assertEquals(restAPIStoreAllAPIs.getCount().toString(), String.valueOf(1), "Wrong API count returned");
+        assertEquals(restAPIStoreAllAPIs.getList().get(0).getVersion(), APIVersionNew, "Wrong API list returned");
     }
 
     @AfterClass(alwaysRun = true)
