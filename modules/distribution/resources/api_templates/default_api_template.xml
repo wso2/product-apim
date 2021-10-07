@@ -1,3 +1,35 @@
+#macro ( get_endpoint_config $format $transport)
+	<endpoint>
+		#if( $transport == "https")
+		#if ($format == "rest")
+		<http uri-template="https://localhost:{uri.var.portnum}/$!{fwdApiContext}" format="rest">
+		#else
+		<http uri-template="https://localhost:{uri.var.portnum}/$!{fwdApiContext}">
+		#end
+		#else
+		#if ($format == "rest")
+		<http uri-template="http://localhost:{uri.var.portnum}/$!{fwdApiContext}" format="rest">
+		#else
+		<http uri-template="http://localhost:{uri.var.portnum}/$!{fwdApiContext}">
+			#end
+			#end
+			<timeout>
+				<duration>60000</duration>
+				<responseAction>fault</responseAction>
+			</timeout>
+			<suspendOnFailure>
+				<errorCodes>-1</errorCodes>
+				<initialDuration>0</initialDuration>
+				<progressionFactor>1.0</progressionFactor>
+				<maximumDuration>0</maximumDuration>
+			</suspendOnFailure>
+			<markForSuspension>
+				<errorCodes>-1</errorCodes>
+			</markForSuspension>
+		</http>
+	</endpoint>
+#end
+
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" transports="$!transport">
    <resource methods="POST PATCH GET DELETE HEAD PUT OPTIONS"
              url-mapping="/*"
@@ -38,30 +70,28 @@
             	<property name="uri.var.portnum" expression="get-property('http.nio.port')"/>
                 #end
 
-			<send>
-			    <endpoint>
-                #if( $transport == "https" )
-				<http uri-template="https://localhost:{uri.var.portnum}/$!{fwdApiContext}">
-                #else
-				<http uri-template="http://localhost:{uri.var.portnum}/$!{fwdApiContext}">
-                #end
-			            <timeout>
-			                <duration>60000</duration>
-			                <responseAction>fault</responseAction>
-			            </timeout>
-			            <suspendOnFailure>
-			                 <errorCodes>-1</errorCodes>
-			                 <initialDuration>0</initialDuration>
-			                 <progressionFactor>1.0</progressionFactor>
-			                 <maximumDuration>0</maximumDuration>
-			            </suspendOnFailure>
-			            <markForSuspension>
-			                <errorCodes>-1</errorCodes>
-			            </markForSuspension>
-			        </http>
-			    </endpoint>
-			</send>
-		    </else>
+				<filter source="get-property('transport', 'SOAPAction')" regex=".*.">
+					<then>
+						<send>
+							#get_endpoint_config("rest" $transport)
+						</send>
+					</then>
+					<else>
+						<filter source="get-property('transport', 'Content-Type')" regex="text/xml">
+							<then>
+								<send>
+									#get_endpoint_config("rest" $transport)
+								</send>
+							</then>
+							<else>
+								<send>
+									#get_endpoint_config("" $transport)
+								</send>
+							</else>
+						</filter>
+					</else>
+				</filter>
+			</else>
 		</filter>
 	    </inSequence>
 	    <outSequence>
