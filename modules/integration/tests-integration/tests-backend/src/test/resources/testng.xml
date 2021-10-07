@@ -115,6 +115,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.TagsRatingTestCase"/>
             <class name="org.wso2.am.integration.tests.comments.DevPortalCommentTest"/>
             <class name="org.wso2.am.integration.tests.comments.PublisherCommentTest"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
@@ -224,7 +225,6 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5326CustomStatusMsgTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/-->
             <class name="org.wso2.am.integration.tests.admin.OAuthApplicationOwnerUpdateTestCase"/>
-            <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTGrantTestCase"/>
             <class name="org.wso2.am.integration.tests.api.sdk.SDKGenerationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.CAPIMGT12CallBackURLOverwriteTestCase"/>
@@ -234,6 +234,12 @@
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5327KeyGenerationWithPGSQLTestCase"/>-->
+        </classes>
+    </test>
+
+    <test name="apim-grant-type-token-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
         </classes>
     </test>
 
@@ -251,6 +257,7 @@
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.CustomThrottlingPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.AdvancedThrottlingPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.admin.EnvironmentTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.KeyManagersTestCase"/>
         </classes>
     </test>
 
@@ -281,7 +288,7 @@
     <test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <classes>
             <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>-->
+            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
         </classes>
     </test>
 
