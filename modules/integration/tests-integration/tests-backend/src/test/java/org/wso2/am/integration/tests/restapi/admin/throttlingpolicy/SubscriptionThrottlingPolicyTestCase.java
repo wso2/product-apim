@@ -204,7 +204,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
 
         // Add the subscription throttle policy (10per1hour)
         String policyName1 = "SubscriptionThrottlePolicy10per1hour";
-        RequestCountLimitDTO requestCountLimit1 = DtoFactory.createRequestCountLimitDTO("hour", 1, 10L);
+        RequestCountLimitDTO requestCountLimit1 = DtoFactory.createRequestCountLimitDTO("hours", 1, 10L);
         ThrottleLimitDTO defaultLimit1 = DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT,
                 requestCountLimit1, null);
         SubscriptionThrottlePolicyPermissionDTO permissions1 = DtoFactory
@@ -220,7 +220,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
 
         // Add the subscription throttle policy (20per1hour)
         String policyName2 = "SubscriptionThrottlePolicy20per1hour";
-        RequestCountLimitDTO requestCountLimit2 = DtoFactory.createRequestCountLimitDTO("hour", 1, 20L);
+        RequestCountLimitDTO requestCountLimit2 = DtoFactory.createRequestCountLimitDTO("hours", 1, 20L);
         ThrottleLimitDTO defaultLimit2 = DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT,
                 requestCountLimit2, null);
         SubscriptionThrottlePolicyPermissionDTO permissions2 = DtoFactory
