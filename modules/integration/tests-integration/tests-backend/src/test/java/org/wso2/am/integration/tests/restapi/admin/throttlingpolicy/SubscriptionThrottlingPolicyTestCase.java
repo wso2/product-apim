@@ -44,13 +44,16 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
@@ -79,12 +82,18 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
     private final String INTERNAL_PUBLISHER = "Internal/publisher";
     private final String INTERNAL_SUBSCRIBER = "Internal/subscriber";
     private final String INTERNAL_EVERYONE= "Internal/everyone";
-    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private String apiEndPointUrl;
+    private final String API_END_POINT_METHOD = "/customers/123";
+    private final String API_NAME = "TestAPI";
+    private final String API_CONTEXT = "testapi";
+    private final String API_VERSION = "1.0.0";
     private String apiId;
-    private String appId;
-    private String tierCollection;
+    private String app1Id;
+    private String app2Id;
     private String providerName;
+    private SubscriptionThrottlePolicyDTO sampleSubscriptionThrottlePolicyDTO1;
+    private SubscriptionThrottlePolicyDTO sampleSubscriptionThrottlePolicyDTO2;
+    private ArrayList grantTypes;
+    private List<String> roleList;
 
     @Factory(dataProvider = "userModeDataProvider")
     public SubscriptionThrottlingPolicyTestCase(TestUserMode userMode) {
@@ -106,7 +115,6 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
                 .addUser(CREATOR_USER, USER_PASSWORD, new String[] { INTERNAL_CREATOR, INTERNAL_PUBLISHER }, CREATOR_USER);
         userManagementClient1
                 .addUser(SUBSCRIBER_USER, USER_PASSWORD, new String[] { INTERNAL_SUBSCRIBER }, SUBSCRIBER_USER);
-        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         adminApiTestHelper = new AdminApiTestHelper();
         customAttributes = new ArrayList<>();
@@ -114,6 +122,8 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         attribute.setName("testAttribute");
         attribute.setValue("testValue");
         customAttributes.add(attribute);
+        grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add subscription throttling policy with request count limit")
@@ -122,7 +132,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         //Create the subscription throttling policy DTO with request count limit
         String policyName = "TestPolicyOne";
         Long requestCount = 50L;
-        List<String> roleList = new ArrayList<>();
+        roleList = new ArrayList<>();
         roleList.add(INTERNAL_CREATOR);
         RequestCountLimitDTO requestCountLimit =
                 DtoFactory.createRequestCountLimitDTO(timeUnit, unitTime, requestCount);
@@ -160,7 +170,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         String policyName = "TestPolicyTwo";
         Long dataAmount = 2L;
         String dataUnit = "KB";
-        List<String> roleList = new ArrayList<>();
+        roleList = new ArrayList<>();
         roleList.add(INTERNAL_EVERYONE);
         roleList.add(INTERNAL_SUBSCRIBER);
 
@@ -188,8 +198,148 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         adminApiTestHelper.verifySubscriptionThrottlePolicyDTO(bandwidthPolicyDTO, addedPolicyDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test get and update subscription throttling policy",
+    @Test(groups = {"wso2.am"}, description = "Test check whether subscription throttling policy works",
             dependsOnMethods = "testAddPolicyWithBandwidthLimit")
+    public void testSubscriptionLevelThrottling() throws Exception {
+
+        // Add the subscription throttle policy (10per1hour)
+        String policyName1 = "SubscriptionThrottlePolicy10per1hour";
+        RequestCountLimitDTO requestCountLimit1 = DtoFactory.createRequestCountLimitDTO("hour", 1, 10L);
+        ThrottleLimitDTO defaultLimit1 = DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT,
+                requestCountLimit1, null);
+        SubscriptionThrottlePolicyPermissionDTO permissions1 = DtoFactory
+                .createSubscriptionThrottlePolicyPermissionDTO(
+                        SubscriptionThrottlePolicyPermissionDTO.PermissionTypeEnum.ALLOW, roleList);
+        sampleSubscriptionThrottlePolicyDTO1 = DtoFactory
+                .createSubscriptionThrottlePolicyDTO(policyName1, policyName1, description, false, defaultLimit1,
+                        graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
+                        stopQuotaOnReach, billingPlan, subscriberCount, permissions1);
+        ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy1 =
+                restAPIAdmin.addSubscriptionThrottlingPolicy(sampleSubscriptionThrottlePolicyDTO1);
+        Assert.assertEquals(addedPolicy1.getStatusCode(), HttpStatus.SC_CREATED);
+
+        // Add the subscription throttle policy (20per1hour)
+        String policyName2 = "SubscriptionThrottlePolicy20per1hour";
+        RequestCountLimitDTO requestCountLimit2 = DtoFactory.createRequestCountLimitDTO("hour", 1, 20L);
+        ThrottleLimitDTO defaultLimit2 = DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT,
+                requestCountLimit2, null);
+        SubscriptionThrottlePolicyPermissionDTO permissions2 = DtoFactory
+                .createSubscriptionThrottlePolicyPermissionDTO(
+                        SubscriptionThrottlePolicyPermissionDTO.PermissionTypeEnum.ALLOW, roleList);
+        sampleSubscriptionThrottlePolicyDTO2 = DtoFactory
+                .createSubscriptionThrottlePolicyDTO(policyName2, policyName2, description, false, defaultLimit2,
+                        graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
+                        stopQuotaOnReach, billingPlan, subscriberCount, permissions2);
+        ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy2 =
+                restAPIAdmin.addSubscriptionThrottlingPolicy(sampleSubscriptionThrottlePolicyDTO2);
+        Assert.assertEquals(addedPolicy2.getStatusCode(), HttpStatus.SC_CREATED);
+
+        // Create and publish an API
+        APIRequest apiRequest;
+        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(getGatewayURLNhttp() + "response"));
+        apiRequest.setVersion(API_VERSION);
+        apiRequest.setTiersCollection(policyName1 + "," + policyName2 + "," + APIMIntegrationConstants.API_TIER.BRONZE
+                + "," + "TestPolicyOne");
+        apiRequest.setProvider(providerName);
+        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
+        Assert.assertEquals(apiResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                "Response Code miss matched when creating the API");
+        apiId = apiResponse.getData();
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
+        waitForAPIDeployment();
+
+        // Create an application
+        ApplicationDTO applicationDTO = restAPIStore.addApplication("App1",
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "TestApp Description");
+        app1Id = applicationDTO.getApplicationId();
+
+        // Subscribe to throttling policy and generate access token
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, app1Id, policyName1);
+        Assert.assertNotNull(subscriptionDTO);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(app1Id,
+                APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        Assert.assertNotNull(applicationKeyDTO);
+        String accessToken1 = applicationKeyDTO.getToken().getAccessToken();
+
+        // Invoke API until throttling out
+        Map<String, String> requestHeaders1 = new HashMap<>();
+        requestHeaders1.put("Authorization", "Bearer " + accessToken1);
+        requestHeaders1.put("accept", "text/xml");
+        requestHeaders1.put("content-type", "application/json");
+        HttpResponse response1;
+        boolean isThrottled1 = false;
+        for (int i = 0; i < 15; i++) {
+            response1 = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + API_END_POINT_METHOD,
+                    requestHeaders1);
+            if (response1.getResponseCode() == 429) {
+                Assert.assertTrue(i >= 10);
+                isThrottled1 = true;
+                break;
+            }
+            Thread.sleep(1000);
+        }
+        Assert.assertTrue(isThrottled1, "Request not throttled by " + policyName1);
+        restAPIStore.removeSubscription(subscriptionDTO);
+
+        // Subscribe to throttling policy and generate access token
+        subscriptionDTO = restAPIStore.subscribeToAPI(apiId, app1Id, policyName2);
+        Assert.assertNotNull(subscriptionDTO);
+        String accessToken2 = applicationKeyDTO.getToken().getAccessToken();
+
+        // Invoke API until throttling out
+        Map<String, String> requestHeaders2 = new HashMap<>();
+        requestHeaders2.put("Authorization", "Bearer " + accessToken2);
+        requestHeaders2.put("accept", "text/xml");
+        requestHeaders2.put("content-type", "application/json");
+        HttpResponse response2;
+        boolean isThrottled2 = false;
+        for (int i = 0; i < 25; i++) {
+            response2 = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + API_END_POINT_METHOD,
+                    requestHeaders2);
+            if (response2.getResponseCode() == 429) {
+                Assert.assertTrue(i >= 20);
+                isThrottled2 = true;
+                break;
+            }
+            Thread.sleep(1000);
+        }
+        Assert.assertTrue(isThrottled2, "Request not throttled by " + policyName2);
+        restAPIStore.removeSubscription(subscriptionDTO);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test check whether restricted policies can be viewed",
+            dependsOnMethods = "testSubscriptionLevelThrottling")
+    public void testCheckPolicyPermission() throws Exception {
+
+        restAPIStore = new RestAPIStoreImpl(SUBSCRIBER_USER, USER_PASSWORD,
+                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
+        //Create an application
+        ApplicationDTO applicationDTO = restAPIStore.addApplication("App2",
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "Applications");
+        app2Id = applicationDTO.getApplicationId();
+        ApplicationKeyDTO appDTO = restAPIStore.generateKeys(app2Id,
+                APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        Assert.assertNotNull(appDTO);
+
+        //Subscribe with policy with permission
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, app2Id,
+                APIMIntegrationConstants.API_TIER.BRONZE);
+        Assert.assertNotNull(subscriptionDTO);
+
+        //Subscribe with policy without permission
+        try {
+            restAPIStore.subscribeToAPI(apiId, app2Id, "TestPolicyOne");
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            Assert.assertEquals(e.getCode(), 403);
+            Assert.assertTrue(e.getResponseBody().contains("Tier TestPolicyOne is not allowed"));
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test get and update subscription throttling policy",
+            dependsOnMethods = "testCheckPolicyPermission")
     public void testGetAndUpdatePolicy() throws Exception {
 
         //Get the added subscription throttling policy with request count limit
@@ -251,58 +401,11 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test check whether restricted policies can be viewed",
-            dependsOnMethods = "testAddPolicyWithRequestCountLimit")
-    public void testCheckPolicyPermission() throws Exception {
-        // Create an API
-        tierCollection = APIMIntegrationConstants.API_TIER.BRONZE + "," + "TestPolicyOne";
-        APIRequest apiRequest;
-        apiRequest = new APIRequest("SubscriptionThrottlingAPI", "SubscriptionThrottlingPolicy",
-                new URL(apiEndPointUrl));
-        apiRequest.setVersion("1.0.0");
-        apiRequest.setTiersCollection(tierCollection);
-        apiRequest.setProvider(providerName);
-
-        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-        apiId = apiResponse.getData();
-        Assert.assertEquals(apiResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
-                "Response Code miss matched when creating the API");
-
-        restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
-
-        restAPIStore = new RestAPIStoreImpl(SUBSCRIBER_USER, USER_PASSWORD,
-                keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
-        //Create an application
-        ArrayList grantTypes = new ArrayList();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationDTO applicationDTO = restAPIStore.addApplication("App1",
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "Applications");
-        appId = applicationDTO.getApplicationId();
-        ApplicationKeyDTO appDTO = restAPIStore.generateKeys(appId,
-                APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        Assert.assertNotNull(appDTO);
-
-        //Subscribe with policy with permission
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, appId,
-                APIMIntegrationConstants.API_TIER.BRONZE);
-        Assert.assertNotNull(subscriptionDTO);
-
-        //Subscribe with policy without permission
-        try {
-            restAPIStore.subscribeToAPI(apiId, appId, "TestPolicyOne");
-        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
-            Assert.assertEquals(e.getCode(), 403);
-            Assert.assertTrue(e.getResponseBody().contains("Tier TestPolicyOne is not allowed for" +
-                    " user testUserSubscribe"));
-        }
-    }
-
-
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIAdmin.deleteSubscriptionThrottlingPolicy(bandwidthPolicyDTO.getPolicyId());
-        restAPIStore.deleteApplication(appId);
+        restAPIStore.deleteApplication(app1Id);
+        restAPIStore.deleteApplication(app2Id);
         restAPIPublisher.deleteAPI(apiId);
     }
 }
