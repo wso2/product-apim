@@ -104,6 +104,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String apiKeySecuredAPIContext = "apiKeySecuredAPI";
     private final String basicAuthSecuredAPI = "BasicAuthSecuredAPI";
     private final String basicAuthSecuredAPIContext = "BasicAuthSecuredAPI";
+    private final String APIKeyEnabledAPI = "APIKeyEnabledAPI";
+    private final String APIKeyEnabledAPIContext = "APIKeyEnabledAPI";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
@@ -118,6 +120,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private String apiId5;
     private String apiId6;
     private String apiId7;
+    private String apiId8;
     private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     String users[] = {"apisecUser", "apisecUser2@wso2.com", "apisecUser2@abc.com"};
     String endUserPassword = "password@123";
@@ -351,6 +354,26 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         HttpResponse response7 = restAPIPublisher.addAPI(apiRequest7);
         apiId7 = response7.getData();
+
+        APIRequest apiRequest8 = new APIRequest(APIKeyEnabledAPI, APIKeyEnabledAPIContext,
+                new URL(apiEndPointUrl));
+
+        apiRequest8.setVersion(API_VERSION_1_0_0);
+        apiRequest8.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest8.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest8.setTags(API_TAGS);
+        apiRequest8.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest8.setOperationsDTOS(operationsDTOS2);
+        List<String> securitySchemes7 = new ArrayList<>();
+        securitySchemes7.add("api_key");
+        apiRequest8.setSecurityScheme(securitySchemes7);
+        apiRequest8.setDefault_version("true");
+        apiRequest8.setHttps_checked("https");
+        apiRequest8.setHttp_checked(null);
+        apiRequest8.setDefault_version_checked("true");
+
+        HttpResponse response8 = restAPIPublisher.addAPI(apiRequest8);
+        apiId8 = response8.getData();
     }
 
     @Test(description = "This test case tests the behaviour of internal Key token on Created API with authentication " +
@@ -434,6 +457,36 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         // wait until certificates loaded
         Thread.sleep(120000);
+    }
+
+    @Test(description = "Testing the invocation for a API key authentication enabled API",
+            dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
+    public void testInvocationWithoutResourceSecurity() throws Exception {
+
+        // Validate for security disabled API
+        HttpResponse response = restAPIPublisher.getAPI(apiId7);
+        String retrievedSwagger;
+
+        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
+        List<APIOperationsDTO> operationsList = apidto.getOperations();
+        // Validate the security of resources in API object
+        for (APIOperationsDTO apiOperation : operationsList) {
+            Assert.assertEquals(apiOperation.getAuthType(), "None", "Incorrect auth type");
+        }
+
+        // Verify the security of API in Swagger
+        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId7);
+        List<Object> authTypes = validateResourceSecurity(retrievedSwagger);
+        for (Object authType : authTypes) {
+            Assert.assertEquals(authType, "None", "Incorrect auth type");
+        }
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        HttpResponse invokeResponse =
+                HttpRequestUtil.doGet(getAPIInvocationURLHttps(APIKeyEnabledAPIContext, API_VERSION_1_0_0) +
+                        API_END_POINT_METHOD, requestHeaders);
+        assertEquals(invokeResponse.getResponseCode(), HttpStatus.SC_OK);
     }
 
     private HttpResponse invokeApiWithInternalKey(String context, String version, String resource,
@@ -1167,6 +1220,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId5);
         restAPIPublisher.deleteAPI(apiId6);
         restAPIPublisher.deleteAPI(apiId7);
+        restAPIPublisher.deleteAPI(apiId8);
         removeUsers();
     }
 
