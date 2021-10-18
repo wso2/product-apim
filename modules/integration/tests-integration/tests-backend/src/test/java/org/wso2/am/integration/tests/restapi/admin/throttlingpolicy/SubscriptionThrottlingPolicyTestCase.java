@@ -82,6 +82,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
     private final String INTERNAL_PUBLISHER = "Internal/publisher";
     private final String INTERNAL_SUBSCRIBER = "Internal/subscriber";
     private final String INTERNAL_EVERYONE= "Internal/everyone";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_NAME = "TestAPI";
     private final String API_CONTEXT = "testapi";
@@ -213,7 +214,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         sampleSubscriptionThrottlePolicyDTO1 = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(policyName1, policyName1, description, false, defaultLimit1,
                         graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
-                        stopQuotaOnReach, billingPlan, subscriberCount, permissions1);
+                        true, billingPlan, subscriberCount, permissions1);
         ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy1 =
                 restAPIAdmin.addSubscriptionThrottlingPolicy(sampleSubscriptionThrottlePolicyDTO1);
         Assert.assertEquals(addedPolicy1.getStatusCode(), HttpStatus.SC_CREATED);
@@ -229,14 +230,15 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         sampleSubscriptionThrottlePolicyDTO2 = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(policyName2, policyName2, description, false, defaultLimit2,
                         graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
-                        stopQuotaOnReach, billingPlan, subscriberCount, permissions2);
+                        true, billingPlan, subscriberCount, permissions2);
         ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy2 =
                 restAPIAdmin.addSubscriptionThrottlingPolicy(sampleSubscriptionThrottlePolicyDTO2);
         Assert.assertEquals(addedPolicy2.getStatusCode(), HttpStatus.SC_CREATED);
 
         // Create and publish an API
         APIRequest apiRequest;
-        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(getGatewayURLNhttp() + "response"));
+        apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(backEndServerUrl.getWebAppURLHttps()
+                + API_END_POINT_POSTFIX_URL));
         apiRequest.setVersion(API_VERSION);
         apiRequest.setTiersCollection(policyName1 + "," + policyName2 + "," + APIMIntegrationConstants.API_TIER.BRONZE
                 + "," + "TestPolicyOne");
