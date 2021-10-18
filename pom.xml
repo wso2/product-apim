@@ -1418,6 +1418,8 @@
         <!-- CallHome version -->
         <callhome.version>4.5.x_1.0.8</callhome.version>
 
+        <tomakehurst.version>2.27.2</tomakehurst.version>
+
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.0.16</wso2is.km.version>
