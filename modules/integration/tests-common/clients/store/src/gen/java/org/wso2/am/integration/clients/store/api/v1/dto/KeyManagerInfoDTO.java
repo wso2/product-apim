@@ -96,6 +96,10 @@ public class KeyManagerInfoDTO {
         @SerializedName(SERIALIZED_NAME_APPLICATION_CONFIGURATION)
             private List<KeyManagerApplicationConfigurationDTO> applicationConfiguration = null;
 
+        public static final String SERIALIZED_NAME_ALIAS = "alias";
+        @SerializedName(SERIALIZED_NAME_ALIAS)
+            private String alias;
+
         public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
         @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
             private Object additionalProperties;
@@ -467,6 +471,29 @@ public class KeyManagerInfoDTO {
     }
 
 
+        public KeyManagerInfoDTO alias(String alias) {
+        
+        this.alias = alias;
+        return this;
+        }
+
+    /**
+        * The alias of Identity Provider. If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token 
+    * @return alias
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "https://localhost:9443/oauth2/token", value = "The alias of Identity Provider. If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token ")
+    
+    public String getAlias() {
+        return alias;
+    }
+
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+
         public KeyManagerInfoDTO additionalProperties(Object additionalProperties) {
         
         this.additionalProperties = additionalProperties;
@@ -515,12 +542,13 @@ public class KeyManagerInfoDTO {
             Objects.equals(this.enableOAuthAppCreation, keyManagerInfo.enableOAuthAppCreation) &&
             Objects.equals(this.enableMapOAuthConsumerApps, keyManagerInfo.enableMapOAuthConsumerApps) &&
             Objects.equals(this.applicationConfiguration, keyManagerInfo.applicationConfiguration) &&
+            Objects.equals(this.alias, keyManagerInfo.alias) &&
             Objects.equals(this.additionalProperties, keyManagerInfo.additionalProperties);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, type, displayName, description, enabled, availableGrantTypes, tokenEndpoint, revokeEndpoint, userInfoEndpoint, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableOAuthAppCreation, enableMapOAuthConsumerApps, applicationConfiguration, additionalProperties);
+        return Objects.hash(id, name, type, displayName, description, enabled, availableGrantTypes, tokenEndpoint, revokeEndpoint, userInfoEndpoint, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableOAuthAppCreation, enableMapOAuthConsumerApps, applicationConfiguration, alias, additionalProperties);
     }
 
 
@@ -544,6 +572,7 @@ sb.append("class KeyManagerInfoDTO {\n");
     sb.append("    enableOAuthAppCreation: ").append(toIndentedString(enableOAuthAppCreation)).append("\n");
     sb.append("    enableMapOAuthConsumerApps: ").append(toIndentedString(enableMapOAuthConsumerApps)).append("\n");
     sb.append("    applicationConfiguration: ").append(toIndentedString(applicationConfiguration)).append("\n");
+    sb.append("    alias: ").append(toIndentedString(alias)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
 sb.append("}");
 return sb.toString();

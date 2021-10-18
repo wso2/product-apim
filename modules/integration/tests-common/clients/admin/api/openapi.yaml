@@ -8239,6 +8239,7 @@ components:
           tokenEndpoint: https://localhost:9444/oauth2/token
           consumerKeyClaim: azp
           scopesClaim: scp
+          alias: https://localhost:9443/oauth2/token
           id: 01234567-0123-0123-0123-012345678901
           userInfoEndpoint: https://localhost:9444/oauth2/userinfo?schema=openid
           displayTokenEndpoint: https://localhost:9444/oauth2/token
@@ -8275,6 +8276,7 @@ components:
             id: 0
             type: REFERENCE
             value: '{}'
+          tokenType: EXCHANGED
           enableTokenGeneration: true
       properties:
         valid:
@@ -8299,6 +8301,7 @@ components:
         tokenEndpoint: https://localhost:9444/oauth2/token
         consumerKeyClaim: azp
         scopesClaim: scp
+        alias: https://localhost:9443/oauth2/token
         id: 01234567-0123-0123-0123-012345678901
         userInfoEndpoint: https://localhost:9444/oauth2/userinfo?schema=openid
         displayTokenEndpoint: https://localhost:9444/oauth2/token
@@ -8335,6 +8338,7 @@ components:
           id: 0
           type: REFERENCE
           value: '{}'
+        tokenType: EXCHANGED
         enableTokenGeneration: true
       properties:
         id:
@@ -8394,6 +8398,12 @@ components:
         issuer:
           example: https://localhost:9444/services
           type: string
+        alias:
+          description: |
+            The alias of Identity Provider.
+            If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token
+          example: https://localhost:9443/oauth2/token
+          type: string
         scopeManagementEndpoint:
           example: https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes
           type: string
@@ -8449,6 +8459,15 @@ components:
             Password: admin
           properties: {}
           type: object
+        tokenType:
+          default: ORIGINAL
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED and ORIGINAL.
+          enum:
+          - EXCHANGED
+          - ORIGINAL
+          example: EXCHANGED
+          type: string
       required:
       - name
       - type
@@ -8460,6 +8479,7 @@ components:
         description: This is a key manager for Developers
         id: 01234567-0123-0123-0123-012345678901
         type: IS
+        tokenType: EXCHANGED
         enabled: true
       properties:
         id:
@@ -8477,6 +8497,15 @@ components:
         enabled:
           example: true
           type: boolean
+        tokenType:
+          default: ORIGINAL
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED and ORIGINAL.
+          enum:
+          - EXCHANGED
+          - ORIGINAL
+          example: EXCHANGED
+          type: string
       required:
       - name
       - type
@@ -8536,11 +8565,13 @@ components:
           description: This is a key manager for Developers
           id: 01234567-0123-0123-0123-012345678901
           type: IS
+          tokenType: EXCHANGED
           enabled: true
         - name: WSO2 IS
           description: This is a key manager for Developers
           id: 01234567-0123-0123-0123-012345678901
           type: IS
+          tokenType: EXCHANGED
           enabled: true
       properties:
         count:

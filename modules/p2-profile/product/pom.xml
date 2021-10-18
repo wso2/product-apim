@@ -670,6 +670,10 @@
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
+                                    org.wso2.carbon.extension.identity.oauth2.grantType.token.exchange:org.wso2.carbon.extension.identity.oauth2.token.exchange.feature:${carbon.extension.identity.oauth2.grantType.token.exchange}
+                                </featureArtifactDef>
+
+                                <featureArtifactDef>
                                     org.wso2.carbon.identity.inbound.auth.sts:org.wso2.carbon.sts.connector.feature:${carbon.identity-inbound-auth-sts.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
@@ -1347,6 +1351,12 @@
                                     <version>${carbon.identity-data-publisher-oauth.version}</version>
                                 </feature>
 
+                                <!-- Token Exchange grant feature-->
+                                <feature>
+                                    <id>org.wso2.carbon.extension.identity.oauth2.token.exchange.feature.group</id>
+                                    <version>${carbon.extension.identity.oauth2.grantType.token.exchange}</version>
+                                </feature>
+
                                 <!-- MB features -->
                                 <feature>
                                     <id>org.wso2.carbon.andes.server.feature.group</id>
@@ -1968,6 +1978,12 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.data.publisher.oauth.server.feature.group</id>
                                     <version>${carbon.identity-data-publisher-oauth.version}</version>
+                                </feature>
+
+                                <!-- Token Exchange grant feature-->
+                                <feature>
+                                    <id>org.wso2.carbon.extension.identity.oauth2.token.exchange.feature.group</id>
+                                    <version>${carbon.extension.identity.oauth2.grantType.token.exchange}</version>
                                 </feature>
 
                                 <!-- MB features -->
@@ -3123,6 +3139,12 @@
                                     <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+
+                                <!-- Token Exchange grant feature-->
+                                <feature>
+                                    <id>org.wso2.carbon.extension.identity.oauth2.token.exchange.feature.group</id>
+                                    <version>${carbon.extension.identity.oauth2.grantType.token.exchange}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -4078,6 +4100,12 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.persistence.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+
+                                <!-- Token Exchange grant feature-->
+                                <feature>
+                                    <id>org.wso2.carbon.extension.identity.oauth2.token.exchange.feature.group</id>
+                                    <version>${carbon.extension.identity.oauth2.grantType.token.exchange}</version>
                                 </feature>
                             </features>
                         </configuration>
