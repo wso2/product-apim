@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~  Copyright (c) 2005-2010, WSO2 Inc. (http://wso2.com) All Rights Reserved.
   ~
@@ -16,57 +16,60 @@
   ~  specific language governing permissions and limitations
   ~  under the License.
   -->
-<sequence xmlns="http://ws.apache.org/ns/synapse" name="fault">
-    <log level="custom">
-        <property name="STATUS" value="Executing default 'fault' sequence"/>
-        <property name="ERROR_CODE" expression="get-property('ERROR_CODE')"/>
-        <property name="ERROR_MESSAGE" expression="get-property('ERROR_MESSAGE')"/>
-    </log>
-    <filter source="get-property('MESSAGE_FORMAT')" regex="soap1[1-2]">
-        <then>
-            <property name="SOAP_FAULT_CODE" value="Server"/>
-            <makefault>
-                <code expression="$ctx:SOAP_FAULT_CODE"/>
-                <reason expression="$ctx:ERROR_MESSAGE"/>
-            </makefault>
-        </then>
-        <else>
-            <payloadFactory>
-                <format>
-                    <am:fault xmlns:am="http://wso2.org/apimanager">
-                        <am:code>$1</am:code>
-                        <am:type>Status report</am:type>
-                        <am:message>Runtime Error</am:message>
-                        <am:description>$2</am:description>
-                    </am:fault>
-                </format>
-                <args>
-                    <arg expression="$ctx:ERROR_CODE"/>
-                    <arg expression="$ctx:ERROR_MESSAGE"/>
-                </args>
-            </payloadFactory>
-            <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT|PATCH)).*$">
-                <property name="messageType" value="application/xml" scope="axis2"/>
-            </filter>
-        </else>
-    </filter>
-    <filter xpath="$ctx:CUSTOM_HTTP_SC">
-        <then>
-            <property name="HTTP_SC" expression="$ctx:CUSTOM_HTTP_SC" scope="axis2"/>
-        </then>
-        <else>
-            <property name="HTTP_SC" value="500" scope="axis2"/>
-        </else>
-    </filter>
-    <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtFaultHandler"/>
-    <property name="RESPONSE" value="true"/>
-    <header name="To" action="remove"/>
-    <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
-    <property name="ContentType" scope="axis2" action="remove"/>
-    <property name="Authorization" scope="transport" action="remove"/>
-    <property name="Host" scope="transport" action="remove"/>
-    <property name="Accept" scope="transport" action="remove"/>
-    <property name="X-JWT-Assertion" scope="transport" action="remove"/>
-    <sequence key="_cors_request_handler_"/>
-    <send/>
-</sequence>
+<definitions xmlns="http://ws.apache.org/ns/synapse">
+    <registry provider="org.wso2.carbon.mediation.registry.WSO2Registry"/>
+    <sequence name="fault">
+        <log level="full">
+            <property name="STATUS" value="Executing default 'fault' sequence"/>
+            <property name="ERROR_CODE" expression="get-property('ERROR_CODE')"/>
+            <property name="ERROR_MESSAGE" expression="get-property('ERROR_MESSAGE')"/>
+        </log>
+        <sequence key="_build_"/>
+        <filter source="get-property('MESSAGE_FORMAT')" regex="soap1[1-2]">
+            <then>
+                <property name="SOAP_FAULT_CODE" value="Server"/>
+                <makefault version="soap11">
+                    <code expression="$ctx:SOAP_FAULT_CODE"/>
+                    <reason expression="$ctx:ERROR_MESSAGE"/>
+                </makefault>
+            </then>
+            <else>
+                <payloadFactory media-type="xml">
+                    <format>
+                        <am:fault xmlns:am="http://wso2.org/apimanager">
+                            <am:code>$1</am:code>
+                            <am:type>Status report</am:type>
+                            <am:message>Runtime Error</am:message>
+                            <am:description>$2</am:description>
+                        </am:fault>
+                    </format>
+                    <args>
+                        <arg evaluator="xml" expression="$ctx:ERROR_CODE"/>
+                        <arg evaluator="xml" expression="$ctx:ERROR_MESSAGE"/>
+                    </args>
+                </payloadFactory>
+                <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT)).*$">
+                    <property name="messageType" value="application/xml" scope="axis2"/>
+                </filter>
+            </else>
+        </filter>
+        <filter xpath="$ctx:CUSTOM_HTTP_SC">
+            <then>
+                <property name="HTTP_SC" expression="$ctx:CUSTOM_HTTP_SC" scope="axis2"/>
+            </then>
+            <else>
+                <property name="HTTP_SC" value="500" scope="axis2"/>
+            </else>
+        </filter>
+        <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtFaultHandler"/>
+        <property name="RESPONSE" value="true"/>
+        <header name="To" action="remove"/>
+        <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+        <property name="ContentType" scope="axis2" action="remove"/>
+        <property name="Authorization" scope="transport" action="remove"/>
+        <property name="Host" scope="transport" action="remove"/>
+        <property name="Accept" scope="transport" action="remove"/>
+        <property name="X-JWT-Assertion" scope="transport" action="remove"/>
+        <send/>
+    </sequence>
+</definitions>
