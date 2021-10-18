@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/devportal/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getAllTopicsOfAPI**](TopicsApi.md#getAllTopicsOfAPI) | **GET** /apis/{apiId}/topics | Get a list of available topics for a given async API 
+[**apisApiIdTopicsGet**](TopicsApi.md#apisApiIdTopicsGet) | **GET** /apis/{apiId}/topics | Get a list of available topics for a given async API 
 
 
-<a name="getAllTopicsOfAPI"></a>
-# **getAllTopicsOfAPI**
-> TopicListDTO getAllTopicsOfAPI(apiId, xWSO2Tenant)
+<a name="apisApiIdTopicsGet"></a>
+# **apisApiIdTopicsGet**
+> TopicListDTO apisApiIdTopicsGet(apiId, xWSO2Tenant)
 
 Get a list of available topics for a given async API 
 
@@ -38,10 +38,10 @@ public class Example {
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
     try {
-      TopicListDTO result = apiInstance.getAllTopicsOfAPI(apiId, xWSO2Tenant);
+      TopicListDTO result = apiInstance.apisApiIdTopicsGet(apiId, xWSO2Tenant);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling TopicsApi#getAllTopicsOfAPI");
+      System.err.println("Exception when calling TopicsApi#apisApiIdTopicsGet");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

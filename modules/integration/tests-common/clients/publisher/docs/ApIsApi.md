@@ -912,7 +912,7 @@ null (empty response body)
 
 <a name="getAllAPIs"></a>
 # **getAllAPIs**
-> APIListDTO getAllAPIs(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept)
+> APIListDTO getAllAPIs(limit, offset, sortBy, sortOrder, xWSO2Tenant, query, ifNoneMatch, expand, accept)
 
 Retrieve/Search APIs 
 
@@ -940,13 +940,15 @@ public class Example {
     ApIsApi apiInstance = new ApIsApi(defaultClient);
     Integer limit = 25; // Integer | Maximum size of resource array to return. 
     Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
+    String sortBy = "createdTime"; // String | Criteria for sorting. 
+    String sortOrder = "desc"; // String | Order of sorting(ascending/descending). 
     String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
     String query = "query_example"; // String | **Search condition**.  You can search in attributes by using an **\"<attribute>:\"** modifier.  Eg. \"provider:wso2\" will match an API if the provider of the API contains \"wso2\". \"provider:\"wso2\"\" will match an API if the provider of the API is exactly \"wso2\". \"status:PUBLISHED\" will match an API if the API is in PUBLISHED state.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, doc, provider**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl) 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     Boolean expand = true; // Boolean | Defines whether the returned response should contain full details of API 
     String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
     try {
-      APIListDTO result = apiInstance.getAllAPIs(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept);
+      APIListDTO result = apiInstance.getAllAPIs(limit, offset, sortBy, sortOrder, xWSO2Tenant, query, ifNoneMatch, expand, accept);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApIsApi#getAllAPIs");
@@ -965,6 +967,8 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
+ **sortBy** | **String**| Criteria for sorting.  | [optional] [default to createdTime] [enum: apiName, version, createdTime, status]
+ **sortOrder** | **String**| Order of sorting(ascending/descending).  | [optional] [default to desc] [enum: asc, desc]
  **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
  **query** | **String**| **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, doc, provider**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  | [optional]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]

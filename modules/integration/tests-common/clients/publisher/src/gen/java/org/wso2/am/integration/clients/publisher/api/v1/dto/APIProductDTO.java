@@ -24,9 +24,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIAdditionalPropertiesDTO;
+import java.util.Map;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPropertiesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPropertiesMapDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
@@ -386,7 +389,11 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
         public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
         @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
-            private List<APIAdditionalPropertiesDTO> additionalProperties = null;
+            private List<APIInfoAdditionalPropertiesDTO> additionalProperties = null;
+
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES_MAP = "additionalPropertiesMap";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES_MAP)
+            private Map<String, APIInfoAdditionalPropertiesMapDTO> additionalPropertiesMap = null;
 
         public static final String SERIALIZED_NAME_MONETIZATION = "monetization";
         @SerializedName(SERIALIZED_NAME_MONETIZATION)
@@ -1041,7 +1048,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
-        public APIProductDTO additionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
+        public APIProductDTO additionalProperties(List<APIInfoAdditionalPropertiesDTO> additionalProperties) {
         
         this.additionalProperties = additionalProperties;
         return this;
@@ -1054,13 +1061,36 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
         @javax.annotation.Nullable
       @ApiModelProperty(value = "Map of custom properties of API")
     
-    public List<APIAdditionalPropertiesDTO> getAdditionalProperties() {
+    public List<APIInfoAdditionalPropertiesDTO> getAdditionalProperties() {
         return additionalProperties;
     }
 
 
-    public void setAdditionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
+    public void setAdditionalProperties(List<APIInfoAdditionalPropertiesDTO> additionalProperties) {
         this.additionalProperties = additionalProperties;
+    }
+
+
+        public APIProductDTO additionalPropertiesMap(Map<String, APIInfoAdditionalPropertiesMapDTO> additionalPropertiesMap) {
+        
+        this.additionalPropertiesMap = additionalPropertiesMap;
+        return this;
+        }
+
+    /**
+        * Get additionalPropertiesMap
+    * @return additionalPropertiesMap
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public Map<String, APIInfoAdditionalPropertiesMapDTO> getAdditionalPropertiesMap() {
+        return additionalPropertiesMap;
+    }
+
+
+    public void setAdditionalPropertiesMap(Map<String, APIInfoAdditionalPropertiesMapDTO> additionalPropertiesMap) {
+        this.additionalPropertiesMap = additionalPropertiesMap;
     }
 
 
@@ -1285,6 +1315,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             Objects.equals(this.subscriptionAvailability, apIProduct.subscriptionAvailability) &&
             Objects.equals(this.subscriptionAvailableTenants, apIProduct.subscriptionAvailableTenants) &&
             Objects.equals(this.additionalProperties, apIProduct.additionalProperties) &&
+            Objects.equals(this.additionalPropertiesMap, apIProduct.additionalPropertiesMap) &&
             Objects.equals(this.monetization, apIProduct.monetization) &&
             Objects.equals(this.businessInformation, apIProduct.businessInformation) &&
             Objects.equals(this.corsConfiguration, apIProduct.corsConfiguration) &&
@@ -1297,7 +1328,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
+        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
     }
 
 
@@ -1333,6 +1364,7 @@ sb.append("class APIProductDTO {\n");
     sb.append("    subscriptionAvailability: ").append(toIndentedString(subscriptionAvailability)).append("\n");
     sb.append("    subscriptionAvailableTenants: ").append(toIndentedString(subscriptionAvailableTenants)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+    sb.append("    additionalPropertiesMap: ").append(toIndentedString(additionalPropertiesMap)).append("\n");
     sb.append("    monetization: ").append(toIndentedString(monetization)).append("\n");
     sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
     sb.append("    corsConfiguration: ").append(toIndentedString(corsConfiguration)).append("\n");

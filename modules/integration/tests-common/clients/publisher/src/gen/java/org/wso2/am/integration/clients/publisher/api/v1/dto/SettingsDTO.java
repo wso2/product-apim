@@ -123,7 +123,7 @@ public class SettingsDTO {
     * @return scopes
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "[\"apim:api_create\",\"apim:api_publish\"]", value = "")
+      @ApiModelProperty(example = "[\"apim:api_create\",\"apim:api_manage\",\"apim:api_publish\"]", value = "")
     
     public List<String> getScopes() {
         return scopes;

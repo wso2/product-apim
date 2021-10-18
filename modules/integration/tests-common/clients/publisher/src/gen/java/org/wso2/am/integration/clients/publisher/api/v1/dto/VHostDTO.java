@@ -53,6 +53,14 @@ public class VHostDTO {
         @SerializedName(SERIALIZED_NAME_WSS_PORT)
             private Integer wssPort;
 
+        public static final String SERIALIZED_NAME_WEBSUB_HTTP_PORT = "websubHttpPort";
+        @SerializedName(SERIALIZED_NAME_WEBSUB_HTTP_PORT)
+            private Integer websubHttpPort;
+
+        public static final String SERIALIZED_NAME_WEBSUB_HTTPS_PORT = "websubHttpsPort";
+        @SerializedName(SERIALIZED_NAME_WEBSUB_HTTPS_PORT)
+            private Integer websubHttpsPort;
+
 
         public VHostDTO host(String host) {
         
@@ -192,6 +200,52 @@ public class VHostDTO {
     }
 
 
+        public VHostDTO websubHttpPort(Integer websubHttpPort) {
+        
+        this.websubHttpPort = websubHttpPort;
+        return this;
+        }
+
+    /**
+        * Get websubHttpPort
+    * @return websubHttpPort
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "9021", value = "")
+    
+    public Integer getWebsubHttpPort() {
+        return websubHttpPort;
+    }
+
+
+    public void setWebsubHttpPort(Integer websubHttpPort) {
+        this.websubHttpPort = websubHttpPort;
+    }
+
+
+        public VHostDTO websubHttpsPort(Integer websubHttpsPort) {
+        
+        this.websubHttpsPort = websubHttpsPort;
+        return this;
+        }
+
+    /**
+        * Get websubHttpsPort
+    * @return websubHttpsPort
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "8021", value = "")
+    
+    public Integer getWebsubHttpsPort() {
+        return websubHttpsPort;
+    }
+
+
+    public void setWebsubHttpsPort(Integer websubHttpsPort) {
+        this.websubHttpsPort = websubHttpsPort;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -206,12 +260,14 @@ public class VHostDTO {
             Objects.equals(this.httpPort, vhost.httpPort) &&
             Objects.equals(this.httpsPort, vhost.httpsPort) &&
             Objects.equals(this.wsPort, vhost.wsPort) &&
-            Objects.equals(this.wssPort, vhost.wssPort);
+            Objects.equals(this.wssPort, vhost.wssPort) &&
+            Objects.equals(this.websubHttpPort, vhost.websubHttpPort) &&
+            Objects.equals(this.websubHttpsPort, vhost.websubHttpsPort);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(host, httpContext, httpPort, httpsPort, wsPort, wssPort);
+        return Objects.hash(host, httpContext, httpPort, httpsPort, wsPort, wssPort, websubHttpPort, websubHttpsPort);
     }
 
 
@@ -225,6 +281,8 @@ sb.append("class VHostDTO {\n");
     sb.append("    httpsPort: ").append(toIndentedString(httpsPort)).append("\n");
     sb.append("    wsPort: ").append(toIndentedString(wsPort)).append("\n");
     sb.append("    wssPort: ").append(toIndentedString(wssPort)).append("\n");
+    sb.append("    websubHttpPort: ").append(toIndentedString(websubHttpPort)).append("\n");
+    sb.append("    websubHttpsPort: ").append(toIndentedString(websubHttpsPort)).append("\n");
 sb.append("}");
 return sb.toString();
 }

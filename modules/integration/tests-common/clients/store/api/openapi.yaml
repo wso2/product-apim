@@ -9,7 +9,7 @@ info:
     Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.7.206/components/apimgt/org.wso2.carbon.apimgt.rest.api.store.v1/src/main/resources/devportal-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.
 
     # Authentication
-    Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking
+    The Developer Portal REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking
     the API, you need to obtain an access token with the required scopes. This guide will walk you through the steps
     that you will need to follow to obtain an access token.
     First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types
@@ -57,11 +57,11 @@ info:
     ```
     curl -k -d "grant_type=password&username=<admin_username>&password=<admin_password>&scope=<scopes separated by space>"
     \ -H "Authorization: Basic base64(cliet_id:client_secret)"
-    \ https://<host>:<gateway_port>/token
+    \ https://<host>:<servlet_port>/oauth2/token
     ```
     **Sample request**
     ```
-    curl https://localhost:8243/token -k \
+    curl https://localhost:9443/oauth2/token -k \
     -H "Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h" \
     -d "grant_type=password&username=admin&password=admin&scope=apim:subscribe apim:api_key"
     ```
@@ -151,7 +151,7 @@ paths:
           "provider:wso2*" will match an API if the provider of the API starts with "wso2".
 
           Supported attribute modifiers are [**version, context, status,
-          description, subcontext, doc, provider, tag**]
+          description, doc, provider, tag**]
 
           If no advanced attribute modifier has been specified, search will match the
           given query string against API Name.
@@ -328,28 +328,10 @@ paths:
           type: string
         style: simple
       - description: |
-          Name of the API microgateway labels
-        explode: true
-        in: query
-        name: labelName
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: |
           Name of the API gateway environment.
         explode: true
         in: query
         name: environmentName
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: |
-          Name of the container managed cluster name.
-        explode: true
-        in: query
-        name: clusterName
         required: false
         schema:
           type: string
@@ -660,15 +642,6 @@ paths:
         schema:
           type: string
         style: simple
-      - description: |
-          Name of the API microgateway labels
-        explode: true
-        in: query
-        name: labelName
-        required: false
-        schema:
-          type: string
-        style: form
       - description: |
           Name of the API gateway environment.
         explode: true
@@ -1607,30 +1580,31 @@ paths:
           description: |
             OK.
             Comments list is returned.
-        "401":
+        "404":
           content:
             application/json:
               example:
-                code: 401
-                message: Unauthorized
-                description: The user is not authorized
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
                 moreInfo: ""
                 error: []
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Unauthorized. The user is not authorized.
-        "406":
+          description: Not Found. The specified resource does not exist.
+        "500":
           content:
             application/json:
               example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
                 moreInfo: ""
                 error: []
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Not Acceptable. The requested media type is not supported.
+          description: Internal Server Error.
       security:
       - OAuth2Security: []
       summary: Retrieve API Comments
@@ -1655,7 +1629,7 @@ paths:
           type: string
         style: simple
       - description: |
-          ID of the parent comment.
+          ID of the perent comment.
         explode: true
         in: query
         name: replyTo
@@ -1673,6 +1647,7 @@ paths:
                   description: |
                     Content of the comment
                   example: This is a comment
+                  maxLength: 512
                   type: string
                 category:
                   description: |
@@ -1735,6 +1710,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Unauthorized. The user is not authorized.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
         "415":
           content:
             application/json:
@@ -1748,6 +1735,19 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Unsupported Media Type. The entity of the request was not in
             a supported format.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:subscribe
@@ -1813,6 +1813,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Unauthorized. The user is not authorized.
+        "403":
+          content: {}
+          description: |
+            Forbidden.
+            The request must be conditional but no condition has been specified.
         "404":
           content:
             application/json:
@@ -1825,9 +1830,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
+        "405":
+          content: {}
+          description: |
+            MethodNotAllowed.
+            Request method is known by the server but is not supported by the target resource.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:subscribe
+        - apim:admin
       summary: Delete an API Comment
       tags:
       - Comments
@@ -1937,11 +1961,6 @@ paths:
               schema:
                 type: string
               style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource.
         "401":
           content:
             application/json:
@@ -1978,6 +1997,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security: []
       summary: Get Details of an API Comment
@@ -2022,6 +2054,7 @@ paths:
                   description: |
                     Content of the comment
                   example: This is a comment
+                  maxLength: 512
                   type: string
                 category:
                   description: |
@@ -2081,6 +2114,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Unauthorized. The user is not authorized.
+        "403":
+          description: |
+            Forbidden.
+            The request must be conditional but no condition has been specified.
         "404":
           content:
             application/json:
@@ -2106,6 +2143,19 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Unsupported Media Type. The entity of the request was not in
             a supported format.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:subscribe
@@ -2114,7 +2164,7 @@ paths:
       - Comments
       x-code-samples:
       - lang: Curl
-        source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+        source: 'curl -k -X PATCH -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/store/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
       x-examples:
         $ref: docs/examples/apis/comments.yaml#/post
@@ -2220,11 +2270,6 @@ paths:
               schema:
                 type: string
               style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource.
         "401":
           content:
             application/json:
@@ -2261,6 +2306,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security: []
       summary: Get replies of a comment
@@ -2268,7 +2326,7 @@ paths:
       - Comments
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/store/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+        source: curl -k "https://localhost:9443/api/am/store/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"
       x-examples:
         $ref: docs/examples/apis/comment_id-comments.yaml#/get
       x-accepts: application/json
@@ -2276,7 +2334,6 @@ paths:
     get:
       description: |
         This operation will provide a list of topics available for a given Async API, based on the provided API ID.
-      operationId: getAllTopicsOfAPI
       parameters:
       - description: |
           **API ID** consisting of the **UUID** of the API.
@@ -2805,6 +2862,16 @@ paths:
         schema:
           type: string
         style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
       responses:
         "200":
           content:
@@ -3000,6 +3067,16 @@ paths:
         schema:
           type: string
         style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
       requestBody:
         content:
           application/json:
@@ -3079,6 +3156,16 @@ paths:
         in: path
         name: applicationId
         required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
         schema:
           type: string
         style: simple
@@ -3733,6 +3820,16 @@ paths:
         in: path
         name: applicationId
         required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
         schema:
           type: string
         style: simple
@@ -5855,7 +5952,6 @@ paths:
       description: |
         This operation will provide a list of web hook topic subscriptions for a given application. If the api id is provided
         results will be filtered by the api Id.
-      operationId: getAllWebhooksOfAPI
       parameters:
       - description: |
           **Application Identifier** consisting of the UUID of the Application.
@@ -5942,7 +6038,7 @@ paths:
   /settings:
     get:
       description: |
-        Retreive Devportal Settings
+        Retreive Developer Portal Settings
       parameters:
       - description: |
           For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
@@ -5978,7 +6074,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:store_settings
-      summary: Retreive Devportal settings
+      summary: Retreive Developer Portal settings
       tags:
       - Settings
       x-code-samples:
@@ -6191,440 +6287,6 @@ paths:
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/recommendations"'
       x-accepts: application/json
-  /alert-types:
-    get:
-      description: |
-        This operation is used to get the list of supportd alert types for the 'subscriber' agent.
-      operationId: getDevportalAlertTypes
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertTypesList'
-          description: |
-            OK.
-            The list of subscriber alert types are returned.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
-      summary: |
-        Get the List of API Developer Portal Alert Types.
-      tags:
-      - Alerts
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/alert-types"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts.yaml#/get
-      x-accepts: application/json
-  /alert-subscriptions:
-    delete:
-      description: |
-        This operation is used to unsubscribe the respective user from all the alert types.
-      operationId: unsubscribeAllAlerts
-      responses:
-        "200":
-          content: {}
-          description: |
-            OK.
-            The user is unsubscribed from the alerts successfully.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
-      summary: |
-        Unsubscribe User from All the Alert Types.
-      tags:
-      - Alert Subscriptions
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/delete
-      x-accepts: application/json
-    get:
-      description: |
-        This operation is used to get the list of subscribed alert types by the user.
-      operationId: getSubscribedAlertTypes
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertsInfo'
-          description: |
-            OK.
-            The list of subscribed alert types are returned.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
-      summary: |
-        Get the List of API Developer Portal Alert Types Subscribed by the User.
-      tags:
-      - Alert Subscriptions
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/get
-      x-accepts: application/json
-    put:
-      description: |
-        This operation is used to subscribe to the selected alert types by the user.
-      operationId: subscribeToAlerts
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AlertsInfo'
-        description: The alerts list and the email list to subscribe.
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertsInfoResponse'
-          description: |
-            OK.
-            Successful response with the newly subscribed alerts.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "400":
-          content: {}
-          description: |
-            Bad Request.
-            Invalid Request or request validation failure.
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
-      summary: |
-        Subscribe to the Selected Alert Types by the User.
-      tags:
-      - Alert Subscriptions
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/put
-      x-contentType: application/json
-      x-accepts: application/json
-  /alerts/{alertType}/configurations:
-    get:
-      description: |
-        This operation is used to get all configurations of the AbnormalRequestsPerMin alert type.
-      operationId: getAllAlertConfigs
-      parameters:
-      - description: |
-          The alert type.
-        explode: false
-        in: path
-        name: alertType
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertConfigList'
-          description: |
-            OK.
-            The Developer Portal alert configuration.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
-      summary: |
-        Get All AbnormalRequestsPerMin Alert Configurations
-      tags:
-      - Alert Configuration
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/get
-      x-accepts: application/json
-  /alerts/{alertType}/configurations/{configurationId}:
-    delete:
-      description: |
-        This operation is used to delete configuration from the AbnormalRequestsPerMin alert type.
-      operationId: deleteAlertConfig
-      parameters:
-      - description: |
-          The alert type.
-        explode: false
-        in: path
-        name: alertType
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          The alert configuration id.
-          Base64 encoded value of 'apiName#apiVersion#applicationName'.
-        explode: false
-        in: path
-        name: configurationId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content: {}
-          description: |
-            OK.
-            The alert config is deleted successfully.
-        "400":
-          content:
-            application/json:
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Bad Request. Invalid request or validation error.
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
-      summary: |
-        Delete the Selected Configuration from AbnormalRequestsPerMin Alert Type.
-      tags:
-      - Alert Configuration
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations/UGV0c3RvcmUjMS4wI0FwcDE"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/delete
-      x-accepts: application/json
-    put:
-      description: |
-        This operation is used to add configuration for the AbnormalRequestsPerMin alert type.
-      operationId: addAlertConfig
-      parameters:
-      - description: |
-          The alert type.
-        explode: false
-        in: path
-        name: alertType
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          The alert configuration id.
-          Base64 encoded value of 'apiName#apiVersion#applicationName'.
-        explode: false
-        in: path
-        name: configurationId
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AlertConfigInfo'
-        description: Configuration for AbnormalRequestCount alert type
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertConfig'
-          description: |
-            Created.
-            Successful response with newly created object as entity.
-            Location header contains URL of newly created entity.
-          headers:
-            Location:
-              description: |
-                The location of the newly created entity.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "400":
-          content:
-            application/json:
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Bad Request. Invalid request or validation error.
-        "500":
-          content:
-            application/json:
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact
-                  administrator.
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Internal Server Error.
-      security:
-      - OAuth2Security:
-        - apim:sub_alert_manage
-      summary: |
-        Add AbnormalRequestsPerMin Alert Configurations.
-      tags:
-      - Alert Configuration
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations/UGV0c3RvcmUjMS4wI0FwcDE"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/put
-      x-contentType: application/json
-      x-accepts: application/json
   /api-categories:
     get:
       description: |
@@ -6828,6 +6490,16 @@ paths:
       x-accepts: application/json
 components:
   parameters:
+    parentCommentID:
+      description: |
+        ID of the perent comment.
+      explode: true
+      in: query
+      name: replyTo
+      required: false
+      schema:
+        type: string
+      style: form
     requestedTenant:
       description: |
         For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
@@ -7015,32 +6687,12 @@ components:
         - subscription
         type: string
       style: simple
-    labelName:
-      description: |
-        Name of the API microgateway labels
-      explode: true
-      in: query
-      name: labelName
-      required: false
-      schema:
-        type: string
-      style: form
     environmentName:
       description: |
         Name of the API gateway environment.
       explode: true
       in: query
       name: environmentName
-      required: false
-      schema:
-        type: string
-      style: form
-    clusterName:
-      description: |
-        Name of the container managed cluster name.
-      explode: true
-      in: query
-      name: clusterName
       required: false
       schema:
         type: string
@@ -7062,6 +6714,28 @@ components:
       explode: true
       in: query
       name: offset
+      required: false
+      schema:
+        default: 0
+        type: integer
+      style: form
+    replyLimit:
+      description: |
+        Maximum size of replies array to return.
+      explode: true
+      in: query
+      name: replyLimit
+      required: false
+      schema:
+        default: 25
+        type: integer
+      style: form
+    replyOffset:
+      description: |
+        Starting point within the complete list of replies.
+      explode: true
+      in: query
+      name: replyOffset
       required: false
       schema:
         default: 0
@@ -7122,38 +6796,6 @@ components:
       schema:
         type: string
       style: simple
-    replyLimit:
-      description: |
-        Maximum size of replies array to return.
-      explode: true
-      in: query
-      name: replyLimit
-      required: false
-      schema:
-        default: 25
-        type: integer
-      style: form
-    replyOffset:
-      description: |
-        Starting point within the complete list of replies.
-      explode: true
-      in: query
-      name: replyOffset
-      required: false
-      schema:
-        default: 0
-        type: integer
-      style: form
-    parentCommentID:
-      description: |
-        ID of the parent comment.
-      explode: true
-      in: query
-      name: replyTo
-      required: false
-      schema:
-        type: string
-      style: form
   requestBodies:
     Post_request_body:
       content:
@@ -7329,8 +6971,10 @@ components:
         context: CalculatorAPI
         advertiseInfo:
           apiOwner: admin
-          originalDevportalUrl: https://localhost:9443/devportal
           advertised: true
+          vendor: WSO2
+          originalDevPortalUrl: https://localhost:9443/devportal
+        createdTime: "1614020559444"
         avgRating: "4.5"
         id: 01234567-0123-0123-0123-012345678901
         thumbnailUri: /apis/01234567-0123-0123-0123-012345678901/thumbnail
@@ -7353,6 +6997,9 @@ components:
           type: string
         type:
           example: WS
+          type: string
+        createdTime:
+          example: "1614020559444"
           type: string
         provider:
           description: |
@@ -7404,23 +7051,6 @@ components:
       type: object
     API:
       example:
-        ingressURLs:
-        - deploymentEnvironmentName: kubernetes
-          clusterDetails:
-          - ingressURL: http://wso2.com:9443
-            clusterDisplayName: Minikube Cluster
-            clusterName: minikube
-          - ingressURL: http://wso2.com:9443
-            clusterDisplayName: Minikube Cluster
-            clusterName: minikube
-        - deploymentEnvironmentName: kubernetes
-          clusterDetails:
-          - ingressURL: http://wso2.com:9443
-            clusterDisplayName: Minikube Cluster
-            clusterName: minikube
-          - ingressURL: http://wso2.com:9443
-            clusterDisplayName: Minikube Cluster
-            clusterName: minikube
         tiers:
         - tierName: Gold
           tierPlan: COMMERCIAL
@@ -7454,6 +7084,7 @@ components:
             ws: ws://localhost:9099/phoneverify/1.0.0
           environmentName: Default
           environmentType: hybrid
+          environmentDisplayName: Default
           defaultVersionURLs:
             wss: ws://localhost:9099/phoneverify/
             http: http://localhost:8280/phoneverify/
@@ -7466,6 +7097,7 @@ components:
             ws: ws://localhost:9099/phoneverify/1.0.0
           environmentName: Default
           environmentType: hybrid
+          environmentDisplayName: Default
           defaultVersionURLs:
             wss: ws://localhost:9099/phoneverify/
             http: http://localhost:8280/phoneverify/
@@ -7489,17 +7121,6 @@ components:
         tags:
         - substract
         - add
-        labels:
-        - accessUrls:
-          - http://localhost:9443/
-          - http://localhost:9443/
-          name: Public
-          description: description
-        - accessUrls:
-          - http://localhost:9443/
-          - http://localhost:9443/
-          name: Public
-          description: description
         isDefaultVersion: false
         businessInformation:
           technicalOwnerEmail: technicalowner@wso2.com
@@ -7512,8 +7133,9 @@ components:
         name: CalculatorAPI
         advertiseInfo:
           apiOwner: admin
-          originalDevportalUrl: https://localhost:9443/devportal
           advertised: true
+          vendor: WSO2
+          originalDevPortalUrl: https://localhost:9443/devportal
         environmentList:
         - PRODUCTION
         - SANDBOX
@@ -7639,22 +7261,12 @@ components:
           type: array
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
-        ingressURLs:
-          items:
-            $ref: '#/components/schemas/API_ingressURLs'
-          type: array
         endpointURLs:
           items:
             $ref: '#/components/schemas/API_endpointURLs'
           type: array
         businessInformation:
           $ref: '#/components/schemas/APIBusinessInformation'
-        labels:
-          description: |
-            Labels of micro-gateway environments attached to the API.
-          items:
-            $ref: '#/components/schemas/Label'
-          type: array
         environmentList:
           description: The environment list configured with non empty endpoint URLs
             for the particular API.
@@ -7701,28 +7313,6 @@ components:
       - provider
       - version
       title: API object
-      type: object
-    Label:
-      example:
-        accessUrls:
-        - http://localhost:9443/
-        - http://localhost:9443/
-        name: Public
-        description: description
-      properties:
-        name:
-          example: Public
-          type: string
-        description:
-          type: string
-        accessUrls:
-          items:
-            example: http://localhost:9443/
-            type: string
-          type: array
-      required:
-      - name
-      title: Label
       type: object
     APIMonetizationInfo:
       example:
@@ -7804,7 +7394,7 @@ components:
           type: string
         name:
           example: CalculatorApp
-          maxLength: 70
+          maxLength: 100
           minLength: 1
           type: string
         throttlingPolicy:
@@ -8012,9 +7602,13 @@ components:
           limit: 1
         count: 1
         list:
-        - policyLevel: subscription
-          requestCount: 50
+        - requestCount: 50
           stopOnQuotaReach: true
+          rateLimitTimeUnit: min
+          description: Allows 50 request(s) per minute.
+          dataUnit: KB
+          policyLevel: subscription
+          rateLimitCount: 10
           tierPlan: FREE
           name: Platinum
           throttlingPolicyPermissions:
@@ -8022,7 +7616,6 @@ components:
             - manager
             - developer
             type: allow
-          description: Allows 50 request(s) per minute.
           attributes: {}
           monetizationAttributes:
             currencyType: USD
@@ -8031,9 +7624,15 @@ components:
             billingCycle: month
             fixedPrice: "10"
           unitTime: 60000
-        - policyLevel: subscription
-          requestCount: 50
+          timeUnit: min
+          quotaPolicyType: REQUESTCOUNT
+        - requestCount: 50
           stopOnQuotaReach: true
+          rateLimitTimeUnit: min
+          description: Allows 50 request(s) per minute.
+          dataUnit: KB
+          policyLevel: subscription
+          rateLimitCount: 10
           tierPlan: FREE
           name: Platinum
           throttlingPolicyPermissions:
@@ -8041,7 +7640,6 @@ components:
             - manager
             - developer
             type: allow
-          description: Allows 50 request(s) per minute.
           attributes: {}
           monetizationAttributes:
             currencyType: USD
@@ -8050,6 +7648,8 @@ components:
             billingCycle: month
             fixedPrice: "10"
           unitTime: 60000
+          timeUnit: min
+          quotaPolicyType: REQUESTCOUNT
       properties:
         count:
           description: |
@@ -8066,9 +7666,13 @@ components:
       type: object
     ThrottlingPolicy:
       example:
-        policyLevel: subscription
         requestCount: 50
         stopOnQuotaReach: true
+        rateLimitTimeUnit: min
+        description: Allows 50 request(s) per minute.
+        dataUnit: KB
+        policyLevel: subscription
+        rateLimitCount: 10
         tierPlan: FREE
         name: Platinum
         throttlingPolicyPermissions:
@@ -8076,7 +7680,6 @@ components:
           - manager
           - developer
           type: allow
-        description: Allows 50 request(s) per minute.
         attributes: {}
         monetizationAttributes:
           currencyType: USD
@@ -8085,6 +7688,8 @@ components:
           billingCycle: month
           fixedPrice: "10"
         unitTime: 60000
+        timeUnit: min
+        quotaPolicyType: REQUESTCOUNT
       properties:
         name:
           example: Platinum
@@ -8111,10 +7716,34 @@ components:
           example: 50
           format: int64
           type: integer
+        dataUnit:
+          description: |
+            Unit of data allowed to be transfered. Allowed values are "KB", "MB" and "GB"
+          example: KB
+          type: string
         unitTime:
           example: 60000
           format: int64
           type: integer
+        timeUnit:
+          example: min
+          type: string
+        rateLimitCount:
+          default: 0
+          description: Burst control request count
+          example: 10
+          type: integer
+        rateLimitTimeUnit:
+          description: Burst control time unit
+          example: min
+          type: string
+        quotaPolicyType:
+          description: Default quota limit type
+          enum:
+          - REQUESTCOUNT
+          - BANDWIDTHVOLUME
+          example: REQUESTCOUNT
+          type: string
         tierPlan:
           description: |
             This attribute declares whether this tier is available under commercial or free
@@ -8175,8 +7804,10 @@ components:
             context: CalculatorAPI
             advertiseInfo:
               apiOwner: admin
-              originalDevportalUrl: https://localhost:9443/devportal
               advertised: true
+              vendor: WSO2
+              originalDevPortalUrl: https://localhost:9443/devportal
+            createdTime: "1614020559444"
             avgRating: "4.5"
             id: 01234567-0123-0123-0123-012345678901
             thumbnailUri: /apis/01234567-0123-0123-0123-012345678901/thumbnail
@@ -8219,8 +7850,10 @@ components:
             context: CalculatorAPI
             advertiseInfo:
               apiOwner: admin
-              originalDevportalUrl: https://localhost:9443/devportal
               advertised: true
+              vendor: WSO2
+              originalDevPortalUrl: https://localhost:9443/devportal
+            createdTime: "1614020559444"
             avgRating: "4.5"
             id: 01234567-0123-0123-0123-012345678901
             thumbnailUri: /apis/01234567-0123-0123-0123-012345678901/thumbnail
@@ -8411,8 +8044,10 @@ components:
           context: CalculatorAPI
           advertiseInfo:
             apiOwner: admin
-            originalDevportalUrl: https://localhost:9443/devportal
             advertised: true
+            vendor: WSO2
+            originalDevPortalUrl: https://localhost:9443/devportal
+          createdTime: "1614020559444"
           avgRating: "4.5"
           id: 01234567-0123-0123-0123-012345678901
           thumbnailUri: /apis/01234567-0123-0123-0123-012345678901/thumbnail
@@ -8597,7 +8232,7 @@ components:
         createdTime: 2021-02-11-09:57:25
         parentCommentId: 6f38aea2-f41e-4ac9-b3f2-a9493d00ba97
         id: 943d3002-000c-42d3-a1b9-d6559f8a4d49
-        entryPoint: DEVPORTAL
+        entryPoint: devPortal
         category: general
         content: This is a comment
       properties:
@@ -8623,14 +8258,18 @@ components:
           type: string
         category:
           default: general
+          example: general
+          readOnly: true
           type: string
         parentCommentId:
           example: 6f38aea2-f41e-4ac9-b3f2-a9493d00ba97
+          readOnly: true
           type: string
         entryPoint:
           enum:
-          - DEVPORTAL
-          - PUBLISHER
+          - devPortal
+          - publisher
+          readOnly: true
           type: string
         commenterInfo:
           $ref: '#/components/schemas/CommenterInfo'
@@ -8659,7 +8298,7 @@ components:
           createdTime: 2021-02-11-09:57:25
           parentCommentId: 6f38aea2-f41e-4ac9-b3f2-a9493d00ba97
           id: 943d3002-000c-42d3-a1b9-d6559f8a4d49
-          entryPoint: DEVPORTAL
+          entryPoint: devPortal
           category: general
           content: This is a comment
         - updatedTime: 2021-02-12-19:57:25
@@ -8671,7 +8310,7 @@ components:
           createdTime: 2021-02-11-09:57:25
           parentCommentId: 6f38aea2-f41e-4ac9-b3f2-a9493d00ba97
           id: 943d3002-000c-42d3-a1b9-d6559f8a4d49
-          entryPoint: DEVPORTAL
+          entryPoint: devPortal
           category: general
           content: This is a comment
       properties:
@@ -8679,10 +8318,12 @@ components:
           description: |
             Number of Comments returned.
           example: 1
+          readOnly: true
           type: integer
         list:
           items:
             $ref: '#/components/schemas/Comment'
+          readOnly: true
           type: array
         pagination:
           $ref: '#/components/schemas/Pagination'
@@ -8775,6 +8416,7 @@ components:
       type: object
     ApplicationKey:
       example:
+        mode: CREATED
         consumerSecret: TIDlOFkpzB7WjufO3OJUhy1fsvAa
         keyMappingId: 92ab520c-8847-427a-a921-3ed19b15aad7
         supportedGrantTypes:
@@ -8837,6 +8479,13 @@ components:
           - SANDBOX
           example: PRODUCTION
           type: string
+        mode:
+          description: Describe the which mode Application Mapped.
+          enum:
+          - MAPPED
+          - CREATED
+          example: CREATED
+          type: string
         groupId:
           description: Application group id (if any).
           example: "2"
@@ -8870,7 +8519,8 @@ components:
       example:
         count: 1
         list:
-        - consumerSecret: TIDlOFkpzB7WjufO3OJUhy1fsvAa
+        - mode: CREATED
+          consumerSecret: TIDlOFkpzB7WjufO3OJUhy1fsvAa
           keyMappingId: 92ab520c-8847-427a-a921-3ed19b15aad7
           supportedGrantTypes:
           - client_credentials
@@ -8889,7 +8539,8 @@ components:
             - read_api
             - write_api
             accessToken: 1.2345678901234568E+30
-        - consumerSecret: TIDlOFkpzB7WjufO3OJUhy1fsvAa
+        - mode: CREATED
+          consumerSecret: TIDlOFkpzB7WjufO3OJUhy1fsvAa
           keyMappingId: 92ab520c-8847-427a-a921-3ed19b15aad7
           supportedGrantTypes:
           - client_credentials
@@ -9019,6 +8670,12 @@ components:
           type: array
         revokeToken:
           description: Token to be revoked, if any
+          type: string
+        grantType:
+          default: CLIENT_CREDENTIALS
+          enum:
+          - CLIENT_CREDENTIALS
+          - TOKEN_EXCHANGE
           type: string
         additionalProperties:
           description: Additional parameters if Authorization server needs any
@@ -9501,267 +9158,26 @@ components:
     AdvertiseInfo:
       example:
         apiOwner: admin
-        originalDevportalUrl: https://localhost:9443/devportal
         advertised: true
+        vendor: WSO2
+        originalDevPortalUrl: https://localhost:9443/devportal
       properties:
         advertised:
           example: true
           type: boolean
-        originalDevportalUrl:
+        originalDevPortalUrl:
           example: https://localhost:9443/devportal
           type: string
         apiOwner:
           example: admin
           type: string
+        vendor:
+          default: WSO2
+          enum:
+          - WSO2
+          - AWS
+          type: string
       title: API Advertise info object with advertise details
-      type: object
-    AlertTypesList:
-      example:
-        alerts:
-        - name: AbnormalRequestsPerMin
-          id: 3
-          requireConfiguration: true
-        - name: AbnormalRequestsPerMin
-          id: 3
-          requireConfiguration: true
-        count: 3
-      properties:
-        count:
-          description: The number of alerts
-          example: 3
-          type: integer
-        alerts:
-          items:
-            $ref: '#/components/schemas/AlertType'
-          type: array
-      title: Alert Types List
-      type: object
-    AlertType:
-      example:
-        name: AbnormalRequestsPerMin
-        id: 3
-        requireConfiguration: true
-      properties:
-        id:
-          description: The alert Id
-          example: 3
-          type: integer
-        name:
-          description: The name of the alert.
-          example: AbnormalRequestsPerMin
-          type: string
-        requireConfiguration:
-          description: Whether the alert type require additional configurations.
-          example: true
-          type: boolean
-      title: Alert Type
-      type: object
-    Alert:
-      example:
-        configuration:
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestCount: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestCount: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-        name: AbnormalRequestsPerMin
-        id: 1
-      properties:
-        id:
-          description: The alert Id
-          example: 1
-          type: integer
-        name:
-          description: The name of the alert.
-          example: AbnormalRequestsPerMin
-          type: string
-        configuration:
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-          type: array
-      title: Alert
-      type: object
-    AlertsInfo:
-      example:
-        alerts:
-        - configuration:
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestCount: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestCount: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          name: AbnormalRequestsPerMin
-          id: 1
-        - configuration:
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestCount: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestCount: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          name: AbnormalRequestsPerMin
-          id: 1
-        emailList:
-        - abc@gmail.com
-      properties:
-        alerts:
-          items:
-            $ref: '#/components/schemas/Alert'
-          type: array
-        emailList:
-          example:
-          - abc@gmail.com
-          items:
-            type: string
-          type: array
-      title: Alerts Info
-      type: object
-    AlertsInfoResponse:
-      example:
-        alerts:
-        - configuration:
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestCount: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestCount: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          name: AbnormalRequestsPerMin
-          id: 1
-        - configuration:
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestCount: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          - configuration:
-              apiName: PizzaShackAPI
-              apiVersion: 1.0.0
-              applicationName: DefaultApplication
-              requestCount: "12"
-            configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          name: AbnormalRequestsPerMin
-          id: 1
-        emailList:
-        - abc@gmail.com
-        failedConfigurations:
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestCount: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestCount: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-      properties:
-        alerts:
-          items:
-            $ref: '#/components/schemas/Alert'
-          type: array
-        emailList:
-          example:
-          - abc@gmail.com
-          items:
-            type: string
-          type: array
-        failedConfigurations:
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-          type: array
-      title: Alerts Info Response
-      type: object
-    AlertConfigList:
-      example:
-        count: 1
-        list:
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestCount: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-        - configuration:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestCount: "12"
-          configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-      properties:
-        count:
-          example: 1
-          type: integer
-        list:
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-          type: array
-      title: Alert Configuration List
-      type: object
-    AlertConfig:
-      example:
-        configuration:
-          apiName: PizzaShackAPI
-          apiVersion: 1.0.0
-          applicationName: DefaultApplication
-          requestCount: "12"
-        configurationId: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-      properties:
-        configurationId:
-          description: The alert config subscription id.
-          example: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-          type: string
-        configuration:
-          additionalProperties:
-            type: string
-          description: The config parameters.
-          example:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestCount: "12"
-          type: object
-      title: Alert Configuration
-      type: object
-    AlertConfigInfo:
-      additionalProperties:
-        type: string
-      description: The config parameters.
-      example:
-        apiName: PizzaShackAPI
-        apiVersion: 1.0.0
-        applicationName: DefaultApplication
-        requestCount: "12"
-      title: Alert Configuration Info
       type: object
     APICategory:
       example:
@@ -9881,6 +9297,7 @@ components:
         revokeEndpoint: https://localhost:9443/oauth2/revoke
         tokenEndpoint: https://localhost:9443/oauth2/token
         name: Resident Key Manager
+        alias: https://localhost:9443/oauth2/token
         id: 01234567-0123-0123-0123-012345678901
         enableTokenHashing: false
         enableOAuthAppCreation: true
@@ -9944,6 +9361,12 @@ components:
           items:
             $ref: '#/components/schemas/KeyManagerApplicationConfiguration'
           type: array
+        alias:
+          description: |
+            The alias of Identity Provider.
+            If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token
+          example: https://localhost:9443/oauth2/token
+          type: string
         additionalProperties:
           properties: {}
           type: object
@@ -10037,6 +9460,7 @@ components:
           revokeEndpoint: https://localhost:9443/oauth2/revoke
           tokenEndpoint: https://localhost:9443/oauth2/token
           name: Resident Key Manager
+          alias: https://localhost:9443/oauth2/token
           id: 01234567-0123-0123-0123-012345678901
           enableTokenHashing: false
           enableOAuthAppCreation: true
@@ -10078,6 +9502,7 @@ components:
           revokeEndpoint: https://localhost:9443/oauth2/revoke
           tokenEndpoint: https://localhost:9443/oauth2/token
           name: Resident Key Manager
+          alias: https://localhost:9443/oauth2/token
           id: 01234567-0123-0123-0123-012345678901
           enableTokenHashing: false
           enableOAuthAppCreation: true
@@ -10180,31 +9605,6 @@ components:
           type: array
       title: Single type and corresponding fields found within the GraphQL Schema
       type: object
-    APIDeploymentClusterInfo:
-      example:
-        ingressURL: http://wso2.com:9443
-        clusterDisplayName: Minikube Cluster
-        clusterName: minikube
-      properties:
-        clusterName:
-          description: |
-            Name of the cluster
-          example: minikube
-          type: string
-        clusterDisplayName:
-          description: |
-            Display name of the cluster
-          example: Minikube Cluster
-          type: string
-        ingressURL:
-          description: ingress URL
-          example: http://wso2.com:9443
-          type: string
-      required:
-      - clusterName
-      - ingressURL
-      title: API Deployments ClusterInfo object
-      type: object
     CurrentAndNewPasswords:
       properties:
         currentPassword:
@@ -10221,6 +9621,7 @@ components:
           description: |
             Content of the comment
           example: This is a comment
+          maxLength: 512
           type: string
         category:
           description: |
@@ -10237,6 +9638,7 @@ components:
           description: |
             Content of the comment
           example: This is a comment
+          maxLength: 512
           type: string
         category:
           description: |
@@ -10290,24 +9692,6 @@ components:
           type: string
         display:
           type: boolean
-    API_ingressURLs:
-      example:
-        deploymentEnvironmentName: kubernetes
-        clusterDetails:
-        - ingressURL: http://wso2.com:9443
-          clusterDisplayName: Minikube Cluster
-          clusterName: minikube
-        - ingressURL: http://wso2.com:9443
-          clusterDisplayName: Minikube Cluster
-          clusterName: minikube
-      properties:
-        deploymentEnvironmentName:
-          example: kubernetes
-          type: string
-        clusterDetails:
-          items:
-            $ref: '#/components/schemas/APIDeploymentClusterInfo'
-          type: array
     API_URLs:
       example:
         wss: wss://localhost:9099/phoneverify/1.0.0
@@ -10363,6 +9747,7 @@ components:
           ws: ws://localhost:9099/phoneverify/1.0.0
         environmentName: Default
         environmentType: hybrid
+        environmentDisplayName: Default
         defaultVersionURLs:
           wss: ws://localhost:9099/phoneverify/
           http: http://localhost:8280/phoneverify/
@@ -10370,6 +9755,9 @@ components:
           ws: ws://localhost:9099/phoneverify/
       properties:
         environmentName:
+          example: Default
+          type: string
+        environmentDisplayName:
           example: Default
           type: string
         environmentType:
@@ -10474,12 +9862,13 @@ components:
             openid: Authorize access to user details
             apim:subscribe: Subscribe API
             apim:api_key: Generate API Keys
-            apim:app_manage: Retrieve, Manage applications
+            apim:app_manage: Retrieve, Manage and Import, Export applications
             apim:sub_manage: Retrieve, Manage subscriptions
             apim:store_settings: Retrieve Developer Portal settings
             apim:sub_alert_manage: Retrieve, subscribe and configure Developer Portal
               alert types
             apim:app_import_export: Import and export applications related operations
+            apim:admin: Manage all admin operations
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
 

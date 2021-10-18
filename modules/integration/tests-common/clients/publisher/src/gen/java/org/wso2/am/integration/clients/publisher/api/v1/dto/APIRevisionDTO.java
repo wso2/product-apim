@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionAPIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
@@ -47,7 +48,7 @@ public class APIRevisionDTO {
 
         public static final String SERIALIZED_NAME_CREATED_TIME = "createdTime";
         @SerializedName(SERIALIZED_NAME_CREATED_TIME)
-            private String createdTime;
+            private Date createdTime;
 
         public static final String SERIALIZED_NAME_API_INFO = "apiInfo";
         @SerializedName(SERIALIZED_NAME_API_INFO)
@@ -127,7 +128,7 @@ public class APIRevisionDTO {
     }
 
 
-        public APIRevisionDTO createdTime(String createdTime) {
+        public APIRevisionDTO createdTime(Date createdTime) {
         
         this.createdTime = createdTime;
         return this;
@@ -140,12 +141,12 @@ public class APIRevisionDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public String getCreatedTime() {
+    public Date getCreatedTime() {
         return createdTime;
     }
 
 
-    public void setCreatedTime(String createdTime) {
+    public void setCreatedTime(Date createdTime) {
         this.createdTime = createdTime;
     }
 

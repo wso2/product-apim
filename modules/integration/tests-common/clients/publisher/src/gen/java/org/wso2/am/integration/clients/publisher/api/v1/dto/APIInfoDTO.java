@@ -24,7 +24,11 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPropertiesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPropertiesMapDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIInfoDTO
@@ -47,6 +51,14 @@ public class APIInfoDTO {
         @SerializedName(SERIALIZED_NAME_CONTEXT)
             private String context;
 
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
+            private List<APIInfoAdditionalPropertiesDTO> additionalProperties = null;
+
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES_MAP = "additionalPropertiesMap";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES_MAP)
+            private Map<String, APIInfoAdditionalPropertiesMapDTO> additionalPropertiesMap = null;
+
         public static final String SERIALIZED_NAME_VERSION = "version";
         @SerializedName(SERIALIZED_NAME_VERSION)
             private String version;
@@ -58,6 +70,57 @@ public class APIInfoDTO {
         public static final String SERIALIZED_NAME_TYPE = "type";
         @SerializedName(SERIALIZED_NAME_TYPE)
             private String type;
+
+            /**
+* The audience of the API. Accepted values are PUBLIC, SINGLE
+*/
+    @JsonAdapter(AudienceEnum.Adapter.class)
+public enum AudienceEnum {
+        PUBLIC("PUBLIC"),
+        
+        SINGLE("SINGLE");
+
+private String value;
+
+AudienceEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static AudienceEnum fromValue(String value) {
+    for (AudienceEnum b : AudienceEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<AudienceEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final AudienceEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public AudienceEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return AudienceEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_AUDIENCE = "audience";
+        @SerializedName(SERIALIZED_NAME_AUDIENCE)
+            private AudienceEnum audience;
 
         public static final String SERIALIZED_NAME_LIFE_CYCLE_STATUS = "lifeCycleStatus";
         @SerializedName(SERIALIZED_NAME_LIFE_CYCLE_STATUS)
@@ -176,6 +239,52 @@ public class APIInfoDTO {
     }
 
 
+        public APIInfoDTO additionalProperties(List<APIInfoAdditionalPropertiesDTO> additionalProperties) {
+        
+        this.additionalProperties = additionalProperties;
+        return this;
+        }
+
+    /**
+        * Map of custom properties of API
+    * @return additionalProperties
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "Map of custom properties of API")
+    
+    public List<APIInfoAdditionalPropertiesDTO> getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+
+    public void setAdditionalProperties(List<APIInfoAdditionalPropertiesDTO> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
+
+        public APIInfoDTO additionalPropertiesMap(Map<String, APIInfoAdditionalPropertiesMapDTO> additionalPropertiesMap) {
+        
+        this.additionalPropertiesMap = additionalPropertiesMap;
+        return this;
+        }
+
+    /**
+        * Get additionalPropertiesMap
+    * @return additionalPropertiesMap
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public Map<String, APIInfoAdditionalPropertiesMapDTO> getAdditionalPropertiesMap() {
+        return additionalPropertiesMap;
+    }
+
+
+    public void setAdditionalPropertiesMap(Map<String, APIInfoAdditionalPropertiesMapDTO> additionalPropertiesMap) {
+        this.additionalPropertiesMap = additionalPropertiesMap;
+    }
+
+
         public APIInfoDTO version(String version) {
         
         this.version = version;
@@ -242,6 +351,29 @@ public class APIInfoDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+
+        public APIInfoDTO audience(AudienceEnum audience) {
+        
+        this.audience = audience;
+        return this;
+        }
+
+    /**
+        * The audience of the API. Accepted values are PUBLIC, SINGLE
+    * @return audience
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "PUBLIC", value = "The audience of the API. Accepted values are PUBLIC, SINGLE")
+    
+    public AudienceEnum getAudience() {
+        return audience;
+    }
+
+
+    public void setAudience(AudienceEnum audience) {
+        this.audience = audience;
     }
 
 
@@ -396,9 +528,12 @@ public class APIInfoDTO {
             Objects.equals(this.name, apIInfo.name) &&
             Objects.equals(this.description, apIInfo.description) &&
             Objects.equals(this.context, apIInfo.context) &&
+            Objects.equals(this.additionalProperties, apIInfo.additionalProperties) &&
+            Objects.equals(this.additionalPropertiesMap, apIInfo.additionalPropertiesMap) &&
             Objects.equals(this.version, apIInfo.version) &&
             Objects.equals(this.provider, apIInfo.provider) &&
             Objects.equals(this.type, apIInfo.type) &&
+            Objects.equals(this.audience, apIInfo.audience) &&
             Objects.equals(this.lifeCycleStatus, apIInfo.lifeCycleStatus) &&
             Objects.equals(this.workflowStatus, apIInfo.workflowStatus) &&
             Objects.equals(this.hasThumbnail, apIInfo.hasThumbnail) &&
@@ -409,7 +544,7 @@ public class APIInfoDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, type, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme, createdTime, updatedTime);
+        return Objects.hash(id, name, description, context, additionalProperties, additionalPropertiesMap, version, provider, type, audience, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme, createdTime, updatedTime);
     }
 
 
@@ -421,9 +556,12 @@ sb.append("class APIInfoDTO {\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
+    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+    sb.append("    additionalPropertiesMap: ").append(toIndentedString(additionalPropertiesMap)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("    audience: ").append(toIndentedString(audience)).append("\n");
     sb.append("    lifeCycleStatus: ").append(toIndentedString(lifeCycleStatus)).append("\n");
     sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");

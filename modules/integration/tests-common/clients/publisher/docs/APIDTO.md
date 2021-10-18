@@ -23,7 +23,8 @@ Name | Type | Description | Notes
 **revisionedApiId** | **String** | UUID of the api registry artifact  |  [optional] [readonly]
 **revisionId** | **Integer** |  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
-**type** | [**TypeEnum**](#TypeEnum) | The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE |  [optional]
+**type** | [**TypeEnum**](#TypeEnum) | The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK |  [optional]
+**audience** | [**AudienceEnum**](#AudienceEnum) | The audience of the API. Accepted values are PUBLIC, SINGLE |  [optional]
 **transport** | **List&lt;String&gt;** | Supported transports for the API (http and/or https).  |  [optional]
 **tags** | **List&lt;String&gt;** |  |  [optional]
 **policies** | **List&lt;String&gt;** |  |  [optional]
@@ -37,7 +38,8 @@ Name | Type | Description | Notes
 **mediationPolicies** | [**List&lt;MediationPolicyDTO&gt;**](MediationPolicyDTO.md) |  |  [optional]
 **subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS. |  [optional]
 **subscriptionAvailableTenants** | **List&lt;String&gt;** |  |  [optional]
-**additionalProperties** | [**List&lt;APIAdditionalPropertiesDTO&gt;**](APIAdditionalPropertiesDTO.md) | Map of custom properties of API |  [optional]
+**additionalProperties** | [**List&lt;APIInfoAdditionalPropertiesDTO&gt;**](APIInfoAdditionalPropertiesDTO.md) | Map of custom properties of API |  [optional]
+**additionalPropertiesMap** | [**Map&lt;String, APIInfoAdditionalPropertiesMapDTO&gt;**](APIInfoAdditionalPropertiesMapDTO.md) |  |  [optional]
 **monetization** | [**APIMonetizationInfoDTO**](APIMonetizationInfoDTO.md) |  |  [optional]
 **accessControl** | [**AccessControlEnum**](#AccessControlEnum) | Is the API is restricted to certain set of publishers or creators or is it visible to all the publishers and creators. If the accessControl restriction is none, this API can be modified by all the publishers and creators, if not it can only be viewable/modifiable by certain set of publishers and creators,  based on the restriction.  |  [optional]
 **accessControlRoles** | **List&lt;String&gt;** | The user roles that are able to view/modify as API publisher or creator. |  [optional]
@@ -70,6 +72,16 @@ SOAP | &quot;SOAP&quot;
 GRAPHQL | &quot;GRAPHQL&quot;
 WEBSUB | &quot;WEBSUB&quot;
 SSE | &quot;SSE&quot;
+WEBHOOK | &quot;WEBHOOK&quot;
+
+
+
+## Enum: AudienceEnum
+
+Name | Value
+---- | -----
+PUBLIC | &quot;PUBLIC&quot;
+SINGLE | &quot;SINGLE&quot;
 
 
 

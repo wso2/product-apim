@@ -22,6 +22,7 @@ Name | Type | Description | Notes
 **enableOAuthAppCreation** | **Boolean** |  |  [optional]
 **enableMapOAuthConsumerApps** | **Boolean** |  |  [optional]
 **applicationConfiguration** | [**List&lt;KeyManagerApplicationConfigurationDTO&gt;**](KeyManagerApplicationConfigurationDTO.md) |  |  [optional]
+**alias** | **String** | The alias of Identity Provider. If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token  |  [optional]
 **additionalProperties** | [**Object**](.md) |  |  [optional]
 
 

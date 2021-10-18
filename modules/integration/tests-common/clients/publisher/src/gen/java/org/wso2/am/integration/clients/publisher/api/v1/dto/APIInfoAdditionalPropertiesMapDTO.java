@@ -23,62 +23,26 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* APIRevisionDeploymentDTO
+* APIInfoAdditionalPropertiesMapDTO
 */
 
-public class APIRevisionDeploymentDTO {
-        public static final String SERIALIZED_NAME_REVISION_UUID = "revisionUuid";
-        @SerializedName(SERIALIZED_NAME_REVISION_UUID)
-            private String revisionUuid;
-
+public class APIInfoAdditionalPropertiesMapDTO {
         public static final String SERIALIZED_NAME_NAME = "name";
         @SerializedName(SERIALIZED_NAME_NAME)
             private String name;
 
-        public static final String SERIALIZED_NAME_VHOST = "vhost";
-        @SerializedName(SERIALIZED_NAME_VHOST)
-            private String vhost;
+        public static final String SERIALIZED_NAME_VALUE = "value";
+        @SerializedName(SERIALIZED_NAME_VALUE)
+            private String value;
 
-        public static final String SERIALIZED_NAME_DISPLAY_ON_DEVPORTAL = "displayOnDevportal";
-        @SerializedName(SERIALIZED_NAME_DISPLAY_ON_DEVPORTAL)
-            private Boolean displayOnDevportal;
-
-        public static final String SERIALIZED_NAME_DEPLOYED_TIME = "deployedTime";
-        @SerializedName(SERIALIZED_NAME_DEPLOYED_TIME)
-            private Date deployedTime;
-
-        public static final String SERIALIZED_NAME_SUCCESS_DEPLOYED_TIME = "successDeployedTime";
-        @SerializedName(SERIALIZED_NAME_SUCCESS_DEPLOYED_TIME)
-            private Date successDeployedTime;
+        public static final String SERIALIZED_NAME_DISPLAY = "display";
+        @SerializedName(SERIALIZED_NAME_DISPLAY)
+            private Boolean display = false;
 
 
-        public APIRevisionDeploymentDTO revisionUuid(String revisionUuid) {
-        
-        this.revisionUuid = revisionUuid;
-        return this;
-        }
-
-    /**
-        * Get revisionUuid
-    * @return revisionUuid
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "c26b2b9b-4632-4ca4-b6f3-521c8863990c", value = "")
-    
-    public String getRevisionUuid() {
-        return revisionUuid;
-    }
-
-
-    public void setRevisionUuid(String revisionUuid) {
-        this.revisionUuid = revisionUuid;
-    }
-
-
-        public APIRevisionDeploymentDTO name(String name) {
+        public APIInfoAdditionalPropertiesMapDTO name(String name) {
         
         this.name = name;
         return this;
@@ -89,7 +53,7 @@ public class APIRevisionDeploymentDTO {
     * @return name
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "default", value = "")
+      @ApiModelProperty(value = "")
     
     public String getName() {
         return name;
@@ -101,95 +65,49 @@ public class APIRevisionDeploymentDTO {
     }
 
 
-        public APIRevisionDeploymentDTO vhost(String vhost) {
+        public APIInfoAdditionalPropertiesMapDTO value(String value) {
         
-        this.vhost = vhost;
+        this.value = value;
         return this;
         }
 
     /**
-        * Get vhost
-    * @return vhost
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "mg.wso2.com", value = "")
-    
-    public String getVhost() {
-        return vhost;
-    }
-
-
-    public void setVhost(String vhost) {
-        this.vhost = vhost;
-    }
-
-
-        public APIRevisionDeploymentDTO displayOnDevportal(Boolean displayOnDevportal) {
-        
-        this.displayOnDevportal = displayOnDevportal;
-        return this;
-        }
-
-    /**
-        * Get displayOnDevportal
-    * @return displayOnDevportal
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "true", value = "")
-    
-    public Boolean isDisplayOnDevportal() {
-        return displayOnDevportal;
-    }
-
-
-    public void setDisplayOnDevportal(Boolean displayOnDevportal) {
-        this.displayOnDevportal = displayOnDevportal;
-    }
-
-
-        public APIRevisionDeploymentDTO deployedTime(Date deployedTime) {
-        
-        this.deployedTime = deployedTime;
-        return this;
-        }
-
-    /**
-        * Get deployedTime
-    * @return deployedTime
+        * Get value
+    * @return value
     **/
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public Date getDeployedTime() {
-        return deployedTime;
+    public String getValue() {
+        return value;
     }
 
 
-    public void setDeployedTime(Date deployedTime) {
-        this.deployedTime = deployedTime;
+    public void setValue(String value) {
+        this.value = value;
     }
 
 
-        public APIRevisionDeploymentDTO successDeployedTime(Date successDeployedTime) {
+        public APIInfoAdditionalPropertiesMapDTO display(Boolean display) {
         
-        this.successDeployedTime = successDeployedTime;
+        this.display = display;
         return this;
         }
 
     /**
-        * Get successDeployedTime
-    * @return successDeployedTime
+        * Get display
+    * @return display
     **/
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public Date getSuccessDeployedTime() {
-        return successDeployedTime;
+    public Boolean isDisplay() {
+        return display;
     }
 
 
-    public void setSuccessDeployedTime(Date successDeployedTime) {
-        this.successDeployedTime = successDeployedTime;
+    public void setDisplay(Boolean display) {
+        this.display = display;
     }
 
 
@@ -201,31 +119,25 @@ public class APIRevisionDeploymentDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            APIRevisionDeploymentDTO apIRevisionDeployment = (APIRevisionDeploymentDTO) o;
-            return Objects.equals(this.revisionUuid, apIRevisionDeployment.revisionUuid) &&
-            Objects.equals(this.name, apIRevisionDeployment.name) &&
-            Objects.equals(this.vhost, apIRevisionDeployment.vhost) &&
-            Objects.equals(this.displayOnDevportal, apIRevisionDeployment.displayOnDevportal) &&
-            Objects.equals(this.deployedTime, apIRevisionDeployment.deployedTime) &&
-            Objects.equals(this.successDeployedTime, apIRevisionDeployment.successDeployedTime);
+            APIInfoAdditionalPropertiesMapDTO apIInfoAdditionalPropertiesMap = (APIInfoAdditionalPropertiesMapDTO) o;
+            return Objects.equals(this.name, apIInfoAdditionalPropertiesMap.name) &&
+            Objects.equals(this.value, apIInfoAdditionalPropertiesMap.value) &&
+            Objects.equals(this.display, apIInfoAdditionalPropertiesMap.display);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(revisionUuid, name, vhost, displayOnDevportal, deployedTime, successDeployedTime);
+        return Objects.hash(name, value, display);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class APIRevisionDeploymentDTO {\n");
-    sb.append("    revisionUuid: ").append(toIndentedString(revisionUuid)).append("\n");
+sb.append("class APIInfoAdditionalPropertiesMapDTO {\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    vhost: ").append(toIndentedString(vhost)).append("\n");
-    sb.append("    displayOnDevportal: ").append(toIndentedString(displayOnDevportal)).append("\n");
-    sb.append("    deployedTime: ").append(toIndentedString(deployedTime)).append("\n");
-    sb.append("    successDeployedTime: ").append(toIndentedString(successDeployedTime)).append("\n");
+    sb.append("    value: ").append(toIndentedString(value)).append("\n");
+    sb.append("    display: ").append(toIndentedString(display)).append("\n");
 sb.append("}");
 return sb.toString();
 }

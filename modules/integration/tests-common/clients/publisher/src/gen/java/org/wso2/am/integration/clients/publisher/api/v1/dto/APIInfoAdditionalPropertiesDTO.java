@@ -25,10 +25,10 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* APIAdditionalPropertiesDTO
+* APIInfoAdditionalPropertiesDTO
 */
 
-public class APIAdditionalPropertiesDTO {
+public class APIInfoAdditionalPropertiesDTO {
         public static final String SERIALIZED_NAME_NAME = "name";
         @SerializedName(SERIALIZED_NAME_NAME)
             private String name;
@@ -42,7 +42,7 @@ public class APIAdditionalPropertiesDTO {
             private Boolean display;
 
 
-        public APIAdditionalPropertiesDTO name(String name) {
+        public APIInfoAdditionalPropertiesDTO name(String name) {
         
         this.name = name;
         return this;
@@ -65,7 +65,7 @@ public class APIAdditionalPropertiesDTO {
     }
 
 
-        public APIAdditionalPropertiesDTO value(String value) {
+        public APIInfoAdditionalPropertiesDTO value(String value) {
         
         this.value = value;
         return this;
@@ -88,7 +88,7 @@ public class APIAdditionalPropertiesDTO {
     }
 
 
-        public APIAdditionalPropertiesDTO display(Boolean display) {
+        public APIInfoAdditionalPropertiesDTO display(Boolean display) {
         
         this.display = display;
         return this;
@@ -119,10 +119,10 @@ public class APIAdditionalPropertiesDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            APIAdditionalPropertiesDTO apIAdditionalProperties = (APIAdditionalPropertiesDTO) o;
-            return Objects.equals(this.name, apIAdditionalProperties.name) &&
-            Objects.equals(this.value, apIAdditionalProperties.value) &&
-            Objects.equals(this.display, apIAdditionalProperties.display);
+            APIInfoAdditionalPropertiesDTO apIInfoAdditionalProperties = (APIInfoAdditionalPropertiesDTO) o;
+            return Objects.equals(this.name, apIInfoAdditionalProperties.name) &&
+            Objects.equals(this.value, apIInfoAdditionalProperties.value) &&
+            Objects.equals(this.display, apIInfoAdditionalProperties.display);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class APIAdditionalPropertiesDTO {
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class APIAdditionalPropertiesDTO {\n");
+sb.append("class APIInfoAdditionalPropertiesDTO {\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    value: ").append(toIndentedString(value)).append("\n");
     sb.append("    display: ").append(toIndentedString(display)).append("\n");

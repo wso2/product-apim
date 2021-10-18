@@ -263,7 +263,7 @@ public class RestAPIStoreImpl {
 
         try {
             applicationsApi.applicationsApplicationIdDelete(applicationId, null);
-            applicationsApi.applicationsApplicationIdGet(applicationId, null);
+            applicationsApi.applicationsApplicationIdGet(applicationId, null, null);
 
             return null;
         } catch (ApiException e) {
@@ -394,7 +394,7 @@ public class RestAPIStoreImpl {
         applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
 
         ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
-                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest , null);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         waitUntilApplicationKeyMappingAvailableInGateway(applicationId,response.getData());
         return response.getData();
@@ -414,7 +414,7 @@ public class RestAPIStoreImpl {
         applicationKeyGenerateRequest.setAdditionalProperties(additionalProperties);
         applicationKeyGenerateRequest.setKeyManager(keyManager);
         ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
-                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest, null);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         waitUntilApplicationKeyMappingAvailableInGateway(applicationId, response.getData());
         return response.getData();
@@ -438,7 +438,7 @@ public class RestAPIStoreImpl {
             applicationKeyGenerateRequest.setKeyManager(keyManager);
         }
         ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
-                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest, null);
         return response;
     }
 
@@ -618,7 +618,7 @@ public class RestAPIStoreImpl {
     public ApplicationDTO getApplicationById(String applicationId) throws ApiException {
 
         ApiResponse<ApplicationDTO> applicationDTOApiResponse = applicationsApi.
-                applicationsApplicationIdGetWithHttpInfo(applicationId, null);
+                applicationsApplicationIdGetWithHttpInfo(applicationId, null, null);
         Assert.assertEquals(applicationDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
         return applicationDTOApiResponse.getData();
 
@@ -1368,7 +1368,7 @@ public class RestAPIStoreImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-            topicListDTO = topicsApi.getAllTopicsOfAPI(apiId, tenantDomain);
+            topicListDTO = topicsApi.apisApiIdTopicsGet(apiId, tenantDomain);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
@@ -1384,7 +1384,7 @@ public class RestAPIStoreImpl {
         HttpResponse response = null;
         Gson gson = new Gson();
         try {
-            subscriptionListDTO = webhooksApi.getAllWebhooksOfAPI(applicationId, apiId, tenantDomain);
+            subscriptionListDTO = webhooksApi.webhooksSubscriptionsGet(applicationId, apiId, tenantDomain);
         } catch (ApiException e) {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
@@ -1980,8 +1980,7 @@ public class RestAPIStoreImpl {
     public String getSwaggerByID(String apiId, String tenantDomain) throws ApiException {
 
         ApiResponse<String> response =
-                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, null, Constants.GATEWAY_ENVIRONMENT,
-                        null, null, tenantDomain);
+                apIsApi.apisApiIdSwaggerGetWithHttpInfo(apiId, Constants.GATEWAY_ENVIRONMENT,null, tenantDomain);
         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         return response.getData();
     }
@@ -2017,8 +2016,7 @@ public class RestAPIStoreImpl {
 
     public ApiResponse<Void> downloadWSDLSchemaDefinitionOfAPI(String apiId, String environmentName)
             throws ApiException {
-        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId, null, environmentName,
-                null, null);
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId, environmentName,null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
         return apiDtoApiResponse;
     }
@@ -2052,7 +2050,7 @@ public class RestAPIStoreImpl {
         ApplicationKeyMappingRequestDTO applicationKeyMappingRequestDTO =
                 new ApplicationKeyMappingRequestDTO().consumerKey(consumerKey).consumerSecret(consumerSecret).keyType(
                         ApplicationKeyMappingRequestDTO.KeyTypeEnum.PRODUCTION).keyManager(keyManager);
-        return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid, applicationKeyMappingRequestDTO);
+        return applicationKeysApi.applicationsApplicationIdMapKeysPost(appid, applicationKeyMappingRequestDTO, null);
     }
 
     /**

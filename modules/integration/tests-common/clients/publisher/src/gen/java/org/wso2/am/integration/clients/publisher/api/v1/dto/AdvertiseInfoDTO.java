@@ -41,6 +41,57 @@ public class AdvertiseInfoDTO {
         @SerializedName(SERIALIZED_NAME_API_OWNER)
             private String apiOwner;
 
+            /**
+* Gets or Sets vendor
+*/
+    @JsonAdapter(VendorEnum.Adapter.class)
+public enum VendorEnum {
+        WSO2("WSO2"),
+        
+        AWS("AWS");
+
+private String value;
+
+VendorEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static VendorEnum fromValue(String value) {
+    for (VendorEnum b : VendorEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<VendorEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final VendorEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public VendorEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return VendorEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_VENDOR = "vendor";
+        @SerializedName(SERIALIZED_NAME_VENDOR)
+            private VendorEnum vendor = VendorEnum.WSO2;
+
 
         public AdvertiseInfoDTO advertised(Boolean advertised) {
         
@@ -111,6 +162,29 @@ public class AdvertiseInfoDTO {
     }
 
 
+        public AdvertiseInfoDTO vendor(VendorEnum vendor) {
+        
+        this.vendor = vendor;
+        return this;
+        }
+
+    /**
+        * Get vendor
+    * @return vendor
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public VendorEnum getVendor() {
+        return vendor;
+    }
+
+
+    public void setVendor(VendorEnum vendor) {
+        this.vendor = vendor;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -122,12 +196,13 @@ public class AdvertiseInfoDTO {
             AdvertiseInfoDTO advertiseInfo = (AdvertiseInfoDTO) o;
             return Objects.equals(this.advertised, advertiseInfo.advertised) &&
             Objects.equals(this.originalDevPortalUrl, advertiseInfo.originalDevPortalUrl) &&
-            Objects.equals(this.apiOwner, advertiseInfo.apiOwner);
+            Objects.equals(this.apiOwner, advertiseInfo.apiOwner) &&
+            Objects.equals(this.vendor, advertiseInfo.vendor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(advertised, originalDevPortalUrl, apiOwner);
+        return Objects.hash(advertised, originalDevPortalUrl, apiOwner, vendor);
     }
 
 
@@ -138,6 +213,7 @@ sb.append("class AdvertiseInfoDTO {\n");
     sb.append("    advertised: ").append(toIndentedString(advertised)).append("\n");
     sb.append("    originalDevPortalUrl: ").append(toIndentedString(originalDevPortalUrl)).append("\n");
     sb.append("    apiOwner: ").append(toIndentedString(apiOwner)).append("\n");
+    sb.append("    vendor: ").append(toIndentedString(vendor)).append("\n");
 sb.append("}");
 return sb.toString();
 }

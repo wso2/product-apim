@@ -24,10 +24,13 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIAdditionalPropertiesDTO;
+import java.util.Map;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPropertiesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPropertiesMapDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMaxTpsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
@@ -113,7 +116,7 @@ public class APIDTO {
             private Boolean enableSchemaValidation;
 
             /**
-* The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
+* The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK
 */
     @JsonAdapter(TypeEnum.Adapter.class)
 public enum TypeEnum {
@@ -129,7 +132,9 @@ public enum TypeEnum {
         
         WEBSUB("WEBSUB"),
         
-        SSE("SSE");
+        SSE("SSE"),
+        
+        WEBHOOK("WEBHOOK");
 
 private String value;
 
@@ -172,6 +177,57 @@ public static TypeEnum fromValue(String value) {
         public static final String SERIALIZED_NAME_TYPE = "type";
         @SerializedName(SERIALIZED_NAME_TYPE)
             private TypeEnum type = TypeEnum.HTTP;
+
+            /**
+* The audience of the API. Accepted values are PUBLIC, SINGLE
+*/
+    @JsonAdapter(AudienceEnum.Adapter.class)
+public enum AudienceEnum {
+        PUBLIC("PUBLIC"),
+        
+        SINGLE("SINGLE");
+
+private String value;
+
+AudienceEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static AudienceEnum fromValue(String value) {
+    for (AudienceEnum b : AudienceEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<AudienceEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final AudienceEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public AudienceEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return AudienceEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_AUDIENCE = "audience";
+        @SerializedName(SERIALIZED_NAME_AUDIENCE)
+            private AudienceEnum audience;
 
         public static final String SERIALIZED_NAME_TRANSPORT = "transport";
         @SerializedName(SERIALIZED_NAME_TRANSPORT)
@@ -325,7 +381,11 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
         public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
         @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
-            private List<APIAdditionalPropertiesDTO> additionalProperties = null;
+            private List<APIInfoAdditionalPropertiesDTO> additionalProperties = null;
+
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES_MAP = "additionalPropertiesMap";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES_MAP)
+            private Map<String, APIInfoAdditionalPropertiesMapDTO> additionalPropertiesMap = null;
 
         public static final String SERIALIZED_NAME_MONETIZATION = "monetization";
         @SerializedName(SERIALIZED_NAME_MONETIZATION)
@@ -889,11 +949,11 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
         }
 
     /**
-        * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
+        * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK
     * @return type
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "HTTP", value = "The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE")
+      @ApiModelProperty(example = "HTTP", value = "The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK")
     
     public TypeEnum getType() {
         return type;
@@ -902,6 +962,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     public void setType(TypeEnum type) {
         this.type = type;
+    }
+
+
+        public APIDTO audience(AudienceEnum audience) {
+        
+        this.audience = audience;
+        return this;
+        }
+
+    /**
+        * The audience of the API. Accepted values are PUBLIC, SINGLE
+    * @return audience
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "PUBLIC", value = "The audience of the API. Accepted values are PUBLIC, SINGLE")
+    
+    public AudienceEnum getAudience() {
+        return audience;
+    }
+
+
+    public void setAudience(AudienceEnum audience) {
+        this.audience = audience;
     }
 
 
@@ -1204,7 +1287,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
-        public APIDTO additionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
+        public APIDTO additionalProperties(List<APIInfoAdditionalPropertiesDTO> additionalProperties) {
         
         this.additionalProperties = additionalProperties;
         return this;
@@ -1217,13 +1300,36 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
         @javax.annotation.Nullable
       @ApiModelProperty(value = "Map of custom properties of API")
     
-    public List<APIAdditionalPropertiesDTO> getAdditionalProperties() {
+    public List<APIInfoAdditionalPropertiesDTO> getAdditionalProperties() {
         return additionalProperties;
     }
 
 
-    public void setAdditionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
+    public void setAdditionalProperties(List<APIInfoAdditionalPropertiesDTO> additionalProperties) {
         this.additionalProperties = additionalProperties;
+    }
+
+
+        public APIDTO additionalPropertiesMap(Map<String, APIInfoAdditionalPropertiesMapDTO> additionalPropertiesMap) {
+        
+        this.additionalPropertiesMap = additionalPropertiesMap;
+        return this;
+        }
+
+    /**
+        * Get additionalPropertiesMap
+    * @return additionalPropertiesMap
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public Map<String, APIInfoAdditionalPropertiesMapDTO> getAdditionalPropertiesMap() {
+        return additionalPropertiesMap;
+    }
+
+
+    public void setAdditionalPropertiesMap(Map<String, APIInfoAdditionalPropertiesMapDTO> additionalPropertiesMap) {
+        this.additionalPropertiesMap = additionalPropertiesMap;
     }
 
 
@@ -1668,6 +1774,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.revisionId, API.revisionId) &&
             Objects.equals(this.enableSchemaValidation, API.enableSchemaValidation) &&
             Objects.equals(this.type, API.type) &&
+            Objects.equals(this.audience, API.audience) &&
             Objects.equals(this.transport, API.transport) &&
             Objects.equals(this.tags, API.tags) &&
             Objects.equals(this.policies, API.policies) &&
@@ -1682,6 +1789,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.subscriptionAvailability, API.subscriptionAvailability) &&
             Objects.equals(this.subscriptionAvailableTenants, API.subscriptionAvailableTenants) &&
             Objects.equals(this.additionalProperties, API.additionalProperties) &&
+            Objects.equals(this.additionalPropertiesMap, API.additionalPropertiesMap) &&
             Objects.equals(this.monetization, API.monetization) &&
             Objects.equals(this.accessControl, API.accessControl) &&
             Objects.equals(this.accessControlRoles, API.accessControlRoles) &&
@@ -1704,7 +1812,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo);
     }
 
 
@@ -1730,6 +1838,7 @@ sb.append("class APIDTO {\n");
     sb.append("    revisionId: ").append(toIndentedString(revisionId)).append("\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("    audience: ").append(toIndentedString(audience)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
     sb.append("    policies: ").append(toIndentedString(policies)).append("\n");
@@ -1744,6 +1853,7 @@ sb.append("class APIDTO {\n");
     sb.append("    subscriptionAvailability: ").append(toIndentedString(subscriptionAvailability)).append("\n");
     sb.append("    subscriptionAvailableTenants: ").append(toIndentedString(subscriptionAvailableTenants)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+    sb.append("    additionalPropertiesMap: ").append(toIndentedString(additionalPropertiesMap)).append("\n");
     sb.append("    monetization: ").append(toIndentedString(monetization)).append("\n");
     sb.append("    accessControl: ").append(toIndentedString(accessControl)).append("\n");
     sb.append("    accessControlRoles: ").append(toIndentedString(accessControlRoles)).append("\n");

@@ -291,7 +291,7 @@ public class ExternalStoresApi {
     /**
      * Build call for publishAPIToExternalStores
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param externalStoreIds External Store Ids of stores which the API needs to be published or updated. (required)
+     * @param externalStoreIds External Store Ids of stores which the API needs to be published or updated. (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -350,11 +350,6 @@ public class ExternalStoresApi {
             throw new ApiException("Missing the required parameter 'apiId' when calling publishAPIToExternalStores(Async)");
         }
         
-        // verify the required parameter 'externalStoreIds' is set
-        if (externalStoreIds == null) {
-            throw new ApiException("Missing the required parameter 'externalStoreIds' when calling publishAPIToExternalStores(Async)");
-        }
-        
 
         okhttp3.Call localVarCall = publishAPIToExternalStoresCall(apiId, externalStoreIds, ifMatch, _callback);
         return localVarCall;
@@ -365,7 +360,7 @@ public class ExternalStoresApi {
      * Publish an API to External Stores
      * This operation can be used to publish an API to a list of external stores. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param externalStoreIds External Store Ids of stores which the API needs to be published or updated. (required)
+     * @param externalStoreIds External Store Ids of stores which the API needs to be published or updated. (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @return APIExternalStoreListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -386,7 +381,7 @@ public class ExternalStoresApi {
      * Publish an API to External Stores
      * This operation can be used to publish an API to a list of external stores. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param externalStoreIds External Store Ids of stores which the API needs to be published or updated. (required)
+     * @param externalStoreIds External Store Ids of stores which the API needs to be published or updated. (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @return ApiResponse&lt;APIExternalStoreListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -408,7 +403,7 @@ public class ExternalStoresApi {
      * Publish an API to External Stores (asynchronously)
      * This operation can be used to publish an API to a list of external stores. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param externalStoreIds External Store Ids of stores which the API needs to be published or updated. (required)
+     * @param externalStoreIds External Store Ids of stores which the API needs to be published or updated. (optional)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call

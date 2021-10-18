@@ -125,6 +125,34 @@ paths:
           type: integer
         style: form
       - description: |
+          Criteria for sorting.
+        explode: true
+        in: query
+        name: sortBy
+        required: false
+        schema:
+          default: createdTime
+          enum:
+          - apiName
+          - version
+          - createdTime
+          - status
+          type: string
+        style: form
+      - description: |
+          Order of sorting(ascending/descending).
+        explode: true
+        in: query
+        name: sortOrder
+        required: false
+        schema:
+          default: desc
+          enum:
+          - asc
+          - desc
+          type: string
+        style: form
+      - description: |
           For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
             retirieved from.
         explode: false
@@ -234,6 +262,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:api_import_export
       summary: |
         Retrieve/Search APIs
@@ -332,6 +361,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Create a New API
       tags:
       - APIs
@@ -428,6 +458,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_delete
+        - apim:api_manage
         - apim:api_import_export
       summary: Delete an API
       tags:
@@ -535,6 +566,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:api_import_export
         - apim:api_product_import_export
       summary: Get Details of an API
@@ -684,6 +716,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Update an API
       tags:
@@ -763,6 +796,11 @@ paths:
               schema:
                 type: string
               style: simple
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:api_import_export
       summary: Update Topics
       tags:
       - APIs
@@ -835,6 +873,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update the Service that is used to create the API
       tags:
       - APIs
@@ -932,6 +971,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get Swagger Definition
       tags:
       - APIs
@@ -1072,6 +1112,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update Swagger Definition
       tags:
       - APIs
@@ -1170,6 +1211,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Generate Mock Response Payloads
       tags:
       - APIs
@@ -1267,6 +1309,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Get Generated Mock Response Payloads
       tags:
       - APIs
@@ -1388,6 +1431,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get the Resource Policy(inflow/outflow) Definitions
       tags:
       - API Resource Policies
@@ -1506,6 +1550,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get the Resource Policy(inflow/outflow) Definition for a Given Resource
         Identifier.
       tags:
@@ -1648,6 +1693,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update the Resource Policy(inflow/outflow) Definition for the Given
         Resource Identifier
       tags:
@@ -1745,6 +1791,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get Thumbnail Image
       tags:
       - APIs
@@ -1869,6 +1916,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Upload a Thumbnail Image
       tags:
@@ -1974,6 +2022,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: |
         Get Details of the Subscription Throttling Policies of an API
       tags:
@@ -2070,6 +2119,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Create a New API Version
       tags:
       - APIs
@@ -2230,6 +2280,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
         - apim:api_import_export
       summary: Change API Status
       tags:
@@ -2309,6 +2360,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Get Lifecycle State Change History of the API.
       tags:
       - API Lifecycle
@@ -2409,6 +2461,7 @@ paths:
       - OAuth2Security:
         - apim:api_publish
         - apim:api_create
+        - apim:api_manage
       summary: Get Lifecycle State Data of the API.
       tags:
       - API Lifecycle
@@ -2467,6 +2520,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Delete Pending Lifecycle State Change Tasks
       tags:
       - API Lifecycle
@@ -2521,6 +2575,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
         - apim:api_import_export
       summary: List Revisions
@@ -2589,6 +2644,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
         - apim:api_import_export
       summary: Create API Revision
@@ -2652,6 +2708,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
         - apim:api_import_export
       summary: Delete Revision
@@ -2709,6 +2766,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Retrieve Revision
       tags:
@@ -2757,6 +2815,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: List Deployments
       tags:
@@ -2820,6 +2879,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Update Deployment
       tags:
@@ -2900,6 +2960,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Deploy Revision
       tags:
@@ -3000,6 +3061,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
         - apim:api_import_export
       summary: UnDeploy Revision
@@ -3059,6 +3121,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Restore API Revision
       tags:
@@ -3141,6 +3204,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Import a Service from Service Catalog
       tags:
       - APIs
@@ -3242,6 +3306,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:comment_view
+        - apim:comment_manage
       summary: Retrieve API Comments
       tags:
       - Comments
@@ -3384,6 +3449,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:comment_write
+        - apim:comment_manage
       summary: Add an API Comment
       tags:
       - Comments
@@ -3491,6 +3557,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:comment_write
+        - apim:comment_manage
         - apim:admin
       summary: Delete an API Comment
       tags:
@@ -3651,6 +3718,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:comment_view
+        - apim:comment_manage
       summary: Get Details of an API Comment
       tags:
       - Comments
@@ -3806,6 +3874,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:comment_write
+        - apim:comment_manage
       summary: Edit a comment
       tags:
       - Comments
@@ -3967,6 +4036,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:comment_view
+        - apim:comment_manage
       summary: Get replies of a comment
       tags:
       - Comments
@@ -4061,6 +4131,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Import an OpenAPI Definition
       tags:
       - APIs
@@ -4178,6 +4249,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Import a WSDL Definition
       tags:
       - APIs
@@ -4282,6 +4354,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Import a GraphQL SDL
       tags:
       - APIs
@@ -4368,6 +4441,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Validate an OpenAPI Definition
       tags:
       - Validation
@@ -4444,6 +4518,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Check Whether Given Endpoint URL is Valid
       tags:
       - Validation
@@ -4528,6 +4603,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Check Given API Context Name already Exists
       tags:
       - Validation
@@ -4600,6 +4676,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Validate a WSDL Definition
       tags:
       - Validation
@@ -4672,6 +4749,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Validate a GraphQL SDL
       tags:
       - Validation
@@ -4780,6 +4858,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get the Schema of a GraphQL API
       tags:
       - GraphQL Schema (Individual)
@@ -4913,6 +4992,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Add a Schema to a GraphQL API
       tags:
       - GraphQL Schema
@@ -4977,6 +5057,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Retrieve the ARNs of AWS Lambda Functions
       tags:
       - AWS Lambda (Individual)
@@ -5054,6 +5135,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Configure Monetization for a Given API
       tags:
       - API Monetization
@@ -5123,6 +5205,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Get Monetization Status for each Tier in a Given API
       tags:
       - API Monetization
@@ -5196,6 +5279,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Get Total Revenue Details of a Given Monetized API with Meterd Billing
       tags:
       - API Monetization
@@ -5305,6 +5389,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
+        - apim:document_manage
       summary: Get a List of Documents of an API
       tags:
       - API Documents
@@ -5404,7 +5490,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:document_create
+        - apim:document_manage
       summary: Add a New Document to an API
       tags:
       - API Documents
@@ -5482,6 +5570,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:document_manage
       summary: Delete a Document of an API
       tags:
@@ -5589,6 +5678,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
+        - apim:document_manage
       summary: Get a Document of an API
       tags:
       - API Documents
@@ -5717,6 +5808,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:document_manage
       summary: Update a Document of an API
       tags:
@@ -5850,6 +5942,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
+        - apim:document_manage
       summary: Get the Content of an API Document
       tags:
       - API Documents
@@ -5988,7 +6082,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:document_create
+        - apim:document_manage
       summary: Upload the Content of an API Document
       tags:
       - API Documents
@@ -6055,6 +6151,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
+        - apim:document_manage
         - apim:document_create
       summary: Check Whether a Document with the Provided Name Exist
       tags:
@@ -6162,7 +6260,10 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:mediation_policy_view
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
       summary: |
         Get All Mediation Policies of an API
       tags:
@@ -6296,7 +6397,10 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:mediation_policy_create
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
       summary: Add an API Specific Mediation Policy
       tags:
       - API Mediation Policies
@@ -6391,7 +6495,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
       summary: Delete an API Specific Mediation Policy
       tags:
       - API Mediation Policy
@@ -6500,7 +6606,10 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:mediation_policy_view
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
       summary: Get an API Specific Mediation Policy
       tags:
       - API Mediation Policy
@@ -6595,7 +6704,10 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:mediation_policy_view
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
       summary: Download an API Specific Mediation Policy
       tags:
       - API Mediation Policy
@@ -6750,7 +6862,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
       summary: Update an API Specific Mediation Policy
       tags:
       - API Mediation Policy
@@ -6814,6 +6928,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get WSDL Meta Information
       tags:
       - APIs
@@ -6905,6 +7020,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get WSDL definition
       tags:
       - APIs
@@ -7043,6 +7159,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update WSDL Definition
       tags:
       - APIs
@@ -7102,6 +7219,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Get the Complexity Related Details of an API
       tags:
@@ -7152,6 +7270,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update Complexity Related Details of an API
       tags:
       - GraphQL Policies
@@ -7209,6 +7328,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Retrieve Types and Fields of a GraphQL Schema
       tags:
@@ -7328,6 +7448,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get Resource Paths of an API
       tags:
       - APIs
@@ -7394,6 +7515,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Retrieve the Security Audit Report of the Audit API
       tags:
       - API Audit
@@ -7481,6 +7603,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get the List of External Stores to which an API is Published
       tags:
       - External Stores
@@ -7511,7 +7634,7 @@ paths:
         explode: true
         in: query
         name: externalStoreIds
-        required: true
+        required: false
         schema:
           type: string
         style: form
@@ -7578,6 +7701,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Publish an API to External Stores
       tags:
       - External Stores
@@ -7639,6 +7763,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_generate_key
+        - apim:api_manage
       summary: Generate internal API Key to invoke APIS.
       tags:
       - APIs
@@ -7776,6 +7901,7 @@ paths:
         - apim:api_publish
         - apim:api_create
         - apim:api_import_export
+        - apim:api_manage
       summary: Export an API
       tags:
       - Import Export
@@ -8005,6 +8131,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:subscription_view
+        - apim:subscription_manage
       summary: Get all Subscriptions
       tags:
       - Subscriptions
@@ -8074,6 +8201,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:subscription_view
+        - apim:subscription_manage
       summary: Get Details of a Pending Invoice for a Monetized Subscription with
         Metered Billing.
       tags:
@@ -8122,6 +8250,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:subscription_view
+        - apim:subscription_manage
       summary: Get Details of a Subscriber
       tags:
       - Subscriber
@@ -8233,6 +8362,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:subscription_block
+        - apim:subscription_manage
       summary: Block a Subscription
       tags:
       - Subscriptions
@@ -8329,6 +8459,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:subscription_block
+        - apim:subscription_manage
       summary: Unblock a Subscription
       tags:
       - Subscriptions
@@ -8430,6 +8561,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:tier_view
+        - apim:tier_manage
       summary: Get All Throttling Policies for the Given Type
       tags:
       - Throttling Policies
@@ -8518,6 +8651,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:tier_view
+        - apim:tier_manage
       summary: Get streaming throttling policies
       tags:
       - Throttling Policies
@@ -8628,6 +8763,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:tier_view
+        - apim:tier_manage
       summary: Get Details of a Policy
       tags:
       - Throttling Policies
@@ -8723,7 +8860,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:mediation_policy_view
+        - apim:mediation_policy_manage
       summary: |
         Get all global level mediation policies
       tags:
@@ -8810,7 +8949,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:mediation_policy_view
+        - apim:mediation_policy_manage
       summary: Download a Global Mediation Policy
       tags:
       - Global Mediation Policy
@@ -8907,7 +9048,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:client_certificates_view
+        - apim:client_certificates_manage
       summary: Retrieve/ Search Uploaded Client Certificates
       tags:
       - Client Certificates
@@ -9004,7 +9147,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:client_certificates_add
+        - apim:client_certificates_manage
       summary: Upload a New Certificate
       tags:
       - Client Certificates
@@ -9093,6 +9238,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:client_certificates_update
       summary: Delete a Certificate
       tags:
@@ -9179,7 +9325,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:client_certificates_view
+        - apim:client_certificates_manage
       summary: Get the Certificate Information
       tags:
       - Client Certificates
@@ -9288,7 +9436,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:client_certificates_update
+        - apim:client_certificates_manage
       summary: Update a Certificate
       tags:
       - Client Certificates
@@ -9374,7 +9524,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:client_certificates_view
+        - apim:client_certificates_manage
       summary: Download a Certificate
       tags:
       - Client Certificates
@@ -9482,7 +9634,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:ep_certificates_view
+        - apim:ep_certificates_manage
       summary: Retrieve/Search Uploaded Certificates
       tags:
       - Endpoint Certificates
@@ -9569,7 +9723,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:ep_certificates_add
+        - apim:ep_certificates_manage
       summary: Upload a new Certificate.
       tags:
       - Endpoint Certificates
@@ -9649,7 +9805,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:ep_certificates_update
+        - apim:ep_certificates_manage
       summary: Delete a certificate.
       tags:
       - Endpoint Certificates
@@ -9726,7 +9884,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:ep_certificates_view
+        - apim:ep_certificates_manage
       summary: Get the Certificate Information
       tags:
       - Endpoint Certificates
@@ -9826,7 +9986,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:ep_certificates_update
+        - apim:ep_certificates_manage
       summary: Update a certificate.
       tags:
       - Endpoint Certificates
@@ -9902,7 +10064,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:ep_certificates_view
+        - apim:ep_certificates_manage
       summary: Download a Certificate
       tags:
       - Endpoint Certificates
@@ -10001,6 +10165,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:api_import_export
         - apim:api_product_import_export
       summary: |
@@ -10112,6 +10277,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: |
         Retrieve/Search API Products
       tags:
@@ -10192,6 +10358,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Create a New API Product
       tags:
       - API Products
@@ -10276,6 +10443,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
         - apim:api_product_import_export
       summary: Delete an API Product
       tags:
@@ -10385,6 +10553,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Get Details of an API Product
       tags:
       - API Products
@@ -10520,6 +10689,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Update an API Product
       tags:
       - API Products
@@ -10628,6 +10798,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Get Thumbnail Image
       tags:
       - API Products
@@ -10755,6 +10926,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Upload a Thumbnail Image
       tags:
       - API Products
@@ -10862,6 +11034,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Get Swagger Definition
       tags:
       - API Products
@@ -10971,6 +11144,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Check Whether API Product is Outdated
       tags:
       - API Products
@@ -11088,6 +11262,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Get a List of Documents of an API Product
       tags:
       - API Product Documents
@@ -11180,6 +11355,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Add a New Document to an API Product
       tags:
       - API Product Documents
@@ -11259,6 +11435,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Delete a Document of an API Product
       tags:
       - API Product Documents
@@ -11377,6 +11554,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Get a Document of an API Product
       tags:
       - API Product Documents
@@ -11507,6 +11685,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Update a Document of an API Product
       tags:
       - API Product Documents
@@ -11648,6 +11827,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Get the Content of an API Product Document
       tags:
       - API Product Documents
@@ -11788,6 +11968,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Upload the Content of an API Product Document
       tags:
       - API Product Documents
@@ -11846,6 +12027,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
         - apim:api_product_import_export
       summary: List Revisions
       tags:
@@ -11916,6 +12098,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Create a new API Product revision
       tags:
       - API Product Revisions
@@ -11980,6 +12163,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Delete Revision
       tags:
       - API Product Revisions
@@ -12038,6 +12222,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Retrieve Revision
       tags:
       - API Product Revisions
@@ -12088,6 +12273,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: List Deployments
       tags:
       - API Product Revisions
@@ -12153,6 +12339,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Update Deployment
       tags:
       - API Product Revisions
@@ -12238,6 +12425,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Deploy Revision
       tags:
       - API Product Revisions
@@ -12340,6 +12528,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
         - apim:api_product_import_export
       summary: UnDeploy Revision
       tags:
@@ -12401,6 +12590,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Restore Revision
       tags:
       - API Product Revisions
@@ -12527,7 +12717,7 @@ paths:
           description: Internal Server Error.
       security:
       - OAuth2Security:
-        - apim:api_import_export
+        - apim:api_product_import_export
       summary: Export an API Product
       tags:
       - Import Export
@@ -12706,6 +12896,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Check Whether Given Role Name already Exist
       tags:
       - Roles
@@ -12750,6 +12941,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Validate Whether the Logged-in User has the Given Role
       tags:
       - Roles
@@ -12788,6 +12980,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Retrieve External Stores List to Publish an API
       tags:
       - External Stores
@@ -12918,6 +13111,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: |
         Get Tenants by State
       tags:
@@ -12961,6 +13155,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Check Whether the Given Tenant already Exists
       tags:
       - Tenants
@@ -12988,6 +13183,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get all API categories
       tags:
       - API Category (Collection)
@@ -13055,6 +13251,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:shared_scope_manage
       summary: Get All Available Shared Scopes
       tags:
       - Scopes
@@ -13218,6 +13415,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:shared_scope_manage
       summary: Get a Shared Scope by Scope Id
       tags:
       - Scopes
@@ -13260,6 +13458,8 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
+        - apim:shared_scope_manage
       summary: Check Given Scope Name already Exists
       tags:
       - Scopes
@@ -13389,6 +13589,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
+        - apim:shared_scope_manage
       summary: Get usages of a Shared Scope by Scope Id
       tags:
       - Scopes
@@ -13414,6 +13616,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Get All Key Managers
       tags:
       - Key Managers (Collection)
@@ -13491,6 +13694,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Validate an AsyncAPI Specification
       tags:
       - Validation
@@ -13574,6 +13778,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: import an AsyncAPI Specification
       tags:
       - APIs
@@ -13667,6 +13872,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get AsyncAPI definition
       tags:
       - APIs
@@ -13802,6 +14008,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update AsyncAPI definition
       tags:
       - APIs
@@ -14146,6 +14353,36 @@ components:
       schema:
         default: 0
         type: integer
+      style: form
+    sortBy:
+      description: |
+        Criteria for sorting.
+      explode: true
+      in: query
+      name: sortBy
+      required: false
+      schema:
+        default: createdTime
+        enum:
+        - apiName
+        - version
+        - createdTime
+        - status
+        type: string
+      style: form
+    sortOrder:
+      description: |
+        Order of sorting(ascending/descending).
+      explode: true
+      in: query
+      name: sortOrder
+      required: false
+      schema:
+        default: desc
+        enum:
+        - asc
+        - desc
+        type: string
       style: form
     If-None-Match:
       description: |
@@ -14552,6 +14789,7 @@ components:
         count: 1
         list:
         - updatedTime: 2021-02-11 09:57:25
+          audience: PUBLIC
           hasThumbnail: true
           workflowStatus: APPROVED
           description: A calculator API that supports basic operations
@@ -14565,8 +14803,21 @@ components:
           context: CalculatorAPI
           createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
+          additionalProperties:
+          - display: true
+            name: name
+            value: value
+          - display: true
+            name: name
+            value: value
+          additionalPropertiesMap:
+            key:
+              display: false
+              name: name
+              value: value
           lifeCycleStatus: CREATED
         - updatedTime: 2021-02-11 09:57:25
+          audience: PUBLIC
           hasThumbnail: true
           workflowStatus: APPROVED
           description: A calculator API that supports basic operations
@@ -14580,6 +14831,18 @@ components:
           context: CalculatorAPI
           createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
+          additionalProperties:
+          - display: true
+            name: name
+            value: value
+          - display: true
+            name: name
+            value: value
+          additionalPropertiesMap:
+            key:
+              display: false
+              name: name
+              value: value
           lifeCycleStatus: CREATED
       properties:
         count:
@@ -14613,6 +14876,7 @@ components:
     APIInfo:
       example:
         updatedTime: 2021-02-11 09:57:25
+        audience: PUBLIC
         hasThumbnail: true
         workflowStatus: APPROVED
         description: A calculator API that supports basic operations
@@ -14626,6 +14890,18 @@ components:
         context: CalculatorAPI
         createdTime: 2021-02-11 09:57:25
         id: 01234567-0123-0123-0123-012345678901
+        additionalProperties:
+        - display: true
+          name: name
+          value: value
+        - display: true
+          name: name
+          value: value
+        additionalPropertiesMap:
+          key:
+            display: false
+            name: name
+            value: value
         lifeCycleStatus: CREATED
       properties:
         id:
@@ -14640,6 +14916,15 @@ components:
         context:
           example: CalculatorAPI
           type: string
+        additionalProperties:
+          description: Map of custom properties of API
+          items:
+            $ref: '#/components/schemas/APIInfo_additionalProperties'
+          type: array
+        additionalPropertiesMap:
+          additionalProperties:
+            $ref: '#/components/schemas/APIInfo_additionalPropertiesMap'
+          type: object
         version:
           example: 1.0.0
           type: string
@@ -14650,6 +14935,13 @@ components:
           type: string
         type:
           example: HTTP
+          type: string
+        audience:
+          description: The audience of the API. Accepted values are PUBLIC, SINGLE
+          enum:
+          - PUBLIC
+          - SINGLE
+          example: PUBLIC
           type: string
         lifeCycleStatus:
           example: CREATED
@@ -14733,6 +15025,7 @@ components:
         id: 01234567-0123-0123-0123-012345678901
         wsdlUrl: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
         accessControlRoles: []
+        audience: PUBLIC
         visibility: PUBLIC
         version: 1.0.0
         tags:
@@ -14752,6 +15045,7 @@ components:
         advertiseInfo:
           apiOwner: admin
           advertised: true
+          vendor: WSO2
           originalDevPortalUrl: https://localhost:9443/devportal
         additionalProperties:
         - display: true
@@ -14816,6 +15110,11 @@ components:
         categories:
         - categories
         - categories
+        additionalPropertiesMap:
+          key:
+            display: false
+            name: name
+            value: value
         wsdlInfo:
           type: WSDL
         hasThumbnail: false
@@ -14863,9 +15162,9 @@ components:
           type: string
         name:
           example: PizzaShackAPI
-          maxLength: 50
+          maxLength: 60
           minLength: 1
-          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+\[\]\/]*$)
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\[\]\/]*$)
           type: string
         description:
           example: This is a simple API for Pizza Shack online pizza delivery store.
@@ -14873,7 +15172,7 @@ components:
           type: string
         context:
           example: pizza
-          maxLength: 82
+          maxLength: 232
           minLength: 1
           type: string
         version:
@@ -14893,6 +15192,7 @@ components:
           type: string
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         wsdlInfo:
           $ref: '#/components/schemas/WSDLInfo'
         wsdlUrl:
@@ -14929,7 +15229,7 @@ components:
         type:
           default: HTTP
           description: The api creation type to be used. Accepted values are HTTP,
-            WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
+            WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK
           enum:
           - HTTP
           - WS
@@ -14938,7 +15238,15 @@ components:
           - GRAPHQL
           - WEBSUB
           - SSE
+          - WEBHOOK
           example: HTTP
+          type: string
+        audience:
+          description: The audience of the API. Accepted values are PUBLIC, SINGLE
+          enum:
+          - PUBLIC
+          - SINGLE
+          example: PUBLIC
           type: string
         transport:
           description: |
@@ -14958,6 +15266,7 @@ components:
           type: array
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         policies:
           example:
           - Unlimited
@@ -14966,6 +15275,7 @@ components:
           type: array
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         apiThrottlingPolicy:
           description: The API level throttling policy selected for the particular
             API
@@ -14973,6 +15283,7 @@ components:
           type: string
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         authorizationHeader:
           description: |
             Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified
@@ -15003,6 +15314,7 @@ components:
           type: string
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         visibleRoles:
           description: The user roles that are able to access the API in Developer
             Portal
@@ -15012,6 +15324,7 @@ components:
           type: array
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         visibleTenants:
           example: []
           items:
@@ -15040,6 +15353,7 @@ components:
           type: string
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         subscriptionAvailableTenants:
           example: []
           items:
@@ -15048,10 +15362,18 @@ components:
         additionalProperties:
           description: Map of custom properties of API
           items:
-            $ref: '#/components/schemas/API_additionalProperties'
+            $ref: '#/components/schemas/APIInfo_additionalProperties'
           type: array
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
+        additionalPropertiesMap:
+          additionalProperties:
+            $ref: '#/components/schemas/APIInfo_additionalPropertiesMap'
+          type: object
+          x-otherScopes:
+          - apim:api_publish
+          - apim:api_manage
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
         accessControl:
@@ -15077,6 +15399,7 @@ components:
           - $ref: '#/components/schemas/APIBusinessInformation'
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         corsConfiguration:
           $ref: '#/components/schemas/APICorsConfiguration'
         websubSubscriptionConfiguration:
@@ -15090,6 +15413,7 @@ components:
           type: string
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         endpointConfig:
           description: |
             Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
@@ -15239,23 +15563,26 @@ components:
       x-scopes:
       - apim:api_create
       - apim:api_import_export
+      - apim:api_manage
     APIRevision:
       example:
         displayName: REVISION 1
         description: removed a post resource
-        createdTime: createdTime
+        createdTime: 2000-01-23T04:56:07.000+00:00
         id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         deploymentInfo:
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: deployedTime
+          deployedTime: 2000-01-23T04:56:07.000+00:00
           name: default
+          successDeployedTime: 2000-01-23T04:56:07.000+00:00
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: deployedTime
+          deployedTime: 2000-01-23T04:56:07.000+00:00
           name: default
+          successDeployedTime: 2000-01-23T04:56:07.000+00:00
         apiInfo:
           id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -15273,6 +15600,7 @@ components:
           minLength: 0
           type: string
         createdTime:
+          format: date-time
           readOnly: true
           type: string
         apiInfo:
@@ -15298,36 +15626,40 @@ components:
         list:
         - displayName: REVISION 1
           description: removed a post resource
-          createdTime: createdTime
+          createdTime: 2000-01-23T04:56:07.000+00:00
           id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           deploymentInfo:
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: deployedTime
+            deployedTime: 2000-01-23T04:56:07.000+00:00
             name: default
+            successDeployedTime: 2000-01-23T04:56:07.000+00:00
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: deployedTime
+            deployedTime: 2000-01-23T04:56:07.000+00:00
             name: default
+            successDeployedTime: 2000-01-23T04:56:07.000+00:00
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
         - displayName: REVISION 1
           description: removed a post resource
-          createdTime: createdTime
+          createdTime: 2000-01-23T04:56:07.000+00:00
           id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           deploymentInfo:
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: deployedTime
+            deployedTime: 2000-01-23T04:56:07.000+00:00
             name: default
+            successDeployedTime: 2000-01-23T04:56:07.000+00:00
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: deployedTime
+            deployedTime: 2000-01-23T04:56:07.000+00:00
             name: default
+            successDeployedTime: 2000-01-23T04:56:07.000+00:00
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -15347,13 +15679,15 @@ components:
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: deployedTime
+          deployedTime: 2000-01-23T04:56:07.000+00:00
           name: default
+          successDeployedTime: 2000-01-23T04:56:07.000+00:00
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: deployedTime
+          deployedTime: 2000-01-23T04:56:07.000+00:00
           name: default
+          successDeployedTime: 2000-01-23T04:56:07.000+00:00
       properties:
         list:
           items:
@@ -15365,8 +15699,9 @@ components:
         revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         vhost: mg.wso2.com
         displayOnDevportal: true
-        deployedTime: deployedTime
+        deployedTime: 2000-01-23T04:56:07.000+00:00
         name: default
+        successDeployedTime: 2000-01-23T04:56:07.000+00:00
       properties:
         revisionUuid:
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
@@ -15388,6 +15723,11 @@ components:
           example: true
           type: boolean
         deployedTime:
+          format: date-time
+          readOnly: true
+          type: string
+        successDeployedTime:
+          format: date-time
           readOnly: true
           type: string
       title: APIRevisionDeployment Info object with basic API deployment details
@@ -15553,6 +15893,11 @@ components:
         id: 01234567-0123-0123-0123-012345678901
         state: CREATED
         categories: []
+        additionalPropertiesMap:
+          key:
+            display: false
+            name: name
+            value: value
         revisionedApiProductId: 01234567-0123-0123-0123-012345678901
         accessControlRoles: []
         hasThumbnail: false
@@ -15762,11 +16107,16 @@ components:
           type: array
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         additionalProperties:
           description: Map of custom properties of API
           items:
-            $ref: '#/components/schemas/API_additionalProperties'
+            $ref: '#/components/schemas/APIInfo_additionalProperties'
           type: array
+        additionalPropertiesMap:
+          additionalProperties:
+            $ref: '#/components/schemas/APIInfo_additionalPropertiesMap'
+          type: object
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
         businessInformation:
@@ -16837,17 +17187,21 @@ components:
         name: default
         type: hybrid
         vhosts:
-        - httpContext: pets
+        - websubHttpPort: 9021
+          httpContext: pets
           wssPort: 8099
           httpPort: 80
           wsPort: 9099
           host: mg.wso2.com
+          websubHttpsPort: 8021
           httpsPort: 443
-        - httpContext: pets
+        - websubHttpPort: 9021
+          httpContext: pets
           wssPort: 8099
           httpPort: 80
           wsPort: 9099
           host: mg.wso2.com
+          websubHttpsPort: 8021
           httpsPort: 443
       properties:
         name:
@@ -16892,11 +17246,13 @@ components:
       type: object
     VHost:
       example:
+        websubHttpPort: 9021
         httpContext: pets
         wssPort: 8099
         httpPort: 80
         wsPort: 9099
         host: mg.wso2.com
+        websubHttpsPort: 8021
         httpsPort: 443
       properties:
         host:
@@ -16916,6 +17272,12 @@ components:
           type: integer
         wssPort:
           example: 8099
+          type: integer
+        websubHttpPort:
+          example: 9021
+          type: integer
+        websubHttpsPort:
+          example: 8021
           type: integer
       title: Virtual Host
       type: object
@@ -16957,7 +17319,6 @@ components:
           type: string
         businessOwnerEmail:
           example: businessowner@wso2.com
-          pattern: ^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$
           type: string
         technicalOwner:
           example: technicalowner
@@ -18118,17 +18479,21 @@ components:
           name: default
           type: hybrid
           vhosts:
-          - httpContext: pets
+          - websubHttpPort: 9021
+            httpContext: pets
             wssPort: 8099
             httpPort: 80
             wsPort: 9099
             host: mg.wso2.com
+            websubHttpsPort: 8021
             httpsPort: 443
-          - httpContext: pets
+          - websubHttpPort: 9021
+            httpContext: pets
             wssPort: 8099
             httpPort: 80
             wsPort: 9099
             host: mg.wso2.com
+            websubHttpsPort: 8021
             httpsPort: 443
         - showInApiConsole: true
           displayName: Default
@@ -18136,22 +18501,27 @@ components:
           name: default
           type: hybrid
           vhosts:
-          - httpContext: pets
+          - websubHttpPort: 9021
+            httpContext: pets
             wssPort: 8099
             httpPort: 80
             wsPort: 9099
             host: mg.wso2.com
+            websubHttpsPort: 8021
             httpsPort: 443
-          - httpContext: pets
+          - websubHttpPort: 9021
+            httpContext: pets
             wssPort: 8099
             httpPort: 80
             wsPort: 9099
             host: mg.wso2.com
+            websubHttpsPort: 8021
             httpsPort: 443
         crossTenantSubscriptionEnabled: false
         securityAuditProperties: '{}'
         scopes:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
         monetizationAttributes: []
         docVisibilityEnabled: false
@@ -18167,6 +18537,7 @@ components:
         scopes:
           example:
           - apim:api_create
+          - apim:api_manage
           - apim:api_publish
           items:
             type: string
@@ -18334,6 +18705,7 @@ components:
       example:
         apiOwner: admin
         advertised: true
+        vendor: WSO2
         originalDevPortalUrl: https://localhost:9443/devportal
       properties:
         advertised:
@@ -18344,6 +18716,12 @@ components:
           type: string
         apiOwner:
           example: admin
+          type: string
+        vendor:
+          default: WSO2
+          enum:
+          - WSO2
+          - AWS
           type: string
       title: API Advertise info object with advertise details
       type: object
@@ -18554,7 +18932,7 @@ components:
           type: string
       title: Patch request body
       type: object
-    API_additionalProperties:
+    APIInfo_additionalProperties:
       example:
         display: true
         name: name
@@ -18565,6 +18943,19 @@ components:
         value:
           type: string
         display:
+          type: boolean
+    APIInfo_additionalPropertiesMap:
+      example:
+        display: false
+        name: name
+        value: value
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+        display:
+          default: false
           type: boolean
     API_threatProtectionPolicies_list:
       example:
@@ -19034,22 +19425,30 @@ components:
             apim:api_create: Create API
             apim:api_delete: Delete API
             apim:api_publish: Publish API
+            apim:api_manage: Manage all API related operations
             apim:subscription_view: View Subscription
             apim:subscription_block: Block Subscription
+            apim:subscription_manage: Manage all Subscription related operations
             apim:threat_protection_policy_create: Create threat protection policies
             apim:threat_protection_policy_manage: Update and delete threat protection
               policies
             apim:document_create: Create API documents
-            apim:document_manage: Update and delete API documents
+            apim:document_manage: Create, update and delete API documents
+            apim:api_mediation_policy_manage: View, create, update and remove API
+              specific mediation policies
             apim:mediation_policy_view: View mediation policies
             apim:mediation_policy_create: Create mediation policies
             apim:mediation_policy_manage: Update and delete mediation policies
             apim:client_certificates_view: View client certificates
             apim:client_certificates_add: Add client certificates
             apim:client_certificates_update: Update and delete client certificates
+            apim:client_certificates_manage: View, create, update and remove client
+              certificates
             apim:ep_certificates_view: View backend endpoint certificates
             apim:ep_certificates_add: Add backend endpoint certificates
             apim:ep_certificates_update: Update and delete backend endpoint certificates
+            apim:ep_certificates_manage: View, create, update and remove endpoint
+              certificates
             apim:publisher_settings: Retrieve store settings
             apim:pub_alert_manage: Get/ subscribe/ configure publisher alerts
             apim:shared_scope_manage: Manage shared scopes
@@ -19061,6 +19460,9 @@ components:
             apim:admin: Manage all admin operations
             apim:comment_view: Read permission to comments
             apim:comment_write: Write permission to comments
+            apim:comment_manage: Read and Write comments
+            apim:tier_view: View throttling policies
+            apim:tier_manage: View, update and delete throttling policies
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
 
