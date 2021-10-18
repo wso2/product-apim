@@ -18,6 +18,17 @@
   -->
 <definitions xmlns="http://ws.apache.org/ns/synapse">
     <registry provider="org.wso2.carbon.mediation.registry.WSO2Registry"/>
+    <sequence name="_build_">
+        <builder>
+            <messageBuilder contentType="application/xml" class="org.apache.axis2.builder.ApplicationXMLBuilder" formatterClass="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
+            <messageBuilder contentType="application/xop+xml" class="org.apache.axis2.builder.MTOMBuilder"/>
+            <messageBuilder contentType="multipart/related" class="org.apache.axis2.builder.MIMEBuilder"/>
+            <messageBuilder contentType="application/json" class="org.apache.axis2.json.JSONBuilder" formatterClass="org.apache.axis2.json.JSONMessageFormatter"/>
+            <messageBuilder contentType="application/x-www-form-urlencoded" class="org.apache.axis2.builder.XFormURLEncodedBuilder" formatterClass="org.apache.axis2.transport.http.XFormURLEncodedFormatter"/>
+            <messageBuilder contentType="text/xml" class="org.apache.axis2.builder.SOAPBuilder" formatterClass="org.apache.axis2.transport.http.SOAPMessageFormatter"/>
+            <messageBuilder contentType="application/soap+xml" class="org.apache.axis2.builder.SOAPBuilder" formatterClass="org.apache.axis2.transport.http.SOAPMessageFormatter"/>
+        </builder>
+    </sequence>
     <sequence name="fault">
         <log level="full">
             <property name="STATUS" value="Executing default 'fault' sequence"/>
