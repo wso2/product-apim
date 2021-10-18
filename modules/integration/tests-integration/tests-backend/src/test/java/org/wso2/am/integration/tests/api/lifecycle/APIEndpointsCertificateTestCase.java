@@ -132,17 +132,16 @@ public class APIEndpointsCertificateTestCase extends APIManagerLifecycleBaseTest
         accessToken = applicationKeyDTO.getToken().getAccessToken();
         waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Invoke API without inserting Endpoint Certificate")
-    public void testInvokeAPIWithoutUploadingEndpointCertificate()
-            throws XPathExpressionException, IOException, APIManagerIntegrationTestException {
         String gatewaySessionCookie = createSession(gatewayContextMgt);
         if (TestUserMode.TENANT_ADMIN == userMode) {
             loadSynapseConfigurationFromClasspath(
                     "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator
                             + "fault.xml", gatewayContextMgt, gatewaySessionCookie);
         }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke API without inserting Endpoint Certificate")
+    public void testInvokeAPIWithoutUploadingEndpointCertificate() throws XPathExpressionException, IOException {
         // Create requestHeaders
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
