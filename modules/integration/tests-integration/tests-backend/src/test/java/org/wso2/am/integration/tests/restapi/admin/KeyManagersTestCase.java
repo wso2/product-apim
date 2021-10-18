@@ -100,6 +100,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         adminApiTestHelper.verifyKeyManagerAdditionalProperties(keyManagerDTO.getAdditionalProperties(),
                 addedKeyManagerDTO.getAdditionalProperties());
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with Auth0 type without a mandatory parameter",
@@ -269,6 +270,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        restAPIAdmin.deleteKeyManager(keyManagerId);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with WSO2IS type without a mandatory parameter",
@@ -430,6 +432,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        restAPIAdmin.deleteKeyManager(keyManagerId);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with Keycloak type without a mandatory parameter",
@@ -591,6 +594,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        restAPIAdmin.deleteKeyManager(keyManagerId);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with Okta type without a mandatory parameter",
@@ -759,6 +763,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        restAPIAdmin.deleteKeyManager(keyManagerId);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with PingFederate type without a mandatory parameter",
@@ -927,6 +932,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        restAPIAdmin.deleteKeyManager(keyManagerId);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with ForgeRock type without a mandatory parameter",
