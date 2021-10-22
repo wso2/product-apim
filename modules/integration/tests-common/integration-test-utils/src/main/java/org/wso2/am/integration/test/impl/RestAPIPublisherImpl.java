@@ -28,68 +28,8 @@ import org.wso2.am.integration.clients.gateway.api.v2.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
-import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GlobalMediationPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
-import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CertificatesDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.PatchRequestBodyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.PostRequestBodyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -143,6 +83,7 @@ public class RestAPIPublisherImpl {
     public ScopesApi sharedScopesApi = new ScopesApi();
     public ApiClient apiPublisherClient = new ApiClient();
     public String tenantDomain;
+    public ResourceEndpointsApi resourceEndpointApi = new ResourceEndpointsApi();
     private ApiProductsApi apiProductsApi = new ApiProductsApi();
     private RestAPIGatewayImpl restAPIGateway;
     private String disableVerification = System.getProperty("disableVerification");
@@ -197,6 +138,7 @@ public class RestAPIPublisherImpl {
         sharedScopesApi.setApiClient(apiPublisherClient);
         globalMediationPoliciesApi.setApiClient(apiPublisherClient);
         endpointCertificatesApi.setApiClient(apiPublisherClient);
+        resourceEndpointApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
@@ -2179,6 +2121,80 @@ public class RestAPIPublisherImpl {
 
         return endpointCertificatesApi.deleteEndpointCertificateByAliasWithHttpInfo(alias);
 
+    }
+
+    /**
+     * Add Resource Endpoint to API
+     *
+     * @param apiId                 UUID of the API
+     * @param resourceEndpointDTO   Resource Endpoint to be added
+     * @return Returns the newly added resource endpoint
+     * @throws ApiException
+     */
+    public ResourceEndpointDTO addResourceEndpoint(String apiId, ResourceEndpointDTO resourceEndpointDTO)
+            throws ApiException {
+        ApiResponse<ResourceEndpointDTO> httpInfo = resourceEndpointApi
+                .addResourceEndpointWithHttpInfo(apiId, resourceEndpointDTO);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_CREATED);
+        return httpInfo.getData();
+    }
+
+    /**
+     * Get Resource Endpoint of API
+     * @param apiId                 UUID of API
+     * @param resourceEndpointId    UUID of Resource Endpoint
+     * @return  Returns Resource Endpoint
+     * @throws ApiException
+     */
+    public ResourceEndpointDTO getResourceEndpoint(String apiId, String resourceEndpointId) throws ApiException {
+        ApiResponse<ResourceEndpointDTO> httpInfo = resourceEndpointApi
+                .getResourceEndpointWithHttpInfo(apiId, resourceEndpointId);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+        return httpInfo.getData();
+    }
+
+    /**
+     * Updates a Resource Endpoint
+     *
+     * @param apiId                 UUID of API
+     * @param resourceEndpointId    UUID of Resource Endpoint
+     * @param resourceEndpointDTO   Resource Endpoint to be updated
+     * @return  Returns updated Resource Endpoint
+     * @throws ApiException
+     */
+    public ResourceEndpointDTO updateResourceEndpoint(String apiId, String resourceEndpointId,
+            ResourceEndpointDTO resourceEndpointDTO) throws ApiException {
+        ApiResponse<ResourceEndpointDTO> httpInfo = resourceEndpointApi
+                .updateResourceEndpointWithHttpInfo(apiId, resourceEndpointId, resourceEndpointDTO);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+        return httpInfo.getData();
+    }
+
+    /**
+     * Fetches all Resource Endpoints of API
+     *
+     * @param apiId     UUID of API
+     * @return
+     * @throws ApiException
+     */
+    public ResourceEndpointListDTO testGetAllResourceEndpointsOfAPI(String apiId) throws ApiException {
+        ApiResponse<ResourceEndpointListDTO> httpInfo = resourceEndpointApi
+                .getResourceEndpointsWithHttpInfo(apiId, 10, 0);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
+        return httpInfo.getData();
+    }
+
+    /**
+     * Deletes a Resource Endpoint
+     *
+     * @param apiId                 UUID of API
+     * @param resourceEndpointId    UUID of Resource Endpoint
+     * @return  Returns updated Resource Endpoint
+     * @throws ApiException
+     */
+    public void deleteResourceEndpoint(String apiId, String resourceEndpointId) throws ApiException {
+        ApiResponse<Void> httpInfo = resourceEndpointApi.deleteResourceEndpointWithHttpInfo(apiId, resourceEndpointId);
+        Assert.assertEquals(httpInfo.getStatusCode(), HttpStatus.SC_OK);
     }
 
     private void setActivityID() {

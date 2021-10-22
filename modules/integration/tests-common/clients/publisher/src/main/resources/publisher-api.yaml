@@ -7700,6 +7700,190 @@ paths:
         - OAuth2Security:
             - apim:api_create
 
+  /apis/{apiId}/resource-endpoints:
+    post:
+      tags:
+        - Resource Endpoints
+      summary: Add Resource Endpoint
+      operationId: addResourceEndpoint
+      description: |
+        This operation can be used to add resource endpoints for an API.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+      requestBody:
+        description: Resource Endpoint Object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceEndpoint'
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created Resource Endpoint object in the body.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will d be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceEndpoint'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        415:
+          $ref: '#/components/responses/UnsupportedMediaType'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+
+    get:
+      tags:
+        - Resource Endpoints
+      summary: Get All Available Resource Endpoints of an API
+      description: |
+        This operation can be used to get all the available resource endpoints of an API.
+      operationId: getResourceEndpoints
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        200:
+          description: |
+            OK.
+            Resource Endpoints list is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceEndpointList'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+
+  /apis/{apiId}/resource-endpoints/{endpointId}:
+    get:
+      tags:
+        - Resource Endpoints
+      summary: Get Resource Endpoint
+      description: |
+        This operation can be used to get a resource endpoint by id.
+      operationId: getResourceEndpoint
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/endpointId'
+      responses:
+        200:
+          description: |
+            OK.
+            Resource Endpoints is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceEndpoint'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+
+    put:
+      tags:
+        - Resource Endpoints
+      summary: Update Resource Endpoint
+      description: |
+        This operation can be used to update a resource endpoint.
+      operationId: updateResourceEndpoint
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/endpointId'
+      requestBody:
+        description: Resource Endpoint object with updated details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceEndpoint'
+      responses:
+        200:
+          description: |
+            OK.
+            Updated Resource Endpoints is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceEndpoint'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        415:
+          $ref: '#/components/responses/UnsupportedMediaType'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+
+    delete:
+      tags:
+        - Resource Endpoints
+      summary: Delete Resource Endpoint
+      description: |
+        This operation can be used to delete a resource endpoint.
+      operationId: deleteResourceEndpoint
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/endpointId'
+      responses:
+        200:
+          description: |
+            OK.
+            Updated Resource Endpoints is returned.
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+
 components:
   schemas:
     Comment:
@@ -9389,7 +9573,7 @@ components:
           type: object
           properties:
             policyId:
-              type: int
+              type: integer
               description: Id of policy
               example: 1
             uuid:
@@ -9417,7 +9601,7 @@ components:
               description: Indicates whether the policy is deployed successfully or not.
               default: false
             tenantId:
-              type: int
+              type: integer
               description: Throttling policy tenant domain id
               example: -1234
             tenantDomain:
@@ -9971,6 +10155,8 @@ components:
         uriMapping:
           type: string
           example: ""
+        operationPolicies:
+          $ref: '#/components/schemas/APIOperationPolicies'
     ScopeList:
       title: Scope List
       type: object
@@ -10935,6 +11121,85 @@ components:
             For example, list out validation error by each field.
           items:
             $ref: '#/components/schemas/ErrorListItem'
+    OperationPolicy:
+      title: API Operation Policy
+      type: object
+      required:
+        - policyType
+      properties:
+        policyType:
+          type: string
+          enum:
+            - SET_HEADER
+            - REMOVE_HEADER
+            - REWRITE_HTTP_METHOD
+            - REWRITE_RESOURCE_PATH
+            - ADD_QUERY_PARAM
+            - REMOVE_QUERY_PARAM
+            - MOCK_RESPONSE
+            - CHANGE_ENDPOINT
+        parameters:
+          type: object
+          additionalProperties:
+            type: string
+    APIOperationPolicies:
+      title: API Operation Level Policies
+      properties:
+        in:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationPolicy'
+        out:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationPolicy'
+    ResourceEndpoint:
+      title: Resource Endpoints
+      required:
+        - name
+        - endpointType
+        - url
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        endpointType:
+          type: string
+          enum:
+            - HTTP
+            - ADDRESS
+        url:
+          type: string
+        securityConfig:
+          type: object
+          additionalProperties:
+            type: string
+        generalConfig:
+          type: object
+          additionalProperties:
+            type: string
+        usageCount:
+          type: integer
+          description: |
+            Usage count of Resource Endpoint
+          default: 0
+          readOnly: true
+    ResourceEndpointList:
+      title: Resource Endpoints List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Resource Endpoints returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceEndpoint'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
@@ -11419,6 +11684,25 @@ components:
       in: query
       schema:
         type: string
+    direction:
+      name: direction
+      description: Operation policy direction(in/out)
+      in: query
+      schema:
+        type: string
+    resourcePath:
+      name: resourcePath
+      description: Resource path
+      in: query
+      schema:
+        type: string
+    httpVerb:
+      name: httpVerb
+      description: HTTP verb
+      in: query
+      schema:
+        type: string
+
   requestBodies:
     threatProtectionPolicy:
       description: |

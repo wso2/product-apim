@@ -25,6 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIOperationsDTO
@@ -74,6 +75,10 @@ public class APIOperationsDTO {
         public static final String SERIALIZED_NAME_URI_MAPPING = "uriMapping";
         @SerializedName(SERIALIZED_NAME_URI_MAPPING)
             private String uriMapping;
+
+        public static final String SERIALIZED_NAME_OPERATION_POLICIES = "operationPolicies";
+        @SerializedName(SERIALIZED_NAME_OPERATION_POLICIES)
+            private APIOperationPoliciesDTO operationPolicies;
 
 
         public APIOperationsDTO id(String id) {
@@ -329,6 +334,29 @@ public class APIOperationsDTO {
     }
 
 
+        public APIOperationsDTO operationPolicies(APIOperationPoliciesDTO operationPolicies) {
+        
+        this.operationPolicies = operationPolicies;
+        return this;
+        }
+
+    /**
+        * Get operationPolicies
+    * @return operationPolicies
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIOperationPoliciesDTO getOperationPolicies() {
+        return operationPolicies;
+    }
+
+
+    public void setOperationPolicies(APIOperationPoliciesDTO operationPolicies) {
+        this.operationPolicies = operationPolicies;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -348,12 +376,13 @@ public class APIOperationsDTO {
             Objects.equals(this.amznResourceName, apIOperations.amznResourceName) &&
             Objects.equals(this.amznResourceTimeout, apIOperations.amznResourceTimeout) &&
             Objects.equals(this.payloadSchema, apIOperations.payloadSchema) &&
-            Objects.equals(this.uriMapping, apIOperations.uriMapping);
+            Objects.equals(this.uriMapping, apIOperations.uriMapping) &&
+            Objects.equals(this.operationPolicies, apIOperations.operationPolicies);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes, usedProductIds, amznResourceName, amznResourceTimeout, payloadSchema, uriMapping);
+        return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes, usedProductIds, amznResourceName, amznResourceTimeout, payloadSchema, uriMapping, operationPolicies);
     }
 
 
@@ -372,6 +401,7 @@ sb.append("class APIOperationsDTO {\n");
     sb.append("    amznResourceTimeout: ").append(toIndentedString(amznResourceTimeout)).append("\n");
     sb.append("    payloadSchema: ").append(toIndentedString(payloadSchema)).append("\n");
     sb.append("    uriMapping: ").append(toIndentedString(uriMapping)).append("\n");
+    sb.append("    operationPolicies: ").append(toIndentedString(operationPolicies)).append("\n");
 sb.append("}");
 return sb.toString();
 }

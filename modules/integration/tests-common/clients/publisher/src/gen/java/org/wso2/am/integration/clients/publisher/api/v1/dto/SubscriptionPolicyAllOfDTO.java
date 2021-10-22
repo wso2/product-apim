@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class SubscriptionPolicyAllOfDTO {
         public static final String SERIALIZED_NAME_POLICY_ID = "policyId";
         @SerializedName(SERIALIZED_NAME_POLICY_ID)
-            private Integer policyId = null;
+            private Integer policyId;
 
         public static final String SERIALIZED_NAME_UUID = "uuid";
         @SerializedName(SERIALIZED_NAME_UUID)
@@ -60,7 +60,7 @@ public class SubscriptionPolicyAllOfDTO {
 
         public static final String SERIALIZED_NAME_TENANT_ID = "tenantId";
         @SerializedName(SERIALIZED_NAME_TENANT_ID)
-            private Integer tenantId = null;
+            private Integer tenantId;
 
         public static final String SERIALIZED_NAME_TENANT_DOMAIN = "tenantDomain";
         @SerializedName(SERIALIZED_NAME_TENANT_DOMAIN)
