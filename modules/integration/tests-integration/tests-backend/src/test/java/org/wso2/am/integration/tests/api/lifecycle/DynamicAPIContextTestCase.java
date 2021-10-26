@@ -24,22 +24,24 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
@@ -58,17 +60,38 @@ public class DynamicAPIContextTestCase extends APIManagerLifecycleBaseTest {
     private final String API_CONTEXT = "api/developer";
     private final String API_DESCRIPTION = "This is an API with a dynamic context";
     private final String API_VERSION = "1.0.0";
-    private final String API_ENDPOINT_POSTFIX_URL = "specialCRN";
-    private final String API_ENDPOINT_RESOURCE = "/special,-._~resource";
+    private final String API_ENDPOINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_ENDPOINT_RESOURCE = "/customers/123";
     private final String APPLICATION_NAME = "DynamicContextTestApp";
     private String endpointUrl;
     private String apiId;
     private String applicationId;
+    private String providerName;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public DynamicAPIContextTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+        };
+    }
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
-        super.init();
-        endpointUrl = getGatewayURLNhttp() + API_ENDPOINT_POSTFIX_URL;
+        super.init(userMode);
+
+        userManagementClient = new UserManagementClient(
+                keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
+
+        endpointUrl = backEndServerUrl.getWebAppURLHttp() + API_ENDPOINT_POSTFIX_URL;
+        providerName = user.getUserName();
 
         // Create application
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME, "Test Application",
@@ -86,16 +109,8 @@ public class DynamicAPIContextTestCase extends APIManagerLifecycleBaseTest {
         apiRequest.setDescription(API_DESCRIPTION);
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setProvider(providerName);
         apiRequest.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
-
-        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
-        apiOperationsDTO.setVerb("GET");
-        apiOperationsDTO.setTarget(API_ENDPOINT_RESOURCE);
-        apiOperationsDTO.setAuthType("Application & Application User");
-        apiOperationsDTO.setThrottlingPolicy("Unlimited");
-        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
-        operationsDTOS.add(apiOperationsDTO);
-        apiRequest.setOperationsDTOS(operationsDTOS);
 
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
@@ -110,9 +125,10 @@ public class DynamicAPIContextTestCase extends APIManagerLifecycleBaseTest {
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("accept", "text/xml");
 
         // Try invoking the API
-        String apiInvocationUrl = getAPIInvocationURLHttp(API_CONTEXT + "/" + API_VERSION + API_ENDPOINT_RESOURCE);
+        String apiInvocationUrl = getAPIInvocationURLHttps(API_CONTEXT, API_VERSION) + API_ENDPOINT_RESOURCE;
         HttpResponse response = HttpRequestUtil.doGet(apiInvocationUrl, requestHeaders);
         assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET Method");
 
