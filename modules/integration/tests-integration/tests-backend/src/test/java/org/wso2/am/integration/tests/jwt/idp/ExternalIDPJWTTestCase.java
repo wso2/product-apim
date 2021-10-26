@@ -304,7 +304,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-//    @Test(groups = {"wso2.am"}, description = "validating display token endpoint behavior")
+    @Test(groups = {"wso2.am"}, description = "validating display token endpoint behavior")
     public void testIDPDisplaytokenEndpoints() throws Exception  {
         String token_ep = "http://localhost:9443/oauth/token";
         String revoke_ep = "http://localhost:9443/oauth/revoke";
@@ -352,6 +352,50 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 Assert.assertEquals(keyManager.getTokenEndpoint(), token_ep);
                 Assert.assertEquals(keyManager.getRevokeEndpoint(), revoke_ep);
             }
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "validating display token endpoint for exchange token grant")
+    public void testExchangeGrantType() throws Exception {
+        log.info("---------------- External Token Exchange Test Case ------------------");
+        String display_token_ep = "http://test.apim.integration/oauth/token";
+        String display_alias = "https://default";
+        String tokenType = KeyManagerDTO.TokenTypeEnum.EXCHANGED.toString();
+
+        KeyManagerDTO keyManagerDTO = new KeyManagerDTO();
+
+        keyManagerDTO.name(KEY_MANAGER_5);
+        keyManagerDTO.displayName("Exchange Grant Type");
+        keyManagerDTO.type("other");
+        keyManagerDTO.description("This is Exchange Grant Key Manager");
+        keyManagerDTO.enabled(true);
+        keyManagerDTO.alias("https://default");
+        keyManagerDTO.tokenEndpoint("http://test.apim.integration/oauth/token");
+        keyManagerDTO.setIssuer("https://http://test.apim.integration/default");
+        keyManagerDTO.enableSelfValidationJWT(true);
+        keyManagerDTO.enableOAuthAppCreation(true);
+        keyManagerDTO.tokenType(KeyManagerDTO.TokenTypeEnum.EXCHANGED);
+        KeyManagerCertificatesDTO certificatesDTO = new KeyManagerCertificatesDTO();
+        certificatesDTO.type(KeyManagerCertificatesDTO.TypeEnum.JWKS);
+        certificatesDTO.value("https://test.apim.integration/oauth2/default/v1/keys");
+        keyManagerDTO.certificates(certificatesDTO);
+
+        try {
+            org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
+                    keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
+            keyManager5Id = keyManagerDTOApiResponse.getData().getId();
+
+            for(KeyManagerInfoDTO keyManager: restAPIStore.getKeyManagers().getList()) {
+                if (keyManager.getName().equals(keyManager5Id)) {
+                    Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
+                    Assert.assertEquals(keyManager.getAlias(), display_alias);
+                    Assert.assertEquals(keyManager.getType(), tokenType);
+                }
+            }
+        }catch (Exception e){
+            log.error(e);
+        } finally {
+            restAPIAdmin.deleteKeyManager(keyManager5Id);
         }
     }
 
@@ -414,44 +458,6 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
         KeyManagerDTO retrievedData = keyManagerDTOApiResponse.getData();
         return retrievedData.getId();
-    }
-
-    @Test(groups = {"wso2.am"}, description = "validating display token endpoint for exchange token grant")
-    public void testExchangeGrantType(RestAPIAdminImpl restAPIAdmin) throws Exception {
-        String display_token_ep = "http://test.apim.integration/oauth/token";
-        String display_alias = "https://default";
-        String tokenType = KeyManagerDTO.TokenTypeEnum.EXCHANGED.toString();
-
-        KeyManagerDTO keyManagerDTO = new KeyManagerDTO();
-
-        keyManagerDTO.name(KEY_MANAGER_5);
-        keyManagerDTO.displayName("Exchange Grant Type");
-        keyManagerDTO.type("other");
-        keyManagerDTO.description("This is Exchange Grant Key Manager");
-        keyManagerDTO.enabled(true);
-        keyManagerDTO.alias("https://default");
-        keyManagerDTO.tokenEndpoint("http://test.apim.integration/oauth/token");
-        keyManagerDTO.setIssuer("https://http://test.apim.integration/default");
-        keyManagerDTO.enableSelfValidationJWT(true);
-        keyManagerDTO.enableOAuthAppCreation(true);
-        keyManagerDTO.tokenType(KeyManagerDTO.TokenTypeEnum.EXCHANGED);
-        KeyManagerCertificatesDTO certificatesDTO = new KeyManagerCertificatesDTO();
-        certificatesDTO.type(KeyManagerCertificatesDTO.TypeEnum.JWKS);
-        certificatesDTO.value("https://test.apim.integration/oauth2/default/v1/keys");
-        keyManagerDTO.certificates(certificatesDTO);
-
-        org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
-                keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
-        keyManager5Id = keyManagerDTOApiResponse.getData().getId();
-
-
-        for(KeyManagerInfoDTO keyManager: restAPIStore.getKeyManagers().getList()) {
-            if (keyManager.getName().equals(keyManager5Id)) {
-                Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
-                Assert.assertEquals(keyManager.getAlias(), display_alias);
-                Assert.assertEquals(keyManager.getType(), tokenType);
-            }
-        }
     }
 
     private String createKeyManager2(RestAPIAdminImpl restAPIAdmin) throws ApiException {
