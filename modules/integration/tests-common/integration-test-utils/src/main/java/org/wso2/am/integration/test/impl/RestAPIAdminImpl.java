@@ -235,19 +235,19 @@ public class RestAPIAdminImpl {
         return keyManagerCollectionApi.keyManagersGet();
     }
 
-    public KeyManagerDTO getKeyManager(String uuid) throws ApiException {
+    public ApiResponse<KeyManagerDTO> getKeyManager(String uuid) throws ApiException {
 
-        return keyManagerIndividualApi.keyManagersKeyManagerIdGet(uuid);
+        return keyManagerIndividualApi.keyManagersKeyManagerIdGetWithHttpInfo(uuid);
     }
 
-    public KeyManagerDTO updateKeyManager(String uuid, KeyManagerDTO keyManagerDTO) throws ApiException {
+    public ApiResponse<KeyManagerDTO> updateKeyManager(String uuid, KeyManagerDTO keyManagerDTO) throws ApiException {
 
-        return keyManagerIndividualApi.keyManagersKeyManagerIdPut(uuid, keyManagerDTO);
+        return keyManagerIndividualApi.keyManagersKeyManagerIdPutWithHttpInfo(uuid, keyManagerDTO);
     }
 
-    public void deleteKeyManager(String uuid) throws ApiException {
+    public ApiResponse<Void> deleteKeyManager(String uuid) throws ApiException {
 
-        keyManagerIndividualApi.keyManagersKeyManagerIdDelete(uuid);
+        return keyManagerIndividualApi.keyManagersKeyManagerIdDeleteWithHttpInfo(uuid);
     }
 
     public SettingsDTO getSettings() throws ApiException {

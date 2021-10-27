@@ -79,6 +79,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -1065,6 +1066,21 @@ public class APIMIntegrationBaseTest {
                     throw new RuntimeException("Unable to close connection ", e);
                 }
             }
+        }
+    }
+    protected static void waitUntilClockHour() throws InterruptedException {
+        while (getWaitTime() > 0) {
+            Thread.sleep(60000);
+        }
+    }
+
+    protected static long getWaitTime() {
+        Calendar calendar = Calendar.getInstance();
+        int minutesInTime = calendar.get(Calendar.MINUTE);
+        if (60 - minutesInTime >= 5) {
+            return 0;
+        } else {
+            return 1;
         }
     }
 }

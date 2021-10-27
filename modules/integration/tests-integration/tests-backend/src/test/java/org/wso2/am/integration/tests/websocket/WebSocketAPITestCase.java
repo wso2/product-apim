@@ -429,12 +429,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      */
     private void testThrottling(String accessToken) throws Exception {
 
-        /* Prevent API requests getting dispersed into two time units */
-        while (LocalDateTime.now().getSecond() > 20) {
-            Thread.sleep(5000L);
-        }
+        waitUntilClockHour();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
-
         int limit = 2;
         WebSocketClient client = new WebSocketClient();
         WebSocketClientImpl socket = new WebSocketClientImpl();
@@ -449,7 +445,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             for (int count = 1; count <= limit + 1; count++) {
                 if (count > limit) {
                     // Set time gap to allow throttle to take place
-                    Thread.sleep(15000L);
+                    Thread.sleep(5000L);
                 }
                 socket.sendMessage(testMessage);
                 waitForReply(socket);
