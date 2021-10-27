@@ -30,7 +30,11 @@
 
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
         #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
+        #if($type == "resource")
+        #set( $ep_key = $endpoint_config.get("endpointKey"))
+        #else
         #set( $ep_key = "${endpointKey}_API${type}Endpoint")
+        #end
         #set( $endpointsecurity = $endpoint_security.get("${type}"))
 
         ## IF endpoint secured
@@ -177,6 +181,91 @@
 <sequence key="$aggregate.getInSequenceName()"/>
 #end
 
+##insert operation level mediation logic
+#set($mockResponsePolicyExists = 'false')
+#set($changeEndpointPolicyExists = 'false')
+#set($operationPolicies = $resource.getOperationPolicies())
+#foreach ($policy in $operationPolicies)
+#if($policy.getPolicyType() == 'SET_HEADER')
+#set($headerName = $policy.getParameters().get('headerName'))
+#set($headerValue = $policy.getParameters().get('headerValue'))
+#if($headerValue)
+<property action="set" name="$headerName" value="$headerValue" scope="transport" />
+#else
+#set($headerExp = $policy.getParameters().get('headerExpression'))
+<property action="set" name="$headerName" expression="$headerExp" scope="transport" />
+#end
+#elseif($policy.getPolicyType() == 'REMOVE_HEADER')
+#set($headerName = $policy.getParameters().get('headerName'))
+<property action="remove" name="$headerName" scope="transport" />
+#elseif($policy.getPolicyType() == 'ADD_QUERY_PARAM')
+#set($paramName = $policy.getParameters().get('paramName'))
+#set($paramValue = $policy.getParameters().get('paramValue'))
+#if($paramValue)
+#set($value = "${paramName}=${paramValue}")
+#else
+#set($paramExp = $policy.getParameters().get('paramExpression'))
+<property name="QUERY_STRING" expression="fn:concat('${paramName}=', ${paramExp})"/>
+#end
+<property name="URL_POSTFIX" expression="get-property('axis2','REST_URL_POSTFIX')"/>
+<rewrite inProperty="URL_POSTFIX" outProperty="URL_POSTFIX">
+    <rewriterule>
+        #if($paramValue)
+        <action type="append" value="$value" fragment="query" />
+        #elseif($paramExp)
+        <action type="append" xpath="$ctx:QUERY_STRING" fragment="query" />
+        #end
+    </rewriterule>
+</rewrite>
+<property name="REST_URL_POSTFIX" scope="axis2" expression="get-property('URL_POSTFIX')"/>
+#elseif($policy.getPolicyType() == 'REMOVE_QUERY_PARAM')
+#set($paramName = $policy.getParameters().get('paramName'))
+<property name="URL_POSTFIX" expression="get-property('axis2','REST_URL_POSTFIX')"/>
+<rewrite inProperty="URL_POSTFIX" outProperty="URL_POSTFIX">
+    <rewriterule>
+        <action type="remove-query-param" value="$paramName" fragment="query" />
+    </rewriterule>
+</rewrite>
+<property name="REST_URL_POSTFIX" scope="axis2" expression="get-property('URL_POSTFIX')"/>
+#elseif($policy.getPolicyType() == 'REWRITE_HTTP_METHOD')
+#set($httpMethod = $policy.getParameters().get('httpMethod'))
+<property name="HTTP_METHOD" value="$httpMethod" scope="axis2"/>
+#elseif($policy.getPolicyType() == 'REWRITE_RESOURCE_PATH')
+#set($resourcePath = $policy.getParameters().get('resourcePath'))
+<property name="URL_POSTFIX" expression="get-property('axis2','REST_URL_POSTFIX')"/>
+<rewrite inProperty="URL_POSTFIX" outProperty="URL_POSTFIX">
+    <rewriterule>
+        <action type="set" value="$resourcePath" fragment="path" />
+    </rewriterule>
+</rewrite>
+<property name="REST_URL_POSTFIX" scope="axis2" expression="get-property('URL_POSTFIX')"/>
+#elseif($policy.getPolicyType() == 'MOCK_RESPONSE')
+#set($mockResponsePolicyExists = 'true')
+#set($payload = $policy.getParameters().get('payload'))
+#set($contentType = $policy.getParameters().get('contentType'))
+#set($statusCode = $policy.getParameters().get('statusCode'))
+#set($headers = $policy.getParameters().get('headers'))
+<payloadFactory media-type="json">
+    <format>
+        $payload
+    </format>
+</payloadFactory>
+<property name="HTTP_SC" value="$statusCode" scope="axis2"/>
+#foreach($header in $headers)
+#set($headerName = $header.get('headerName'))
+#set($headerValue = $header.get('headerValue'))
+<property action="set" name="$headerName" value="$headerValue" scope="transport" />
+#end
+<respond/>
+#elseif($policy.getPolicyType() == 'CHANGE_ENDPOINT')
+#set($changeEndpointPolicyExists = 'true')
+#set($endpointId = $policy.getParameters().get('endpointId'))
+#set($res_endpoint_json = $resource_endpoint_config.get($endpointId))
+#set($res_endpoint_security = $res_endpoint_json.get("endpoint_security"))
+#end
+#end
+
+#if($mockResponsePolicyExists != 'true')
 ## check and set response caching
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="false" hashGenerator="org.wso2.carbon.mediator.cache.digest.HttpRequestHashGenerator" timeout="$!responseCacheTimeOut">
@@ -205,9 +294,17 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
     <then>
         #end
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_json.get("production_endpoints") ))
+        #if ($changeEndpointPolicyExists == 'true')
+        #draw_endpoint( "resource" $res_endpoint_json $res_endpoint_security)
+        #else
         #draw_endpoint( "sandbox" $endpoint_json $endpointSecurity)
+        #end
+        #else
+        #if ($changeEndpointPolicyExists == 'true')
+        #draw_endpoint( "resource" $res_endpoint_json $res_endpoint_security)
         #else
         #draw_endpoint( "production" $endpoint_json $endpointSecurity)
+        #end
         #end
         #if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
     </then>
@@ -232,7 +329,11 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         <send/>
         #else
         #if($endpoint_json.get("production_endpoints") && $endpoint_json.get("sandbox_endpoints"))
+        #if ($changeEndpointPolicyExists == 'true')
+        #draw_endpoint( "resource" $res_endpoint_json $res_endpoint_security)
+        #else
         #draw_endpoint( "sandbox" $endpoint_json $endpointSecurity)
+        #end
         #elseif($endpoint_json.get("production_endpoints"))
         <sequence key="_sandbox_key_error_"/>
         #elseif($endpoint_json.get("sandbox_endpoints"))
@@ -241,6 +342,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         #end
     </else>
 </filter>
+#end
 #end
 </inSequence>
 <outSequence>

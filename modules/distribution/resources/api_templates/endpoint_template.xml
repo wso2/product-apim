@@ -129,7 +129,11 @@ optimize="$advance_ep.get("optimize")"
 
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
         #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
+        #if($type == "resource")
+        #set( $ep_key = $endpoint_config.get("endpointKey"))
+        #else
         #set( $ep_key = "${endpointKey}_API${type}Endpoint")
+        #end
 
         #if ( $endpointClass == "http" )
         #http_endpoint( $ep_key $endpoints )
@@ -193,7 +197,10 @@ optimize="$advance_ep.get("optimize")"
         ############################################### end of macros ##########################################################
 
         #if(${type} == "production_endpoints")
-            #draw_endpoint("production" $endpoint_config  )
-        #else
-            #draw_endpoint("sandbox" $endpoint_config )
+        #draw_endpoint("production" $endpoint_config  )
+        #elseif(${type} == "sandbox_endpoints")
+        #draw_endpoint("sandbox" $endpoint_config )
+        #elseif(${type} == "resource_endpoints")
+        #set($endpoint_config = $resource_endpoint_config.get($endpointId))
+        #draw_endpoint("resource" $endpoint_config )
         #end
