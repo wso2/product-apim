@@ -146,6 +146,97 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
 
     }
 
+    @Test(groups = {"wso2.am"}, description = "Pagination test case")
+    public void testPaginationWithMultipleVersions() throws Exception {
+
+        //create 3 APIs and publish them; these APIs should be paginated as 1
+        int numberOfVersions = 3;
+        try {
+            for (int i = 0; i < numberOfVersions; i++) {
+                String APIName = "PaginationTestVersionedAPI";
+                //put the name of the API in the array so that we can refer it when deleting
+                String APIContext = "paginationTestVersioned";
+                String tags = "pagination";
+                String url = "https://localhost:9443/test";
+                String description = "This is test API create by API manager integration test";
+                String APIVersion = Integer.toString(i) + ".0.0";
+
+                //Wait till CommonConfigDeployer finishes adding the default set of policies to the database after tenant admin
+                //login, if not api creation fails since Unlimited resource tier is not available in database.
+                waitForAPIDeployment();
+
+                APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+                apiRequest.setTags(tags);
+                apiRequest.setDescription(description);
+                apiRequest.setVersion(APIVersion);
+                apiRequest.setSandbox(url);
+                apiRequest.setResourceMethod("GET");
+                APIDTO createdAPI = restAPIPublisher.addAPI(apiRequest, "v2");
+                createdAPIs.add(createdAPI);
+                //update the lifecycle of the API to Published state, so that is it visible in store
+                HttpResponse lifecycleChangeResponse =
+                        restAPIPublisher.changeAPILifeCycleStatusToPublish(createdAPI.getId(), false);
+                assertNotNull(lifecycleChangeResponse,
+                        "Failed to publish the API " + createdAPI.getName() + ":" + createdAPI.getVersion());
+            }
+            int start = 5;
+            int count = start + 5;
+            for (int i = 5; i < count; i++) {
+                String APIName = "PaginationTestAPI" + Integer.toString(i);
+                //put the name of the API in the array so that we can refer it when deleting
+                String APIContext = "paginationTest" + Integer.toString(i);
+                String tags = "pagination";
+                String url = "https://localhost:9443/test";
+                String description = "This is test API create by API manager integration test";
+                String APIVersion = "1.0.0";
+
+                //Wait till CommonConfigDeployer finishes adding the default set of policies to the database after tenant admin
+                //login, if not api creation fails since Unlimited resource tier is not available in database.
+                waitForAPIDeployment();
+
+                APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+                apiRequest.setTags(tags);
+                apiRequest.setDescription(description);
+                apiRequest.setVersion(APIVersion);
+                apiRequest.setSandbox(url);
+                apiRequest.setResourceMethod("GET");
+                APIDTO createdAPI = restAPIPublisher.addAPI(apiRequest, "v2");
+                createdAPIs.add(createdAPI);
+                //update the lifecycle of the API to Published state, so that is it visible in store
+                HttpResponse lifecycleChangeResponse =
+                        restAPIPublisher.changeAPILifeCycleStatusToPublish(createdAPI.getId(), false);
+                assertNotNull(lifecycleChangeResponse,
+                        "Failed to publish the API " + createdAPI.getName() + ":" + createdAPI.getVersion());
+            }
+
+            //periodically check (for 1 min) if the APIs are available for searching (give some time for solr indexing)
+            boolean apisAvailableForTesting = false;
+            for (int i = 0; i < 12; i++) {
+                if (restAPIPublisher.getAllAPIs().getCount() == numberOfVersions + start
+                        && restAPIStore.getAllAPIs().getCount() == numberOfVersions + start) {
+                    apisAvailableForTesting = true;
+                    break;
+                }
+                Thread.sleep(5000);
+            }
+
+            if (!apisAvailableForTesting) {
+                fail((numberOfVersions + start) + " Versioned APIs are not visible properly in Devportal or Publisher");
+            }
+        } catch (APIManagerIntegrationTestException e) {
+            fail("Error occurred while log-in to add APIs. Pagination count test case failed.");
+        } catch (MalformedURLException e) {
+            fail("Invalid service URL to add APIs. Pagination count test case failed.");
+        }
+
+        //Checking Dev Portal pagination
+        //fetch the first page, this page should have 2 results
+        getPaginatedAPIsFromStoreAndVerify(0, 4,4);
+        //fetch the 2nd page, this page should have 2 results
+        getPaginatedAPIsFromStoreAndVerify(4,4, 2);
+
+    }
+
     /**
      * Request paginated APIs from publisher and verify counts
      *
