@@ -142,7 +142,7 @@ public class DynamicAPIContextTestCase extends APIManagerLifecycleBaseTest {
         String query = "context:/" + API_CONTEXT_TEMPLATE;
 
         // Since indexing needs time, we are retrying at an interval of 3s
-        int retries = 5;
+        int retries = 20;
 
         // Search for API in Publisher
         for (int i = 0; i <= retries; i++) {
