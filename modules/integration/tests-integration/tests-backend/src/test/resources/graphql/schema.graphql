@@ -32,6 +32,10 @@ type Language {
   rtl: Int
 }
 
+input comparison {
+  eq: Int
+}
+
 type Query {
   continents: [Continent]
   continent(code: String): Continent
