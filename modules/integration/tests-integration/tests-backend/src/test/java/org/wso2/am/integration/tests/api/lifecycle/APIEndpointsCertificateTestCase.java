@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import org.apache.axiom.om.OMElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
@@ -40,9 +41,11 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRe
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,6 +135,21 @@ public class APIEndpointsCertificateTestCase extends APIManagerLifecycleBaseTest
         accessToken = applicationKeyDTO.getToken().getAccessToken();
         waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        // Upload the synapse for tenant user.
+        if (TestUserMode.TENANT_ADMIN == userMode) {
+            String file = "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator
+                    + "fault.xml";
+            OMElement synapseConfig = APIMTestCaseUtils.loadResource(file);
+
+            AuthenticatorClient login = new AuthenticatorClient(gatewayContextWrk.getContextUrls().getBackEndUrl());
+            String session = login.login(keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                    keyManagerContext.getContextTenant().getTenantAdmin().getPassword(), "localhost");
+            APIMTestCaseUtils
+                    .updateSynapseConfiguration(synapseConfig, gatewayContextWrk.getContextUrls().getBackEndUrl(),
+                            session);
+            waitForAPIDeployment();
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke API without inserting Endpoint Certificate")
