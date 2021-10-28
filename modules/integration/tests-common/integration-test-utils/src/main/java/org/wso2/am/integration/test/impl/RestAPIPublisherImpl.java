@@ -1590,19 +1590,21 @@ public class RestAPIPublisherImpl {
         if (Boolean.parseBoolean(disableVerification)){
             return;
         }
-        String context, version, provider, name;
+        String context, version, provider, name, apiPolicy;
         if ("APIProduct".equals(apiType)) {
             APIProductDTO apiProduct = getApiProduct(revisionUUID);
             context = apiProduct.getContext();
             version = "1.0.0";
             provider = apiProduct.getProvider();
             name = apiProduct.getName();
+            apiPolicy = apiProduct.getApiThrottlingPolicy();
         } else {
             APIDTO api = getAPIByID(revisionUUID);
             context = api.getContext();
             version = api.getVersion();
             provider = api.getProvider();
             name = api.getName();
+            apiPolicy = api.getApiThrottlingPolicy();
         }
         APIInfoDTO apiInfo = restAPIGateway.getAPIInfo(apiUUID);
         if (apiInfo != null) {
@@ -1618,6 +1620,21 @@ public class RestAPIPublisherImpl {
             }
             Assert.assertEquals(apiInfo.getName(), name);
             Assert.assertEquals(apiInfo.getProvider(), provider);
+            if (!StringUtils.equals(apiPolicy, apiInfo.getPolicy())) {
+                int retries = 0;
+                while (retries <= 5) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+                    }
+                    apiInfo = restAPIGateway.getAPIInfo(apiUUID);
+                    if (!StringUtils.equals(apiPolicy, apiInfo.getPolicy())) {
+                        retries++;
+                    } else {
+                        break;
+                    }
+                }
+            }
             return;
         }
         int retries = 0;

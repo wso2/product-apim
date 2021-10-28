@@ -8241,6 +8241,8 @@ components:
           scopesClaim: scp
           id: 01234567-0123-0123-0123-012345678901
           userInfoEndpoint: https://localhost:9444/oauth2/userinfo?schema=openid
+          displayTokenEndpoint: https://localhost:9444/oauth2/token
+          displayRevokeEndpoint: https://localhost:9444/oauth2/revoke
           enableSelfValidationJWT: true
           enableTokenEncryption: false
           availableGrantTypes:
@@ -8299,6 +8301,8 @@ components:
         scopesClaim: scp
         id: 01234567-0123-0123-0123-012345678901
         userInfoEndpoint: https://localhost:9444/oauth2/userinfo?schema=openid
+        displayTokenEndpoint: https://localhost:9444/oauth2/token
+        displayRevokeEndpoint: https://localhost:9444/oauth2/revoke
         enableSelfValidationJWT: true
         enableTokenEncryption: false
         availableGrantTypes:
@@ -8370,7 +8374,13 @@ components:
         tokenEndpoint:
           example: https://localhost:9444/oauth2/token
           type: string
+        displayTokenEndpoint:
+          example: https://localhost:9444/oauth2/token
+          type: string
         revokeEndpoint:
+          example: https://localhost:9444/oauth2/revoke
+          type: string
+        displayRevokeEndpoint:
           example: https://localhost:9444/oauth2/revoke
           type: string
         userInfoEndpoint:
