@@ -240,6 +240,13 @@
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/synapse-configs</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>src/main/conf/synapse-configs/default</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/apim-synapse-config/</outputDirectory>
+            <includes>
+                <include>**/registry.xml</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>src/main/conf/synapse-configs/default/sequences</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources/apim-synapse-config/</outputDirectory>
         </fileSet>
