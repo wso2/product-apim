@@ -113,6 +113,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.DynamicAPIContextTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TagsRatingTestCase"/>
@@ -230,6 +231,7 @@
             <class name="org.wso2.am.integration.tests.application.CAPIMGT12CallBackURLOverwriteTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationAttributesTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.PkceEnabledApplicationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5417PrototypedAPIsInMonetizedTestCase"/>-->
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
