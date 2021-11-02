@@ -1279,7 +1279,7 @@
         <carbon.apimgt.ui.version>9.0.214</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.0.382</carbon.apimgt.version>
+        <carbon.apimgt.version>9.0.385</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1330,8 +1330,6 @@
         <!-- carbon deployment -->
         <carbon.deployment.version>4.11.1</carbon.deployment.version>
 
-        <!-- carbon analytics -->
-        <carbon.analytics.version>1.4.5</carbon.analytics.version>
 
         <!--jaggery-->
         <org.jaggery.version>0.14.13</org.jaggery.version>
