@@ -223,7 +223,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         sampleSubscriptionThrottlePolicyDTO1 = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(policyName1, policyName1, description, false, defaultLimit1,
                         graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
-                        true, billingPlan, subscriberCount, permissions1);
+                        true, billingPlan, permissions1);
         ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy1 =
                 restAPIAdmin.addSubscriptionThrottlingPolicy(sampleSubscriptionThrottlePolicyDTO1);
         Assert.assertEquals(addedPolicy1.getStatusCode(), HttpStatus.SC_CREATED);
@@ -239,7 +239,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         sampleSubscriptionThrottlePolicyDTO2 = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(policyName2, policyName2, description, false, defaultLimit2,
                         graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount, rateLimitTimeUnit, customAttributes,
-                        true, billingPlan, subscriberCount, permissions2);
+                        true, billingPlan, permissions2);
         ApiResponse<SubscriptionThrottlePolicyDTO> addedPolicy2 =
                 restAPIAdmin.addSubscriptionThrottlingPolicy(sampleSubscriptionThrottlePolicyDTO2);
         Assert.assertEquals(addedPolicy2.getStatusCode(), HttpStatus.SC_CREATED);
@@ -256,7 +256,6 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         Assert.assertEquals(apiResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
                 "Response Code miss matched when creating the API");
         apiId = apiResponse.getData();
-        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
         waitForAPIDeployment();
 
@@ -292,7 +291,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
             Thread.sleep(1000);
         }
         Assert.assertTrue(isThrottled1, "Request not throttled by " + policyName1);
-        restAPIStore.removeSubscription(subscriptionDTO);
+        restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
 
         // Subscribe to throttling policy and generate access token
         subscriptionDTO = restAPIStore.subscribeToAPI(apiId, app1Id, policyName2);
@@ -317,7 +316,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
             Thread.sleep(1000);
         }
         Assert.assertTrue(isThrottled2, "Request not throttled by " + policyName2);
-        restAPIStore.removeSubscription(subscriptionDTO);
+        restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test check whether restricted policies can be viewed",
