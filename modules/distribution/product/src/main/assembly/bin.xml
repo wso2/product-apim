@@ -97,6 +97,7 @@
                 <!--<exclude>**/repository/components/plugins/waffle_1.4.0.wso2v1.jar</exclude>-->
                 <!--<exclude>**/repository/components/plugins/compass_2.0.1.wso2v2.jar</exclude>-->
                 <!--<exclude>**/repository/components/plugins/poi_3.9.0.wso2v1.jar</exclude>-->
+                <exclude>**/repository/components/plugins/net.minidev.json-smart_2.3.0.jar</exclude>
 
                 <!-- Remove jars which are not needed-->
                 <exclude>**/repository/components/plugins/org.wso2.carbon.feature.mgt.stub_${carbon.kernel.version}.jar</exclude>
@@ -238,6 +239,13 @@
         <fileSet>
             <directory>src/main/conf/synapse-configs</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/synapse-configs</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/conf/synapse-configs/default</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/apim-synapse-config/</outputDirectory>
+            <includes>
+                <include>**/registry.xml</include>
+            </includes>
         </fileSet>
         <fileSet>
             <directory>src/main/conf/synapse-configs/default/sequences</directory>
@@ -1617,15 +1625,7 @@
             <fileMode>644</fileMode>
         </file>
 
-        <!--Message Tracer config file-->
-        <file>
-            <source>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/message-tracer-config.xml
-            </source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/etc</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>644</fileMode>
-        </file>
+
         <file>
             <source>../resources/authenticators/authenticators.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
