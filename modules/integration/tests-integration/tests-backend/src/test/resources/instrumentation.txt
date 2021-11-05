@@ -1,1 +1,4 @@
 org.wso2.carbon.apimgt_
+api#am#_
+internal#data_
+client-registration_
