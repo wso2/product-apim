@@ -625,6 +625,11 @@
                 <version>${carbon.identity.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.commons</groupId>
+                <artifactId>org.wso2.carbon.logging.mgt.feature</artifactId>
+                <version>${carbon.commons.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.multitenancy</groupId>
                 <artifactId>org.wso2.carbon.tenant.mgt.stub</artifactId>
                 <version>${carbon.multitenancy.version}</version>
@@ -1298,7 +1303,7 @@
 
 	    <cipher.tool.version>1.1.15</cipher.tool.version>
 
-        <carbon.commons.version>4.7.35</carbon.commons.version>
+        <carbon.commons.version>4.7.40-SNAPSHOT</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
