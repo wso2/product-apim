@@ -237,6 +237,39 @@ public class ApiTestHelper {
         return restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
     }
 
+    public APIDTO createAdvertiseOnlyApi() throws ApiException {
+        String swaggerPath = resourceLocation + File.separator + SWAGGER_FOLDER +
+                File.separator + "customer-info-api.yaml";
+
+        File definition = new File(swaggerPath);
+
+        JSONObject apiProperties = new JSONObject();
+
+        String uniqueName = UUID.randomUUID().toString();
+        apiProperties.put("name", uniqueName);
+        apiProperties.put("context", "/" + uniqueName);
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", user.getUserName());
+
+        JSONObject url = new JSONObject();
+        url.put("url", "https://test.com");
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("sandbox_endpoints", url);
+        endpointConfig.put("production_endpoints", url);
+        apiProperties.put("endpointConfig", endpointConfig);
+
+        JSONObject advertiseInfo = new JSONObject();
+        advertiseInfo.put("advertised", true);
+        advertiseInfo.put("accessibleEndpointUrl", "https://test.com");
+        advertiseInfo.put("originalDevPortalUrl", "https://test.com");
+        advertiseInfo.put("vendor", "WSO2");
+        advertiseInfo.put("apiOwner", user.getUserName());
+        apiProperties.put("advertiseInfo", advertiseInfo);
+
+        return restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
+    }
+
     public ApplicationDTO verifySubscription(org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO,
                                              String applicationName, String subscriptionPolicy)
             throws org.wso2.am.integration.clients.store.api.ApiException, APIManagerIntegrationTestException {

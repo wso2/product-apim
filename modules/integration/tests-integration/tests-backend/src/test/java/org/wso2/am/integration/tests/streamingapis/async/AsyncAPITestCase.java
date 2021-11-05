@@ -145,6 +145,18 @@ public class AsyncAPITestCase extends APIMIntegrationBaseTest {
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
                 apiName + " API creation is failed");
 
+        String revisionUUID = null;
+        // Create Revision and Deploy to Gateway
+        try {
+            revisionUUID = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        } catch (ApiException e) {
+            Assert.assertTrue(e.getResponseBody().contains("Creating API Revisions is not supported for advertise " +
+                    "only APIs"));
+        }
+        if (revisionUUID != null) {
+            Assert.fail();
+        }
+
         // publish api
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
 
