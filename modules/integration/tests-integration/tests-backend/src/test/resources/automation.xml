@@ -37,6 +37,11 @@
          Change this to true if you want to generate coverage statistics
         -->
         <coverage>true</coverage>
+        <coverageClassesRelativeDirectories>
+            <coverageClassesRelativeDirectory>repository/deployment/server/webapps</coverageClassesRelativeDirectory>
+            <coverageClassesRelativeDirectory>repository/components/plugins</coverageClassesRelativeDirectory>
+            <coverageClassesRelativeDirectory>lib/runtimes/cxf3</coverageClassesRelativeDirectory>
+        </coverageClassesRelativeDirectories>
         <!--
          Change this to true if you want to enable framework dashboard
         -->
