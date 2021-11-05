@@ -29,6 +29,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
@@ -482,6 +483,32 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         headers.put("Content-Type", "application/json");
         apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, expectedResponse,
                 requestBody, headers);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test creation of API Product with an Advertise only API")
+    public void testCreateApiProductWithAdvertiseOnlyApi() throws Exception {
+        // Pre-Conditions : Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+        APIDTO advertiseOnlyApi = apiTestHelper.createAdvertiseOnlyApi();
+        apisToBeUsed.add(advertiseOnlyApi);
+
+        // Step 1 : Create APIProduct
+        final String provider = user.getUserName();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID();
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        APIProductDTO apiProductDTO = null;
+        try {
+            apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+                    apisToBeUsed, policies);
+        } catch (ApiException e) {
+            Assert.assertTrue(e.getResponseBody().contains("Advertise Only APIs cannot be included in API products"));
+        }
+        if (apiProductDTO != null) {
+            Assert.fail();
+        }
     }
 
     @AfterClass(alwaysRun = true)

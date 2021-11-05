@@ -1165,6 +1165,10 @@ public class RestAPIPublisherImpl {
         return apiDtoApiResponse;
     }
 
+    public ApiResponse<APIDTO> importAsyncAPIDefinition(File file, String properties) throws ApiException {
+        return apIsApi.importAsyncAPISpecificationWithHttpInfo(file, null, properties);
+    }
+
     public ResourcePolicyListDTO getApiResourcePolicies(String apiId, String sequenceType, String resourcePath,
             String verb) throws ApiException {
         ApiResponse<ResourcePolicyListDTO> policyListDTOApiResponse = apiResourcePoliciesApi

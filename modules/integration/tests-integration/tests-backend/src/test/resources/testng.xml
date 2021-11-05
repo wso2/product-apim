@@ -300,6 +300,7 @@
             <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.ThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.SecretValidationTestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.async.AsyncAPITestCase"/>
             <!--<class name="org.wso2.am.integration.tests.streamingapis.websub.FailedWebSubSubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.MultipleWebSubSubcriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.streamingapis.websub.LeaseTimeSubscriptionTestCase"/>-->
