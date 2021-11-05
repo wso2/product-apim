@@ -625,6 +625,11 @@
                 <version>${carbon.identity.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.commons</groupId>
+                <artifactId>org.wso2.carbon.logging.mgt.feature</artifactId>
+                <version>${carbon.commons.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.multitenancy</groupId>
                 <artifactId>org.wso2.carbon.tenant.mgt.stub</artifactId>
                 <version>${carbon.multitenancy.version}</version>
