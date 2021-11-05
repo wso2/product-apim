@@ -13807,6 +13807,402 @@ paths:
       - APIs
       x-contentType: multipart/form-data
       x-accepts: application/json
+  /apis/{apiId}/resource-endpoints:
+    get:
+      description: |
+        This operation can be used to get all the available resource endpoints of an API.
+      operationId: getResourceEndpoints
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceEndpointList'
+          description: |
+            OK.
+            Resource Endpoints list is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+      summary: Get All Available Resource Endpoints of an API
+      tags:
+      - Resource Endpoints
+      x-accepts: application/json
+    post:
+      description: |
+        This operation can be used to add resource endpoints for an API.
+      operationId: addResourceEndpoint
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceEndpoint'
+        description: Resource Endpoint Object that needs to be added
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceEndpoint'
+          description: |
+            Created.
+            Successful response with the newly created Resource Endpoint object in the body.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will d be supported in future).
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Last-Modified:
+              description: |
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "415":
+          content:
+            application/json:
+              example:
+                code: 415
+                message: Unsupported media type
+                description: The entity of the request was not in a supported format
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unsupported Media Type. The entity of the request was not in
+            a supported format.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+      summary: Add Resource Endpoint
+      tags:
+      - Resource Endpoints
+      x-contentType: application/json
+      x-accepts: application/json
+  /apis/{apiId}/resource-endpoints/{endpointId}:
+    delete:
+      description: |
+        This operation can be used to delete a resource endpoint.
+      operationId: deleteResourceEndpoint
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Endpoint ID** consisting of the **UUID** of the Endpoint**.
+        explode: false
+        in: path
+        name: endpointId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Updated Resource Endpoints is returned.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+      summary: Delete Resource Endpoint
+      tags:
+      - Resource Endpoints
+      x-accepts: application/json
+    get:
+      description: |
+        This operation can be used to get a resource endpoint by id.
+      operationId: getResourceEndpoint
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Endpoint ID** consisting of the **UUID** of the Endpoint**.
+        explode: false
+        in: path
+        name: endpointId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceEndpoint'
+          description: |
+            OK.
+            Resource Endpoints is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+      summary: Get Resource Endpoint
+      tags:
+      - Resource Endpoints
+      x-accepts: application/json
+    put:
+      description: |
+        This operation can be used to update a resource endpoint.
+      operationId: updateResourceEndpoint
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Endpoint ID** consisting of the **UUID** of the Endpoint**.
+        explode: false
+        in: path
+        name: endpointId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceEndpoint'
+        description: Resource Endpoint object with updated details
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceEndpoint'
+          description: |
+            OK.
+            Updated Resource Endpoints is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "415":
+          content:
+            application/json:
+              example:
+                code: 415
+                message: Unsupported media type
+                description: The entity of the request was not in a supported format
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unsupported Media Type. The entity of the request was not in
+            a supported format.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+      summary: Update Resource Endpoint
+      tags:
+      - Resource Endpoints
+      x-contentType: application/json
+      x-accepts: application/json
 components:
   parameters:
     replyLimit:
@@ -14276,6 +14672,33 @@ components:
       explode: true
       in: query
       name: tierQuotaType
+      required: false
+      schema:
+        type: string
+      style: form
+    direction:
+      description: Operation policy direction(in/out)
+      explode: true
+      in: query
+      name: direction
+      required: false
+      schema:
+        type: string
+      style: form
+    resourcePath:
+      description: Resource path
+      explode: true
+      in: query
+      name: resourcePath
+      required: false
+      schema:
+        type: string
+      style: form
+    httpVerb:
+      description: HTTP verb
+      explode: true
+      in: query
+      name: httpVerb
       required: false
       schema:
         type: string
@@ -17264,6 +17687,21 @@ components:
         usedProductIds: []
         payloadSchema: payloadSchema
         amznResourceName: amznResourceName
+        operationPolicies:
+          in:
+          - policyType: SET_HEADER
+            parameters:
+              key: parameters
+          - policyType: SET_HEADER
+            parameters:
+              key: parameters
+          out:
+          - policyType: SET_HEADER
+            parameters:
+              key: parameters
+          - policyType: SET_HEADER
+            parameters:
+              key: parameters
         verb: POST
         uriMapping: uriMapping
         id: postapiresource
@@ -17307,6 +17745,8 @@ components:
           type: string
         uriMapping:
           type: string
+        operationPolicies:
+          $ref: '#/components/schemas/APIOperationPolicies'
       title: Operation
       type: object
     ScopeList:
@@ -17757,6 +18197,21 @@ components:
           - usedProductIds: []
             payloadSchema: payloadSchema
             amznResourceName: amznResourceName
+            operationPolicies:
+              in:
+              - policyType: SET_HEADER
+                parameters:
+                  key: parameters
+              - policyType: SET_HEADER
+                parameters:
+                  key: parameters
+              out:
+              - policyType: SET_HEADER
+                parameters:
+                  key: parameters
+              - policyType: SET_HEADER
+                parameters:
+                  key: parameters
             verb: POST
             uriMapping: uriMapping
             id: postapiresource
@@ -17768,6 +18223,21 @@ components:
           - usedProductIds: []
             payloadSchema: payloadSchema
             amznResourceName: amznResourceName
+            operationPolicies:
+              in:
+              - policyType: SET_HEADER
+                parameters:
+                  key: parameters
+              - policyType: SET_HEADER
+                parameters:
+                  key: parameters
+              out:
+              - policyType: SET_HEADER
+                parameters:
+                  key: parameters
+              - policyType: SET_HEADER
+                parameters:
+                  key: parameters
             verb: POST
             uriMapping: uriMapping
             id: postapiresource
@@ -18522,6 +18992,141 @@ components:
       - isValid
       title: AsyncAPI Specification Validation Response
       type: object
+    OperationPolicy:
+      example:
+        policyType: SET_HEADER
+        parameters:
+          key: parameters
+      properties:
+        policyType:
+          enum:
+          - SET_HEADER
+          - REMOVE_HEADER
+          - REWRITE_HTTP_METHOD
+          - REWRITE_RESOURCE_PATH
+          - ADD_QUERY_PARAM
+          - REMOVE_QUERY_PARAM
+          - MOCK_RESPONSE
+          - CHANGE_ENDPOINT
+          type: string
+        parameters:
+          additionalProperties:
+            type: string
+          type: object
+      required:
+      - policyType
+      title: API Operation Policy
+      type: object
+    APIOperationPolicies:
+      example:
+        in:
+        - policyType: SET_HEADER
+          parameters:
+            key: parameters
+        - policyType: SET_HEADER
+          parameters:
+            key: parameters
+        out:
+        - policyType: SET_HEADER
+          parameters:
+            key: parameters
+        - policyType: SET_HEADER
+          parameters:
+            key: parameters
+      properties:
+        in:
+          items:
+            $ref: '#/components/schemas/OperationPolicy'
+          type: array
+        out:
+          items:
+            $ref: '#/components/schemas/OperationPolicy'
+          type: array
+      title: API Operation Level Policies
+    ResourceEndpoint:
+      example:
+        securityConfig:
+          key: securityConfig
+        endpointType: HTTP
+        generalConfig:
+          key: generalConfig
+        name: name
+        id: id
+        url: url
+        usageCount: 0
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        endpointType:
+          enum:
+          - HTTP
+          - ADDRESS
+          type: string
+        url:
+          type: string
+        securityConfig:
+          additionalProperties:
+            type: string
+          type: object
+        generalConfig:
+          additionalProperties:
+            type: string
+          type: object
+        usageCount:
+          default: 0
+          description: |
+            Usage count of Resource Endpoint
+          readOnly: true
+          type: integer
+      required:
+      - endpointType
+      - name
+      - url
+      title: Resource Endpoints
+    ResourceEndpointList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 1
+        list:
+        - securityConfig:
+            key: securityConfig
+          endpointType: HTTP
+          generalConfig:
+            key: generalConfig
+          name: name
+          id: id
+          url: url
+          usageCount: 0
+        - securityConfig:
+            key: securityConfig
+          endpointType: HTTP
+          generalConfig:
+            key: generalConfig
+          name: name
+          id: id
+          url: url
+          usageCount: 0
+      properties:
+        count:
+          description: |
+            Number of Resource Endpoints returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/ResourceEndpoint'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Resource Endpoints List
+      type: object
     Post_request_body:
       properties:
         content:
@@ -18644,7 +19249,7 @@ components:
         policyId:
           description: Id of policy
           example: 1
-          type: int
+          type: integer
         uuid:
           description: policy uuid
           example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
@@ -18672,7 +19277,7 @@ components:
         tenantId:
           description: Throttling policy tenant domain id
           example: -1234
-          type: int
+          type: integer
         tenantDomain:
           description: Throttling policy tenant domain
           example: carbon.super
@@ -18856,6 +19461,21 @@ components:
         - usedProductIds: []
           payloadSchema: payloadSchema
           amznResourceName: amznResourceName
+          operationPolicies:
+            in:
+            - policyType: SET_HEADER
+              parameters:
+                key: parameters
+            - policyType: SET_HEADER
+              parameters:
+                key: parameters
+            out:
+            - policyType: SET_HEADER
+              parameters:
+                key: parameters
+            - policyType: SET_HEADER
+              parameters:
+                key: parameters
           verb: POST
           uriMapping: uriMapping
           id: postapiresource
@@ -18867,6 +19487,21 @@ components:
         - usedProductIds: []
           payloadSchema: payloadSchema
           amznResourceName: amznResourceName
+          operationPolicies:
+            in:
+            - policyType: SET_HEADER
+              parameters:
+                key: parameters
+            - policyType: SET_HEADER
+              parameters:
+                key: parameters
+            out:
+            - policyType: SET_HEADER
+              parameters:
+                key: parameters
+            - policyType: SET_HEADER
+              parameters:
+                key: parameters
           verb: POST
           uriMapping: uriMapping
           id: postapiresource

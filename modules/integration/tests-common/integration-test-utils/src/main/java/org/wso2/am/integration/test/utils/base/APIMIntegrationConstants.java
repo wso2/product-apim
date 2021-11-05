@@ -52,6 +52,7 @@ public class APIMIntegrationConstants {
     public static final String AM_MONITORING_WEB_APP_NAME = "APIStatusMonitor";
     public static final String GRAPHQL_API_WEB_APP_NAME = "am-graphQL-sample";
     public static final String AUDIT_API_WEB_APP_NAME = "am-auditApi-sample";
+    public static final String ECHO_REQUEST_API_WEB_APP_NAME = "am-echo-service";
     public static final String PRODEP1_WEB_APP_NAME = "name-checkOne";
     public static final String PRODEP2_WEB_APP_NAME = "name-checkTwo";
     public static final String PRODEP3_WEB_APP_NAME = "name-checkThree";

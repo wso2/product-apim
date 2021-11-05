@@ -1,0 +1,59 @@
+{
+  "name": "OperationPolicyTestAPI2",
+  "description": "This is a test API created by API manager integration test",
+  "context": "/operation-policies-2",
+  "version": "1.0.0",
+  "lifeCycleStatus": "PUBLISHED",
+  "type": "HTTP",
+  "transport": ["http", "https"],
+  "policies": ["Unlimited"],
+  "authorizationHeader": "Authorization",
+  "securityScheme": ["oauth2", "oauth_basic_auth_api_key_mandatory"],
+  "visibility": "PUBLIC",
+  "subscriptionAvailability": "CURRENT_TENANT",
+  "accessControl": "NONE",
+  "accessControlRoles": [],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {
+      "url": "https://localhost:9443/am/sample/pizzashack/v1/api/"
+    },
+    "production_endpoints": {
+      "url": "https://localhost:9443/am/sample/pizzashack/v1/api/"
+    }
+  },
+  "endpointImplementationType": "ENDPOINT",
+  "operations": [{
+    "target": "/menu",
+    "verb": "GET",
+    "authType": "Application & Application User",
+    "throttlingPolicy": "Unlimited",
+    "operationPolicies": {
+      "in": [
+        {
+          "policyType": "SET_HEADER",
+          "parameters": {
+            "headerName": "OrgId",
+            "headerValue": "ABC-12345"
+          }
+        }
+      ],
+      "out": [
+        {
+          "policyType": "REMOVE_HEADER",
+          "parameters": {
+            "headerName": "RegionId"
+          }
+        }
+      ]
+    }
+  },
+    {
+      "target": "/order",
+      "verb": "POST",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited"
+    }
+  ],
+  "keyManagers": ["all"]
+}

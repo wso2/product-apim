@@ -90,6 +90,9 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         String GraphqlAPIWebAppSourcePath = testArtifactPath + "war" + File.separator +
                 APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME + ".war";
 
+        String echoWebAppSourcePath = testArtifactPath + "war" + File.separator +
+                APIMIntegrationConstants.ECHO_REQUEST_API_WEB_APP_NAME + ".war";
+
         String AuditAPIWebAppSourcePath = testArtifactPath + "war" + File.separator +
                 APIMIntegrationConstants.AUDIT_API_WEB_APP_NAME + ".war";
 
@@ -116,6 +119,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                 .uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.WILDCARD_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
         webAppAdminClient.uploadWarFile(GraphqlAPIWebAppSourcePath);
+        webAppAdminClient.uploadWarFile(echoWebAppSourcePath);
         webAppAdminClient.uploadWarFile(AuditAPIWebAppSourcePath);
         String sourcePath = org.wso2.am.integration.test.utils.generic.TestConfigurationProvider.getResourceLocation()
                 + File.separator + "artifacts" + File.separator + "AM" + File.separator + "war" + File.separator
@@ -141,6 +145,8 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                 gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 gatewayMgtSessionId, APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                gatewayMgtSessionId, APIMIntegrationConstants.ECHO_REQUEST_API_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 gatewayMgtSessionId, APIMIntegrationConstants.AUDIT_API_WEB_APP_NAME);
         WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());

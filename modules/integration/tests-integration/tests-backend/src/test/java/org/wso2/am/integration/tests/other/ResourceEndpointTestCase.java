@@ -9,27 +9,33 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
-import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
-import org.wso2.carbon.apimgt.api.model.OperationPolicy;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
 
 public class ResourceEndpointTestCase extends APIManagerLifecycleBaseTest {
-    private final Log log = LogFactory.getLog(APICategoriesTestCase.class);
+    private final Log log = LogFactory.getLog(ResourceEndpointTestCase.class);
 
     private String resourceEndpointName = "Sample Resource Endpoint";
     private String resourceEndpointUrl = "https://run.mocky.io/v3/c07d060c-7b04-40cc-a418-6dc603b48ca5";
     private String apiId;
     private String resourceEndpointId;
-    private ApiTestHelper apiTestHelper;
+    private String apiRevisionUUID;
     private ApiProductTestHelper apiProductTestHelper;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -39,16 +45,16 @@ public class ResourceEndpointTestCase extends APIManagerLifecycleBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN }, };
+        return new Object[][] {
+                new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN }
+        };
     }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
 
-        apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation(),
-                keyManagerContext.getContextTenant().getDomain(), keyManagerHTTPSURL, user);
         apiProductTestHelper = new ApiProductTestHelper(restAPIPublisher, restAPIStore);
 
         String APIName = "ResourceEndpointTestAPI";
@@ -126,7 +132,7 @@ public class ResourceEndpointTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response = restAPIPublisher.getAPI(apiId);
         APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
 
-        List<APIOperationsDTO> operationsDTOList = apidto.getOperations();
+        List<APIOperationsDTO> operationsDTOList = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         OperationPolicyDTO operationPolicyDTO = new OperationPolicyDTO();
         APIOperationPoliciesDTO operationPoliciesDTO = new APIOperationPoliciesDTO();
@@ -144,6 +150,7 @@ public class ResourceEndpointTestCase extends APIManagerLifecycleBaseTest {
         apiOperationsDTO.setTarget("/resource");
         apiOperationsDTO.setOperationPolicies(operationPoliciesDTO);
         operationsDTOList.add(apiOperationsDTO);
+        apidto.setOperations(operationsDTOList);
 
         restAPIPublisher.updateAPI(apidto);
 
@@ -152,8 +159,8 @@ public class ResourceEndpointTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Delete resource endpoint",
-            dependsOnMethods = "testAttachEndpointToAPIOperationPolicy")
-    public void testIncludeOperationWithOperationPolicyInAPIProduct() throws Exception {
+            dependsOnMethods = "testAttachEndpointToAPIOperationPolicy") public void testIncludeOperationWithOperationPolicyInAPIProduct()
+            throws Exception {
         List<APIDTO> apisToBeUsed = new ArrayList<>();
         HttpResponse apiResponse = restAPIPublisher.getAPI(apiId);
         Gson gson = new Gson();
@@ -161,16 +168,81 @@ public class ResourceEndpointTestCase extends APIManagerLifecycleBaseTest {
         apisToBeUsed.add(apiDTO);
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO createdAPIProductDTO = apiProductTestHelper.createAPIProductInPublisher(user.getUserName(), "TestProduct", "/op-policy-test",
-                apisToBeUsed, policies);
-        OperationPolicyDTO operationPolicy = createdAPIProductDTO.getApis().get(0).getOperations().get(0).getOperationPolicies().getIn().get(0);
+        APIProductDTO createdAPIProductDTO = apiProductTestHelper
+                .createAPIProductInPublisher(user.getUserName(), "TestProduct", "/op-policy-test", apisToBeUsed,
+                        policies);
+        OperationPolicyDTO operationPolicy = createdAPIProductDTO.getApis().get(0).getOperations().get(0)
+                .getOperationPolicies().getIn().get(0);
         Assert.assertNotNull(operationPolicy);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Delete resource endpoint",
-            dependsOnMethods = "testIncludeOperationWithOperationPolicyInAPIProduct")
-    public void testDeleteResourceEndpoint() throws Exception {
-        restAPIPublisher.deleteResourceEndpoint(apiId, resourceEndpointId);
+    @Test(groups = { "wso2.am" }, description = "Create Revision of API that has a CHANGE_ENDPOINT policy",
+            dependsOnMethods = "testAttachEndpointToAPIOperationPolicy")
+    public void testCreateAndDeployRevisionOfAPIWithChangeEndpointPolicy() throws Exception {
+        APIRevisionDTO apiRevisionDTO = restAPIPublisher.addAPIRevision(apiId);
+        Assert.assertNotNull(apiRevisionDTO);
+
+        apiRevisionUUID = apiRevisionDTO.getId();
+        HttpResponse response = restAPIPublisher.getAPI(apiRevisionUUID);
+        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
+        List<APIOperationsDTO> operationsDTOList = apidto.getOperations();
+
+        for (APIOperationsDTO operation : operationsDTOList) {
+            String verb = operation.getVerb();
+            String urlPattern = operation.getTarget();
+            if ("GET".equals(verb) && "/resource".equals(urlPattern)) {
+                APIOperationPoliciesDTO operationPolicies = operation.getOperationPolicies();
+                Assert.assertEquals(operationPolicies.getIn().get(0).getPolicyType(),
+                        OperationPolicyDTO.PolicyTypeEnum.CHANGE_ENDPOINT,
+                        "Change Endpoint policy is not attached to the API product resource");
+            }
+        }
+
+        //Deploy Revision
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost("localhost");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, apiRevisionUUID,
+                apiRevisionDeployRequestList,"API");
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to deploy API Revision:" +apiRevisionsDeployResponse.getData());
+
+        //Undeploy Revision
+        List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionUnDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionUndeployRequestList.add(apiRevisionUnDeployRequest);
+        HttpResponse apiRevisionsUnDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, apiRevisionUUID,
+                apiRevisionUndeployRequestList);
+        assertEquals(apiRevisionsUnDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to Undeploy API Revision:" + apiRevisionsUnDeployResponse.getData());
     }
 
+    @Test(groups = { "wso2.am" }, description = "Restore Revision of API that has a CHANGE_ENDPOINT policy",
+            dependsOnMethods = "testCreateAndDeployRevisionOfAPIWithChangeEndpointPolicy")
+    public void testRestoreRevisionOfAPIWithChangeEndpointPolicy() throws Exception {
+        //Remove change_endpoint policy mapping from current API
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
+
+        List<APIOperationsDTO> operationsDTOList = apidto.getOperations();
+        operationsDTOList.get(0).setOperationPolicies(new APIOperationPoliciesDTO());
+        restAPIPublisher.updateAPI(apidto);
+
+        HttpResponse updatedAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO updatedAPIDTO = new Gson().fromJson(updatedAPIResponse.getData(), APIDTO.class);
+        Assert.assertEquals(updatedAPIDTO.getOperations().get(0).getOperationPolicies().getIn().size(), 0);
+        Assert.assertEquals(updatedAPIDTO.getOperations().get(0).getOperationPolicies().getOut().size(), 0);
+
+        //Restore revision
+        restAPIPublisher.restoreAPIRevision(apiId, apiRevisionUUID);
+        HttpResponse restoredAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO restoredAPIDTO = new Gson().fromJson(restoredAPIResponse.getData(), APIDTO.class);
+        Assert.assertEquals(restoredAPIDTO.getOperations().get(0).getOperationPolicies().getIn().size(), 1);
+        Assert.assertEquals(restoredAPIDTO.getOperations().get(0).getOperationPolicies().getIn().get(0).getPolicyType(),
+                OperationPolicyDTO.PolicyTypeEnum.CHANGE_ENDPOINT);
+    }
 }

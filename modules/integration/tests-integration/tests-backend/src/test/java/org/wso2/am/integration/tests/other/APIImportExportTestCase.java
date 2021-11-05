@@ -36,6 +36,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
@@ -44,10 +45,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
+import org.wso2.am.integration.clients.store.api.JSON;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -148,6 +147,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private String PASSWORD = "test123";
     private static final String RESTRICTED_ACCESS_CONTROL = "restricted";
     private final String INTERNAL_CREATOR = "Internal/creator";
+    private final String RESOURCE_ENDPOINT_EXPORT_API = "ResourceEndpointExportTestAPI";
+    private String resourceEndpointAPIId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIImportExportTestCase(TestUserMode userMode) {
@@ -820,6 +821,80 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
         exportArtifact(exportRequest, apiZip, publisherUser, String.valueOf(PUBLISHER_USER_PASS));
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Export API that has resource endpoints")
+    public void testExportImportAPIWithResourceEndpoints() throws Exception {
+        //Add API to be exported
+        String exportAPIVersion = "1.0.0";
+        String providerName = user.getUserName();
+        APIRequest apiRequest = new APIRequest(RESOURCE_ENDPOINT_EXPORT_API, "export-resource-endpoints",
+                new URL(backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add"));
+        apiRequest.setVersion(exportAPIVersion);
+        apiRequest.setProvider(providerName);
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        resourceEndpointAPIId = serviceResponse.getData();
+
+        //Add API Resource Endpoint
+        ResourceEndpointDTO resourceEndpointDTO = new ResourceEndpointDTO();
+        Map<String, String> securityConfig = new HashMap<>();
+        securityConfig.put("enabled", "false");
+
+        resourceEndpointDTO.setEndpointType(ResourceEndpointDTO.EndpointTypeEnum.HTTP);
+        resourceEndpointDTO.setName("Test Endpoint");
+        resourceEndpointDTO.setUrl("https://run.mocky.io/v3/c07d060c-7b04-40cc-a418-6dc603b48ca5");
+        resourceEndpointDTO.securityConfig(securityConfig);
+        ResourceEndpointDTO addedResourceEndpointDTO = restAPIPublisher
+                .addResourceEndpoint(resourceEndpointAPIId, resourceEndpointDTO);
+        String endpointId = addedResourceEndpointDTO.getId();
+
+        URL exportRequest = new URL(exportUrl + "?name=" + RESOURCE_ENDPOINT_EXPORT_API + "&version=" + exportAPIVersion +
+                "&providerName=" + providerName + "&format=JSON");
+        File exportZipDir = Files.createTempDir();
+
+        //set the export file name with tenant prefix
+        String fileName = user.getUserDomain() + "_" + RESOURCE_ENDPOINT_EXPORT_API;
+        File exportedZip = new File(exportZipDir.getAbsolutePath() + File.separator + fileName + ".zip");
+        //save the exported API
+        exportArtifact(exportRequest, exportedZip, USER_WITH_ACCESS_ROLE, PASSWORD);
+
+        // Test whether exported API archive contains the endpoint security password in plain text
+        String extractedAPIDir = exportedZip.getParent();
+        try {
+            ZipFile zipFile = new ZipFile(exportedZip);
+            zipFile.extractAll(exportedZip.getParent());
+        } catch (ZipException e) {
+            throw new APIManagerIntegrationTestException("Error in extracting the exported API archive.", e);
+        }
+
+        String resourceEPFilePath =
+                extractedAPIDir + File.separator + RESOURCE_ENDPOINT_EXPORT_API + "-" + exportAPIVersion + File.separator
+                        + "Resource-endpoints/" + "resource-endpoints.json";
+        StringBuilder contentBuilder = new StringBuilder();
+        try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(resourceEPFilePath), StandardCharsets.UTF_8)) {
+            stream.forEach(s -> contentBuilder.append(s).append("\n"));
+        } catch (IOException e) {
+            throw new APIManagerIntegrationTestException("Error in reading from extracted api file " + resourceEPFilePath, e);
+        }
+
+        String resourceEndpointFileContent = contentBuilder.toString();
+        Assert.assertNotNull(resourceEndpointFileContent);
+        JSONParser parser = new JSONParser();
+        JSONObject resourceEndpointsJson = (JSONObject) parser.parse(resourceEndpointFileContent);
+        Assert.assertEquals(resourceEndpointsJson.get("type"), "resource-endpoints");
+        JSONObject endpointData = (JSONObject)resourceEndpointsJson.get("data");
+        Assert.assertEquals(endpointData.get("count"), new Long(1));
+        org.json.simple.JSONArray endpoints = (org.json.simple.JSONArray)endpointData.get("list");
+        JSONObject endpoint = (JSONObject)endpoints.get(0);
+        Assert.assertEquals(endpoint.get("id"), endpointId);
+
+        //delete API
+        restAPIPublisher.deleteAPI(resourceEndpointAPIId);
+
+        //deploy exported API
+        importArtifact(importUrl, exportedZip, user.getUserName(), user.getPassword().toCharArray());
+        SearchResultListDTO searchResultListDTO = restAPIPublisher.searchAPIs(RESOURCE_ENDPOINT_EXPORT_API);
+        Assert.assertEquals(searchResultListDTO.getList().size(), 1);
     }
 
     @AfterClass(alwaysRun = true)
