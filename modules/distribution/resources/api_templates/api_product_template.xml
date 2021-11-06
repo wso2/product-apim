@@ -31,11 +31,14 @@
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
         #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
         #if($type == "resource")
+        #set( $endpointsecurity = "")
         #set( $ep_key = $endpoint_config.get("endpointKey"))
+        #set( $endpointsecurity = $res_endpoint_security.get("${type}"))
         #else
+        #set( $endpointsecurity = "")
         #set( $ep_key = "${endpointKey}_API${type}Endpoint")
-        #end
         #set( $endpointsecurity = $endpoint_security.get("${type}"))
+        #end
 
         ## IF endpoint secured
         #if($endpointsecurity.enabled)
@@ -186,6 +189,7 @@
 #set($changeEndpointPolicyExists = 'false')
 #set($operationPolicies = $resource.getOperationPolicies())
 #foreach ($policy in $operationPolicies)
+#if($policy.getDirection() == 'in')
 #if($policy.getPolicyType() == 'SET_HEADER')
 #set($headerName = $policy.getParameters().get('headerName'))
 #set($headerValue = $policy.getParameters().get('headerValue'))
@@ -260,8 +264,9 @@
 #elseif($policy.getPolicyType() == 'CHANGE_ENDPOINT')
 #set($changeEndpointPolicyExists = 'true')
 #set($endpointId = $policy.getParameters().get('endpointId'))
-#set($res_endpoint_json = $resource_endpoint_config.get($endpointId))
-#set($res_endpoint_security = $res_endpoint_json.get("endpoint_security"))
+#set($res_endpoint_config = $resource_endpoint_config.get($endpointId))
+#set($res_endpoint_security = $resource_endpoint_security_config.get($endpointId))
+#end
 #end
 #end
 
@@ -346,6 +351,34 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 #end
 </inSequence>
 <outSequence>
+
+##insert operation level mediation logic
+#set($mockResponsePolicyExists = 'false')
+#set($changeEndpointPolicyExists = 'false')
+#set($operationPolicies = $resource.getOperationPolicies())
+#foreach ($policy in $operationPolicies)
+#if($policy.getDirection() == 'out')
+#if($policy.getPolicyType() == 'SET_HEADER')
+#set($headerName = $policy.getParameters().get('headerName'))
+#set($headerValue = $policy.getParameters().get('headerValue'))
+#if($headerValue)
+<property action="set" name="$headerName" value="$headerValue" scope="transport" />
+#else
+#set($headerExp = $policy.getParameters().get('headerExpression'))
+<property action="set" name="$headerName" expression="$headerExp" scope="transport" />
+#end
+#elseif($policy.getPolicyType() == 'REMOVE_HEADER')
+#set($headerName = $policy.getParameters().get('headerName'))
+<property action="remove" name="$headerName" scope="transport" />
+#elseif($policy.getPolicyType() == 'CALL_VALIDATION_SERVICE')
+#set($validationEndpointId = $policy.getParameters().get('endpointId'))
+#set($validation_endpoint_config = $resource_endpoint_config.get($validationEndpointId))
+#set($res_endpoint_security = $resource_endpoint_security_config.get($validationEndpointId))
+#draw_endpoint( "resource" $validation_endpoint_config )
+#end
+#end
+#end
+
 #if($isSoapToRestMode)
 #foreach($uri in $out_sequences.get("$resource.getUriTemplate()").keySet())
 $out_sequences.get("$resource.getUriTemplate()").get($uri)
