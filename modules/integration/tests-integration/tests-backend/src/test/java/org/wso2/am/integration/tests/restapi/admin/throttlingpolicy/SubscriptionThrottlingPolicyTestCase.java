@@ -280,7 +280,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         requestHeaders1.put("content-type", "application/json");
         HttpResponse response1;
         boolean isThrottled1 = false;
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 20; i++) {
             response1 = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + API_END_POINT_METHOD,
                     requestHeaders1);
             if (response1.getResponseCode() == 429) {
@@ -293,7 +293,7 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         Assert.assertTrue(isThrottled1, "Request not throttled by " + policyName1);
         restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
 
-        // Subscribe to throttling policy and generate access token
+        // Subscribe to another throttling policy and generate access token - To validate the subscription policy update
         subscriptionDTO = restAPIStore.subscribeToAPI(apiId, app1Id, policyName2);
         Assert.assertNotNull(subscriptionDTO);
         String accessToken2 = applicationKeyDTO.getToken().getAccessToken();
@@ -304,8 +304,9 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         requestHeaders2.put("accept", "text/xml");
         requestHeaders2.put("content-type", "application/json");
         HttpResponse response2;
+        Thread.sleep(60000);
         boolean isThrottled2 = false;
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 30; i++) {
             response2 = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + API_END_POINT_METHOD,
                     requestHeaders2);
             if (response2.getResponseCode() == 429) {
