@@ -1,0 +1,103 @@
+[server]
+#hostname = "localhost"
+node_ip = "127.0.0.1"
+#offset=0
+mode = "single" #single or ha
+base_path = "${carbon.protocol}://${carbon.host}:${carbon.management.port}"
+server_role = "default"
+
+[super_admin]
+username = "admin"
+password = "admin"
+create_admin_account = true
+
+[user_store]
+type = "database_unique_id"
+
+[database.apim_db]
+driver = "$env{API_MANAGER_DATABASE_DRIVER}"
+url = "$env{API_MANAGER_DATABASE_URL}"
+username = "$env{API_MANAGER_DATABASE_USERNAME}"
+password = "$env{API_MANAGER_DATABASE_PASSWORD}"
+validationQuery = "$env{API_MANAGER_DATABASE_VALIDATION_QUERY}"
+
+[database.shared_db]
+driver = "$env{SHARED_DATABASE_DRIVER}"
+url = "$env{SHARED_DATABASE_URL}"
+username = "$env{SHARED_DATABASE_USERNAME}"
+password = "$env{SHARED_DATABASE_PASSWORD}"
+validationQuery = "$env{SHARED_DATABASE_VALIDATION_QUERY}"
+
+[keystore.tls]
+file_name =  "wso2carbon.jks"
+type =  "JKS"
+password =  "wso2carbon"
+alias =  "wso2carbon"
+key_password =  "wso2carbon"
+
+[[apim.gateway.environment]]
+name = "Production and Sandbox"
+type = "hybrid"
+display_in_api_console = true
+description = "This is a hybrid gateway that handles both production and sandbox token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:${mgt.transport.https.port}/services/"
+username = "admin"
+password = "admin"
+ws_endpoint = "ws://localhost:9099"
+http_endpoint = "http://localhost:${http.nio.port}"
+https_endpoint = "https://localhost:${https.nio.port}"
+
+[[apim.gateway.environment]]
+name = "publisherEnv"
+display_name = "Publisher portal Test Environment"
+type = "hybrid"
+display_in_api_console = false
+description = "development api gateway broker"
+provider = "solace"
+service_url = "http://localhost:9955/"
+username = "testUser"
+ws_endpoint = "ws://localhost:9955/"
+wss_endpoint = "wss://localhost:9955/"
+http_endpoint = "http://localhost:9955/"
+https_endpoint = "https://localhost:9955/"
+password = "testPassword"
+show_as_token_endpoint_url = false
+
+[apim.gateway.environment.properties]
+Organization = "TestWSO2"
+DisplayName = "Publisher portal Test Environment"
+DevAccountName = "publisherTestEnv"
+
+[apim.cors]
+allow_origins = "*"
+allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
+allow_credentials = false
+
+[[event_handler]]
+name="userPostSelfRegistration"
+subscriptions=["POST_ADD_USER"]
+[transport]
+passthru_https.listener.ssl_profile_interval = 6000
+
+[apim.certificate_reloader]
+period = "1m"
+
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
+
+# JWT Generation
+[apim.jwt]
+enable = true
+encoding = "base64" # base64,base64url
+#generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+signing_algorithm = "SHA256withRSA"
+#enable_user_claims = true
+#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+
+[apim.sync_runtime_artifacts.gateway.skip_list]
+apis = ["admin--git2231head_v1.0.0.xml","admin--PizzaShackAPI_v1.0.0.xml","admin--ScriptMediatorAPI_v1.0.xml",
+"APIThrottleBackendAPI.xml","BackEndSecurity.xml","DigestAuth_API.xml","git2231.xml","HttpPATCHSupport_API.xml","JWKS-Backend.xml","JWTBackendAPI.xml","multiVSR_v1.0.0.xml","Response_API_1.xml","Response_API_2.xml","Response_Custom_API.xml","Response_Error_API.xml","Response_Loc_API.xml","SpecialCRN_v1.0.0.xml","status_code_204_API.xml","stockquote.xml","XML_API.xml","Version1.xml","Version2.xml"]
