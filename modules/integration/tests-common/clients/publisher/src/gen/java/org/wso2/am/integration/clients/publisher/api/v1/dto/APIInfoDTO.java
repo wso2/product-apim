@@ -83,6 +83,10 @@ public class APIInfoDTO {
         @SerializedName(SERIALIZED_NAME_UPDATED_TIME)
             private String updatedTime;
 
+        public static final String SERIALIZED_NAME_GATEWAY_VENDOR = "gatewayVendor";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_VENDOR)
+            private String gatewayVendor;
+
 
         public APIInfoDTO id(String id) {
         
@@ -383,6 +387,29 @@ public class APIInfoDTO {
     }
 
 
+        public APIInfoDTO gatewayVendor(String gatewayVendor) {
+        
+        this.gatewayVendor = gatewayVendor;
+        return this;
+        }
+
+    /**
+        * Get gatewayVendor
+    * @return gatewayVendor
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getGatewayVendor() {
+        return gatewayVendor;
+    }
+
+
+    public void setGatewayVendor(String gatewayVendor) {
+        this.gatewayVendor = gatewayVendor;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -404,12 +431,13 @@ public class APIInfoDTO {
             Objects.equals(this.hasThumbnail, apIInfo.hasThumbnail) &&
             Objects.equals(this.securityScheme, apIInfo.securityScheme) &&
             Objects.equals(this.createdTime, apIInfo.createdTime) &&
-            Objects.equals(this.updatedTime, apIInfo.updatedTime);
+            Objects.equals(this.updatedTime, apIInfo.updatedTime) &&
+            Objects.equals(this.gatewayVendor, apIInfo.gatewayVendor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, type, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme, createdTime, updatedTime);
+        return Objects.hash(id, name, description, context, version, provider, type, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme, createdTime, updatedTime, gatewayVendor);
     }
 
 
@@ -430,6 +458,7 @@ sb.append("class APIInfoDTO {\n");
     sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    updatedTime: ").append(toIndentedString(updatedTime)).append("\n");
+    sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
 sb.append("}");
 return sb.toString();
 }

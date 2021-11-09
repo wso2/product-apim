@@ -14558,6 +14558,7 @@ components:
           type: HTTP
           version: 1.0.0
           provider: admin
+          gatewayVendor: wso2
           securityScheme:
           - securityScheme
           - securityScheme
@@ -14573,6 +14574,7 @@ components:
           type: HTTP
           version: 1.0.0
           provider: admin
+          gatewayVendor: wso2
           securityScheme:
           - securityScheme
           - securityScheme
@@ -14619,6 +14621,7 @@ components:
         type: HTTP
         version: 1.0.0
         provider: admin
+        gatewayVendor: wso2
         securityScheme:
         - securityScheme
         - securityScheme
@@ -14669,6 +14672,9 @@ components:
           type: string
         updatedTime:
           example: 2021-02-11 09:57:25
+          type: string
+        gatewayVendor:
+          example: wso2
           type: string
       title: API Info object with basic API details.
       type: object
@@ -14741,6 +14747,10 @@ components:
         visibleTenants: []
         cacheTimeout: 300
         isDefaultVersion: false
+        gatewayVendor: wso2
+        asyncTransportProtocols:
+        - http
+        - https
         apiThrottlingPolicy: Unlimited
         websubSubscriptionConfiguration:
           signingAlgorithm: signingAlgorithm
@@ -15230,6 +15240,19 @@ components:
           $ref: '#/components/schemas/API_serviceInfo'
         advertiseInfo:
           $ref: '#/components/schemas/AdvertiseInfo'
+        gatewayVendor:
+          example: wso2
+          title: field to identify gateway vendor
+          type: string
+        asyncTransportProtocols:
+          description: |
+            Supported transports for the async API (http and/or https).
+          example:
+          - http
+          - https
+          items:
+            type: string
+          type: array
       required:
       - context
       - name
@@ -16831,10 +16854,21 @@ components:
       type: object
     Environment:
       example:
+        endpointURIs:
+        - protocol: default
+          endpointURI: default
+        - protocol: default
+          endpointURI: default
+        provider: wso2
         showInApiConsole: true
         displayName: Default
         serverUrl: https://localhost:9443/services/
         name: default
+        additionalProperties:
+        - value: wso2
+          key: Organization
+        - value: wso2
+          key: Organization
         type: hybrid
         vhosts:
         - httpContext: pets
@@ -16862,12 +16896,23 @@ components:
         serverUrl:
           example: https://localhost:9443/services/
           type: string
+        provider:
+          example: wso2
+          type: string
         showInApiConsole:
           example: true
           type: boolean
         vhosts:
           items:
             $ref: '#/components/schemas/VHost'
+          type: array
+        endpointURIs:
+          items:
+            $ref: '#/components/schemas/GatewayEnvironmentProtocolURI'
+          type: array
+        additionalProperties:
+          items:
+            $ref: '#/components/schemas/AdditionalProperty'
           type: array
       required:
       - endpoints
@@ -16889,6 +16934,19 @@ components:
             $ref: '#/components/schemas/Environment'
           type: array
       title: Environment List
+      type: object
+    AdditionalProperty:
+      example:
+        value: wso2
+        key: Organization
+      properties:
+        key:
+          example: Organization
+          type: string
+        value:
+          example: wso2
+          type: string
+      title: Additional Gateway Properties
       type: object
     VHost:
       example:
@@ -18112,10 +18170,21 @@ components:
         devportalUrl: https://localhost:9443/devportal
         externalStoresEnabled: true
         environment:
-        - showInApiConsole: true
+        - endpointURIs:
+          - protocol: default
+            endpointURI: default
+          - protocol: default
+            endpointURI: default
+          provider: wso2
+          showInApiConsole: true
           displayName: Default
           serverUrl: https://localhost:9443/services/
           name: default
+          additionalProperties:
+          - value: wso2
+            key: Organization
+          - value: wso2
+            key: Organization
           type: hybrid
           vhosts:
           - httpContext: pets
@@ -18130,10 +18199,21 @@ components:
             wsPort: 9099
             host: mg.wso2.com
             httpsPort: 443
-        - showInApiConsole: true
+        - endpointURIs:
+          - protocol: default
+            endpointURI: default
+          - protocol: default
+            endpointURI: default
+          provider: wso2
+          showInApiConsole: true
           displayName: Default
           serverUrl: https://localhost:9443/services/
           name: default
+          additionalProperties:
+          - value: wso2
+            key: Organization
+          - value: wso2
+            key: Organization
           type: hybrid
           vhosts:
           - httpContext: pets
@@ -18495,6 +18575,10 @@ components:
           endpoints:
           - https://localhost:9443/am/sample/pizzashack/v1/api/
           - https://localhost:9443/am/sample/pizzashack/v1/api/
+          gatewayVendor: wso2
+          asyncTransportProtocols:
+          - http
+          - http
           name: Streetlights
           context: /streetlights
           description: A sample API that uses a streetlights as an example to demonstrate
@@ -18521,6 +18605,22 @@ components:
       required:
       - isValid
       title: AsyncAPI Specification Validation Response
+      type: object
+    GatewayEnvironmentProtocolURI:
+      example:
+        protocol: default
+        endpointURI: default
+      properties:
+        protocol:
+          example: default
+          type: string
+        endpointURI:
+          example: default
+          type: string
+      required:
+      - endpointURI
+      - protocol
+      title: Gateway Environment protocols and URIs
       type: object
     Post_request_body:
       properties:
@@ -18992,6 +19092,10 @@ components:
         endpoints:
         - https://localhost:9443/am/sample/pizzashack/v1/api/
         - https://localhost:9443/am/sample/pizzashack/v1/api/
+        gatewayVendor: wso2
+        asyncTransportProtocols:
+        - http
+        - http
         name: Streetlights
         context: /streetlights
         description: A sample API that uses a streetlights as an example to demonstrate
@@ -19022,6 +19126,15 @@ components:
           description: contains host/servers specified in the AsyncAPI file/URL
           items:
             example: https://localhost:9443/am/sample/pizzashack/v1/api/
+            type: string
+          type: array
+        gatewayVendor:
+          example: wso2
+          type: string
+        asyncTransportProtocols:
+          description: contains available transports for an async API
+          items:
+            example: http
             type: string
           type: array
   securitySchemes:

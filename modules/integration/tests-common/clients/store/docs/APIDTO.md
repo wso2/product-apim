@@ -39,6 +39,8 @@ Name | Type | Description | Notes
 **keyManagers** | [**Object**](.md) | API Key Managers  |  [optional]
 **createdTime** | **String** |  |  [optional]
 **lastUpdatedTime** | **String** |  |  [optional]
+**gatewayVendor** | **String** |  |  [optional]
+**asyncTransportProtocols** | **List&lt;String&gt;** | Supported transports for the aync API.  |  [optional]
 
 
 

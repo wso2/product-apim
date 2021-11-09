@@ -14,6 +14,8 @@ Name | Type | Description | Notes
 **asyncAPIVersion** | **String** |  |  [optional]
 **protocol** | **String** |  |  [optional]
 **endpoints** | **List&lt;String&gt;** | contains host/servers specified in the AsyncAPI file/URL |  [optional]
+**gatewayVendor** | **String** |  |  [optional]
+**asyncTransportProtocols** | **List&lt;String&gt;** | contains available transports for an async API |  [optional]
 
 
 

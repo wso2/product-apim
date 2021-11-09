@@ -173,6 +173,14 @@ public class APIDTO {
         @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
             private String lastUpdatedTime;
 
+        public static final String SERIALIZED_NAME_GATEWAY_VENDOR = "gatewayVendor";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_VENDOR)
+            private String gatewayVendor;
+
+        public static final String SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS = "asyncTransportProtocols";
+        @SerializedName(SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS)
+            private List<String> asyncTransportProtocols = null;
+
 
         public APIDTO id(String id) {
         
@@ -928,6 +936,52 @@ public class APIDTO {
     }
 
 
+        public APIDTO gatewayVendor(String gatewayVendor) {
+        
+        this.gatewayVendor = gatewayVendor;
+        return this;
+        }
+
+    /**
+        * Get gatewayVendor
+    * @return gatewayVendor
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getGatewayVendor() {
+        return gatewayVendor;
+    }
+
+
+    public void setGatewayVendor(String gatewayVendor) {
+        this.gatewayVendor = gatewayVendor;
+    }
+
+
+        public APIDTO asyncTransportProtocols(List<String> asyncTransportProtocols) {
+        
+        this.asyncTransportProtocols = asyncTransportProtocols;
+        return this;
+        }
+
+    /**
+        * Supported transports for the aync API. 
+    * @return asyncTransportProtocols
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"http\",\"mqtt\"]", value = "Supported transports for the aync API. ")
+    
+    public List<String> getAsyncTransportProtocols() {
+        return asyncTransportProtocols;
+    }
+
+
+    public void setAsyncTransportProtocols(List<String> asyncTransportProtocols) {
+        this.asyncTransportProtocols = asyncTransportProtocols;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -969,12 +1023,14 @@ public class APIDTO {
             Objects.equals(this.categories, API.categories) &&
             Objects.equals(this.keyManagers, API.keyManagers) &&
             Objects.equals(this.createdTime, API.createdTime) &&
-            Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime);
+            Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime) &&
+            Objects.equals(this.gatewayVendor, API.gatewayVendor) &&
+            Objects.equals(this.asyncTransportProtocols, API.asyncTransportProtocols);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, ingressURLs, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable, categories, keyManagers, createdTime, lastUpdatedTime);
+        return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, ingressURLs, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable, categories, keyManagers, createdTime, lastUpdatedTime, gatewayVendor, asyncTransportProtocols);
     }
 
 
@@ -1015,6 +1071,8 @@ sb.append("class APIDTO {\n");
     sb.append("    keyManagers: ").append(toIndentedString(keyManagers)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
+    sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
+    sb.append("    asyncTransportProtocols: ").append(toIndentedString(asyncTransportProtocols)).append("\n");
 sb.append("}");
 return sb.toString();
 }
