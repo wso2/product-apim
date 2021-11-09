@@ -2521,6 +2521,51 @@ paths:
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions/multiple"'
 
   ######################################################
+  # The "Subscriptions related to API" resource API
+  ######################################################
+  /subscriptions/{apiId}/additionalInfo:
+    get:
+      tags:
+        - Subscriptions
+      summary: Get Additional Information of subscriptions attached to an API.
+      description: |
+        This operation can be used to retrieve all additional Information of subscriptions attached to an API by providing the API id.
+      operationId: getAdditionalInfoOfAPISubscriptions
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/groupId'
+        - $ref: '#/components/parameters/requestedTenant'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Types and fields returned successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content of the body.
+              schema:
+                type: string
+                default: application/json
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdditionalSubscriptionInfoList'
+        404:
+          description: |
+            Not Found.
+            Retrieving types and fields failed.
+          content: {}
+      security:
+        - OAuth2Security: []
+      x-code-samples:
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/devportal/v2/subscriptions/e93fb282-b456-48fc-8981-003fb89086ae/additionalInfo"
+
+  ######################################################
   # The "Individual Subscription" resource APIs
   ######################################################
   /subscriptions/{subscriptionId}:
@@ -3987,6 +4032,20 @@ components:
         lastUpdatedTime:
           type: string
           example: 2020-10-31T13:57:16.229
+        gatewayVendor:
+          title: Gateway vendor of the API
+          type: string
+          example:
+            wso2
+        asyncTransportProtocols:
+          type: array
+          description: |
+            Supported transports for the aync API.
+          example:
+            - http
+            - mqtt
+          items:
+            type: string
     Label:
       title: Label
       required:
@@ -5662,6 +5721,89 @@ components:
         newPassword:
           type: string
           example: newpassword1234
+    AdditionalSubscriptionInfoList:
+      title: Additional Subscription Info List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of additional information sets of subscription returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdditionalSubscriptionInfo'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    AdditionalSubscriptionInfo:
+      title: Additional Information of subscriptions related to an API
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+          description: The UUID of the subscription
+          readOnly: true
+          example: faae5fcc-cbae-40c4-bf43-89931630d313
+        applicationId:
+          type: string
+          description: The UUID of the application
+          example: b3ade481-30b0-4b38-9a67-498a40873a6d
+        applicationName:
+          type: string
+          description: The name of the application
+          example: Sample Application
+        apiId:
+          type: string
+          description: The unique identifier of the API.
+          example: 2962f3bb-8330-438e-baee-0ee1d6434ba4
+        isSolaceAPI:
+          type: boolean
+          example: false
+        solaceOrganization:
+          type: string
+          example: SolaceWso2
+        solaceDeployedEnvironments:
+          type: array
+          items:
+            type: object
+            properties:
+              environmentName:
+                type: string
+              environmentDisplayName:
+                type: string
+              organizationName:
+                type: string
+              solaceURLs:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    protocol:
+                      type: string
+                      example: Defalt
+                    endpointURL:
+                      type: string
+                      example: Default
+              SolaceTopicsObject:
+                type: object
+                properties:
+                  defaultSyntax:
+                    $ref: '#/components/schemas/SolaceTopics'
+                  mqttSyntax:
+                    $ref: '#/components/schemas/SolaceTopics'
+    SolaceTopics:
+      title: SolaceTopics
+      type: object
+      properties:
+        publishTopics:
+          type: array
+          items:
+            type: string
+        subscribeTopics:
+          type: array
+          items:
+            type: string
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.

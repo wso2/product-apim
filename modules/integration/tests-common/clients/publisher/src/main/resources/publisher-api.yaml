@@ -7851,6 +7851,9 @@ components:
         updatedTime:
           type: string
           example : 2021-02-11 09:57:25
+        gatewayVendor:
+          type: string
+          example: wso2
 
     Topic:
       title: Topic object
@@ -8307,6 +8310,20 @@ components:
               example: false
         advertiseInfo:
           $ref: '#/components/schemas/AdvertiseInfo'
+        gatewayVendor:
+          title: field to identify gateway vendor
+          type: string
+          example:
+            wso2
+        asyncTransportProtocols:
+          type: array
+          description: |
+            Supported transports for the async API (http and/or https).
+          example:
+            - http
+            - https
+          items:
+            type: string
       x-scopes:
         - apim:api_create
         - apim:api_import_export
@@ -9594,6 +9611,9 @@ components:
         serverUrl:
           type: string
           example: https://localhost:9443/services/
+        provider:
+          type: string
+          example: wso2
         showInApiConsole:
           type: boolean
           example: true
@@ -9601,6 +9621,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VHost'
+        endpointURIs:
+          type: array
+          items:
+            $ref: '#/components/schemas/GatewayEnvironmentProtocolURI'
+        additionalProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdditionalProperty'
     EnvironmentList:
       title: Environment List
       type: object
@@ -9614,6 +9642,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Environment'
+    AdditionalProperty:
+      title: Additional Gateway Properties
+      type: object
+      properties:
+        key:
+          type: string
+          example: Organization
+        value:
+          type: string
+          example: wso2
     VHost:
       title: Virtual Host
       type: object
@@ -10926,6 +10964,15 @@ components:
               items:
                 type: string
                 example: "https://localhost:9443/am/sample/pizzashack/v1/api/"
+            gatewayVendor:
+              type: string
+              example: wso2
+            asyncTransportProtocols:
+              type: array
+              description: contains available transports for an async API
+              items:
+                type: string
+                example: http
           description:
             API definition information
         errors:
@@ -10935,6 +10982,19 @@ components:
             For example, list out validation error by each field.
           items:
             $ref: '#/components/schemas/ErrorListItem'
+    GatewayEnvironmentProtocolURI:
+      title: Gateway Environment protocols and URIs
+      required:
+        - protocol
+        - endpointURI
+      type: object
+      properties:
+        protocol:
+          type: string
+          example: default
+        endpointURI:
+          type: string
+          example: default
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
