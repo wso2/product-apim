@@ -27,6 +27,7 @@
   "oauth.grant_type.uma_ticket.enable": false,
   "oauth.grant_type.uma_ticket.grant_handler": "org.wso2.carbon.identity.oauth.uma.grant.UMA2GrantHandler",
   "oauth.grant_type.uma_ticket.grant_validator": "org.wso2.carbon.identity.oauth.uma.grant.GrantValidator",
+  "oauth.enable_jwt_token_validation_during_introspection": false,
   "system.parameter.\u0027org.wso2.CipherTransformation\u0027": "RSA/ECB/OAEPwithSHA1andMGF1Padding",
   "server.userAgent": "WSO2 AM 3.0.0",
   "server.serverDetails": "WSO2 AM 3.0.0",

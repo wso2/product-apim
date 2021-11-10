@@ -708,6 +708,21 @@
             {% endfor %}
         </AllowedScopes>
         {% endif %}
+
+        <!--
+        By enabling this feature, server will identify a JWT token at the introspection endpoint by attempting a JWT
+        token parsing. If identified, introspection is performed by treating the token as a JWT access token.
+
+        Important: Enabling this feature will validate the token using the available JWT token validator. Ex: In the
+                   default pack, this will be Default JWT token validator. However, if the server issue custom JWT
+                   tokens, which fails the available JWT token validator, the existing flow can break. For an example,
+                   the default JWT token validator mandate to have the jti claim in the token. If a custom token issuer
+                   does not include this claim, introspection breaks once this feature is enabled. In such scenarios,
+                   a compatible JWT token validator should be deployed in the system prior to enabling this feature.
+
+        Default value: false
+        -->
+        <EnableJWTTokenValidationDuringIntrospection>{{oauth.enable_jwt_token_validation_during_introspection}}</EnableJWTTokenValidationDuringIntrospection>
     </OAuth>
 
     <MultifactorAuthentication>
