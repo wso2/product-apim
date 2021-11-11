@@ -185,7 +185,7 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
             Assert.fail("API created with same context");
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), 409);
-            Assert.assertTrue(e.getResponseBody().contains("A duplicate API context already exists"));
+            Assert.assertTrue(e.getResponseBody().contains("The API context already exists"));
         }
     }
 
