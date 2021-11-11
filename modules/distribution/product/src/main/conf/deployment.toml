@@ -132,6 +132,9 @@ auth_token = ""
 #enable_token_encryption = false
 #enable_token_hashing = false
 
+#[oauth]
+#enable_jwt_token_validation_during_introspection = false
+
 #[apim.devportal]
 #url = "https://localhost:${mgt.transport.https.port}/devportal"
 #enable_application_sharing = false
