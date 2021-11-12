@@ -430,7 +430,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
             keyManager6Id = keyManagerDTOApiResponse.getData().getId();
 
             for(KeyManagerInfoDTO keyManager: restAPIStore.getKeyManagers().getList()) {
-                if (keyManager.getName().equals(keyManager5Id)) {
+                if (keyManager.getName().equals(keyManager6Id)) {
                     Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
                     Assert.assertEquals(keyManager.getAlias(), display_alias);
                     Assert.assertEquals(keyManager.getType(), tokenType);
@@ -439,7 +439,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         }catch (Exception e){
             log.error(e);
         } finally {
-            restAPIAdmin.deleteKeyManager(keyManager5Id);
+            restAPIAdmin.deleteKeyManager(keyManager6Id);
         }
     }
 
@@ -451,6 +451,8 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIAdmin.deleteKeyManager(keyManager2Id);
         restAPIAdmin.deleteKeyManager(keyManager3Id);
         restAPIAdmin.deleteKeyManager(keyManager4Id);
+        restAPIAdmin.deleteKeyManager(keyManager5Id);
+        restAPIAdmin.deleteKeyManager(keyManager6Id);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         undeployAndDeleteAPIRevisionsUsingRest(apiIdOnlyKm1, restAPIPublisher);
