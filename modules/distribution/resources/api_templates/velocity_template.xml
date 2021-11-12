@@ -283,7 +283,9 @@
 #set($validationEndpointId = $policy.getParameters().get('endpointId'))
 #set($validation_endpoint_config = $resource_endpoint_config.get($validationEndpointId))
 #set($res_endpoint_security = $resource_endpoint_security_config.get($validationEndpointId))
+<call>
 #draw_endpoint( "resource" $validation_endpoint_config )
+</call>
 #end
 #end
 #end
@@ -417,7 +419,9 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 #set($validationEndpointId = $policy.getParameters().get('endpointId'))
 #set($validation_endpoint_config = $resource_endpoint_config.get($validationEndpointId))
 #set($res_endpoint_security = $resource_endpoint_security_config.get($validationEndpointId))
+<call>
 #draw_endpoint( "resource" $validation_endpoint_config )
+</call>
 #end
 #end
 #end

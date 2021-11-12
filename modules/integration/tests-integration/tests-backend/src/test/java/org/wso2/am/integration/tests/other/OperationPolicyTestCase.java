@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
@@ -11,10 +12,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -57,10 +55,6 @@ public class OperationPolicyTestCase extends APIMIntegrationBaseTest {
         };
     }
 
-    //set header, remove header, remap header
-    //set query param, remove query param(need to uncomment after synapse upgrade), remap query param
-    //rewrite http verb
-    //mock response
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
@@ -132,6 +126,7 @@ public class OperationPolicyTestCase extends APIMIntegrationBaseTest {
         for(APIOperationsDTO operation : updatedAPIResponse.getOperations()){
             String verb = operation.getVerb();
             String resource = operation.getTarget();
+            //use constant
             if ("GET".equals(verb) && "/menu".equals(resource)) {
                 List<OperationPolicyDTO> inPolicies = operation.getOperationPolicies().getIn();
                 List<OperationPolicyDTO> outPolicies = operation.getOperationPolicies().getOut();
@@ -347,8 +342,7 @@ public class OperationPolicyTestCase extends APIMIntegrationBaseTest {
         Assert.assertTrue(result.containsKey("org"), "Org Query Parameter is missing: " + responseJson.toString());
     }*/
 
-    //uncomment when synapse is updated for out sequence
-    /*@Test(groups = { "wso2.am" }, description = "Test mediation for SET_HEADER policy in response flow",
+    @Test(groups = { "wso2.am" }, description = "Test mediation for SET_HEADER policy in response flow",
             dependsOnMethods = "testRemapRequestHeaderPolicy")
     public void testSetResponseHeaderPolicy() throws Exception {
         //Fetch API
@@ -378,47 +372,68 @@ public class OperationPolicyTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK);
         Assert.assertTrue(response.getHeaders().containsKey("org-resp"), "Response header is missing");
         Assert.assertTrue("abcd".equals(response.getHeaders().get("org-resp")), "Header value is incorrect");
-    }*/
+    }
 
-    @Test(groups = { "wso2.am" }, description = "Test attach operation policies to API")
-    public void testAttachOperationPolicies() throws Exception {
-        //Attach operation policies in API create flow
-        String APIName = "OperationPolicyTestAPI";
-        String APIContext = "operation-policies";
-        String endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
-        String description = "This is operation policy test API created by API manager integration test";
-        String providerName = user.getUserName();
-        String APIVersion = "1.0.0";
+    @Test(groups = { "wso2.am" }, description = "Test mediation for REMOVE_HEADER policy in response flow",
+            dependsOnMethods = "testSetResponseHeaderPolicy")
+    public void testRemoveResponseHeaderPolicy() throws Exception {
+        //Fetch API
+        APIDTO api = fetchAPI(apiId);
 
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(endpointUrl));
-        apiRequest.setDescription(description);
-        apiRequest.setVersion(APIVersion);
-        apiRequest.setProvider(providerName);
+        //Attach SET_HEADER operation policy to response in flow
+        OperationPolicyDTO policy = new OperationPolicyDTO();
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("headerName", "org-resp");
+        policy.setPolicyType(OperationPolicyDTO.PolicyTypeEnum.REMOVE_HEADER);
+        policy.setParameters(parameters);
+        addInPolicy(api, policy, OUT_FLOW, false);
 
+        APIDTO updatedAPI = restAPIPublisher.updateAPI(api, apiId);
+        Assert.assertNotNull(updatedAPI, "Error while updating API with Operation Policy");
+
+        //Add new API Revision and deploy
+        addAndDeployNewAPIRevision(apiId);
+
+        //invoke API (/echo-request GET request)
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + RESOURCE_PATH;
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+
+        HttpResponse response = HTTPSClientUtils.doGet(invokeURL, requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK);
+        Assert.assertTrue(!response.getHeaders().containsKey("org-resp"), "Response header was not removed");
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test mediation for REWRITE_RESOURCE_PATH policy",
+            dependsOnMethods = "testRemoveResponseHeaderPolicy")
+    public void testRewriteResourcePathPolicy() throws Exception {
+        //Fetch API
+        APIDTO api = fetchAPI(apiId);
+
+        //expose GET /EMPLOYEES resource as GET /employees
+        List<APIOperationsDTO> operationsDTOList = api.getOperations();
+        APIOperationsDTO operationsDTO = new APIOperationsDTO();
+        operationsDTO.setVerb("GET");
+        operationsDTO.setTarget("/employees");
+
+        OperationPolicyDTO policyDTO = constructPolicyDTO(OperationPolicyDTO.PolicyTypeEnum.REWRITE_RESOURCE_PATH,
+                "resourcePath:/EMPLOYEE");
         APIOperationPoliciesDTO operationPoliciesDTO = new APIOperationPoliciesDTO();
-        /*addInPolicy();
+        List<OperationPolicyDTO> inPolicies = new ArrayList<>();
+        inPolicies.add(policyDTO);
+        operationPoliciesDTO.setIn(inPolicies);
+        operationsDTO.setOperationPolicies(operationPoliciesDTO);
+        operationsDTOList.add(operationsDTO);
 
-        addOperation(apiRequest, "/menu", APIMIntegrationConstants.HTTP_VERB_GET, operationPolicy);
-        addOperation(apiRequest, "/order", APIMIntegrationConstants.HTTP_VERB_POST);*/
-    }
+        APIDTO updatedAPI = restAPIPublisher.updateAPI(api, apiId);
+        Assert.assertNotNull(updatedAPI, "Error while updating API with Operation Policy");
 
-    @Test(groups = { "wso2.am" }, description = "Test update operation policies of API",
-            dependsOnMethods = "testAttachOperationPolicies")
-    public void testUpdateOperationPolicies() throws Exception {
+        //Add new API Revision and deploy
+        addAndDeployNewAPIRevision(apiId);
 
-    }
-
-    @Test(groups = { "wso2.am" }, description = "Test update operation policies of API",
-            dependsOnMethods = "testAttachOperationPolicies")
-    public void testRemoveOperationPolicies() throws Exception {
-
-    }
-
-    //unit test
-    @Test(groups = { "wso2.am" }, description = "Test add operation policies with invalid parameters",
-            dependsOnMethods = "testAttachOperationPolicies")
-    public void testAddOperationPoliciesWithInvalidParams() throws Exception {
-
+        JSONObject response = invokeAPI("/employees", accessToken);
+        Assert.assertEquals(((JSONArray) response.get("employees")).size(), 2,
+                "Error while mediating REWRITE_RESOURCE_PATH");
     }
 
     private APIDTO fetchAPI(String id) throws Exception {

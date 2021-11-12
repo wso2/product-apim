@@ -158,9 +158,10 @@ public class ResourceEndpointTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(endpointDTO.getUsageCount().intValue(), 1);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Delete resource endpoint",
-            dependsOnMethods = "testAttachEndpointToAPIOperationPolicy") public void testIncludeOperationWithOperationPolicyInAPIProduct()
-            throws Exception {
+    @Test
+    (groups = {"wso2.am" }, description = "Delete resource endpoint", dependsOnMethods =
+            "testAttachEndpointToAPIOperationPolicy")
+    public void testIncludeOperationWithOperationPolicyInAPIProduct() throws Exception {
         List<APIDTO> apisToBeUsed = new ArrayList<>();
         HttpResponse apiResponse = restAPIPublisher.getAPI(apiId);
         Gson gson = new Gson();
@@ -208,7 +209,7 @@ public class ResourceEndpointTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, apiRevisionUUID,
                 apiRevisionDeployRequestList,"API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
-                "Unable to deploy API Revision:" +apiRevisionsDeployResponse.getData());
+                "Unable to deploy API Revision:" + apiRevisionsDeployResponse.getData());
 
         //Undeploy Revision
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
