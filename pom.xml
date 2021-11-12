@@ -24,7 +24,7 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>https://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
@@ -1293,7 +1293,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.6.2</carbon.kernel.version>
-        <apimserver.version>4.0.1-SNAPSHOT</apimserver.version>
+        <apimserver.version>4.1.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.3</ws.feature.version>
 
 	    <cipher.tool.version>1.1.15</cipher.tool.version>
@@ -1302,7 +1302,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.99</carbon.mediation.version>
+        <carbon.mediation.version>4.7.102</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.18.187</carbon.identity.version>
@@ -1330,8 +1330,6 @@
         <!-- carbon deployment -->
         <carbon.deployment.version>4.11.1</carbon.deployment.version>
 
-        <!-- carbon analytics -->
-        <carbon.analytics.version>1.4.5</carbon.analytics.version>
 
         <!--jaggery-->
         <org.jaggery.version>0.14.13</org.jaggery.version>
@@ -1350,7 +1348,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v227</synapse.version>
+	    <synapse.version>2.1.7-wso2v233</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v63</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
@@ -1390,7 +1388,7 @@
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
 
-        <carbon.automation.version>4.4.8</carbon.automation.version>
+        <carbon.automation.version>4.4.10</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
         <testng.version>6.11</testng.version>
         <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
