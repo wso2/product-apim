@@ -5190,6 +5190,7 @@ components:
           enum:
             - EXCHANGED
             - ORIGINAL
+            - BOTH
     KeyManagerInfo:
       title: Key Manager Info
       required:
@@ -5221,6 +5222,7 @@ components:
           enum:
             - EXCHANGED
             - ORIGINAL
+            - BOTH
     KeyManagerConfiguration:
       title: Key Manager Configuration
       type: object

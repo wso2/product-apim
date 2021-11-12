@@ -8466,6 +8466,7 @@ components:
           enum:
           - EXCHANGED
           - ORIGINAL
+          - BOTH
           example: EXCHANGED
           type: string
       required:
@@ -8504,6 +8505,7 @@ components:
           enum:
           - EXCHANGED
           - ORIGINAL
+          - BOTH
           example: EXCHANGED
           type: string
       required:

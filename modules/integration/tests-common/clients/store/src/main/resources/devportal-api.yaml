@@ -5517,6 +5517,16 @@ components:
         additionalProperties:
           type: object
           properties: {}
+        tokenType:
+          type: string
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED, ORIGINAL and BOTH.
+          example: EXCHANGED
+          default: ORIGINAL
+          enum:
+            - EXCHANGED
+            - ORIGINAL
+            - BOTH
     KeyManagerApplicationConfiguration:
       title: Key Manager application Configuration
       type: object

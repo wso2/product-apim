@@ -9893,6 +9893,7 @@ components:
         enableOAuthAppCreation: true
         additionalProperties: '{}'
         userInfoEndpoint: userInfoEndpoint
+        tokenType: EXCHANGED
         enableTokenGeneration: true
       properties:
         id:
@@ -9960,6 +9961,16 @@ components:
         additionalProperties:
           properties: {}
           type: object
+        tokenType:
+          default: ORIGINAL
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED, ORIGINAL and BOTH.
+          enum:
+          - EXCHANGED
+          - ORIGINAL
+          - BOTH
+          example: EXCHANGED
+          type: string
       required:
       - name
       - type
@@ -10056,6 +10067,7 @@ components:
           enableOAuthAppCreation: true
           additionalProperties: '{}'
           userInfoEndpoint: userInfoEndpoint
+          tokenType: EXCHANGED
           enableTokenGeneration: true
         - displayName: Resident Key Manager
           enableMapOAuthConsumerApps: false
@@ -10098,6 +10110,7 @@ components:
           enableOAuthAppCreation: true
           additionalProperties: '{}'
           userInfoEndpoint: userInfoEndpoint
+          tokenType: EXCHANGED
           enableTokenGeneration: true
       properties:
         count:

@@ -56,7 +56,9 @@ public class KeyManagerInfoDTO {
 public enum TokenTypeEnum {
         EXCHANGED("EXCHANGED"),
         
-        ORIGINAL("ORIGINAL");
+        ORIGINAL("ORIGINAL"),
+        
+        BOTH("BOTH");
 
 private String value;
 
