@@ -24,12 +24,14 @@ import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -652,7 +654,11 @@ public class SolacePublisherPortalTestCase extends APIManagerLifecycleBaseTest {
 
         // Create revision and deploy to Solace broker
         createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApi1Id, restAPIPublisher);
-        restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApi1Id, false);
+        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApi1Id, false);
+
+        // Assert successful lifecycle change
+        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
+
         waitForAPIDeploymentSync(user.getUserName(), solaceApi1Name, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
