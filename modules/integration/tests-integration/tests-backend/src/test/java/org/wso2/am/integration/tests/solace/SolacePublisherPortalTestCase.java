@@ -667,6 +667,16 @@ public class SolacePublisherPortalTestCase extends APIManagerLifecycleBaseTest {
         undeployAndDeleteSolaceAPIRevisionsFromSolaceBroker(solaceApi1Id, restAPIPublisher);
         waitForAPIUnDeploymentSync(user.getUserName(), solaceApi1Name, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
+        // Assert that related artifacts are not found in solace broker
+        HttpClient httpClient = HttpClients.createDefault();
+        String apiNameForRegistration = solaceApi1Name + "-" + solaceApiVersion;
+        HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
+        String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
+        httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
+
+        org.apache.http.HttpResponse response = httpClient.execute(httpGet);
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invocation fails for GET request");
     }
 
     @Test(groups = {"wso2.am"}, description = "Deploy Solace API to solace broker and change life cycle as Retired and " +
