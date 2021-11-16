@@ -133,27 +133,29 @@ optimize="$advance_ep.get("optimize")"
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
 
         ##If graphql api
-        #if ( $endpointClass == "graphql" )
-        #if( $websocketResourceKey )
-        #set( $endpoint_config = $endpoint_config.get("ws") )
-        #set( $isGQLSubscription = "true" )
-        #else
-        #set( $endpoint_config = $endpoint_config.get("http") )
-        #end
-        #set( $endpointClass = $endpoint_config.get("endpoint_type") )
+        #if( $endpointClass == "graphql" )
+            #if( $websocketResourceKey )
+                ##If websocketResourceKey present in context then this is the graphQL subscription endpoint
+                #set( $endpoint_config = $endpoint_config.get("ws") )
+                #set( $isGQLSubscription = "true" )
+            #else
+                ##Else GraphQL query mutation http endpoint
+                #set( $endpoint_config = $endpoint_config.get("http") )
+            #end
+            #set( $endpointClass = $endpoint_config.get("endpoint_type") )
         #end
 
-        #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
-        #set( $ep_key = "${endpointKey}_API${type}Endpoint")
+        #set( $endpoints = $endpoint_config.get("${type}_endpoints") )
+        #set( $ep_key = "${endpointKey}_API${type}Endpoint" )
 
-        #if ( $endpointClass == "http" )
-        #http_endpoint( $ep_key $endpoints )
-        #elseif( $endpointClass == "ws")
-        #websocket_endpoint( $ep_key )
-        #elseif ( $endpointClass == "address" )
-        #address_endpoint($ep_key $endpoints)
-        #elseif ( $endpointClass == "failover" )
-        #set( $failover_endpoints = $endpoint_config.get("${type}_failovers"))
+        #if( $endpointClass == "http" )
+            #http_endpoint( $ep_key $endpoints )
+        #elseif( $endpointClass == "ws" )
+            #websocket_endpoint( $ep_key )
+        #elseif( $endpointClass == "address" )
+            #address_endpoint( $ep_key $endpoints )
+        #elseif( $endpointClass == "failover" )
+            #set( $failover_endpoints = $endpoint_config.get("${type}_failovers") )
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_key">
 <failover>
     #if($endpoints.get("endpoint_type") == "address")
