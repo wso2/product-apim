@@ -198,8 +198,6 @@
 <inSequence>
 
 ##insert operation level mediation logic
-#set($mockResponsePolicyExists = 'false')
-#set($changeEndpointPolicyExists = 'false')
 #set($operationPolicies = $resource.getOperationPolicies())
 #foreach ($policy in $operationPolicies)
 #if($policy.getDirection() == 'in')
@@ -256,29 +254,6 @@
     </rewriterule>
 </rewrite>
 <property name="REST_URL_POSTFIX" scope="axis2" expression="get-property('URL_POSTFIX')"/>
-#elseif($policy.getPolicyType() == 'MOCK_RESPONSE')
-#set($mockResponsePolicyExists = 'true')
-#set($payload = $policy.getParameters().get('payload'))
-#set($contentType = $policy.getParameters().get('contentType'))
-#set($statusCode = $policy.getParameters().get('statusCode'))
-#set($headers = $policy.getParameters().get('headers'))
-<payloadFactory media-type="json">
-    <format>
-        $payload
-    </format>
-</payloadFactory>
-<property name="HTTP_SC" value="$statusCode" scope="axis2"/>
-#foreach($header in $headers)
-#set($headerName = $header.get('headerName'))
-#set($headerValue = $header.get('headerValue'))
-<property action="set" name="$headerName" value="$headerValue" scope="transport" />
-#end
-<respond/>
-#elseif($policy.getPolicyType() == 'CHANGE_ENDPOINT')
-#set($changeEndpointPolicyExists = 'true')
-#set($endpointId = $policy.getParameters().get('endpointId'))
-#set($res_endpoint_config = $resource_endpoint_config.get($endpointId))
-#set($res_endpoint_security = $resource_endpoint_security_config.get($endpointId))
 #elseif($policy.getPolicyType() == 'CALL_VALIDATION_SERVICE')
 #set($validationEndpointId = $policy.getParameters().get('endpointId'))
 #set($validation_endpoint_config = $resource_endpoint_config.get($validationEndpointId))
@@ -290,7 +265,6 @@
 #end
 #end
 
-#if($mockResponsePolicyExists != 'true')
 ## check and set response caching
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="false" hashGenerator="org.wso2.carbon.mediator.cache.digest.HttpRequestHashGenerator" timeout="$!responseCacheTimeOut">
@@ -343,17 +317,9 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
     <then>
         #end
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
-            #if($changeEndpointPolicyExists == 'true')
-                #draw_endpoint( "resource" $res_endpoint_config )
-            #else
-                #draw_endpoint( "sandbox" $endpoint_config )
-            #end
+            #draw_endpoint( "sandbox" $endpoint_config )
         #else
-            #if($changeEndpointPolicyExists == 'true')
-                #draw_endpoint( "resource" $res_endpoint_config )
-            #else
-                #draw_endpoint( "production" $endpoint_config )
-            #end
+            #draw_endpoint( "production" $endpoint_config )
         #end
         #if($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected)
     </then>
@@ -378,11 +344,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         <send/>
         #else
         #if($endpoint_config.get("production_endpoints") && $endpoint_config.get("sandbox_endpoints"))
-            #if($changeEndpointPolicyExists == 'true')
-                #draw_endpoint( "resource" $res_endpoint_config )
-            #else
-                #draw_endpoint( "sandbox" $endpoint_config )
-            #end
+            #draw_endpoint( "sandbox" $endpoint_config )
         #elseif($endpoint_config.get("production_endpoints"))
         <sequence key="_sandbox_key_error_"/>
         #elseif($endpoint_config.get("sandbox_endpoints"))
@@ -393,13 +355,10 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 </filter>
 #end
 #end
-#end
 </inSequence>
 <outSequence>
 
 ##insert operation level mediation logic
-#set($mockResponsePolicyExists = 'false')
-#set($changeEndpointPolicyExists = 'false')
 #set($operationPolicies = $resource.getOperationPolicies())
 #foreach ($policy in $operationPolicies)
 #if($policy.getDirection() == 'out')

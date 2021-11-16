@@ -184,34 +184,6 @@ public class OperationPolicyTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "Test mediation for REMOVE_HEADER policy in request flow",
             dependsOnMethods = "testRemoveRequestHeaderPolicy")
-    public void testRemapRequestHeaderPolicy() throws Exception {
-        //Fetch API
-        APIDTO api = fetchAPI(apiId);
-
-        //Attach SET_HEADER operation policy to resource in flow
-        OperationPolicyDTO policy1 = constructPolicyDTO(OperationPolicyDTO.PolicyTypeEnum.SET_HEADER,
-                "headerName:emp-id", "headerValue:1234");
-        addInPolicy(api, policy1, IN_FLOW, true);
-
-        OperationPolicyDTO policy2 = constructPolicyDTO(OperationPolicyDTO.PolicyTypeEnum.SET_HEADER,
-                "headerName:ref-no", "headerExpression:req.header.emp-id");
-        addInPolicy(api, policy2, IN_FLOW, false);
-
-        //Add new API Revision and deploy
-        addAndDeployNewAPIRevision(apiId);
-
-        //invoke API (/echo-request GET request)
-        JSONObject responseJson = invokeAPI(RESOURCE_PATH, accessToken);
-
-        Map<String, String> result = new ObjectMapper()
-                .readValue(responseJson.get("headers").toString(), Map.class);
-        Assert.assertTrue(result.containsKey("ref-no"), "Request Header is missing: " + responseJson.toString());
-        Assert.assertTrue("1234".equals(result.get("ref-no")),
-                "Incorrect Request Header value: " + responseJson.toString());
-    }
-
-    @Test(groups = { "wso2.am" }, description = "Test mediation for REMOVE_HEADER policy in request flow",
-            dependsOnMethods = "testRemapRequestHeaderPolicy")
     public void testAddQueryParamPolicy() throws Exception {
         //Fetch API
         APIDTO api = fetchAPI(apiId);
@@ -234,9 +206,9 @@ public class OperationPolicyTestCase extends APIMIntegrationBaseTest {
                 "Incorrect query parameter value: " + responseJson.toString());
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test mediation for ADD_QUERY_PARAM policy in request flow with param remap",
-            dependsOnMethods = "testAddQueryParamPolicy")
-    public void testRemapQueryParamPolicy() throws Exception {
+    /*@Test(groups = {
+            "wso2.am" }, description = "Test mediation for ADD_QUERY_PARAM policy in request flow with param remap", dependsOnMethods = "testAddQueryParamPolicy") public void testRemapQueryParamPolicy()
+            throws Exception {
         //Fetch API
         APIDTO api = fetchAPI(apiId);
 
@@ -263,10 +235,10 @@ public class OperationPolicyTestCase extends APIMIntegrationBaseTest {
         Assert.assertTrue(result.containsKey("empName"), "Query Parameter is missing: " + responseJson.toString());
         Assert.assertTrue("test1234".equals(result.get("empName")),
                 "Mapped value for Query Parameter is incorrect: " + responseJson.toString());
-    }
+    }*/
 
     @Test(groups = { "wso2.am" }, description = "Test mediation for REWRITE_HTTP_METHOD policy",
-            dependsOnMethods = "testRemapQueryParamPolicy")
+            dependsOnMethods = "testAddQueryParamPolicy")
     public void testRewriteHttpMethodPolicy() throws Exception {
         //Fetch API
         APIDTO api = fetchAPI(apiId);
@@ -286,64 +258,8 @@ public class OperationPolicyTestCase extends APIMIntegrationBaseTest {
                 "Incorrect http method invoked: " + responseJson.toString());
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test mediation for MOCK_RESPONSE policy",
-            dependsOnMethods = "testRewriteHttpMethodPolicy")
-    public void testMockResponsePolicy() throws Exception {
-        //Fetch API
-        APIDTO api = fetchAPI(apiId);
-
-        //Attach REWRITE_HTTP_METHOD operation policy to resource in flow
-        OperationPolicyDTO policy = constructPolicyDTO(OperationPolicyDTO.PolicyTypeEnum.MOCK_RESPONSE,
-                "payload:{\"hello\": \"world\"}", "contentType:application/json", "statusCode:200");
-        addInPolicy(api, policy, IN_FLOW, true);
-
-        //Add new API Revision and deploy
-        addAndDeployNewAPIRevision(apiId);
-
-        //invoke API (/echo-request GET request)
-        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + RESOURCE_PATH;
-        Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-
-        HttpResponse response = HTTPSClientUtils.doGet(invokeURL, requestHeaders);
-        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK);
-        JSONObject responseJson = (JSONObject) new JSONParser().parse(response.getData().replace("\\", ""));
-
-        Assert.assertTrue("world".equals(responseJson.get("hello")));
-    }
-
-    /*@Test(groups = { "wso2.am" }, description = "Test mediation for REMOVE_HEADER policy in request flow",
-            dependsOnMethods = "testAddQueryParamPolicy")
-    public void testRemoveQueryParamPolicy() throws Exception {
-        //Fetch API
-        APIDTO api = fetchAPI(apiId);
-
-        //Attach REMOVE_HEADER operation policy to resource in flow
-        OperationPolicyDTO policy = new OperationPolicyDTO();
-        Map<String, String> parameters = new HashMap<>();
-        parameters.put("paramName", "idQuery");
-        policy.setPolicyType(OperationPolicyDTO.PolicyTypeEnum.REMOVE_QUERY_PARAM);
-        policy.setParameters(parameters);
-
-        addInPolicy(api, policy, IN_FLOW, true);
-        APIDTO updatedAPI = restAPIPublisher.updateAPI(api, apiId);
-        Assert.assertNotNull(updatedAPI, "Error while updating API with Operation Policy");
-
-        //Add new API Revision and deploy
-        addAndDeployNewAPIRevision(apiId);
-
-        //invoke API (/echo-request GET request)
-        JSONObject responseJson = invokeAPI(RESOURCE_PATH + "?name=abcd&idQuery=1234&org=Test", accessToken);
-
-        Map<String, String> result = new ObjectMapper()
-                .readValue(responseJson.get("query-parameters").toString(), Map.class);
-        Assert.assertTrue(!result.containsKey("idQuery"), "Query Parameter is still there: " + responseJson.toString());
-        Assert.assertTrue(result.containsKey("name"), "Name Query Parameter is missing: " + responseJson.toString());
-        Assert.assertTrue(result.containsKey("org"), "Org Query Parameter is missing: " + responseJson.toString());
-    }*/
-
     @Test(groups = { "wso2.am" }, description = "Test mediation for SET_HEADER policy in response flow",
-            dependsOnMethods = "testRemapRequestHeaderPolicy")
+            dependsOnMethods = "testRewriteHttpMethodPolicy")
     public void testSetResponseHeaderPolicy() throws Exception {
         //Fetch API
         APIDTO api = fetchAPI(apiId);
