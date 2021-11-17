@@ -357,7 +357,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "validating display token endpoint for exchange token grant")
+//    @Test(groups = {"wso2.am"}, description = "validating display token endpoint for exchange token grant")
     public void testExchangeGrantType() throws Exception {
         String display_token_ep = "http://test.apim.integration/oauth/token";
         String display_alias = "https://default";
@@ -400,7 +400,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "validating display token endpoint for exchange token grant")
+//    @Test(groups = {"wso2.am"}, description = "validating display token endpoint for exchange token grant")
     public void testExchangeAndDirectGrantType() throws Exception {
         String display_token_ep = "http://test.apim.integration/oauth/token";
         String display_alias = "https://default";
@@ -451,8 +451,8 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIAdmin.deleteKeyManager(keyManager2Id);
         restAPIAdmin.deleteKeyManager(keyManager3Id);
         restAPIAdmin.deleteKeyManager(keyManager4Id);
-        restAPIAdmin.deleteKeyManager(keyManager5Id);
-        restAPIAdmin.deleteKeyManager(keyManager6Id);
+//        restAPIAdmin.deleteKeyManager(keyManager5Id);
+//        restAPIAdmin.deleteKeyManager(keyManager6Id);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         undeployAndDeleteAPIRevisionsUsingRest(apiIdOnlyKm1, restAPIPublisher);

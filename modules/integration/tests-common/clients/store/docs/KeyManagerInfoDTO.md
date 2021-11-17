@@ -24,7 +24,7 @@ Name | Type | Description | Notes
 **applicationConfiguration** | [**List&lt;KeyManagerApplicationConfigurationDTO&gt;**](KeyManagerApplicationConfigurationDTO.md) |  |  [optional]
 **alias** | **String** | The alias of Identity Provider. If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token  |  [optional]
 **additionalProperties** | [**Object**](.md) |  |  [optional]
-**tokenType** | [**TokenTypeEnum**](#TokenTypeEnum) | The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED, ORIGINAL and BOTH. |  [optional]
+**tokenType** | [**TokenTypeEnum**](#TokenTypeEnum) | The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED, DIRECT and BOTH. |  [optional]
 
 
 
@@ -33,7 +33,7 @@ Name | Type | Description | Notes
 Name | Value
 ---- | -----
 EXCHANGED | &quot;EXCHANGED&quot;
-ORIGINAL | &quot;ORIGINAL&quot;
+DIRECT | &quot;DIRECT&quot;
 BOTH | &quot;BOTH&quot;
 
 

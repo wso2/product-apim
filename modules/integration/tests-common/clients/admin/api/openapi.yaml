@@ -8460,12 +8460,12 @@ components:
           properties: {}
           type: object
         tokenType:
-          default: ORIGINAL
+          default: DIRECT
           description: The type of the tokens to be used (exchanged or without exchanged).
-            Accepted values are EXCHANGED and ORIGINAL.
+            Accepted values are EXCHANGED and DIRECT.
           enum:
           - EXCHANGED
-          - ORIGINAL
+          - DIRECT
           - BOTH
           example: EXCHANGED
           type: string
@@ -8499,12 +8499,12 @@ components:
           example: true
           type: boolean
         tokenType:
-          default: ORIGINAL
+          default: DIRECT
           description: The type of the tokens to be used (exchanged or without exchanged).
-            Accepted values are EXCHANGED and ORIGINAL.
+            Accepted values are EXCHANGED and DIRECT.
           enum:
           - EXCHANGED
-          - ORIGINAL
+          - DIRECT
           - BOTH
           example: EXCHANGED
           type: string

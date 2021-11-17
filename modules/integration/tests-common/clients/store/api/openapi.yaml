@@ -9962,12 +9962,12 @@ components:
           properties: {}
           type: object
         tokenType:
-          default: ORIGINAL
+          default: DIRECT
           description: The type of the tokens to be used (exchanged or without exchanged).
-            Accepted values are EXCHANGED, ORIGINAL and BOTH.
+            Accepted values are EXCHANGED, DIRECT and BOTH.
           enum:
           - EXCHANGED
-          - ORIGINAL
+          - DIRECT
           - BOTH
           example: EXCHANGED
           type: string

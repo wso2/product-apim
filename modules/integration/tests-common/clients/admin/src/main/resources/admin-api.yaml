@@ -5184,12 +5184,12 @@ components:
         tokenType:
           type: string
           description: The type of the tokens to be used (exchanged or without exchanged).
-            Accepted values are EXCHANGED and ORIGINAL.
+            Accepted values are EXCHANGED and DIRECT.
           example: EXCHANGED
-          default: ORIGINAL
+          default: DIRECT
           enum:
             - EXCHANGED
-            - ORIGINAL
+            - DIRECT
             - BOTH
     KeyManagerInfo:
       title: Key Manager Info
@@ -5216,12 +5216,12 @@ components:
         tokenType:
           type: string
           description: The type of the tokens to be used (exchanged or without exchanged).
-            Accepted values are EXCHANGED and ORIGINAL.
+            Accepted values are EXCHANGED and DIRECT.
           example: EXCHANGED
-          default: ORIGINAL
+          default: DIRECT
           enum:
             - EXCHANGED
-            - ORIGINAL
+            - DIRECT
             - BOTH
     KeyManagerConfiguration:
       title: Key Manager Configuration

@@ -159,13 +159,13 @@ public class KeyManagerDTO {
             private Object additionalProperties;
 
             /**
-* The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED and ORIGINAL.
+* The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED and DIRECT.
 */
     @JsonAdapter(TokenTypeEnum.Adapter.class)
 public enum TokenTypeEnum {
         EXCHANGED("EXCHANGED"),
         
-        ORIGINAL("ORIGINAL"),
+        DIRECT("DIRECT"),
         
         BOTH("BOTH");
 
@@ -209,7 +209,7 @@ public static TokenTypeEnum fromValue(String value) {
 
         public static final String SERIALIZED_NAME_TOKEN_TYPE = "tokenType";
         @SerializedName(SERIALIZED_NAME_TOKEN_TYPE)
-            private TokenTypeEnum tokenType = TokenTypeEnum.ORIGINAL;
+            private TokenTypeEnum tokenType = TokenTypeEnum.DIRECT;
 
 
         public KeyManagerDTO id(String id) {
@@ -930,11 +930,11 @@ public static TokenTypeEnum fromValue(String value) {
         }
 
     /**
-        * The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED and ORIGINAL.
+        * The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED and DIRECT.
     * @return tokenType
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "EXCHANGED", value = "The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED and ORIGINAL.")
+      @ApiModelProperty(example = "EXCHANGED", value = "The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED and DIRECT.")
     
     public TokenTypeEnum getTokenType() {
         return tokenType;
