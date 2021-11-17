@@ -534,6 +534,23 @@ public class RestAPIStoreImpl {
     }
 
     /**
+     * Regenerate Consumer Secret by key mapping ID
+     *
+     * @param applicationId     ID of the application
+     * @param keyMappingId      Keymapping Id
+     * @return APIResponse of re-generate request
+     * @throws Exception
+     */
+    public ApplicationKeyReGenerateResponseDTO regenerateSecretByKeyMappingId(String applicationId,
+            String keyMappingId) throws ApiException {
+        ApiResponse<ApplicationKeyReGenerateResponseDTO> responseDTO = applicationKeysApi
+                .applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPostWithHttpInfo(applicationId,
+                        keyMappingId);
+        Assert.assertEquals(HttpStatus.SC_OK, responseDTO.getStatusCode());
+        return responseDTO.getData();
+    }
+
+    /**
      * Get api which are published
      *
      * @return - http response of get API post request
