@@ -306,7 +306,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-//    @Test(groups = {"wso2.am"}, description = "validating display token endpoint behavior")
+    @Test(groups = {"wso2.am"}, description = "validating display token endpoint behavior")
     public void testIDPDisplaytokenEndpoints() throws Exception  {
         String token_ep = "http://localhost:9443/oauth/token";
         String revoke_ep = "http://localhost:9443/oauth/revoke";
