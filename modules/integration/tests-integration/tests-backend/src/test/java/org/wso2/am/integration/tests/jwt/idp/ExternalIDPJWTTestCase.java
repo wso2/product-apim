@@ -345,7 +345,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 keyManagerDTOApiResponse1 = restAPIAdmin.addKeyManager(keyManagerDTO1);
         keyManager4Id = keyManagerDTOApiResponse1.getData().getId();
 
-        for (KeyManagerInfoDTO keyManager : restAPIStore.getKeyManagers().getList()) {
+        for(KeyManagerInfoDTO keyManager: restAPIStore.getKeyManagers().getList()) {
             if (keyManager.getName().equals(KEY_MANAGER_3)) {
                 Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
                 Assert.assertEquals(keyManager.getRevokeEndpoint(), display_revoke_ep);
@@ -381,18 +381,23 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         certificatesDTO.value("https://test.apim.integration/oauth2/default/v1/keys");
         keyManagerDTO.certificates(certificatesDTO);
 
-        org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
-                keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
-        keyManager5Id = keyManagerDTOApiResponse.getData().getId();
+        try {
+            org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
+                    keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
+            keyManager5Id = keyManagerDTOApiResponse.getData().getId();
 
-        for (KeyManagerInfoDTO keyManager : restAPIStore.getKeyManagers().getList()) {
-            if (keyManager.getName().equals(keyManager5Id)) {
-                Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
-                Assert.assertEquals(keyManager.getAlias(), display_alias);
-                Assert.assertEquals(keyManager.getType(), tokenType);
+            for(KeyManagerInfoDTO keyManager: restAPIStore.getKeyManagers().getList()) {
+                if (keyManager.getName().equals(keyManager5Id)) {
+                    Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
+                    Assert.assertEquals(keyManager.getAlias(), display_alias);
+                    Assert.assertEquals(keyManager.getType(), tokenType);
+                }
             }
+        }catch (Exception e){
+            log.error(e);
+        } finally {
+            restAPIAdmin.deleteKeyManager(keyManager5Id);
         }
-
     }
 
     @Test(groups = {"wso2.am"}, description = "validating display token endpoint for exchange token grant")
@@ -419,16 +424,22 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         certificatesDTO.value("https://test.apim.integration/oauth2/default/v1/keys");
         keyManagerDTO.certificates(certificatesDTO);
 
-        org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
-                keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
-        keyManager6Id = keyManagerDTOApiResponse.getData().getId();
+        try {
+            org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
+                    keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
+            keyManager6Id = keyManagerDTOApiResponse.getData().getId();
 
-        for (KeyManagerInfoDTO keyManager : restAPIStore.getKeyManagers().getList()) {
-            if (keyManager.getName().equals(keyManager6Id)) {
-                Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
-                Assert.assertEquals(keyManager.getAlias(), display_alias);
-                Assert.assertEquals(keyManager.getType(), tokenType);
+            for(KeyManagerInfoDTO keyManager: restAPIStore.getKeyManagers().getList()) {
+                if (keyManager.getName().equals(keyManager6Id)) {
+                    Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
+                    Assert.assertEquals(keyManager.getAlias(), display_alias);
+                    Assert.assertEquals(keyManager.getType(), tokenType);
+                }
             }
+        }catch (Exception e){
+            log.error(e);
+        } finally {
+            restAPIAdmin.deleteKeyManager(keyManager6Id);
         }
     }
 
@@ -440,8 +451,6 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIAdmin.deleteKeyManager(keyManager2Id);
         restAPIAdmin.deleteKeyManager(keyManager3Id);
         restAPIAdmin.deleteKeyManager(keyManager4Id);
-        restAPIAdmin.deleteKeyManager(keyManager5Id);
-        restAPIAdmin.deleteKeyManager(keyManager6Id);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         undeployAndDeleteAPIRevisionsUsingRest(apiIdOnlyKm1, restAPIPublisher);
