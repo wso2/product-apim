@@ -24,6 +24,7 @@
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.client.SelfUserRegistrationResource" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.AuthenticationEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.bean.ResendCodeRequestDTO" %>
+<%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.bean.PropertyDTO" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.bean.UserDTO" %>
 <%@ page import="java.net.URLEncoder" %>
 <%@ page import="java.net.URLDecoder" %>
@@ -39,6 +40,8 @@
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.EndpointConfigManager" %>
 <%@ page import="org.wso2.carbon.identity.core.URLBuilderException" %>
 <%@ page import="org.wso2.carbon.identity.core.ServiceURLBuilder" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApplicationDataRetrievalClient" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApplicationDataRetrievalClientException" %>
 
 <jsp:directive.include file="includes/init-loginform-action-url.jsp"/>
 
@@ -166,6 +169,18 @@
         ResendCodeRequestDTO selfRegistrationRequest = new ResendCodeRequestDTO();
         UserDTO userDTO = AuthenticationEndpointUtil.getUser(resendUsername);
         selfRegistrationRequest.setUser(userDTO);
+
+        PropertyDTO propertyDTO = new PropertyDTO();
+        propertyDTO.setKey("RecoveryScenario");
+        propertyDTO.setValue("SELF_SIGN_UP");
+        selfRegistrationRequest.getProperties().add(propertyDTO);
+
+        // We have to send an empty property for the client to work properly.
+        PropertyDTO dummyPropertyDTO = new PropertyDTO();
+        dummyPropertyDTO.setKey("");
+        dummyPropertyDTO.setValue("");
+        selfRegistrationRequest.getProperties().add(dummyPropertyDTO);
+
         String path = config.getServletContext().getInitParameter(Constants.ACCOUNT_RECOVERY_REST_ENDPOINT_URL);
         String url;
         if (StringUtils.isNotBlank(EndpointConfigManager.getServerOrigin())) {
@@ -272,7 +287,7 @@
     %>
         <div class="field">
             <div class="g-recaptcha"
-                data-sitekey="<%=Encode.forHtmlContent(request.getParameter("reCaptchaKey"))%>"
+                data-sitekey="<%=Encode.forHtmlContent(reCaptchaKey)%>"
                 data-testid="login-page-g-recaptcha"
             >
             </div>
@@ -300,12 +315,22 @@
             isSelfSignUpEPAvailable = isSelfSignUpEPAvailable();
         }
         if (isRecoveryEPAvailable || isSelfSignUpEPAvailable) {
-            String scheme = request.getScheme();
-            String serverName = request.getServerName();
-            int serverPort = request.getServerPort();
-            String uri = (String) request.getAttribute(JAVAX_SERVLET_FORWARD_REQUEST_URI);
-            String prmstr = URLDecoder.decode(((String) request.getAttribute(JAVAX_SERVLET_FORWARD_QUERY_STRING)), UTF_8);
-            String urlWithoutEncoding = scheme + "://" +serverName + ":" + serverPort + uri + "?" + prmstr;
+            String urlWithoutEncoding = null;
+            try {
+                ApplicationDataRetrievalClient applicationDataRetrievalClient = new ApplicationDataRetrievalClient();
+                urlWithoutEncoding = applicationDataRetrievalClient.getApplicationAccessURL(tenantDomain,
+                                        request.getParameter("sp"));
+            } catch (ApplicationDataRetrievalClientException e) {
+                //ignored and fallback to login page url
+            }
+            if (StringUtils.isBlank(urlWithoutEncoding)) {
+                String scheme = request.getScheme();
+                String serverName = request.getServerName();
+                int serverPort = request.getServerPort();
+                String uri = (String) request.getAttribute(JAVAX_SERVLET_FORWARD_REQUEST_URI);
+                String prmstr = URLDecoder.decode(((String) request.getAttribute(JAVAX_SERVLET_FORWARD_QUERY_STRING)), UTF_8);
+                urlWithoutEncoding = scheme + "://" +serverName + ":" + serverPort + uri + "?" + prmstr;
+            }
             urlEncodedURL = URLEncoder.encode(urlWithoutEncoding, UTF_8);
             urlParameters = (String) request.getAttribute(JAVAX_SERVLET_FORWARD_QUERY_STRING);
 
