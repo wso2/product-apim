@@ -367,7 +367,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
 
         keyManagerDTO.name(KEY_MANAGER_5);
         keyManagerDTO.displayName("Exchange Grant Type");
-        keyManagerDTO.type("other");
+        keyManagerDTO.type("custom");
         keyManagerDTO.description("This is Exchange Grant Key Manager");
         keyManagerDTO.enabled(true);
         keyManagerDTO.alias("https://default");
