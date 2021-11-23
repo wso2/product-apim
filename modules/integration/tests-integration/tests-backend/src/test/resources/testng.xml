@@ -249,6 +249,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.graphql.GraphqlTestCase"/>
             <class name="org.wso2.am.integration.tests.graphqlqueryanalysis.GraphQLQueryAnalysisTest"/>
+            <class name="org.wso2.am.integration.tests.graphql.GraphqlSubscriptionTestCase"/>
         </classes>
     </test>
 
