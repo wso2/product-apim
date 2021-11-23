@@ -374,6 +374,11 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         HttpResponse response8 = restAPIPublisher.addAPI(apiRequest8);
         apiId8 = response8.getData();
+
+        createAPIRevisionAndDeployUsingRest(apiId8, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId8, false);
+        waitForAPIDeploymentSync(apiRequest8.getProvider(), apiRequest8.getName(), apiRequest8.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(description = "This test case tests the behaviour of internal Key token on Created API with authentication " +
