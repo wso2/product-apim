@@ -295,34 +295,11 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                 public void configure(WebSocketServletFactory factory) {
 
                     factory.setCreator(new SubscriptionServerCreator());
-//                    factory.register(SubscriptionWSServerImpl.class);
                 }
             };
 
             Server server = new Server(serverPort);
             server.setHandler(wsHandler);
-
-//            ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-//            context.setContextPath("/");
-//            server.setHandler(context);
-//
-//
-//            try
-//            {
-//                // Initialize javax.websocket layer
-//                WebSocketServerContainerInitializer.configure(context,
-//                        (servletContext, wsContainer) ->
-//                        {
-//
-//                        });
-//
-//                server.start();
-//                server.join();
-//            }
-//            catch (Throwable t)
-//            {
-//                t.printStackTrace(System.err);
-//            }
             try {
                 server.start();
                 log.info("GraphQL WebSocket backend server started at port: " + serverPort);
