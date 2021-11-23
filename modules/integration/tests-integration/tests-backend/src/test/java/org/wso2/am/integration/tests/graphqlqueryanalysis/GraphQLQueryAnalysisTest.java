@@ -205,6 +205,14 @@ public class GraphQLQueryAnalysisTest extends APIMIntegrationBaseTest {
         //Maximum query depth exceed, max_query_depth = 2 < query_depth = 3
         HttpResponse serviceResponse2 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject2.toString());
         Assert.assertEquals(serviceResponse2.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
+
+        JSONObject queryObject3 = new JSONObject();
+        queryObject3.put("query", "{limitLanguage(limit:1000, where:{eq:100})}");
+
+        //Maximum query complexity exceed, max_query_complexity = 4 < query complexity = 1001 with a limit
+        //Test for https://github.com/wso2/product-apim/issues/11773
+        HttpResponse serviceResponse3 = HTTPSClientUtils.doPost(invokeURL, requestHeaders, queryObject3.toString());
+        Assert.assertEquals(serviceResponse3.getResponseCode(), HttpStatus.SC_BAD_REQUEST);
     }
 
     @Test(groups = {"wso2.am"}, description = "API invocation using oauth App")

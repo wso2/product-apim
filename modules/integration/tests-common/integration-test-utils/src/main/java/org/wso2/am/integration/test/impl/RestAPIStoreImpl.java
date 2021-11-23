@@ -420,6 +420,24 @@ public class RestAPIStoreImpl {
         return response.getData();
     }
 
+    public ApplicationKeyDTO generateKeysWithAdditionalProperties(String applicationId, String validityTime, String callBackUrl,
+                                          ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
+                                          List<String> grantTypes,Map<String,Object> additionalProperties)
+            throws ApiException, APIManagerIntegrationTestException {
+        ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
+        applicationKeyGenerateRequest.setValidityTime(validityTime);
+        applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
+        applicationKeyGenerateRequest.setKeyType(keyTypeEnum);
+        applicationKeyGenerateRequest.setScopes(scopes);
+        applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
+        applicationKeyGenerateRequest.setAdditionalProperties(additionalProperties);
+        ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
+                .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        waitUntilApplicationKeyMappingAvailableInGateway(applicationId, response.getData());
+        return response.getData();
+    }
+
     public ApiResponse<ApplicationKeyDTO> generateKeysWithApiResponse(String applicationId, String validityTime,
                                                                       String callBackUrl,
                                                                       ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, List<String> scopes,
@@ -513,6 +531,23 @@ public class RestAPIStoreImpl {
 
         return applicationKeysApi
                 .applicationsApplicationIdKeysKeyTypeGetWithHttpInfo(applicationId, keyType, null);
+    }
+
+    /**
+     * Regenerate Consumer Secret by key mapping ID
+     *
+     * @param applicationId     ID of the application
+     * @param keyMappingId      Keymapping Id
+     * @return APIResponse of re-generate request
+     * @throws Exception
+     */
+    public ApplicationKeyReGenerateResponseDTO regenerateSecretByKeyMappingId(String applicationId,
+            String keyMappingId) throws ApiException {
+        ApiResponse<ApplicationKeyReGenerateResponseDTO> responseDTO = applicationKeysApi
+                .applicationsApplicationIdOauthKeysKeyMappingIdRegenerateSecretPostWithHttpInfo(applicationId,
+                        keyMappingId);
+        Assert.assertEquals(HttpStatus.SC_OK, responseDTO.getStatusCode());
+        return responseDTO.getData();
     }
 
     /**
