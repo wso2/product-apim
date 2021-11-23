@@ -96,9 +96,66 @@ public class KeyManagerInfoDTO {
         @SerializedName(SERIALIZED_NAME_APPLICATION_CONFIGURATION)
             private List<KeyManagerApplicationConfigurationDTO> applicationConfiguration = null;
 
+        public static final String SERIALIZED_NAME_ALIAS = "alias";
+        @SerializedName(SERIALIZED_NAME_ALIAS)
+            private String alias;
+
         public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
         @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
             private Object additionalProperties;
+
+            /**
+* The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED, DIRECT and BOTH.
+*/
+    @JsonAdapter(TokenTypeEnum.Adapter.class)
+public enum TokenTypeEnum {
+        EXCHANGED("EXCHANGED"),
+        
+        DIRECT("DIRECT"),
+        
+        BOTH("BOTH");
+
+private String value;
+
+TokenTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static TokenTypeEnum fromValue(String value) {
+    for (TokenTypeEnum b : TokenTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<TokenTypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final TokenTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public TokenTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return TokenTypeEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_TOKEN_TYPE = "tokenType";
+        @SerializedName(SERIALIZED_NAME_TOKEN_TYPE)
+            private TokenTypeEnum tokenType = TokenTypeEnum.DIRECT;
 
 
         public KeyManagerInfoDTO id(String id) {
@@ -467,6 +524,29 @@ public class KeyManagerInfoDTO {
     }
 
 
+        public KeyManagerInfoDTO alias(String alias) {
+        
+        this.alias = alias;
+        return this;
+        }
+
+    /**
+        * The alias of Identity Provider. If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token 
+    * @return alias
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "https://localhost:9443/oauth2/token", value = "The alias of Identity Provider. If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token ")
+    
+    public String getAlias() {
+        return alias;
+    }
+
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+
         public KeyManagerInfoDTO additionalProperties(Object additionalProperties) {
         
         this.additionalProperties = additionalProperties;
@@ -487,6 +567,29 @@ public class KeyManagerInfoDTO {
 
     public void setAdditionalProperties(Object additionalProperties) {
         this.additionalProperties = additionalProperties;
+    }
+
+
+        public KeyManagerInfoDTO tokenType(TokenTypeEnum tokenType) {
+        
+        this.tokenType = tokenType;
+        return this;
+        }
+
+    /**
+        * The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED, DIRECT and BOTH.
+    * @return tokenType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "EXCHANGED", value = "The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED, DIRECT and BOTH.")
+    
+    public TokenTypeEnum getTokenType() {
+        return tokenType;
+    }
+
+
+    public void setTokenType(TokenTypeEnum tokenType) {
+        this.tokenType = tokenType;
     }
 
 
@@ -515,12 +618,14 @@ public class KeyManagerInfoDTO {
             Objects.equals(this.enableOAuthAppCreation, keyManagerInfo.enableOAuthAppCreation) &&
             Objects.equals(this.enableMapOAuthConsumerApps, keyManagerInfo.enableMapOAuthConsumerApps) &&
             Objects.equals(this.applicationConfiguration, keyManagerInfo.applicationConfiguration) &&
-            Objects.equals(this.additionalProperties, keyManagerInfo.additionalProperties);
+            Objects.equals(this.alias, keyManagerInfo.alias) &&
+            Objects.equals(this.additionalProperties, keyManagerInfo.additionalProperties) &&
+            Objects.equals(this.tokenType, keyManagerInfo.tokenType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, type, displayName, description, enabled, availableGrantTypes, tokenEndpoint, revokeEndpoint, userInfoEndpoint, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableOAuthAppCreation, enableMapOAuthConsumerApps, applicationConfiguration, additionalProperties);
+        return Objects.hash(id, name, type, displayName, description, enabled, availableGrantTypes, tokenEndpoint, revokeEndpoint, userInfoEndpoint, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableOAuthAppCreation, enableMapOAuthConsumerApps, applicationConfiguration, alias, additionalProperties, tokenType);
     }
 
 
@@ -544,7 +649,9 @@ sb.append("class KeyManagerInfoDTO {\n");
     sb.append("    enableOAuthAppCreation: ").append(toIndentedString(enableOAuthAppCreation)).append("\n");
     sb.append("    enableMapOAuthConsumerApps: ").append(toIndentedString(enableMapOAuthConsumerApps)).append("\n");
     sb.append("    applicationConfiguration: ").append(toIndentedString(applicationConfiguration)).append("\n");
+    sb.append("    alias: ").append(toIndentedString(alias)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+    sb.append("    tokenType: ").append(toIndentedString(tokenType)).append("\n");
 sb.append("}");
 return sb.toString();
 }

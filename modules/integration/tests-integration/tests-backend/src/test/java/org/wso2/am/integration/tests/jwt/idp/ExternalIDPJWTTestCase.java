@@ -78,6 +78,8 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
     private static final String KEY_MANAGER_2 = "KeyManager-2";
     private static final String KEY_MANAGER_3 = "KeyManager-3";
     private static final String KEY_MANAGER_4 = "KeyManager-4";
+    private static final String KEY_MANAGER_5 = "KeyManager-5";
+    private static final String KEY_MANAGER_6 = "KeyManager-6";
     public static final String ALL_KEY_MANAGER = "all";
     private String apiName = "ExternalJWTTest";
     private String apiNameOnlyKM1 = "ExternalJWTTestOnlyKM1";
@@ -97,6 +99,8 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
     private String keyManager2Id;
     private String keyManager3Id;
     private String keyManager4Id;
+    private String keyManager5Id;
+    private String keyManager6Id;
     private String consumerKey1 = UUID.randomUUID().toString();
     private String consumerKey2 = UUID.randomUUID().toString();
     private String apiIdOnlyKm1;
@@ -303,7 +307,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "validating display token endpoint behavior")
-    public void testIDPDisplaytokenEndpoints() throws Exception  {
+    public void testIDPDisplaytokenEndpoints() throws Exception {
         String token_ep = "http://localhost:9443/oauth/token";
         String revoke_ep = "http://localhost:9443/oauth/revoke";
         String display_token_ep = "http://localhost:9443/display/oauth/token";
@@ -350,6 +354,92 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
                 Assert.assertEquals(keyManager.getTokenEndpoint(), token_ep);
                 Assert.assertEquals(keyManager.getRevokeEndpoint(), revoke_ep);
             }
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "validating display token endpoint for exchange token grant")
+    public void testExchangeGrantType() throws Exception {
+        String display_token_ep = "http://test.apim.integration/oauth/token";
+        String display_alias = "https://default";
+        String tokenType = KeyManagerDTO.TokenTypeEnum.EXCHANGED.toString();
+
+        KeyManagerDTO keyManagerDTO = new KeyManagerDTO();
+
+        keyManagerDTO.name(KEY_MANAGER_5);
+        keyManagerDTO.displayName("Exchange Grant Type");
+        keyManagerDTO.type("custom");
+        keyManagerDTO.description("This is Exchange Grant Key Manager");
+        keyManagerDTO.enabled(true);
+        keyManagerDTO.alias("https://default");
+        keyManagerDTO.tokenEndpoint("http://test.apim.integration/oauth/token");
+        keyManagerDTO.setIssuer("https://http://test.apim.integration/default");
+        keyManagerDTO.enableSelfValidationJWT(true);
+        keyManagerDTO.enableOAuthAppCreation(true);
+        keyManagerDTO.tokenType(KeyManagerDTO.TokenTypeEnum.EXCHANGED);
+        KeyManagerCertificatesDTO certificatesDTO = new KeyManagerCertificatesDTO();
+        certificatesDTO.type(KeyManagerCertificatesDTO.TypeEnum.JWKS);
+        certificatesDTO.value("https://test.apim.integration/oauth2/default/v1/keys");
+        keyManagerDTO.certificates(certificatesDTO);
+
+        try {
+            org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
+                    keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
+            keyManager5Id = keyManagerDTOApiResponse.getData().getId();
+
+            for(KeyManagerInfoDTO keyManager: restAPIStore.getKeyManagers().getList()) {
+                if (keyManager.getName().equals(keyManager5Id)) {
+                    Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
+                    Assert.assertEquals(keyManager.getAlias(), display_alias);
+                    Assert.assertEquals(keyManager.getType(), tokenType);
+                }
+            }
+        }catch (Exception e){
+            log.error(e);
+        } finally {
+            restAPIAdmin.deleteKeyManager(keyManager5Id);
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "validating display token endpoint for exchange token grant")
+    public void testExchangeAndDirectGrantType() throws Exception {
+        String display_token_ep = "http://test.apim.integration/oauth/token";
+        String display_alias = "https://default";
+        String tokenType = KeyManagerDTO.TokenTypeEnum.BOTH.toString();
+
+        KeyManagerDTO keyManagerDTO = new KeyManagerDTO();
+
+        keyManagerDTO.name(KEY_MANAGER_6);
+        keyManagerDTO.displayName("Hybrid Type");
+        keyManagerDTO.type("custom");
+        keyManagerDTO.description("This is Exchange Grant Key Manager");
+        keyManagerDTO.enabled(true);
+        keyManagerDTO.alias("https://default");
+        keyManagerDTO.tokenEndpoint("http://test.apim.integration/oauth/token");
+        keyManagerDTO.setIssuer("https://http://test.apim.integration/default");
+        keyManagerDTO.enableSelfValidationJWT(true);
+        keyManagerDTO.enableOAuthAppCreation(true);
+        keyManagerDTO.tokenType(KeyManagerDTO.TokenTypeEnum.BOTH);
+        KeyManagerCertificatesDTO certificatesDTO = new KeyManagerCertificatesDTO();
+        certificatesDTO.type(KeyManagerCertificatesDTO.TypeEnum.JWKS);
+        certificatesDTO.value("https://test.apim.integration/oauth2/default/v1/keys");
+        keyManagerDTO.certificates(certificatesDTO);
+
+        try {
+            org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
+                    keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
+            keyManager6Id = keyManagerDTOApiResponse.getData().getId();
+
+            for(KeyManagerInfoDTO keyManager: restAPIStore.getKeyManagers().getList()) {
+                if (keyManager.getName().equals(keyManager6Id)) {
+                    Assert.assertEquals(keyManager.getTokenEndpoint(), display_token_ep);
+                    Assert.assertEquals(keyManager.getAlias(), display_alias);
+                    Assert.assertEquals(keyManager.getType(), tokenType);
+                }
+            }
+        }catch (Exception e){
+            log.error(e);
+        } finally {
+            restAPIAdmin.deleteKeyManager(keyManager6Id);
         }
     }
 

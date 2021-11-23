@@ -9020,6 +9020,12 @@ components:
         revokeToken:
           description: Token to be revoked, if any
           type: string
+        grantType:
+          default: CLIENT_CREDENTIALS
+          enum:
+          - CLIENT_CREDENTIALS
+          - TOKEN_EXCHANGE
+          type: string
         additionalProperties:
           description: Additional parameters if Authorization server needs any
           properties: {}
@@ -9881,11 +9887,13 @@ components:
         revokeEndpoint: https://localhost:9443/oauth2/revoke
         tokenEndpoint: https://localhost:9443/oauth2/token
         name: Resident Key Manager
+        alias: https://localhost:9443/oauth2/token
         id: 01234567-0123-0123-0123-012345678901
         enableTokenHashing: false
         enableOAuthAppCreation: true
         additionalProperties: '{}'
         userInfoEndpoint: userInfoEndpoint
+        tokenType: EXCHANGED
         enableTokenGeneration: true
       properties:
         id:
@@ -9944,9 +9952,25 @@ components:
           items:
             $ref: '#/components/schemas/KeyManagerApplicationConfiguration'
           type: array
+        alias:
+          description: |
+            The alias of Identity Provider.
+            If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token
+          example: https://localhost:9443/oauth2/token
+          type: string
         additionalProperties:
           properties: {}
           type: object
+        tokenType:
+          default: DIRECT
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED, DIRECT and BOTH.
+          enum:
+          - EXCHANGED
+          - DIRECT
+          - BOTH
+          example: EXCHANGED
+          type: string
       required:
       - name
       - type
@@ -10037,11 +10061,13 @@ components:
           revokeEndpoint: https://localhost:9443/oauth2/revoke
           tokenEndpoint: https://localhost:9443/oauth2/token
           name: Resident Key Manager
+          alias: https://localhost:9443/oauth2/token
           id: 01234567-0123-0123-0123-012345678901
           enableTokenHashing: false
           enableOAuthAppCreation: true
           additionalProperties: '{}'
           userInfoEndpoint: userInfoEndpoint
+          tokenType: EXCHANGED
           enableTokenGeneration: true
         - displayName: Resident Key Manager
           enableMapOAuthConsumerApps: false
@@ -10078,11 +10104,13 @@ components:
           revokeEndpoint: https://localhost:9443/oauth2/revoke
           tokenEndpoint: https://localhost:9443/oauth2/token
           name: Resident Key Manager
+          alias: https://localhost:9443/oauth2/token
           id: 01234567-0123-0123-0123-012345678901
           enableTokenHashing: false
           enableOAuthAppCreation: true
           additionalProperties: '{}'
           userInfoEndpoint: userInfoEndpoint
+          tokenType: EXCHANGED
           enableTokenGeneration: true
       properties:
         count:
