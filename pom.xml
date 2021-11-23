@@ -1276,10 +1276,10 @@
         <project.scm.id>scm-server</project.scm.id>
         <carbon.analytics.common.version>5.2.34</carbon.analytics.common.version>
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.0.216-SNAPSHOT</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.0.218</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.2.1-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.version>9.2.7</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1348,7 +1348,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-	<synapse.version>2.1.7-wso2v233</synapse.version>
+	    <synapse.version>2.1.7-wso2v233</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v63</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
@@ -1401,6 +1401,7 @@
         <slf4j.api.version>1.7.28</slf4j.api.version>
         <org.slf4j.version>1.7.30</org.slf4j.version>
         <google.code.gson.version>2.8.5</google.code.gson.version>
+        <carbon.extension.identity.oauth2.grantType.token.exchange>1.0.1</carbon.extension.identity.oauth2.grantType.token.exchange>
 
         <!-- Developer Portal -->
         <caramel.feature.version>1.0.1</caramel.feature.version>

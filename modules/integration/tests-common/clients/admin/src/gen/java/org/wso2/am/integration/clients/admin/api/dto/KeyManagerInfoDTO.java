@@ -49,6 +49,59 @@ public class KeyManagerInfoDTO {
         @SerializedName(SERIALIZED_NAME_ENABLED)
             private Boolean enabled;
 
+            /**
+* The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED and DIRECT.
+*/
+    @JsonAdapter(TokenTypeEnum.Adapter.class)
+public enum TokenTypeEnum {
+        EXCHANGED("EXCHANGED"),
+        
+        DIRECT("DIRECT"),
+        
+        BOTH("BOTH");
+
+private String value;
+
+TokenTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static TokenTypeEnum fromValue(String value) {
+    for (TokenTypeEnum b : TokenTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<TokenTypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final TokenTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public TokenTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return TokenTypeEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_TOKEN_TYPE = "tokenType";
+        @SerializedName(SERIALIZED_NAME_TOKEN_TYPE)
+            private TokenTypeEnum tokenType = TokenTypeEnum.DIRECT;
+
 
         public KeyManagerInfoDTO id(String id) {
         
@@ -163,6 +216,29 @@ public class KeyManagerInfoDTO {
     }
 
 
+        public KeyManagerInfoDTO tokenType(TokenTypeEnum tokenType) {
+        
+        this.tokenType = tokenType;
+        return this;
+        }
+
+    /**
+        * The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED and DIRECT.
+    * @return tokenType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "EXCHANGED", value = "The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED and DIRECT.")
+    
+    public TokenTypeEnum getTokenType() {
+        return tokenType;
+    }
+
+
+    public void setTokenType(TokenTypeEnum tokenType) {
+        this.tokenType = tokenType;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -176,12 +252,13 @@ public class KeyManagerInfoDTO {
             Objects.equals(this.name, keyManagerInfo.name) &&
             Objects.equals(this.type, keyManagerInfo.type) &&
             Objects.equals(this.description, keyManagerInfo.description) &&
-            Objects.equals(this.enabled, keyManagerInfo.enabled);
+            Objects.equals(this.enabled, keyManagerInfo.enabled) &&
+            Objects.equals(this.tokenType, keyManagerInfo.tokenType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, type, description, enabled);
+        return Objects.hash(id, name, type, description, enabled, tokenType);
     }
 
 
@@ -194,6 +271,7 @@ sb.append("class KeyManagerInfoDTO {\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    enabled: ").append(toIndentedString(enabled)).append("\n");
+    sb.append("    tokenType: ").append(toIndentedString(tokenType)).append("\n");
 sb.append("}");
 return sb.toString();
 }
