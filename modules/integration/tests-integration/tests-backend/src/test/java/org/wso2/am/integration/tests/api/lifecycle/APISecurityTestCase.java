@@ -469,7 +469,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     public void testInvocationWithoutResourceSecurity() throws Exception {
 
         // Validate for security disabled API
-        HttpResponse response = restAPIPublisher.getAPI(apiId7);
+        HttpResponse response = restAPIPublisher.getAPI(apiId8);
         String retrievedSwagger;
 
         APIDTO apidto = new Gson().fromJson(response.getData(), APIDTO.class);
@@ -480,7 +480,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         }
 
         // Verify the security of API in Swagger
-        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId7);
+        retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId8);
         List<Object> authTypes = validateResourceSecurity(retrievedSwagger);
         for (Object authType : authTypes) {
             Assert.assertEquals(authType, "None", "Incorrect auth type");
