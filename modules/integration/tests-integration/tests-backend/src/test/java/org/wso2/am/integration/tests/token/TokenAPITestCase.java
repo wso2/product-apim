@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.token;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -35,6 +36,7 @@ import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -42,6 +44,9 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+
+import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,12 +61,15 @@ import static org.testng.Assert.assertTrue;
 public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(TokenAPITestCase.class);
+    private final String APPLICATION_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private String apiId;
     private String appId;
     private String oauthTokenTestAppId;
     private String gatewayUrl;
     private String consumerKey;
     private String consumerSecret;
+    private String introspectTestApiAppId;
+    private String introspectUrl;
 
     @Factory(dataProvider = "userModeDataProvider")
     public TokenAPITestCase(TestUserMode userMode) {
@@ -301,10 +309,48 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         assertTrue(youTubeResponse.getData().contains("<Customer>"), "Response data mismatched");
     }
 
+    @Test(groups = { "wso2.am" }, description = "Oauth Token API Test other", dependsOnMethods = {
+            "testOauthTokenAPITestCase" })
+    public void testIntrospectAPITestCase() throws Exception {
+        introspectUrl = getKeyManagerURLHttps() + "/oauth2/introspect";
+        if (userMode == TestUserMode.TENANT_EMAIL_USER) {
+            introspectUrl = getKeyManagerURLHttps() + "/t/wso2.com/oauth2/introspect";
+        }
+        // Create application
+        ApplicationDTO applicationDTO = restAPIStore.addApplication("IntrospectAPI-Application",
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "this-is-test");
+        introspectTestApiAppId = applicationDTO.getApplicationId();
+
+        //Generate production token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        ApplicationKeyDTO productionApplicationKeyDTO = restAPIStore.generateKeys(applicationDTO.getApplicationId(),
+                "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = productionApplicationKeyDTO.getToken().getAccessToken();
+        HttpResponse res = invokeIntrospectEndpoint(accessToken);
+        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_OK, "Response code is not 200 as expected");
+        JSONObject response = new JSONObject(res.getData());
+        String aud = response.getString("aud");
+        Assert.assertNotNull(aud, "Couldn't find aud value in response");
+        String iss = response.getString("iss");
+        Assert.assertNotNull(iss, "Couldn't find iss value in response");
+    }
+
+    private HttpResponse invokeIntrospectEndpoint(String jwt) throws IOException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + jwt);
+        headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
+        String payload = "token=" + jwt;
+        return HTTPSClientUtils.doPost(introspectUrl, headers, payload);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(appId);
         restAPIStore.deleteApplication(oauthTokenTestAppId);
+        restAPIStore.deleteApplication(introspectTestApiAppId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
