@@ -36,6 +36,7 @@ import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -76,6 +77,8 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
     private String apiId;
     private String applicationId1;
     private String applicationId2;
+    private String applicationId3;
+    private String app3KeyMappingId;
     private ArrayList<String> grantTypes;
     private ApplicationDTO applicationDTO;
     protected ApplicationManagementClient applicationManagementClient;
@@ -289,6 +292,35 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
             Assert.assertEquals(409, e.getCode());
             Assert.assertTrue(e.getResponseBody().contains("Key Mappings already exists"));
         }
+    }
+
+    @Test(groups = {"webapp"}, description = "Fetch Oauth key details by key mapping ID")
+    public void testFetchKeyDetailsByKeyMappingID() throws Exception {
+        HttpResponse applicationResponse = restAPIStore.createApplication("KeyMappingTestApp",
+                "Test Application", tier, ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Error while adding test application");
+
+        applicationId3 = applicationResponse.getData();
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationId3, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, grantTypes);
+        Assert.assertNotNull(applicationKeyDTO);
+        app3KeyMappingId = applicationKeyDTO.getKeyMappingId();
+
+        ApplicationKeyDTO responseKeyDTO = restAPIStore.getApplicationKeyByKeyMappingId(applicationId3, app3KeyMappingId);
+        Assert.assertNotNull(responseKeyDTO);
+        Assert.assertNotNull(responseKeyDTO.getConsumerKey(), "Consumer secret is not populated in REST API response");
+        Assert.assertEquals(responseKeyDTO.getConsumerKey(), applicationKeyDTO.getConsumerKey(),
+                "Incorrect consumer key returned");
+    }
+
+    @Test(groups = {"webapp" }, description = "Regenerate secret by key mapping ID",
+            dependsOnMethods = "testFetchKeyDetailsByKeyMappingID")
+    public void testRegenerateSecretForKeyMappingId() throws Exception {
+        ApplicationKeyReGenerateResponseDTO reGenerateResponseDTO = restAPIStore
+                .regenerateSecretByKeyMappingId(applicationId3, app3KeyMappingId);
+        Assert.assertNotNull(reGenerateResponseDTO);
+        Assert.assertNotNull(reGenerateResponseDTO.getConsumerSecret(), "Secret is not populated");
     }
 
     private OAuthConsumerAppDTO createOIDCApplication(String applicationName) throws Exception {

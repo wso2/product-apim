@@ -47,6 +47,57 @@ public class ApplicationTokenGenerateRequestDTO {
         @SerializedName(SERIALIZED_NAME_REVOKE_TOKEN)
             private String revokeToken;
 
+            /**
+* Gets or Sets grantType
+*/
+    @JsonAdapter(GrantTypeEnum.Adapter.class)
+public enum GrantTypeEnum {
+        CLIENT_CREDENTIALS("CLIENT_CREDENTIALS"),
+        
+        TOKEN_EXCHANGE("TOKEN_EXCHANGE");
+
+private String value;
+
+GrantTypeEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static GrantTypeEnum fromValue(String value) {
+    for (GrantTypeEnum b : GrantTypeEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<GrantTypeEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final GrantTypeEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public GrantTypeEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return GrantTypeEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_GRANT_TYPE = "grantType";
+        @SerializedName(SERIALIZED_NAME_GRANT_TYPE)
+            private GrantTypeEnum grantType = GrantTypeEnum.CLIENT_CREDENTIALS;
+
         public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
         @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
             private Object additionalProperties;
@@ -144,6 +195,29 @@ public class ApplicationTokenGenerateRequestDTO {
     }
 
 
+        public ApplicationTokenGenerateRequestDTO grantType(GrantTypeEnum grantType) {
+        
+        this.grantType = grantType;
+        return this;
+        }
+
+    /**
+        * Get grantType
+    * @return grantType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public GrantTypeEnum getGrantType() {
+        return grantType;
+    }
+
+
+    public void setGrantType(GrantTypeEnum grantType) {
+        this.grantType = grantType;
+    }
+
+
         public ApplicationTokenGenerateRequestDTO additionalProperties(Object additionalProperties) {
         
         this.additionalProperties = additionalProperties;
@@ -180,12 +254,13 @@ public class ApplicationTokenGenerateRequestDTO {
             Objects.equals(this.validityPeriod, applicationTokenGenerateRequest.validityPeriod) &&
             Objects.equals(this.scopes, applicationTokenGenerateRequest.scopes) &&
             Objects.equals(this.revokeToken, applicationTokenGenerateRequest.revokeToken) &&
+            Objects.equals(this.grantType, applicationTokenGenerateRequest.grantType) &&
             Objects.equals(this.additionalProperties, applicationTokenGenerateRequest.additionalProperties);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(consumerSecret, validityPeriod, scopes, revokeToken, additionalProperties);
+        return Objects.hash(consumerSecret, validityPeriod, scopes, revokeToken, grantType, additionalProperties);
     }
 
 
@@ -197,6 +272,7 @@ sb.append("class ApplicationTokenGenerateRequestDTO {\n");
     sb.append("    validityPeriod: ").append(toIndentedString(validityPeriod)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    revokeToken: ").append(toIndentedString(revokeToken)).append("\n");
+    sb.append("    grantType: ").append(toIndentedString(grantType)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
 sb.append("}");
 return sb.toString();

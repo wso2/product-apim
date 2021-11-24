@@ -4786,16 +4786,22 @@ components:
           type: array
           description: Allowed scopes (space seperated) for the access token
           example:
-          - apim:subscribe
+            - apim:subscribe
           items:
             type: string
         revokeToken:
           type: string
           description: Token to be revoked, if any
           example: ""
+        grantType:
+          type: string
+          default: CLIENT_CREDENTIALS
+          enum:
+            - CLIENT_CREDENTIALS
+            - TOKEN_EXCHANGE
         additionalProperties:
           type: object
-          properties: {}
+          properties: { }
           description: Additional parameters if Authorization server needs any
     APIKeyGenerateRequest:
       title: API Key generation request object
@@ -5441,8 +5447,8 @@ components:
     KeyManagerInfo:
       title: Key Manager Info
       required:
-      - name
-      - type
+        - name
+        - type
       type: object
       properties:
         id:
@@ -5502,9 +5508,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/KeyManagerApplicationConfiguration'
+        alias:
+          type: string
+          description: |
+            The alias of Identity Provider.
+            If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token
+          example: https://localhost:9443/oauth2/token
         additionalProperties:
           type: object
           properties: {}
+        tokenType:
+          type: string
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED, DIRECT and BOTH.
+          example: EXCHANGED
+          default: DIRECT
+          enum:
+            - EXCHANGED
+            - DIRECT
+            - BOTH
     KeyManagerApplicationConfiguration:
       title: Key Manager application Configuration
       type: object

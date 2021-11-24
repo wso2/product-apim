@@ -79,6 +79,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -803,21 +804,8 @@ public class APIMIntegrationBaseTest {
 
         assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Create API Response Code is invalid." + apiRevisionResponse.getData());
-
-        // Retrieve Revision Info
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
-        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
-        List<JSONObject> revisionList = new ArrayList<>();
-        JSONObject jsonObject = new JSONObject(apiRevisionsGetResponse.getData());
-
-        JSONArray arrayList = jsonObject.getJSONArray("list");
-        for (int i = 0, l = arrayList.length(); i < l; i++) {
-            revisionList.add(arrayList.getJSONObject(i));
-        }
-        for (JSONObject revision :revisionList) {
-            revisionUUID = revision.getString("id");
-        }
+        JSONObject jsonObject = new JSONObject(apiRevisionResponse.getData());
+        revisionUUID = jsonObject.getString("id");
 
         // Deploy Revision to gateway
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
@@ -1066,5 +1054,19 @@ public class APIMIntegrationBaseTest {
                 }
             }
         }
+    }
+
+    protected static void waitUntilClockHour() throws InterruptedException {
+
+        long waitTime = getWaitTime();
+        if (waitTime > 0) {
+            Thread.sleep(waitTime * 1000);
+        }
+    }
+
+    protected static long getWaitTime() {
+        Calendar calendar = Calendar.getInstance();
+        int secondsInTime = calendar.get(Calendar.SECOND);
+        return 60 - secondsInTime;
     }
 }

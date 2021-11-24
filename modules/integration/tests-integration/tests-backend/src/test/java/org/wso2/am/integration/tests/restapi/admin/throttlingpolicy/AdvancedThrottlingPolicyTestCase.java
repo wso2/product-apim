@@ -639,21 +639,7 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
         return advancedThrottlePolicyDTO;
     }
 
-    private static void waitUntilClockHour() throws InterruptedException {
-        while (getWaitTime() > 0) {
-            Thread.sleep(60000);
-        }
-    }
 
-    private static long getWaitTime() {
-        Calendar calendar = Calendar.getInstance();
-        int minutesInTime = calendar.get(Calendar.MINUTE);
-        if (60 - minutesInTime >= 5) {
-            return 0;
-        } else {
-            return 1;
-        }
-    }
 
     /**
      * @param apiContext

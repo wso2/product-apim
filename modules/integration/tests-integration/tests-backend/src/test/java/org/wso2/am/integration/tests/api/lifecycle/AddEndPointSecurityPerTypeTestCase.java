@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
@@ -41,6 +42,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
@@ -53,9 +55,11 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import waffle.util.Base64;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -84,6 +88,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
     private ApplicationKeyDTO sandboxApplication;
     private APIIdentifier apiIdentifier;
     private String dcrURL;
+    private String clientCredGrantTypeEndpointSecurityForProductionAndSandbox;
     ArrayList<String> apiIds = new ArrayList<>();
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -132,6 +137,26 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
                 "password client_credentials", dcrURL, user.getUserName(), user.getPassword(), null);
         applicationKeyBeanProduction = ClientAuthenticator.makeDCRRequest(oauthAppProduction);
         applicationKeyBeanSandbox = ClientAuthenticator.makeDCRRequest(oauthAppSandbox);
+        clientCredGrantTypeEndpointSecurityForProductionAndSandbox = "{\n" +
+                "  \"production\":{\n" +
+                "    \"enabled\":true,\n" +
+                "    \"type\":\"OAUTH\",\n" +
+                "    \"tokenUrl\":\"https://localhost:9943/oauth2/token\",\n" +
+                "    \"clientId\":\"" + applicationKeyBeanProduction.getConsumerKey() + "\",\n" +
+                "    \"clientSecret\":\"" + applicationKeyBeanProduction.getConsumerSecret() + "\",\n" +
+                "    \"customParameters\":{},\n" +
+                "    \"grantType\":\"CLIENT_CREDENTIALS\"\n" +
+                "  },\n" +
+                "  \"sandbox\":{\n" +
+                "    \"enabled\":true,\n" +
+                "    \"type\":\"OAUTH\",\n" +
+                "    \"tokenUrl\":\"https://localhost:9943/oauth2/token\",\n" +
+                "    \"clientId\":\"" + applicationKeyBeanSandbox.getConsumerKey() + "\",\n" +
+                "    \"clientSecret\":\"" + applicationKeyBeanSandbox.getConsumerSecret() + "\",\n" +
+                "    \"customParameters\":{},\n" +
+                "    \"grantType\":\"CLIENT_CREDENTIALS\"\n" +
+                "  }\n" +
+                "  }";
     }
 
     @Test(groups = {"wso2.am"}, description = "Add Endpoint Security for production")
@@ -357,28 +382,9 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         apiCreationRequestBean.setSetEndpointSecurityDirectlyToEndpoint(Boolean.TRUE);
         apiIdentifier = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_UNLIMITED);
-        String endpointSecurity = "{\n" +
-                "  \"production\":{\n" +
-                "    \"enabled\":true,\n" +
-                "    \"type\":\"OAUTH\",\n" +
-                "    \"tokenUrl\":\"https://localhost:9943/oauth2/token\",\n" +
-                "    \"clientId\":\"" + applicationKeyBeanProduction.getConsumerKey() + "\",\n" +
-                "    \"clientSecret\":\"" + applicationKeyBeanProduction.getConsumerSecret() + "\",\n" +
-                "    \"customParameters\":{},\n" +
-                "    \"grantType\":\"CLIENT_CREDENTIALS\"\n" +
-                "  },\n" +
-                "  \"sandbox\":{\n" +
-                "    \"enabled\":true,\n" +
-                "    \"type\":\"OAUTH\",\n" +
-                "    \"tokenUrl\":\"https://localhost:9943/oauth2/token\",\n" +
-                "    \"clientId\":\"" + applicationKeyBeanSandbox.getConsumerKey() + "\",\n" +
-                "    \"clientSecret\":\"" + applicationKeyBeanSandbox.getConsumerSecret() + "\",\n" +
-                "    \"customParameters\":{},\n" +
-                "    \"grantType\":\"CLIENT_CREDENTIALS\"\n" +
-                "  }\n" +
-                "  }";
         org.json.JSONObject endpointConfig = apiCreationRequestBean.getEndpoint();
-        endpointConfig.put("endpoint_security", new JSONParser().parse(endpointSecurity));
+        endpointConfig.put("endpoint_security",
+                new JSONParser().parse(clientCredGrantTypeEndpointSecurityForProductionAndSandbox));
         apiCreationRequestBean.setEndpoint(endpointConfig);
         APIDTO apidto =
                 createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, restAPIPublisher, restAPIStore,
@@ -436,6 +442,53 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         validateIntrospectionResponse(user, backendToken, applicationKeyBeanSandbox.getConsumerKey());
     }
 
+    @Test(groups = {"wso2.am"}, description = "API definition import with endpoint security",
+            dependsOnMethods = "testAddEndpointSecurityForOauth")
+    public void testAPIDefinitionImportWithEndpointSecurity() throws Exception {
+        String resourcePath = "oas" + File.separator + "v3" + File.separator;
+        String originalDefinition = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_import.json"),
+                "UTF-8");
+        String additionalProperties = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "additionalProperties.json"),
+                "UTF-8");
+
+        org.json.JSONObject additionalPropertiesObj = new org.json.JSONObject(additionalProperties);
+        additionalPropertiesObj.put("provider", user.getUserName());
+
+        org.json.JSONObject endpointConfig = (org.json.JSONObject) additionalPropertiesObj.get("endpointConfig");
+        endpointConfig.put("endpoint_security",
+                new JSONParser().parse(clientCredGrantTypeEndpointSecurityForProductionAndSandbox));
+        additionalPropertiesObj.put("endpointConfig", endpointConfig);
+
+        File file = geTempFileWithContent(originalDefinition);
+        APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
+        apiIds.add(apidto.getId());
+
+        restAPIPublisher.changeAPILifeCycleStatus(apidto.getId(), Constants.PUBLISHED);
+
+        Map addedEndpointConfig = (Map) apidto.getEndpointConfig();
+        Assert.assertNotNull(addedEndpointConfig.get("endpoint_security"));
+        Map endpointSecurityModel = (Map) addedEndpointConfig.get("endpoint_security");
+        Assert.assertNotNull(endpointSecurityModel.get("sandbox"));
+        Map sandboxEndpointSecurityModel = (Map) endpointSecurityModel.get("sandbox");
+        Assert.assertTrue((Boolean) sandboxEndpointSecurityModel.get("enabled"));
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("type"), "OAUTH");
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("clientId"), applicationKeyBeanSandbox.getConsumerKey());
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("clientSecret"),
+                applicationKeyBeanSandbox.getConsumerSecret());
+        Assert.assertNotNull(endpointSecurityModel.get("production"));
+        Map productionEndpointSecurityModel = (Map) endpointSecurityModel.get("production");
+        Assert.assertTrue((Boolean) productionEndpointSecurityModel.get("enabled"));
+        Assert.assertEquals(productionEndpointSecurityModel.get("type"), "OAUTH");
+        Assert.assertEquals(productionEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
+        Assert.assertEquals(productionEndpointSecurityModel.get("clientId"),
+                applicationKeyBeanProduction.getConsumerKey());
+        Assert.assertEquals(productionEndpointSecurityModel.get("clientSecret"),
+                applicationKeyBeanProduction.getConsumerSecret());
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
@@ -472,5 +525,14 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
             log.error(e.getMessage());
             throw new Exception(e);
         }
+    }
+
+    private File geTempFileWithContent(String swagger) throws Exception {
+        File temp = File.createTempFile("swagger", ".json");
+        temp.deleteOnExit();
+        BufferedWriter out = new BufferedWriter(new FileWriter(temp));
+        out.write(swagger);
+        out.close();
+        return temp;
     }
 }

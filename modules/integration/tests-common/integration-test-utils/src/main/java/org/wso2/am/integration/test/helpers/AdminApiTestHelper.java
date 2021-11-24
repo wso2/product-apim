@@ -18,11 +18,12 @@
 package org.wso2.am.integration.test.helpers;
 
 import org.testng.Assert;
-import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.APICategoryDTO;
+import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
+import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
@@ -215,6 +216,69 @@ public class AdminApiTestHelper {
     }
 
     /**
+     * Verify whether the field values of the key manager DTO contains the expected values.
+     *
+     * @param expectedKeyManager Expected key manager which contains the expected field values.
+     * @param actualKeyManager   Key manager object of which the field values should be verified.
+     */
+    public void verifyKeyManagerDTO(KeyManagerDTO expectedKeyManager, KeyManagerDTO actualKeyManager) {
+
+        Assert.assertEquals(actualKeyManager.getId(), expectedKeyManager.getId(),
+                "Key Manager ID does not match with the expected Key Manager ID");
+        Assert.assertEquals(actualKeyManager.getName(), expectedKeyManager.getName(),
+                "Key Manager name does not match with the expected Key Manager name");
+        Assert.assertEquals(actualKeyManager.getDescription(), expectedKeyManager.getDescription(),
+                "Key Manager description does not match with the expected Key Manager description");
+        Assert.assertEquals(actualKeyManager.getDisplayName(), expectedKeyManager.getDisplayName(),
+                "Key Manager display name does not match with the expected Key Manager display name");
+        Assert.assertEquals(actualKeyManager.getCertificates(), expectedKeyManager.getCertificates(),
+                "Key Manager certificates  does not match with the expected Key Manager certificates");
+        Assert.assertEquals(actualKeyManager.getIntrospectionEndpoint(), expectedKeyManager.getIntrospectionEndpoint(),
+                "Key Manager introspection endpoint does not match with the expected Key Manager " +
+                        "introspection endpoint");
+        Assert.assertEquals(actualKeyManager.getRevokeEndpoint(), expectedKeyManager.getRevokeEndpoint(),
+                "Key Manager revoke endpoint does not match with the expected Key Manager revoke endpoint");
+        Assert.assertEquals(actualKeyManager.getClientRegistrationEndpoint(),
+                expectedKeyManager.getClientRegistrationEndpoint(),
+                "Key Manager client registration endpoint does not match with the expected Key Manager " +
+                        "client registration endpoint");
+        Assert.assertEquals(actualKeyManager.getTokenEndpoint(), expectedKeyManager.getTokenEndpoint(),
+                "Key Manager token endpoint does not match with the expected Key Manager token endpoint");
+        Assert.assertEquals(actualKeyManager.getUserInfoEndpoint(), expectedKeyManager.getUserInfoEndpoint(),
+                "Key Manager user info endpoint  does not match with the expected user info endpoint");
+        Assert.assertEquals(actualKeyManager.getAuthorizeEndpoint(), expectedKeyManager.getAuthorizeEndpoint(),
+                "Key Manager authorize endpoint does not match with the expected Key Manager authorize endpoint");
+        Assert.assertEquals(actualKeyManager.getScopeManagementEndpoint(),
+                expectedKeyManager.getScopeManagementEndpoint(),
+                "Key Manager scope management endpoint does not match with the expected Key Manager " +
+                        "scope management endpoint");
+        Assert.assertEquals(actualKeyManager.getConsumerKeyClaim(), expectedKeyManager.getConsumerKeyClaim(),
+                "Key Manager consumer key claim does not match with the expected Key Manager consumer key claim");
+        Assert.assertEquals(actualKeyManager.getScopesClaim(), expectedKeyManager.getScopesClaim(),
+                "Key Manager scopes claim does not match with the expected Key Manager scopes claim");
+        Assert.assertEquals(actualKeyManager.getIssuer(), expectedKeyManager.getIssuer(),
+                "Key Manager issuer  does not match with the expected Key Manager issuer");
+        Assert.assertEquals(actualKeyManager.getAvailableGrantTypes(), expectedKeyManager.getAvailableGrantTypes(),
+                "Key Manager available grant types does not match with the expected Key Manager " +
+                        "available grant types");
+    }
+
+    /**
+     * Verify whether the additional properties values of the key manager DTO contains the expected values.
+     *
+     * @param expectedAdditionalProperties Expected key manager which contains the expected field values.
+     * @param actualAdditionalProperties   Key manager object of which the field values should be verified.
+     */
+    public void verifyKeyManagerAdditionalProperties(Object expectedAdditionalProperties,
+                                                     Object actualAdditionalProperties) {
+        Assert.assertEquals(actualAdditionalProperties, expectedAdditionalProperties,
+                "Key Manager additional properties does not match with the expected Key Manager " +
+                        "additional properties");
+
+    }
+
+
+    /**
      * Verify whether the field values of the role alias list DTO contains the expected values.
      *
      * @param expectedRoleAliasListDTO Expected role alias list which contains the expected field values.
@@ -238,4 +302,5 @@ public class AdminApiTestHelper {
             }
         }
     }
+
 }

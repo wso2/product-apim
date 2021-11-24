@@ -7,6 +7,20 @@ enum CacheControlScope {
   PRIVATE
 }
 
+interface Region {
+  name: String
+}
+
+interface Population {
+  value: Int
+}
+
+type State implements Region & Population {
+  name: String
+  value: Int
+  capital: String
+}
+
 type Continent {
   code: String
   name: String
@@ -32,10 +46,6 @@ type Language {
   rtl: Int
 }
 
-input comparison {
-  eq: Int
-}
-
 type Query {
   continents: [Continent]
   continent(code: String): Continent
@@ -43,5 +53,9 @@ type Query {
   country(code: String): Country
   languages: [Language]
   language(code: String): Language
-  limitLanguage(limit: Int where: comparison): String
+}
+
+type Nation {
+   code : String
+   name: String
 }
