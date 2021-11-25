@@ -28,12 +28,13 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.testng.Assert;
 
 import java.io.IOException;
 
 @WebSocket
 public class SubscriptionWSServerImpl {
-    private final Log log = LogFactory.getLog(org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl.class);
+    private final Log log = LogFactory.getLog(SubscriptionWSServerImpl.class);
 
 
     @OnWebSocketMessage
@@ -43,21 +44,38 @@ public class SubscriptionWSServerImpl {
         if (session.isOpen()) {
             JSONParser jsonParser = new JSONParser();
             try {
+                boolean isThrottleInitRequest = false;
                 JSONObject clientMessage = (JSONObject) jsonParser.parse(message);
                 if (clientMessage.containsKey("type")) {
                     String messageType = (String) clientMessage.get("type");
                     if ("connection_init".equals(messageType)) {
                         response = "{\"type\":\"connection_ack\"}";
                     } else if ("start".equals(messageType)) {
-                        response = "{\"type\":\"data\",\"id\":\"1\",\"payload\":{\"data\":"
-                                + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
+                        String messageId = (String) clientMessage.get("id");
+                        if ("2".equals(messageId)) {
+                            isThrottleInitRequest = true;
+                            for (int i = 1; i < 5; i++) {
+                                response = "{\"type\":\"data\",\"id\":\"2\",\"payload\":{\"data\":"
+                                        + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
+                                Thread.sleep(1000L);
+                                session.getRemote().sendString(response);
+                            }
+                        } else {
+                            response = "{\"type\":\"data\",\"id\":\"1\",\"payload\":{\"data\":"
+                                    + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
+                        }
                     }
                 } else {
                     response = "Invalid message type";
                 }
-                session.getRemote().sendString(response);
+                if (!isThrottleInitRequest) {
+                    session.getRemote().sendString(response);
+                }
             } catch (ParseException e) {
                 log.error("Invalid json message received to GraphQL Subscription backend: " + message);
+                Assert.fail("Invalid json message received to GraphQL Subscription backend");
+            } catch (InterruptedException e) {
+                Assert.fail("Error handling response for throttling");
             }
         }
     }
