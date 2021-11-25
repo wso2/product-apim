@@ -8507,6 +8507,9 @@ components:
             - oauth2
           items:
             type: string
+        gatewayVendor:
+          type: string
+          example: wso2
     APIProduct:
       title: API Product object
       required:
@@ -8698,6 +8701,11 @@ components:
           type: string
         lastUpdatedTime:
           type: string
+        gatewayVendor:
+          title: field to identify gateway vendor
+          type: string
+          example:
+            wso2
         apis:
           type: array
           description: |

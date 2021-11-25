@@ -15454,6 +15454,7 @@ components:
         list:
         - hasThumbnail: true
           provider: admin
+          gatewayVendor: wso2
           securityScheme:
           - oauth2
           name: PizzaShackAPIProduct
@@ -15464,6 +15465,7 @@ components:
           state: CREATED
         - hasThumbnail: true
           provider: admin
+          gatewayVendor: wso2
           securityScheme:
           - oauth2
           name: PizzaShackAPIProduct
@@ -15490,6 +15492,7 @@ components:
       example:
         hasThumbnail: true
         provider: admin
+        gatewayVendor: wso2
         securityScheme:
         - oauth2
         name: PizzaShackAPIProduct
@@ -15539,6 +15542,9 @@ components:
           items:
             type: string
           type: array
+        gatewayVendor:
+          example: wso2
+          type: string
       title: API Info object with basic API details.
       type: object
     APIProduct:
@@ -15602,6 +15608,7 @@ components:
             verb: GET
             authType: Application & Application User
             throttlingPolicy: Unlimited
+        gatewayVendor: wso2
         businessInformation:
           technicalOwnerEmail: technicalowner@wso2.com
           businessOwnerEmail: businessowner@wso2.com
@@ -15799,6 +15806,10 @@ components:
         createdTime:
           type: string
         lastUpdatedTime:
+          type: string
+        gatewayVendor:
+          example: wso2
+          title: field to identify gateway vendor
           type: string
         apis:
           description: |

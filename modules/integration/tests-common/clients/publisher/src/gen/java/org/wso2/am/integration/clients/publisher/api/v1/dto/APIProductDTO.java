@@ -408,6 +408,10 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
             private String lastUpdatedTime;
 
+        public static final String SERIALIZED_NAME_GATEWAY_VENDOR = "gatewayVendor";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_VENDOR)
+            private String gatewayVendor;
+
         public static final String SERIALIZED_NAME_APIS = "apis";
         @SerializedName(SERIALIZED_NAME_APIS)
             private List<ProductAPIDTO> apis = null;
@@ -1179,6 +1183,29 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
+        public APIProductDTO gatewayVendor(String gatewayVendor) {
+        
+        this.gatewayVendor = gatewayVendor;
+        return this;
+        }
+
+    /**
+        * Get gatewayVendor
+    * @return gatewayVendor
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getGatewayVendor() {
+        return gatewayVendor;
+    }
+
+
+    public void setGatewayVendor(String gatewayVendor) {
+        this.gatewayVendor = gatewayVendor;
+    }
+
+
         public APIProductDTO apis(List<ProductAPIDTO> apis) {
         
         this.apis = apis;
@@ -1290,6 +1317,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             Objects.equals(this.corsConfiguration, apIProduct.corsConfiguration) &&
             Objects.equals(this.createdTime, apIProduct.createdTime) &&
             Objects.equals(this.lastUpdatedTime, apIProduct.lastUpdatedTime) &&
+            Objects.equals(this.gatewayVendor, apIProduct.gatewayVendor) &&
             Objects.equals(this.apis, apIProduct.apis) &&
             Objects.equals(this.scopes, apIProduct.scopes) &&
             Objects.equals(this.categories, apIProduct.categories);
@@ -1297,7 +1325,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
+        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, gatewayVendor, apis, scopes, categories);
     }
 
 
@@ -1338,6 +1366,7 @@ sb.append("class APIProductDTO {\n");
     sb.append("    corsConfiguration: ").append(toIndentedString(corsConfiguration)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
+    sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
     sb.append("    apis: ").append(toIndentedString(apis)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    categories: ").append(toIndentedString(categories)).append("\n");
