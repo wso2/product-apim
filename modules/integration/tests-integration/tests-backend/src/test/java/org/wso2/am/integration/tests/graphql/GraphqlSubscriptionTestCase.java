@@ -35,6 +35,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -1021,5 +1022,17 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         } finally {
             client.stop();
         }
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        restAPIStore.deleteApplication("GraphQLSubApplication");
+        restAPIStore.deleteApplication("GraphQLSubComplexApp");
+        restAPIStore.deleteApplication("GraphQLSubDepthApp");
+        restAPIStore.deleteApplication("GraphQLThrottleApp");
+        undeployAndDeleteAPIRevisionsUsingRest(graphqlApiId, restAPIPublisher);
+        restAPIPublisher.deleteAPI(graphqlApiId);
+        executorService.shutdownNow();
+        super.cleanUp();
     }
 }
