@@ -804,21 +804,8 @@ public class APIMIntegrationBaseTest {
 
         assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Create API Response Code is invalid." + apiRevisionResponse.getData());
-
-        // Retrieve Revision Info
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
-        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
-        List<JSONObject> revisionList = new ArrayList<>();
-        JSONObject jsonObject = new JSONObject(apiRevisionsGetResponse.getData());
-
-        JSONArray arrayList = jsonObject.getJSONArray("list");
-        for (int i = 0, l = arrayList.length(); i < l; i++) {
-            revisionList.add(arrayList.getJSONObject(i));
-        }
-        for (JSONObject revision :revisionList) {
-            revisionUUID = revision.getString("id");
-        }
+        JSONObject jsonObject = new JSONObject(apiRevisionResponse.getData());
+        revisionUUID = jsonObject.getString("id");
 
         // Deploy Revision to gateway
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
