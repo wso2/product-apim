@@ -102,9 +102,9 @@ import static org.testng.Assert.assertTrue;
 public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(GraphqlSubscriptionTestCase.class);
-    private static final String GRAPHQL_ROLE = "graphqlrole";
-    private static final String GRAPHQL_TEST_USER = "graphqluser";
-    private static final String GRAPHQL_TEST_USER_PASSWORD = "graphqlUser";
+    private static final String GRAPHQL_ROLE = "graphqlSubRole";
+    private static final String GRAPHQL_TEST_USER = "graphqlSubUser";
+    private static final String GRAPHQL_TEST_USER_PASSWORD = "graphqlSubUser";
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private int webSocketServerPort;
     private String webSocketServerHost;
