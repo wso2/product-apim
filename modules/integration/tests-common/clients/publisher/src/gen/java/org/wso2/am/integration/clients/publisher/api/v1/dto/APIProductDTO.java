@@ -68,7 +68,15 @@ public class APIProductDTO {
 public enum StateEnum {
         CREATED("CREATED"),
         
-        PUBLISHED("PUBLISHED");
+        PUBLISHED("PUBLISHED"),
+        
+        DEPRECATED("DEPRECATED"),
+        
+        RETIRED("RETIRED"),
+        
+        BLOCKED("BLOCKED"),
+        
+        PROTOTYPED("PROTOTYPED");
 
 private String value;
 
@@ -110,7 +118,7 @@ public static StateEnum fromValue(String value) {
 
         public static final String SERIALIZED_NAME_STATE = "state";
         @SerializedName(SERIALIZED_NAME_STATE)
-            private StateEnum state;
+            private StateEnum state = StateEnum.CREATED;
 
         public static final String SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION = "enableSchemaValidation";
         @SerializedName(SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION)

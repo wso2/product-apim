@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.test.impl;
 
+import org.apache.synapse.unittest.testcase.data.classes.AssertNotNull;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -29,6 +30,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
@@ -86,6 +88,15 @@ public class ApiProductTestHelper {
         }
 
         return responseData;
+    }
+
+    public WorkflowResponseDTO changeLifecycleStateOfApiProduct(String apiProductId, String action,
+                                                                String lifecycleChecklist) throws ApiException {
+
+        WorkflowResponseDTO workflowResponseDTO = restAPIPublisher.changeAPIProductLifeCycleStatus(apiProductId, action,
+                lifecycleChecklist);
+        Assert.assertNotNull(workflowResponseDTO);
+        return workflowResponseDTO;
     }
 
     private void verifyAPIProductDto(List<ProductAPIDTO> expectedProduct, List<ProductAPIDTO> actualProduct) {

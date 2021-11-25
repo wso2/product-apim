@@ -32,6 +32,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiProductLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
@@ -146,6 +147,7 @@ public class RestAPIPublisherImpl {
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
     public GlobalMediationPoliciesApi globalMediationPoliciesApi = new GlobalMediationPoliciesApi();
     public ScopesApi sharedScopesApi = new ScopesApi();
+    public ApiProductLifecycleApi productLifecycleApi = new ApiProductLifecycleApi();
     public ApiClient apiPublisherClient = new ApiClient();
     public String tenantDomain;
     private ApiProductsApi apiProductsApi = new ApiProductsApi();
@@ -202,6 +204,7 @@ public class RestAPIPublisherImpl {
         sharedScopesApi.setApiClient(apiPublisherClient);
         globalMediationPoliciesApi.setApiClient(apiPublisherClient);
         endpointCertificatesApi.setApiClient(apiPublisherClient);
+        productLifecycleApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
@@ -1587,9 +1590,13 @@ public class RestAPIPublisherImpl {
     /**
      * This method is used to deploy API Revision to Gateways.
      *
-     * @param apiRevisionDeployRequestList API Revision deploy object body
+     * @param apiUUID UUID of API
+     * @param revisionUUID UUID of API Revision
+     * @param apiRevisionDeployRequest API Revision deploy object body
+     * @param apiType API Type
      * @return HttpResponse
      * @throws ApiException throws of an error occurred when creating the API Revision.
+     * @throws APIManagerIntegrationTestException
      */
     public HttpResponse deployAPIRevision(String apiUUID, String revisionUUID,
                                           APIRevisionDeployUndeployRequest apiRevisionDeployRequest, String apiType)
@@ -2214,6 +2221,54 @@ public class RestAPIPublisherImpl {
 
         return endpointCertificatesApi.deleteEndpointCertificateByAliasWithHttpInfo(alias);
 
+    }
+
+    /**
+     * Change the lifecycle status of API Product
+     *
+     * @param apiProductId       UUID of api product
+     * @param action             Lifecycle state change action
+     * @param lifecycleChecklist Lifecycle check list
+     * @return WorkflowResponseDTO object
+     * @throws ApiException If error when changing the lifecycle state of api product
+     */
+    public WorkflowResponseDTO changeAPIProductLifeCycleStatus(String apiProductId, String action, String lifecycleChecklist)
+            throws ApiException {
+
+        setActivityID();
+        return this.productLifecycleApi
+                .changeAPIProductLifecycle(action, apiProductId, lifecycleChecklist, null);
+    }
+
+    /**
+     * Get lifecycle state information of an API Product
+     *
+     * @param apiProductId UUID of API Product
+     * @return  Http Response object
+     * @throws ApiException If error when retrieving the lifecycle state information of an api product
+     */
+    public HttpResponse getLifecycleStatusOfApiProduct(String apiProductId) throws ApiException {
+
+        LifecycleStateDTO lifecycleStateDTO = this.productLifecycleApi.getAPIProductLifecycleState(apiProductId, null);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(lifecycleStateDTO.getState())) {
+            response = new HttpResponse(lifecycleStateDTO.getState(), 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get lifecycle state change history of an API Product
+     * @param apiProductId  UUID of API Product
+     * @return LifecycleHistoryDTO object
+     * @throws ApiException If error when retrieving the lifecycle state change history of API Product
+     */
+    public LifecycleHistoryDTO getLifecycleHistoryOfApiProduct(String apiProductId) throws ApiException {
+
+        ApiResponse<LifecycleHistoryDTO> apiResponse =
+                this.productLifecycleApi.getAPIProductLifecycleHistoryWithHttpInfo(apiProductId, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        return apiResponse.getData();
     }
 
     private void setActivityID() {
