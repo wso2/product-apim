@@ -58,7 +58,7 @@ Please follow the [installation](#installation) instruction and execute the foll
 
 ```java
 
-import org.wso2.carbon.apimgt.samples.utils.admin.rest.cli4.7.46ent.*;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.*;
 import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.auth.*;
 import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.model.*;
 import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.api.AdvancedPolicyCollectionApi;
