@@ -27,6 +27,7 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 
 
+import org.wso2.am.integration.clients.store.api.v1.dto.AdditionalSubscriptionInfoListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
@@ -57,6 +58,161 @@ public class SubscriptionsApi {
         this.localVarApiClient = apiClient;
     }
 
+    /**
+     * Build call for getAdditionalInfoOfAPISubscriptions
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param groupId Application Group Id  (optional)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Types and fields returned successfully.  </td><td>  * Content-Type - The content of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. Retrieving types and fields failed.  </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAdditionalInfoOfAPISubscriptionsCall(String apiId, String groupId, String xWSO2Tenant, Integer offset, Integer limit, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/subscriptions/{apiId}/additionalInfo"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (groupId != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("groupId", groupId));
+        }
+
+        if (offset != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("offset", offset));
+        }
+
+        if (limit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
+        if (ifNoneMatch != null) {
+            localVarHeaderParams.put("If-None-Match", localVarApiClient.parameterToString(ifNoneMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call getAdditionalInfoOfAPISubscriptionsValidateBeforeCall(String apiId, String groupId, String xWSO2Tenant, Integer offset, Integer limit, String ifNoneMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling getAdditionalInfoOfAPISubscriptions(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = getAdditionalInfoOfAPISubscriptionsCall(apiId, groupId, xWSO2Tenant, offset, limit, ifNoneMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get Additional Information of subscriptions attached to an API.
+     * This operation can be used to retrieve all additional Information of subscriptions attached to an API by providing the API id. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param groupId Application Group Id  (optional)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return AdditionalSubscriptionInfoListDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Types and fields returned successfully.  </td><td>  * Content-Type - The content of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. Retrieving types and fields failed.  </td><td>  -  </td></tr>
+     </table>
+     */
+    public AdditionalSubscriptionInfoListDTO getAdditionalInfoOfAPISubscriptions(String apiId, String groupId, String xWSO2Tenant, Integer offset, Integer limit, String ifNoneMatch) throws ApiException {
+        ApiResponse<AdditionalSubscriptionInfoListDTO> localVarResp = getAdditionalInfoOfAPISubscriptionsWithHttpInfo(apiId, groupId, xWSO2Tenant, offset, limit, ifNoneMatch);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get Additional Information of subscriptions attached to an API.
+     * This operation can be used to retrieve all additional Information of subscriptions attached to an API by providing the API id. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param groupId Application Group Id  (optional)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @return ApiResponse&lt;AdditionalSubscriptionInfoListDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Types and fields returned successfully.  </td><td>  * Content-Type - The content of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. Retrieving types and fields failed.  </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<AdditionalSubscriptionInfoListDTO> getAdditionalInfoOfAPISubscriptionsWithHttpInfo(String apiId, String groupId, String xWSO2Tenant, Integer offset, Integer limit, String ifNoneMatch) throws ApiException {
+        okhttp3.Call localVarCall = getAdditionalInfoOfAPISubscriptionsValidateBeforeCall(apiId, groupId, xWSO2Tenant, offset, limit, ifNoneMatch, null);
+        Type localVarReturnType = new TypeToken<AdditionalSubscriptionInfoListDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get Additional Information of subscriptions attached to an API. (asynchronously)
+     * This operation can be used to retrieve all additional Information of subscriptions attached to an API by providing the API id. 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param groupId Application Group Id  (optional)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
+     * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
+     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Types and fields returned successfully.  </td><td>  * Content-Type - The content of the body.  <br>  </td></tr>
+        <tr><td> 404 </td><td> Not Found. Retrieving types and fields failed.  </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call getAdditionalInfoOfAPISubscriptionsAsync(String apiId, String groupId, String xWSO2Tenant, Integer offset, Integer limit, String ifNoneMatch, final ApiCallback<AdditionalSubscriptionInfoListDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = getAdditionalInfoOfAPISubscriptionsValidateBeforeCall(apiId, groupId, xWSO2Tenant, offset, limit, ifNoneMatch, _callback);
+        Type localVarReturnType = new TypeToken<AdditionalSubscriptionInfoListDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
     /**
      * Build call for subscriptionsGet
      * @param apiId **API ID** consisting of the **UUID** of the API.  (optional)

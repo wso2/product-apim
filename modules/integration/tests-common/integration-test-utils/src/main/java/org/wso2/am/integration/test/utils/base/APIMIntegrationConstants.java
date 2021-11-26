@@ -168,4 +168,6 @@ public class APIMIntegrationConstants {
     public static final String ADMIN_USERNAME = "admin";
     public static final String ADMIN_PASSWORD = "admin";
     public static final String LOCAL_HOST_NAME = "localhost";
+
+    public static final String WSO2_GATEWAY_VENDOR = "wso2";
 }

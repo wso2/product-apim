@@ -60,6 +60,14 @@ public class AsyncAPISpecificationValidationResponseInfoDTO {
         @SerializedName(SERIALIZED_NAME_ENDPOINTS)
             private List<String> endpoints = null;
 
+        public static final String SERIALIZED_NAME_GATEWAY_VENDOR = "gatewayVendor";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_VENDOR)
+            private String gatewayVendor;
+
+        public static final String SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS = "asyncTransportProtocols";
+        @SerializedName(SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS)
+            private List<String> asyncTransportProtocols = null;
+
 
         public AsyncAPISpecificationValidationResponseInfoDTO name(String name) {
         
@@ -222,6 +230,52 @@ public class AsyncAPISpecificationValidationResponseInfoDTO {
     }
 
 
+        public AsyncAPISpecificationValidationResponseInfoDTO gatewayVendor(String gatewayVendor) {
+        
+        this.gatewayVendor = gatewayVendor;
+        return this;
+        }
+
+    /**
+        * Get gatewayVendor
+    * @return gatewayVendor
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getGatewayVendor() {
+        return gatewayVendor;
+    }
+
+
+    public void setGatewayVendor(String gatewayVendor) {
+        this.gatewayVendor = gatewayVendor;
+    }
+
+
+        public AsyncAPISpecificationValidationResponseInfoDTO asyncTransportProtocols(List<String> asyncTransportProtocols) {
+        
+        this.asyncTransportProtocols = asyncTransportProtocols;
+        return this;
+        }
+
+    /**
+        * contains available transports for an async API
+    * @return asyncTransportProtocols
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "contains available transports for an async API")
+    
+    public List<String> getAsyncTransportProtocols() {
+        return asyncTransportProtocols;
+    }
+
+
+    public void setAsyncTransportProtocols(List<String> asyncTransportProtocols) {
+        this.asyncTransportProtocols = asyncTransportProtocols;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -237,12 +291,14 @@ public class AsyncAPISpecificationValidationResponseInfoDTO {
             Objects.equals(this.description, asyncAPISpecificationValidationResponseInfo.description) &&
             Objects.equals(this.asyncAPIVersion, asyncAPISpecificationValidationResponseInfo.asyncAPIVersion) &&
             Objects.equals(this.protocol, asyncAPISpecificationValidationResponseInfo.protocol) &&
-            Objects.equals(this.endpoints, asyncAPISpecificationValidationResponseInfo.endpoints);
+            Objects.equals(this.endpoints, asyncAPISpecificationValidationResponseInfo.endpoints) &&
+            Objects.equals(this.gatewayVendor, asyncAPISpecificationValidationResponseInfo.gatewayVendor) &&
+            Objects.equals(this.asyncTransportProtocols, asyncAPISpecificationValidationResponseInfo.asyncTransportProtocols);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, version, context, description, asyncAPIVersion, protocol, endpoints);
+        return Objects.hash(name, version, context, description, asyncAPIVersion, protocol, endpoints, gatewayVendor, asyncTransportProtocols);
     }
 
 
@@ -257,6 +313,8 @@ sb.append("class AsyncAPISpecificationValidationResponseInfoDTO {\n");
     sb.append("    asyncAPIVersion: ").append(toIndentedString(asyncAPIVersion)).append("\n");
     sb.append("    protocol: ").append(toIndentedString(protocol)).append("\n");
     sb.append("    endpoints: ").append(toIndentedString(endpoints)).append("\n");
+    sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
+    sb.append("    asyncTransportProtocols: ").append(toIndentedString(asyncTransportProtocols)).append("\n");
 sb.append("}");
 return sb.toString();
 }

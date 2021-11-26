@@ -4,6 +4,7 @@ All URIs are relative to *https://apis.wso2.com/api/am/devportal/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**getAdditionalInfoOfAPISubscriptions**](SubscriptionsApi.md#getAdditionalInfoOfAPISubscriptions) | **GET** /subscriptions/{apiId}/additionalInfo | Get Additional Information of subscriptions attached to an API.
 [**subscriptionsGet**](SubscriptionsApi.md#subscriptionsGet) | **GET** /subscriptions | Get All Subscriptions 
 [**subscriptionsMultiplePost**](SubscriptionsApi.md#subscriptionsMultiplePost) | **POST** /subscriptions/multiple | Add New Subscriptions 
 [**subscriptionsPost**](SubscriptionsApi.md#subscriptionsPost) | **POST** /subscriptions | Add a New Subscription 
@@ -11,6 +12,84 @@ Method | HTTP request | Description
 [**subscriptionsSubscriptionIdGet**](SubscriptionsApi.md#subscriptionsSubscriptionIdGet) | **GET** /subscriptions/{subscriptionId} | Get Details of a Subscription 
 [**subscriptionsSubscriptionIdPut**](SubscriptionsApi.md#subscriptionsSubscriptionIdPut) | **PUT** /subscriptions/{subscriptionId} | Update Existing Subscription 
 
+
+<a name="getAdditionalInfoOfAPISubscriptions"></a>
+# **getAdditionalInfoOfAPISubscriptions**
+> AdditionalSubscriptionInfoListDTO getAdditionalInfoOfAPISubscriptions(apiId, groupId, xWSO2Tenant, offset, limit, ifNoneMatch)
+
+Get Additional Information of subscriptions attached to an API.
+
+This operation can be used to retrieve all additional Information of subscriptions attached to an API by providing the API id. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.store.api.ApiClient;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.Configuration;
+import org.wso2.am.integration.clients.store.api.auth.*;
+import org.wso2.am.integration.clients.store.api.models.*;
+import org.wso2.am.integration.clients.store.api.v1.SubscriptionsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    SubscriptionsApi apiInstance = new SubscriptionsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    String groupId = "groupId_example"; // String | Application Group Id 
+    String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
+    Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
+    Integer limit = 25; // Integer | Maximum size of resource array to return. 
+    String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
+    try {
+      AdditionalSubscriptionInfoListDTO result = apiInstance.getAdditionalInfoOfAPISubscriptions(apiId, groupId, xWSO2Tenant, offset, limit, ifNoneMatch);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling SubscriptionsApi#getAdditionalInfoOfAPISubscriptions");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **groupId** | **String**| Application Group Id  | [optional]
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  | [optional]
+ **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
+ **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
+ **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
+
+### Return type
+
+[**AdditionalSubscriptionInfoListDTO**](AdditionalSubscriptionInfoListDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Types and fields returned successfully.  |  * Content-Type - The content of the body.  <br>  |
+**404** | Not Found. Retrieving types and fields failed.  |  -  |
 
 <a name="subscriptionsGet"></a>
 # **subscriptionsGet**

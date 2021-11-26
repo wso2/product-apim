@@ -61,6 +61,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AsyncAPISpecificationValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertificatesDTO;
@@ -1180,6 +1181,28 @@ public class RestAPIPublisherImpl {
                 .updateAPIResourcePoliciesByPolicyIdWithHttpInfo(apiId, resourcePolicyId, resourcePolicyInfoDTO, null);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
+    }
+
+
+    public AsyncAPISpecificationValidationResponseDTO validateAsyncAPISchemaDefinition(String url, File file)
+            throws ApiException {
+        ApiResponse<AsyncAPISpecificationValidationResponseDTO> response = validationApi
+                .validateAsyncAPISpecificationWithHttpInfo(false, url, file);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
+    public APIDTO importAsyncAPISchemaDefinition(File file, String url, String properties)
+            throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importAsyncAPISpecificationWithHttpInfo(file, url, properties);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    public ApiResponse<Void> getAsyncAPIDefinitionOfAPI(String apiId) throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse;
     }
 
     public APIDTO addAPI(APICreationRequestBean apiCreationRequestBean) throws ApiException {

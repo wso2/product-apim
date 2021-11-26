@@ -378,7 +378,7 @@
                     <name>org.wso2.am.framework.extensions.APIMCarbonServerExtension</name>
                     <parameter name="-DportOffset" value="500"/>
                <!--                    <parameter name="-Dsetup" value="true"/>-->
-                    <!--<parameter name="cmdArg" value="debug 5005"/>-->
+<!--                    <parameter name="cmdArg" value="debug 5006"/>-->
                 </class>
                 <class>
                     <name>org.wso2.carbon.integration.common.extensions.usermgt.UserPopulateExtension</name>

@@ -6356,6 +6356,222 @@ paths:
           -F file=@theme.zip "https://127.0.0.1:9443/api/am/admin/v2/tenant-theme"'
       x-contentType: multipart/form-data
       x-accepts: application/json
+  /tenant-config:
+    get:
+      description: |
+        This operation can be used to export a tenant-config.json used in deployment.
+      operationId: exportTenantConfig
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: |
+            OK.
+            Tenant config Exported Successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Export a tenant-Config.
+      tags:
+      - Tenant Config
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/tenant-config" > tenant-config.json'
+      x-accepts: application/json
+    put:
+      description: |
+        This operation can be used to update tenant-config.
+      operationId: updateTenantConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: tenant-config
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: |
+            OK.
+            Role mapping alias returned
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "413":
+          content:
+            application/json:
+              example:
+                code: 413
+                message: Payload Too Large
+                description: Request entity is larger than limits defined by server
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Payload Too Large. Request entity is larger than limits defined
+            by server.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Update a tenant-config.
+      tags:
+      - Tenant Config
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/tenant-config"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /tenant-config-schema:
+    get:
+      description: |
+        This operation can be used to export a tenant-config-schema.json used in deployment.
+      operationId: exportTenantConfigSchema
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: |
+            OK.
+            Tenant config schema exported successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Export a tenant-Config-Schema.
+      tags:
+      - Tenant Config Schema
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/tenant-config-schema" > tenant-config-schema.json'
+      x-accepts: application/json
   /key-managers:
     get:
       description: |

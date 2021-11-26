@@ -20,9 +20,11 @@
 
 package org.wso2.am.integration.tests.other;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
@@ -35,12 +37,10 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 
 import java.io.File;
-import java.io.FileInputStream;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(AdvancedConfigDeploymentConfig.class);
-    private final String TENANT_CONFIG_LOCATION = "/_system/config/apimgt/applicationdata/tenant-conf.json";
     private ServerConfigurationManager serverConfigurationManager;
     private AutomationContext superTenantKeyManagerContext;
     private ResourceAdminServiceClient resourceAdminServiceClient;
@@ -57,11 +57,12 @@ public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
                         createSession(gatewayContextMgt));
 
         //Configurations for Notification Test
-        String tenantConfSrcLocation = IOUtils.toString(new FileInputStream(
-                getAMResourceLocation() + File.separator + "configFiles"
-                        + File.separator + "notification" + File.separator + "tenant-conf.json"));
+        String tenantConfContent = FileUtils.readFileToString(new File(getAMResourceLocation() + File.separator
+                + "configFiles" + File.separator + "notification" + File.separator + "tenant-conf.json"), "UTF-8");
+        JSONParser jsonParser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(tenantConfContent);
+        restAPIAdmin.updateTenantConfig(jsonObject);
 
-        resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfSrcLocation);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
 
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
@@ -72,14 +73,14 @@ public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
 
     @AfterTest(alwaysRun = true)
     public void restoreConfigs() throws Exception {
-        String tenantConfSrcLocation = IOUtils.toString(new FileInputStream(
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "common"
-                        + File.separator + "tenant-conf.json"));
+        String tenantConfContent = FileUtils.readFileToString(new File(getAMResourceLocation() + File.separator
+                + "configFiles" + File.separator + "common" + File.separator + "tenant-conf.json"), "UTF-8");
+        JSONParser jsonParser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(tenantConfContent);
+        restAPIAdmin.updateTenantConfig(jsonObject);
         resourceAdminServiceClient =
                 new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                         createSession(gatewayContextMgt));
-
-        resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfSrcLocation);
         serverConfigurationManager.restoreToLastConfiguration();
     }
 }

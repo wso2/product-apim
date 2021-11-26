@@ -493,6 +493,14 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_ADVERTISE_INFO)
             private AdvertiseInfoDTO advertiseInfo;
 
+        public static final String SERIALIZED_NAME_GATEWAY_VENDOR = "gatewayVendor";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_VENDOR)
+            private String gatewayVendor;
+
+        public static final String SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS = "asyncTransportProtocols";
+        @SerializedName(SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS)
+            private List<String> asyncTransportProtocols = null;
+
 
         public APIDTO id(String id) {
         
@@ -1641,6 +1649,52 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO gatewayVendor(String gatewayVendor) {
+        
+        this.gatewayVendor = gatewayVendor;
+        return this;
+        }
+
+    /**
+        * Get gatewayVendor
+    * @return gatewayVendor
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getGatewayVendor() {
+        return gatewayVendor;
+    }
+
+
+    public void setGatewayVendor(String gatewayVendor) {
+        this.gatewayVendor = gatewayVendor;
+    }
+
+
+        public APIDTO asyncTransportProtocols(List<String> asyncTransportProtocols) {
+        
+        this.asyncTransportProtocols = asyncTransportProtocols;
+        return this;
+        }
+
+    /**
+        * Supported transports for the async API (http and/or https). 
+    * @return asyncTransportProtocols
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"http\",\"https\"]", value = "Supported transports for the async API (http and/or https). ")
+    
+    public List<String> getAsyncTransportProtocols() {
+        return asyncTransportProtocols;
+    }
+
+
+    public void setAsyncTransportProtocols(List<String> asyncTransportProtocols) {
+        this.asyncTransportProtocols = asyncTransportProtocols;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -1699,12 +1753,14 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.categories, API.categories) &&
             Objects.equals(this.keyManagers, API.keyManagers) &&
             Objects.equals(this.serviceInfo, API.serviceInfo) &&
-            Objects.equals(this.advertiseInfo, API.advertiseInfo);
+            Objects.equals(this.advertiseInfo, API.advertiseInfo) &&
+            Objects.equals(this.gatewayVendor, API.gatewayVendor) &&
+            Objects.equals(this.asyncTransportProtocols, API.asyncTransportProtocols);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
     }
 
 
@@ -1762,6 +1818,8 @@ sb.append("class APIDTO {\n");
     sb.append("    keyManagers: ").append(toIndentedString(keyManagers)).append("\n");
     sb.append("    serviceInfo: ").append(toIndentedString(serviceInfo)).append("\n");
     sb.append("    advertiseInfo: ").append(toIndentedString(advertiseInfo)).append("\n");
+    sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
+    sb.append("    asyncTransportProtocols: ").append(toIndentedString(asyncTransportProtocols)).append("\n");
 sb.append("}");
 return sb.toString();
 }
