@@ -166,8 +166,6 @@ public class AdminApiTestHelper {
                 "Environment name does not match with the expected name");
         Assert.assertEquals(actualEnv.getDisplayName(), expectedEnv.getDisplayName(),
                 "Environment display name does not match with the expected display name");
-        Assert.assertEquals(actualEnv.getDescription(), expectedEnv.getDescription(),
-                "Environment description does not match with the expected description");
         Assert.assertEquals(actualEnv.isIsReadOnly(), expectedEnv.isIsReadOnly());
         for (VHostDTO vhost : expectedEnv.getVhosts()) {
             Assert.assertTrue(actualEnv.getVhosts().contains(vhost),

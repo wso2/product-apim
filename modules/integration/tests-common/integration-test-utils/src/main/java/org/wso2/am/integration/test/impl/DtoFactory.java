@@ -391,15 +391,15 @@ public class DtoFactory {
      * @param vhosts      Vhosts available in the environment
      * @return Environment DTO object
      */
-    public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description,
-                                                      boolean isReadOnly, List<VHostDTO> vhosts) {
+    public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description, String
+            provider, boolean isReadOnly, List<VHostDTO> vhosts) {
         return new EnvironmentDTO()
                 .name(name)
                 .displayName(displayName)
                 .description(description)
+                .provider(provider)
                 .isReadOnly(isReadOnly)
-                .vhosts(vhosts)
-                .provider("wso2");
+                .vhosts(vhosts);
     }
 
     /**
