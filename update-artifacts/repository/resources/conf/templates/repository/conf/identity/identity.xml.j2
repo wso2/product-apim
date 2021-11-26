@@ -651,6 +651,9 @@
             -->
             <RequestObjectValidator>{{oauth.oidc.extensions.request_object_validator}}</RequestObjectValidator>
             <RedirectToPostLogoutUriOnConsentDenial>{{oauth.oidc.redirect_to_post_logout_uri_on_consent_denial}}</RedirectToPostLogoutUriOnConsentDenial>
+            {% if oauth.oidc.allow_additional_params_from_post_logout_redirect_uri is defined %}
+                <AllowAdditionalParamsFromPostLogoutRedirectURI>{{oauth.oidc.allow_additional_params_from_post_logout_redirect_uri}}</AllowAdditionalParamsFromPostLogoutRedirectURI>
+            {% endif %}
         </OpenIDConnect>
 
         {% if oauth.show_display_name_in_consent_page is defined %}
