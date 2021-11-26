@@ -398,7 +398,8 @@ public class DtoFactory {
                 .displayName(displayName)
                 .description(description)
                 .isReadOnly(isReadOnly)
-                .vhosts(vhosts);
+                .vhosts(vhosts)
+                .provider("wso2");
     }
 
     /**

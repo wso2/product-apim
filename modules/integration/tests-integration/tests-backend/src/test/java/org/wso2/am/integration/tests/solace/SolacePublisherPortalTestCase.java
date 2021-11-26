@@ -658,9 +658,6 @@ public class SolacePublisherPortalTestCase extends APIManagerLifecycleBaseTest {
 
         // Assert successful lifecycle change
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
-
-        waitForAPIDeploymentSync(user.getUserName(), solaceApi1Name, solaceApiVersion,
-                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(groups = {"wso2.am"}, description = "Undeploy deployed Solace API from Solace broker",
@@ -732,9 +729,11 @@ public class SolacePublisherPortalTestCase extends APIManagerLifecycleBaseTest {
 
         // Deploy API to Solace broker and publish API
         createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApi2Id, restAPIPublisher);
-        restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApi2Id, false);
         waitForAPIDeploymentSync(user.getUserName(), solaceApi2Name, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
+        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApi2Id, false);
+        // Assert successful lifecycle change
+        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
 
         //Change lifeCycle to DEPRECATED and then RETIRED
         HttpResponse blockAPIActionResponse = restAPIPublisher
@@ -809,9 +808,12 @@ public class SolacePublisherPortalTestCase extends APIManagerLifecycleBaseTest {
 
         // Deploy API to Solace broker and publish API
         createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApi3Id, restAPIPublisher);
-        restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApi3Id, false);
         waitForAPIDeploymentSync(user.getUserName(), solaceApi3Name, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApi3Id, false);
+        // Assert successful lifecycle change
+        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
 
         // Delete API from publisher portal
         HttpResponse apiDeleteResponse = restAPIPublisher.deleteAPI(solaceApi3Id);
