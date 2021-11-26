@@ -110,6 +110,10 @@ public static StateEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_SECURITY_SCHEME)
             private List<String> securityScheme = null;
 
+        public static final String SERIALIZED_NAME_GATEWAY_VENDOR = "gatewayVendor";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_VENDOR)
+            private String gatewayVendor;
+
 
         public APIProductInfoDTO id(String id) {
         
@@ -295,6 +299,29 @@ public static StateEnum fromValue(String value) {
     }
 
 
+        public APIProductInfoDTO gatewayVendor(String gatewayVendor) {
+        
+        this.gatewayVendor = gatewayVendor;
+        return this;
+        }
+
+    /**
+        * Get gatewayVendor
+    * @return gatewayVendor
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getGatewayVendor() {
+        return gatewayVendor;
+    }
+
+
+    public void setGatewayVendor(String gatewayVendor) {
+        this.gatewayVendor = gatewayVendor;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -311,12 +338,13 @@ public static StateEnum fromValue(String value) {
             Objects.equals(this.provider, apIProductInfo.provider) &&
             Objects.equals(this.hasThumbnail, apIProductInfo.hasThumbnail) &&
             Objects.equals(this.state, apIProductInfo.state) &&
-            Objects.equals(this.securityScheme, apIProductInfo.securityScheme);
+            Objects.equals(this.securityScheme, apIProductInfo.securityScheme) &&
+            Objects.equals(this.gatewayVendor, apIProductInfo.gatewayVendor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, securityScheme);
+        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, securityScheme, gatewayVendor);
     }
 
 
@@ -332,6 +360,7 @@ sb.append("class APIProductInfoDTO {\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    state: ").append(toIndentedString(state)).append("\n");
     sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
+    sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
 sb.append("}");
 return sb.toString();
 }

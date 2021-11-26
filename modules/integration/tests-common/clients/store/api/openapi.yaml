@@ -5021,6 +5021,102 @@ paths:
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions/multiple"'
       x-contentType: application/json
       x-accepts: application/json
+  /subscriptions/{apiId}/additionalInfo:
+    get:
+      description: |
+        This operation can be used to retrieve all additional Information of subscriptions attached to an API by providing the API id.
+      operationId: getAdditionalInfoOfAPISubscriptions
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Application Group Id
+        explode: true
+        in: query
+        name: groupId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resourec.
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdditionalSubscriptionInfoList'
+          description: |
+            OK.
+            Types and fields returned successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content of the body.
+              explode: false
+              schema:
+                default: application/json
+                type: string
+              style: simple
+        "404":
+          content: {}
+          description: |
+            Not Found.
+            Retrieving types and fields failed.
+      security:
+      - OAuth2Security: []
+      summary: Get Additional Information of subscriptions attached to an API.
+      tags:
+      - Subscriptions
+      x-code-samples:
+      - lang: Curl
+        source: curl -k "https://localhost:9443/api/am/devportal/v2/subscriptions/e93fb282-b456-48fc-8981-003fb89086ae/additionalInfo"
+      x-accepts: application/json
   /subscriptions/{subscriptionId}:
     delete:
       description: |
@@ -7501,6 +7597,10 @@ components:
           name: Public
           description: description
         isDefaultVersion: false
+        gatewayVendor: wso2
+        asyncTransportProtocols:
+        - http
+        - mqtt
         businessInformation:
           technicalOwnerEmail: technicalowner@wso2.com
           businessOwnerEmail: businessowner@wso2.com
@@ -7694,6 +7794,19 @@ components:
         lastUpdatedTime:
           example: 2020-10-31T13:57:16.229
           type: string
+        gatewayVendor:
+          example: wso2
+          title: Gateway vendor of the API
+          type: string
+        asyncTransportProtocols:
+          description: |
+            Supported transports for the aync API.
+          example:
+          - http
+          - mqtt
+          items:
+            type: string
+          type: array
       required:
       - context
       - lifeCycleStatus
@@ -10243,6 +10356,240 @@ components:
           type: string
       title: Current and new passowrd of the user
       type: object
+    AdditionalSubscriptionInfoList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 1
+        list:
+        - solaceDeployedEnvironments:
+          - SolaceTopicsObject:
+              mqttSyntax:
+                subscribeTopics:
+                - subscribeTopics
+                - subscribeTopics
+                publishTopics:
+                - publishTopics
+                - publishTopics
+              defaultSyntax:
+                subscribeTopics:
+                - subscribeTopics
+                - subscribeTopics
+                publishTopics:
+                - publishTopics
+                - publishTopics
+            organizationName: organizationName
+            environmentName: environmentName
+            environmentDisplayName: environmentDisplayName
+            solaceURLs:
+            - protocol: Defalt
+              endpointURL: Default
+            - protocol: Defalt
+              endpointURL: Default
+          - SolaceTopicsObject:
+              mqttSyntax:
+                subscribeTopics:
+                - subscribeTopics
+                - subscribeTopics
+                publishTopics:
+                - publishTopics
+                - publishTopics
+              defaultSyntax:
+                subscribeTopics:
+                - subscribeTopics
+                - subscribeTopics
+                publishTopics:
+                - publishTopics
+                - publishTopics
+            organizationName: organizationName
+            environmentName: environmentName
+            environmentDisplayName: environmentDisplayName
+            solaceURLs:
+            - protocol: Defalt
+              endpointURL: Default
+            - protocol: Defalt
+              endpointURL: Default
+          solaceOrganization: SolaceWso2
+          isSolaceAPI: false
+          subscriptionId: faae5fcc-cbae-40c4-bf43-89931630d313
+          applicationId: b3ade481-30b0-4b38-9a67-498a40873a6d
+          applicationName: Sample Application
+          apiId: 2962f3bb-8330-438e-baee-0ee1d6434ba4
+        - solaceDeployedEnvironments:
+          - SolaceTopicsObject:
+              mqttSyntax:
+                subscribeTopics:
+                - subscribeTopics
+                - subscribeTopics
+                publishTopics:
+                - publishTopics
+                - publishTopics
+              defaultSyntax:
+                subscribeTopics:
+                - subscribeTopics
+                - subscribeTopics
+                publishTopics:
+                - publishTopics
+                - publishTopics
+            organizationName: organizationName
+            environmentName: environmentName
+            environmentDisplayName: environmentDisplayName
+            solaceURLs:
+            - protocol: Defalt
+              endpointURL: Default
+            - protocol: Defalt
+              endpointURL: Default
+          - SolaceTopicsObject:
+              mqttSyntax:
+                subscribeTopics:
+                - subscribeTopics
+                - subscribeTopics
+                publishTopics:
+                - publishTopics
+                - publishTopics
+              defaultSyntax:
+                subscribeTopics:
+                - subscribeTopics
+                - subscribeTopics
+                publishTopics:
+                - publishTopics
+                - publishTopics
+            organizationName: organizationName
+            environmentName: environmentName
+            environmentDisplayName: environmentDisplayName
+            solaceURLs:
+            - protocol: Defalt
+              endpointURL: Default
+            - protocol: Defalt
+              endpointURL: Default
+          solaceOrganization: SolaceWso2
+          isSolaceAPI: false
+          subscriptionId: faae5fcc-cbae-40c4-bf43-89931630d313
+          applicationId: b3ade481-30b0-4b38-9a67-498a40873a6d
+          applicationName: Sample Application
+          apiId: 2962f3bb-8330-438e-baee-0ee1d6434ba4
+      properties:
+        count:
+          description: |
+            Number of additional information sets of subscription returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/AdditionalSubscriptionInfo'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Additional Subscription Info List
+      type: object
+    AdditionalSubscriptionInfo:
+      example:
+        solaceDeployedEnvironments:
+        - SolaceTopicsObject:
+            mqttSyntax:
+              subscribeTopics:
+              - subscribeTopics
+              - subscribeTopics
+              publishTopics:
+              - publishTopics
+              - publishTopics
+            defaultSyntax:
+              subscribeTopics:
+              - subscribeTopics
+              - subscribeTopics
+              publishTopics:
+              - publishTopics
+              - publishTopics
+          organizationName: organizationName
+          environmentName: environmentName
+          environmentDisplayName: environmentDisplayName
+          solaceURLs:
+          - protocol: Defalt
+            endpointURL: Default
+          - protocol: Defalt
+            endpointURL: Default
+        - SolaceTopicsObject:
+            mqttSyntax:
+              subscribeTopics:
+              - subscribeTopics
+              - subscribeTopics
+              publishTopics:
+              - publishTopics
+              - publishTopics
+            defaultSyntax:
+              subscribeTopics:
+              - subscribeTopics
+              - subscribeTopics
+              publishTopics:
+              - publishTopics
+              - publishTopics
+          organizationName: organizationName
+          environmentName: environmentName
+          environmentDisplayName: environmentDisplayName
+          solaceURLs:
+          - protocol: Defalt
+            endpointURL: Default
+          - protocol: Defalt
+            endpointURL: Default
+        solaceOrganization: SolaceWso2
+        isSolaceAPI: false
+        subscriptionId: faae5fcc-cbae-40c4-bf43-89931630d313
+        applicationId: b3ade481-30b0-4b38-9a67-498a40873a6d
+        applicationName: Sample Application
+        apiId: 2962f3bb-8330-438e-baee-0ee1d6434ba4
+      properties:
+        subscriptionId:
+          description: The UUID of the subscription
+          example: faae5fcc-cbae-40c4-bf43-89931630d313
+          readOnly: true
+          type: string
+        applicationId:
+          description: The UUID of the application
+          example: b3ade481-30b0-4b38-9a67-498a40873a6d
+          type: string
+        applicationName:
+          description: The name of the application
+          example: Sample Application
+          type: string
+        apiId:
+          description: The unique identifier of the API.
+          example: 2962f3bb-8330-438e-baee-0ee1d6434ba4
+          type: string
+        isSolaceAPI:
+          example: false
+          type: boolean
+        solaceOrganization:
+          example: SolaceWso2
+          type: string
+        solaceDeployedEnvironments:
+          items:
+            $ref: '#/components/schemas/AdditionalSubscriptionInfo_solaceDeployedEnvironments'
+          type: array
+      title: Additional Information of subscriptions related to an API
+      type: object
+    SolaceTopics:
+      example:
+        subscribeTopics:
+        - subscribeTopics
+        - subscribeTopics
+        publishTopics:
+        - publishTopics
+        - publishTopics
+      properties:
+        publishTopics:
+          items:
+            type: string
+          type: array
+        subscribeTopics:
+          items:
+            type: string
+          type: array
+      title: SolaceTopics
+      type: object
     Post_request_body:
       properties:
         content:
@@ -10494,6 +10841,76 @@ components:
         external:
           default: false
           type: boolean
+    AdditionalSubscriptionInfo_solaceURLs:
+      example:
+        protocol: Defalt
+        endpointURL: Default
+      properties:
+        protocol:
+          example: Defalt
+          type: string
+        endpointURL:
+          example: Default
+          type: string
+    AdditionalSubscriptionInfo_SolaceTopicsObject:
+      example:
+        mqttSyntax:
+          subscribeTopics:
+          - subscribeTopics
+          - subscribeTopics
+          publishTopics:
+          - publishTopics
+          - publishTopics
+        defaultSyntax:
+          subscribeTopics:
+          - subscribeTopics
+          - subscribeTopics
+          publishTopics:
+          - publishTopics
+          - publishTopics
+      properties:
+        defaultSyntax:
+          $ref: '#/components/schemas/SolaceTopics'
+        mqttSyntax:
+          $ref: '#/components/schemas/SolaceTopics'
+    AdditionalSubscriptionInfo_solaceDeployedEnvironments:
+      example:
+        SolaceTopicsObject:
+          mqttSyntax:
+            subscribeTopics:
+            - subscribeTopics
+            - subscribeTopics
+            publishTopics:
+            - publishTopics
+            - publishTopics
+          defaultSyntax:
+            subscribeTopics:
+            - subscribeTopics
+            - subscribeTopics
+            publishTopics:
+            - publishTopics
+            - publishTopics
+        organizationName: organizationName
+        environmentName: environmentName
+        environmentDisplayName: environmentDisplayName
+        solaceURLs:
+        - protocol: Defalt
+          endpointURL: Default
+        - protocol: Defalt
+          endpointURL: Default
+      properties:
+        environmentName:
+          type: string
+        environmentDisplayName:
+          type: string
+        organizationName:
+          type: string
+        solaceURLs:
+          items:
+            $ref: '#/components/schemas/AdditionalSubscriptionInfo_solaceURLs'
+          type: array
+        SolaceTopicsObject:
+          $ref: '#/components/schemas/AdditionalSubscriptionInfo_SolaceTopicsObject'
   securitySchemes:
     OAuth2Security:
       flows:

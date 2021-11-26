@@ -1,0 +1,190 @@
+components:
+  parameters:
+    tracking_id:
+      schema:
+        type: string
+        pattern: "^[a-zA-Z0-9-]+$"
+    resource_region_id:
+      schema:
+        type: string
+        enum:
+          - fr
+          - de
+          - us-east
+          - us-west
+    equipment_type:
+      schema:
+        type: string
+        enum:
+          - elevator
+    event_type:
+      schema:
+        type: string
+        enum:
+          - maintenace
+    resource_type:
+      schema:
+        type: string
+        enum:
+          - elev-make-1
+          - elev-make-2
+    resource_id:
+      schema:
+        type: string
+        pattern: "^[a-zA-Z0-9-]+$"
+  schemas:
+    status_update:
+      $schema: 'http://json-schema.org/draft-07/schema#'
+      additionalProperties: false
+      type: object
+      title: Elevator Co status update for tracking id
+      required:
+        - status_update
+      properties:
+        status_update:
+          additionalProperties: false
+          type: object
+          required:
+            - timestamp
+            - tracking_id
+            - status
+          properties:
+            tracking_id:
+              type: string
+              pattern: "^[a-zA-Z0-9-]+$"
+            timestamp:
+              type: string
+            status:
+              type: string
+              enum:
+              - received
+              - resolved
+      $id: >-
+        http://eventportal.solace.cloud/apim/elevator-co/status_update.json
+    maintenance:
+      $schema: 'http://json-schema.org/draft-07/schema#'
+      type: object
+      title: Elevator Co maintenance event payload
+      required:
+        - header
+        - body
+      properties:
+        header:
+          additionalProperties: false
+          type: object
+          required:
+            - topic
+            - timestamp
+            - tracking_id
+          properties:
+            topic:
+              type: string
+            timestamp:
+              type: string
+            tracking_id:
+              type: string
+              pattern: "^[a-zA-Z0-9-]+$"
+        body:
+          additionalProperties: false
+          type: object
+          required:
+            - component_id
+            - description
+            - timewindow_days
+            - details
+          properties:
+            component_id:
+              title: component_id that needs maintenance
+              type: string
+            timewindow_days:
+              title: maintenance time window in days
+              type: integer
+            description:
+              title: maintenance description
+              type: string
+            details:
+              title: maintenance details
+              type: object
+            probability_of_failure_pct:
+              title: probability of fault / urgency of maintenace in %
+              type: integer
+      $id: >-
+        http://eventportal.solace.cloud/apim/elevator-co/maintenance/maintenance.json
+  messages:
+    status_update:
+      payload:
+        $ref: '#/components/schemas/status_update'
+      schemaFormat: application/vnd.aai.asyncapi+json;version=2.0.0
+      contentType: application/json
+      examples:
+        - payload: {"status_update":{"timestamp":"2021-02-16-14:54:15-UTC","status":"received","tracking_id":"44ccd43d-7f3e-45a0-a98b-3d75388e3e44"}}
+        - payload: {"status_update":{"timestamp":"2021-02-16-14:54:36-UTC","status":"resolved","tracking_id":"fa663bb5-fadb-43b2-80cd-461d4302d503"}}
+    maintenance:
+      payload:
+        $ref: '#/components/schemas/maintenance'
+      schemaFormat: application/vnd.aai.asyncapi+json;version=2.0.0
+      contentType: application/json
+      examples:
+        - payload: {"header":{"topic":"apim/elevator-co/api/V1/json/fr/elevator/maintenace/elev-make-1/elevator-id-1","timestamp":"2021-02-15-13:25:27-UTC","tracking_id":"4fd44ed1-1ba9-4f53-87a2-d4f4385c09d5"},"body":{"component_id":"ABC-1784","description":"misalignment car to floor","timewindow_days":24,"probability_of_failure_pct":90,"details":{"reasons":["misalignment car to floor > 8mm","avg journeys / day > 25"]}}}
+channels:
+  'apim/elevator-co/api/V1/json/{resource_region_id}/{equipment_type}/{event_type}/{resource_type}/{resource_id}':
+    publish:
+      summary: "subscribe to maintenace events from elevators"
+      description: |
+        Maintenance events indicate recommended maintenance actions to be carried out within a certain timeframe.
+        Each maintennace event must be confirmed with a status_update message using the same tracking_id indicating action is either received or resolved.
+      operationId: onMaintenance
+      bindings:
+        mqtt:
+          bindingVersion: ‘0.1.0’
+          qos: 1
+        http:
+          bindingVersion: ‘0.1.0’
+          type: request
+          method: POST
+      message:
+        $ref: '#/components/messages/maintenance'
+    parameters:
+      resource_region_id:
+        $ref: '#/components/parameters/resource_region_id'
+      equipment_type:
+        $ref: '#/components/parameters/equipment_type'
+      event_type:
+        $ref: '#/components/parameters/event_type'
+      resource_type:
+        $ref: '#/components/parameters/resource_type'
+      resource_id:
+        $ref: '#/components/parameters/resource_id'
+  'apim/elevator-co/api/V1/json/status/{tracking_id}':
+    subscribe:
+      summary: "publish status updates for a specific tracking id"
+      description: |
+        Send status update events to indicate that the maintenance event has been processed.
+        Use the {tracking_id} from the maintance event for correlation.
+      operationId: publishStatus
+      tags:
+        - name: status
+        - name: tracking
+      message:
+        $ref: '#/components/messages/status_update'
+      bindings:
+        mqtt:
+          bindingVersion: ‘0.1.0’
+          qos: 1
+          retain: false
+        http:
+          bindingVersion: ‘0.1.0’
+          type: response
+          method: POST
+    parameters:
+      tracking_id:
+        $ref: '#/components/parameters/tracking_id'
+asyncapi: 2.0.0
+info:
+  title: 'API:Maintenance'
+  description: Subscribe to elevator maintenance events and update their status.
+  x-view: provider
+  x-origin:
+    name: event-portal
+    vendor: solace
+  version: 0.0.3

@@ -25,6 +25,8 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AdditionalPropertyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayEnvironmentProtocolURIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.VHostDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
@@ -48,6 +50,10 @@ public class EnvironmentDTO {
         @SerializedName(SERIALIZED_NAME_SERVER_URL)
             private String serverUrl;
 
+        public static final String SERIALIZED_NAME_PROVIDER = "provider";
+        @SerializedName(SERIALIZED_NAME_PROVIDER)
+            private String provider;
+
         public static final String SERIALIZED_NAME_SHOW_IN_API_CONSOLE = "showInApiConsole";
         @SerializedName(SERIALIZED_NAME_SHOW_IN_API_CONSOLE)
             private Boolean showInApiConsole;
@@ -55,6 +61,14 @@ public class EnvironmentDTO {
         public static final String SERIALIZED_NAME_VHOSTS = "vhosts";
         @SerializedName(SERIALIZED_NAME_VHOSTS)
             private List<VHostDTO> vhosts = null;
+
+        public static final String SERIALIZED_NAME_ENDPOINT_U_R_IS = "endpointURIs";
+        @SerializedName(SERIALIZED_NAME_ENDPOINT_U_R_IS)
+            private List<GatewayEnvironmentProtocolURIDTO> endpointURIs = null;
+
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
+            private List<AdditionalPropertyDTO> additionalProperties = null;
 
 
         public EnvironmentDTO name(String name) {
@@ -146,6 +160,29 @@ public class EnvironmentDTO {
     }
 
 
+        public EnvironmentDTO provider(String provider) {
+        
+        this.provider = provider;
+        return this;
+        }
+
+    /**
+        * Get provider
+    * @return provider
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getProvider() {
+        return provider;
+    }
+
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+
         public EnvironmentDTO showInApiConsole(Boolean showInApiConsole) {
         
         this.showInApiConsole = showInApiConsole;
@@ -191,6 +228,52 @@ public class EnvironmentDTO {
     }
 
 
+        public EnvironmentDTO endpointURIs(List<GatewayEnvironmentProtocolURIDTO> endpointURIs) {
+        
+        this.endpointURIs = endpointURIs;
+        return this;
+        }
+
+    /**
+        * Get endpointURIs
+    * @return endpointURIs
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<GatewayEnvironmentProtocolURIDTO> getEndpointURIs() {
+        return endpointURIs;
+    }
+
+
+    public void setEndpointURIs(List<GatewayEnvironmentProtocolURIDTO> endpointURIs) {
+        this.endpointURIs = endpointURIs;
+    }
+
+
+        public EnvironmentDTO additionalProperties(List<AdditionalPropertyDTO> additionalProperties) {
+        
+        this.additionalProperties = additionalProperties;
+        return this;
+        }
+
+    /**
+        * Get additionalProperties
+    * @return additionalProperties
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<AdditionalPropertyDTO> getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+
+    public void setAdditionalProperties(List<AdditionalPropertyDTO> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -204,13 +287,16 @@ public class EnvironmentDTO {
             Objects.equals(this.displayName, environment.displayName) &&
             Objects.equals(this.type, environment.type) &&
             Objects.equals(this.serverUrl, environment.serverUrl) &&
+            Objects.equals(this.provider, environment.provider) &&
             Objects.equals(this.showInApiConsole, environment.showInApiConsole) &&
-            Objects.equals(this.vhosts, environment.vhosts);
+            Objects.equals(this.vhosts, environment.vhosts) &&
+            Objects.equals(this.endpointURIs, environment.endpointURIs) &&
+            Objects.equals(this.additionalProperties, environment.additionalProperties);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, displayName, type, serverUrl, showInApiConsole, vhosts);
+        return Objects.hash(name, displayName, type, serverUrl, provider, showInApiConsole, vhosts, endpointURIs, additionalProperties);
     }
 
 
@@ -222,8 +308,11 @@ sb.append("class EnvironmentDTO {\n");
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    serverUrl: ").append(toIndentedString(serverUrl)).append("\n");
+    sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    showInApiConsole: ").append(toIndentedString(showInApiConsole)).append("\n");
     sb.append("    vhosts: ").append(toIndentedString(vhosts)).append("\n");
+    sb.append("    endpointURIs: ").append(toIndentedString(endpointURIs)).append("\n");
+    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
 sb.append("}");
 return sb.toString();
 }

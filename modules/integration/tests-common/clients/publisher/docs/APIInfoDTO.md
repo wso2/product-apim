@@ -19,6 +19,7 @@ Name | Type | Description | Notes
 **securityScheme** | **List&lt;String&gt;** |  |  [optional]
 **createdTime** | **String** |  |  [optional]
 **updatedTime** | **String** |  |  [optional]
+**gatewayVendor** | **String** |  |  [optional]
 
 
 
