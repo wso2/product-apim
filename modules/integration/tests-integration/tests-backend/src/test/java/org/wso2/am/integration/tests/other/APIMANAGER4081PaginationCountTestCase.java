@@ -19,6 +19,8 @@
 package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -38,7 +40,6 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +56,8 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
 
     private String tenantDomain = "paginationtest.com";
     private int numberOfAPIs = 5;
-    private List<APIDTO> createdAPIs = new ArrayList<>();
+    private List<String> createdAPIs = new ArrayList<>();
+    private static final Log log = LogFactory.getLog(APIMANAGER4081PaginationCountTestCase.class);
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() {
@@ -77,80 +79,6 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Pagination test case")
-    public void testPagination() throws Exception {
-
-        //create 5 APIs and publish them; these APIs should be paginated as 2,2,1
-        try {
-            for (int i = 0; i < numberOfAPIs; i++) {
-                String APIName = "PaginationTestAPI" + Integer.toString(i);
-                //put the name of the API in the array so that we can refer it when deleting
-                String APIContext = "paginationTest" + Integer.toString(i);
-                String tags = "pagination";
-                String url = "https://localhost:9443/test";
-                String description = "This is test API create by API manager integration test";
-                String APIVersion = "1.0.0";
-                String providerName = publisherContext.getContextTenant().getTenantAdmin().getUserName()
-                        + "@" + tenantDomain;
-
-                //Wait till CommonConfigDeployer finishes adding the default set of policies to the database after tenant admin
-                //login, if not api creation fails since Unlimited resource tier is not available in database.
-                waitForAPIDeployment();
-
-                APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
-                apiRequest.setTags(tags);
-                apiRequest.setDescription(description);
-                apiRequest.setVersion(APIVersion);
-                apiRequest.setSandbox(url);
-                apiRequest.setResourceMethod("GET");
-                APIDTO createdAPI = restAPIPublisher.addAPI(apiRequest, "v2");
-                createdAPIs.add(createdAPI);
-                //update the lifecycle of the API to Published state, so that is it visible in store
-                HttpResponse lifecycleChangeResponse =
-                        restAPIPublisher.changeAPILifeCycleStatusToPublish(createdAPI.getId(), false);
-                assertNotNull(lifecycleChangeResponse,
-                        "Failed to publish the API " + createdAPI.getName() + ":" + createdAPI.getVersion());
-            }
-
-            //periodically check (for 1 min) if the APIs are available for searching (give some time for solr indexing)
-            boolean apisAvailableForTesting = false;
-            for (int i = 0; i < 12; i++) {
-                if (restAPIPublisher.getAllAPIs().getCount() == numberOfAPIs
-                        && restAPIStore.getAllAPIs().getCount() == numberOfAPIs) {
-                    apisAvailableForTesting = true;
-                    break;
-                }
-                Thread.sleep(5000);
-            }
-
-            if (!apisAvailableForTesting) {
-                fail(numberOfAPIs + " APIs are not visible properly Store or Publisher");
-            }
-        } catch (XPathExpressionException e) {
-            fail("Error occurred when retrieving context to add APIs. Pagination count test case failed.");
-        } catch (APIManagerIntegrationTestException e) {
-            fail("Error occurred while log-in to add APIs. Pagination count test case failed.");
-        } catch (MalformedURLException e) {
-            fail("Invalid service URL to add APIs. Pagination count test case failed.");
-        }
-
-        //Checking Dev Portal pagination
-        //fetch the first page, this page should have 2 results
-        getPaginatedAPIsFromStoreAndVerify(0, 2,2);
-        //fetch the 2nd page, this page should have 2 results
-        getPaginatedAPIsFromStoreAndVerify(2,2, 2);
-        //fetch the 3nd page, this page should have 1 results
-        getPaginatedAPIsFromStoreAndVerify(4,3, 1);
-
-        //Checking Publisher pagination
-        //fetch the first page, this page should have 2 results
-        getPaginatedAPIsFromPublisherAndVerify(0, 2,2);
-        //fetch the 2nd page, this page should have 2 results
-        getPaginatedAPIsFromPublisherAndVerify(2,2, 2);
-        //fetch the 3nd page, this page should have 1 results
-        getPaginatedAPIsFromPublisherAndVerify(4,3, 1);
-
-    }
 /*
 * This test follow the below integration scenario.
 *
@@ -203,14 +131,12 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
             int numberOfVersions = apiVersionsArray.length;
             String apiId = "";
 
-//            try {
                 for (int i = 0; i < numberOfVersions; i++) {
                     String APIName = "PaginationTestVersionedAPI" + Integer.toString(counter);
                     //put the name of the API in the array so that we can refer it when deleting
                     String APIContext = "paginationTestVersioned" + Integer.toString(counter);
                     String tags = "pagination";
-                    String providerName = publisherContext.getContextTenant().getTenantAdmin().getUserName()
-                            + "@" + tenantDomain;
+                    String providerName = publisherContext.getContextTenant().getTenantAdmin().getUserName();
                     String url = "https://localhost:9443/test";
                     String description = "This is test API create by API manager integration test";
                     String APIVersion = apiVersionsArray[i];
@@ -229,10 +155,14 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                     apiRequest.setResourceMethod("GET");
                     if (i < 1) {
                         APIDTO createdAPI = restAPIPublisher.addAPI(apiRequest, "v2");// 1.1
-                        apiId = createdAPI.getId();
-
+                        if (createdAPI != null) {
+                            apiId = createdAPI.getId();
+                            createdAPIs.add(createdAPI.getId());
+                        } else {
+                            fail("API creation has failed for APIName=" + APIName + " APIVersion=" + APIVersion);
+                        }
                     } else {
-                        restAPIPublisher.createNewAPIVersion(APIVersion, apiId, false);//1.4 1.8 1.12
+                        apiId = restAPIPublisher.createNewAPIVersion(APIVersion, apiId, false);//1.4 1.8 1.12
                         //1.9
                         if (i == 2) {
                             devportalAPIs = restAPIStore.getAllAPIs();
@@ -246,21 +176,42 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                             }
                         }
                     }
+                    //periodically check if the API is available in publisher
+                    int publisherAPIsCount = (4 * (counter - 1)) + (i + 1);
+                    publisherAPIsCount = (i == 3) ? publisherAPIsCount - 1 : publisherAPIsCount;
+
+                    boolean isAPIAvailableInPublisher = false;
+                    for (int j = 0; j < 24 ; j++) {
+                        APIListDTO publisherAPIs = restAPIPublisher.getAllAPIs();
+                        if (null != publisherAPIs.getCount()) {
+                            if ((publisherAPIs.getCount() == publisherAPIsCount)) {
+                                isAPIAvailableInPublisher = true;
+                                break;
+                            }
+                        }
+                        Thread.sleep(5000);
+                    }
+                    if(!isAPIAvailableInPublisher) {
+                        fail(" Versioned API apiId=" + apiId + " APIName = "  + APIName + "APIVersion" + APIVersion +
+                                "is not visible properly in Publisher.");
+                    }
                     //1.2 1.6
+                    log.info("publishing API apiId=" + apiId + " APIName = "  + APIName + "APIVersion" + APIVersion);
                     HttpResponse lifecycleChangeResponse =
                             restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId, false);
                     assertNotNull(lifecycleChangeResponse,
                             "Failed to publish the API " + APIName + ":" + APIVersion);
                     //Check whether the APIs are available for testing
                     boolean apisAvailableForTesting = false;
-                    int publisherAPIsCount = (counter * i) + (i + 1);
                     APIListDTO publisherAPIs = new APIListDTO();
 
+                    //wait for latest versin to be available
+                    waitForAPIDeployment();
+
                     //periodically check if the APIs are available for searching (give some time for solr indexing)
-                    for (int j = 0; j < 5; j++) {
+                    for (int j = 0; j < 10; j++) {
                          devportalAPIs = restAPIStore.getAllAPIs();
                         publisherAPIs = restAPIPublisher.getAllAPIs();
-                        restAPIPublisher.getAllAPIs();
                          if (null != publisherAPIs && null != devportalAPIs) {
                              if ((publisherAPIs.getCount() == publisherAPIsCount)
                                      && devportalAPIs.getCount() == counter) {
@@ -287,28 +238,27 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                                     .equals(apiInfoDTO.getProvider())) {
                                 latestVersionInDevportal = apiInfoDTO.getVersion();
                                 latestVersionApiId = apiInfoDTO.getId();
-//                                log.info("API Object after Import: " + apiInfoDTO.toString());
                             }
                         }
                     }
-
+                    log.info("apiVersionsArray = " + apiVersionsArray + " i= " + i + "apiVersionsArray[i] = " + apiVersionsArray[i]
+                            + " latestVersionInDevportal= " + latestVersionInDevportal);
                     switch (i) { //1.3
                         case 0:
-                            assertEquals(latestVersionInDevportal, versionsOfAPIs.get(counter)[i]);
-                            break;
                         case 1: //1.7
-                        case 3:
-                            assertEquals(latestVersionInDevportal, versionsOfAPIs.get(counter)[i]);
+                        case 3: // 1.15
+                             assertEquals(latestVersionInDevportal, apiVersionsArray[i], " count = " + counter + " i=" + i);
                             break;
                         case 2: // 1.11
-                            assertEquals(latestVersionInDevportal, versionsOfAPIs.get(counter)[i - 1]); //1.11
+                            assertEquals(latestVersionInDevportal, apiVersionsArray[i - 1], " count = " + counter + " i=" + i); //1.11
                             break;
                         default:
                             break;
                     }
-                    // delete the version created in step 1.4 (only when i ==2)
+                    // delete the version created in step 1.4 (only when i == 2)
                     if (i==2 && StringUtils.isNotEmpty(latestVersionApiId)) {
                         restAPIPublisher.deleteAPI(latestVersionApiId); // 1.12
+                        waitForAPIDeployment();
 
                         // assert for the latest version, which should be the version created in step 1.8
                         devportalAPIs = restAPIStore.getAllAPIs();
@@ -317,7 +267,6 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                                 if (APIName.equals(apiInfoDTO.getName()) && providerName
                                         .equals(apiInfoDTO.getProvider())) {
                                     latestVersionInDevportal = apiInfoDTO.getVersion();
-//                                log.info("API Object after Import: " + apiInfoDTO.toString());
                                 }
                             }
                         }
@@ -327,27 +276,27 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                 }
 
         }
-
         //Checking Dev Portal pagination
+        //fetch the first page, this page should have 4 results
+        getPaginatedAPIsFromDevportalAndVerify(0, 4,4);
+        //fetch the 2nd page, this page should have 4 results
+        getPaginatedAPIsFromDevportalAndVerify(4,4, 4);
+        //fetch the 3nd page, this page should have 4 results
+        getPaginatedAPIsFromDevportalAndVerify(8,4, 4);
+        //fetch the 4nd page, this page should have 3 results
+        getPaginatedAPIsFromDevportalAndVerify(12,4, 3);
+
+        //Checking Publisher pagination
         //fetch the first page, this page should have 2 results
-        getPaginatedAPIsFromStoreAndVerify(0, 4,4);
+        getPaginatedAPIsFromPublisherAndVerify(0, 2,2);
         //fetch the 2nd page, this page should have 2 results
-        getPaginatedAPIsFromStoreAndVerify(4,4, 2);
+        getPaginatedAPIsFromPublisherAndVerify(2,2, 2);
+        //fetch the 3nd page, this page should have 1 results
+        getPaginatedAPIsFromPublisherAndVerify(4,3, 1);
+
 
     }
 
- /*   private String findLatestVersionAPI (String apiName, String apiProvider, ) {
-        if (storeAdevportalAPIs.getList() != null) {
-            for (APIInfoDTO apiInfoDTO : devportalAPIs.getList()) {
-                if (APIName.equals(apiInfoDTO.getName()) && providerName
-                        .equals(apiInfoDTO.getProvider())) {
-                    latestVersionInDevportal = apiInfoDTO.getVersion();
-                    latestVersionApiId = apiInfoDTO.getId();
-//                                log.info("API Object after Import: " + apiInfoDTO.toString());
-                }
-            }
-        }
-    }*/
     /**
      * Request paginated APIs from publisher and verify counts
      *
@@ -373,7 +322,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
      * @param expect expected returned number of APIs
      * @throws org.wso2.am.integration.clients.store.api.ApiException when failed to fetch the APIs
      */
-    private void getPaginatedAPIsFromStoreAndVerify(int offset, int limit, int expect) throws org.wso2.am.integration.clients.store.api.ApiException {
+    private void getPaginatedAPIsFromDevportalAndVerify(int offset, int limit, int expect) throws org.wso2.am.integration.clients.store.api.ApiException {
         org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO storeAPIs = restAPIStore.getAPIs(offset, limit);
         assertEquals(storeAPIs.getCount().intValue(), expect, "Expected " + expect + " of APIs in the page with " +
                 "offset:" + offset + " but was " + storeAPIs.getCount());
@@ -386,9 +335,10 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
     public void destroy() throws Exception {
         if (restAPIPublisher != null) {
             //take the names of the newly added APIs from the saved array and delete them
-            for (int j = 0; j < numberOfAPIs; j++) {
-                String APIVersion = "1.0.0";
-                restAPIPublisher.deleteAPI(createdAPIs.get(j).getId());
+            List<org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO> publisherAPIs =
+                    restAPIPublisher.getAllAPIs().getList();
+            for(org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO dto : publisherAPIs) {
+                restAPIPublisher.deleteAPI(dto.getId());
             }
         }
         super.cleanUp();
