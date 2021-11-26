@@ -112,6 +112,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
     private String apiEndPoint;
     String appJWTId;
     ApplicationKeyDTO applicationKeyDTO;
+    String throttleAppId;
+    String complexAppId;
+    String depthAppId;
 
     private enum AUTH_IN {
         HEADER,
@@ -149,7 +152,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @Test(description = "Publish GraphQL API with Subscriptions")
+    @Test(groups = {"wso2.am"}, description = "Publish GraphQL API with Subscriptions")
     public void publishGraphQLAPIWithSubscriptions() throws Exception {
 
         String arrayToJson = null;
@@ -255,7 +258,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
     }
 
-    @Test(description = "Invoke Subscriptions using token", dependsOnMethods =
+    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions using token", dependsOnMethods =
             "testGraphQLAPIJWTApplicationSubscription")
     public void testGraphQLAPIInvocationWithJWTToken() throws Exception {
 
@@ -293,7 +296,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Invoke Subscriptions for complexity",
+    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions for complexity",
             dependsOnMethods = "testGraphQLAPIInvocationWithJWTToken")
     public void testGraphQLAPIInvocationForComplexity() throws Exception {
 
@@ -328,9 +331,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("GraphQLSubComplexApp",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "complexity analysis test-app",
                 ApplicationDTO.TokenTypeEnum.JWT.toString());
+        complexAppId = applicationDTO.getApplicationId();
         //Subscribe to the API
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(graphqlApiId, applicationDTO.getApplicationId(),
-                "QueryComplexPolicy");
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(graphqlApiId, complexAppId, "QueryComplexPolicy");
         assertEquals(subscriptionDTO.getThrottlingPolicy(), "QueryComplexPolicy");
         // generate token
         ArrayList<String> grantTypes = new ArrayList<>();
@@ -352,7 +355,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Invoke Subscriptions for depth", dependsOnMethods = "testGraphQLAPIInvocationForComplexity")
+    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions for depth", dependsOnMethods = "testGraphQLAPIInvocationForComplexity")
     public void testGraphQLAPIInvocationForDepth() throws Exception {
 
         //create new JWT Application
@@ -367,8 +370,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        complexAppId = applicationDTO.getApplicationId();
 
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationDTO.getApplicationId(), "36000",
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(complexAppId, "36000",
                 "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
         WebSocketClient client = new WebSocketClient();
@@ -382,7 +386,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Invoke Subscriptions using token", dependsOnMethods = "testGraphQLAPIInvocationForDepth")
+    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions using token", dependsOnMethods = "testGraphQLAPIInvocationForDepth")
     public void testGraphQLAPIInvocationWithScopes() throws Exception {
 
         List role = new ArrayList();
@@ -483,7 +487,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
 
-    @Test(description = "Invoke Subscriptions for throttling", dependsOnMethods = "testGraphQLAPIInvocationWithScopes")
+    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions for throttling", dependsOnMethods = "testGraphQLAPIInvocationWithScopes")
     public void testGraphQLAPISubscriptionThrottling() throws Exception {
 
         // Deploy Throttling policy with throttle limit set as 4 frames.
@@ -534,8 +538,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("GraphQLThrottleApp",
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "advanced throttle test-app",
                 ApplicationDTO.TokenTypeEnum.JWT.toString());
+        throttleAppId = applicationDTO.getApplicationId();
         //Subscribe to the API
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(graphqlApiId, applicationDTO.getApplicationId(),
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(graphqlApiId, throttleAppId,
                 "Unlimited");
         assertEquals(subscriptionDTO.getThrottlingPolicy(), "Unlimited");
         // generate token
@@ -1026,12 +1031,13 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIStore.deleteApplication("GraphQLSubApplication");
-        restAPIStore.deleteApplication("GraphQLSubComplexApp");
-        restAPIStore.deleteApplication("GraphQLSubDepthApp");
-        restAPIStore.deleteApplication("GraphQLThrottleApp");
+        userManagementClient.deleteRole(GRAPHQL_ROLE);
+        userManagementClient.deleteUser(GRAPHQL_TEST_USER);
+        restAPIStore.deleteApplication(appJWTId);
+        restAPIStore.deleteApplication(complexAppId);
+        restAPIStore.deleteApplication(depthAppId);
+        restAPIStore.deleteApplication(throttleAppId);
         undeployAndDeleteAPIRevisionsUsingRest(graphqlApiId, restAPIPublisher);
-        restAPIPublisher.deleteAPI(graphqlApiId);
         executorService.shutdownNow();
         super.cleanUp();
     }
