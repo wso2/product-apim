@@ -246,6 +246,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String introspectionEndpoint = "https://localhost:9444/oauth2/introspect";
         String clientRegistrationEndpoint = "https://localhost:9444/keymanager-operations/dcr/register";
         String scopeManagementEndpoint = "https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes";
+        String tokenEndpoint = "https://wso2is.com:9444/oauth2/token";
+        String revokeEndpoint = "https://wso2is.com:9444/oauth2/revoke";
         String consumerKeyClaim = "azp";
         String scopesClaim = "scope";
         List<String> availableGrantTypes = Collections.emptyList();
@@ -255,7 +257,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object additionalProperties = new Gson().fromJson(jsonObject, Map.class);
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
-                null, clientRegistrationEndpoint, null, null, null, null,
+                null, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null, null,
                 scopeManagementEndpoint, consumerKeyClaim, scopesClaim, availableGrantTypes, additionalProperties,
                 null);
 
@@ -283,6 +285,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String introspectionEndpoint = "https://localhost:9444/oauth2/introspect";
         String clientRegistrationEndpoint = "https://localhost:9444/keymanager-operations/dcr/register";
         String scopeManagementEndpoint = "https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes";
+        String tokenEndpoint = "https://wso2is.com:9444/oauth2/token";
+        String revokeEndpoint = "https://wso2is.com:9444/oauth2/revoke";
         String consumerKeyClaim = "azp";
         String scopesClaim = "scope";
         List<String> availableGrantTypes = Collections.emptyList();
@@ -290,7 +294,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         JsonObject jsonObject = new JsonObject();
         Object additionalProperties = new Gson().fromJson(jsonObject, Map.class);
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
-                null, clientRegistrationEndpoint, null, null, null, null,
+                null, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null, null,
                 scopeManagementEndpoint, consumerKeyClaim, scopesClaim, availableGrantTypes, additionalProperties,
                 null);
 
@@ -312,6 +316,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String introspectionEndpoint = "https://localhost:9444/oauth2/introspect";
         String clientRegistrationEndpoint = "https://localhost:9444/keymanager-operations/dcr/register";
         String scopeManagementEndpoint = "https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes";
+        String tokenEndpoint = "https://wso2is.com:9444/oauth2/token";
+        String revokeEndpoint = "https://wso2is.com:9444/oauth2/revoke";
         String consumerKeyClaim = "azp";
         String scopesClaim = "scope";
         JsonObject jsonObject = new JsonObject();
@@ -329,7 +335,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
                 DtoFactory.createKeyManagerCertificatesDTO(KeyManagerCertificatesDTO.TypeEnum.JWKS, certificateValue);
 
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, description, type, displayName, introspectionEndpoint,
-                issuer, clientRegistrationEndpoint, null, null, null, null,
+                issuer, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null, null,
                 scopeManagementEndpoint, consumerKeyClaim, scopesClaim, availableGrantTypes, additionalProperties,
                 keyManagerCertificates);
 
@@ -408,6 +414,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String introspectionEndpoint = "https://localhost:8443/auth/realms/master/protocol/openid-connect/token/introspect";
         String clientRegistrationEndpoint = "https://localhost:8443/auth/realms/master/clients-registrations/openid-connect";
         String tokenEndpoint = "https://localhost:8443/auth/realms/master/protocol/openid-connect/token";
+        String revoke = "https://localhost:8443/auth/realms/master/protocol/openid-connect/revoke";
         String consumerKeyClaim = "azp";
         String scopesClaim = "scope";
         List<String> availableGrantTypes = Collections.emptyList();
@@ -417,7 +424,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object additionalProperties = new Gson().fromJson(jsonObject, Map.class);
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
-                issuer, clientRegistrationEndpoint, tokenEndpoint, null, null, null,
+                issuer, clientRegistrationEndpoint, tokenEndpoint, revoke, null, null,
                 null, consumerKeyClaim, scopesClaim, availableGrantTypes, additionalProperties,
                 null);
 
@@ -446,6 +453,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String introspectionEndpoint = "https://localhost:8443/auth/realms/master/protocol/openid-connect/token/introspect";
         String clientRegistrationEndpoint = "https://localhost:8443/auth/realms/master/clients-registrations/openid-connect";
         String tokenEndpoint = "https://localhost:8443/auth/realms/master/protocol/openid-connect/token";
+        String revoke = "https://localhost:8443/auth/realms/master/protocol/openid-connect/revoke";
         String consumerKeyClaim = "azp";
         String scopesClaim = "scope";
         List<String> availableGrantTypes = Collections.emptyList();
@@ -453,7 +461,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         JsonObject jsonObject = new JsonObject();
         Object additionalProperties = new Gson().fromJson(jsonObject, Map.class);
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
-                issuer, clientRegistrationEndpoint, tokenEndpoint, null, null, null,
+                issuer, clientRegistrationEndpoint, tokenEndpoint, revoke, null, null,
                 null, consumerKeyClaim, scopesClaim, availableGrantTypes, additionalProperties,
                 null);
         //Add the Keycloak key manager - This should fail
@@ -737,6 +745,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String introspectionEndpoint = "https://localhost:9031/as/introspect.oauth2";
         String clientRegistrationEndpoint = "https://localhost:9031/pf-ws/rest/oauth/clients";
         String tokenEndpoint = "https://localhost:9031/as/token.oauth2";
+        String revokeEndpoint = "https://localhost:9031/as/revoke.oauth2";
         String consumerKeyClaim = "client_id_name";
         String scopesClaim = "scope";
         List<String> availableGrantTypes = Collections.emptyList();
@@ -748,7 +757,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object additionalProperties = new Gson().fromJson(jsonObject, Map.class);
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
-                issuer, clientRegistrationEndpoint, tokenEndpoint, null, null,
+                issuer, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null,
                 null, null, consumerKeyClaim, scopesClaim, availableGrantTypes,
                 additionalProperties, null);
 
@@ -777,6 +786,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String introspectionEndpoint = "https://localhost:9031/as/introspect.oauth2";
         String clientRegistrationEndpoint = "https://localhost:9031/pf-ws/rest/oauth/clients";
         String tokenEndpoint = "https://localhost:9031/as/token.oauth2";
+        String revokeEndpoint = "https://localhost:9031/as/revoke.oauth2";
         String consumerKeyClaim = "client_id_name";
         String scopesClaim = "scope";
         List<String> availableGrantTypes = Collections.emptyList();
@@ -784,7 +794,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         JsonObject jsonObject = new JsonObject();
         Object additionalProperties = new Gson().fromJson(jsonObject, Map.class);
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
-                issuer, clientRegistrationEndpoint, tokenEndpoint, null, null,
+                issuer, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null,
                 null, null, consumerKeyClaim, scopesClaim, availableGrantTypes,
                 additionalProperties, null);
         //Add the PingFederate key manager - This should fail
@@ -908,6 +918,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String introspectionEndpoint = "http://localhost:8080/openam/oauth2/introspect";
         String clientRegistrationEndpoint = "http://localhost:8080/openam/oauth2/register";
         String tokenEndpoint = "http://localhost:8080/openam/oauth2/access_token";
+        String revokeEndpoint = "http://localhost:8080/openam/oauth2/revoke_token";
         String consumerKeyClaim = "aud";
         String scopesClaim = "scp";
         List<String> availableGrantTypes = Collections.emptyList();
@@ -917,7 +928,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object additionalProperties = new Gson().fromJson(jsonObject, Map.class);
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
-                issuer, clientRegistrationEndpoint, tokenEndpoint, null, null,
+                issuer, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null,
                 null, null, consumerKeyClaim, scopesClaim, availableGrantTypes,
                 additionalProperties, null);
 
@@ -946,6 +957,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String introspectionEndpoint = "http://localhost:8080/openam/oauth2/introspect";
         String clientRegistrationEndpoint = "http://localhost:8080/openam/oauth2/register";
         String tokenEndpoint = "http://localhost:8080/openam/oauth2/access_token";
+        String revokeEndpoint = "http://localhost:8080/openam/oauth2/revoke_token";
         String consumerKeyClaim = "aud";
         String scopesClaim = "scp";
         List<String> availableGrantTypes = Collections.emptyList();
@@ -953,7 +965,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         JsonObject jsonObject = new JsonObject();
         Object additionalProperties = new Gson().fromJson(jsonObject, Map.class);
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
-                issuer, clientRegistrationEndpoint, tokenEndpoint, null, null,
+                issuer, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null,
                 null, null, consumerKeyClaim, scopesClaim, availableGrantTypes,
                 additionalProperties, null);
         //Add the ForgeRock key manager - This should fail

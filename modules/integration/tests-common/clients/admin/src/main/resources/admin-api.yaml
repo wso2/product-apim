@@ -5120,6 +5120,12 @@ components:
         issuer:
           type: string
           example: https://localhost:9444/services
+        alias:
+          type: string
+          description: |
+            The alias of Identity Provider.
+            If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token
+          example: https://localhost:9443/oauth2/token
         scopeManagementEndpoint:
           type: string
           example: https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes
@@ -5170,11 +5176,21 @@ components:
           example: true
         additionalProperties:
           type: object
-          properties: {}
+          properties: { }
           example:
             self_validate_jwt: true
             Username: admin
             Password: admin
+        tokenType:
+          type: string
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED and DIRECT.
+          example: EXCHANGED
+          default: DIRECT
+          enum:
+            - EXCHANGED
+            - DIRECT
+            - BOTH
     KeyManagerInfo:
       title: Key Manager Info
       required:
@@ -5197,6 +5213,16 @@ components:
         enabled:
           type: boolean
           example: true
+        tokenType:
+          type: string
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED and DIRECT.
+          example: EXCHANGED
+          default: DIRECT
+          enum:
+            - EXCHANGED
+            - DIRECT
+            - BOTH
     KeyManagerConfiguration:
       title: Key Manager Configuration
       type: object

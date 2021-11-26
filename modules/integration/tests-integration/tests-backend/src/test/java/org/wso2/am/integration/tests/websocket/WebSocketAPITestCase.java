@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.am.integration.tests.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -174,9 +173,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
         apiRequest.setProvider(provider);
         apiRequest.setType("WS");
+        apiRequest.setApiTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         HttpResponse addAPIResponse = restAPIPublisher.addAPI(apiRequest);
-         websocketAPIID = addAPIResponse.getData();
-         createAPIRevisionAndDeployUsingRest(websocketAPIID,restAPIPublisher);
+        websocketAPIID = addAPIResponse.getData();
+        createAPIRevisionAndDeployUsingRest(websocketAPIID,restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(websocketAPIID, APILifeCycleAction.PUBLISH.getAction(), null);
         waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -459,7 +459,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                                 "separate units of time");
                         testThrottling(accessToken);
                     }
-                    assertEquals(socket.getResponseMessage(), "Websocket frame throttled out",
+                    assertEquals(socket.getResponseMessage(), "Error code: 4003 reason: Websocket frame throttled out",
                             "Received response is not matching");
                 }
                 socket.setResponseMessage(null);

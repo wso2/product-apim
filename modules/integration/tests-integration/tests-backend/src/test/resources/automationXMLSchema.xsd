@@ -53,6 +53,13 @@
                                     </xs:documentation>
                                 </xs:annotation>
                             </xs:element>
+                            <xs:element type="xs:string" name="coverageClassesRelativeDirectory">
+                                <xs:annotation>
+                                    <xs:documentation>Change this to true if you want to generate
+                                        coverage statistics
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
                             <xs:element type="xs:string" name="frameworkDashboard">
                                 <xs:annotation>
                                     <xs:documentation>Change this to true if you want to enable
