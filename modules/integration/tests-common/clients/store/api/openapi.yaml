@@ -3736,6 +3736,16 @@ paths:
         schema:
           type: string
         style: simple
+      - description: |
+          For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+            retrieved from.
+        explode: false
+        in: header
+        name: X-WSO2-Tenant
+        required: false
+        schema:
+          type: string
+        style: simple
       responses:
         "200":
           content:
@@ -5532,9 +5542,7 @@ paths:
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/ThrottlingPolicyList'
-                type: array
+                $ref: '#/components/schemas/ThrottlingPolicyList'
           description: |
             OK.
             List of throttling policies returned.

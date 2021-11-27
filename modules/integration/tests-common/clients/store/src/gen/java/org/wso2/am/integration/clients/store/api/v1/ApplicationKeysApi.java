@@ -1047,6 +1047,7 @@ public class ApplicationKeysApi {
     /**
      * Build call for applicationsApplicationIdOauthKeysGet
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -1059,7 +1060,7 @@ public class ApplicationKeysApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call applicationsApplicationIdOauthKeysGetCall(String applicationId, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call applicationsApplicationIdOauthKeysGetCall(String applicationId, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -1069,6 +1070,10 @@ public class ApplicationKeysApi {
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (xWSO2Tenant != null) {
+            localVarHeaderParams.put("X-WSO2-Tenant", localVarApiClient.parameterToString(xWSO2Tenant));
+        }
+
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         final String[] localVarAccepts = {
@@ -1090,7 +1095,7 @@ public class ApplicationKeysApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call applicationsApplicationIdOauthKeysGetValidateBeforeCall(String applicationId, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call applicationsApplicationIdOauthKeysGetValidateBeforeCall(String applicationId, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'applicationId' is set
         if (applicationId == null) {
@@ -1098,7 +1103,7 @@ public class ApplicationKeysApi {
         }
         
 
-        okhttp3.Call localVarCall = applicationsApplicationIdOauthKeysGetCall(applicationId, _callback);
+        okhttp3.Call localVarCall = applicationsApplicationIdOauthKeysGetCall(applicationId, xWSO2Tenant, _callback);
         return localVarCall;
 
     }
@@ -1107,6 +1112,7 @@ public class ApplicationKeysApi {
      * Retrieve All Application Keys
      * Retrieve keys (Consumer key/secret) of application 
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
      * @return ApplicationKeyListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1118,8 +1124,8 @@ public class ApplicationKeysApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApplicationKeyListDTO applicationsApplicationIdOauthKeysGet(String applicationId) throws ApiException {
-        ApiResponse<ApplicationKeyListDTO> localVarResp = applicationsApplicationIdOauthKeysGetWithHttpInfo(applicationId);
+    public ApplicationKeyListDTO applicationsApplicationIdOauthKeysGet(String applicationId, String xWSO2Tenant) throws ApiException {
+        ApiResponse<ApplicationKeyListDTO> localVarResp = applicationsApplicationIdOauthKeysGetWithHttpInfo(applicationId, xWSO2Tenant);
         return localVarResp.getData();
     }
 
@@ -1127,6 +1133,7 @@ public class ApplicationKeysApi {
      * Retrieve All Application Keys
      * Retrieve keys (Consumer key/secret) of application 
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
      * @return ApiResponse&lt;ApplicationKeyListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -1138,8 +1145,8 @@ public class ApplicationKeysApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<ApplicationKeyListDTO> applicationsApplicationIdOauthKeysGetWithHttpInfo(String applicationId) throws ApiException {
-        okhttp3.Call localVarCall = applicationsApplicationIdOauthKeysGetValidateBeforeCall(applicationId, null);
+    public ApiResponse<ApplicationKeyListDTO> applicationsApplicationIdOauthKeysGetWithHttpInfo(String applicationId, String xWSO2Tenant) throws ApiException {
+        okhttp3.Call localVarCall = applicationsApplicationIdOauthKeysGetValidateBeforeCall(applicationId, xWSO2Tenant, null);
         Type localVarReturnType = new TypeToken<ApplicationKeyListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -1148,6 +1155,7 @@ public class ApplicationKeysApi {
      * Retrieve All Application Keys (asynchronously)
      * Retrieve keys (Consumer key/secret) of application 
      * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -1160,9 +1168,9 @@ public class ApplicationKeysApi {
         <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call applicationsApplicationIdOauthKeysGetAsync(String applicationId, final ApiCallback<ApplicationKeyListDTO> _callback) throws ApiException {
+    public okhttp3.Call applicationsApplicationIdOauthKeysGetAsync(String applicationId, String xWSO2Tenant, final ApiCallback<ApplicationKeyListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = applicationsApplicationIdOauthKeysGetValidateBeforeCall(applicationId, _callback);
+        okhttp3.Call localVarCall = applicationsApplicationIdOauthKeysGetValidateBeforeCall(applicationId, xWSO2Tenant, _callback);
         Type localVarReturnType = new TypeToken<ApplicationKeyListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

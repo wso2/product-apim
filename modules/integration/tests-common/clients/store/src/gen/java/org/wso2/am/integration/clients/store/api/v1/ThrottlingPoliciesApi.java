@@ -142,7 +142,7 @@ public class ThrottlingPoliciesApi {
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
-     * @return List&lt;ThrottlingPolicyListDTO&gt;
+     * @return ThrottlingPolicyListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -152,8 +152,8 @@ public class ThrottlingPoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public List<ThrottlingPolicyListDTO> throttlingPoliciesPolicyLevelGet(String policyLevel, Integer limit, Integer offset, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
-        ApiResponse<List<ThrottlingPolicyListDTO>> localVarResp = throttlingPoliciesPolicyLevelGetWithHttpInfo(policyLevel, limit, offset, ifNoneMatch, xWSO2Tenant);
+    public ThrottlingPolicyListDTO throttlingPoliciesPolicyLevelGet(String policyLevel, Integer limit, Integer offset, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
+        ApiResponse<ThrottlingPolicyListDTO> localVarResp = throttlingPoliciesPolicyLevelGetWithHttpInfo(policyLevel, limit, offset, ifNoneMatch, xWSO2Tenant);
         return localVarResp.getData();
     }
 
@@ -165,7 +165,7 @@ public class ThrottlingPoliciesApi {
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
-     * @return ApiResponse&lt;List&lt;ThrottlingPolicyListDTO&gt;&gt;
+     * @return ApiResponse&lt;ThrottlingPolicyListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -175,9 +175,9 @@ public class ThrottlingPoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<List<ThrottlingPolicyListDTO>> throttlingPoliciesPolicyLevelGetWithHttpInfo(String policyLevel, Integer limit, Integer offset, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
+    public ApiResponse<ThrottlingPolicyListDTO> throttlingPoliciesPolicyLevelGetWithHttpInfo(String policyLevel, Integer limit, Integer offset, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
         okhttp3.Call localVarCall = throttlingPoliciesPolicyLevelGetValidateBeforeCall(policyLevel, limit, offset, ifNoneMatch, xWSO2Tenant, null);
-        Type localVarReturnType = new TypeToken<List<ThrottlingPolicyListDTO>>(){}.getType();
+        Type localVarReturnType = new TypeToken<ThrottlingPolicyListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
@@ -200,10 +200,10 @@ public class ThrottlingPoliciesApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call throttlingPoliciesPolicyLevelGetAsync(String policyLevel, Integer limit, Integer offset, String ifNoneMatch, String xWSO2Tenant, final ApiCallback<List<ThrottlingPolicyListDTO>> _callback) throws ApiException {
+    public okhttp3.Call throttlingPoliciesPolicyLevelGetAsync(String policyLevel, Integer limit, Integer offset, String ifNoneMatch, String xWSO2Tenant, final ApiCallback<ThrottlingPolicyListDTO> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = throttlingPoliciesPolicyLevelGetValidateBeforeCall(policyLevel, limit, offset, ifNoneMatch, xWSO2Tenant, _callback);
-        Type localVarReturnType = new TypeToken<List<ThrottlingPolicyListDTO>>(){}.getType();
+        Type localVarReturnType = new TypeToken<ThrottlingPolicyListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
