@@ -625,13 +625,17 @@ public class SolaceDeveloperPortalTestCase extends APIManagerLifecycleBaseTest {
 
         // Deploy the revision and publish API
         createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), solaceApiName, solaceApiVersion,
-                APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId, false);
         // Assert successful lifecycle change
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
+        waitForAPIDeploymentSync(user.getUserName(), solaceApiName, solaceApiVersion,
+                APIMIntegrationConstants.IS_API_EXISTS);
+        Thread.sleep(60000);
 
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO storeAPI = restAPIStore.getAPI(solaceApiId);
+        System.out.println("------------------------------------------------");
+        System.out.println(restAPIStore.getAllPublishedAPIs());
+        System.out.println("------------------------------------------------");
         // Assert that Solace API is properly retrieved in store
         assertEquals(storeAPI.getName(), solaceApiName);
         assertEquals(storeAPI.getContext(), "/" + solaceApiContext + "/" + solaceApiVersion);

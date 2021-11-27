@@ -388,6 +388,7 @@ public class DtoFactory {
      * @param name        Name of the environment
      * @param displayName Display name of the environment
      * @param description Description of the environment
+     * @param provider    Vendor provider of the environment
      * @param vhosts      Vhosts available in the environment
      * @return Environment DTO object
      */
