@@ -702,12 +702,12 @@ public class SolaceDeveloperPortalTestCase extends APIManagerLifecycleBaseTest {
 
         // Deploy the revision and publish API
         createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId2, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), solaceApiName2, solaceApiVersion2,
-                APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId2, false);
-
         // Assert successful lifecycle change
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
+        waitForAPIDeploymentSync(user.getUserName(), solaceApiName2, solaceApiVersion2,
+                APIMIntegrationConstants.IS_API_EXISTS);
+        Thread.sleep(60000);
 
         // Add subscription
         subscriptionDTO2 = restAPIStore.subscribeToAPI(solaceApiId2, newSubApplicationId,
