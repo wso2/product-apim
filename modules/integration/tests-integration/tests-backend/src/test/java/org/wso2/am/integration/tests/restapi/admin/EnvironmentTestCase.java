@@ -289,6 +289,9 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         for (EnvironmentDTO environment : environmentDTOS) {
             //There are two environments which is configured from deployment toml file and the created
             //dynamic environment with the testAddGatewayEnvironment test.
+            // TODO: Add Provider property to database level and retrieve with this restAPIAdmin.getEnvironments() REST
+            // call. Until then that value will be set manually.
+            environment.setProvider(Constants.WSO2_GATEWAY_ENVIRONMENT);
             if (configuredGatewayEnvironment.getName().equals(environment.getName())) {
                 adminApiTestHelper.verifyEnvironmentDTO(configuredGatewayEnvironment, environment);
             } else {

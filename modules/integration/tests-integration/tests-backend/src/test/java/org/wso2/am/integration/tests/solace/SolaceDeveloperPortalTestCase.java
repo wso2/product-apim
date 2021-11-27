@@ -633,9 +633,6 @@ public class SolaceDeveloperPortalTestCase extends APIManagerLifecycleBaseTest {
         Thread.sleep(60000);
 
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO storeAPI = restAPIStore.getAPI(solaceApiId);
-        System.out.println("------------------------------------------------");
-        System.out.println(restAPIStore.getAllPublishedAPIs());
-        System.out.println("------------------------------------------------");
         // Assert that Solace API is properly retrieved in store
         assertEquals(storeAPI.getName(), solaceApiName);
         assertEquals(storeAPI.getContext(), "/" + solaceApiContext + "/" + solaceApiVersion);

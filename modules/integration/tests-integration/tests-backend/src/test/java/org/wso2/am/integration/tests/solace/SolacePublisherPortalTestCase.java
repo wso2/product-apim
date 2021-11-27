@@ -737,10 +737,6 @@ public class SolacePublisherPortalTestCase extends APIManagerLifecycleBaseTest {
                 APIMIntegrationConstants.IS_API_EXISTS);
         Thread.sleep(60000);
 
-        System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-        System.out.println(restAPIPublisher.getAPI(solaceApi2Id).getData());
-        System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-
         //Change lifeCycle to DEPRECATED and then RETIRED
         HttpResponse blockAPIActionResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(solaceApi2Id, APILifeCycleAction.DEPRECATE.getAction(), null);
@@ -814,12 +810,12 @@ public class SolacePublisherPortalTestCase extends APIManagerLifecycleBaseTest {
 
         // Deploy API to Solace broker and publish API
         createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApi3Id, restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), solaceApi3Name, solaceApiVersion,
-                APIMIntegrationConstants.IS_API_EXISTS);
-
         HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApi3Id, false);
         // Assert successful lifecycle change
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
+        waitForAPIDeploymentSync(user.getUserName(), solaceApi3Name, solaceApiVersion,
+                APIMIntegrationConstants.IS_API_EXISTS);
+        Thread.sleep(60000);
 
         // Delete API from publisher portal
         HttpResponse apiDeleteResponse = restAPIPublisher.deleteAPI(solaceApi3Id);
