@@ -20,7 +20,7 @@ info:
     Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.7.206/components/apimgt/org.wso2.carbon.apimgt.rest.api.store.v1/src/main/resources/devportal-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.
 
     # Authentication
-    Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking
+    The Developer Portal REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking
     the API, you need to obtain an access token with the required scopes. This guide will walk you through the steps
     that you will need to follow to obtain an access token.
     First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types
@@ -68,11 +68,11 @@ info:
     ```
     curl -k -d "grant_type=password&username=<admin_username>&password=<admin_password>&scope=<scopes separated by space>"
     \ -H "Authorization: Basic base64(cliet_id:client_secret)"
-    \ https://<host>:<gateway_port>/token
+    \ https://<host>:<servlet_port>/oauth2/token
     ```
     **Sample request**
     ```
-    curl https://localhost:8243/token -k \
+    curl https://localhost:9443/oauth2/token -k \
     -H "Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h" \
     -d "grant_type=password&username=admin&password=admin&scope=apim:subscribe apim:api_key"
     ```
@@ -147,7 +147,7 @@ paths:
             "provider:wso2*" will match an API if the provider of the API starts with "wso2".
 
             Supported attribute modifiers are [**version, context, status,
-            description, subcontext, doc, provider, tag**]
+            description, doc, provider, tag**]
 
             If no advanced attribute modifier has been specified, search will match the
             given query string against API Name.
@@ -241,9 +241,7 @@ paths:
         * This operation does not require an Authorization header by default. But in order to see a restricted API's swagger definition, you need to provide Authorization header.
       parameters:
         - $ref: '#/components/parameters/apiId'
-        - $ref: '#/components/parameters/labelName'
         - $ref: '#/components/parameters/environmentName'
-        - $ref: '#/components/parameters/clusterName'
         - $ref: '#/components/parameters/If-None-Match'
         - $ref: '#/components/parameters/requestedTenant'
       responses:
@@ -399,7 +397,6 @@ paths:
       operationId: getWSDLOfAPI
       parameters:
         - $ref: '#/components/parameters/apiId'
-        - $ref: '#/components/parameters/labelName'
         - $ref: '#/components/parameters/environmentName'
         - $ref: '#/components/parameters/If-None-Match'
         - $ref: '#/components/parameters/requestedTenant'
@@ -855,10 +852,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommentList'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security: []
       x-code-samples:
@@ -886,6 +883,7 @@ paths:
               properties:
                 content:
                   type: string
+                  maxLength: 512
                   description: |
                     Content of the comment
                   example: This is a comment
@@ -922,8 +920,12 @@ paths:
           $ref: '#/components/responses/BadRequest'
         401:
           $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
         415:
           $ref: '#/components/responses/UnsupportedMediaType'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
             - apim:subscribe
@@ -972,17 +974,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Comment'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource.
-          content: {}
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
           $ref: '#/components/responses/NotFound'
         406:
           $ref: '#/components/responses/NotAcceptable'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security: []
       x-code-samples:
@@ -1012,6 +1011,7 @@ paths:
               properties:
                 content:
                   type: string
+                  maxLength: 512
                   description: |
                     Content of the comment
                   example: This is a comment
@@ -1032,7 +1032,7 @@ paths:
                 Entity Tag of the response resource. Used by caches, or in conditional request.
               schema:
                 type: string
-            Location: #???
+            Location:
               description: |
                 Location to the newly created Comment.
               schema:
@@ -1045,16 +1045,22 @@ paths:
           $ref: '#/components/responses/BadRequest'
         401:
           $ref: '#/components/responses/Unauthorized'
+        403:
+          description: |
+            Forbidden.
+            The request must be conditional but no condition has been specified.
         404:
           $ref: '#/components/responses/NotFound'
         415:
           $ref: '#/components/responses/UnsupportedMediaType'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
             - apim:subscribe
       x-code-samples:
         - lang: Curl
-          source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          source: 'curl -k -X PATCH -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/store/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
       x-examples:
         $ref: docs/examples/apis/comments.yaml#/post
@@ -1078,11 +1084,24 @@ paths:
           content: {}
         401:
           $ref: '#/components/responses/Unauthorized'
+        403:
+          description: |
+            Forbidden.
+            The request must be conditional but no condition has been specified.
+          content: {}
         404:
           $ref: '#/components/responses/NotFound'
+        405:
+          description: |
+            MethodNotAllowed.
+            Request method is known by the server but is not supported by the target resource.
+          content: {}
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
             - apim:subscribe
+            - apim:admin # special scope added to moderate comments
       x-code-samples:
         - lang: Curl
           source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1128,22 +1147,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommentList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource.
-          content: {}
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
           $ref: '#/components/responses/NotFound'
         406:
           $ref: '#/components/responses/NotAcceptable'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/store/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+          source: curl -k "https://localhost:9443/api/am/store/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"
       x-examples:
         $ref: docs/examples/apis/comment_id-comments.yaml#/get
 
@@ -1155,7 +1171,6 @@ paths:
         Get a list of available topics for a given async API
       description: |
         This operation will provide a list of topics available for a given Async API, based on the provided API ID.
-      operationId: getAllTopicsOfAPI
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/requestedTenant'
@@ -1395,6 +1410,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/applicationId'
         - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
@@ -1546,6 +1562,7 @@ paths:
         Generate keys (Consumer key/secret) for application
       parameters:
         - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/requestedTenant'
       requestBody:
         description: |
           Application key generation request object
@@ -1587,6 +1604,7 @@ paths:
         Map keys (Consumer key/secret) to an application
       parameters:
         - $ref: '#/components/parameters/applicationId'
+        - $ref: '#/components/parameters/requestedTenant'
       requestBody:
         description: |
           Application key mapping request object
@@ -3042,7 +3060,6 @@ paths:
       description: |
         This operation will provide a list of web hook topic subscriptions for a given application. If the api id is provided
         results will be filtered by the api Id.
-      operationId: getAllWebhooksOfAPI
       parameters:
         - $ref: '#/components/parameters/applicationId-Q'
         - $ref: '#/components/parameters/apiId-Q'
@@ -3081,9 +3098,9 @@ paths:
     get:
       tags:
         - Settings
-      summary: Retreive Devportal settings
+      summary: Retreive Developer Portal settings
       description: |
-        Retreive Devportal Settings
+        Retreive Developer Portal Settings
       parameters:
         - $ref: '#/components/parameters/requestedTenant'
       responses:
@@ -3229,280 +3246,6 @@ paths:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://localhost:9443/api/am/devportal/v2/recommendations"'
-
-  ####################################################
-  # Developer Portal Alerts management REST API
-  ####################################################
-  /alert-types:
-    get:
-      tags:
-        - Alerts
-      summary: |
-        Get the List of API Developer Portal Alert Types.
-      description: |
-        This operation is used to get the list of supportd alert types for the 'subscriber' agent.
-      operationId: getDevportalAlertTypes
-      responses:
-        200:
-          description: |
-            OK.
-            The list of subscriber alert types are returned.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertTypesList'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:sub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/alert-types"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts.yaml#/get
-
-  /alert-subscriptions:
-    get:
-      tags:
-        - Alert Subscriptions
-      summary: |
-        Get the List of API Developer Portal Alert Types Subscribed by the User.
-      description: |
-        This operation is used to get the list of subscribed alert types by the user.
-      operationId: getSubscribedAlertTypes
-      responses:
-        200:
-          description: |
-            OK.
-            The list of subscribed alert types are returned.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertsInfo'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:sub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/get
-
-    put:
-      tags:
-        - Alert Subscriptions
-      summary: |
-        Subscribe to the Selected Alert Types by the User.
-      description: |
-        This operation is used to subscribe to the selected alert types by the user.
-      operationId: subscribeToAlerts
-      requestBody:
-        description: The alerts list and the email list to subscribe.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AlertsInfo'
-        required: true
-      responses:
-        201:
-          description: |
-            OK.
-            Successful response with the newly subscribed alerts.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertsInfoResponse'
-        400:
-          description: |
-            Bad Request.
-            Invalid Request or request validation failure.
-          content: {}
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:sub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/put
-
-    delete:
-      tags:
-        - Alert Subscriptions
-      summary: |
-        Unsubscribe User from All the Alert Types.
-      description: |
-        This operation is used to unsubscribe the respective user from all the alert types.
-      operationId: unsubscribeAllAlerts
-      responses:
-        200:
-          description: |
-            OK.
-            The user is unsubscribed from the alerts successfully.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content: {}
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:sub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/delete
-
-  /alerts/{alertType}/configurations:
-    get:
-      tags:
-        - Alert Configuration
-      summary: |
-        Get All AbnormalRequestsPerMin Alert Configurations
-      description: |
-        This operation is used to get all configurations of the AbnormalRequestsPerMin alert type.
-      operationId: getAllAlertConfigs
-      parameters:
-        - $ref: '#/components/parameters/alertType'
-      responses:
-        200:
-          description: |
-            OK.
-            The Developer Portal alert configuration.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertConfigList'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:sub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/get
-
-  /alerts/{alertType}/configurations/{configurationId}:
-    put:
-      tags:
-        - Alert Configuration
-      summary: |
-        Add AbnormalRequestsPerMin Alert Configurations.
-      description: |
-        This operation is used to add configuration for the AbnormalRequestsPerMin alert type.
-      operationId: addAlertConfig
-      parameters:
-        - $ref: '#/components/parameters/alertType'
-        - $ref: '#/components/parameters/configurationId'
-      requestBody:
-        description: Configuration for AbnormalRequestCount alert type
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AlertConfigInfo'
-        required: true
-      responses:
-        201:
-          description: |
-            Created.
-            Successful response with newly created object as entity.
-            Location header contains URL of newly created entity.
-          headers:
-            Location:
-              description: |
-                The location of the newly created entity.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertConfig'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:sub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations/UGV0c3RvcmUjMS4wI0FwcDE"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/put
-
-    delete:
-      tags:
-        - Alert Configuration
-      summary: |
-        Delete the Selected Configuration from AbnormalRequestsPerMin Alert Type.
-      description: |
-        This operation is used to delete configuration from the AbnormalRequestsPerMin alert type.
-      operationId: deleteAlertConfig
-      parameters:
-        - $ref: '#/components/parameters/alertType'
-        - $ref: '#/components/parameters/configurationId'
-      responses:
-        200:
-          description: |
-            OK.
-            The alert config is deleted successfully.
-          content: {}
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:sub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/alerts/AbnormalRequestsPerMin/configurations/UGV0c3RvcmUjMS4wI0FwcDE"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/delete
 
   ######################################################
   # The "Category Collection" resource API
@@ -3732,6 +3475,9 @@ components:
         type:
           type: string
           example: WS
+        createdTime:
+          type: string
+          example: 1614020559444
         provider:
           type: string
           description: |
@@ -3922,24 +3668,15 @@ components:
           example: {}
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
-        ingressURLs:
-          type: array
-          items:
-            type: object
-            properties:
-              deploymentEnvironmentName:
-                type: string
-                example: kubernetes
-              clusterDetails:
-                type: array
-                items:
-                  $ref: '#/components/schemas/APIDeploymentClusterInfo'
         endpointURLs:
           type: array
           items:
             type: object
             properties:
               environmentName:
+                type: string
+                example: Default
+              environmentDisplayName:
                 type: string
                 example: Default
               environmentType:
@@ -3985,12 +3722,6 @@ components:
                     example: ws://localhost:9099/phoneverify/
         businessInformation:
           $ref: '#/components/schemas/APIBusinessInformation'
-        labels:
-          type: array
-          description: |
-            Labels of micro-gateway environments attached to the API.
-          items:
-            $ref: '#/components/schemas/Label'
         environmentList:
           type: array
           description: The environment list configured with non empty endpoint URLs
@@ -4045,22 +3776,6 @@ components:
             - mqtt
           items:
             type: string
-    Label:
-      title: Label
-      required:
-        - name
-      type: object
-      properties:
-        name:
-          type: string
-          example: Public
-        description:
-          type: string
-        accessUrls:
-          type: array
-          items:
-            type: string
-            example: http://localhost:9443/
     APIMonetizationInfo:
       title: API monetization object
       required:
@@ -4098,7 +3813,7 @@ components:
           readOnly: true
           example: 01234567-0123-0123-0123-012345678901
         name:
-          maxLength: 70
+          maxLength: 100
           minLength: 1
           type: string
           example: CalculatorApp
@@ -4302,10 +4017,34 @@ components:
             Maximum number of requests which can be sent within a provided unit time
           format: int64
           example: 50
+        dataUnit:
+          description: |
+            Unit of data allowed to be transfered. Allowed values are "KB", "MB" and "GB"
+          type: string
+          example: KB
         unitTime:
           type: integer
           format: int64
           example: 60000
+        timeUnit:
+          type: string
+          example: min
+        rateLimitCount:
+          type: integer
+          default: 0
+          description: Burst control request count
+          example: 10
+        rateLimitTimeUnit:
+          type: string
+          description: Burst control time unit
+          example: min
+        quotaPolicyType:
+          type: string
+          description: Default quota limit type
+          enum:
+            - REQUESTCOUNT
+            - BANDWIDTHVOLUME
+          example: REQUESTCOUNT
         tierPlan:
           type: string
           description: |
@@ -4564,13 +4303,17 @@ components:
           example : 2021-02-12-19:57:25
         category:
           type: string
+          readOnly: true
           default: general
+          example : general
         parentCommentId:
           type: string
+          readOnly: true
           example: 6f38aea2-f41e-4ac9-b3f2-a9493d00ba97
         entryPoint:
           type: string
-          enum: [DEVPORTAL, PUBLISHER]
+          readOnly: true
+          enum: [devPortal, publisher]
         commenterInfo:
           $ref: '#/components/schemas/CommenterInfo'
         replies:
@@ -4581,11 +4324,13 @@ components:
       properties:
         count:
           type: integer
+          readOnly: true
           description: |
             Number of Comments returned.
           example: 1
         list:
           type: array
+          readOnly: true
           items:
             $ref: '#/components/schemas/Comment'
         pagination:
@@ -4711,6 +4456,13 @@ components:
           enum:
             - PRODUCTION
             - SANDBOX
+        mode:
+          type: string
+          description: Describe the which mode Application Mapped.
+          example: CREATED
+          enum:
+            - MAPPED
+            - CREATED
         groupId:
           type: string
           description: Application group id (if any).
@@ -4859,7 +4611,7 @@ components:
             - TOKEN_EXCHANGE
         additionalProperties:
           type: object
-          properties: { }
+          properties: {}
           description: Additional parameters if Authorization server needs any
     APIKeyGenerateRequest:
       title: API Key generation request object
@@ -5325,128 +5077,18 @@ components:
         advertised:
           type: boolean
           example: true
-        originalDevportalUrl:
+        originalDevPortalUrl:
           type: string
           example: https://localhost:9443/devportal
         apiOwner:
           type: string
           example: admin
-    AlertTypesList:
-      title: Alert Types List
-      type: object
-      properties:
-        count:
-          type: integer
-          description: The number of alerts
-          example: 3
-        alerts:
-          type: array
-          items:
-            $ref: '#/components/schemas/AlertType'
-    AlertType:
-      title: Alert Type
-      type: object
-      properties:
-        id:
-          type: integer
-          description: The alert Id
-          example: 3
-        name:
+        vendor:
           type: string
-          description: The name of the alert.
-          example: AbnormalRequestsPerMin
-        requireConfiguration:
-          type: boolean
-          description: Whether the alert type require additional configurations.
-          example: true
-    Alert:
-      title: Alert
-      type: object
-      properties:
-        id:
-          type: integer
-          description: The alert Id
-          example: 1
-        name:
-          type: string
-          description: The name of the alert.
-          example: AbnormalRequestsPerMin
-        configuration:
-          type: array
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-    AlertsInfo:
-      title: Alerts Info
-      type: object
-      properties:
-        alerts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Alert'
-        emailList:
-          type: array
-          example:
-            - abc@gmail.com
-          items:
-            type: string
-    AlertsInfoResponse:
-      title: Alerts Info Response
-      type: object
-      properties:
-        alerts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Alert'
-        emailList:
-          type: array
-          example:
-            - abc@gmail.com
-          items:
-            type: string
-        failedConfigurations:
-          type: array
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-    AlertConfigList:
-      title: Alert Configuration List
-      type: object
-      properties:
-        count:
-          type: integer
-          example: 1
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-    AlertConfig:
-      title: Alert Configuration
-      type: object
-      properties:
-        configurationId:
-          type: string
-          description: The alert config subscription id.
-          example: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-        configuration:
-          type: object
-          additionalProperties:
-            type: string
-          description: The config parameters.
-          example:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestCount: "12"
-    AlertConfigInfo:
-      title: Alert Configuration Info
-      type: object
-      additionalProperties:
-        type: string
-      description: The config parameters.
-      example:
-        apiName: PizzaShackAPI
-        apiVersion: 1.0.0
-        applicationName: DefaultApplication
-        requestCount: "12"
+          default: WSO2
+          enum:
+            - WSO2
+            - AWS
     APICategory:
       title: API Category
       required:
@@ -5689,27 +5331,6 @@ components:
             - name
           items:
             type: string
-    APIDeploymentClusterInfo:
-      title: API Deployments ClusterInfo object
-      required:
-        - clusterName
-        - ingressURL
-      type: object
-      properties:
-        clusterName:
-          type: string
-          description: |
-            Name of the cluster
-          example: minikube
-        clusterDisplayName:
-          type: string
-          description: |
-            Display name of the cluster
-          example: Minikube Cluster
-        ingressURL:
-          type: string
-          description: ingress URL
-          example: http://wso2.com:9443
     CurrentAndNewPasswords:
       title: Current and new passowrd of the user
       type: object
@@ -5905,6 +5526,13 @@ components:
             moreInfo: ""
             error: []
   parameters:
+    parentCommentID:
+      name: replyTo
+      in: query
+      description: |
+        ID of the perent comment.
+      schema:
+        type: string
     requestedTenant:
       name: X-WSO2-Tenant
       in: header
@@ -6049,25 +5677,11 @@ components:
         enum:
           - application
           - subscription
-    labelName:
-      name: labelName
-      in: query
-      description: |
-        Name of the API microgateway labels
-      schema:
-        type: string
     environmentName:
       name: environmentName
       in: query
       description: |
         Name of the API gateway environment.
-      schema:
-        type: string
-    clusterName:
-      name: clusterName
-      in: query
-      description: |
-        Name of the container managed cluster name.
       schema:
         type: string
     limit:
@@ -6083,6 +5697,22 @@ components:
       in: query
       description: |
         Starting point within the complete list of items qualified.
+      schema:
+        type: integer
+        default: 0
+    replyLimit:
+      name: replyLimit
+      in: query
+      description: |
+        Maximum size of replies array to return.
+      schema:
+        type: integer
+        default: 25
+    replyOffset:
+      name: replyOffset
+      in: query
+      description: |
+        Starting point within the complete list of replies.
       schema:
         type: integer
         default: 0
@@ -6129,29 +5759,6 @@ components:
       required: true
       schema:
         type: string
-    replyLimit:
-      name: replyLimit
-      in: query
-      description: |
-        Maximum size of replies array to return.
-      schema:
-        type: integer
-        default: 25
-    replyOffset:
-      name: replyOffset
-      in: query
-      description: |
-        Starting point within the complete list of replies.
-      schema:
-        type: integer
-        default: 0
-    parentCommentID:
-      name: replyTo
-      in: query
-      description: |
-        ID of the parent comment.
-      schema:
-        type: string
   securitySchemes:
     OAuth2Security:
       type: oauth2
@@ -6162,8 +5769,9 @@ components:
             openid: Authorize access to user details
             apim:subscribe: Subscribe API
             apim:api_key: Generate API Keys
-            apim:app_manage: Retrieve, Manage applications
+            apim:app_manage: Retrieve, Manage and Import, Export applications
             apim:sub_manage: Retrieve, Manage subscriptions
             apim:store_settings: Retrieve Developer Portal settings
             apim:sub_alert_manage: Retrieve, subscribe and configure Developer Portal alert types
             apim:app_import_export: Import and export applications related operations
+            apim:admin: Manage all admin operations

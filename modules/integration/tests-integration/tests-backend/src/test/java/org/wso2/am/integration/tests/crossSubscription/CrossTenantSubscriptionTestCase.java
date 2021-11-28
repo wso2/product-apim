@@ -191,7 +191,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
         ApiResponse<ApplicationThrottlePolicyDTO> addedPolicy2 =
                 restAPIAdminTenant2.addApplicationThrottlingPolicy(requestCountPolicyDTO);
         Assert.assertEquals(addedPolicy2.getStatusCode(), HttpStatus.SC_CREATED);
-        addedPolicyDTO = addedPolicy1.getData();
+        addedPolicyDTO = addedPolicy2.getData();
         policyIdTenant2 = addedPolicyDTO.getPolicyId();
         Assert.assertNotNull(policyIdTenant2, "The policy ID cannot be null or empty");
         // Create KM in tenant1.
@@ -249,7 +249,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
 
         //Assert the status code and policy ID
         Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
-         testPolicyTenant1Public = addedPolicy.getData();
+        testPolicyTenant1Public = addedPolicy.getData();
         String policyId = testPolicyTenant1Public.getPolicyId();
         Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
 
@@ -273,7 +273,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
 
         //Assert the status code and policy ID
         Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
-         testPolicyTenant2Public = addedPolicy.getData();
+        testPolicyTenant2Public = addedPolicy.getData();
         String policyId = testPolicyTenant2Public.getPolicyId();
         Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
     }
@@ -298,7 +298,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
 
         //Assert the status code and policy ID
         Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
-         testPolicyTenant1Restricted = addedPolicy.getData();
+        testPolicyTenant1Restricted = addedPolicy.getData();
         String policyId = testPolicyTenant1Restricted.getPolicyId();
         Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
 
@@ -324,7 +324,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
 
         //Assert the status code and policy ID
         Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
-         testPolicyTenant2Restricted = addedPolicy.getData();
+        testPolicyTenant2Restricted = addedPolicy.getData();
         String policyId = testPolicyTenant2Restricted.getPolicyId();
         Assert.assertNotNull(policyId, "The policy ID cannot be null or empty");
     }
@@ -581,8 +581,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
     }
 
     @Test(groups = {"wso2.am"}, description = "Create Application from other tenant")
-    public void getKeyManagersFromTenant2FromTenant1User() throws APIManagerIntegrationTestException,
-            ApiException {
+    public void getKeyManagersFromTenant2FromTenant1User() throws ApiException {
 
         KeyManagerListDTO keyManagers = apiStoreRestClientTenant1.getKeyManagers(tenant2Name);
         Assert.assertNotNull(keyManagers);
@@ -638,8 +637,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
     @Test(groups = {"wso2.am"}, description = "Create Application from other tenant", dependsOnMethods =
             {"testCreateApplicationInTenant1FromTenant2User", "testCreateApplicationInTenant2FromTenant1User",
                     "testGenerateKeysFromTenant1AppInTenant2Store", "testGenerateKeysFromTenant1AppInTenant1Store"})
-    public void testRetrieveOauthKeysFromTenant1Store() throws APIManagerIntegrationTestException,
-            ApiException {
+    public void testRetrieveOauthKeysFromTenant1Store() throws ApiException {
 
         ApplicationKeyListDTO applicationOauthKeys =
                 apiStoreRestClientTenant1.getApplicationOauthKeys(tenant1Application.getApplicationId(), tenant1Name);
@@ -666,8 +664,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
     @Test(groups = {"wso2.am"}, description = "Create Application from other tenant", dependsOnMethods =
             {"testCreateApplicationInTenant1FromTenant2User", "testCreateApplicationInTenant2FromTenant1User",
                     "testGenerateKeysFromTenant1AppInTenant2Store", "testGenerateKeysFromTenant1AppInTenant1Store"})
-    public void testRetrieveOauthKeysFromTenant2() throws APIManagerIntegrationTestException,
-            ApiException {
+    public void testRetrieveOauthKeysFromTenant2() throws ApiException {
 
         ApplicationKeyListDTO applicationOauthKeys =
                 apiStoreRestClientTenant1.getApplicationOauthKeys(tenant1Application.getApplicationId(), tenant2Name);
@@ -755,6 +752,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
                         tenant1Name);
         Assert.assertNotNull(allSubscriptionsOfApplication);
         Assert.assertNotNull(allSubscriptionsOfApplication.getList());
+        Assert.assertEquals(allSubscriptionsOfApplication.getCount().intValue(), 1);
         boolean foundAPI1 = false;
         boolean foundAPI2 = false;
         for (SubscriptionDTO subscriptionDTO : allSubscriptionsOfApplication.getList()) {
@@ -767,6 +765,14 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
         }
         Assert.assertTrue(foundAPI1, "Subscription for API1 not found");
         Assert.assertFalse(foundAPI2, "Subscription for API2 found");
+        ApplicationDTO applicationById =
+                apiStoreRestClientTenant1.getApplicationById(tenant1Application.getApplicationId(), tenant2Name);
+        Assert.assertNotNull(applicationById);
+        Assert.assertEquals(applicationById.getSubscriptionCount().intValue(), 1);
+        applicationById =
+                apiStoreRestClientTenant1.getApplicationById(tenant1Application.getApplicationId(), tenant1Name);
+        Assert.assertNotNull(applicationById);
+        Assert.assertEquals(applicationById.getSubscriptionCount().intValue(), 1);
     }
 
     @Test(groups = {"wso2.am"}, description = "Create Application from other tenant", dependsOnMethods =
@@ -779,6 +785,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
                         tenant2Name);
         Assert.assertNotNull(allSubscriptionsOfApplication);
         Assert.assertNotNull(allSubscriptionsOfApplication.getList());
+        Assert.assertEquals(allSubscriptionsOfApplication.getCount().intValue(), 1);
         boolean foundAPI1 = false;
         boolean foundAPI2 = false;
         for (SubscriptionDTO subscriptionDTO : allSubscriptionsOfApplication.getList()) {
@@ -791,6 +798,14 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
         }
         Assert.assertFalse(foundAPI1, "Subscription for API1 found");
         Assert.assertTrue(foundAPI2, "Subscription for API2 not found");
+        ApplicationDTO applicationById =
+                apiStoreRestClientTenant2.getApplicationById(tenant2Application.getApplicationId(), tenant2Name);
+        Assert.assertNotNull(applicationById);
+        Assert.assertEquals(applicationById.getSubscriptionCount().intValue(), 1);
+        applicationById =
+                apiStoreRestClientTenant2.getApplicationById(tenant2Application.getApplicationId(), tenant1Name);
+        Assert.assertNotNull(applicationById);
+        Assert.assertEquals(applicationById.getSubscriptionCount().intValue(), 1);
     }
 
     @AfterClass(alwaysRun = true)
@@ -811,7 +826,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
         restAPIAdminTenant1.deleteKeyManager(keymanagerTenant1.getId());
         restAPIAdminTenant2.deleteKeyManager(keymanagerTenant2.getId());
         tenant1UserStoreManager.deleteRole("role1");
-        tenant2UserStoreManager.deleteRole("role2");
+        tenant2UserStoreManager.deleteRole("role1");
         tenantManagementServiceClient.deleteTenant(tenant1Name);
         tenantManagementServiceClient.deleteTenant(tenant2Name);
         super.cleanUp();
