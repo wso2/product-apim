@@ -630,7 +630,6 @@ public class SolaceDeveloperPortalTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
         waitForAPIDeploymentSync(user.getUserName(), solaceApiName, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
-        Thread.sleep(60000);
 
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO storeAPI = restAPIStore.getAPI(solaceApiId);
         // Assert that Solace API is properly retrieved in store
@@ -707,7 +706,6 @@ public class SolaceDeveloperPortalTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
         waitForAPIDeploymentSync(user.getUserName(), solaceApiName2, solaceApiVersion2,
                 APIMIntegrationConstants.IS_API_EXISTS);
-        Thread.sleep(60000);
 
         // Add subscription
         subscriptionDTO2 = restAPIStore.subscribeToAPI(solaceApiId2, newSubApplicationId,
