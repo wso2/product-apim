@@ -8975,6 +8975,9 @@ components:
           example: []
           items:
             type: string
+        workflowStatus:
+          type: string
+          example: APPROVED
     ProductAPI:
       title: ProductAPI
       required:

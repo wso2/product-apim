@@ -15975,6 +15975,7 @@ components:
     APIProduct:
       example:
         accessControl: NONE
+        workflowStatus: APPROVED
         monetization:
           enabled: true
           properties:
@@ -16272,6 +16273,9 @@ components:
           items:
             type: string
           type: array
+        workflowStatus:
+          example: APPROVED
+          type: string
       required:
       - name
       title: API Product object

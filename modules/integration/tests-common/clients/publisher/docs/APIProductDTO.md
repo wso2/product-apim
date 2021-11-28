@@ -43,6 +43,7 @@ Name | Type | Description | Notes
 **apis** | [**List&lt;ProductAPIDTO&gt;**](ProductAPIDTO.md) | APIs and resources in the API Product.  |  [optional]
 **scopes** | [**List&lt;APIScopeDTO&gt;**](APIScopeDTO.md) |  |  [optional]
 **categories** | **List&lt;String&gt;** | API categories  |  [optional]
+**workflowStatus** | **String** |  |  [optional]
 
 
 
