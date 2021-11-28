@@ -22,6 +22,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -624,7 +625,9 @@ public class SolaceDeveloperPortalTestCase extends APIManagerLifecycleBaseTest {
 
         // Deploy the revision and publish API
         createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId, restAPIPublisher);
-        restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId, false);
+        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId, false);
+        // Assert successful lifecycle change
+        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
         waitForAPIDeploymentSync(user.getUserName(), solaceApiName, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
@@ -698,7 +701,9 @@ public class SolaceDeveloperPortalTestCase extends APIManagerLifecycleBaseTest {
 
         // Deploy the revision and publish API
         createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId2, restAPIPublisher);
-        restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId2, false);
+        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId2, false);
+        // Assert successful lifecycle change
+        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
         waitForAPIDeploymentSync(user.getUserName(), solaceApiName2, solaceApiVersion2,
                 APIMIntegrationConstants.IS_API_EXISTS);
 

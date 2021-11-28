@@ -4886,6 +4886,9 @@ components:
           maxLength: 1023
           type: string
           example: Gateway environment in US Region
+        provider:
+          type: string
+          example: wso2
         isReadOnly:
           type: boolean
           readOnly: true
@@ -4895,6 +4898,14 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/VHost'
+        endpointURIs:
+          type: array
+          items:
+            $ref: '#/components/schemas/GatewayEnvironmentProtocolURI'
+        additionalProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdditionalProperty'
     EnvironmentList:
       title: Environment List
       type: object
@@ -4939,6 +4950,29 @@ components:
         wssPort:
           type: integer
           example: 8099
+    AdditionalProperty:
+      title: Additional Gateway Properties
+      type: object
+      properties:
+        key:
+          type: string
+          example: Organization
+        value:
+          type: string
+          example: wso2
+    GatewayEnvironmentProtocolURI:
+      title: Gateway Environment protocols and URIs
+      required:
+        - protocol
+        - endpointURI
+      type: object
+      properties:
+        protocol:
+          type: string
+          example: default
+        endpointURI:
+          type: string
+          example: default
     PublishStatus:
       title: Usage publish status
       type: object

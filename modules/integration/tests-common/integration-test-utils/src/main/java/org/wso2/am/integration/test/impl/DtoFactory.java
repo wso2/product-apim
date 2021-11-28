@@ -388,15 +388,17 @@ public class DtoFactory {
      * @param name        Name of the environment
      * @param displayName Display name of the environment
      * @param description Description of the environment
+     * @param provider    Vendor provider of the environment
      * @param vhosts      Vhosts available in the environment
      * @return Environment DTO object
      */
-    public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description,
-                                                      boolean isReadOnly, List<VHostDTO> vhosts) {
+    public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description, String
+            provider, boolean isReadOnly, List<VHostDTO> vhosts) {
         return new EnvironmentDTO()
                 .name(name)
                 .displayName(displayName)
                 .description(description)
+                .provider(provider)
                 .isReadOnly(isReadOnly)
                 .vhosts(vhosts);
     }
