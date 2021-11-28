@@ -724,4 +724,8 @@ public class RestAPIAdminImpl {
         return tenantConfigSchemaApi.exportTenantConfigSchema();
     }
 
+
+    public WorkflowListDTO getWorkflowsByWorkflowType(String workflowType) throws ApiException {
+        return workflowCollectionApi.workflowsGet(null, null, null, null, workflowType);
+    }
 }
