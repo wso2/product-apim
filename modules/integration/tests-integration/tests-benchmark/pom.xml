@@ -114,7 +114,7 @@ under the License.
                                 <apim.server.version>${apimserver.version}</apim.server.version>
                                 <startupScript>api-manager</startupScript>
                             </systemProperties>
-                            <skipTests>${skipIntegrationTests}</skipTests>
+                            <skipTests>${skipBenchMarkTest}</skipTests>
                             <environmentVariables>
                                 <SHARED_DATABASE_DRIVER>org.h2.Driver</SHARED_DATABASE_DRIVER>
                                 <SHARED_DATABASE_URL>
