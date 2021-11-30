@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Developer Portal
- * This document specifies a **RESTful API** for WSO2 **API Manager** - **Developer Portal**. Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.7.206/components/apimgt/org.wso2.carbon.apimgt.rest.api.store.v1/src/main/resources/devportal-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.  # Authentication Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking the API, you need to obtain an access token with the required scopes. This guide will walk you through the steps that you will need to follow to obtain an access token. First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types in the payload. A Sample payload is shown below. ```   {   \"callbackUrl\":\"www.google.lk\",   \"clientName\":\"rest_api_devportal\",   \"owner\":\"admin\",   \"grantType\":\"client_credentials password refresh_token\",   \"saasApp\":true   } ``` Create a file (payload.json) with the above sample payload, and use the cURL shown below to invoke the DCR endpoint. Authorization header of this should contain the base64 encoded admin username and password. **Format of the request** ```   curl -X POST -H \"Authorization: Basic Base64(admin_username:admin_password)\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://<host>:<servlet_port>/client-registration/v0.17/register ``` **Sample request** ```   curl -X POST -H \"Authorization: Basic YWRtaW46YWRtaW4=\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://localhost:9443/client-registration/v0.17/register ``` Following is a sample response after invoking the above curl. ``` { \"clientId\": \"fOCi4vNJ59PpHucC2CAYfYuADdMa\", \"clientName\": \"rest_api_devportal\", \"callBackURL\": \"www.google.lk\", \"clientSecret\": \"a4FwHlq0iCIKVs2MPIIDnepZnYMa\", \"isSaasApplication\": true, \"appOwner\": \"admin\", \"jsonString\": \"{\\\"grant_types\\\":\\\"client_credentials password refresh_token\\\",\\\"redirect_uris\\\":\\\"www.google.lk\\\",\\\"client_name\\\":\\\"rest_api_devportal\\\"}\", \"jsonAppAttribute\": \"{}\", \"tokenType\": null } ``` Next you must use the above client id and secret to obtain the access token. We will be using the password grant type for this, you can use any grant type you desire. You also need to add the proper **scope** when getting the access token. All possible scopes for devportal REST API can be viewed in **OAuth2 Security** section of this document and scope for each resource is given in **authorization** section of resource documentation. Following is the format of the request if you are using the password grant type. ``` curl -k -d \"grant_type=password&username=<admin_username>&password=<admin_password>&scope=<scopes separated by space>\" \\ -H \"Authorization: Basic base64(cliet_id:client_secret)\" \\ https://<host>:<gateway_port>/token ``` **Sample request** ``` curl https://localhost:8243/token -k \\ -H \"Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h\" \\ -d \"grant_type=password&username=admin&password=admin&scope=apim:subscribe apim:api_key\" ``` Shown below is a sample response to the above request. ``` { \"access_token\": \"e79bda48-3406-3178-acce-f6e4dbdcbb12\", \"refresh_token\": \"a757795d-e69f-38b8-bd85-9aded677a97c\", \"scope\": \"apim:subscribe apim:api_key\", \"token_type\": \"Bearer\", \"expires_in\": 3600 } ``` Now you have a valid access token, which you can use to invoke an API. Navigate through the API descriptions to find the required API, obtain an access token as described above and invoke the API with the authentication header. If you use a different authentication mechanism, this process may change.  # Try out in Postman If you want to try-out the embedded postman collection with \"Run in Postman\" option, please follow the guidelines listed below. * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes. * Make sure you have an API Manager instance up and running. * Update the `basepath` parameter to match the hostname and port of the APIM instance.  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/5bc0161b8aa7e701d7bf) 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - **Developer Portal**. Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.7.206/components/apimgt/org.wso2.carbon.apimgt.rest.api.store.v1/src/main/resources/devportal-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.  # Authentication The Developer Portal REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking the API, you need to obtain an access token with the required scopes. This guide will walk you through the steps that you will need to follow to obtain an access token. First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types in the payload. A Sample payload is shown below. ```   {   \"callbackUrl\":\"www.google.lk\",   \"clientName\":\"rest_api_devportal\",   \"owner\":\"admin\",   \"grantType\":\"client_credentials password refresh_token\",   \"saasApp\":true   } ``` Create a file (payload.json) with the above sample payload, and use the cURL shown below to invoke the DCR endpoint. Authorization header of this should contain the base64 encoded admin username and password. **Format of the request** ```   curl -X POST -H \"Authorization: Basic Base64(admin_username:admin_password)\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://<host>:<servlet_port>/client-registration/v0.17/register ``` **Sample request** ```   curl -X POST -H \"Authorization: Basic YWRtaW46YWRtaW4=\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://localhost:9443/client-registration/v0.17/register ``` Following is a sample response after invoking the above curl. ``` { \"clientId\": \"fOCi4vNJ59PpHucC2CAYfYuADdMa\", \"clientName\": \"rest_api_devportal\", \"callBackURL\": \"www.google.lk\", \"clientSecret\": \"a4FwHlq0iCIKVs2MPIIDnepZnYMa\", \"isSaasApplication\": true, \"appOwner\": \"admin\", \"jsonString\": \"{\\\"grant_types\\\":\\\"client_credentials password refresh_token\\\",\\\"redirect_uris\\\":\\\"www.google.lk\\\",\\\"client_name\\\":\\\"rest_api_devportal\\\"}\", \"jsonAppAttribute\": \"{}\", \"tokenType\": null } ``` Next you must use the above client id and secret to obtain the access token. We will be using the password grant type for this, you can use any grant type you desire. You also need to add the proper **scope** when getting the access token. All possible scopes for devportal REST API can be viewed in **OAuth2 Security** section of this document and scope for each resource is given in **authorization** section of resource documentation. Following is the format of the request if you are using the password grant type. ``` curl -k -d \"grant_type=password&username=<admin_username>&password=<admin_password>&scope=<scopes separated by space>\" \\ -H \"Authorization: Basic base64(cliet_id:client_secret)\" \\ https://<host>:<servlet_port>/oauth2/token ``` **Sample request** ``` curl https://localhost:9443/oauth2/token -k \\ -H \"Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h\" \\ -d \"grant_type=password&username=admin&password=admin&scope=apim:subscribe apim:api_key\" ``` Shown below is a sample response to the above request. ``` { \"access_token\": \"e79bda48-3406-3178-acce-f6e4dbdcbb12\", \"refresh_token\": \"a757795d-e69f-38b8-bd85-9aded677a97c\", \"scope\": \"apim:subscribe apim:api_key\", \"token_type\": \"Bearer\", \"expires_in\": 3600 } ``` Now you have a valid access token, which you can use to invoke an API. Navigate through the API descriptions to find the required API, obtain an access token as described above and invoke the API with the authentication header. If you use a different authentication mechanism, this process may change.  # Try out in Postman If you want to try-out the embedded postman collection with \"Run in Postman\" option, please follow the guidelines listed below. * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes. * Make sure you have an API Manager instance up and running. * Update the `basepath` parameter to match the hostname and port of the APIM instance.  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/5bc0161b8aa7e701d7bf) 
  *
  * The version of the OpenAPI document: v2
  * Contact: architecture@wso2.com
@@ -473,9 +473,7 @@ public class ApIsApi {
     /**
      * Build call for apisApiIdSwaggerGet
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
-     * @param clusterName Name of the container managed cluster name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
      * @param _callback Callback for upload/download progress
@@ -490,7 +488,7 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdSwaggerGetCall(String apiId, String labelName, String environmentName, String clusterName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call apisApiIdSwaggerGetCall(String apiId, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -499,16 +497,8 @@ public class ApIsApi {
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (labelName != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("labelName", labelName));
-        }
-
         if (environmentName != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("environmentName", environmentName));
-        }
-
-        if (clusterName != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("clusterName", clusterName));
         }
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
@@ -541,7 +531,7 @@ public class ApIsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call apisApiIdSwaggerGetValidateBeforeCall(String apiId, String labelName, String environmentName, String clusterName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call apisApiIdSwaggerGetValidateBeforeCall(String apiId, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
@@ -549,7 +539,7 @@ public class ApIsApi {
         }
         
 
-        okhttp3.Call localVarCall = apisApiIdSwaggerGetCall(apiId, labelName, environmentName, clusterName, ifNoneMatch, xWSO2Tenant, _callback);
+        okhttp3.Call localVarCall = apisApiIdSwaggerGetCall(apiId, environmentName, ifNoneMatch, xWSO2Tenant, _callback);
         return localVarCall;
 
     }
@@ -558,9 +548,7 @@ public class ApIsApi {
      * Get Swagger Definition 
      * You can use this operation to retrieve the swagger definition of an API.   &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
-     * @param clusterName Name of the container managed cluster name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
      * @return String
@@ -574,8 +562,8 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public String apisApiIdSwaggerGet(String apiId, String labelName, String environmentName, String clusterName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
-        ApiResponse<String> localVarResp = apisApiIdSwaggerGetWithHttpInfo(apiId, labelName, environmentName, clusterName, ifNoneMatch, xWSO2Tenant);
+    public String apisApiIdSwaggerGet(String apiId, String environmentName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
+        ApiResponse<String> localVarResp = apisApiIdSwaggerGetWithHttpInfo(apiId, environmentName, ifNoneMatch, xWSO2Tenant);
         return localVarResp.getData();
     }
 
@@ -583,9 +571,7 @@ public class ApIsApi {
      * Get Swagger Definition 
      * You can use this operation to retrieve the swagger definition of an API.   &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
-     * @param clusterName Name of the container managed cluster name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
      * @return ApiResponse&lt;String&gt;
@@ -599,8 +585,8 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<String> apisApiIdSwaggerGetWithHttpInfo(String apiId, String labelName, String environmentName, String clusterName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
-        okhttp3.Call localVarCall = apisApiIdSwaggerGetValidateBeforeCall(apiId, labelName, environmentName, clusterName, ifNoneMatch, xWSO2Tenant, null);
+    public ApiResponse<String> apisApiIdSwaggerGetWithHttpInfo(String apiId, String environmentName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
+        okhttp3.Call localVarCall = apisApiIdSwaggerGetValidateBeforeCall(apiId, environmentName, ifNoneMatch, xWSO2Tenant, null);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -609,9 +595,7 @@ public class ApIsApi {
      * Get Swagger Definition  (asynchronously)
      * You can use this operation to retrieve the swagger definition of an API.   &#x60;X-WSO2-Tenant&#x60; header can be used to retrieve the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user&#39;s tenant associated with the access token will be used.  **NOTE:** * This operation does not require an Authorization header by default. But in order to see a restricted API&#39;s swagger definition, you need to provide Authorization header. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
-     * @param clusterName Name of the container managed cluster name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
      * @param _callback The callback to be executed when the API call finishes
@@ -626,9 +610,9 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call apisApiIdSwaggerGetAsync(String apiId, String labelName, String environmentName, String clusterName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback<String> _callback) throws ApiException {
+    public okhttp3.Call apisApiIdSwaggerGetAsync(String apiId, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback<String> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = apisApiIdSwaggerGetValidateBeforeCall(apiId, labelName, environmentName, clusterName, ifNoneMatch, xWSO2Tenant, _callback);
+        okhttp3.Call localVarCall = apisApiIdSwaggerGetValidateBeforeCall(apiId, environmentName, ifNoneMatch, xWSO2Tenant, _callback);
         Type localVarReturnType = new TypeToken<String>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -773,7 +757,7 @@ public class ApIsApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
-     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -849,7 +833,7 @@ public class ApIsApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
-     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @return APIListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -871,7 +855,7 @@ public class ApIsApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
-     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @return ApiResponse&lt;APIListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -894,7 +878,7 @@ public class ApIsApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
-     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -916,7 +900,6 @@ public class ApIsApi {
     /**
      * Build call for getWSDLOfAPI
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
@@ -932,7 +915,7 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getWSDLOfAPICall(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getWSDLOfAPICall(String apiId, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -941,10 +924,6 @@ public class ApIsApi {
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        if (labelName != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("labelName", labelName));
-        }
-
         if (environmentName != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("environmentName", environmentName));
         }
@@ -979,7 +958,7 @@ public class ApIsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call getWSDLOfAPIValidateBeforeCall(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getWSDLOfAPIValidateBeforeCall(String apiId, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
@@ -987,7 +966,7 @@ public class ApIsApi {
         }
         
 
-        okhttp3.Call localVarCall = getWSDLOfAPICall(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant, _callback);
+        okhttp3.Call localVarCall = getWSDLOfAPICall(apiId, environmentName, ifNoneMatch, xWSO2Tenant, _callback);
         return localVarCall;
 
     }
@@ -996,7 +975,6 @@ public class ApIsApi {
      * Get API WSDL definition
      * This operation can be used to retrieve the swagger definition of an API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
@@ -1010,15 +988,14 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public void getWSDLOfAPI(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
-        getWSDLOfAPIWithHttpInfo(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant);
+    public void getWSDLOfAPI(String apiId, String environmentName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
+        getWSDLOfAPIWithHttpInfo(apiId, environmentName, ifNoneMatch, xWSO2Tenant);
     }
 
     /**
      * Get API WSDL definition
      * This operation can be used to retrieve the swagger definition of an API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
@@ -1033,8 +1010,8 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> getWSDLOfAPIWithHttpInfo(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
-        okhttp3.Call localVarCall = getWSDLOfAPIValidateBeforeCall(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant, null);
+    public ApiResponse<Void> getWSDLOfAPIWithHttpInfo(String apiId, String environmentName, String ifNoneMatch, String xWSO2Tenant) throws ApiException {
+        okhttp3.Call localVarCall = getWSDLOfAPIValidateBeforeCall(apiId, environmentName, ifNoneMatch, xWSO2Tenant, null);
         return localVarApiClient.execute(localVarCall);
     }
 
@@ -1042,7 +1019,6 @@ public class ApIsApi {
      * Get API WSDL definition (asynchronously)
      * This operation can be used to retrieve the swagger definition of an API. 
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
-     * @param labelName Name of the API microgateway labels  (optional)
      * @param environmentName Name of the API gateway environment.  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  (optional)
@@ -1058,9 +1034,9 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getWSDLOfAPIAsync(String apiId, String labelName, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call getWSDLOfAPIAsync(String apiId, String environmentName, String ifNoneMatch, String xWSO2Tenant, final ApiCallback<Void> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = getWSDLOfAPIValidateBeforeCall(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant, _callback);
+        okhttp3.Call localVarCall = getWSDLOfAPIValidateBeforeCall(apiId, environmentName, ifNoneMatch, xWSO2Tenant, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }

@@ -54,7 +54,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     private static final Log log = LogFactory.getLog(APIM678ApplicationCreationTestCase.class);
     private String applicationName = "NewApplication1";
     private static final String description = "NewApplicationCreation";
-    private static final String appTier = APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+    private static final String appTier = APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN;
     private static Map<String, String> customAttributes = new HashMap<String, String>() {
         {
             put("billing_tier", "default_tier");
@@ -185,7 +185,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
         String newAppName = "UpdateApplication";
         String newappDescription = "Application updated";
-        String newAppTier = "Gold";
+        String newAppTier = "20PerMin";
 
 
         //Update AppTier

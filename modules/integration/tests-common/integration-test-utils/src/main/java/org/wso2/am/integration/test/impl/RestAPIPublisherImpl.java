@@ -103,11 +103,15 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+
+import static org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO.SubscriptionAvailabilityEnum.ALL_TENANTS;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -248,6 +252,14 @@ public class RestAPIPublisherImpl {
             }
         } else {
             body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
+        }
+        if (apiRequest.getSubscriptionAvailability() == null) {
+            body.setSubscriptionAvailability(APIDTO.SubscriptionAvailabilityEnum.CURRENT_TENANT);
+        } else {
+            body.setSubscriptionAvailability(APIDTO.SubscriptionAvailabilityEnum.fromValue(apiRequest.getSubscriptionAvailability()));
+        }
+        if (apiRequest.getVisibleTenants() != null) {
+            body.setVisibleTenants(apiRequest.getVisibleTenants());
         }
 
         if (apiRequest.getAccessControl() != null) {

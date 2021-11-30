@@ -11,9 +11,9 @@ Name | Type | Description | Notes
 **createdTime** | **String** |  |  [optional] [readonly]
 **createdBy** | **String** |  |  [optional] [readonly]
 **updatedTime** | **String** |  |  [optional] [readonly]
-**category** | **String** |  |  [optional]
-**parentCommentId** | **String** |  |  [optional]
-**entryPoint** | [**EntryPointEnum**](#EntryPointEnum) |  |  [optional]
+**category** | **String** |  |  [optional] [readonly]
+**parentCommentId** | **String** |  |  [optional] [readonly]
+**entryPoint** | [**EntryPointEnum**](#EntryPointEnum) |  |  [optional] [readonly]
 **commenterInfo** | [**CommenterInfoDTO**](CommenterInfoDTO.md) |  |  [optional]
 **replies** | [**CommentListDTO**](CommentListDTO.md) |  |  [optional]
 
@@ -23,8 +23,8 @@ Name | Type | Description | Notes
 
 Name | Value
 ---- | -----
-DEVPORTAL | &quot;DEVPORTAL&quot;
-PUBLISHER | &quot;PUBLISHER&quot;
+DEVPORTAL | &quot;devPortal&quot;
+PUBLISHER | &quot;publisher&quot;
 
 
 

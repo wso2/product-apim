@@ -83,6 +83,20 @@ public class APIRequest extends AbstractRequest {
     private List<String> securityScheme;
     private List<String> apiCategories;
     private List<String> keyManagers;
+    private String subscriptionAvailability;
+
+    public List<String> getVisibleTenants() {
+
+        return visibleTenants;
+    }
+
+    public void setVisibleTenants(List<String> visibleTenants) {
+
+        this.visibleTenants = visibleTenants;
+    }
+
+    private List<String> visibleTenants;
+
     public List<String> getSecurityScheme() {
         return securityScheme;
     }
@@ -661,5 +675,15 @@ public class APIRequest extends AbstractRequest {
 
     public List<String> getApiCategories() {
         return apiCategories;
+    }
+
+    public String getSubscriptionAvailability() {
+
+        return subscriptionAvailability;
+    }
+
+    public void setSubscriptionAvailability(String subscriptionAvailability) {
+
+        this.subscriptionAvailability = subscriptionAvailability;
     }
 }
