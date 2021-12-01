@@ -47,7 +47,7 @@ set pathToTenantAxis2DevportalXmlTemplate=..\repository\resources\conf\templates
 set pathToTenantAxis2ControlPlaneXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\tenant-axis2_Devportal.xml.j2
 set pathToTomcatCarbonWEBINFWebXmlTemplate=..\repository\resources\conf\templates\repository\conf\tomcat\carbon\WEB-INF\web.xml.j2
 set pathToTomcatCarbonWEBINFWebXmlTemplateBackup=web.xml.j2.backup
-set pathToTomcatCarbonWEBINFWebXmlTMTemplate=..\repository\resources\conf\templates\repository\conf\tomcat\carbon\WEB-INF\web_TM.xml.j2
+set pathToTomcatCarbonWEBINFWebXmlTMTemplate=..\repository\resources\conf\templates\repository\conf\tomcat\carbon\WEB-INF\web_TM_GW.xml.j2
 cd /d %~dp0
 
 set profileConfigurationToml=%pathToDeploymentTemplates%\%2.toml

@@ -43,7 +43,7 @@ pathToDeploymentConfigurationBackup='../repository/conf/deployment.toml.backup'
 pathToDeploymentTemplates='../repository/resources/conf/deployment-templates'
 pathToTomcatCarbonWEBINFWebXmlTemplate='../repository/resources/conf/templates/repository/conf/tomcat/carbon/WEB-INF/web.xml.j2'
 pathToTomcatCarbonWEBINFWebXmlTemplateBackup='../repository/resources/conf/templates/repository/conf/tomcat/carbon/WEB-INF/web.xml.j2.backup'
-pathToTomcatCarbonWEBINFWebXmlTMTemplate='../repository/resources/conf/templates/repository/conf/tomcat/carbon/WEB-INF/web_TM.xml.j2'
+pathToTomcatCarbonWEBINFWebXmlTMTemplate='../repository/resources/conf/templates/repository/conf/tomcat/carbon/WEB-INF/web_TM_GW.xml.j2'
 timestamp=""
 cd `dirname "$0"`
 
