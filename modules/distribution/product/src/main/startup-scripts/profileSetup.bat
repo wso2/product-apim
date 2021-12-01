@@ -43,6 +43,9 @@ set tenantAxis2XMLTemplate=tenant-axis2.xml.j2
 set pathToTenantAxis2KMXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\tenant-axis2_KM.xml.j2
 set pathToTenantAxis2PublisherXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\tenant-axis2_Publisher.xml.j2
 set pathToTenantAxis2DevportalXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\tenant-axis2_Devportal.xml.j2
+set pathToTomcatCarbonWEBINFWebXmlTemplate=..\repository\resources\conf\templates\repository\conf\tomcat\carbon\WEB-INF\web.xml.j2
+set pathToTomcatCarbonWEBINFWebXmlTemplateBackup=web.xml.j2.backup
+set pathToTomcatCarbonWEBINFWebXmlTMTemplate=..\repository\resources\conf\templates\repository\conf\tomcat\carbon\WEB-INF\web_TM_GW.xml.j2
 cd /d %~dp0
 
 set profileConfigurationToml=%pathToDeploymentTemplates%\%2.toml
@@ -159,6 +162,7 @@ goto finishOptimization
 echo Starting to optimize API Manager for the Traffic Manager profile
 call :replaceAxis2TemplateFile %pathToAxis2TMXmlTemplate%
 call :replaceRegistryXMLTemplateFile
+call :replaceTomcatCarbonWEBINFWebXmlTemplateFile
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
 call :removeSynapseConfigs
@@ -189,6 +193,7 @@ goto finishOptimization
 :gatewayWorker
 echo Starting to optimize API Manager for the Gateway worker profile
 call :replaceDeploymentConfiguration
+call :replaceTomcatCarbonWEBINFWebXmlTemplateFile
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "am#sample#pizzashack#v.*war api#am#gateway.war"') do (
 	del /f %pathToWebapps%\%%i
@@ -276,6 +281,19 @@ if exist %pathToRegistryTemplate% (
         copy  %pathToRegistryTMTemplate% %pathToRegistryTemplate%
         call :Timestamp value
         echo %value% INFO - Rename the existing %pathToRegistryTMTemplate% file as %registryXMLTemplate%
+	)
+)
+EXIT /B 0
+
+:replaceTomcatCarbonWEBINFWebXmlTemplateFile
+if exist %pathToTomcatCarbonWEBINFWebXmlTemplate% (
+	if exist %pathToTomcatCarbonWEBINFWebXmlTMTemplate% (
+        ren %pathToTomcatCarbonWEBINFWebXmlTemplate% %pathToTomcatCarbonWEBINFWebXmlTemplateBackup%
+        call :Timestamp value
+        echo %value% INFO - Rename the existing %pathToTomcatCarbonWEBINFWebXmlTemplate% file as %pathToTomcatCarbonWEBINFWebXmlTemplateBackup%
+        copy  %pathToTomcatCarbonWEBINFWebXmlTMTemplate% %pathToTomcatCarbonWEBINFWebXmlTemplate%
+        call :Timestamp value
+        echo %value% INFO - Rename the existing %pathToTomcatCarbonWEBINFWebXmlTMTemplate% file as %pathToTomcatCarbonWEBINFWebXmlTemplate%
 	)
 )
 EXIT /B 0
