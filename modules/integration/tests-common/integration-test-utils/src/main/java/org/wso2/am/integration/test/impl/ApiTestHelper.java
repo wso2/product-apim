@@ -535,6 +535,7 @@ public class ApiTestHelper {
         Assert.assertEquals(applicationInfo.getOwner(), applicationDTO.getOwner());
         Assert.assertEquals(applicationInfo.getStatus(), applicationDTO.getStatus());
         Assert.assertEquals(applicationInfo.getThrottlingPolicy(), applicationDTO.getThrottlingPolicy());
-        Assert.assertEquals(applicationInfo.getSubscriptionCount(), new Integer(applicationDTO.getSubscriptionCount() + 1));
+        Assert.assertEquals(applicationInfo.getSubscriptionCount(),
+                new Integer(applicationDTO.getSubscriptionCount() + 1));
     }
 }

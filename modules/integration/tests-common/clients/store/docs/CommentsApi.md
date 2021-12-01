@@ -40,7 +40,7 @@ public class Example {
     CommentsApi apiInstance = new CommentsApi(defaultClient);
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     PostRequestBodyDTO postRequestBodyDTO = new PostRequestBodyDTO(); // PostRequestBodyDTO | 
-    String replyTo = "replyTo_example"; // String | ID of the parent comment. 
+    String replyTo = "replyTo_example"; // String | ID of the perent comment. 
     try {
       CommentDTO result = apiInstance.addCommentToAPI(apiId, postRequestBodyDTO, replyTo);
       System.out.println(result);
@@ -61,7 +61,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
  **postRequestBodyDTO** | [**PostRequestBodyDTO**](PostRequestBodyDTO.md)|  |
- **replyTo** | **String**| ID of the parent comment.  | [optional]
+ **replyTo** | **String**| ID of the perent comment.  | [optional]
 
 ### Return type
 
@@ -82,7 +82,9 @@ Name | Type | Description  | Notes
 **201** | Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **401** | Unauthorized. The user is not authorized. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
 **415** | Unsupported Media Type. The entity of the request was not in a supported format. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="deleteComment"></a>
 # **deleteComment**
@@ -154,7 +156,10 @@ null (empty response body)
 |-------------|-------------|------------------|
 **200** | OK. Resource successfully deleted.  |  -  |
 **401** | Unauthorized. The user is not authorized. |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified.  |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
+**405** | MethodNotAllowed. Request method is known by the server but is not supported by the target resource.  |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="editCommentOfAPI"></a>
 # **editCommentOfAPI**
@@ -228,8 +233,10 @@ Name | Type | Description  | Notes
 **200** | OK. Comment updated.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional request.  <br>  * Location - Location to the newly created Comment.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **401** | Unauthorized. The user is not authorized. |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified.  |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **415** | Unsupported Media Type. The entity of the request was not in a supported format. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getAllCommentsOfAPI"></a>
 # **getAllCommentsOfAPI**
@@ -305,8 +312,8 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK. Comments list is returned.  |  -  |
-**401** | Unauthorized. The user is not authorized. |  -  |
-**406** | Not Acceptable. The requested media type is not supported. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getCommentOfAPI"></a>
 # **getCommentOfAPI**
@@ -386,10 +393,10 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK. Comment returned.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  |
-**304** | Not Modified. Empty body because the client has already the latest version of the requested resource.  |  -  |
 **401** | Unauthorized. The user is not authorized. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getRepliesOfComment"></a>
 # **getRepliesOfComment**
@@ -469,8 +476,8 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK. Comment returned.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests.  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests.  <br>  |
-**304** | Not Modified. Empty body because the client has already the latest version of the requested resource.  |  -  |
 **401** | Unauthorized. The user is not authorized. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
+**500** | Internal Server Error. |  -  |
 

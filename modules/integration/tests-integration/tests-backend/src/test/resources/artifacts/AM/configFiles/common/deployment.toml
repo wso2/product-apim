@@ -36,6 +36,7 @@ key_password =  "wso2carbon"
 [[apim.gateway.environment]]
 name = "Default"
 type = "hybrid"
+provider = "wso2"
 display_in_api_console = true
 description = "This is a hybrid gateway that handles both production and sandbox token traffic."
 show_as_token_endpoint_url = true
@@ -49,6 +50,7 @@ https_endpoint = "https://localhost:${https.nio.port}"
 [[apim.gateway.environment]]
 name = "Hybrid 2"
 type = "hybrid"
+provider = "wso2"
 display_in_api_console = true
 description = "This is a hybrid gateway 2 that handles both production and sandbox token traffic."
 show_as_token_endpoint_url = true

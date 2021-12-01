@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 <a name="throttlingPoliciesPolicyLevelGet"></a>
 # **throttlingPoliciesPolicyLevelGet**
-> List&lt;ThrottlingPolicyListDTO&gt; throttlingPoliciesPolicyLevelGet(policyLevel, limit, offset, ifNoneMatch, xWSO2Tenant)
+> ThrottlingPolicyListDTO throttlingPoliciesPolicyLevelGet(policyLevel, limit, offset, ifNoneMatch, xWSO2Tenant)
 
 Get All Available Throttling Policies
 
@@ -42,7 +42,7 @@ public class Example {
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
     String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
     try {
-      List<ThrottlingPolicyListDTO> result = apiInstance.throttlingPoliciesPolicyLevelGet(policyLevel, limit, offset, ifNoneMatch, xWSO2Tenant);
+      ThrottlingPolicyListDTO result = apiInstance.throttlingPoliciesPolicyLevelGet(policyLevel, limit, offset, ifNoneMatch, xWSO2Tenant);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ThrottlingPoliciesApi#throttlingPoliciesPolicyLevelGet");
@@ -67,7 +67,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List&lt;ThrottlingPolicyListDTO&gt;**](ThrottlingPolicyListDTO.md)
+[**ThrottlingPolicyListDTO**](ThrottlingPolicyListDTO.md)
 
 ### Authorization
 

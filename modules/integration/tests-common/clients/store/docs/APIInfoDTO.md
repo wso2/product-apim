@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **context** | **String** |  |  [optional]
 **version** | **String** |  |  [optional]
 **type** | **String** |  |  [optional]
+**createdTime** | **String** |  |  [optional]
 **provider** | **String** | If the provider value is not given, the user invoking the API will be used as the provider.  |  [optional]
 **lifeCycleStatus** | **String** |  |  [optional]
 **thumbnailUri** | **String** |  |  [optional]

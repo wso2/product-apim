@@ -32,16 +32,22 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
     public void alter(List<XmlSuite> list) {
         String testsToRunCommaSeparated = System.getenv("PRODUCT_APIM_TESTS");
         String testClassesToRunCommaSeparated = System.getenv("PRODUCT_APIM_TEST_CLASSES");
-        if (StringUtils.isBlank(testsToRunCommaSeparated) && StringUtils.isBlank(testClassesToRunCommaSeparated) ) {
+        String testGroupsToRunCommaSeparated = System.getenv("PRODUCT_APIM_TEST_GROUPS");
+        if (StringUtils.isBlank(testsToRunCommaSeparated) && StringUtils.isBlank(testClassesToRunCommaSeparated)
+                && StringUtils.isBlank(testGroupsToRunCommaSeparated)) {
             return;
         }
         String[] enabledTests = new String[]{};
         String[] enabledTestClasses = new String[]{};
+        String[] enableTestGroups =  new String[]{};
         if (!StringUtils.isBlank(testsToRunCommaSeparated)) {
             enabledTests = testsToRunCommaSeparated.split(",");
         }
         if (!StringUtils.isBlank(testClassesToRunCommaSeparated)) {
             enabledTestClasses = testClassesToRunCommaSeparated.split(",");
+        }
+        if (!StringUtils.isBlank(testGroupsToRunCommaSeparated)) {
+            enableTestGroups = testGroupsToRunCommaSeparated.split(",");
         }
         for (XmlSuite suite: list) {
             if ("ApiManager-features-test-suite".equals(suite.getName())) {
@@ -51,6 +57,13 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
                     boolean xmlTestAdded = false;
                     for (String enabledTest: enabledTests) {
                         if (enabledTest.trim().equals(xmlTest.getName().trim())) {
+                            xmlTestAdded = true;
+                            newXMLTests.add(xmlTest);
+                        }
+                    }
+                    // Process PRODUCT_APIM_TEST_GROUPS to select xml tests to run.
+                    for (String enabledTestGroup: enableTestGroups) {
+                        if (enabledTestGroup.trim().equals(getTestGroup(xmlTest))) {
                             xmlTestAdded = true;
                             newXMLTests.add(xmlTest);
                         }
@@ -84,5 +97,10 @@ public class APIMAlterSuiteListener implements IAlterSuiteListener {
                 suite.setTests(newXMLTests);
             }
         }
+    }
+
+    private String getTestGroup(XmlTest xmlTest) {
+
+        return xmlTest.getParameter("group");
     }
 }
