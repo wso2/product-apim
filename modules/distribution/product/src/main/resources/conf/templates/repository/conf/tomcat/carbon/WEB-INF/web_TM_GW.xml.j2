@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
+        "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app id="WebApp" metadata-complete="true">
+    <absolute-ordering/>
+
+    <!-- OWASP CSRFGuard per-application configuration property file location-->
+    <context-param>
+        <param-name>Owasp.CsrfGuard.Config</param-name>
+        <param-value>repository/conf/security/Owasp.CsrfGuard.Carbon.properties</param-value>
+    </context-param>
+
+    <servlet id="bridge">
+        <servlet-name>bridgeservlet</servlet-name>
+        <display-name>Carbon Bridge Servlet</display-name>
+        <description>Carbon Bridge Servlet</description>
+        <servlet-class>org.wso2.carbon.tomcat.ext.servlet.DelegationServlet</servlet-class>
+
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <!-- OWASP CSRFGuard servlet that serves dynamic token injection JavaScript-->
+    <servlet>
+        <servlet-name>JavaScriptServlet</servlet-name>
+        <servlet-class>org.owasp.csrfguard.servlet.JavaScriptServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>bridgeservlet</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+    <!--
+       This is required if your application bundles expose JSPs.
+     -->
+    <servlet-mapping>
+        <servlet-name>bridgeservlet</servlet-name>
+        <url-pattern>*.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>JavaScriptServlet</servlet-name>
+        <url-pattern>/carbon/admin/js/csrfPrevention.js</url-pattern>
+    </servlet-mapping>
+
+    <!--This is for performing the character encoding in the JSPs. -->
+    <filter>
+        <filter-name>CharsetFilter</filter-name>
+        <filter-class>org.wso2.carbon.tomcat.ext.filter.CharacterSetFilter</filter-class>
+        <init-param>
+            <param-name>requestEncoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </filter>
+
+    <!-- OWASP CSRFGuard filter used to validate CSRF token-->
+    <filter>
+        <filter-name>CSRFGuard</filter-name>
+        <filter-class>org.owasp.csrfguard.CsrfGuardFilter</filter-class>
+    </filter>
+
+    <!-- Tomcat http header security filter -->
+    <filter>
+        <filter-name>HttpHeaderSecurityFilter</filter-name>
+        <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+        {% for init_param in tomcat.header_security_filters %}
+        <init-param>
+            <param-name>{{init_param.name}}</param-name>
+            <param-value>{{init_param.value}}</param-value>
+        </init-param>
+        {% endfor %}
+    </filter>
+
+    <filter>
+        <filter-name>URLBasedCachePreventionFilter</filter-name>
+        <filter-class>org.wso2.carbon.ui.filters.cache.URLBasedCachePreventionFilter</filter-class>
+    </filter>
+
+ <filter>
+ <filter-name>HttpHeaderSecurityFilter_EnableAntiClickJacking</filter-name>
+ <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+ <init-param>
+ <param-name>hstsEnabled</param-name>
+ <param-value>false</param-value>
+ </init-param>
+ <init-param>
+ <param-name>blockContentTypeSniffingEnabled</param-name>
+ <param-value>false</param-value>
+</init-param>
+<init-param>
+<param-name>xssProtectionEnabled</param-name>
+<param-value>false</param-value>
+</init-param>
+</filter>
+
+<filter-mapping>
+ <filter-name>HttpHeaderSecurityFilter</filter-name>
+ <url-pattern>*</url-pattern>
+ </filter-mapping>
+
+ <filter-mapping>
+ <filter-name>CharsetFilter</filter-name>
+ <url-pattern>/*</url-pattern>
+ </filter-mapping>
+
+     <filter-mapping>
+         <filter-name>URLBasedCachePreventionFilter</filter-name>
+         <url-pattern>*.jsp</url-pattern>
+     </filter-mapping>
+
+ <filter-mapping>
+ <filter-name>HttpHeaderSecurityFilter_EnableAntiClickJacking</filter-name>
+ <url-pattern>/carbon/*</url-pattern>
+ <url-pattern>/services/*</url-pattern>
+ <url-pattern>/samlsso/*</url-pattern>
+ <url-pattern>/openid/*</url-pattern>
+ <url-pattern>/openidserver/*</url-pattern>
+ <url-pattern>/passivests/*</url-pattern>
+ <url-pattern>/acs/*</url-pattern>
+ <url-pattern>/iwa/*</url-pattern>
+ <url-pattern>/identity/*</url-pattern>
+ <url-pattern>/thriftAuthenticator/*</url-pattern>
+ </filter-mapping>
+
+ <filter-mapping>
+ <filter-name>CSRFGuard</filter-name>
+ <url-pattern>/*</url-pattern>
+ </filter-mapping>
+
+
+    <!-- OWASP CSRFGuard context listener used to read CSRF configuration -->
+    <listener>
+        <listener-class>org.owasp.csrfguard.CsrfGuardServletContextListener</listener-class>
+    </listener>
+
+    <!-- OWASP CSRFGuard session listener used to generate per-session CSRF token -->
+    <listener>
+        <listener-class>org.owasp.csrfguard.CsrfGuardHttpSessionListener</listener-class>
+    </listener>
+
+
+
+ <session-config>
+        <session-timeout>{{tomcat.management_console.session_timeout}}</session-timeout>
+        <cookie-config>
+            <secure>true</secure>
+        </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
+    <!-- custom error pages -->
+    <error-page>
+        <error-code>400</error-code>
+        <location>{{error_page.code_400.location}}</location>
+    </error-page>
+    <error-page>
+        <error-code>401</error-code>
+        <location>{{error_page.code_401.location}}</location>
+    </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>{{error_page.code_403.location}}</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>{{error_page.code_404.location}}</location>
+    </error-page>
+    <error-page>
+        <error-code>405</error-code>
+        <location>{{error_page.code_405.location}}</location>
+    </error-page>
+    <error-page>
+        <error-code>408</error-code>
+        <location>{{error_page.code_408.location}}</location>
+    </error-page>
+    <error-page>
+        <error-code>410</error-code>
+        <location>{{error_page.code_410.location}}</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>{{error_page.code_500.location}}</location>
+    </error-page>
+    <error-page>
+        <error-code>502</error-code>
+        <location>{{error_page.code_502.location}}</location>
+    </error-page>
+    <error-page>
+        <error-code>503</error-code>
+        <location>{{error_page.code_503.location}}</location>
+    </error-page>
+    <error-page>
+        <error-code>504</error-code>
+        <location>{{error_page.code_504.location}}</location>
+    </error-page>
+
+    <error-page>
+        <location>{{error_page.code_general.location}}</location>
+    </error-page>
+</web-app>
