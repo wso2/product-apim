@@ -184,10 +184,12 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                 boolean isAPIAvailableInPublisher = false;
                 for (int j = 0; j < 24; j++) {
                     APIListDTO publisherAPIs = restAPIPublisher.getAllAPIs();
-                    if (null != publisherAPIs.getCount()) {
-                        if ((publisherAPIs.getCount() == publisherAPIsCount)) {
-                            isAPIAvailableInPublisher = true;
-                            break;
+                    if (publisherAPIs != null) {
+                        if (null != publisherAPIs.getCount()) {
+                            if ((publisherAPIs.getCount() == publisherAPIsCount)) {
+                                isAPIAvailableInPublisher = true;
+                                break;
+                            }
                         }
                     }
                     Thread.sleep(5000);
