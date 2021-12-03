@@ -638,7 +638,7 @@
 
             var firstname = $("#firstname").val();
 
-            if (!firstname.trim()) {
+            if (firstname && !firstname.trim()) {
                 error_msg.text("<%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                         "Invalid.firstname") %> ");
                 error_msg.show();
@@ -648,7 +648,7 @@
 
             var lastname = $("#lastname").val();
 
-            if (!lastname.trim()) {
+            if (lastname && !lastname.trim()) {
                 error_msg.text("<%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                         "Invalid.lastname") %> ");
                 error_msg.show();
