@@ -340,7 +340,12 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
             List<org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO> publisherAPIs =
                     restAPIPublisher.getAllAPIs().getList();
             for(org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO dto : publisherAPIs) {
+                log.info("Delete API : " + dto.getName() + " version:" + dto.getVersion());
                 restAPIPublisher.deleteAPI(dto.getId());
+            }
+            for (String id : createdAPIs) {
+                log.info("Delete API from createdAPIs: id" + id);
+                restAPIPublisher.deleteAPI(id);
             }
         }
         super.cleanUp();
