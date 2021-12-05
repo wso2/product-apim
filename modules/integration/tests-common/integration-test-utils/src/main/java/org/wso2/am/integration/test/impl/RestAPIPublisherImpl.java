@@ -61,6 +61,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.AsyncAPISpecificationValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CertificatesDTO;
@@ -102,11 +103,15 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+
+import static org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO.SubscriptionAvailabilityEnum.ALL_TENANTS;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -247,6 +252,14 @@ public class RestAPIPublisherImpl {
             }
         } else {
             body.setVisibility(APIDTO.VisibilityEnum.PUBLIC);
+        }
+        if (apiRequest.getSubscriptionAvailability() == null) {
+            body.setSubscriptionAvailability(APIDTO.SubscriptionAvailabilityEnum.CURRENT_TENANT);
+        } else {
+            body.setSubscriptionAvailability(APIDTO.SubscriptionAvailabilityEnum.fromValue(apiRequest.getSubscriptionAvailability()));
+        }
+        if (apiRequest.getVisibleTenants() != null) {
+            body.setVisibleTenants(apiRequest.getVisibleTenants());
         }
 
         if (apiRequest.getAccessControl() != null) {
@@ -1180,6 +1193,28 @@ public class RestAPIPublisherImpl {
                 .updateAPIResourcePoliciesByPolicyIdWithHttpInfo(apiId, resourcePolicyId, resourcePolicyInfoDTO, null);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
         return response.getData();
+    }
+
+
+    public AsyncAPISpecificationValidationResponseDTO validateAsyncAPISchemaDefinition(String url, File file)
+            throws ApiException {
+        ApiResponse<AsyncAPISpecificationValidationResponseDTO> response = validationApi
+                .validateAsyncAPISpecificationWithHttpInfo(false, url, file);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
+    public APIDTO importAsyncAPISchemaDefinition(File file, String url, String properties)
+            throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.importAsyncAPISpecificationWithHttpInfo(file, url, properties);
+        Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse.getData();
+    }
+
+    public ApiResponse<Void> getAsyncAPIDefinitionOfAPI(String apiId) throws ApiException {
+        ApiResponse<Void> apiDtoApiResponse = apIsApi.getWSDLOfAPIWithHttpInfo(apiId,null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+        return apiDtoApiResponse;
     }
 
     public APIDTO addAPI(APICreationRequestBean apiCreationRequestBean) throws ApiException {

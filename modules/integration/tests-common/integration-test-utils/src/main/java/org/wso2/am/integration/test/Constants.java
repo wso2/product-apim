@@ -41,6 +41,8 @@ public class Constants {
     public static final String PROTOCOL_HTTP = "http";
     public static final String PROTOCOL_HTTPS = "https";
     public static final String GATEWAY_ENVIRONMENT = "Default";
+    public static final String SOLACE_GATEWAY_ENVIRONMENT = "solace";
+    public static final String WSO2_GATEWAY_ENVIRONMENT = "wso2";
     public static final String APPLICATION_JSON = "application/json";
     public static final String API_DEFINITION = "api-definition-";
     public static final String ENDPOINT_DEFINITION = "endpoint-config-";

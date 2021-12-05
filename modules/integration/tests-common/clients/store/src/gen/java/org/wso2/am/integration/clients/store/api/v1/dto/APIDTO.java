@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Developer Portal
- * This document specifies a **RESTful API** for WSO2 **API Manager** - **Developer Portal**. Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.7.206/components/apimgt/org.wso2.carbon.apimgt.rest.api.store.v1/src/main/resources/devportal-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.  # Authentication Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking the API, you need to obtain an access token with the required scopes. This guide will walk you through the steps that you will need to follow to obtain an access token. First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types in the payload. A Sample payload is shown below. ```   {   \"callbackUrl\":\"www.google.lk\",   \"clientName\":\"rest_api_devportal\",   \"owner\":\"admin\",   \"grantType\":\"client_credentials password refresh_token\",   \"saasApp\":true   } ``` Create a file (payload.json) with the above sample payload, and use the cURL shown below to invoke the DCR endpoint. Authorization header of this should contain the base64 encoded admin username and password. **Format of the request** ```   curl -X POST -H \"Authorization: Basic Base64(admin_username:admin_password)\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://<host>:<servlet_port>/client-registration/v0.17/register ``` **Sample request** ```   curl -X POST -H \"Authorization: Basic YWRtaW46YWRtaW4=\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://localhost:9443/client-registration/v0.17/register ``` Following is a sample response after invoking the above curl. ``` { \"clientId\": \"fOCi4vNJ59PpHucC2CAYfYuADdMa\", \"clientName\": \"rest_api_devportal\", \"callBackURL\": \"www.google.lk\", \"clientSecret\": \"a4FwHlq0iCIKVs2MPIIDnepZnYMa\", \"isSaasApplication\": true, \"appOwner\": \"admin\", \"jsonString\": \"{\\\"grant_types\\\":\\\"client_credentials password refresh_token\\\",\\\"redirect_uris\\\":\\\"www.google.lk\\\",\\\"client_name\\\":\\\"rest_api_devportal\\\"}\", \"jsonAppAttribute\": \"{}\", \"tokenType\": null } ``` Next you must use the above client id and secret to obtain the access token. We will be using the password grant type for this, you can use any grant type you desire. You also need to add the proper **scope** when getting the access token. All possible scopes for devportal REST API can be viewed in **OAuth2 Security** section of this document and scope for each resource is given in **authorization** section of resource documentation. Following is the format of the request if you are using the password grant type. ``` curl -k -d \"grant_type=password&username=<admin_username>&password=<admin_password>&scope=<scopes separated by space>\" \\ -H \"Authorization: Basic base64(cliet_id:client_secret)\" \\ https://<host>:<gateway_port>/token ``` **Sample request** ``` curl https://localhost:8243/token -k \\ -H \"Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h\" \\ -d \"grant_type=password&username=admin&password=admin&scope=apim:subscribe apim:api_key\" ``` Shown below is a sample response to the above request. ``` { \"access_token\": \"e79bda48-3406-3178-acce-f6e4dbdcbb12\", \"refresh_token\": \"a757795d-e69f-38b8-bd85-9aded677a97c\", \"scope\": \"apim:subscribe apim:api_key\", \"token_type\": \"Bearer\", \"expires_in\": 3600 } ``` Now you have a valid access token, which you can use to invoke an API. Navigate through the API descriptions to find the required API, obtain an access token as described above and invoke the API with the authentication header. If you use a different authentication mechanism, this process may change.  # Try out in Postman If you want to try-out the embedded postman collection with \"Run in Postman\" option, please follow the guidelines listed below. * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes. * Make sure you have an API Manager instance up and running. * Update the `basepath` parameter to match the hostname and port of the APIM instance.  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/5bc0161b8aa7e701d7bf) 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - **Developer Portal**. Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.7.206/components/apimgt/org.wso2.carbon.apimgt.rest.api.store.v1/src/main/resources/devportal-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.  # Authentication The Developer Portal REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking the API, you need to obtain an access token with the required scopes. This guide will walk you through the steps that you will need to follow to obtain an access token. First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types in the payload. A Sample payload is shown below. ```   {   \"callbackUrl\":\"www.google.lk\",   \"clientName\":\"rest_api_devportal\",   \"owner\":\"admin\",   \"grantType\":\"client_credentials password refresh_token\",   \"saasApp\":true   } ``` Create a file (payload.json) with the above sample payload, and use the cURL shown below to invoke the DCR endpoint. Authorization header of this should contain the base64 encoded admin username and password. **Format of the request** ```   curl -X POST -H \"Authorization: Basic Base64(admin_username:admin_password)\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://<host>:<servlet_port>/client-registration/v0.17/register ``` **Sample request** ```   curl -X POST -H \"Authorization: Basic YWRtaW46YWRtaW4=\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://localhost:9443/client-registration/v0.17/register ``` Following is a sample response after invoking the above curl. ``` { \"clientId\": \"fOCi4vNJ59PpHucC2CAYfYuADdMa\", \"clientName\": \"rest_api_devportal\", \"callBackURL\": \"www.google.lk\", \"clientSecret\": \"a4FwHlq0iCIKVs2MPIIDnepZnYMa\", \"isSaasApplication\": true, \"appOwner\": \"admin\", \"jsonString\": \"{\\\"grant_types\\\":\\\"client_credentials password refresh_token\\\",\\\"redirect_uris\\\":\\\"www.google.lk\\\",\\\"client_name\\\":\\\"rest_api_devportal\\\"}\", \"jsonAppAttribute\": \"{}\", \"tokenType\": null } ``` Next you must use the above client id and secret to obtain the access token. We will be using the password grant type for this, you can use any grant type you desire. You also need to add the proper **scope** when getting the access token. All possible scopes for devportal REST API can be viewed in **OAuth2 Security** section of this document and scope for each resource is given in **authorization** section of resource documentation. Following is the format of the request if you are using the password grant type. ``` curl -k -d \"grant_type=password&username=<admin_username>&password=<admin_password>&scope=<scopes separated by space>\" \\ -H \"Authorization: Basic base64(cliet_id:client_secret)\" \\ https://<host>:<servlet_port>/oauth2/token ``` **Sample request** ``` curl https://localhost:9443/oauth2/token -k \\ -H \"Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h\" \\ -d \"grant_type=password&username=admin&password=admin&scope=apim:subscribe apim:api_key\" ``` Shown below is a sample response to the above request. ``` { \"access_token\": \"e79bda48-3406-3178-acce-f6e4dbdcbb12\", \"refresh_token\": \"a757795d-e69f-38b8-bd85-9aded677a97c\", \"scope\": \"apim:subscribe apim:api_key\", \"token_type\": \"Bearer\", \"expires_in\": 3600 } ``` Now you have a valid access token, which you can use to invoke an API. Navigate through the API descriptions to find the required API, obtain an access token as described above and invoke the API with the authentication header. If you use a different authentication mechanism, this process may change.  # Try out in Postman If you want to try-out the embedded postman collection with \"Run in Postman\" option, please follow the guidelines listed below. * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes. * Make sure you have an API Manager instance up and running. * Update the `basepath` parameter to match the hostname and port of the APIM instance.  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/5bc0161b8aa7e701d7bf) 
  *
  * The version of the OpenAPI document: v2
  * Contact: architecture@wso2.com
@@ -28,12 +28,10 @@ import java.util.List;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIAdditionalPropertiesDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIEndpointURLsDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APIIngressURLsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APITiersDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.AdvertiseInfoDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.LabelDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ScopeInfoDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
@@ -121,10 +119,6 @@ public class APIDTO {
         @SerializedName(SERIALIZED_NAME_MONETIZATION)
             private APIMonetizationInfoDTO monetization;
 
-        public static final String SERIALIZED_NAME_INGRESS_U_R_LS = "ingressURLs";
-        @SerializedName(SERIALIZED_NAME_INGRESS_U_R_LS)
-            private List<APIIngressURLsDTO> ingressURLs = null;
-
         public static final String SERIALIZED_NAME_ENDPOINT_U_R_LS = "endpointURLs";
         @SerializedName(SERIALIZED_NAME_ENDPOINT_U_R_LS)
             private List<APIEndpointURLsDTO> endpointURLs = null;
@@ -132,10 +126,6 @@ public class APIDTO {
         public static final String SERIALIZED_NAME_BUSINESS_INFORMATION = "businessInformation";
         @SerializedName(SERIALIZED_NAME_BUSINESS_INFORMATION)
             private APIBusinessInformationDTO businessInformation;
-
-        public static final String SERIALIZED_NAME_LABELS = "labels";
-        @SerializedName(SERIALIZED_NAME_LABELS)
-            private List<LabelDTO> labels = null;
 
         public static final String SERIALIZED_NAME_ENVIRONMENT_LIST = "environmentList";
         @SerializedName(SERIALIZED_NAME_ENVIRONMENT_LIST)
@@ -172,6 +162,14 @@ public class APIDTO {
         public static final String SERIALIZED_NAME_LAST_UPDATED_TIME = "lastUpdatedTime";
         @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
             private String lastUpdatedTime;
+
+        public static final String SERIALIZED_NAME_GATEWAY_VENDOR = "gatewayVendor";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_VENDOR)
+            private String gatewayVendor;
+
+        public static final String SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS = "asyncTransportProtocols";
+        @SerializedName(SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS)
+            private List<String> asyncTransportProtocols = null;
 
 
         public APIDTO id(String id) {
@@ -629,29 +627,6 @@ public class APIDTO {
     }
 
 
-        public APIDTO ingressURLs(List<APIIngressURLsDTO> ingressURLs) {
-        
-        this.ingressURLs = ingressURLs;
-        return this;
-        }
-
-    /**
-        * Get ingressURLs
-    * @return ingressURLs
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
-    
-    public List<APIIngressURLsDTO> getIngressURLs() {
-        return ingressURLs;
-    }
-
-
-    public void setIngressURLs(List<APIIngressURLsDTO> ingressURLs) {
-        this.ingressURLs = ingressURLs;
-    }
-
-
         public APIDTO endpointURLs(List<APIEndpointURLsDTO> endpointURLs) {
         
         this.endpointURLs = endpointURLs;
@@ -695,29 +670,6 @@ public class APIDTO {
 
     public void setBusinessInformation(APIBusinessInformationDTO businessInformation) {
         this.businessInformation = businessInformation;
-    }
-
-
-        public APIDTO labels(List<LabelDTO> labels) {
-        
-        this.labels = labels;
-        return this;
-        }
-
-    /**
-        * Labels of micro-gateway environments attached to the API. 
-    * @return labels
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "Labels of micro-gateway environments attached to the API. ")
-    
-    public List<LabelDTO> getLabels() {
-        return labels;
-    }
-
-
-    public void setLabels(List<LabelDTO> labels) {
-        this.labels = labels;
     }
 
 
@@ -928,6 +880,52 @@ public class APIDTO {
     }
 
 
+        public APIDTO gatewayVendor(String gatewayVendor) {
+        
+        this.gatewayVendor = gatewayVendor;
+        return this;
+        }
+
+    /**
+        * Get gatewayVendor
+    * @return gatewayVendor
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getGatewayVendor() {
+        return gatewayVendor;
+    }
+
+
+    public void setGatewayVendor(String gatewayVendor) {
+        this.gatewayVendor = gatewayVendor;
+    }
+
+
+        public APIDTO asyncTransportProtocols(List<String> asyncTransportProtocols) {
+        
+        this.asyncTransportProtocols = asyncTransportProtocols;
+        return this;
+        }
+
+    /**
+        * Supported transports for the aync API. 
+    * @return asyncTransportProtocols
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"http\",\"mqtt\"]", value = "Supported transports for the aync API. ")
+    
+    public List<String> getAsyncTransportProtocols() {
+        return asyncTransportProtocols;
+    }
+
+
+    public void setAsyncTransportProtocols(List<String> asyncTransportProtocols) {
+        this.asyncTransportProtocols = asyncTransportProtocols;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -957,10 +955,8 @@ public class APIDTO {
             Objects.equals(this.hasThumbnail, API.hasThumbnail) &&
             Objects.equals(this.additionalProperties, API.additionalProperties) &&
             Objects.equals(this.monetization, API.monetization) &&
-            Objects.equals(this.ingressURLs, API.ingressURLs) &&
             Objects.equals(this.endpointURLs, API.endpointURLs) &&
             Objects.equals(this.businessInformation, API.businessInformation) &&
-            Objects.equals(this.labels, API.labels) &&
             Objects.equals(this.environmentList, API.environmentList) &&
             Objects.equals(this.scopes, API.scopes) &&
             Objects.equals(this.avgRating, API.avgRating) &&
@@ -969,12 +965,14 @@ public class APIDTO {
             Objects.equals(this.categories, API.categories) &&
             Objects.equals(this.keyManagers, API.keyManagers) &&
             Objects.equals(this.createdTime, API.createdTime) &&
-            Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime);
+            Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime) &&
+            Objects.equals(this.gatewayVendor, API.gatewayVendor) &&
+            Objects.equals(this.asyncTransportProtocols, API.asyncTransportProtocols);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, ingressURLs, endpointURLs, businessInformation, labels, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable, categories, keyManagers, createdTime, lastUpdatedTime);
+        return Objects.hash(id, name, description, context, version, provider, apiDefinition, wsdlUri, lifeCycleStatus, isDefaultVersion, type, transport, operations, authorizationHeader, securityScheme, tags, tiers, hasThumbnail, additionalProperties, monetization, endpointURLs, businessInformation, environmentList, scopes, avgRating, advertiseInfo, isSubscriptionAvailable, categories, keyManagers, createdTime, lastUpdatedTime, gatewayVendor, asyncTransportProtocols);
     }
 
 
@@ -1002,10 +1000,8 @@ sb.append("class APIDTO {\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("    monetization: ").append(toIndentedString(monetization)).append("\n");
-    sb.append("    ingressURLs: ").append(toIndentedString(ingressURLs)).append("\n");
     sb.append("    endpointURLs: ").append(toIndentedString(endpointURLs)).append("\n");
     sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
-    sb.append("    labels: ").append(toIndentedString(labels)).append("\n");
     sb.append("    environmentList: ").append(toIndentedString(environmentList)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    avgRating: ").append(toIndentedString(avgRating)).append("\n");
@@ -1015,6 +1011,8 @@ sb.append("class APIDTO {\n");
     sb.append("    keyManagers: ").append(toIndentedString(keyManagers)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
+    sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
+    sb.append("    asyncTransportProtocols: ").append(toIndentedString(asyncTransportProtocols)).append("\n");
 sb.append("}");
 return sb.toString();
 }

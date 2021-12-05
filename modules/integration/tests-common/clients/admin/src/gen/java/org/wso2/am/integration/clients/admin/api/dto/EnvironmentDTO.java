@@ -25,6 +25,8 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.am.integration.clients.admin.api.dto.AdditionalPropertyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.GatewayEnvironmentProtocolURIDTO;
 import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
@@ -48,6 +50,10 @@ public class EnvironmentDTO {
         @SerializedName(SERIALIZED_NAME_DESCRIPTION)
             private String description;
 
+        public static final String SERIALIZED_NAME_PROVIDER = "provider";
+        @SerializedName(SERIALIZED_NAME_PROVIDER)
+            private String provider;
+
         public static final String SERIALIZED_NAME_IS_READ_ONLY = "isReadOnly";
         @SerializedName(SERIALIZED_NAME_IS_READ_ONLY)
             private Boolean isReadOnly;
@@ -55,6 +61,14 @@ public class EnvironmentDTO {
         public static final String SERIALIZED_NAME_VHOSTS = "vhosts";
         @SerializedName(SERIALIZED_NAME_VHOSTS)
             private List<VHostDTO> vhosts = new ArrayList<VHostDTO>();
+
+        public static final String SERIALIZED_NAME_ENDPOINT_U_R_IS = "endpointURIs";
+        @SerializedName(SERIALIZED_NAME_ENDPOINT_U_R_IS)
+            private List<GatewayEnvironmentProtocolURIDTO> endpointURIs = null;
+
+        public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
+        @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
+            private List<AdditionalPropertyDTO> additionalProperties = null;
 
 
         public EnvironmentDTO id(String id) {
@@ -148,6 +162,29 @@ public class EnvironmentDTO {
     }
 
 
+        public EnvironmentDTO provider(String provider) {
+        
+        this.provider = provider;
+        return this;
+        }
+
+    /**
+        * Get provider
+    * @return provider
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getProvider() {
+        return provider;
+    }
+
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+
         public EnvironmentDTO isReadOnly(Boolean isReadOnly) {
         
         this.isReadOnly = isReadOnly;
@@ -193,6 +230,52 @@ public class EnvironmentDTO {
     }
 
 
+        public EnvironmentDTO endpointURIs(List<GatewayEnvironmentProtocolURIDTO> endpointURIs) {
+        
+        this.endpointURIs = endpointURIs;
+        return this;
+        }
+
+    /**
+        * Get endpointURIs
+    * @return endpointURIs
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<GatewayEnvironmentProtocolURIDTO> getEndpointURIs() {
+        return endpointURIs;
+    }
+
+
+    public void setEndpointURIs(List<GatewayEnvironmentProtocolURIDTO> endpointURIs) {
+        this.endpointURIs = endpointURIs;
+    }
+
+
+        public EnvironmentDTO additionalProperties(List<AdditionalPropertyDTO> additionalProperties) {
+        
+        this.additionalProperties = additionalProperties;
+        return this;
+        }
+
+    /**
+        * Get additionalProperties
+    * @return additionalProperties
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<AdditionalPropertyDTO> getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+
+    public void setAdditionalProperties(List<AdditionalPropertyDTO> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -206,13 +289,16 @@ public class EnvironmentDTO {
             Objects.equals(this.name, environment.name) &&
             Objects.equals(this.displayName, environment.displayName) &&
             Objects.equals(this.description, environment.description) &&
+            Objects.equals(this.provider, environment.provider) &&
             Objects.equals(this.isReadOnly, environment.isReadOnly) &&
-            Objects.equals(this.vhosts, environment.vhosts);
+            Objects.equals(this.vhosts, environment.vhosts) &&
+            Objects.equals(this.endpointURIs, environment.endpointURIs) &&
+            Objects.equals(this.additionalProperties, environment.additionalProperties);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, displayName, description, isReadOnly, vhosts);
+        return Objects.hash(id, name, displayName, description, provider, isReadOnly, vhosts, endpointURIs, additionalProperties);
     }
 
 
@@ -224,8 +310,11 @@ sb.append("class EnvironmentDTO {\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
+    sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    isReadOnly: ").append(toIndentedString(isReadOnly)).append("\n");
     sb.append("    vhosts: ").append(toIndentedString(vhosts)).append("\n");
+    sb.append("    endpointURIs: ").append(toIndentedString(endpointURIs)).append("\n");
+    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
 sb.append("}");
 return sb.toString();
 }

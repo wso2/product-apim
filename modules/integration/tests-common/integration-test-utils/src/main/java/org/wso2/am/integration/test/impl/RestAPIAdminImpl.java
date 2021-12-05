@@ -40,6 +40,8 @@ import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
 import org.wso2.am.integration.clients.admin.api.LabelApi;
 import org.wso2.am.integration.clients.admin.api.LabelCollectionApi;
 import org.wso2.am.integration.clients.admin.api.SettingsApi;
+import org.wso2.am.integration.clients.admin.api.TenantConfigApi;
+import org.wso2.am.integration.clients.admin.api.TenantConfigSchemaApi;
 import org.wso2.am.integration.clients.admin.api.WorkflowCollectionApi;
 import org.wso2.am.integration.clients.admin.api.WorkflowsIndividualApi;
 import org.wso2.am.integration.clients.admin.api.SystemScopesApi;
@@ -101,6 +103,8 @@ public class RestAPIAdminImpl {
     private LabelCollectionApi labelCollectionApi = new LabelCollectionApi();
     private EnvironmentApi environmentApi = new EnvironmentApi();
     private EnvironmentCollectionApi environmentCollectionApi = new EnvironmentCollectionApi();
+    private TenantConfigApi tenantConfigApi = new TenantConfigApi();
+    private TenantConfigSchemaApi tenantConfigSchemaApi = new TenantConfigSchemaApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -179,6 +183,8 @@ public class RestAPIAdminImpl {
         apiCategoryCollectionApi.setApiClient(apiAdminClient);
         apiCategoryIndividualApi.setApiClient(apiAdminClient);
         systemScopesApi.setApiClient(apiAdminClient);
+        tenantConfigApi.setApiClient(apiAdminClient);
+        tenantConfigSchemaApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -734,4 +740,36 @@ public class RestAPIAdminImpl {
         }
         return response;
     }
+
+    /**
+     * This method is used to retrieve tenant Config.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving tenant Config.
+     */
+    public Object getTenantConfig() throws ApiException {
+        return tenantConfigApi.exportTenantConfig();
+    }
+
+    /**
+     * This method is used to update tenant config.
+     *
+     * @param tenantConf Tenant Configuration.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs updating the tenant conf.
+     */
+    public Object updateTenantConfig(Object tenantConf) throws ApiException {
+        return tenantConfigApi.updateTenantConfig(tenantConf);
+    }
+
+    /**
+     * This method is used to retrieve tenant Config Schema.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving tenant Config schema.
+     */
+    public Object getTenantConfigSchema() throws ApiException {
+        return tenantConfigSchemaApi.exportTenantConfigSchema();
+    }
+
 }

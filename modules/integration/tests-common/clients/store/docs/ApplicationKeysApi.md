@@ -20,7 +20,7 @@ Method | HTTP request | Description
 
 <a name="applicationsApplicationIdGenerateKeysPost"></a>
 # **applicationsApplicationIdGenerateKeysPost**
-> ApplicationKeyDTO applicationsApplicationIdGenerateKeysPost(applicationId, applicationKeyGenerateRequestDTO)
+> ApplicationKeyDTO applicationsApplicationIdGenerateKeysPost(applicationId, applicationKeyGenerateRequestDTO, xWSO2Tenant)
 
 Generate Application Keys
 
@@ -48,8 +48,9 @@ public class Example {
     ApplicationKeysApi apiInstance = new ApplicationKeysApi(defaultClient);
     String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
     ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequestDTO = new ApplicationKeyGenerateRequestDTO(); // ApplicationKeyGenerateRequestDTO | Application key generation request object 
+    String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
     try {
-      ApplicationKeyDTO result = apiInstance.applicationsApplicationIdGenerateKeysPost(applicationId, applicationKeyGenerateRequestDTO);
+      ApplicationKeyDTO result = apiInstance.applicationsApplicationIdGenerateKeysPost(applicationId, applicationKeyGenerateRequestDTO, xWSO2Tenant);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApplicationKeysApi#applicationsApplicationIdGenerateKeysPost");
@@ -68,6 +69,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
  **applicationKeyGenerateRequestDTO** | [**ApplicationKeyGenerateRequestDTO**](ApplicationKeyGenerateRequestDTO.md)| Application key generation request object  |
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  | [optional]
 
 ### Return type
 
@@ -455,7 +457,7 @@ Name | Type | Description  | Notes
 
 <a name="applicationsApplicationIdMapKeysPost"></a>
 # **applicationsApplicationIdMapKeysPost**
-> ApplicationKeyDTO applicationsApplicationIdMapKeysPost(applicationId, applicationKeyMappingRequestDTO)
+> ApplicationKeyDTO applicationsApplicationIdMapKeysPost(applicationId, applicationKeyMappingRequestDTO, xWSO2Tenant)
 
 Map Application Keys
 
@@ -483,8 +485,9 @@ public class Example {
     ApplicationKeysApi apiInstance = new ApplicationKeysApi(defaultClient);
     String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
     ApplicationKeyMappingRequestDTO applicationKeyMappingRequestDTO = new ApplicationKeyMappingRequestDTO(); // ApplicationKeyMappingRequestDTO | Application key mapping request object 
+    String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
     try {
-      ApplicationKeyDTO result = apiInstance.applicationsApplicationIdMapKeysPost(applicationId, applicationKeyMappingRequestDTO);
+      ApplicationKeyDTO result = apiInstance.applicationsApplicationIdMapKeysPost(applicationId, applicationKeyMappingRequestDTO, xWSO2Tenant);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApplicationKeysApi#applicationsApplicationIdMapKeysPost");
@@ -503,6 +506,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
  **applicationKeyMappingRequestDTO** | [**ApplicationKeyMappingRequestDTO**](ApplicationKeyMappingRequestDTO.md)| Application key mapping request object  |
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  | [optional]
 
 ### Return type
 
@@ -527,7 +531,7 @@ Name | Type | Description  | Notes
 
 <a name="applicationsApplicationIdOauthKeysGet"></a>
 # **applicationsApplicationIdOauthKeysGet**
-> ApplicationKeyListDTO applicationsApplicationIdOauthKeysGet(applicationId)
+> ApplicationKeyListDTO applicationsApplicationIdOauthKeysGet(applicationId, xWSO2Tenant)
 
 Retrieve All Application Keys
 
@@ -554,8 +558,9 @@ public class Example {
 
     ApplicationKeysApi apiInstance = new ApplicationKeysApi(defaultClient);
     String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
+    String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
     try {
-      ApplicationKeyListDTO result = apiInstance.applicationsApplicationIdOauthKeysGet(applicationId);
+      ApplicationKeyListDTO result = apiInstance.applicationsApplicationIdOauthKeysGet(applicationId, xWSO2Tenant);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApplicationKeysApi#applicationsApplicationIdOauthKeysGet");
@@ -573,6 +578,7 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  | [optional]
 
 ### Return type
 

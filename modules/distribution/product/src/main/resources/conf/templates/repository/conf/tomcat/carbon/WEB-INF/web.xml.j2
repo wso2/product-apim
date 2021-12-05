@@ -109,7 +109,20 @@
 </init-param>
 </filter>
 
-    <filter-mapping>
+<filter>
+    <filter-name>CaptchaFilter</filter-name>
+    <filter-class>org.wso2.carbon.identity.captcha.filter.CaptchaFilter</filter-class>
+</filter>
+<filter-mapping>
+    <filter-name>CaptchaFilter</filter-name>
+    <url-pattern>/samlsso</url-pattern>
+    <url-pattern>/oauth2</url-pattern>
+    <url-pattern>/commonauth</url-pattern>
+    <dispatcher>FORWARD</dispatcher>
+    <dispatcher>REQUEST</dispatcher>
+</filter-mapping>
+
+<filter-mapping>
  <filter-name>HttpHeaderSecurityFilter</filter-name>
  <url-pattern>*</url-pattern>
  </filter-mapping>

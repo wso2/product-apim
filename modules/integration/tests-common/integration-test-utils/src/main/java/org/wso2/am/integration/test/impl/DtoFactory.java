@@ -217,6 +217,45 @@ public class DtoFactory {
     }
 
     /**
+     * Creates a subscription throttling policy DTO using the given parameters.
+     *
+     * @param policyName           Name of the policy.
+     * @param displayName          Display name of the policy.
+     * @param description          Description of the policy.
+     * @param isDeployed           Deployed status of the policy.
+     * @param defaultLimit         Default Limit of the policy.
+     * @param rateLimitCount       Burst control request count.
+     * @param rateLimitTimeUnit    Burst control time unit.
+     * @param stopQuotaOnReach     Action to be taken when a user goes beyond the allocated quota.
+     * @return Created subscription throttling policy DTO.
+     */
+    public static SubscriptionThrottlePolicyDTO createSubscriptionThrottlePolicyDTO(String policyName,
+                                                                                    String displayName,
+                                                                                    String description,
+                                                                                    boolean isDeployed,
+                                                                                    ThrottleLimitDTO defaultLimit,
+                                                                                    int rateLimitCount,
+                                                                                    String rateLimitTimeUnit,
+                                                                                    boolean stopQuotaOnReach,
+                                                                                    SubscriptionThrottlePolicyPermissionDTO permissions) {
+
+        SubscriptionThrottlePolicyDTO subscriptionThrottlePolicyDTO = new SubscriptionThrottlePolicyDTO();
+        subscriptionThrottlePolicyDTO.setPolicyName(policyName);
+        subscriptionThrottlePolicyDTO.setDisplayName(displayName);
+        subscriptionThrottlePolicyDTO.setDescription(description);
+        subscriptionThrottlePolicyDTO.setIsDeployed(isDeployed);
+        subscriptionThrottlePolicyDTO.setDefaultLimit(defaultLimit);
+        subscriptionThrottlePolicyDTO.setRateLimitCount(rateLimitCount);
+        subscriptionThrottlePolicyDTO.setRateLimitTimeUnit(rateLimitTimeUnit);
+        subscriptionThrottlePolicyDTO.setStopOnQuotaReach(stopQuotaOnReach);
+        subscriptionThrottlePolicyDTO.setPermissions(permissions);
+        subscriptionThrottlePolicyDTO.setSubscriberCount(0);
+        subscriptionThrottlePolicyDTO.setBillingPlan("FREE");
+        return subscriptionThrottlePolicyDTO;
+    }
+
+
+    /**
      * Creates a custom throttling policy DTO using the given parameters.
      *
      * @param policyName  Name of the policy.
@@ -388,15 +427,17 @@ public class DtoFactory {
      * @param name        Name of the environment
      * @param displayName Display name of the environment
      * @param description Description of the environment
+     * @param provider    Vendor provider of the environment
      * @param vhosts      Vhosts available in the environment
      * @return Environment DTO object
      */
-    public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description,
-                                                      boolean isReadOnly, List<VHostDTO> vhosts) {
+    public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description, String
+            provider, boolean isReadOnly, List<VHostDTO> vhosts) {
         return new EnvironmentDTO()
                 .name(name)
                 .displayName(displayName)
                 .description(description)
+                .provider(provider)
                 .isReadOnly(isReadOnly)
                 .vhosts(vhosts);
     }
@@ -435,6 +476,43 @@ public class DtoFactory {
                 name(name).
                 description(description);
     }
+    /**
+     * Creates an key manager DTO using the given parameters.
+     *
+     * @param name                       Name of key manager.
+     * @param displayName                Display name of the key manager.
+     * @param description                Description of the key manager.
+     * @param type                       Type of the key manager.
+     * @param issuer                     Issuer of the key manager.
+     * @param consumerKeyClaim           Consumer key claim URI of the key manager.
+     * @param scopesClaim                Scopes claim URI of the key manager.
+     * @param availableGrantTypes        Available grant types of the key manager.
+     * @param certificates               Certificates of the key manager.
+     * @return Created key manager DTO.
+     */
+    public static KeyManagerDTO createKeyManagerDTO(String name, String description, String type, String displayName,
+                                                    String issuer,
+                                                    String consumerKeyClaim, String scopesClaim,
+                                                    List<String> availableGrantTypes,
+                                                    KeyManagerCertificatesDTO certificates) {
+
+        KeyManagerDTO keyManagerDTO = new KeyManagerDTO();
+        keyManagerDTO.setType(type);
+        keyManagerDTO.setName(name);
+        keyManagerDTO.setDescription(description);
+        keyManagerDTO.setDisplayName(displayName);
+        keyManagerDTO.setEnabled(true);
+        keyManagerDTO.setConsumerKeyClaim(consumerKeyClaim);
+        keyManagerDTO.setScopesClaim(scopesClaim);
+        keyManagerDTO.setIssuer(issuer);
+        keyManagerDTO.setCertificates(certificates);
+        keyManagerDTO.setEnableMapOAuthConsumerApps(true);
+        keyManagerDTO.setEnableTokenGeneration(true);
+        keyManagerDTO.setEnableOAuthAppCreation(true);
+        keyManagerDTO.setAvailableGrantTypes(availableGrantTypes);
+        return keyManagerDTO;
+    }
+
 
     /**
      * Creates an key manager DTO using the given parameters.

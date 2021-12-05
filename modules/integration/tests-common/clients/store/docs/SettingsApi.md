@@ -5,7 +5,7 @@ All URIs are relative to *https://apis.wso2.com/api/am/devportal/v2*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**settingsApplicationAttributesGet**](SettingsApi.md#settingsApplicationAttributesGet) | **GET** /settings/application-attributes | Get All Application Attributes from Configuration 
-[**settingsGet**](SettingsApi.md#settingsGet) | **GET** /settings | Retreive Devportal settings
+[**settingsGet**](SettingsApi.md#settingsGet) | **GET** /settings | Retreive Developer Portal settings
 
 
 <a name="settingsApplicationAttributesGet"></a>
@@ -81,9 +81,9 @@ Name | Type | Description  | Notes
 # **settingsGet**
 > SettingsDTO settingsGet(xWSO2Tenant)
 
-Retreive Devportal settings
+Retreive Developer Portal settings
 
-Retreive Devportal Settings 
+Retreive Developer Portal Settings 
 
 ### Example
 ```java

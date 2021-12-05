@@ -84,7 +84,7 @@ null (empty response body)
 
 <a name="applicationsApplicationIdGet"></a>
 # **applicationsApplicationIdGet**
-> ApplicationDTO applicationsApplicationIdGet(applicationId, ifNoneMatch)
+> ApplicationDTO applicationsApplicationIdGet(applicationId, ifNoneMatch, xWSO2Tenant)
 
 Get Details of an Application 
 
@@ -112,8 +112,9 @@ public class Example {
     ApplicationsApi apiInstance = new ApplicationsApi(defaultClient);
     String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
+    String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
     try {
-      ApplicationDTO result = apiInstance.applicationsApplicationIdGet(applicationId, ifNoneMatch);
+      ApplicationDTO result = apiInstance.applicationsApplicationIdGet(applicationId, ifNoneMatch, xWSO2Tenant);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApplicationsApi#applicationsApplicationIdGet");
@@ -132,6 +133,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
+ **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  | [optional]
 
 ### Return type
 

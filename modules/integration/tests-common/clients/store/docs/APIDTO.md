@@ -26,10 +26,8 @@ Name | Type | Description | Notes
 **hasThumbnail** | **Boolean** |  |  [optional]
 **additionalProperties** | [**List&lt;APIAdditionalPropertiesDTO&gt;**](APIAdditionalPropertiesDTO.md) | Custom(user defined) properties of API  |  [optional]
 **monetization** | [**APIMonetizationInfoDTO**](APIMonetizationInfoDTO.md) |  |  [optional]
-**ingressURLs** | [**List&lt;APIIngressURLsDTO&gt;**](APIIngressURLsDTO.md) |  |  [optional]
 **endpointURLs** | [**List&lt;APIEndpointURLsDTO&gt;**](APIEndpointURLsDTO.md) |  |  [optional]
 **businessInformation** | [**APIBusinessInformationDTO**](APIBusinessInformationDTO.md) |  |  [optional]
-**labels** | [**List&lt;LabelDTO&gt;**](LabelDTO.md) | Labels of micro-gateway environments attached to the API.  |  [optional]
 **environmentList** | **List&lt;String&gt;** | The environment list configured with non empty endpoint URLs for the particular API. |  [optional]
 **scopes** | [**List&lt;ScopeInfoDTO&gt;**](ScopeInfoDTO.md) |  |  [optional]
 **avgRating** | **String** | The average rating of the API |  [optional]
@@ -39,6 +37,8 @@ Name | Type | Description | Notes
 **keyManagers** | [**Object**](.md) | API Key Managers  |  [optional]
 **createdTime** | **String** |  |  [optional]
 **lastUpdatedTime** | **String** |  |  [optional]
+**gatewayVendor** | **String** |  |  [optional]
+**asyncTransportProtocols** | **List&lt;String&gt;** | Supported transports for the aync API.  |  [optional]
 
 
 

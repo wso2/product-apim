@@ -20,6 +20,7 @@ package org.wso2.am.integration.test.utils.bean;
 
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractRequest {
