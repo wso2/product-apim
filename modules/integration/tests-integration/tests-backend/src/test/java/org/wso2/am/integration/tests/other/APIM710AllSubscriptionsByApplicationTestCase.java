@@ -36,6 +36,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 /**
  * APIM2-710:List all the the subscriptions by application
@@ -162,6 +163,9 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
             }
         }
         assertEquals(listcount, listCount1, "Application subscription count mismatch");
+        assertNotNull(subscriptionListDTO.getPagination(), "Pagination DTO is empty");
+        int total1 = subscriptionListDTO.getPagination().getTotal();
+        assertEquals(total1, listCount1, "Application subscription count mismatch in pagination DTO");
 
         subscriptionList1DTO = restAPIStore.getSubscription(null, applicationList.get(1),
                 null, null);
@@ -174,9 +178,13 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
             }
         }
         assertEquals(listcount, listCount2, "Application subscription count mismatch");
+        assertNotNull(subscriptionList1DTO.getPagination(), "Pagination DTO is empty");
+        int total2 = subscriptionList1DTO.getPagination().getTotal();
+        assertEquals(total2, listCount2, "Application subscription count mismatch in pagination DTO");
     }
 
-    @Test(groups = {"webapp"}, description = "List all Subscriptions By API Id")
+    @Test(groups = {"webapp"}, description = "List all Subscriptions By API Id", dependsOnMethods = {
+            "testGetAllSubscriptionsByAppId"})
     public void testGetAllSubscriptionsByAPIId() throws Exception {
         for (String apiId : apiList1) {
             restAPIStore.createSubscription(apiId,
