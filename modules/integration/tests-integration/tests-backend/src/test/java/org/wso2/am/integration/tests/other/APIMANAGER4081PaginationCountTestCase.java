@@ -163,7 +163,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                         fail("API creation has failed for APIName=" + APIName + " APIVersion=" + APIVersion);
                     }
                 } else {
-                    apiId = restAPIPublisher.createNewAPIVersion(APIVersion, apiId, false);//1.4 1.8 1.12
+                    apiId = restAPIPublisher.createNewAPIVersion(APIVersion, apiId, false);//1.4 1.8 1.14
                     //1.9
                     if (i == 2) {
                         devportalAPIs = restAPIStore.getAllAPIs();
@@ -175,6 +175,8 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                                 }
                             }
                         }
+                    } else {
+                        createdAPIs.add(apiId);
                     }
                 }
                 //periodically check if the API is available in publisher
@@ -336,16 +338,16 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (restAPIPublisher != null) {
+            for (String id : createdAPIs) {
+                log.info("Delete API from createdAPIs: id" + id);
+                restAPIPublisher.deleteAPI(id);
+            }
             //take the names of the newly added APIs from the saved array and delete them
             List<org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO> publisherAPIs =
                     restAPIPublisher.getAllAPIs().getList();
             for(org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO dto : publisherAPIs) {
                 log.info("Delete API : " + dto.getName() + " version:" + dto.getVersion());
                 restAPIPublisher.deleteAPI(dto.getId());
-            }
-            for (String id : createdAPIs) {
-                log.info("Delete API from createdAPIs: id" + id);
-                restAPIPublisher.deleteAPI(id);
             }
         }
         super.cleanUp();
