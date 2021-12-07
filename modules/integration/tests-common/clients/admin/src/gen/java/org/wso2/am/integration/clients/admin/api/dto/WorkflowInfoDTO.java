@@ -50,7 +50,9 @@ public enum WorkflowTypeEnum {
         
         SUBSCRIPTION_DELETION("SUBSCRIPTION_DELETION"),
         
-        SUBSCRIPTION_UPDATE("SUBSCRIPTION_UPDATE");
+        SUBSCRIPTION_UPDATE("SUBSCRIPTION_UPDATE"),
+        
+        API_PRODUCT_STATE("API_PRODUCT_STATE");
 
 private String value;
 

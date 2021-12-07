@@ -52,10 +52,8 @@ import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
-import org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 
-import org.wso2.am.integration.tests.apiproduct.lifecycle.APIProductLifecycleTest;
 import org.wso2.carbon.apimgt.api.WorkflowStatus;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -65,18 +63,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.testng.Assert.assertEquals;
-import static org.wso2.am.integration.test.utils.base.APIMIntegrationConstants.SUPER_TENANT_DOMAIN;
 
 public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
     private UserManagementClient userManagementClient = null;
-  //  protected String user;
     private String originalWFExtentionsXML;
     private String newWFExtentionsXML;
     private String USER_SMITH = "smith";
@@ -130,8 +124,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
                 keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
 
-//        userManagementClient.addUser(USER_SMITH, "john123", new String[]{INTERNAL_ROLE_SUBSCRIBER}, USER_SMITH);
-//        userManagementClient.addUser(USER_ADMIN, "admin", new String[]{ALLOWED_ROLE}, ADMIN_ROLE);
+        userManagementClient.addUser(USER_SMITH, "john123", new String[]{INTERNAL_ROLE_SUBSCRIBER}, USER_SMITH);
+        userManagementClient.addUser(USER_ADMIN, "admin", new String[]{ALLOWED_ROLE}, ADMIN_ROLE);
 
         resourceAdminServiceClient = new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 createSession(gatewayContextMgt));
@@ -255,7 +249,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(returnedAPIProductDTO.getWorkflowStatus(), APILifeCycleState.CREATED.toString(), "Lifecycle "
                 + "state should remain without changing till approval. ");
 
-        String workflowType = "AM_API_STATE";
+        String workflowType = "AM_API_PRODUCT_STATE";
 
         WorkflowListDTO workflowListDTO = restAPIAdmin.getWorkflowsByWorkflowType(workflowType);
         assertNotNull(workflowListDTO);
@@ -305,7 +299,6 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
         apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(USER_SMITH, name, context, apisToBeUsed,
                 policies);
-        apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
         apiProductId = apiProductDTO.getId();
         assert apiProductDTO.getState() != null;
         Assert.assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(apiProductDTO.getState().getValue()));

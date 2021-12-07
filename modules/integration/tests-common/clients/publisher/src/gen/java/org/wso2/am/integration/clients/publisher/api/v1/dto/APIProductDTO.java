@@ -1196,7 +1196,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
 
         public APIProductDTO gatewayVendor(String gatewayVendor) {
-
+        
         this.gatewayVendor = gatewayVendor;
         return this;
         }
@@ -1207,7 +1207,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     **/
         @javax.annotation.Nullable
       @ApiModelProperty(example = "wso2", value = "")
-
+    
     public String getGatewayVendor() {
         return gatewayVendor;
     }
@@ -1288,7 +1288,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
 
         public APIProductDTO workflowStatus(String workflowStatus) {
-
+        
         this.workflowStatus = workflowStatus;
         return this;
         }
@@ -1299,7 +1299,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     **/
         @javax.annotation.Nullable
       @ApiModelProperty(example = "APPROVED", value = "")
-
+    
     public String getWorkflowStatus() {
         return workflowStatus;
     }

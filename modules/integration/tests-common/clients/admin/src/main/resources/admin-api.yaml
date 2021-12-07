@@ -2846,6 +2846,7 @@ paths:
               - AM_SUBSCRIPTION_DELETION
               - AM_APPLICATION_DELETION
               - AM_API_STATE
+              - AM_API_PRODUCT_STATE
       responses:
         200:
           description: |
@@ -5565,6 +5566,7 @@ components:
             - API_STATE
             - SUBSCRIPTION_DELETION
             - SUBSCRIPTION_UPDATE
+            - API_PRODUCT_STATE
         workflowStatus:
           type: string
           description: |
