@@ -201,9 +201,7 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
 
         // Test the invocation of Deprecated API Product
         APIProductDTO returnedProduct = restAPIPublisher.getApiProduct(apiProductId);
-        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
-                apiProductTestHelper.verifyApiProductInPortal(returnedProduct);
-        apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
+        apiTestHelper.verifyInvocation(responseData, productionAppKey.getToken().getAccessToken(),
                 productionAppKey.getToken().getAccessToken(), invocationStatusCodes);
     }
 
@@ -228,7 +226,6 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        restAPIPublisher.deleteApiProduct(apiProductId);
         for (APIDTO apiDto: apisToBeUsed) {
             restAPIPublisher.deleteAPI(apiDto.getId());
         }
