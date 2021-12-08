@@ -29,16 +29,20 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.InvocationStatusCodes;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -53,6 +57,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
@@ -130,6 +137,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         // Step 2 : Verify created APIProduct in publisher
         apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+
+        apiProductDTO = publishAPIProduct(apiProductDTO.getId());
 
         // Step 3 : Verify APIProduct in dev portal
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
@@ -213,6 +222,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         // Step 2 : Verify created APIProduct in publisher
         apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
 
+        apiProductDTO = publishAPIProduct(apiProductDTO.getId());
+
         // Step 3 : Verify APIProduct in dev portal
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
                 apiProductTestHelper.verifyApiProductInPortal(apiProductDTO);
@@ -273,6 +284,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         // Step 2 : Verify created APIProduct in publisher
         apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+
+        apiProductDTO = publishAPIProduct(apiProductDTO.getId());
 
         // Step 3 : Verify APIProduct in dev portal
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
@@ -335,6 +348,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         // Step 2 : Verify created APIProduct in publisher
         apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+
+        apiProductDTO = publishAPIProduct(apiProductDTO.getId());
 
         // Step 3 : Verify APIProduct in dev portal
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
@@ -422,6 +437,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         // Step 2 : Verify created APIProduct in publisher
         apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
 
+        apiProductDTO = publishAPIProduct(apiProductDTO.getId());
+
         // Step 3 : Verify APIProduct in dev portal
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
                 apiProductTestHelper.verifyApiProductInPortal(apiProductDTO);
@@ -508,5 +525,17 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         return new HttpResponse(content, response.getStatusLine().getStatusCode(), outputHeaders);
     }
 
+    private APIProductDTO publishAPIProduct(String uuid) throws ApiException {
+
+        WorkflowResponseDTO workflowResponseDTO = apiProductTestHelper.changeLifecycleStateOfApiProduct(uuid,
+                "Publish", null);
+        assertNotNull(workflowResponseDTO);
+        LifecycleStateDTO lifecycleStateDTO = workflowResponseDTO.getLifecycleState();
+        assertNotNull(lifecycleStateDTO);
+        assertEquals("APPROVED", workflowResponseDTO.getWorkflowStatus().getValue());
+        assert APILifeCycleState.PUBLISHED.getState().equals(lifecycleStateDTO.getState());
+
+        return restAPIPublisher.getApiProduct(uuid);
+    }
 }
 

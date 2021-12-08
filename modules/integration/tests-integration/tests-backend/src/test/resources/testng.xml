@@ -52,6 +52,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.api.revision.APIProductRevisionTestCase"/>
             <class name="org.wso2.am.integration.tests.apiproduct.APIProductCreationTestCase"/>
+            <class name="org.wso2.am.integration.tests.apiproduct.lifecycle.APIProductLifecycleTest"/>
         </classes>
     </test>
 

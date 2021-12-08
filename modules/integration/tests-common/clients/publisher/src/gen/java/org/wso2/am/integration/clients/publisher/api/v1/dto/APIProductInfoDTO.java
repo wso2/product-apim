@@ -62,7 +62,15 @@ public class APIProductInfoDTO {
 public enum StateEnum {
         CREATED("CREATED"),
         
-        PUBLISHED("PUBLISHED");
+        PUBLISHED("PUBLISHED"),
+        
+        DEPRECATED("DEPRECATED"),
+        
+        RETIRED("RETIRED"),
+        
+        BLOCKED("BLOCKED"),
+        
+        PROTOTYPED("PROTOTYPED");
 
 private String value;
 

@@ -7700,6 +7700,235 @@ paths:
         - OAuth2Security:
             - apim:api_create
 
+  /api-products/change-lifecycle:
+    post:
+      tags:
+        - API Product Lifecycle
+      summary: Change API Product LC Status
+      description: |
+        This operation is used to change the lifecycle of an API Product.
+        Eg: Publish an API Product which is in `CREATED` state. In order to change the lifecycle, we need to provide the
+        lifecycle `action` as a query parameter.
+
+        For example, to Publish an API Product, `action` should be `Publish`. Note that the `Re-publish` action is
+        available only after calling `Block`.
+
+        Some actions supports providing additional paramters which should be provided as `lifecycleChecklist` parameter.
+        Please see parameters table for more information.
+      parameters:
+        - name: action
+          in: query
+          description: |
+            The action to demote or promote the state of the API Product.
+
+            Supported actions are [ **Publish**, **Deploy as a Prototype**, **Demote to Created**, **Block**, **Deprecate**, **Re-Publish**, **Retire** ]
+          required: true
+          schema:
+            type: string
+            enum:
+              - Publish
+              - Deploy as a Prototype
+              - Demote to Created
+              - Block
+              - Deprecate
+              - Re-Publish
+              - Retire
+        - name: lifecycleChecklist
+          in: query
+          description: |2
+
+            Supported checklist items are as follows.
+            1. **Deprecate old versions after publishing the API**: Setting this to true will deprecate older versions of a particular API Product when it is promoted to Published state from Created state.
+            2. **Requires re-subscription when publishing the API**: If you set this to true, users need to re subscribe to the API Products although they may have subscribed to an older version.
+            You can specify additional checklist items by using an **"attribute:"** modifier.
+            Eg: "Deprecate old versions after publishing the API:true" will deprecate older versions of a particular API Product when it is promoted to Published state from Created state. Multiple checklist items can be given in "attribute1:true, attribute2:false" format.
+            **Sample CURL :**  curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -X POST "https://localhost:9443/api/am/publisher/v2/api-products/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish&lifecycleChecklist=Deprecate%20old%20versions%20after%20publishing%20the%20API%3Atrue,Requires%20re-subscription%20when%20publishing%20the%20API%3Afalse"
+          schema:
+            type: string
+        - $ref: '#/components/parameters/apiProductId-Q'
+        - $ref: '#/components/parameters/If-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Lifecycle changed successfully.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the changed API. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the API lifecycle has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+        202:
+          description: |
+            Accepted.
+            The request has been accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+            - apim:api_manage
+            - apim:api_import_export
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish"'
+      operationId: changeAPIProductLifecycle
+
+  /api-products/{apiProductId}/lifecycle-history:
+    get:
+      tags:
+        - API Product Lifecycle
+      summary: Get Lifecycle State Change History of the API Products.
+      description: |
+        This operation can be used to retrieve Lifecycle state change history of the API Products.
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Lifecycle state change history returned successfully.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifecycleHistory'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+            - apim:api_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-history"'
+      operationId: getAPIProductLifecycleHistory
+
+  /api-products/{apiProductId}/lifecycle-state:
+    get:
+      tags:
+        - API Product Lifecycle
+      summary: Get Lifecycle State Data of the API Product.
+      description: |
+        This operation can be used to retrieve Lifecycle state data of the API Product.
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Lifecycle state data returned successfully.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifecycleState'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+            - apim:api_create
+            - apim:api_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-state"'
+      operationId: getAPIProductLifecycleState
+
+  /api-products/{apiProductId}/lifecycle-state/pending-tasks:
+    delete:
+      tags:
+        - API Product Lifecycle
+      summary: Delete Pending Lifecycle State Change Tasks
+      description: |
+        This operation can be used to remove pending lifecycle state change requests that are in pending state
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+      responses:
+        200:
+          description: |
+            OK.
+            Lifecycle state change pending task removed successfully.
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+            - apim:api_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-state/pending-tasks"'
+      operationId: deleteAPIProductLifecycleStatePendingTasks
+
+
 components:
   schemas:
     Comment:
@@ -8498,6 +8727,10 @@ components:
           enum:
             - CREATED
             - PUBLISHED
+            - DEPRECATED
+            - RETIRED
+            - BLOCKED
+            - PROTOTYPED
         securityScheme:
           type: array
           description: |
@@ -8550,9 +8783,14 @@ components:
           type: string
           description: |
             State of the API product. Only published api products are visible on the Developer Portal
+          default: CREATED
           enum:
             - CREATED
             - PUBLISHED
+            - DEPRECATED
+            - RETIRED
+            - BLOCKED
+            - PROTOTYPED
         enableSchemaValidation:
           type: boolean
           example: false
@@ -8737,6 +8975,9 @@ components:
           example: []
           items:
             type: string
+        workflowStatus:
+          type: string
+          example: APPROVED
     ProductAPI:
       title: ProductAPI
       required:
@@ -11485,6 +11726,16 @@ components:
       name: tierQuotaType
       description: Filter the subscription base on tier quota type
       in: query
+      schema:
+        type: string
+    apiProductId-Q:
+      name: apiProductId
+      in: query
+      description: |
+        **API Product ID** consisting of the **UUID** of the API Product.
+        The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID.
+        Should be formatted as **provider-name-version**.
+      required: true
       schema:
         type: string
   requestBodies:

@@ -20,23 +20,30 @@ package org.wso2.am.integration.tests.workflow;
 
 import java.io.File;
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.testng.annotations.*;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowDTO;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowInfoDTO;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowListDTO;
 
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.impl.ApiProductTestHelper;
+import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.UserManagementUtils;
@@ -54,17 +61,16 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.testng.Assert.assertEquals;
-import static org.wso2.am.integration.test.utils.base.APIMIntegrationConstants.SUPER_TENANT_DOMAIN;
 
 public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
     private UserManagementClient userManagementClient = null;
-    protected String user;
     private String originalWFExtentionsXML;
     private String newWFExtentionsXML;
     private String USER_SMITH = "smith";
@@ -89,11 +95,14 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     private String apiId;
     private String applicationID;
     private String subscriptionId;
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
+    private ApiProductTestHelper apiProductTestHelper;
+    private ApiTestHelper apiTestHelper;
     private RestAPIStoreImpl APIStoreClient;
     private String apiName = "WorkflowTestAPI";
     private String applicationName = "AppCreationWorkflowTestAPP";
+    private ArrayList<APIDTO> apisToBeUsed;
+    private APIProductDTO apiProductDTO;
+    private String apiProductId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WorkflowApprovalExecutorTest(TestUserMode userMode) {
@@ -129,8 +138,9 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         // Updates the content of the workflow-extentions.xml of the registry file, to have the new configurations.
         resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION, newWFExtentionsXML);
 
-        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
-        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
+        apiProductTestHelper = new ApiProductTestHelper(restAPIPublisher, restAPIStore);
+        apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation(),
+                keyManagerContext.getContextTenant().getDomain(), keyManagerHTTPSURL, user);
     }
 
     @Test(groups = {"wso2.am"}, description = "Api workflow process check")
@@ -223,6 +233,80 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         // lifecycle state should change as PUBLISHED
         assertEquals(apiNewStatus, APILifeCycleState.PUBLISHED.toString(),
                 "Lifecycle state should change after approval. ");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "API Product workflow process check")
+    public void testAPIProductWorkflowProcess() throws Exception {
+
+        createAndDeployAPIProduct();
+
+        // Request to Publish the API Product
+        WorkflowResponseDTO workflowResponseDTO = apiProductTestHelper.changeLifecycleStateOfApiProduct(apiProductId,
+                "Publish", null);
+        assertEquals("CREATED", workflowResponseDTO.getWorkflowStatus().getValue());
+        APIProductDTO returnedAPIProductDTO = restAPIPublisher.getApiProduct(apiProductId);
+        assertEquals("CREATED", returnedAPIProductDTO.getState().getValue());
+        assertEquals(returnedAPIProductDTO.getWorkflowStatus(), APILifeCycleState.CREATED.toString(), "Lifecycle "
+                + "state should remain without changing till approval. ");
+
+        String workflowType = "AM_API_PRODUCT_STATE";
+
+        WorkflowListDTO workflowListDTO = restAPIAdmin.getWorkflowsByWorkflowType(workflowType);
+        assertNotNull(workflowListDTO);
+        assertNotNull(workflowListDTO.getList());
+        String workflowReferenceID = null;
+        for (WorkflowInfoDTO workflow : workflowListDTO.getList()) {
+            LinkedTreeMap workflowProperties = (LinkedTreeMap) workflow.getProperties();
+            assert workflowProperties != null;
+            if (workflowProperties.containsKey("apiName") && apiProductDTO.getName().equals(workflowProperties.get(
+                    "apiName"))) {
+                workflowReferenceID = workflow.getReferenceId();
+            }
+        }
+        assertNotNull("Workflow reference is not available ", workflowReferenceID);
+
+        org.wso2.am.integration.test.HttpResponse response =
+                restAPIAdmin.getWorkflowByExternalWorkflowReference(workflowReferenceID);
+        assertEquals(response.getResponseCode(), 200, "Get Workflow Pending request by external workflow " +
+                "reference failed for User Admin");
+
+        response = restAPIAdmin.updateWorkflowStatus(workflowReferenceID);
+        assertEquals(response.getResponseCode(), 200, "Workflow request update failed for user admin");
+
+        String jsonUpdateResponse = response.getData();
+        Gson gsonUpdateResponse = new Gson();
+        WorkflowDTO workflowDTO = gsonUpdateResponse.fromJson(jsonUpdateResponse, WorkflowDTO.class);
+        String status = workflowDTO.getStatus().toString();
+        assertEquals(status, WorkflowStatus.APPROVED.toString());
+
+        returnedAPIProductDTO = restAPIPublisher.getApiProduct(apiProductId);
+        assertEquals(returnedAPIProductDTO.getState().getValue().toUpperCase(),
+                APILifeCycleState.PUBLISHED.toString().toUpperCase(), "Lifecycle state should change after approval");
+    }
+
+    private void createAndDeployAPIProduct() throws Exception {
+
+        apisToBeUsed = new ArrayList<>();
+        APIDTO apiOne = apiTestHelper.createApiOne(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        APIDTO apiTwo = apiTestHelper.createApiTwo(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        apisToBeUsed.add(apiOne);
+        apisToBeUsed.add(apiTwo);
+
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID();
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(USER_SMITH, name, context, apisToBeUsed,
+                policies);
+        apiProductId = apiProductDTO.getId();
+        assert apiProductDTO.getState() != null;
+        Assert.assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(apiProductDTO.getState().getValue()));
+
+        waitForAPIDeployment();
+
+        createAPIProductRevisionAndDeployUsingRest(apiProductId, restAPIPublisher);
+        apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
     }
 
     @Test(groups = {"wso2.am"}, description = "Application workflow process check", dependsOnMethods =

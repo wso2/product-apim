@@ -24,6 +24,10 @@ Name | Value
 ---- | -----
 CREATED | &quot;CREATED&quot;
 PUBLISHED | &quot;PUBLISHED&quot;
+DEPRECATED | &quot;DEPRECATED&quot;
+RETIRED | &quot;RETIRED&quot;
+BLOCKED | &quot;BLOCKED&quot;
+PROTOTYPED | &quot;PROTOTYPED&quot;
 
 
 
