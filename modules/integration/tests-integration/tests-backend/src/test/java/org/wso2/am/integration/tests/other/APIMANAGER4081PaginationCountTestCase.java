@@ -126,8 +126,9 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
         versionsOfAPIs.put(4, api4Versions);
         versionsOfAPIs.put(5, api5Versions);
 
-        int counter = 1;
+        int counter = 0;
         while (counter < versionsOfAPIs.size()) {
+            counter ++;
             String[] apiVersionsArray = versionsOfAPIs.get(counter);
             int numberOfVersions = apiVersionsArray.length;
             String apiId = "";
