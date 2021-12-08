@@ -70,6 +70,17 @@
                 <checksumPolicy>ignore</checksumPolicy>
             </releases>
         </repository>
+        <repository>
+            <id>repo</id>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+	    <url>file://${maven.multiModuleProjectDirectory}/../../support-modules</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
