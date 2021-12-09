@@ -79,6 +79,9 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.SUPER_TENANT_EMAIL_USER},
+                new Object[]{TestUserMode.TENANT_EMAIL_USER},
+                new Object[]{TestUserMode.SUPER_TENANT_USER_STORE_USER},
         };
     }
 
@@ -99,7 +102,7 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before retire")
     public void testCreateAPIProduct() throws Exception {
 
-        final String provider = user.getUserName();
+        final String provider = user.getUserNameWithoutDomain();
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID();
 
