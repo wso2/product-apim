@@ -56,6 +56,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
 
     private String tenantDomain = "paginationtest.com";
     private int numberOfAPIs = 5;
+    private int numberOfPublisherAPIs = 15;
     private List<String> createdAPIs = new ArrayList<>();
     private static final Log log = LogFactory.getLog(APIMANAGER4081PaginationCountTestCase.class);
 
@@ -176,12 +177,13 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                                 }
                             }
                         }
-                    } else {
+                    }
+                    if (i > 1) {
                         createdAPIs.add(apiId);
                     }
                 }
                 //periodically check if the API is available in publisher
-                int publisherAPIsCount = (4 * (counter - 1)) + (i + 1);
+                int publisherAPIsCount = (3 * (counter - 1)) + (i + 1);
                 publisherAPIsCount = (i == 3) ? publisherAPIsCount - 1 : publisherAPIsCount;
 
                 boolean isAPIAvailableInPublisher = false;
@@ -284,21 +286,21 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
         }
         //Checking Dev Portal pagination
         //fetch the first page, this page should have 4 results
-        getPaginatedAPIsFromDevportalAndVerify(0, 4, 4);
+        getPaginatedAPIsFromPublisherAndVerify(0, 4, 4);
         //fetch the 2nd page, this page should have 4 results
-        getPaginatedAPIsFromDevportalAndVerify(4, 4, 4);
+        getPaginatedAPIsFromPublisherAndVerify(4, 4, 4);
         //fetch the 3nd page, this page should have 4 results
-        getPaginatedAPIsFromDevportalAndVerify(8, 4, 4);
+        getPaginatedAPIsFromPublisherAndVerify(8, 4, 4);
         //fetch the 4nd page, this page should have 3 results
-        getPaginatedAPIsFromDevportalAndVerify(12, 4, 3);
+        getPaginatedAPIsFromPublisherAndVerify(12, 4, 3);
 
         //Checking Publisher pagination
         //fetch the first page, this page should have 2 results
-        getPaginatedAPIsFromPublisherAndVerify(0, 2, 2);
+        getPaginatedAPIsFromDevportalAndVerify(0, 2, 2);
         //fetch the 2nd page, this page should have 2 results
-        getPaginatedAPIsFromPublisherAndVerify(2, 2, 2);
+        getPaginatedAPIsFromDevportalAndVerify(2, 2, 2);
         //fetch the 3nd page, this page should have 1 results
-        getPaginatedAPIsFromPublisherAndVerify(4, 3, 1);
+        getPaginatedAPIsFromDevportalAndVerify(4, 3, 1);
 
     }
 
@@ -315,7 +317,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
         assertEquals(publisherAPIs.getCount().intValue(), expect, "Expected " + expect + " of APIs in the page with " +
                 "offset:" + offset + " but was " + publisherAPIs.getCount());
         assertNotNull(publisherAPIs.getPagination(), "pagination element cannot be null in get APIs response");
-        assertEquals(publisherAPIs.getPagination().getTotal().intValue(), numberOfAPIs, "Expected " + numberOfAPIs + " as " +
+        assertEquals(publisherAPIs.getPagination().getTotal().intValue(), numberOfPublisherAPIs, "Expected " + numberOfPublisherAPIs + " as " +
                 "total number of APIs in the system but was " + publisherAPIs.getPagination().getTotal());
     }
 
@@ -342,13 +344,6 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
             for (String id : createdAPIs) {
                 log.info("Delete API from createdAPIs: id" + id);
                 restAPIPublisher.deleteAPI(id);
-            }
-            //take the names of the newly added APIs from the saved array and delete them
-            List<org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO> publisherAPIs =
-                    restAPIPublisher.getAllAPIs().getList();
-            for(org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO dto : publisherAPIs) {
-                log.info("Delete API : " + dto.getName() + " version:" + dto.getVersion());
-                restAPIPublisher.deleteAPI(dto.getId());
             }
         }
         super.cleanUp();
