@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
@@ -81,6 +82,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
@@ -92,6 +94,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertEquals;
@@ -130,9 +133,12 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN}};
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                //new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
+
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -187,6 +193,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         subPolicyPolicyId = addedSubPolicy.getPolicyId();
         Assert.assertNotNull(subPolicyPolicyId, "The policy ID cannot be null or empty");
 
+        ArrayList<String> environment = new ArrayList<>();
+        environment.add(Constants.GATEWAY_ENVIRONMENTS);
+
         ArrayList<String> policies = new ArrayList<>();
         policies.add("Unlimited");
         policies.add("QueryComplexPolicy");
@@ -207,6 +216,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         endpointConfig.put("sandbox_endpoints", url);
         endpointConfig.put("production_endpoints", url);
         additionalPropertiesObj.put("endpointConfig", endpointConfig);
+        additionalPropertiesObj.put("gatewayEnvironments", environment);
         additionalPropertiesObj.put("policies", policies);
         additionalPropertiesObj.put("operations", operations);
 
@@ -214,7 +224,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         APIDTO apidto = restAPIPublisher.importGraphqlSchemaDefinition(file, additionalPropertiesObj.toString());
         graphqlApiId = apidto.getId();
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlApiId);
-        System.out.println(createdApiResponse.getData());
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
                 API_NAME + " API creation is failed");
         // publish api
@@ -230,17 +239,41 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         }
         log.info("API Endpoint URL" + apiEndPoint);
         APIIdentifier apiIdentifierWebSocket = new APIIdentifier(user.getUserName(), API_NAME, API_VERSION);
-        APIListDTO apiPublisherAllAPIs = restAPIPublisher.getAllAPIs();
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierWebSocket, apiPublisherAllAPIs),
-                "Published API is visible in API Publisher.");
-        org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO restAPIStoreAllAPIs;
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            restAPIStoreAllAPIs = restAPIStore.getAllAPIs();
-        } else {
-            restAPIStoreAllAPIs = restAPIStore.getAllAPIs(user.getUserDomain());
+        APIListDTO apiPublisherAllAPIs;
+        boolean isAPIAvailableInPublisherPortal = Boolean.FALSE;
+        int retry = 0;
+        while (retry < 15) {
+            apiPublisherAllAPIs = restAPIPublisher.getAllAPIs();
+            isAPIAvailableInPublisherPortal = APIMTestCaseUtils.isAPIAvailable(apiIdentifierWebSocket,
+                    apiPublisherAllAPIs);
+            if (isAPIAvailableInPublisherPortal) {
+                break;
+            }
+            log.info("Waiting for API '" + API_NAME + "' is available on Publisher Portal.");
+            Thread.sleep(1000);
+            retry++;
         }
-        assertTrue(APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifierWebSocket, restAPIStoreAllAPIs),
-                "Published API is visible in Dev Portal.");
+        assertTrue(isAPIAvailableInPublisherPortal, "Published API '" + API_NAME + "'is visible in API Publisher.");
+
+        org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO restAPIStoreAllAPIs;
+        boolean isAPIAvailableInDevPortal = Boolean.FALSE;
+        retry = 0;
+        while (retry < 15) {
+            if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+                restAPIStoreAllAPIs = restAPIStore.getAllAPIs();
+            } else {
+                restAPIStoreAllAPIs = restAPIStore.getAllAPIs(user.getUserDomain());
+            }
+            isAPIAvailableInDevPortal = APIMTestCaseUtils.isAPIAvailableInStore(apiIdentifierWebSocket,
+                    restAPIStoreAllAPIs);
+            if (isAPIAvailableInDevPortal) {
+                break;
+            }
+            log.info("Waiting for API '" + API_NAME + "' is available on Dev Portal.");
+            Thread.sleep(1000);
+            retry++;
+        }
+        assertTrue(isAPIAvailableInDevPortal, "Published API is visible in Dev Portal.");
     }
 
     @Test(description = "Create JWT Type Application and subscribe",
@@ -559,6 +592,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = null;
 
+        request.setSubProtocols("graphql-ws");
         if (AUTH_IN.HEADER == in) {
             request.setHeader("Authorization", "Bearer " + accessToken);
             echoUri = new URI(apiEndPoint);
@@ -754,6 +788,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
 
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
@@ -804,6 +839,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
 
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
@@ -856,6 +892,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
 
+        request.setSubProtocols("graphql-ws");
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             String textMessage;
@@ -906,6 +943,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
 
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {

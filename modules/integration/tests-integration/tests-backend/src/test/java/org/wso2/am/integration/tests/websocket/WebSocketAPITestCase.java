@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.am.integration.tests.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -47,6 +46,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -59,14 +59,14 @@ import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
 import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.xml.StringUtils;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -76,6 +76,7 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -129,8 +130,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     public static Object[][] userModeDataProvider() {
 
         return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN}
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
         };
     }
 
@@ -173,8 +173,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setProvider(provider);
         apiRequest.setType("WS");
         apiRequest.setApiTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setEnvironment(Constants.GATEWAY_ENVIRONMENTS);
         HttpResponse addAPIResponse = restAPIPublisher.addAPI(apiRequest);
-         websocketAPIID = addAPIResponse.getData();
+        websocketAPIID = addAPIResponse.getData();
         restAPIPublisher.changeAPILifeCycleStatus(websocketAPIID, APILifeCycleAction.PUBLISH.getAction(), null);
         waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -313,9 +314,11 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
         apidto.setApiThrottlingPolicy("WebSocketTestThrottlingPolicy");
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto);
+        waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), "WebSocketTestThrottlingPolicy");
         //Get an Access Token from the user who is logged into the API Store.
-        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(getKeyManagerURLHttps() + "/oauth2/token");
         String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(),
                 user.getPassword());
         JSONObject subsAccessTokenGenerationResponse = new JSONObject(
@@ -424,12 +427,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      */
     private void testThrottling(String accessToken) throws Exception {
 
-        /* Prevent API requests getting dispersed into two time units */
-        while (LocalDateTime.now().getSecond() > 20) {
-            Thread.sleep(5000L);
-        }
+        waitUntilClockHour();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
-
         int limit = 2;
         WebSocketClient client = new WebSocketClient();
         WebSocketClientImpl socket = new WebSocketClientImpl();
@@ -504,6 +503,22 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             socket.setResponseMessage(null);
         } else {
             throw new APIManagerIntegrationTestException("Unable to create client connection");
+        }
+    }
+
+    private static void waitUntilClockHour() throws InterruptedException {
+        while (getWaitTime() > 0) {
+            Thread.sleep(60000);
+        }
+    }
+
+    private static long getWaitTime() {
+        Calendar calendar = Calendar.getInstance();
+        int minutesInTime = calendar.get(Calendar.MINUTE);
+        if (60 - minutesInTime >= 5) {
+            return 0;
+        } else {
+            return 1;
         }
     }
 
