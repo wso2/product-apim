@@ -102,7 +102,12 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before retire")
     public void testCreateAPIProduct() throws Exception {
 
-        final String provider = user.getUserNameWithoutDomain();
+        String provider;
+        if (userMode == TestUserMode.SUPER_TENANT_USER_STORE_USER) {
+            provider = user.getUserNameWithoutDomain();
+        } else {
+            provider = user.getUserName();
+        }
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID();
 
