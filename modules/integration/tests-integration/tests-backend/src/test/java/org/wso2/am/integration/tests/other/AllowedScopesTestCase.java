@@ -17,6 +17,7 @@
  */
 package org.wso2.am.integration.tests.other;
 
+import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.Header;
 import org.json.JSONException;
@@ -25,6 +26,8 @@ import org.junit.Assert;
 import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.*;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
@@ -92,28 +95,58 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
         //Create API
         APIRequest apiRequest = new APIRequest(ALLOWED_SCOPES_API, ALLOWED_SCOPES_API, new URL(apiEndPointUrl));
         apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setProvider(user.getUserName());
 
+        HttpResponse response = restAPIPublisher.addAPI(apiRequest);
+        apiId = response.getData();
+
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId);
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(createdApiResponse.getData(), APIDTO.class);
+
+        // Adding admin role
+        List role = new ArrayList();
+        role.add("admin");
+        //Adding scope1
+        ScopeDTO scopeObject = new ScopeDTO();
+        scopeObject.setName("scope1");
+        scopeObject.setBindings(role);
+        APIScopeDTO apiScope1DTO = new APIScopeDTO();
+        apiScope1DTO.setScope(scopeObject);
+        //Adding scope2
+        ScopeDTO scopeObject2 = new ScopeDTO();
+        scopeObject2.setName("scope2");
+        scopeObject2.setBindings(role);
+        APIScopeDTO apiScope2DTO = new APIScopeDTO();
+        apiScope2DTO.setScope(scopeObject2);
+        // Adding scopes to API
+        List apiScopeList = new ArrayList();
+        apiScopeList.add(apiScope1DTO);
+        apiScopeList.add(apiScope2DTO);
+        apidto.setScopes(apiScopeList);
+
+        // Adding Operation with scopes
         List<String> scopes = new ArrayList<>();
         scopes.add("scope1");
         scopes.add("scope2");
-
+        List<APIOperationsDTO> operations = new ArrayList<>();
         APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
         apiOperationsDTO.setVerb("GET");
         apiOperationsDTO.setTarget("/customers/{id}");
         apiOperationsDTO.setAuthType("Application & Application User");
         apiOperationsDTO.setThrottlingPolicy("Unlimited");
         apiOperationsDTO.setScopes(scopes);
+        operations.add(apiOperationsDTO);
+        apidto.operations(operations);
 
-        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
-        operationsDTOS.add(apiOperationsDTO);
-        apiRequest.setOperationsDTOS(operationsDTOS);
-        apiRequest.setProvider(user.getUserName());
+        // Update the API
+        restAPIPublisher.updateAPI(apidto, apiId);
 
-        HttpResponse response = restAPIPublisher.addAPI(apiRequest);
-        apiId = response.getData();
-
+        // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId, false);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_NOT_EXISTS);
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
@@ -191,6 +224,48 @@ public class AllowedScopesTestCase extends APIManagerLifecycleBaseTest {
                 .doGet(getAPIInvocationURLHttps(ALLOWED_SCOPES_API, API_VERSION_1_0_0) + API_END_POINT_METHOD,
                         requestHeadersScope1);
         assertEquals(apiResponse3.getResponseCode(), HttpStatus.SC_OK);
+
+        // Generate token with scope3
+        String requestBodyForWithScope3 = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword()+ "&scope=scope3";
+        JSONObject accessTokenGenerationResponseWithScope3 = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBodyForWithScope3, tokenEndpointURL)
+                        .getData());
+        // Validate access token
+        Assert.assertNotNull(accessTokenGenerationResponseWithScope3);
+        Assert.assertTrue(accessTokenGenerationResponseWithScope3.getString("scope").contains("scope3"));
+        Assert.assertTrue(accessTokenGenerationResponseWithScope3.getString("expires_in").equals("3600"));
+        String accessTokenWithScope3 = accessTokenGenerationResponseWithScope3.getString("access_token");
+
+        Map<String, String> requestHeadersWithScope3 = new HashMap<String, String>();
+        requestHeadersWithScope3.put("Authorization", "Bearer " + accessTokenWithScope3);
+        requestHeadersWithScope3.put("accept", "text/xml");
+
+        // Check if scope3 token is forbidden
+        HttpResponse apiResponse4 = HttpRequestUtil
+                .doGet(getAPIInvocationURLHttps(ALLOWED_SCOPES_API, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                        requestHeadersWithScope3);
+        assertEquals(apiResponse4.getResponseCode(), HttpStatus.SC_FORBIDDEN);
+
+        // Generate token without scope
+        String requestBodyForWithoutScope = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword();
+        JSONObject accessTokenGenerationResponseWithoutScope = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBodyForWithoutScope, tokenEndpointURL)
+                        .getData());
+        // Validate access token
+        Assert.assertNotNull(accessTokenGenerationResponseWithoutScope);
+        Assert.assertTrue(accessTokenGenerationResponseWithoutScope.getString("scope").contains("default"));
+        Assert.assertTrue(accessTokenGenerationResponseWithoutScope.getString("expires_in").equals("3600"));
+        String accessTokenWithoutScope = accessTokenGenerationResponseWithoutScope.getString("access_token");
+
+        Map<String, String> requestHeadersWithoutScope = new HashMap<String, String>();
+        requestHeadersWithoutScope.put("Authorization", "Bearer " + accessTokenWithoutScope);
+        requestHeadersWithoutScope.put("accept", "text/xml");
+
+        // Check if default scoped token is forbidden
+        HttpResponse apiResponse5 = HttpRequestUtil
+                .doGet(getAPIInvocationURLHttps(ALLOWED_SCOPES_API, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                        requestHeadersWithoutScope);
+        assertEquals(apiResponse5.getResponseCode(), HttpStatus.SC_FORBIDDEN);
     }
 
     @AfterClass(alwaysRun = true)
