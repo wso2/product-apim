@@ -135,7 +135,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                //new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 
@@ -447,8 +447,8 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         );
         apidto.operations(operations);
         restAPIPublisher.updateAPI(apidto, graphqlApiId);
-        waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
+        Thread.sleep(10000);
+
         // generate token
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
@@ -507,8 +507,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         );
         apidto.operations(operations);
         restAPIPublisher.updateAPI(apidto, graphqlApiId);
-        waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
+        Thread.sleep(10000);
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions for throttling", dependsOnMethods = "testGraphQLAPIInvocationWithScopes")
@@ -554,8 +553,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
         apidto.setApiThrottlingPolicy("GraphQLSubThrottlingPolicy");
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto);
-        waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
+        Thread.sleep(10000);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), "GraphQLSubThrottlingPolicy");
         //create new JWT Application
         ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("GraphQLThrottleApp",
@@ -606,23 +604,25 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
-                    "Received response in not a Connection Ack response");
+                    "Received response is not a Connection Ack response");
             socket.setResponseMessage(null);
             //Send graphQL subscription request message
             textMessage = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\":"
                     + "\"subscription {\\n  liftStatusChange {\\n    name\\n  }\\n}\\n\"}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"data\",\"id\":\"1\",\"payload\":{\"data\":"
                             + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}",
-                    "Received response in not a lift status change sub topic event response");
+                    "Received response is not a lift status change sub topic event response");
             socket.setResponseMessage(null);
         } else {
             throw new APIManagerIntegrationTestException("Unable to create client connection");
@@ -796,17 +796,19 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
-                    "Received response in not a Connection Ack response");
+                    "Received response is not a Connection Ack response");
             socket.setResponseMessage(null);
             //Send graphQL subscription request message
             textMessage = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\":"
                     + "\"subscription {\\n  liftStatusChange {\\n    name\\n  }\\n}\\n\"}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -847,17 +849,19 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
-                    "Received response in not a Connection Ack response");
+                    "Received response is not a Connection Ack response");
             socket.setResponseMessage(null);
             //Send graphQL subscription request message
             textMessage = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\": \"subscription {\\n  "
                     + "liftStatusChange {\\n name\\n id\\n status\\n night\\n capacity\\n }\\n}\\n\"}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -899,17 +903,19 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
-                    "Received response in not a Connection Ack response");
+                    "Received response is not a Connection Ack response");
             socket.setResponseMessage(null);
             //Send graphQL subscription request message
             textMessage = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\": \"subscription {\\n  "
                     + "liftStatusChange {\\n name\\n}\\n}\\n\"}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -951,17 +957,19 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
-                    "Received response in not a Connection Ack response");
+                    "Received response is not a Connection Ack response");
             socket.setResponseMessage(null);
             //Send graphQL subscription request message
             textMessage = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\": \"subscription {\\n  "
                     + "liftStatusChange {\\n name\\n invalidField\\n }\\n}\\n\"}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -997,17 +1005,18 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         request.setHeader("Authorization", "Bearer " + accessToken);
         client.connect(socket, echoUri, request);
-        socket.getLatch().await(3L, TimeUnit.SECONDS);
+        socket.getLatch().await(4L, TimeUnit.SECONDS);
         try {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
             socket.sendMessage(textMessage);
+            Thread.sleep(60000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
-                    "Received response in not a Connection Ack response");
+                    "Received response is not a Connection Ack response");
             socket.setResponseMessage(null);
             for (int count = 1; count <= limit; count++) {
                 if (count == 1) {
@@ -1017,6 +1026,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                             + "liftStatusChange {\\n name\\n }\\n}\\n\"}}";
                     socket.sendMessage(textMessage);
                 }
+                Thread.sleep(60000);
                 waitForReply(socket);
                 String responseMessage = socket.getResponseMessage();
                 log.info("Count :" + count + " Message :" + responseMessage);
