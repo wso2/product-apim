@@ -65,10 +65,10 @@
     if (Boolean.parseBoolean(request.getParameter(Constants.AUTH_FAILURE))) {
         loginFailed = "true";
         String error = request.getParameter(Constants.AUTH_FAILURE_MSG);
-	// Check the error is not null and whether there is a corresponding value in the resource bundle.	
-        if (!(StringUtils.isBlank(error)) &&	
-            !error.equalsIgnoreCase(AuthenticationEndpointUtil.i18n(resourceBundle, error))) {	
-                errorMessage = error;	
+        // Check the error is not null and whether there is a corresponding value in the resource bundle.
+        if (!(StringUtils.isBlank(error)) &&
+            !error.equalsIgnoreCase(AuthenticationEndpointUtil.i18n(resourceBundle, error))) {
+                errorMessage = error;
         }
     }
 %>
