@@ -16,6 +16,10 @@
 
 package org.wso2.am.integration.tests.apiproduct.lifecycle;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -65,7 +69,9 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
     private String apiProductId;
     private String applicationId;
     private ApplicationKeyDTO productionAppKey;
-    private InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
+    private final InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
+    private APIProductDTO apiProductDTO;
+    private String accessToken;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIProductLifecycleTest(TestUserMode userMode) {
@@ -95,11 +101,13 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
         apisToBeUsed = new ArrayList<>();
         APIDTO apiOne = apiTestHelper.createApiOne(getBackendEndServiceEndPointHttp("wildcard/resources"));
         APIDTO apiTwo = apiTestHelper.createApiTwo(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        createAPIRevisionAndDeployUsingRest(apiOne.getId(), restAPIPublisher);
+        createAPIRevisionAndDeployUsingRest(apiTwo.getId(), restAPIPublisher);
         apisToBeUsed.add(apiOne);
         apisToBeUsed.add(apiTwo);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before retire")
+    @Test(groups = {"wso2.am"}, description = "Test creation of the API Product")
     public void testCreateAPIProduct() throws Exception {
 
         String provider;
@@ -113,7 +121,7 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
         apiProductId = apiProductDTO.getId();
         assert apiProductDTO.getState() != null;
@@ -121,11 +129,14 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
         waitForAPIDeployment();
 
         createAPIProductRevisionAndDeployUsingRest(apiProductId, restAPIPublisher);
+        waitForAPIDeployment();
         apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
 
         ApiResponse<APIKeyDTO> apiKeyDTOResponse = restAPIPublisher.generateInternalApiKey(apiProductId);
         assertEquals(apiKeyDTOResponse.getStatusCode(), 200);
-        invokeApiWithInternalKey(apiProductDTO.getContext(), "/*", apiKeyDTOResponse.getData().getApikey());
+        org.apache.http.HttpResponse response = invokeApiWithInternalKey(apiProductDTO.getContext(),
+                apiKeyDTOResponse.getData().getApikey());
+        Assert.assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test Publishing API Product", dependsOnMethods =
@@ -156,14 +167,16 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
 
         apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
                 productionAppKey.getToken().getAccessToken(), invocationStatusCodes);
+        accessToken = productionAppKey.getToken().getAccessToken();
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before retire", dependsOnMethods =
+    @Test(groups = {"wso2.am"}, description = "Test invocation of the API Product in blocked state", dependsOnMethods =
             {"testPublishAPIProduct"})
     public void testChangeAPIProductLifecycleStateToBlockedState() throws Exception {
 
         WorkflowResponseDTO workflowResponseDTO = apiProductTestHelper.changeLifecycleStateOfApiProduct(apiProductId,
                 "Block", null);
+        waitForAPIDeployment();
         assertNotNull(workflowResponseDTO);
         LifecycleStateDTO lifecycleStateDTO = workflowResponseDTO.getLifecycleState();
         assertNotNull(lifecycleStateDTO);
@@ -171,6 +184,8 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
         assert APILifeCycleState.BLOCKED.getState().equals(lifecycleStateDTO.getState());
         assert lifecycleStateDTO.getAvailableTransitions() != null;
         // invoke blocked API Product
+        HttpResponse response = invokeApiWithBearerToken(apiProductDTO.getContext(), "/customers", accessToken);
+        Assert.assertEquals(503, response.getResponseCode());
 
         // re-publish API Product
         workflowResponseDTO = apiProductTestHelper.changeLifecycleStateOfApiProduct(apiProductId,
@@ -240,11 +255,22 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(applicationId);
     }
 
-    private HttpResponse invokeApiWithInternalKey(String context, String resource, String internalKey)
+    private org.apache.http.HttpResponse invokeApiWithInternalKey(String context, String internalKey)
             throws XPathExpressionException, IOException {
+
+        HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
+        HttpGet request = new HttpGet(getAPIProductInvocationURLHttp(context) + "/customers");
+        request.setHeader("Internal-Key", internalKey);
+        request.setHeader("accept", "application/json");
+        return client.execute(request);
+    }
+
+    private HttpResponse invokeApiWithBearerToken(String context, String resource, String accessToken)
+            throws XPathExpressionException, IOException {
+
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
-        requestHeaders.put("Internal-Key", internalKey);
+        requestHeaders.put("Bearer", "Authorization : " + accessToken);
         return HttpRequestUtil.doGet(getAPIProductInvocationURLHttps(context) + resource, requestHeaders);
     }
 }
