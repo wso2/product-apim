@@ -1133,38 +1133,6 @@ public class RestAPIStoreImpl {
     /**
      * Update given Auth application
      *
-     * @param application       auth application name
-     * @param keyType           type of the key
-     * @param authorizedDomains authorized domains
-     * @param retryAfterFailure retry after fail
-     * @param jsonParams        json parameters for grant type
-     * @param callbackUrl       call back url
-     * @return Http response of the update request
-     * @throws APIManagerIntegrationTestException APIManagerIntegrationTestException - throws if update application fail
-     */
-    public HttpResponse updateClientApplication(String application, String keyType, String authorizedDomains,
-                                                String retryAfterFailure, String jsonParams, String callbackUrl) throws APIManagerIntegrationTestException {
-//        try {
-//            checkAuthentication();
-//            return HTTPSClientUtils.doPost(new URL(backendURL
-//                            + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?" +
-//                            "action=updateClientApplication&application=" + application + "&keytype=" +
-//                            keyType + "&authorizedDomains=" + authorizedDomains + "&retryAfterFailure=" +
-//                            retryAfterFailure + "&jsonParams=" + URLEncoder.encode(jsonParams, "UTF-8")
-//                            + "&callbackUrl=" + callbackUrl), "",
-//                    requestHeaders);
-//
-//        } catch (Exception e) {
-//            throw new APIManagerIntegrationTestException(
-//                    "Unable to update application - " + application + ". Error: " + e.getMessage(), e);
-//
-//        }
-        return null;
-    }
-
-    /**
-     * Update given Auth application
-     *
      * @param applicationId  auth application id
      * @param applicationDTO DTO of the application
      * @return Http response of the update request
@@ -2158,6 +2126,24 @@ public class RestAPIStoreImpl {
         waitUntilApplicationKeyMappingAvailableInGateway(applicationId, response.getData());
         return response.getData();
     }
+
+    public ApiResponse<ApplicationKeyDTO> generateKeysWithHttpInfo(String applicationId, String validityTime,
+                                                                   String callBackUrl,
+                                                                   ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum,
+                                                                   ArrayList<String> scopes, List<String> grantTypes,
+                                                                   String keyManager) throws ApiException {
+
+        ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
+        applicationKeyGenerateRequest.setValidityTime(validityTime);
+        applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
+        applicationKeyGenerateRequest.setKeyType(keyTypeEnum);
+        applicationKeyGenerateRequest.setScopes(scopes);
+        applicationKeyGenerateRequest.setGrantTypesToBeSupported(grantTypes);
+        applicationKeyGenerateRequest.setKeyManager(keyManager);
+        return applicationKeysApi.applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId,
+                applicationKeyGenerateRequest, this.tenantDomain);
+    }
+
     public ApplicationKeyListDTO getApplicationOauthKeys(String applicationUUID, String tenantDomain) throws ApiException {
         return applicationKeysApi.applicationsApplicationIdOauthKeysGet(applicationUUID,tenantDomain);
     }

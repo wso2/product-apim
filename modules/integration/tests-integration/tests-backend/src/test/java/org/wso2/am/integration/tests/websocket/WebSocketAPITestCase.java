@@ -131,7 +131,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
         // Removing Tenant_ADMIN due to https://github.com/wso2/product-apim/issues/10183
         return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN}
         };
     }
 
