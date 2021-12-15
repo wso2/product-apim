@@ -490,19 +490,6 @@ public class APIMIntegrationBaseTest {
                 + "/" + apiContext;
     }
 
-    /**
-     * To get the API Product invocation in http with context and version.
-     *
-     * @param apiContext Relevant context of the API Product.
-     * @return Https url related with api context and version.
-     * @throws XPathExpressionException XPath Express Exception.
-     */
-    protected String getAPIProductInvocationURLHttp(String apiContext) throws XPathExpressionException {
-
-        return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "")
-                + "/" + apiContext;
-    }
-
     protected String getWebSocketAPIInvocationURL(String apiContext, String version)
             throws XPathExpressionException {
         String url = gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "").

@@ -55,7 +55,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.core.Response;
-import javax.xml.xpath.XPathExpressionException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -70,8 +69,9 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
     private String applicationId;
     private ApplicationKeyDTO productionAppKey;
     private final InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
-    private APIProductDTO apiProductDTO;
     private String accessToken;
+    private String gatewayUrl;
+    private String context;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIProductLifecycleTest(TestUserMode userMode) {
@@ -105,6 +105,12 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
         createAPIRevisionAndDeployUsingRest(apiTwo.getId(), restAPIPublisher);
         apisToBeUsed.add(apiOne);
         apisToBeUsed.add(apiTwo);
+        if (keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
+            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
+        } else {
+            gatewayUrl =
+                    gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + keyManagerContext.getContextTenant().getDomain() + "/";
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Test creation of the API Product")
@@ -117,11 +123,11 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
             provider = user.getUserName();
         }
         final String name = UUID.randomUUID().toString();
-        final String context = "/" + UUID.randomUUID();
+        context = "/" + UUID.randomUUID();
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
                 apisToBeUsed, policies);
         apiProductId = apiProductDTO.getId();
         assert apiProductDTO.getState() != null;
@@ -134,8 +140,8 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
 
         ApiResponse<APIKeyDTO> apiKeyDTOResponse = restAPIPublisher.generateInternalApiKey(apiProductId);
         assertEquals(apiKeyDTOResponse.getStatusCode(), 200);
-        org.apache.http.HttpResponse response = invokeApiWithInternalKey(apiProductDTO.getContext(),
-                apiKeyDTOResponse.getData().getApikey());
+        org.apache.http.HttpResponse response = invokeApiWithInternalKey(apiKeyDTOResponse.getData().getApikey(),
+                context.substring(1));
         Assert.assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
@@ -165,6 +171,7 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
         productionAppKey = apiTestHelper.verifyKeyGeneration(applicationDTO,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, new ArrayList<>(), grantTypes);
 
+        assert productionAppKey.getToken() != null;
         apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
                 productionAppKey.getToken().getAccessToken(), invocationStatusCodes);
         accessToken = productionAppKey.getToken().getAccessToken();
@@ -184,13 +191,15 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
         assert APILifeCycleState.BLOCKED.getState().equals(lifecycleStateDTO.getState());
         assert lifecycleStateDTO.getAvailableTransitions() != null;
         // invoke blocked API Product
-        HttpResponse response = invokeApiWithBearerToken(apiProductDTO.getContext(), "/customers", accessToken);
+        HttpResponse response = invokeApiWithBearerToken(accessToken, context.substring(1));
         Assert.assertEquals(503, response.getResponseCode());
 
         // re-publish API Product
         workflowResponseDTO = apiProductTestHelper.changeLifecycleStateOfApiProduct(apiProductId,
                 "Re-Publish", null);
+        waitForAPIDeployment();
         assertEquals("APPROVED", workflowResponseDTO.getWorkflowStatus().getValue());
+        assert workflowResponseDTO.getLifecycleState() != null;
         assertEquals(workflowResponseDTO.getLifecycleState().getState(),
                 APILifeCycleState.PUBLISHED.getState());
         APIProductDTO returnedProduct = restAPIPublisher.getApiProduct(apiProductId);
@@ -198,6 +207,7 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
                 apiProductTestHelper.verifyApiProductInPortal(returnedProduct);
 
         // invoke published API Product
+        assert productionAppKey.getToken() != null;
         apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
                 productionAppKey.getToken().getAccessToken(), invocationStatusCodes);
     }
@@ -223,7 +233,7 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
                 restAPIStore.getAPI(apiProductId);
 
         // Test the invocation of Deprecated API Product
-        APIProductDTO returnedProduct = restAPIPublisher.getApiProduct(apiProductId);
+        assert productionAppKey.getToken() != null;
         apiTestHelper.verifyInvocation(responseData, productionAppKey.getToken().getAccessToken(),
                 productionAppKey.getToken().getAccessToken(), invocationStatusCodes);
     }
@@ -241,6 +251,7 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
 
         // Verify the subscriptions
         SubscriptionListDTO subscriptionListDTO = restAPIPublisher.getSubscriptionByAPIID(apiProductId);
+        assert subscriptionListDTO.getList() != null;
         assertEquals(subscriptionListDTO.getList().size(), 0);
 
         // Delete API Product
@@ -255,22 +266,21 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(applicationId);
     }
 
-    private org.apache.http.HttpResponse invokeApiWithInternalKey(String context, String internalKey)
-            throws XPathExpressionException, IOException {
+    private org.apache.http.HttpResponse invokeApiWithInternalKey(String internalKey, String context)
+            throws IOException {
 
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
-        HttpGet request = new HttpGet(getAPIProductInvocationURLHttp(context) + "/customers");
+        HttpGet request = new HttpGet(gatewayUrl + context + "/customers");
         request.setHeader("Internal-Key", internalKey);
         request.setHeader("accept", "application/json");
         return client.execute(request);
     }
 
-    private HttpResponse invokeApiWithBearerToken(String context, String resource, String accessToken)
-            throws XPathExpressionException, IOException {
+    private HttpResponse invokeApiWithBearerToken(String accessToken, String context) throws IOException {
 
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
         requestHeaders.put("Bearer", "Authorization : " + accessToken);
-        return HttpRequestUtil.doGet(getAPIProductInvocationURLHttps(context) + resource, requestHeaders);
+        return HttpRequestUtil.doGet(gatewayUrl + context + "/customers", requestHeaders);
     }
 }
