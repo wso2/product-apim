@@ -797,6 +797,46 @@ public class APIMIntegrationBaseTest {
         }
     }
 
+    protected void waitForKeyManagerUnDeployment(String tenantDomain, String keyManagerName)
+            throws XPathExpressionException, UnsupportedEncodingException {
+
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+        String colonSeparatedHeader =
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName() + ":" + keyManagerContext
+                        .getContextTenant().getTenantAdmin().getPassword();
+        String authorizationHeader = "Basic " + new String(Base64.encodeBase64(colonSeparatedHeader.getBytes()));
+        Map headerMap = new HashMap();
+        keyManagerName = URLEncoder.encode(keyManagerName, "utf8").replaceAll("\\+", "%20");
+        headerMap.put("Authorization", authorizationHeader);
+
+        while (waitTime > System.currentTimeMillis()) {
+            HttpResponse response = null;
+            try {
+                response = HttpRequestUtil.doGet(getGatewayURLHttp() +
+                        "APIStatusMonitor/keyManagerInformation/" + tenantDomain + "/" + keyManagerName, headerMap);
+            } catch (IOException ignored) {
+                log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " KeyManager :" + keyManagerName +
+                        " not yet " +
+                        "deployed " + " in tenantDomain " + tenantDomain);
+            }
+
+            log.info("WAIT for availability of KeyManager: " + keyManagerName + " in tenant Domain : " + tenantDomain);
+            if (response != null) {
+                log.info("Status Code: " + response.getResponseCode());
+                if (response.getResponseCode() == 404) {
+                    log.info("Key Manager :" + keyManagerName + " not exist in tenant" + tenantDomain);
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
+    }
     /**
      * Create API Revision and Deploy to gateway using REST API.
      *
