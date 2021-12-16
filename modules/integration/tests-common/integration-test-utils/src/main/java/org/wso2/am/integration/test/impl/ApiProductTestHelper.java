@@ -78,7 +78,7 @@ public class ApiProductTestHelper {
         verifyAPIProductDto(responseResources, resourcesForProduct);
 
         // Validate mandatory fields returned in response data
-        Assert.assertEquals(responseData.getProvider(), provider);
+        Assert.assertTrue(provider.equalsIgnoreCase(responseData.getProvider()));
         Assert.assertEquals(responseData.getName(), name);
         if ("carbon.super".equals(restAPIPublisher.tenantDomain)) {
             Assert.assertEquals(responseData.getContext(), context);
