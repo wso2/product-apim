@@ -150,6 +150,7 @@ public class RestAPIPublisherImpl {
     public ApiProductLifecycleApi productLifecycleApi = new ApiProductLifecycleApi();
     public ApiClient apiPublisherClient = new ApiClient();
     public String tenantDomain;
+    public String accessToken;
     private ApiProductsApi apiProductsApi = new ApiProductsApi();
     private RestAPIGatewayImpl restAPIGateway;
     private String disableVerification = System.getProperty("disableVerification");
@@ -164,7 +165,7 @@ public class RestAPIPublisherImpl {
         // token/DCR of Publisher node itself will be used
         String tokenURL = publisherURL + "oauth2/token";
         String dcrURL = publisherURL + "client-registration/v0.17/register";
-        String accessToken = ClientAuthenticator
+        accessToken = ClientAuthenticator
                 .getAccessToken("openid apim:api_view apim:api_create apim:api_delete apim:api_publish " +
                                 "apim:subscription_view apim:subscription_block apim:external_services_discover " +
                                 "apim:threat_protection_policy_create apim:threat_protection_policy_manage " +
@@ -207,6 +208,16 @@ public class RestAPIPublisherImpl {
         productLifecycleApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
+    }
+
+    public String getAccessToken() {
+
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+
+        this.accessToken = accessToken;
     }
 
     /**
