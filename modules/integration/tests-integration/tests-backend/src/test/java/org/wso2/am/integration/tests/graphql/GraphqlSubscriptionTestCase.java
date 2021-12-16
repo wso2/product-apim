@@ -603,8 +603,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(30000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -615,8 +616,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             textMessage = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\":"
                     + "\"subscription {\\n  liftStatusChange {\\n    name\\n  }\\n}\\n\"}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(30000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -795,8 +797,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(30000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -807,8 +810,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             textMessage = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\":"
                     + "\"subscription {\\n  liftStatusChange {\\n    name\\n  }\\n}\\n\"}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(30000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -848,8 +852,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(30000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -860,8 +865,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             textMessage = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\": \"subscription {\\n  "
                     + "liftStatusChange {\\n name\\n id\\n status\\n night\\n capacity\\n }\\n}\\n\"}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(30000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -902,8 +908,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(30000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -914,8 +921,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             textMessage = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\": \"subscription {\\n  "
                     + "liftStatusChange {\\n name\\n}\\n}\\n\"}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(30000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -956,8 +964,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(30000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -968,8 +977,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             textMessage = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\": \"subscription {\\n  "
                     + "liftStatusChange {\\n name\\n invalidField\\n }\\n}\\n\"}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(30000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -1010,8 +1020,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
-            Thread.sleep(60000);
+            Thread.sleep(10000);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
@@ -1024,9 +1035,10 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                     textMessage = "{\"id\":\"2\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                             + "\"operationName\":null,\"query\": \"subscription {\\n  "
                             + "liftStatusChange {\\n name\\n }\\n}\\n\"}}";
+                    Thread.sleep(10000);
                     socket.sendMessage(textMessage);
                 }
-                Thread.sleep(60000);
+                Thread.sleep(10000);
                 waitForReply(socket);
                 String responseMessage = socket.getResponseMessage();
                 log.info("Count :" + count + " Message :" + responseMessage);
