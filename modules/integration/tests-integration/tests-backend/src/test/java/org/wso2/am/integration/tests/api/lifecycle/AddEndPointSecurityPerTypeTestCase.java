@@ -102,7 +102,9 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
 
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN}
+                new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.SUPER_TENANT_USER},
+                new Object[]{TestUserMode.TENANT_USER}
         };
     }
 
