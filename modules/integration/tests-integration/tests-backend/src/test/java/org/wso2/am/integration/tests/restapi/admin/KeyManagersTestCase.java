@@ -92,7 +92,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(addedKeyManagers.getStatusCode(), HttpStatus.SC_CREATED);
         KeyManagerDTO addedKeyManagerDTO = addedKeyManagers.getData();
         String keyManagerId = addedKeyManagerDTO.getId();
-
+        waitForKeyManagerDeployment(user.getUserDomain(), keyManagerDTO.getName());
         //Assert the status code and key manager ID
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
@@ -101,6 +101,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
                 addedKeyManagerDTO.getAdditionalProperties());
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
         restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
+        waitForKeyManagerUnDeployment(user.getUserDomain(), keyManagerDTO.getName());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with Auth0 type without a mandatory parameter",
@@ -132,6 +133,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Add the Auth0 key manager - This should fail
         try {
             restAPIAdmin.addKeyManager(keyManagerDTO);
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
         }
@@ -176,7 +178,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(addedKeyManagers.getStatusCode(), HttpStatus.SC_CREATED);
         KeyManagerDTO addedKeyManagerDTO = addedKeyManagers.getData();
         String keyManagerId = addedKeyManagerDTO.getId();
-
+        waitForKeyManagerDeployment(user.getUserDomain(), keyManagerDTO.getName());
         //Assert the status code and key manager ID
         Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
         keyManagerDTO.setId(keyManagerId);
@@ -218,6 +220,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
 
         //Verify the updated key manager DTO
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, updatedKeyManagerDTO);
+        waitForKeyManagerDeployment(user.getUserDomain(), keyManagerDTO.getName());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test delete key manager with Auth0 type",
@@ -230,6 +233,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Delete non existing key manager - not found
         try {
             apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
         }
@@ -301,6 +305,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Add the WSO2 IS key manager - This should fail
         try {
             restAPIAdmin.addKeyManager(keyManagerDTO);
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
         }
@@ -467,6 +472,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Add the Keycloak key manager - This should fail
         try {
             restAPIAdmin.addKeyManager(keyManagerDTO);
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
         }
@@ -560,6 +566,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Delete non existing key manager - not found
         try {
             apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
         }
@@ -629,6 +636,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Add the Okta key manager - This should fail
         try {
             restAPIAdmin.addKeyManager(keyManagerDTO);
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
         }
@@ -728,6 +736,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Delete non existing key manager - not found
         try {
             apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
         }
@@ -800,6 +809,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Add the PingFederate key manager - This should fail
         try {
             restAPIAdmin.addKeyManager(keyManagerDTO);
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
         }
@@ -901,6 +911,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Delete non existing key manager - not found
         try {
             apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
         }
@@ -971,6 +982,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Add the ForgeRock key manager - This should fail
         try {
             restAPIAdmin.addKeyManager(keyManagerDTO);
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST);
         }
@@ -1022,6 +1034,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         keyManagerDTO.setId(keyManagerId);
         //Verify the created key manager DTO
         adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        waitForKeyManagerDeployment(user.getUserDomain(), keyManagerDTO.getName());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with ForgeRock type with only mandatory parameters",
@@ -1060,7 +1073,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test delete key manager with ForgeRock type",
-            dependsOnMethods = "testUpdateKeyManagerWithForgeRock")
+            dependsOnMethods = "testAddKeyManagerWithExistingKeyManagerName")
     public void testDeleteKeyManagerWithForgeRock() throws Exception {
         ApiResponse<Void> apiResponse =
                 restAPIAdmin.deleteKeyManager(keyManagerDTO.getId());
@@ -1069,18 +1082,21 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         //Delete non existing key manager - not found
         try {
             apiResponse = restAPIAdmin.deleteKeyManager(UUID.randomUUID().toString());
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
         }
+        waitForKeyManagerUnDeployment(user.getUserDomain(), keyManagerDTO.getName());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test add key manager with existing key manager name",
-            dependsOnMethods = "testDeleteKeyManagerWithForgeRock")
+            dependsOnMethods = "testUpdateKeyManagerWithForgeRock")
     public void testAddKeyManagerWithExistingKeyManagerName() throws ApiException {
         //Exception occurs when adding a key manager with an existing key manager name. The status code
         //in the Exception object is used to assert this scenario
         try {
             restAPIAdmin.addKeyManager(keyManagerDTO);
+            Assert.fail();
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT);
         }
