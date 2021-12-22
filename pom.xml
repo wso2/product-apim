@@ -1271,6 +1271,7 @@
         <carbon.identity.carbon.auth.saml2.version>5.5.0</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.4.0</carbon.identity.auth.version>
         <identity.apps.version>1.0.72</identity.apps.version>
+        <carbon.identity.framework.version>5.17.5.139</carbon.identity.framework.version>
 
         <!--SAML Common Utils Version-->
         <saml.common.util.version>1.0.4</saml.common.util.version>

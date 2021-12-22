@@ -25,15 +25,22 @@
 <%
     String stat = request.getParameter("status");
     String statusMessage = request.getParameter("statusMsg");
-    // Check the error is null or whether there is a corresponding value in the resource bundle.
-    if (stat == null || statusMessage == null ||
-            statusMessage.equals(AuthenticationEndpointUtil.i18n(resourceBundle, statusMessage))) {
+    // Check the error is null or whether there is no corresponding value in the resource bundle.
+    if (stat == null || statusMessage == null) {
         stat = AuthenticationEndpointUtil.i18n(resourceBundle, "authentication.error");
         statusMessage =  AuthenticationEndpointUtil.i18n(resourceBundle,
                 "something.went.wrong.during.authentication");
     } else {
-        stat = AuthenticationEndpointUtil.customi18n(resourceBundle, stat);
-        statusMessage = AuthenticationEndpointUtil.customi18n(resourceBundle, statusMessage);
+        String i18nErrorMapping = AuthenticationEndpointUtil.getErrorCodeToi18nMapping(
+                stat, statusMessage);
+        if (!("incorrect.error.mapping").equals(i18nErrorMapping)) {
+            stat = AuthenticationEndpointUtil.customi18n(resourceBundle, stat);
+            statusMessage = AuthenticationEndpointUtil.customi18n(resourceBundle, statusMessage);
+        } else {
+            stat = AuthenticationEndpointUtil.i18n(resourceBundle, "authentication.error");
+            statusMessage =  AuthenticationEndpointUtil.i18n(resourceBundle,
+                    "something.went.wrong.during.authentication");
+        }
     }
     session.invalidate();
 %>
