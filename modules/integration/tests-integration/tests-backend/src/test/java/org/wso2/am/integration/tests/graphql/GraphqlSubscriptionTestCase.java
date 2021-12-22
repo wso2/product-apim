@@ -139,7 +139,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         };
     }
 
-
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
 
@@ -313,204 +312,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Invoke subscription with invalid payload", dependsOnMethods =
-            "testGraphQLAPIInvocationWithJWTToken")
-    public void testGraphQLAPIInvocationWithInvalidPayload() throws Exception {
-
-        WebSocketClient client = new WebSocketClient();
-        try {
-            invokeGraphQLSubscriptionForInvalidPayloadError(client, applicationKeyDTO.getToken().getAccessToken());
-        } catch (Exception e) {
-            log.error("Exception in connecting to server", e);
-            Assert.fail("Client cannot connect to server");
-        } finally {
-            client.stop();
-        }
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions for complexity",
-            dependsOnMethods = "testGraphQLAPIInvocationWithJWTToken")
-    public void testGraphQLAPIInvocationForComplexity() throws Exception {
-
-        //Get GraphQL Schema Type List
-        GraphQLSchemaTypeListDTO graphQLSchemaTypeList = restAPIPublisher.getGraphQLSchemaTypeList(graphqlApiId);
-        HttpResponse response = restAPIPublisher.getGraphQLSchemaTypeListResponse(graphqlApiId);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getResponseCode());
-
-        // add GraphQL Complexity Details
-        List<GraphQLSchemaTypeDTO> list = graphQLSchemaTypeList.getTypeList();
-        List<GraphQLCustomComplexityInfoDTO> complexityList = new ArrayList<>();
-        for (GraphQLSchemaTypeDTO graphQLSchemaTypeDTO : list) {
-            List<String> fieldList = graphQLSchemaTypeDTO.getFieldList();
-            for (String field : fieldList) {
-                GraphQLCustomComplexityInfoDTO graphQLCustomComplexityInfoDTO = new GraphQLCustomComplexityInfoDTO();
-                graphQLCustomComplexityInfoDTO.setType(graphQLSchemaTypeDTO.getType());
-                graphQLCustomComplexityInfoDTO.setField(field);
-                graphQLCustomComplexityInfoDTO.setComplexityValue(1);
-                log.info(graphQLCustomComplexityInfoDTO);
-                complexityList.add(graphQLCustomComplexityInfoDTO);
-            }
-        }
-        GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO = new GraphQLQueryComplexityInfoDTO();
-        graphQLQueryComplexityInfoDTO.setList(complexityList);
-        restAPIPublisher.addGraphQLComplexityDetails(graphQLQueryComplexityInfoDTO, graphqlApiId);
-
-        //Get GraphQLComplexity Details
-        HttpResponse complexityResponse = restAPIPublisher.getGraphQLComplexityResponse(graphqlApiId);
-        assertEquals(Response.Status.OK.getStatusCode(), complexityResponse.getResponseCode());
-
-        //create new JWT Application
-        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("GraphQLSubComplexApp",
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "complexity analysis test-app",
-                ApplicationDTO.TokenTypeEnum.JWT.toString());
-        complexAppId = applicationDTO.getApplicationId();
-        //Subscribe to the API
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(graphqlApiId, complexAppId, "QueryComplexPolicy");
-        assertEquals(subscriptionDTO.getThrottlingPolicy(), "QueryComplexPolicy");
-        // generate token
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationDTO.getApplicationId(), "36000",
-                "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        WebSocketClient client = new WebSocketClient();
-        try {
-            invokeGraphQLSubscriptionSuccess(client, accessToken, AUTH_IN.HEADER);
-            invokeGraphQLSubscriptionForComplexityError(client, accessToken);
-        } catch (Exception e) {
-            log.error("Exception in connecting to server", e);
-            Assert.fail("Client cannot connect to server");
-        } finally {
-            client.stop();
-        }
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions for depth", dependsOnMethods = "testGraphQLAPIInvocationForComplexity")
-    public void testGraphQLAPIInvocationForDepth() throws Exception {
-
-        //create new JWT Application
-        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("GraphQLSubDepthApp",
-                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "depth analysis test-app",
-                ApplicationDTO.TokenTypeEnum.JWT.toString());
-        //Subscribe to the API
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(graphqlApiId, applicationDTO.getApplicationId(),
-                "QueryDepthPolicy");
-        assertEquals(subscriptionDTO.getThrottlingPolicy(), "QueryDepthPolicy");
-        // generate token
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        complexAppId = applicationDTO.getApplicationId();
-
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(complexAppId, "36000",
-                "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        WebSocketClient client = new WebSocketClient();
-        try {
-            invokeGraphQLSubscriptionForDepthError(client, accessToken);
-        } catch (Exception e) {
-            log.error("Exception in connecting to server", e);
-            Assert.fail("Client cannot connect to server");
-        } finally {
-            client.stop();
-        }
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions using token", dependsOnMethods = "testGraphQLAPIInvocationForDepth")
-    public void testGraphQLAPIInvocationWithScopes() throws Exception {
-
-        List role = new ArrayList();
-        role.add(GRAPHQL_ROLE);
-        ScopeDTO scopeObject = new ScopeDTO();
-        scopeObject.setName("subscriber");
-        scopeObject.setBindings(role);
-
-        APIScopeDTO apiScopeDTO = new APIScopeDTO();
-        apiScopeDTO.setScope(scopeObject);
-        List apiScopeList = new ArrayList();
-        apiScopeList.add(apiScopeDTO);
-        HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlApiId);
-        Gson g = new Gson();
-        APIDTO apidto = g.fromJson(createdApiResponse.getData(), APIDTO.class);
-        apidto.setScopes(apiScopeList);
-        List scope = new ArrayList();
-        scope.add("subscriber");
-        List<APIOperationsDTO> operations = apidto.getOperations();
-        operations.forEach((item) ->
-                {
-                    if (item.getTarget().equals("liftStatusChange")) {
-                        item.setScopes(scope);
-                    }
-                }
-        );
-        apidto.operations(operations);
-        restAPIPublisher.updateAPI(apidto, graphqlApiId);
-        Thread.sleep(10000);
-
-        // generate token
-        ArrayList grantTypes = new ArrayList();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-
-        // invoke api without authorized scope
-        log.info("Access Token response without scope: " + applicationKeyDTO.getToken().getAccessToken());
-        WebSocketClient client = new WebSocketClient();
-        try {
-            invokeGraphQLSubscriptionScopeInvalidError(client, applicationKeyDTO.getToken().getAccessToken());
-        } catch (Exception e) {
-            log.error("Exception in connecting to server", e);
-            Assert.fail("Client cannot connect to server");
-        } finally {
-            client.stop();
-        }
-        String consumerKey = applicationKeyDTO.getConsumerKey();
-        String consumerSecret = applicationKeyDTO.getConsumerSecret();
-        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
-        HttpResponse response;
-        String requestBody;
-        JSONObject accessTokenGenerationResponse;
-        String username = GRAPHQL_TEST_USER;
-        //Obtain user access token for Admin
-        if (userMode != TestUserMode.SUPER_TENANT_ADMIN) {
-            username = username.concat("@").concat(user.getUserDomain());
-        }
-        requestBody =
-                "grant_type=password&username=" + username + "&password=" + GRAPHQL_TEST_USER_PASSWORD +
-                        "&scope=subscriber";
-        response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
-        accessTokenGenerationResponse = new JSONObject(response.getData());
-        log.info("Access Token response with scope: " + response.getData());
-        String accessToken = accessTokenGenerationResponse.getString("access_token");
-        try {
-            invokeGraphQLSubscriptionSuccess(client, accessToken, AUTH_IN.HEADER);
-        } catch (Exception e) {
-            log.error("Exception in connecting to server", e);
-            Assert.fail("Client cannot connect to server");
-        } finally {
-            client.stop();
-        }
-
-        //Remove scopes
-        createdApiResponse = restAPIPublisher.getAPI(graphqlApiId);
-        apidto = g.fromJson(createdApiResponse.getData(), APIDTO.class);
-        apidto.setScopes(null);
-        operations = apidto.getOperations();
-        operations.forEach((item) ->
-                {
-                    if (item.getTarget().equals("liftStatusChange")) {
-                        item.setScopes(null);
-                    }
-                }
-        );
-        apidto.operations(operations);
-        restAPIPublisher.updateAPI(apidto, graphqlApiId);
-        Thread.sleep(10000);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions for throttling", dependsOnMethods = "testGraphQLAPIInvocationWithScopes")
+    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions for throttling", dependsOnMethods = "publishGraphQLAPIWithSubscriptions")
     public void testGraphQLAPISubscriptionThrottling() throws Exception {
 
         // Deploy Throttling policy with throttle limit set as 4 frames.
@@ -553,7 +355,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
         apidto.setApiThrottlingPolicy("GraphQLSubThrottlingPolicy");
         APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto);
-        Thread.sleep(10000);
+        Thread.sleep(20000);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), "GraphQLSubThrottlingPolicy");
         //create new JWT Application
         ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("GraphQLThrottleApp",
@@ -1007,15 +809,16 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
         waitUntilClockHour();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
-        int limit = 4;
+        int limit = 3;
         WebSocketClient client = new WebSocketClient();
         SubscriptionWSClientImpl socket = new SubscriptionWSClientImpl();
         client.start();
         URI echoUri = new URI(apiEndPoint);
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
         client.connect(socket, echoUri, request);
-        socket.getLatch().await(4L, TimeUnit.SECONDS);
+        socket.getLatch().await(3L, TimeUnit.SECONDS);
         try {
             String textMessage;
             //Send connection init message
@@ -1035,10 +838,8 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                     textMessage = "{\"id\":\"2\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                             + "\"operationName\":null,\"query\": \"subscription {\\n  "
                             + "liftStatusChange {\\n name\\n }\\n}\\n\"}}";
-                    Thread.sleep(10000);
                     socket.sendMessage(textMessage);
                 }
-                Thread.sleep(10000);
                 waitForReply(socket);
                 String responseMessage = socket.getResponseMessage();
                 log.info("Count :" + count + " Message :" + responseMessage);
