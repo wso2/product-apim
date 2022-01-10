@@ -65,7 +65,6 @@
     boolean isPasswordProvisionEnabled = Boolean.parseBoolean(request.getParameter("passwordProvisionEnabled"));
     String callback = Encode.forHtmlAttribute(request.getParameter("callback"));
     User user = IdentityManagementServiceUtil.getInstance().getUser(username);
-    String loginUrl = request.getParameter("callback");
 
     if (skipSignUpEnableCheck) {
         consentPurposeGroupName = "JIT";
@@ -100,11 +99,6 @@
 
     if (StringUtils.isBlank(callback)) {
         callback = IdentityManagementEndpointUtil.getUserPortalUrl(
-                application.getInitParameter(IdentityManagementEndpointConstants.ConfigConstants.USER_PORTAL_URL));
-    }
-
-    if (StringUtils.isBlank(loginUrl)) {
-        loginUrl = IdentityManagementEndpointUtil.getUserPortalUrl(
                 application.getInitParameter(IdentityManagementEndpointConstants.ConfigConstants.USER_PORTAL_URL));
     }
 
@@ -519,7 +513,7 @@
                             <div>
                                         <span>
                                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Already.have.account")%></span>
-                                <a href="<%=Encode.forHtmlAttribute(loginUrl)%>"
+                                <a href="javascript:history.go(-2)"
                                    id="signInLink">
                                     <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Sign.in")%>
                                 </a>
