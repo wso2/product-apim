@@ -598,6 +598,7 @@
                 <exclude>accountrecoveryendpoint/includes/product-footer.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/product-title.jsp</exclude>
                 <exclude>accountrecoveryendpoint/self-registration-username-request.jsp</exclude>
+                <exclude>accountrecoveryendpoint/self-registration-with-verification.jsp</exclude>
                 <exclude>accountrecoveryendpoint/error.jsp</exclude>
             </excludes>
         </fileSet>
@@ -627,6 +628,7 @@
                 <include>self-registration-complete.jsp</include>
                 <include>password-recovery.jsp</include>
                 <include>self-registration-username-request.jsp</include>
+                <include>self-registration-with-verification.jsp</include>
                 <include>error.jsp</include>
             </includes>
         </fileSet>
