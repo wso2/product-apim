@@ -61,7 +61,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * Test CORS Access-Control-Allow-Credentials functionality
  */
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE })
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerLifecycleBaseTest {
 
     private static final String API_NAME_2 = "CorsACACHeadersTestAPI_2";
@@ -116,7 +116,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         assertNotNull(header, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
 
         assertNotNull(pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
-                   ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is not available in the response.");
+                ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is not available in the response.");
     }
 
     private String createPublishAndSubscribeToApi(User user, String apiName, String apiContext, String apiVersion,
@@ -197,8 +197,8 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN },
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 
