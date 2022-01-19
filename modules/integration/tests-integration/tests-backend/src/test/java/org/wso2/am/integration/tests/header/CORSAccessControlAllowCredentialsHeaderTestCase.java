@@ -183,7 +183,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
             ApiResponse<byte[]> sdkGenerationResponse = restAPIStore.generateSDKUpdated(apiId, language,
                     user.getUserDomain());
             assertEquals(sdkGenerationResponse.getStatusCode(), Response.Status.OK.getStatusCode(),
-                    "Error when generating SDK for " + language + " language");
+                    "Error when generating SDK for the " + language + " language");
         }
     }
 
