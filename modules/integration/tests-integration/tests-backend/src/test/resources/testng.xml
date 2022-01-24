@@ -35,6 +35,7 @@
             <class name="org.wso2.am.integration.tests.api.revision.APIRevisionTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIMRuntimeHealthChecksTestCase"/>
         </classes>
     </test>
 
