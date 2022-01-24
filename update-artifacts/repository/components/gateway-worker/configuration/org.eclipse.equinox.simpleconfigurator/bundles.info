@@ -222,8 +222,8 @@ org.jaggeryjs.scriptengine,0.14.13,../plugins/org.jaggeryjs.scriptengine_0.14.13
 org.objectweb.asm,5.2.0,../plugins/org.objectweb.asm_5.2.0.jar,4,true
 org.objectweb.asm.all,5.2.0,../plugins/org.objectweb.asm.all_5.2.0.jar,4,true
 org.objenesis,2.1.0,../plugins/org.objenesis_2.1.0.jar,4,true
-org.ops4j.pax.logging.pax-logging-api,1.11.12,../plugins/org.ops4j.pax.logging.pax-logging-api_1.11.12.jar,4,true
-org.ops4j.pax.logging.pax-logging-log4j2,1.11.12,../plugins/org.ops4j.pax.logging.pax-logging-log4j2_1.11.12.jar,4,true
+org.ops4j.pax.logging.pax-logging-api,1.11.13,../plugins/org.ops4j.pax.logging.pax-logging-api_1.11.13.jar,4,true
+org.ops4j.pax.logging.pax-logging-log4j2,1.11.13,../plugins/org.ops4j.pax.logging.pax-logging-log4j2_1.11.13.jar,4,true
 org.restlet,2.3.0.wso2v1,../plugins/org.restlet_2.3.0.wso2v1.jar,4,true
 org.sat4j.core,2.3.5.v201308161310,../plugins/org.sat4j.core_2.3.5.v201308161310.jar,4,true
 org.sat4j.pb,2.3.5.v201308161310,../plugins/org.sat4j.pb_2.3.5.v201308161310.jar,4,true
