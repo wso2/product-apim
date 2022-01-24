@@ -154,8 +154,8 @@ org.eclipse.osgi,3.14.0.v20190517-1309,../plugins/org.eclipse.osgi_3.14.0.v20190
 org.eclipse.osgi.compatibility.state,1.0.200.v20160504-1419,../plugins/org.eclipse.osgi.compatibility.state_1.0.200.v20160504-1419.jar,4,true
 org.eclipse.osgi.services,3.5.100.v20160504-1419,../plugins/org.eclipse.osgi.services_3.5.100.v20160504-1419.jar,4,true
 org.objectweb.asm.all,5.2.0,../plugins/org.objectweb.asm.all_5.2.0.jar,4,true
-org.ops4j.pax.logging.pax-logging-api,1.11.12,../plugins/org.ops4j.pax.logging.pax-logging-api_1.11.12.jar,4,true
-org.ops4j.pax.logging.pax-logging-log4j2,1.11.12,../plugins/org.ops4j.pax.logging.pax-logging-log4j2_1.11.12.jar,4,true
+org.ops4j.pax.logging.pax-logging-api,1.11.13,../plugins/org.ops4j.pax.logging.pax-logging-api_1.11.13.jar,4,true
+org.ops4j.pax.logging.pax-logging-log4j2,1.11.13,../plugins/org.ops4j.pax.logging.pax-logging-log4j2_1.11.13.jar,4,true
 org.restlet,2.3.0.wso2v1,../plugins/org.restlet_2.3.0.wso2v1.jar,4,true
 org.sat4j.core,2.3.5.v201308161310,../plugins/org.sat4j.core_2.3.5.v201308161310.jar,4,true
 org.sat4j.pb,2.3.5.v201308161310,../plugins/org.sat4j.pb_2.3.5.v201308161310.jar,4,true
