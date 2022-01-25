@@ -154,7 +154,7 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test restoring API Product using created API Product Revision",
             dependsOnMethods = "testUnDeployAPIProductRevisions")
     public void testRestoreAPIProductRevision() throws Exception {
-        HttpResponse apiRevisionsRestoreResponse = restAPIPublisher.restoreAPIRevision(apiId, revisionUUID);
+        HttpResponse apiRevisionsRestoreResponse = restAPIPublisher.restoreAPIProductRevision(apiId, revisionUUID);
         assertEquals(apiRevisionsRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to resotre API Revisions:" + apiRevisionsRestoreResponse.getData());
 
