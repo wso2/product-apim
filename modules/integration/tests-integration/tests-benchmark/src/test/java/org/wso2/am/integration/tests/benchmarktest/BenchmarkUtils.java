@@ -49,7 +49,7 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
 
     private static final String APIM_HOME = System.getProperty("carbon.home");
     private static final String IN_FILE_PATH = APIM_HOME + "/repository/logs/correlation.log";
-    private static final String OUT_FILE_PATH = "logs/benchmark-tests/";
+    private static final String OUT_FILE_PATH = "logs/benchmark-tests/"; // This dir is initially created by the maven-antrun-plugin
     private static final String SUPER_TENANT = "superTenant";
     public static String tenant;
 
