@@ -151,6 +151,10 @@
         <messageFormatter contentType="application/octet-stream"
                           class="{{message_formatter.octet_stream}}"/>
 
+    {% for message_formatter in blocking.custom_message_formatters %}
+        <messageFormatter contentType="{{message_formatter.content_type}}"
+                          class="{{message_formatter.class}}"/>
+    {% endfor %} 
     </messageFormatters>
     <!-- ================================================= -->
     <!--                Message Builders                   -->
@@ -179,6 +183,10 @@
                         class="{{message_builder.text_plain}}"/>
         <messageBuilder contentType="application/octet-stream"
                         class="{{message_builder.octet_stream}}"/>
+    {% for message_builder in blocking.custom_message_builders %}
+        <messageBuilder contentType="{{message_builder.content_type}}"
+                        class="{{message_builder.class}}"/>
+    {% endfor %}
     </messageBuilders>
 
 
