@@ -169,7 +169,7 @@ public class BenchmarkTestCase extends APIMIntegrationBaseTest {
     @Test(dependsOnMethods = "retrieveAllApisFromPublisher")
     public void retrieveAllApisFromDevPortal(Method method)
             throws InterruptedException, IOException, ParseException,
-            org.wso2.am.integration.clients.store.api.ApiException {
+            org.wso2.am.integration.clients.store.api.ApiException, APIManagerIntegrationTestException {
 
         scenario = "RETRIEVE_ALL_STORE";
         testName = method.getName();
