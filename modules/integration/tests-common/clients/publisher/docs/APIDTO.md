@@ -23,7 +23,7 @@ Name | Type | Description | Notes
 **revisionedApiId** | **String** | UUID of the api registry artifact  |  [optional] [readonly]
 **revisionId** | **Integer** |  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
-**type** | [**TypeEnum**](#TypeEnum) | The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE |  [optional]
+**type** | [**TypeEnum**](#TypeEnum) | The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, ASYNC |  [optional]
 **transport** | **List&lt;String&gt;** | Supported transports for the API (http and/or https).  |  [optional]
 **tags** | **List&lt;String&gt;** |  |  [optional]
 **policies** | **List&lt;String&gt;** |  |  [optional]
@@ -72,6 +72,7 @@ SOAP | &quot;SOAP&quot;
 GRAPHQL | &quot;GRAPHQL&quot;
 WEBSUB | &quot;WEBSUB&quot;
 SSE | &quot;SSE&quot;
+ASYNC | &quot;ASYNC&quot;
 
 
 

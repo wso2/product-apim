@@ -113,7 +113,7 @@ public class APIDTO {
             private Boolean enableSchemaValidation;
 
             /**
-* The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
+* The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, ASYNC
 */
     @JsonAdapter(TypeEnum.Adapter.class)
 public enum TypeEnum {
@@ -129,7 +129,9 @@ public enum TypeEnum {
         
         WEBSUB("WEBSUB"),
         
-        SSE("SSE");
+        SSE("SSE"),
+        
+        ASYNC("ASYNC");
 
 private String value;
 
@@ -897,11 +899,11 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
         }
 
     /**
-        * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
+        * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, ASYNC
     * @return type
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(example = "HTTP", value = "The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE")
+      @ApiModelProperty(example = "HTTP", value = "The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, ASYNC")
     
     public TypeEnum getType() {
         return type;
