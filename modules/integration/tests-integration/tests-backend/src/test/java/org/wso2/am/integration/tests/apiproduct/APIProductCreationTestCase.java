@@ -501,6 +501,66 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 requestBody, headers);
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test creation of API Product with an Advertise only API")
+    public void testCreateApiProductWithAdvertiseOnlyApi() throws Exception {
+        // Pre-Conditions : Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+        APIDTO advertiseOnlyApi = apiTestHelper
+                .createAdvertiseOnlyApi(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        apisToBeUsed.add(advertiseOnlyApi);
+
+        // Step 1 : Create APIProduct
+        final String provider = user.getUserName();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID();
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        // Step 1 : Create APIProduct
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+                apisToBeUsed, policies);
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
+        waitForAPIDeployment();
+
+        // Step 2 : Verify created APIProduct in publisher
+        apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+
+        apiProductDTO = publishAPIProduct(apiProductDTO.getId());
+
+        // Step 3 : Verify APIProduct in dev portal
+        org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
+                apiProductTestHelper.verifyApiProductInPortal(apiProductDTO);
+
+        // Step 4 : Subscribe to APIProduct
+        ApplicationDTO applicationDTO = apiTestHelper.verifySubscription(apiDTO, UUID.randomUUID().toString(),
+                TIER_UNLIMITED);
+
+        // Step 5 : Generate Production and Sandbox keys and Application Access tokens without scopes
+        List<String> grantTypes = Arrays.asList("client_credentials", "password");
+        ApplicationKeyDTO productionAppKey = apiTestHelper.verifyKeyGeneration(applicationDTO,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, new ArrayList<>(), grantTypes);
+
+        ApplicationKeyDTO sandboxAppKey = apiTestHelper.verifyKeyGeneration(applicationDTO,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, new ArrayList<>(), grantTypes);
+
+        // Step 6 : Invoke API Product with Application Access tokens
+        InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
+        apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
+                sandboxAppKey.getToken().getAccessToken(), invocationStatusCodes);
+
+        // Step 7 : Generate Production and Sandbox User tokens without scopes
+        String productionToken = apiTestHelper.generateTokenPasswordGrant(productionAppKey.getConsumerKey(),
+                productionAppKey.getConsumerSecret(), STANDARD_SUBSCRIBER, PASSWORD,
+                Collections.emptyList());
+
+        String sandboxToken = apiTestHelper.generateTokenPasswordGrant(sandboxAppKey.getConsumerKey(),
+                sandboxAppKey.getConsumerSecret(), STANDARD_SUBSCRIBER, PASSWORD,
+                Collections.emptyList());
+
+        // Step 8 : Invoke API Product with User Access tokens
+        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes);
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
