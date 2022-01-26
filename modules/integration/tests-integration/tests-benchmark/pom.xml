@@ -141,6 +141,26 @@ under the License.
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>createBenchmarkTestsLogsDir</id>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <tasks>
+                                        <property name="benchmarkTestsLogsDir" value="target/logs/benchmark-tests/" />
+                                        <delete dir="${benchmarkTestsLogsDir}"/>
+                                        <mkdir dir="${benchmarkTestsLogsDir}"/>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>

@@ -41,6 +41,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.enums.OperatingSystems;
@@ -49,12 +50,12 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
 
     private static final String APIM_HOME = System.getProperty("carbon.home");
     private static final String IN_FILE_PATH = APIM_HOME + "/repository/logs/correlation.log";
-    private static final String OUT_FILE_PATH = "logs/benchmark-tests/";
+    private static final String OUT_FILE_PATH = "logs/benchmark-tests/"; // This dir is initially created by the maven-antrun-plugin
     private static final String SUPER_TENANT = "superTenant";
     public static String tenant;
 
     public static int extractCountsFromLog(String logFile, String testType, LocalTime startTime, String provider)
-            throws InterruptedException {
+            throws InterruptedException, APIManagerIntegrationTestException {
 
         String tenantName;
         String correlationID = System.getProperty("testName");
@@ -115,12 +116,13 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            String errorMsg = "Error while reading/writing benchmark test log files";
+            throw new APIManagerIntegrationTestException(errorMsg, e);
         }
         return noOfLinesExecuted;
     }
 
-    public static int fetchNoOflines(LocalTime startTime, String logAttribute, String correlationID) {
+    public static int fetchNoOflines(LocalTime startTime, String logAttribute, String correlationID) throws APIManagerIntegrationTestException {
 
         int noOfLinesExecuted = 0;
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(IN_FILE_PATH));) {
@@ -142,10 +144,9 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
                     }
                 }
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            String errorMsg = "Error while reading correlation log files";
+            throw new APIManagerIntegrationTestException(errorMsg, e);
         }
         return noOfLinesExecuted;
     }
@@ -240,7 +241,7 @@ public class BenchmarkUtils extends APIMIntegrationBaseTest {
     }
 
     public static void validateBenchmarkResults(String testName, String testType, LocalTime startTime, String scenario, String provider)
-            throws InterruptedException, IOException, ParseException {
+            throws InterruptedException, IOException, ParseException, APIManagerIntegrationTestException {
 
         int benchmark = getBenchmark(testType, scenario);
         int actualCount = extractCountsFromLog(testName, testType, startTime, provider);
