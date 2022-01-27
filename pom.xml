@@ -1391,7 +1391,7 @@
         <carbon.automation.version>4.4.10</carbon.automation.version>
         <carbon.automationutils.version>4.5.3</carbon.automationutils.version>
         <testng.version>6.11</testng.version>
-        <org.apache.cxf.version>3.2.8</org.apache.cxf.version>
+        <org.apache.cxf.version>3.5.0</org.apache.cxf.version>
         <org.apache.axis2.transport.version>2.0.0-wso2v2</org.apache.axis2.transport.version>
         <org.springframework.version>5.1.13.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.96</org.apache.tomcat>
@@ -1433,7 +1433,7 @@
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.23</swagger-annotations-version>
         <jersey-version>1.19.4</jersey-version>
-        <jackson-version>2.10.3</jackson-version>
+        <jackson-version>2.13.1</jackson-version>
         <jodatime-version>2.10.6</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <log4j.version>1.2.13</log4j.version>
