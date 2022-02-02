@@ -1,13 +1,34 @@
+/*
+ * Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.am.integration.tests.logging;
 
 import org.apache.axis2.AxisFault;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -18,15 +39,16 @@ import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
 import org.wso2.carbon.logging.view.data.xsd.LogEvent;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,25 +57,25 @@ import javax.xml.xpath.XPathExpressionException;
 import static org.testng.Assert.assertEquals;
 
 public class APILoggingTest extends APIManagerLifecycleBaseTest {
-
     private LogViewerClient logViewerClient;
+    private String apiId;
+    private String applicationId;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public APILoggingTest(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN}, new Object[]{TestUserMode.TENANT_ADMIN}};
+    }
+
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, AxisFault, XPathExpressionException {
         super.init();
-        logViewerClient = new LogViewerClient(
-                gatewayContextMgt.getContextUrls().getBackEndUrl(), createSession(gatewayContextMgt));
-
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
-
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
-
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                           publisherContext.getContextTenant().getContextUser().getPassword());
-        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                       storeContext.getContextTenant().getContextUser().getPassword());
+        logViewerClient = new LogViewerClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                createSession(gatewayContextMgt));
     }
 
     @Test(groups = {"wso2.am" }, description = "Sending http request to per API logging enabled API: ")
@@ -61,60 +83,63 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         boolean isPercentEncoded = false;
         logViewerClient.clearLogs();
 
+        // Get list of logging disabled APIs without any API
         Map<String, String> header = new HashMap<>();
-        header.put("Authorization", "Basic YWRtaW46YWRtaW4=");
+        byte[] encodedBytes = Base64.encodeBase64(RESTAPITestConstants.BASIC_AUTH_HEADER.getBytes(StandardCharsets.UTF_8));
+        header.put("Authorization", "Basic " + new String(encodedBytes, StandardCharsets.UTF_8));
         header.put("Content-Type", "application/json");
-        HttpResponse loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps() + "api/am/devops/v1/tenant-logs/carbon.super/apis?logging-enabled=false", header);
+        HttpResponse loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
+                + "api/am/devops/v1/tenant-logs/carbon.super/apis?logging-enabled=false", header);
         Assert.assertEquals(loggingResponse.getData(), "{\"apis\":[]}");
 
-        final String API_NAME = "AddNewMediationAndInvokeAPITest";
-        final String API_CONTEXT = "AddNewMediationAndInvokeAPI";
-        final String API_TAGS = "testTag1, testTag2, testTag3";
-        final String API_END_POINT_POSTFIX_URL = "xmlapi";
-        final String API_VERSION_1_0_0 = "1.0.0";
-        final String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
+        String API_NAME = "AddNewMediationAndInvokeAPITest";
+        String API_CONTEXT = "AddNewMediationAndInvokeAPI";
+        String API_TAGS = "testTag1, testTag2, testTag3";
+        String API_END_POINT_POSTFIX_URL = "xmlapi";
+        String API_VERSION_1_0_0 = "1.0.0";
+        String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
-                                                                          "Test Application AccessibilityOfBlockAPITestCase", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                                                                          ApplicationDTO.TokenTypeEnum.JWT);
-        String applicationId = applicationResponse.getData();
-
-        //Create the api creation request object
+                "Test Application AccessibilityOfBlockAPITestCase", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.JWT);
+        applicationId = applicationResponse.getData();
         APIRequest apiRequest;
         String apiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION_1_0_0);
         apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
-
         apiRequest.setVersion(API_VERSION_1_0_0);
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTags(API_TAGS);
+        apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore,
+                applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        String apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
-                                                        APIMIntegrationConstants.API_TIER.UNLIMITED);
-
-
-        loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps() + "api/am/devops/v1/tenant-logs/carbon.super/apis?logging-enabled=false", header);
+        // Get list of logging disabled APIs with a logging disabled API
+        loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
+                + "api/am/devops/v1/tenant-logs/carbon.super/apis?logging-enabled=false", header);
         Assert.assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\",\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\"}]}");
 
+        // Enable logging
         String addNewLoggerPayload = "{ \"logLevel\": \"FULL\" }";
         HTTPSClientUtils.doPut(getStoreURLHttps() + "api/am/devops/v1/tenant-logs/carbon.super/apis/" + apiId, header, addNewLoggerPayload);
 
-        loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps() + "api/am/devops/v1/tenant-logs/carbon.super/apis?logging-enabled=false", header);
+        // Get list of logging disabled APIs with a logging enabled API
+        loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
+                + "api/am/devops/v1/tenant-logs/carbon.super/apis?logging-enabled=false", header);
         Assert.assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\",\"logLevel\":\"FULL\",\"apiId\":\"" + apiId + "\"}]}");
 
+        // Create application and invoke API
         ArrayList grantTypes = new ArrayList();
         grantTypes.add("client_credentials");
-
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
-                                                                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
         request.setHeader("Authorization", "Bearer " + accessToken);
         org.apache.http.HttpResponse response = client.execute(request);
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "Invocation fails for GET request");
 
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
-
+        // Validate Per API Logs
         LogEvent[] logs = logViewerClient.getAllSystemLogs();
         for (LogEvent logEvent : logs) {
             String message = logEvent.getMessage();
@@ -124,22 +149,30 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
             }
         }
         Assert.assertTrue(isPercentEncoded,
-                          "Reserved character should be percent encoded while uri-template expansion");
+                "Reserved character should be percent encoded while uri-template expansion");
     }
+
     protected String createPublishAndSubscribeToAPIUsingRest(APIRequest apiRequest,
-                                                             RestAPIPublisherImpl publisherRestClient, RestAPIStoreImpl storeRestClient, String applicationId,
+                                                             RestAPIPublisherImpl publisherRestClient,
+                                                             RestAPIStoreImpl storeRestClient, String applicationId,
                                                              String tier)
             throws APIManagerIntegrationTestException, ApiException, XPathExpressionException {
         String apiId = createAndPublishAPIUsingRest(apiRequest, publisherRestClient, false);
         waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
-                                 APIMIntegrationConstants.IS_API_EXISTS);
+                APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse httpResponseSubscribeAPI = subscribeToAPIUsingRest(apiId, applicationId, tier, storeRestClient);
-        if (!(httpResponseSubscribeAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
-              !StringUtils.isEmpty(httpResponseSubscribeAPI.getData()))) {
-            throw new APIManagerIntegrationTestException("Error in API Subscribe." +
-                                                         getAPIIdentifierStringFromAPIRequest(apiRequest) +
-                                                         "Response Code:" + httpResponseSubscribeAPI.getResponseCode());
+        if (!(httpResponseSubscribeAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK
+                && !StringUtils.isEmpty(httpResponseSubscribeAPI.getData()))) {
+            throw new APIManagerIntegrationTestException("Error in API Subscribe."
+                    + getAPIIdentifierStringFromAPIRequest(apiRequest) + "Response Code:"
+                    + httpResponseSubscribeAPI.getResponseCode());
         }
         return apiId;
+    }
+
+    @AfterClass(alwaysRun = true)
+    void destroy() throws Exception {
+        restAPIStore.deleteApplication(applicationId);
+        restAPIPublisher.deleteAPI(apiId);
     }
 }
