@@ -1337,7 +1337,7 @@
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.9.10</carbon.multitenancy.version>
 
-        <siddhi.version>3.2.6</siddhi.version>
+        <siddhi.version>3.2.7</siddhi.version>
 
         <axis2-transports.wso2.version>2.0.0-wso2v42</axis2-transports.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
