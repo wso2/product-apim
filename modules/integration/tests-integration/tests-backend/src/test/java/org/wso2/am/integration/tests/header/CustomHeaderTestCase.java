@@ -145,10 +145,10 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiResponse3 = HttpRequestUtil.doGet(invocationUrl, requestHeaders3);
         assertEquals(apiResponse3.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched");
-
         assertTrue(apiResponse3.getResponseMessage().contains("\"detail_arguments\": \"Invalid Credentials. " +
                 "Make sure your API invocation call has a header: '" + CUSTOM_AUTHORIZATION_HEADER
-                + " : Bearer ACCESS_TOKEN' or 'null : Basic ACCESS_TOKEN' or 'apikey: API_KEY'\""));
+                + " : Bearer ACCESS_TOKEN' or '" + CUSTOM_AUTHORIZATION_HEADER
+                + " : Basic ACCESS_TOKEN' or 'apikey: API_KEY'\""));
     }
 
     @AfterClass(alwaysRun = true)
