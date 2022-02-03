@@ -38,6 +38,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 import static org.wso2.am.integration.tests.restapi.RESTAPITestConstants.APPLICATION_JSON_CONTENT;
 import static org.wso2.am.integration.tests.restapi.RESTAPITestConstants.AUTHORIZATION_KEY;
 
@@ -136,6 +137,19 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
         assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched");
+
+        // Tests whether system-wide custom Authorization header is mentioned properly in the missing credential
+        // authentication response.
+        Map<String, String> requestHeaders3 = new HashMap<>();
+        requestHeaders3.put("accept", "application/json");
+        HttpResponse apiResponse3 = HttpRequestUtil.doGet(invocationUrl, requestHeaders3);
+        assertEquals(apiResponse3.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched");
+        assertTrue(apiResponse3.getData().contains("{\"fault\":{\"code\":900902,"
+                + "\"message\":\"Missing Credentials\",\"description\":\"Invalid Credentials. "
+                + "Make sure your API invocation call has a header: '" + CUSTOM_AUTHORIZATION_HEADER
+                + " : Bearer ACCESS_TOKEN' or '" + CUSTOM_AUTHORIZATION_HEADER
+                + " : Basic ACCESS_TOKEN' or 'apikey: API_KEY'\"}}"));
     }
 
     @AfterClass(alwaysRun = true)
