@@ -528,6 +528,6 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
+        restAPIPublisher.deleteAPI(apiId);
     }
 }

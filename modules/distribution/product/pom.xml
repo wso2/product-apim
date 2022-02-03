@@ -157,6 +157,25 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>unpack-rest-devops</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.apimgt</groupId>
+                                    <artifactId>org.wso2.carbon.apimgt.rest.api.devops.feature</artifactId>
+                                    <version>${carbon.apimgt.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>unpack-rest-admin</id>
                         <phase>package</phase>
                         <goals>
