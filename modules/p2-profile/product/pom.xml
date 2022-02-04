@@ -691,6 +691,15 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.eventing.hub.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
+
+                                <!-- Multi Attribute Login feature -->
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.framework:org.wso2.carbon.identity.multi.attribute.login.mgt.server.feature:${carbon.identity.version}
+                                </featureArtifactDef>
+                                <!-- Multi Attribute Login (osgi service impl)feature -->
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.governance:org.wso2.carbon.identity.multi.attribute.login.service.server.feature:${carbon.identity.governance.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1521,6 +1530,17 @@
                                     <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+
+                                <feature>
+                                    <id>
+                                        org.wso2.carbon.identity.multi.attribute.login.mgt.server.feature.group
+                                    </id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.multi.attribute.login.service.server.feature.group</id>
+                                    <version>${carbon.identity.governance.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2154,6 +2174,17 @@
                                     <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+
+                                <feature>
+                                    <id>
+                                        org.wso2.carbon.identity.multi.attribute.login.mgt.server.feature.group
+                                    </id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.multi.attribute.login.service.server.feature.group</id>
+                                    <version>${carbon.identity.governance.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2605,6 +2636,17 @@
                                 <feature>
                                     <id>org.wso2.am.analytics.publisher.client.feature.group</id>
                                     <version>${apim.analytics.publisher.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>
+                                        org.wso2.carbon.identity.multi.attribute.login.mgt.server.feature.group
+                                    </id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.multi.attribute.login.service.server.feature.group</id>
+                                    <version>${carbon.identity.governance.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -3150,6 +3192,17 @@
                                     <id>org.wso2.carbon.extension.identity.oauth2.token.exchange.feature.group</id>
                                     <version>${carbon.extension.identity.oauth2.grantType.token.exchange}</version>
                                 </feature>
+
+                                <feature>
+                                    <id>
+                                        org.wso2.carbon.identity.multi.attribute.login.mgt.server.feature.group
+                                    </id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.multi.attribute.login.service.server.feature.group</id>
+                                    <version>${carbon.identity.governance.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -3658,6 +3711,17 @@
                                     <id>org.wso2.carbon.apimgt.eventing.hub.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+
+                                <feature>
+                                    <id>
+                                        org.wso2.carbon.identity.multi.attribute.login.mgt.server.feature.group
+                                    </id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.multi.attribute.login.service.server.feature.group</id>
+                                    <version>${carbon.identity.governance.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -4111,6 +4175,17 @@
                                 <feature>
                                     <id>org.wso2.carbon.extension.identity.oauth2.token.exchange.feature.group</id>
                                     <version>${carbon.extension.identity.oauth2.grantType.token.exchange}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>
+                                        org.wso2.carbon.identity.multi.attribute.login.mgt.server.feature.group
+                                    </id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.multi.attribute.login.service.server.feature.group</id>
+                                    <version>${carbon.identity.governance.version}</version>
                                 </feature>
                             </features>
                         </configuration>
