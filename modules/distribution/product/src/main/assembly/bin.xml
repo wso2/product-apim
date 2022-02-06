@@ -447,6 +447,7 @@
             <outputDirectory>wso2am-${pom.version}/repository/resources/api_templates</outputDirectory>
             <includes>
                 <include>**/**.xml</include>
+                <include>**/**.j2</include>
             </includes>
         </fileSet>
         <!-- Throttling policy related templates -->
