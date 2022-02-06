@@ -1,6 +1,7 @@
 <?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <sequence xmlns=\"http://ws.apache.org/ns/synapse\" name=\"{{sequence_name}}\">
-    <switch source=\"$ctx:URL_TEMPLATE_SWITCH\">
+<property name="switchExpression" expression="fn:concat($ctx:REST_METHOD,'_',$ctx:API_ELECTED_RESOURCE)" />
+    <switch source=\"$ctx:switchExpression\">
     {% for case in case_list %}
         <case regex=\"{{case.case_regex}}\">
         {% for policy in case.policy_sequence %}
