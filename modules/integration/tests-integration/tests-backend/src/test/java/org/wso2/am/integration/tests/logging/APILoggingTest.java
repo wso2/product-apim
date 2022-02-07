@@ -23,7 +23,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -40,9 +39,11 @@ import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
-import org.wso2.carbon.logging.view.data.xsd.LogEvent;
+import org.wso2.carbon.utils.ServerConstants;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -51,9 +52,10 @@ import java.util.Map;
 import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class APILoggingTest extends APIManagerLifecycleBaseTest {
-    private LogViewerClient logViewerClient;
     private String apiId;
     private String applicationId;
 
@@ -70,23 +72,20 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, AxisFault, XPathExpressionException {
         super.init();
-        logViewerClient = new LogViewerClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                createSession(gatewayContextMgt));
     }
 
     @Test(groups = {"wso2.am" }, description = "Sending http request to per API logging enabled API: ")
     public void testAPIPerAPILoggingTestcase() throws Exception {
-        boolean isPercentEncoded = false;
-        logViewerClient.clearLogs();
 
         // Get list of APIs without any API
         Map<String, String> header = new HashMap<>();
-        byte[] encodedBytes = Base64.encodeBase64(RESTAPITestConstants.BASIC_AUTH_HEADER.getBytes(StandardCharsets.UTF_8));
+        byte[] encodedBytes = Base64.encodeBase64(RESTAPITestConstants.BASIC_AUTH_HEADER
+                .getBytes(StandardCharsets.UTF_8));
         header.put("Authorization", "Basic " + new String(encodedBytes, StandardCharsets.UTF_8));
         header.put("Content-Type", "application/json");
         HttpResponse loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
-                + "api/am/devops/v1/tenant-logs/carbon.super/apis?logging-enabled=false", header);
-        Assert.assertEquals(loggingResponse.getData(), "{\"apis\":[]}");
+                + "api/am/devops/v1/tenant-logs/carbon.super/apis", header);
+        assertEquals(loggingResponse.getData(), "{\"apis\":[]}");
 
         String API_NAME = "AddNewMediationAndInvokeAPITest";
         String API_CONTEXT = "AddNewMediationAndInvokeAPI";
@@ -94,10 +93,14 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         String API_END_POINT_POSTFIX_URL = "xmlapi";
         String API_VERSION_1_0_0 = "1.0.0";
         String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
+
+        // Create an application
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application AccessibilityOfBlockAPITestCase", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
+
+        // Create an API and subscribe to it using created application
         APIRequest apiRequest;
         String apiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION_1_0_0);
         apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
@@ -108,25 +111,29 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore,
                 applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        // Get list of APIs with a logging disabled API
+        // Get list of APIs with an API
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
-                + "api/am/devops/v1/tenant-logs/carbon.super/apis?logging-enabled=false", header);
-        Assert.assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\",\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\"}]}");
+                + "api/am/devops/v1/tenant-logs/carbon.super/apis", header);
+        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\","
+                + "\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\"}]}");
 
-        // Enable logging of the API
+        // Change logLevel to FULL
         String addNewLoggerPayload = "{ \"logLevel\": \"FULL\" }";
-        HTTPSClientUtils.doPut(getStoreURLHttps() + "api/am/devops/v1/tenant-logs/carbon.super/apis/" + apiId, header, addNewLoggerPayload);
+        HTTPSClientUtils.doPut(getStoreURLHttps() + "api/am/devops/v1/tenant-logs/carbon.super/apis/" + apiId, header,
+                addNewLoggerPayload);
 
-        // Get list of APIs with a logging enabled API
+        // Get list of APIs which have log-level=FULL
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
-                + "api/am/devops/v1/tenant-logs/carbon.super/apis?logging-enabled=false", header);
-        Assert.assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\",\"logLevel\":\"FULL\",\"apiId\":\"" + apiId + "\"}]}");
+                + "api/am/devops/v1/tenant-logs/carbon.super/apis?log-level=full", header);
+        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\","
+                + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiId + "\"}]}");
 
-        // Create application and invoke API
-        ArrayList grantTypes = new ArrayList();
+        // Invoke the API
+        ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add("client_credentials");
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        assertNotNull(applicationKeyDTO.getToken());
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
@@ -136,16 +143,13 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
                 "Invocation fails for GET request");
 
         // Validate API Logs
-        LogEvent[] logs = logViewerClient.getAllSystemLogs();
-        for (LogEvent logEvent : logs) {
-            String message = logEvent.getMessage();
-            if (message.contains(" | response-out<<<< | GET | AddNewMediationAndInvokeAPI/1.0.0 | PAYLOAD | ")) {
-                isPercentEncoded = true;
-                break;
-            }
+        String apiLogFilePath = System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository"
+                + File.separator + "logs" + File.separator + "api.log";
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(apiLogFilePath));
+        String logLine;
+        while ((logLine = bufferedReader.readLine()) != null) {
+            assertTrue(logLine.contains("INFO {API_LOG} AddNewMediationAndInvokeAPI"));
         }
-        Assert.assertTrue(isPercentEncoded,
-                "Reserved character should be percent encoded while uri-template expansion");
     }
 
     @AfterClass(alwaysRun = true)
