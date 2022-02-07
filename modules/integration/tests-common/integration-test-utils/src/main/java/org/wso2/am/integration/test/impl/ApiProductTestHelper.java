@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.test.impl;
 
+import org.apache.synapse.unittest.testcase.data.classes.AssertNotNull;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -29,6 +30,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
@@ -76,7 +78,7 @@ public class ApiProductTestHelper {
         verifyAPIProductDto(responseResources, resourcesForProduct);
 
         // Validate mandatory fields returned in response data
-        Assert.assertEquals(responseData.getProvider(), provider);
+        Assert.assertTrue(provider.equalsIgnoreCase(responseData.getProvider()));
         Assert.assertEquals(responseData.getName(), name);
         if ("carbon.super".equals(restAPIPublisher.tenantDomain)) {
             Assert.assertEquals(responseData.getContext(), context);
@@ -86,6 +88,15 @@ public class ApiProductTestHelper {
         }
 
         return responseData;
+    }
+
+    public WorkflowResponseDTO changeLifecycleStateOfApiProduct(String apiProductId, String action,
+                                                                String lifecycleChecklist) throws ApiException {
+
+        WorkflowResponseDTO workflowResponseDTO = restAPIPublisher.changeAPIProductLifeCycleStatus(apiProductId, action,
+                lifecycleChecklist);
+        Assert.assertNotNull(workflowResponseDTO);
+        return workflowResponseDTO;
     }
 
     private void verifyAPIProductDto(List<ProductAPIDTO> expectedProduct, List<ProductAPIDTO> actualProduct) {
@@ -146,7 +157,6 @@ public class ApiProductTestHelper {
         Assert.assertEquals(returnedProduct.getVisibleTenants(), responseData.getVisibleTenants());
         Assert.assertEquals(returnedProduct.getAccessControl(), responseData.getAccessControl());
         Assert.assertEquals(returnedProduct.getAccessControlRoles(), responseData.getAccessControlRoles());
-        Assert.assertEquals(returnedProduct.getGatewayEnvironments(), responseData.getGatewayEnvironments());
         Assert.assertEquals(returnedProduct.getApiType(), responseData.getApiType());
         Assert.assertEquals(returnedProduct.getTransport(), responseData.getTransport());
         Assert.assertEquals(returnedProduct.getTags(), responseData.getTags());
@@ -319,7 +329,6 @@ public class ApiProductTestHelper {
         verifyBusinessInformation(apiDTO.getBusinessInformation(), apiProductDTO.getBusinessInformation());
         Assert.assertEquals(apiDTO.getContext(), apiProductDTO.getContext());
         Assert.assertEquals(apiDTO.getDescription(), apiProductDTO.getDescription());
-        Assert.assertEquals(new HashSet<>(apiDTO.getEnvironmentList()), new HashSet<>(apiProductDTO.getGatewayEnvironments()));
         Assert.assertEquals(apiDTO.getLifeCycleStatus(), apiProductDTO.getState().getValue());
         Assert.assertEquals(apiDTO.getName(), apiProductDTO.getName());
         verifyResources(apiDTO.getOperations(), apiProductDTO.getApis());

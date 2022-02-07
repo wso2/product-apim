@@ -23,15 +23,20 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.admin.clients.application.ApplicationManagementClient;
+import org.wso2.am.admin.clients.oauth.OAuthAdminServiceClient;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -40,6 +45,11 @@ import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.identity.application.common.model.xsd.InboundAuthenticationConfig;
+import org.wso2.carbon.identity.application.common.model.xsd.InboundAuthenticationRequestConfig;
+import org.wso2.carbon.identity.application.common.model.xsd.Property;
+import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
+import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -65,8 +75,17 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
     private String apiContext = "subscriptionapicontext";
     private String applicationId;
     private String apiId;
+    private String applicationId1;
+    private String applicationId2;
+    private String applicationId3;
+    private String app3KeyMappingId;
     private ArrayList<String> grantTypes;
     private ApplicationDTO applicationDTO;
+    protected ApplicationManagementClient applicationManagementClient;
+    private String oidcApp1ClientId;
+    private String oidcApp1ClientSecret;
+    private String oidcApp2ClientId;
+    private String oidcApp2ClientSecret;
 
     @Factory(dataProvider = "userModeDataProvider")
     public ApplicationTestCase(TestUserMode userMode) {
@@ -127,6 +146,12 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
         applicationId = applicationResponse.getData();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
 
+        applicationManagementClient =
+                new ApplicationManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                        keymanagerSessionCookie);
+        oAuthAdminServiceClient =
+                new OAuthAdminServiceClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                        keymanagerSessionCookie);
     }
 
     @Test(groups = {"webapp"}, description = "Get Application By Application Id")
@@ -217,9 +242,136 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched when deleting an application");
     }
 
+    @Test(groups = {"webapp"}, description = "Map application keys negative test case")
+    public void mapApplicationKeysNegative() throws Exception {
+        OAuthConsumerAppDTO oAuthApplicationData = createOIDCApplication("OauthApp1");
+        oidcApp1ClientId = oAuthApplicationData.getOauthConsumerKey();
+        oidcApp1ClientSecret = oAuthApplicationData.getOauthConsumerSecret();
+
+        createServiceProvider("OauthApp1", oidcApp1ClientId, oidcApp1ClientSecret);
+
+        HttpResponse applicationDTO =
+                restAPIStore.createApplication("DevPortalApp1", "JWT Application",
+                        APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, ApplicationDTO.TokenTypeEnum.JWT);
+        applicationId1 = applicationDTO.getData();
+
+        try {
+            restAPIStore.generateKeys(applicationId1, "36000", "",
+                    ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+            restAPIStore.mapConsumerKeyWithApplication(oidcApp1ClientId, oidcApp1ClientSecret, applicationId1,
+                    "Resident Key Manager");
+        } catch (ApiException e) {
+            Assert.assertEquals(409, e.getCode());
+            Assert.assertTrue(e.getResponseBody().contains("Key Mappings already exists"));
+        }
+    }
+
+    @Test(groups = {"webapp"}, description = "Map application keys test case",
+            dependsOnMethods = "mapApplicationKeysNegative")
+    public void mapApplicationKeys() throws Exception {
+
+        OAuthConsumerAppDTO oAuthApplicationData = createOIDCApplication("OauthApp2");
+        oidcApp2ClientId = oAuthApplicationData.getOauthConsumerKey();
+        oidcApp2ClientSecret = oAuthApplicationData.getOauthConsumerSecret();
+
+        createServiceProvider("OauthApp2", oidcApp2ClientId, oidcApp2ClientSecret);
+
+        HttpResponse applicationDTO =
+                restAPIStore.createApplication("DevPortalApp2", "JWT Application",
+                        APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, ApplicationDTO.TokenTypeEnum.JWT);
+        applicationId2 = applicationDTO.getData();
+
+        try {
+            //Map application Keys
+            ApplicationKeyDTO applicationKeyDTO = restAPIStore.mapConsumerKeyWithApplication(oidcApp2ClientId,
+                    oidcApp2ClientSecret, applicationId2, "Resident Key Manager");
+            Assert.assertNotNull(applicationKeyDTO);
+            restAPIStore.generateKeys(applicationId2, "3600", "",
+                    ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        } catch (ApiException e) {
+            Assert.assertEquals(409, e.getCode());
+            Assert.assertTrue(e.getResponseBody().contains("Key Mappings already exists"));
+        }
+    }
+
+    @Test(groups = {"webapp"}, description = "Fetch Oauth key details by key mapping ID")
+    public void testFetchKeyDetailsByKeyMappingID() throws Exception {
+        HttpResponse applicationResponse = restAPIStore.createApplication("KeyMappingTestApp",
+                "Test Application", tier, ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse.getResponseCode(), HttpStatus.SC_OK, "Error while adding test application");
+
+        applicationId3 = applicationResponse.getData();
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationId3, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, grantTypes);
+        Assert.assertNotNull(applicationKeyDTO);
+        app3KeyMappingId = applicationKeyDTO.getKeyMappingId();
+
+        ApplicationKeyDTO responseKeyDTO = restAPIStore.getApplicationKeyByKeyMappingId(applicationId3, app3KeyMappingId);
+        Assert.assertNotNull(responseKeyDTO);
+        Assert.assertNotNull(responseKeyDTO.getConsumerKey(), "Consumer secret is not populated in REST API response");
+        Assert.assertEquals(responseKeyDTO.getConsumerKey(), applicationKeyDTO.getConsumerKey(),
+                "Incorrect consumer key returned");
+    }
+
+    @Test(groups = {"webapp" }, description = "Regenerate secret by key mapping ID",
+            dependsOnMethods = "testFetchKeyDetailsByKeyMappingID")
+    public void testRegenerateSecretForKeyMappingId() throws Exception {
+        ApplicationKeyReGenerateResponseDTO reGenerateResponseDTO = restAPIStore
+                .regenerateSecretByKeyMappingId(applicationId3, app3KeyMappingId);
+        Assert.assertNotNull(reGenerateResponseDTO);
+        Assert.assertNotNull(reGenerateResponseDTO.getConsumerSecret(), "Secret is not populated");
+    }
+
+    private OAuthConsumerAppDTO createOIDCApplication(String applicationName) throws Exception {
+
+        OAuthConsumerAppDTO appDTO = new OAuthConsumerAppDTO();
+        appDTO.setApplicationName(applicationName);
+        appDTO.setCallbackUrl("http://localhost:8490/playground2/oauth2clien");
+        appDTO.setOAuthVersion("OAuth-2.0");
+        appDTO.setGrantTypes("authorization_code");
+        appDTO.setBackChannelLogoutUrl("http://localhost:8490/playground2/bclogout");
+
+        oAuthAdminServiceClient.registerOAuthApplicationData(appDTO);
+        OAuthConsumerAppDTO createdApp = oAuthAdminServiceClient.getOAuthAppByName(applicationName);
+        Assert.assertNotNull(createdApp);
+        return createdApp;
+    }
+
+    private ServiceProvider createServiceProvider(String applicationName, String clientId, String clientSecret) throws Exception {
+
+        ServiceProvider serviceProvider = new ServiceProvider();
+        serviceProvider.setApplicationName(applicationName);
+        applicationManagementClient.createApplication(serviceProvider);
+        serviceProvider = applicationManagementClient.getApplication(applicationName);
+
+        InboundAuthenticationRequestConfig requestConfig = new InboundAuthenticationRequestConfig();
+        requestConfig.setInboundAuthKey(clientId);
+        requestConfig.setInboundAuthType("oauth2");
+        if (StringUtils.isNotBlank(clientSecret)) {
+            Property property = new Property();
+            property.setName("oauthConsumerSecret");
+            property.setValue(clientSecret);
+            Property[] properties = {property};
+            requestConfig.setProperties(properties);
+        }
+
+        InboundAuthenticationConfig inboundAuthenticationConfig = new InboundAuthenticationConfig();
+        inboundAuthenticationConfig
+                .setInboundAuthenticationRequestConfigs(new InboundAuthenticationRequestConfig[]{requestConfig});
+        serviceProvider.setInboundAuthenticationConfig(inboundAuthenticationConfig);
+        applicationManagementClient.updateApplication(serviceProvider);
+        return serviceProvider;
+    }
+
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
+        restAPIStore.deleteApplication(applicationId1);
+        restAPIStore.deleteApplication(applicationId2);
+        applicationManagementClient.deleteApplication("OauthApp1");
+        applicationManagementClient.deleteApplication("OauthApp2");
     }
 }

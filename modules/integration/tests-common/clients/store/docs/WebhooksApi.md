@@ -4,12 +4,12 @@ All URIs are relative to *https://apis.wso2.com/api/am/devportal/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getAllWebhooksOfAPI**](WebhooksApi.md#getAllWebhooksOfAPI) | **GET** /webhooks/subscriptions | Get available web hook subscriptions for a given application. 
+[**webhooksSubscriptionsGet**](WebhooksApi.md#webhooksSubscriptionsGet) | **GET** /webhooks/subscriptions | Get available web hook subscriptions for a given application. 
 
 
-<a name="getAllWebhooksOfAPI"></a>
-# **getAllWebhooksOfAPI**
-> WebhookSubscriptionListDTO getAllWebhooksOfAPI(applicationId, apiId, xWSO2Tenant)
+<a name="webhooksSubscriptionsGet"></a>
+# **webhooksSubscriptionsGet**
+> WebhookSubscriptionListDTO webhooksSubscriptionsGet(applicationId, apiId, xWSO2Tenant)
 
 Get available web hook subscriptions for a given application. 
 
@@ -39,10 +39,10 @@ public class Example {
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
     try {
-      WebhookSubscriptionListDTO result = apiInstance.getAllWebhooksOfAPI(applicationId, apiId, xWSO2Tenant);
+      WebhookSubscriptionListDTO result = apiInstance.webhooksSubscriptionsGet(applicationId, apiId, xWSO2Tenant);
       System.out.println(result);
     } catch (ApiException e) {
-      System.err.println("Exception when calling WebhooksApi#getAllWebhooksOfAPI");
+      System.err.println("Exception when calling WebhooksApi#webhooksSubscriptionsGet");
       System.err.println("Status code: " + e.getCode());
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());

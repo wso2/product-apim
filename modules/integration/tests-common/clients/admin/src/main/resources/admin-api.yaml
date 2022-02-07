@@ -2846,6 +2846,7 @@ paths:
               - AM_SUBSCRIPTION_DELETION
               - AM_APPLICATION_DELETION
               - AM_API_STATE
+              - AM_API_PRODUCT_STATE
       responses:
         200:
           description: |
@@ -3762,6 +3763,122 @@ paths:
         - lang: Shell
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -F file=@theme.zip "https://127.0.0.1:9443/api/am/admin/v2/tenant-theme"'
+
+  ######################################################
+  # The Tenant config resource APIs
+  ######################################################
+  /tenant-config:
+    get:
+      tags:
+        - Tenant Config
+      summary: Export a tenant-Config.
+      description: |
+        This operation can be used to export a tenant-config.json used in deployment.
+      operationId: exportTenantConfig
+      responses:
+        200:
+          description: |
+            OK.
+            Tenant config Exported Successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/tenant-config" > tenant-config.json'
+    put:
+      tags:
+        - Tenant Config
+      summary: Update a tenant-config.
+      description: |
+        This operation can be used to update tenant-config.
+      operationId: updateTenantConfig
+      requestBody:
+        description: tenant-config
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Role mapping alias returned
+          content:
+            application/json:
+              schema:
+                type: object
+        403:
+          $ref: '#/components/responses/Forbidden'
+        413:
+          $ref: '#/components/responses/PayloadTooLarge'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+           "https://127.0.0.1:9443/api/am/admin/v2/tenant-config"'
+
+  ######################################################
+  # The Tenant config schema resource APIs
+  ######################################################
+  /tenant-config-schema:
+    get:
+      tags:
+        - Tenant Config Schema
+      summary: Export a tenant-Config-Schema.
+      description: |
+        This operation can be used to export a tenant-config-schema.json used in deployment.
+      operationId: exportTenantConfigSchema
+      responses:
+        200:
+          description: |
+            OK.
+            Tenant config schema exported successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Shell
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/tenant-config-schema" > tenant-config-schema.json'
 
   ######################################################
   # The "Key Manager Collection" resource API
@@ -4770,6 +4887,9 @@ components:
           maxLength: 1023
           type: string
           example: Gateway environment in US Region
+        provider:
+          type: string
+          example: wso2
         isReadOnly:
           type: boolean
           readOnly: true
@@ -4779,6 +4899,14 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/VHost'
+        endpointURIs:
+          type: array
+          items:
+            $ref: '#/components/schemas/GatewayEnvironmentProtocolURI'
+        additionalProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdditionalProperty'
     EnvironmentList:
       title: Environment List
       type: object
@@ -4823,6 +4951,29 @@ components:
         wssPort:
           type: integer
           example: 8099
+    AdditionalProperty:
+      title: Additional Gateway Properties
+      type: object
+      properties:
+        key:
+          type: string
+          example: Organization
+        value:
+          type: string
+          example: wso2
+    GatewayEnvironmentProtocolURI:
+      title: Gateway Environment protocols and URIs
+      required:
+        - protocol
+        - endpointURI
+      type: object
+      properties:
+        protocol:
+          type: string
+          example: default
+        endpointURI:
+          type: string
+          example: default
     PublishStatus:
       title: Usage publish status
       type: object
@@ -5092,7 +5243,13 @@ components:
         tokenEndpoint:
           type: string
           example: https://localhost:9444/oauth2/token
+        displayTokenEndpoint:
+          type: string
+          example: https://localhost:9444/oauth2/token
         revokeEndpoint:
+          type: string
+          example: https://localhost:9444/oauth2/revoke
+        displayRevokeEndpoint:
           type: string
           example: https://localhost:9444/oauth2/revoke
         userInfoEndpoint:
@@ -5114,6 +5271,12 @@ components:
         issuer:
           type: string
           example: https://localhost:9444/services
+        alias:
+          type: string
+          description: |
+            The alias of Identity Provider.
+            If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token
+          example: https://localhost:9443/oauth2/token
         scopeManagementEndpoint:
           type: string
           example: https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes
@@ -5164,11 +5327,21 @@ components:
           example: true
         additionalProperties:
           type: object
-          properties: {}
+          properties: { }
           example:
             self_validate_jwt: true
             Username: admin
             Password: admin
+        tokenType:
+          type: string
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED and DIRECT.
+          example: EXCHANGED
+          default: DIRECT
+          enum:
+            - EXCHANGED
+            - DIRECT
+            - BOTH
     KeyManagerInfo:
       title: Key Manager Info
       required:
@@ -5191,6 +5364,16 @@ components:
         enabled:
           type: boolean
           example: true
+        tokenType:
+          type: string
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED and DIRECT.
+          example: EXCHANGED
+          default: DIRECT
+          enum:
+            - EXCHANGED
+            - DIRECT
+            - BOTH
     KeyManagerConfiguration:
       title: Key Manager Configuration
       type: object
@@ -5383,6 +5566,7 @@ components:
             - API_STATE
             - SUBSCRIPTION_DELETION
             - SUBSCRIPTION_UPDATE
+            - API_PRODUCT_STATE
         workflowStatus:
           type: string
           description: |

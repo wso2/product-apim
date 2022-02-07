@@ -21,3 +21,8 @@ target
 #OSX meta files and js local packages
 .DS_Store
 node_modules/
+
+*.war
+*.mar
+*.jar
+

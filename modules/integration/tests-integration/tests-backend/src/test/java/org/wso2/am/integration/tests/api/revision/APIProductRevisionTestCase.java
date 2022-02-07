@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.api.revision;
 
+import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -27,6 +28,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
@@ -128,7 +130,7 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"APIProduct");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Product Revisions:" +apiRevisionsDeployResponse.getData());
     }
@@ -155,6 +157,10 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
         HttpResponse apiRevisionsRestoreResponse = restAPIPublisher.restoreAPIRevision(apiId, revisionUUID);
         assertEquals(apiRevisionsRestoreResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to resotre API Revisions:" + apiRevisionsRestoreResponse.getData());
+
+        APIProductDTO restoredAPIProduct = restAPIPublisher.getApiProduct(apiId);
+        assertFalse(restoredAPIProduct.getApis().isEmpty(), "API Product's APIs list is empty after API Product "
+                + "restore: " + restoredAPIProduct);
     }
 
     @Test(groups = {"wso2.am"}, description = "Test deleting API using created API Revision",

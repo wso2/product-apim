@@ -36,11 +36,13 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.testng.Assert.assertTrue;
 import static org.wso2.am.integration.test.utils.base.APIMIntegrationConstants.SUPER_TENANT_DOMAIN;
 
 /**
@@ -114,7 +116,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
 
         // create application in the store using super tenant user john1's credentials
-        restAPIStoreClient1 = new RestAPIStoreImpl(USER_JOHN, USER_JOHN_PWD, SUPER_TENANT_DOMAIN, storeURLHttps);
+        restAPIStoreClient1 = new RestAPIStoreImpl(USER_JOHN, USER_JOHN_PWD, SUPER_TENANT_DOMAIN, storeURLHttps
+        );
         ApplicationDTO appOfJohnDTO = restAPIStoreClient1.addApplication(JOHN_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "App of user John");
         appIdOfJohnApp = appOfJohnDTO.getApplicationId();
@@ -141,7 +144,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
 
         // create application in the store using tenant admin user's credentials
-        restAPIStoreClient3 = new RestAPIStoreImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, storeURLHttps);
+        restAPIStoreClient3 = new RestAPIStoreImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, storeURLHttps
+        );
         ApplicationDTO appOfTenantAdminDTO = restAPIStoreClient3.addApplication(TENANT_ADMIN_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, "", "App of tenant admin");
         appIdOfTenantAdminApp = appOfTenantAdminDTO.getApplicationId();
@@ -150,7 +154,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
 
         // create application in the store using tenant user user1's credentials
-        restAPIStoreClient4 = new RestAPIStoreImpl(TENANT_USER1, TENANT_USER1_PWD, TENANT_DOMAIN, storeURLHttps);
+        restAPIStoreClient4 = new RestAPIStoreImpl(TENANT_USER1, TENANT_USER1_PWD, TENANT_DOMAIN, storeURLHttps
+        );
         ApplicationDTO appOfTenantUser1DTO = restAPIStoreClient4.addApplication(TENANT_USER1_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, "", "App of tenant user 1");
         appIdOfTenantUser1App = appOfTenantUser1DTO.getApplicationId();
@@ -159,7 +164,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
 
         // create application in the store using tenant user user2's credentials
-        restAPIStoreClient5 = new RestAPIStoreImpl(TENANT_USER2, TENANT_USER2_PWD, TENANT_DOMAIN, storeURLHttps);
+        restAPIStoreClient5 = new RestAPIStoreImpl(TENANT_USER2, TENANT_USER2_PWD, TENANT_DOMAIN, storeURLHttps
+        );
         ApplicationDTO appOfTenantUser2DTO = restAPIStoreClient5.addApplication(TENANT_USER2_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, "", "App of tenant user 2");
         appIdOfTenantUser2App = appOfTenantUser2DTO.getApplicationId();
@@ -168,7 +174,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes );
 
         // create application in the store using tenant user user3's credentials
-        restAPIStoreClient6 = new RestAPIStoreImpl(TENANT_USER3, TENANT_USER3_PWD, TENANT_DOMAIN, storeURLHttps);
+        restAPIStoreClient6 = new RestAPIStoreImpl(TENANT_USER3, TENANT_USER3_PWD, TENANT_DOMAIN, storeURLHttps
+        );
         ApplicationDTO appOfTenantUser3DTO = restAPIStoreClient6.addApplication(TENANT_USER3_APP,
                 APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, "", "App of tenant user 3");
         appIdOfTenantUser3App = appOfTenantUser3DTO.getApplicationId();
@@ -221,6 +228,54 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
         //Update application Owner for tenant domain
         restAPIAdminClient = new RestAPIAdminImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, publisherURLHttps);
         updateOwner(appIdOfTenantUser2App, TENANT_USER1_WITH_DOMAIN, TENANT_DOMAIN);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "test Update application by new owner",
+            dependsOnMethods = "updateApplicationOwner")
+    public void testApplicationUpdateAfterOwnerChange() throws Exception {
+
+        String newAppName = "JohnUpdatedApplication";
+        String newAppDescription = "Application updated After Ownership Change to JOHN";
+        String newAppTier = "Gold";
+
+        //Update AppTier
+        HttpResponse updateTierResponse = restAPIStoreClient1.updateApplicationByID(appIdOfMaryApp,
+                MARY_APP, "App of user Mary", newAppTier,
+                ApplicationDTO.TokenTypeEnum.JWT);
+        assertTrue(updateTierResponse.getData().contains(newAppTier), "Error while updating application tier" +
+                MARY_APP);
+
+        //Update AppName
+        HttpResponse updateNameResponse = restAPIStoreClient1.updateApplicationByID(appIdOfMaryApp,
+                newAppName, "App of user Mary", newAppTier,
+                ApplicationDTO.TokenTypeEnum.JWT);
+        assertTrue(updateNameResponse.getData().contains(newAppName), "Error while updating application name" +
+                MARY_APP);
+
+        //Update AppDescription
+        HttpResponse updateDesResponse = restAPIStoreClient1.updateApplicationByID(appIdOfMaryApp,
+                newAppName, newAppDescription, newAppTier,
+                ApplicationDTO.TokenTypeEnum.JWT);
+        assertTrue(updateDesResponse.getData().contains(newAppDescription), "Error while updating application " +
+                "description" + MARY_APP);
+
+        //Update OAuthApp - Can be enabled after fixing the issue
+        /*
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.SAML2);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.NTLM);
+        ApplicationKeyDTO applicationKeyDTO = new ApplicationKeyDTO();
+        applicationKeyDTO.setKeyType(ApplicationKeyDTO.KeyTypeEnum.PRODUCTION);
+        applicationKeyDTO.setCallbackUrl("wso2.com");
+        applicationKeyDTO.setSupportedGrantTypes(grantTypes);
+        org.wso2.am.integration.clients.store.api.ApiResponse<ApplicationKeyDTO> updateResponse = restAPIStoreClient1
+                .updateKeys(appIdOfMaryApp, ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.toString(), applicationKeyDTO);
+        assertEquals(updateResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Response code mismatched when updating an application");
+         */
+
     }
 
     @AfterClass(alwaysRun = true)

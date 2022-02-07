@@ -21,32 +21,39 @@ package org.wso2.am.integration.tests.other;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.ftpserver.command.impl.USER;
 import org.json.JSONObject;
-import org.testng.annotations.*;
+import org.junit.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
-import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.core.Response;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
 
@@ -57,8 +64,12 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
     private static final String APP_NAME = "NewApplication";
     private String USER_SMITH = "smith";
     private String ADMIN_ROLE = "admin";
+    private String INTERNAL_CREATOR_USER = "UserNew1";
+    private String INTERNAL_CREATOR_PUBLISHER_USER = "UserNew2";
+
     private static final String SUBSCRIBER_ROLE = "subscriber";
     private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
+    private final String INTERNAL_ROLE_CREATOR = "Internal/creator";
     private final String API_VERSION_WITH_SCOPE = "1.0.0";
     private final String API_VERSION_WITH_SCOPE_COPY = "2.0.0";
     private final String API_NAME_WITH_SCOPE = "APIScopeTestWithScopeName";
@@ -73,6 +84,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
             "Internal/subscriber", "Internal/everyone", "role1" };
     private final String[] SEC_OLD_ROLE_LIST = { "Internal/publisher", "Internal/creator",
             "Internal/subscriber", "Internal/everyone"};
+    private final String[] INTERNAL_CREATOR_PUBLISHER_USER_ROLE_LIST = { "Internal/publisher", "Internal/creator"};
     private String apiId;
     private String apiIdWithScope;
     private String copyApiId;
@@ -97,12 +109,16 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
                 keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
         // crating user smith
         String userSmith;
+        String user1;
+        String user2;
         String gatewayUrl;
 
         if (TestUserMode.SUPER_TENANT_USER_STORE_USER.equals(userMode)) {
             USER_SMITH = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + USER_SMITH;
             ADMIN_ROLE = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + ADMIN_ROLE;
-
+            INTERNAL_CREATOR_USER = APIMIntegrationConstants.SECONDARY_USER_STORE + "/" + INTERNAL_CREATOR_USER;
+            INTERNAL_CREATOR_PUBLISHER_USER = APIMIntegrationConstants.SECONDARY_USER_STORE + "/"
+                    + INTERNAL_CREATOR_PUBLISHER_USER;
             userManagementClient1.addRole(ADMIN_ROLE, new String[]{user.getUserNameWithoutDomain()}, ADMIN_PERMISSIONS);
         }
 
@@ -114,13 +130,20 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         if (keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
             userSmith = USER_SMITH;
+            user1 = INTERNAL_CREATOR_USER;
+            user2 = INTERNAL_CREATOR_PUBLISHER_USER;
         } else {
             gatewayUrl =
                     gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + keyManagerContext.getContextTenant().getDomain() + "/";
             userSmith = USER_SMITH + "@" + keyManagerContext.getContextTenant().getDomain();
+            user1 = INTERNAL_CREATOR_USER + "@" + keyManagerContext.getContextTenant().getDomain();
+            user2 = INTERNAL_CREATOR_PUBLISHER_USER + "@" + keyManagerContext.getContextTenant().getDomain();
         }
 
         userManagementClient1.addUser(USER_SMITH, "john123", new String[]{INTERNAL_ROLE_SUBSCRIBER}, USER_SMITH);
+        userManagementClient1.addUser(INTERNAL_CREATOR_USER, "john123", new String[]{INTERNAL_ROLE_CREATOR}, INTERNAL_CREATOR_USER);
+        userManagementClient1.addUser(INTERNAL_CREATOR_PUBLISHER_USER, "john123", INTERNAL_CREATOR_PUBLISHER_USER_ROLE_LIST, INTERNAL_CREATOR_PUBLISHER_USER);
+
         restAPIPublisher = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getContextUser().getPassword(),
@@ -232,6 +255,35 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Admin user cannot access the POST Method");
 
+        //Obtain user access token for Admin without scopes
+        requestBody = "grant_type=password&username=" + user.getUserName() +
+                "&password=" + user.getPassword();
+
+        response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret,
+                requestBody, tokenEndpointURL);
+        accessTokenGenerationResponse = new JSONObject(response.getData());
+        accessToken = accessTokenGenerationResponse.getString("access_token");
+        Assert.assertTrue(accessTokenGenerationResponse.getString("scope").contains("default"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("user_scope"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("admin_scope"));
+        requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+
+        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/test", requestHeaders);
+
+        assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
+                "Admin user can access the GET Method without scope");
+
+        try {
+            // Accessing POST method
+            endPointURL = new URL(gatewayUrl + "testScopeAPI/1.0.0/test");
+            response = HttpRequestUtil.doPost(endPointURL, "", requestHeaders);
+            assertTrue(response.getResponseCode() != Response.Status.OK.getStatusCode(),
+                    "Admin user can access the POST Method");
+        } catch (Exception e) {
+            log.error("user Admin cannot access the resources (expected behaviour)");
+            assertTrue(true, "user admin cannot access the resources");
+        }
 
         //Obtaining user access token for john
         requestBody = "grant_type=password&username=" + userSmith + "&password=john123&scope=admin_scope user_scope";
@@ -259,6 +311,71 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
             log.error("user john cannot access the resources (expected behaviour)");
             assertTrue(true, "user john cannot access the resources");
         }
+
+        //Obtaining user access token for john without scope
+        requestBody = "grant_type=password&username=" + userSmith + "&password=john123";
+        accessTokenGenerationResponse = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
+                        .getData());
+        accessToken = accessTokenGenerationResponse.getString("access_token");
+        Assert.assertTrue(accessTokenGenerationResponse.getString("scope").contains("default"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("user_scope"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("admin_scope"));
+        requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+
+        // Accessing GET method
+        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/test", requestHeaders);
+        assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
+                "User John can access the GET Method without scopes");
+
+        // Contains both Publisher and Store REST API related scopes
+        String fullScopes = "openid apim:api_view apim:api_create apim:api_delete apim:api_publish " +
+                "apim:subscription_view apim:subscription_block apim:external_services_discover " +
+                "apim:threat_protection_policy_create apim:threat_protection_policy_manage " +
+                "apim:document_create apim:document_manage apim:mediation_policy_view " +
+                "apim:mediation_policy_create apim:mediation_policy_manage " +
+                "apim:client_certificates_view apim:client_certificates_add " +
+                "apim:client_certificates_update apim:ep_certificates_view " +
+                "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
+                "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
+                "apim:comment_write apim:subscribe apim:app_update apim:app_manage apim:sub_manage " +
+                "apim:self-signup apim:dedicated_gateway apim:store_settings apim:api_key";
+
+        //Obtaining user access token for john(consumer) with all scopes
+        requestBody = "grant_type=password&username=" + userSmith + "&password=john123&scope=" + fullScopes;
+        accessTokenGenerationResponse = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
+                        .getData());
+        accessTokenGenerationResponse.getString("access_token");
+        Assert.assertTrue(accessTokenGenerationResponse.getString("scope").contains("openid"));
+        Assert.assertTrue(accessTokenGenerationResponse.getString("scope").contains("apim:subscribe"));
+        Assert.assertTrue(accessTokenGenerationResponse.getString("scope").contains("apim:app_update"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("apim:api_create"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("apim:api_delete"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("apim:api_publish"));
+
+        //Obtaining user access token for user1(creator) with full Scopes
+        requestBody = "grant_type=password&username=" + user1 + "&password=john123&scope=" + fullScopes;
+        accessTokenGenerationResponse = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
+                        .getData());
+        accessTokenGenerationResponse.getString("access_token");
+        Assert.assertTrue(accessTokenGenerationResponse.getString("scope").contains("apim:api_create"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("apim:api_publish"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("apim:subscribe"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("apim:app_update"));
+
+        //Obtaining user access token for user2(creator+publisher) with full scopes
+        requestBody = "grant_type=password&username=" + user2 + "&password=john123&scope=" + fullScopes;
+        accessTokenGenerationResponse = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
+                        .getData());
+        accessTokenGenerationResponse.getString("access_token");
+        Assert.assertTrue(accessTokenGenerationResponse.getString("scope").contains("apim:api_create"));
+        Assert.assertTrue(accessTokenGenerationResponse.getString("scope").contains("apim:api_publish"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("apim:subscribe"));
+        Assert.assertFalse(accessTokenGenerationResponse.getString("scope").contains("apim:app_update"));
     }
 
     @Test(groups = { "wso2.am" }, description = "Testing Copy api with scopes assigned",
@@ -323,6 +440,82 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         createAPIRevisionAndDeployUsingRest(apiIdWithScope, restAPIPublisher);
     }
 
+    @Test(groups = { "wso2.am" }, description = "Testing REST API scopes",
+            dependsOnMethods = "testUpdateApiWithScopes")
+    public void testRESTAPIScopes() throws Exception {
+
+        //Generate a token with subscriber user for Devportal Access
+        RestAPIStoreImpl restAPIStoreUserSmith =
+                new RestAPIStoreImpl(USER_SMITH,
+                        "john123",
+                        storeContext.getContextTenant().getDomain(), storeURLHttps);
+        Assert.assertNotNull(restAPIStoreUserSmith.getAccessToken());
+
+        //Generate a token with creator user for Publisher Access
+        RestAPIPublisherImpl restAPIPublisherUser1 = new RestAPIPublisherImpl(
+                INTERNAL_CREATOR_USER,
+                "john123",
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        Assert.assertNotNull(restAPIPublisherUser1.getAccessToken());
+
+        //Generate a token with creator/publisher user for Publisher Access
+        RestAPIPublisherImpl restAPIPublisherUser2 = new RestAPIPublisherImpl(
+                INTERNAL_CREATOR_PUBLISHER_USER,
+                "john123",
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        Assert.assertNotNull(restAPIPublisherUser2.getAccessToken());
+
+        //Generate a token with subscriber user for Publisher Access
+        RestAPIPublisherImpl restAPIPublisherNegative = new RestAPIPublisherImpl(
+                USER_SMITH,
+                "john123",
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        Assert.assertNotNull(restAPIPublisherNegative.getAccessToken());
+        try {
+            restAPIPublisherNegative.apIsApi.getAllAPIs(null, null, keyManagerContext.getContextTenant().getDomain(),
+                    null, null, null, null);
+            Assert.assertTrue(false);
+        } catch (ApiException e) {
+            Assert.assertTrue(true);
+        }
+
+        //Generate a token with creator user for Devportal Access
+        RestAPIStoreImpl restAPIStoreUserNegative =
+                new RestAPIStoreImpl(INTERNAL_CREATOR_USER,
+                        "john123",
+                        storeContext.getContextTenant().getDomain(), storeURLHttps);
+        Assert.assertNotNull(restAPIStoreUserNegative.getAccessToken());
+        try {
+            ApplicationListDTO responseData = restAPIStoreUserNegative.getAllApps();
+            if (responseData.getCount().intValue() == 0) {
+                Assert.assertTrue(true);
+            } else {
+                Assert.assertTrue(false);
+            }
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            Assert.assertTrue(false);
+        }
+
+        //Generate a token with creator/publisher user for Devportal Access
+        RestAPIStoreImpl restAPIStoreUserNegative2 =
+                new RestAPIStoreImpl(INTERNAL_CREATOR_PUBLISHER_USER,
+                        "john123",
+                        storeContext.getContextTenant().getDomain(), storeURLHttps);
+        Assert.assertNotNull(restAPIStoreUserNegative2.getAccessToken());
+        try {
+            ApplicationListDTO responseData = restAPIStoreUserNegative2.getAllApps();
+            if (responseData.getCount().intValue() == 0) {
+                Assert.assertTrue(true);
+            } else {
+                Assert.assertTrue(false);
+            }
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            Assert.assertTrue(false);
+        }
+
+
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
@@ -343,6 +536,8 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
                 userManagementClient1.updateRolesOfUser(user.getUserNameWithoutDomain(), SEC_OLD_ROLE_LIST);
             }
             userManagementClient1.deleteUser(USER_SMITH);
+            userManagementClient1.deleteUser(INTERNAL_CREATOR_USER);
+            userManagementClient1.deleteUser(INTERNAL_CREATOR_PUBLISHER_USER);
         }
         super.cleanUp();
     }

@@ -68,7 +68,8 @@
                         pattern="{{http_access_log.pattern}}"/>
                 {% else %}
                 <Valve className="org.apache.catalina.valves.AccessLogValve" directory="{{http_access_log.directory}}"
-                       prefix="{{http_access_log.prefix}}" suffix="{{http_access_log.suffix}}" pattern="{{http_access_log.pattern}}"/>
+                       prefix="{{http_access_log.prefix}}" suffix="{{http_access_log.suffix}}" pattern="{{http_access_log.pattern}}"
+                       maxDays="{{http_access_log.maxDays}}"/>
                 {% endif %}
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.CarbonStuckThreadDetectionValve" threshold="600"/>
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.CompositeValve"/>

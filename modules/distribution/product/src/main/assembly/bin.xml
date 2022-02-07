@@ -97,6 +97,7 @@
                 <!--<exclude>**/repository/components/plugins/waffle_1.4.0.wso2v1.jar</exclude>-->
                 <!--<exclude>**/repository/components/plugins/compass_2.0.1.wso2v2.jar</exclude>-->
                 <!--<exclude>**/repository/components/plugins/poi_3.9.0.wso2v1.jar</exclude>-->
+                <exclude>**/repository/components/plugins/net.minidev.json-smart_2.3.0.jar</exclude>
 
                 <!-- Remove jars which are not needed-->
                 <exclude>**/repository/components/plugins/org.wso2.carbon.feature.mgt.stub_${carbon.kernel.version}.jar</exclude>
@@ -159,6 +160,7 @@
                 <exclude>**/repository/components/plugins/org.apache.aries.proxy*.jar</exclude>
                 <exclude>**/repository/components/plugins/org.apache.aries.util*.jar</exclude>
                 <exclude>**/repository/components/plugins/slf4j*.jar</exclude>
+                <exclude>**/repository/components/plugins/commons-io_2.4.0.wso2v1.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -238,6 +240,13 @@
         <fileSet>
             <directory>src/main/conf/synapse-configs</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/synapse-configs</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/conf/synapse-configs/default</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/apim-synapse-config/</outputDirectory>
+            <includes>
+                <include>**/registry.xml</include>
+            </includes>
         </fileSet>
         <fileSet>
             <directory>src/main/conf/synapse-configs/default/sequences</directory>
@@ -532,6 +541,7 @@
             <excludes>
                 <!--Need to remove after GA-->
                 <exclude>authenticationendpoint/basicauth.jsp</exclude>
+                <exclude>authenticationendpoint/identifierauth.jsp</exclude>
                 <exclude>authenticationendpoint/includes/cookie-policy-content.jsp</exclude>
                 <exclude>authenticationendpoint/includes/header.jsp</exclude>
                 <exclude>authenticationendpoint/includes/title.jsp</exclude>
@@ -568,6 +578,7 @@
             <includes>
                 <include>basicauth.jsp</include>
                 <include>login.jsp</include>
+                <include>identifierauth.jsp</include>
             </includes>
         </fileSet>
 
@@ -589,6 +600,7 @@
                 <exclude>accountrecoveryendpoint/includes/product-footer.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/product-title.jsp</exclude>
                 <exclude>accountrecoveryendpoint/self-registration-username-request.jsp</exclude>
+                <exclude>accountrecoveryendpoint/self-registration-with-verification.jsp</exclude>
                 <exclude>accountrecoveryendpoint/error.jsp</exclude>
             </excludes>
         </fileSet>
@@ -618,6 +630,7 @@
                 <include>self-registration-complete.jsp</include>
                 <include>password-recovery.jsp</include>
                 <include>self-registration-username-request.jsp</include>
+                <include>self-registration-with-verification.jsp</include>
                 <include>error.jsp</include>
             </includes>
         </fileSet>
@@ -713,6 +726,16 @@
             </outputDirectory>
             <includes>
                 <include>api#am#gateway#v2.war</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>api#am#devops#v1.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -834,14 +857,6 @@
             </includes>
         </fileSet>
 
-        <!-- Default Tiers -->
-        <fileSet>
-            <directory>../resources/default-tiers</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/default-tiers</outputDirectory>
-            <includes>
-                <include>**/**.xml</include>
-            </includes>
-        </fileSet>
         <!--End of  API Manager related -->
 
         <!--Multitenancy related file -->
@@ -1330,14 +1345,14 @@
         </file>
 
         <file>
-            <source>src/main/startup-scripts/wso2server.sh</source>
+            <source>src/main/startup-scripts/api-manager.sh</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
 
         <file>
-            <source>src/main/startup-scripts/wso2server.bat</source>
+            <source>src/main/startup-scripts/api-manager.bat</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
@@ -1625,15 +1640,7 @@
             <fileMode>644</fileMode>
         </file>
 
-        <!--Message Tracer config file-->
-        <file>
-            <source>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/message-tracer-config.xml
-            </source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/etc</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>644</fileMode>
-        </file>
+
         <file>
             <source>../resources/authenticators/authenticators.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>

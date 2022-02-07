@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <inboundEndpoint xmlns="http://ws.apache.org/ns/synapse"
+                 xmlns:svns="http://org.wso2.securevault/configuration"
                  name="SecureWebSocketEP"
                  sequence="{{apim.wss.dispatch.sequence}}"
                  onError="{{apim.wss.dispatch.on_error.sequence}}"
@@ -18,5 +19,8 @@
         <parameter name="wss.ssl.key.store.pass">{{apim.wss.keystore.password}}</parameter>
         <parameter name="wss.ssl.cert.pass">{{apim.wss.keystore.key_password}}</parameter>
         <parameter name="wss.ssl.protocols">{{apim.wss.ssl_enabled_protocols}}</parameter>
+        {% if apim.wss.ciphers is defined %}
+        <parameter name="wss.ssl.cipher.suites">{{apim.wss.ciphers}}</parameter>
+        {% endif %}
     </parameters>
 </inboundEndpoint>

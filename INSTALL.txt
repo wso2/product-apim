@@ -9,14 +9,14 @@ Running WSO2 API Manager in standalone mode
 
 2. All the shell scripts and .bat files are available in <APIM_HOME>/bin folder.
 
-3. To start WSO2 APIM one can use either wso2server.sh or daemon.sh in all Unix
-   systems & wso2server.bat file on Windows operating systems.
+3. To start WSO2 APIM one can use either api-manager.sh or daemon.sh in all Unix
+   systems & api-manager.bat file on Windows operating systems.
 
 4. Either of the following commands can be used to start APIM
-      i)  ./wso2server.sh {console|start|stop|restart|status|dump|version}   
-     ii)  wso2server.bat {start|stop|version}
+      i)  ./api-manager.sh {console|start|stop|restart|version}
+     ii)  api-manager.bat {start|stop|version}
 
-        Usage: wso2server.sh [command] [options] [system-properties]
+        Usage: api-manager.sh [command] [options] [system-properties]
 
             command:               
                 --start		    Start APIM as a Unix daemon in the background

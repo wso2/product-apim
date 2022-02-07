@@ -236,7 +236,7 @@ Name | Type | Description  | Notes
 
 <a name="apisApiIdSwaggerGet"></a>
 # **apisApiIdSwaggerGet**
-> String apisApiIdSwaggerGet(apiId, labelName, environmentName, clusterName, ifNoneMatch, xWSO2Tenant)
+> String apisApiIdSwaggerGet(apiId, environmentName, ifNoneMatch, xWSO2Tenant)
 
 Get Swagger Definition 
 
@@ -263,13 +263,11 @@ public class Example {
 
     ApIsApi apiInstance = new ApIsApi(defaultClient);
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
-    String labelName = "labelName_example"; // String | Name of the API microgateway labels 
     String environmentName = "environmentName_example"; // String | Name of the API gateway environment. 
-    String clusterName = "clusterName_example"; // String | Name of the container managed cluster name. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
     String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
     try {
-      String result = apiInstance.apisApiIdSwaggerGet(apiId, labelName, environmentName, clusterName, ifNoneMatch, xWSO2Tenant);
+      String result = apiInstance.apisApiIdSwaggerGet(apiId, environmentName, ifNoneMatch, xWSO2Tenant);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApIsApi#apisApiIdSwaggerGet");
@@ -287,9 +285,7 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **labelName** | **String**| Name of the API microgateway labels  | [optional]
  **environmentName** | **String**| Name of the API gateway environment.  | [optional]
- **clusterName** | **String**| Name of the container managed cluster name.  | [optional]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
  **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  | [optional]
 
@@ -418,7 +414,7 @@ public class Example {
     Integer limit = 25; // Integer | Maximum size of resource array to return. 
     Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
     String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
-    String query = "query_example"; // String | **Search condition**.  You can search in attributes by using an **\"<attribute>:\"** modifier.  Eg. \"provider:wso2\" will match an API if the provider of the API is exactly \"wso2\".  Additionally you can use wildcards.  Eg. \"provider:wso2*\" will match an API if the provider of the API starts with \"wso2\".  Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name. 
+    String query = "query_example"; // String | **Search condition**.  You can search in attributes by using an **\"<attribute>:\"** modifier.  Eg. \"provider:wso2\" will match an API if the provider of the API is exactly \"wso2\".  Additionally you can use wildcards.  Eg. \"provider:wso2*\" will match an API if the provider of the API starts with \"wso2\".  Supported attribute modifiers are [**version, context, status, description, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
     try {
       APIListDTO result = apiInstance.apisGet(limit, offset, xWSO2Tenant, query, ifNoneMatch);
@@ -441,7 +437,7 @@ Name | Type | Description  | Notes
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
  **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  | [optional]
- **query** | **String**| **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, subcontext, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  | [optional]
+ **query** | **String**| **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;.  Additionally you can use wildcards.  Eg. \&quot;provider:wso2*\&quot; will match an API if the provider of the API starts with \&quot;wso2\&quot;.  Supported attribute modifiers are [**version, context, status, description, doc, provider, tag**]  If no advanced attribute modifier has been specified, search will match the given query string against API Name.  | [optional]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
 
 ### Return type
@@ -465,7 +461,7 @@ Name | Type | Description  | Notes
 
 <a name="getWSDLOfAPI"></a>
 # **getWSDLOfAPI**
-> getWSDLOfAPI(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant)
+> getWSDLOfAPI(apiId, environmentName, ifNoneMatch, xWSO2Tenant)
 
 Get API WSDL definition
 
@@ -492,12 +488,11 @@ public class Example {
 
     ApIsApi apiInstance = new ApIsApi(defaultClient);
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
-    String labelName = "labelName_example"; // String | Name of the API microgateway labels 
     String environmentName = "environmentName_example"; // String | Name of the API gateway environment. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec. 
     String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from. 
     try {
-      apiInstance.getWSDLOfAPI(apiId, labelName, environmentName, ifNoneMatch, xWSO2Tenant);
+      apiInstance.getWSDLOfAPI(apiId, environmentName, ifNoneMatch, xWSO2Tenant);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApIsApi#getWSDLOfAPI");
       System.err.println("Status code: " + e.getCode());
@@ -514,7 +509,6 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **labelName** | **String**| Name of the API microgateway labels  | [optional]
  **environmentName** | **String**| Name of the API gateway environment.  | [optional]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  | [optional]
  **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retrieved from.  | [optional]

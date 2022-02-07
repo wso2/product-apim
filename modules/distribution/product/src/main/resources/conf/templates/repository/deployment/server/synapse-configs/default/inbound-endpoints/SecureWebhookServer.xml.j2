@@ -5,7 +5,7 @@
     <p:parameters xmlns:p="http://ws.apache.org/ns/synapse">
         <p:parameter  name="inbound.http.port">{{apim.webhooks.https.port}}</p:parameter>
         <p:parameter name="keystore">
-            <KeyStore>
+            <KeyStore xmlns:svns="http://org.wso2.securevault/configuration">
                 <Location>{{apim.webhooks.https.key_store.location}}</Location>
                 <Type>{{apim.webhooks.https.key_store.type}}</Type>
                 <Password>{{apim.webhooks.https.key_store.password}}</Password>
@@ -13,7 +13,7 @@
             </KeyStore>
         </p:parameter>
         <p:parameter name="truststore">
-            <TrustStore>
+            <TrustStore xmlns:svns="http://org.wso2.securevault/configuration">
                 <Location>{{apim.webhooks.https.trust_store.location}}</Location>
                 <Type>{{apim.webhooks.https.trust_store.type}}</Type>
                 <Password>{{apim.webhooks.https.trust_store.password}}</Password>

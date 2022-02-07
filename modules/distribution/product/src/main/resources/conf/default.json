@@ -7,8 +7,18 @@
   "server.enableSwA": false,
   "server.discard_empty_caches": false,
   "identity.data_source": "jdbc/WSO2AM_DB",
-  "database.apim_db.url": "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE;LOCK_TIMEOUT=60000;MVCC=TRUE",
+  "database.apim_db.url": "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE;LOCK_TIMEOUT=60000",
   "database.apim_db.driver": "org.h2.Driver",
+  "database.mb.store_db.url": "jdbc:h2:./repository/database/WSO2MB_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000",
+  "database.mb.store_db.driver": "org.h2.Driver",
+  "database.mb.store_db.validationQuery": "SELECT 1",
+  "database.mb.store_db.username": "wso2carbon",
+  "database.mb.store_db.password": "wso2carbon",
+  "database.mb.store_db.pool_options.maxActive": "50",
+  "database.mb.store_db.pool_options.maxWait": "60000",
+  "database.mb.store_db.pool_options.testOnBorrow": "true",
+  "database.mb.store_db.pool_options.validationInterval": "30000",
+  "database.mb.store_db.pool_options.defaultAutoCommit": "false",
   "oauth.token_validation.refresh_token_validity": "1d",
   "oauth.scope_validator.xacml.enable": false,
   "oauth.grant_type.authorization_code.enable": true,
@@ -23,6 +33,11 @@
   "oauth.grant_type.iwa_ntlm.grant_handler": "org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake",
   "oauth.grant_type.jwt_bearer.enable": true,
   "oauth.grant_type.jwt_bearer.grant_validator": "org.wso2.carbon.identity.oauth2.grant.jwt.JWTGrantValidator",
+  "oauth.grant_type.token_exchange.enable": true,
+  "oauth.grant_type.token_exchange.grant_handler": "org.wso2.carbon.identity.oauth2.grant.token.exchange.TokenExchangeGrantHandler",
+  "oauth.grant_type.token_exchange.grant_validator": "org.wso2.carbon.identity.oauth2.grant.token.exchange.TokenExchangeGrantValidator",
+  "oauth.grant_type.token_exchange.allow_refresh_tokens": true,
+  "oauth.grant_type.token_exchange.iat_validity_period": "1h",
   "oauth.grant_type.uma_ticket.enable": false,
   "oauth.grant_type.uma_ticket.grant_handler": "org.wso2.carbon.identity.oauth.uma.grant.UMA2GrantHandler",
   "oauth.grant_type.uma_ticket.grant_validator": "org.wso2.carbon.identity.oauth.uma.grant.GrantValidator",
@@ -121,6 +136,10 @@
   "synapse_properties.'synapse.xpath.func.extensions'": "org.wso2.carbon.mediation.security.vault.xpath.SecureVaultLookupXPathFunctionProvider",
   "synapse_properties.'synapse.carbon.ext.tenant.info'": "org.wso2.carbon.mediation.initializer.handler.CarbonTenantInfoConfigurator",
   "synapse_properties.'synapse.carbon.ext.tenant.info.initiator'": "org.wso2.carbon.mediation.initializer.handler.CarbonTenantInfoInitiator",
+  "synapse_properties.'inbound.port.offset.enable'": true,
+  "synapse_properties.'synapse.main.xml.location'": "repository/resources/apim-synapse-config/main.xml",
+  "synapse_properties.'synapse.fault.xml.location'": "repository/resources/apim-synapse-config/fault.xml",
+  "synapse_properties.'synapse.registry.xml.location'": "repository/resources/apim-synapse-config/registry.xml",
   "passthru_http.'http.socket.timeout'": "180000",
   "passthru_http.'worker_pool_size_core'": "400",
   "passthru_http.'worker_pool_size_max'": "500",
@@ -165,6 +184,7 @@
     "TLSv1.1",
     "TLSv1.2"
   ],
+  "transport.binary.receiver.ciphers": ["TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256","TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256","TLS_DHE_RSA_WITH_AES_128_CBC_SHA256","TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA","TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA","TLS_DHE_RSA_WITH_AES_128_CBC_SHA","TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256","TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256","TLS_DHE_RSA_WITH_AES_128_GCM_SHA256"],
   "monitoring.jmx.rmi_registry_port": "9999",
   "monitoring.jmx.rmi_server_port": "11111",
   "monitoring.jmx.rmi_server_start": true,
@@ -251,7 +271,7 @@
   "transport.client.https.properties.Transfer-Encoding": "chunked",
   "transport.client.https.properties.SO_TIMEOUT": "60000",
   "transport.client.https.properties.CONNECTION_TIMEOUT": "60000",
-  "database.local.url": "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE;MVCC=TRUE",
+  "database.local.url": "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE",
   "database.local.username": "wso2carbon",
   "database.local.password": "wso2carbon",
   "database.local.driver": "org.h2.Driver",
@@ -337,6 +357,7 @@
   "qpid.queue.auto_register": true,
   "qpid.queue.view_message_counts": false,
   "qpid.status_updates": "ON",
+  "config_endpoint": "https://analytics-event-auth.choreo.dev/auth/v1",
   "governance.comparators": [
     "org.wso2.carbon.governance.comparator.text.TextComparator",
     "org.wso2.carbon.governance.comparator.wsdl.WSDLComparator"
@@ -380,5 +401,6 @@
       "name": "antiClickJackingEnabled",
       "value": false
     }
-  ]
+  ],
+  "throttle_properties.'throttling.distributed.counter.type'": "hazelcast"
 }

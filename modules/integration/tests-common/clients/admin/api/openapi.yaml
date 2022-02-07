@@ -4934,6 +4934,7 @@ paths:
           - AM_SUBSCRIPTION_DELETION
           - AM_APPLICATION_DELETION
           - AM_API_STATE
+          - AM_API_PRODUCT_STATE
           type: string
         style: form
       responses:
@@ -6356,6 +6357,222 @@ paths:
           -F file=@theme.zip "https://127.0.0.1:9443/api/am/admin/v2/tenant-theme"'
       x-contentType: multipart/form-data
       x-accepts: application/json
+  /tenant-config:
+    get:
+      description: |
+        This operation can be used to export a tenant-config.json used in deployment.
+      operationId: exportTenantConfig
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: |
+            OK.
+            Tenant config Exported Successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Export a tenant-Config.
+      tags:
+      - Tenant Config
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/tenant-config" > tenant-config.json'
+      x-accepts: application/json
+    put:
+      description: |
+        This operation can be used to update tenant-config.
+      operationId: updateTenantConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: tenant-config
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: |
+            OK.
+            Role mapping alias returned
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "413":
+          content:
+            application/json:
+              example:
+                code: 413
+                message: Payload Too Large
+                description: Request entity is larger than limits defined by server
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Payload Too Large. Request entity is larger than limits defined
+            by server.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Update a tenant-config.
+      tags:
+      - Tenant Config
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/tenant-config"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /tenant-config-schema:
+    get:
+      description: |
+        This operation can be used to export a tenant-config-schema.json used in deployment.
+      operationId: exportTenantConfigSchema
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: |
+            OK.
+            Tenant config schema exported successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Export a tenant-Config-Schema.
+      tags:
+      - Tenant Config Schema
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v2/tenant-config-schema" > tenant-config-schema.json'
+      x-accepts: application/json
   /key-managers:
     get:
       description: |
@@ -7769,11 +7986,22 @@ components:
       type: object
     Environment:
       example:
+        endpointURIs:
+        - protocol: default
+          endpointURI: default
+        - protocol: default
+          endpointURI: default
         isReadOnly: false
+        provider: wso2
         displayName: US Region
         name: us-region
         description: Gateway environment in US Region
         id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        additionalProperties:
+        - value: wso2
+          key: Organization
+        - value: wso2
+          key: Organization
         vhosts:
         - httpContext: pets
           wssPort: 8099
@@ -7807,6 +8035,9 @@ components:
           example: Gateway environment in US Region
           maxLength: 1023
           type: string
+        provider:
+          example: wso2
+          type: string
         isReadOnly:
           example: false
           readOnly: true
@@ -7815,6 +8046,14 @@ components:
           items:
             $ref: '#/components/schemas/VHost'
           minItems: 1
+          type: array
+        endpointURIs:
+          items:
+            $ref: '#/components/schemas/GatewayEnvironmentProtocolURI'
+          type: array
+        additionalProperties:
+          items:
+            $ref: '#/components/schemas/AdditionalProperty'
           type: array
       required:
       - name
@@ -7825,11 +8064,22 @@ components:
       example:
         count: 1
         list:
-        - isReadOnly: false
+        - endpointURIs:
+          - protocol: default
+            endpointURI: default
+          - protocol: default
+            endpointURI: default
+          isReadOnly: false
+          provider: wso2
           displayName: US Region
           name: us-region
           description: Gateway environment in US Region
           id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          additionalProperties:
+          - value: wso2
+            key: Organization
+          - value: wso2
+            key: Organization
           vhosts:
           - httpContext: pets
             wssPort: 8099
@@ -7843,11 +8093,22 @@ components:
             wsPort: 9099
             host: mg.wso2.com
             httpsPort: 443
-        - isReadOnly: false
+        - endpointURIs:
+          - protocol: default
+            endpointURI: default
+          - protocol: default
+            endpointURI: default
+          isReadOnly: false
+          provider: wso2
           displayName: US Region
           name: us-region
           description: Gateway environment in US Region
           id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          additionalProperties:
+          - value: wso2
+            key: Organization
+          - value: wso2
+            key: Organization
           vhosts:
           - httpContext: pets
             wssPort: 8099
@@ -7909,6 +8170,35 @@ components:
       required:
       - host
       title: Virtual Host
+      type: object
+    AdditionalProperty:
+      example:
+        value: wso2
+        key: Organization
+      properties:
+        key:
+          example: Organization
+          type: string
+        value:
+          example: wso2
+          type: string
+      title: Additional Gateway Properties
+      type: object
+    GatewayEnvironmentProtocolURI:
+      example:
+        protocol: default
+        endpointURI: default
+      properties:
+        protocol:
+          example: default
+          type: string
+        endpointURI:
+          example: default
+          type: string
+      required:
+      - endpointURI
+      - protocol
+      title: Gateway Environment protocols and URIs
       type: object
     PublishStatus:
       example:
@@ -8239,8 +8529,11 @@ components:
           tokenEndpoint: https://localhost:9444/oauth2/token
           consumerKeyClaim: azp
           scopesClaim: scp
+          alias: https://localhost:9443/oauth2/token
           id: 01234567-0123-0123-0123-012345678901
           userInfoEndpoint: https://localhost:9444/oauth2/userinfo?schema=openid
+          displayTokenEndpoint: https://localhost:9444/oauth2/token
+          displayRevokeEndpoint: https://localhost:9444/oauth2/revoke
           enableSelfValidationJWT: true
           enableTokenEncryption: false
           availableGrantTypes:
@@ -8273,6 +8566,7 @@ components:
             id: 0
             type: REFERENCE
             value: '{}'
+          tokenType: EXCHANGED
           enableTokenGeneration: true
       properties:
         valid:
@@ -8297,8 +8591,11 @@ components:
         tokenEndpoint: https://localhost:9444/oauth2/token
         consumerKeyClaim: azp
         scopesClaim: scp
+        alias: https://localhost:9443/oauth2/token
         id: 01234567-0123-0123-0123-012345678901
         userInfoEndpoint: https://localhost:9444/oauth2/userinfo?schema=openid
+        displayTokenEndpoint: https://localhost:9444/oauth2/token
+        displayRevokeEndpoint: https://localhost:9444/oauth2/revoke
         enableSelfValidationJWT: true
         enableTokenEncryption: false
         availableGrantTypes:
@@ -8331,6 +8628,7 @@ components:
           id: 0
           type: REFERENCE
           value: '{}'
+        tokenType: EXCHANGED
         enableTokenGeneration: true
       properties:
         id:
@@ -8370,7 +8668,13 @@ components:
         tokenEndpoint:
           example: https://localhost:9444/oauth2/token
           type: string
+        displayTokenEndpoint:
+          example: https://localhost:9444/oauth2/token
+          type: string
         revokeEndpoint:
+          example: https://localhost:9444/oauth2/revoke
+          type: string
+        displayRevokeEndpoint:
           example: https://localhost:9444/oauth2/revoke
           type: string
         userInfoEndpoint:
@@ -8383,6 +8687,12 @@ components:
           $ref: '#/components/schemas/KeyManager_certificates'
         issuer:
           example: https://localhost:9444/services
+          type: string
+        alias:
+          description: |
+            The alias of Identity Provider.
+            If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token
+          example: https://localhost:9443/oauth2/token
           type: string
         scopeManagementEndpoint:
           example: https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes
@@ -8439,6 +8749,16 @@ components:
             Password: admin
           properties: {}
           type: object
+        tokenType:
+          default: DIRECT
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED and DIRECT.
+          enum:
+          - EXCHANGED
+          - DIRECT
+          - BOTH
+          example: EXCHANGED
+          type: string
       required:
       - name
       - type
@@ -8450,6 +8770,7 @@ components:
         description: This is a key manager for Developers
         id: 01234567-0123-0123-0123-012345678901
         type: IS
+        tokenType: EXCHANGED
         enabled: true
       properties:
         id:
@@ -8467,6 +8788,16 @@ components:
         enabled:
           example: true
           type: boolean
+        tokenType:
+          default: DIRECT
+          description: The type of the tokens to be used (exchanged or without exchanged).
+            Accepted values are EXCHANGED and DIRECT.
+          enum:
+          - EXCHANGED
+          - DIRECT
+          - BOTH
+          example: EXCHANGED
+          type: string
       required:
       - name
       - type
@@ -8526,11 +8857,13 @@ components:
           description: This is a key manager for Developers
           id: 01234567-0123-0123-0123-012345678901
           type: IS
+          tokenType: EXCHANGED
           enabled: true
         - name: WSO2 IS
           description: This is a key manager for Developers
           id: 01234567-0123-0123-0123-012345678901
           type: IS
+          tokenType: EXCHANGED
           enabled: true
       properties:
         count:
@@ -8754,6 +9087,7 @@ components:
           - API_STATE
           - SUBSCRIPTION_DELETION
           - SUBSCRIPTION_UPDATE
+          - API_PRODUCT_STATE
           example: APPLICATION_CREATION
           type: string
         workflowStatus:

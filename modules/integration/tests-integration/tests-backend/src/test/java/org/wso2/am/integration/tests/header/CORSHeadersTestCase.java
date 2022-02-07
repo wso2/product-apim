@@ -17,6 +17,9 @@
  */
 package org.wso2.am.integration.tests.header;
 
+import io.swagger.parser.OpenAPIParser;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
@@ -26,11 +29,15 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -44,6 +51,7 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,6 +89,8 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
     private String accessToken;
     private String applicationId;
     private String apiId;
+    private String apiId2;
+    private String apiId3;
     private ArrayList<String> grantTypes;
     private Map<String, String> requestHeaders;
     private String apiEndPointUrl;
@@ -210,11 +220,98 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
                    "but it should not be.");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Enable CORS and verify ", dependsOnMethods = "CheckCORSHeadersInResponse")
+    public void AddCORSHeadersToAPIAndVerify() throws Exception {
+
+        APIRequest apiRequest = new APIRequest("CORSAPI", "corsAPI", new URL(apiEndPointUrl));
+        apiRequest.setVersion(API_VERSION);
+        apiRequest.setProvider(user.getUserName());
+
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId2 = serviceResponse.getData();
+
+        APICorsConfigurationDTO apiCorsConfigurationDTO = new APICorsConfigurationDTO();
+        List<String> accessControlAllowHeaders = new ArrayList<String>();
+        accessControlAllowHeaders.add("Access-Control-Allow-Origin");
+        accessControlAllowHeaders.add("Content-Type");
+
+        List<String> accessControlAllowMethods = new ArrayList<String>();
+        accessControlAllowMethods.add("GET");
+        accessControlAllowMethods.add("PUT");
+        accessControlAllowMethods.add("POST");
+
+        List<String> accessControlAllowOrigins = new ArrayList<String>();
+        accessControlAllowOrigins.add("*");
+
+        apiCorsConfigurationDTO.setCorsConfigurationEnabled(true);
+        apiCorsConfigurationDTO.setAccessControlAllowHeaders(accessControlAllowHeaders);
+        apiCorsConfigurationDTO.setAccessControlAllowMethods(accessControlAllowMethods);
+        apiCorsConfigurationDTO.setAccessControlAllowOrigins(accessControlAllowOrigins);
+
+        APIDTO apidto = restAPIPublisher.getAPIByID(apiId2);
+        apidto.setCorsConfiguration(apiCorsConfigurationDTO);
+        APIDTO updatedApidto = restAPIPublisher.updateAPI(apidto, apiId2);
+
+        APICorsConfigurationDTO apiCorsConfigurationDTO1 = updatedApidto.getCorsConfiguration();
+        Assert.assertTrue(apiCorsConfigurationDTO1.isCorsConfigurationEnabled(), "CORS is not enabled");
+
+        String retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId2);
+        retrievedSwagger = restAPIPublisher.updateSwagger(apiId2, retrievedSwagger);
+        Assert.assertNotNull(retrievedSwagger);
+
+        OpenAPIParser parser = new OpenAPIParser();
+        SwaggerParseResult swaggerParseResult = parser.readContents(retrievedSwagger, null, null);
+        OpenAPI openAPI = swaggerParseResult.getOpenAPI();
+        Assert.assertNotNull(openAPI.getExtensions().get("x-wso2-cors"));
+
+        HashMap<String, Object> corsDetails = (HashMap<String, Object>) openAPI.getExtensions().get("x-wso2-cors");
+        for (Map.Entry<String, Object> entry : corsDetails.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase("corsConfigurationEnabled")) {
+                Assert.assertTrue((Boolean) entry.getValue(), "CORS not enabled");
+            }
+        }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Enable CORS through swagger and verify", dependsOnMethods = "AddCORSHeadersToAPIAndVerify")
+    public void CreateAPIWithSwaggerwithCORSHeadersAndVerify() throws Exception {
+
+        //create a REST API
+        String swaggerPath = getAMResourceLocation() + File.separator + "configFiles" + File.separator + "cors"
+                + File.separator + "CORSApi.yaml";
+        File definition = new File(swaggerPath);
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", "https://test.com");
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.SILVER);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", "ImportedCORSAPI");
+        apiProperties.put("context", "/importedCORSAPI");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", user.getUserName());
+        apiProperties.put("endpointConfig", endpointConfig);
+        apiProperties.put("policies", tierList);
+
+        APIDTO restAPIDTO = restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
+        apiId3 = restAPIDTO.getId();
+
+        APIDTO apidto = restAPIPublisher.getAPIByID(apiId3);
+        APICorsConfigurationDTO apiCorsConfigurationDTO = apidto.getCorsConfiguration();
+        Assert.assertTrue(apiCorsConfigurationDTO.isCorsConfigurationEnabled(), "CORS has not been enabled");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId);
         for (SubscriptionDTO subscriptionDTO: subsDTO.getList()){
-            restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
+            restAPIStore.removeSubscription(subscriptionDTO);
         }
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);

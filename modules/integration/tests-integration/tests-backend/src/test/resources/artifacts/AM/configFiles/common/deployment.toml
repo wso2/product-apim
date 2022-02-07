@@ -36,6 +36,7 @@ key_password =  "wso2carbon"
 [[apim.gateway.environment]]
 name = "Default"
 type = "hybrid"
+provider = "wso2"
 display_in_api_console = true
 description = "This is a hybrid gateway that handles both production and sandbox token traffic."
 show_as_token_endpoint_url = true
@@ -49,6 +50,7 @@ https_endpoint = "https://localhost:${https.nio.port}"
 [[apim.gateway.environment]]
 name = "Hybrid 2"
 type = "hybrid"
+provider = "wso2"
 display_in_api_console = true
 description = "This is a hybrid gateway 2 that handles both production and sandbox token traffic."
 show_as_token_endpoint_url = true
@@ -58,17 +60,6 @@ password = "admin"
 ws_endpoint = "ws://localhost:9099"
 http_endpoint = "http://localhost:8282"
 https_endpoint = "https://localhost:8245"
-
-[apim.analytics]
-enable = true
-store_api_url = "https://localhost:9446"
-username = "$ref{super_admin.username}"
-password = "$ref{super_admin.password}"
-
-[[apim.analytics.analytics_node]]
-analytics_url ="tcp://localhost:7614"
-analytics_auth_url ="ssl://localhost:7714"
-type = "failover"
 
 [apim.jwt]
 enable = true

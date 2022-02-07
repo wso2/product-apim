@@ -47,4 +47,9 @@
         <Property name="stateList">Created:Publish,Published:Block</Property>
     </APIStateChange>
 
+    <!--APIProductStateChange executor="org.wso2.carbon.apimgt.impl.workflow.APIProductStateChangeSimpleWorkflowExecutor" /-->
+    <APIProductStateChange executor="org.wso2.carbon.apimgt.impl.workflow.APIProductStateChangeApprovalWorkflowExecutor">
+        <Property name="stateList">Created:Publish,Published:Block</Property>
+    </APIProductStateChange>
+
 </WorkFlowExtensions>

@@ -87,6 +87,11 @@ public class ThirdPartyKmConnector extends AbstractKeyManager {
     }
 
     @Override
+    public boolean canHandleToken(String accessToken) throws APIManagementException {
+        return false;
+    }
+
+    @Override
     public Map getResourceByApiId(String apiId) throws APIManagementException {
 
         return null;

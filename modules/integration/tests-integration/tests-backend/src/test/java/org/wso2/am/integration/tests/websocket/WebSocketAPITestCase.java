@@ -16,7 +16,6 @@
  *  under the License.
  *
  */
-
 package org.wso2.am.integration.tests.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -132,7 +131,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
         // Removing Tenant_ADMIN due to https://github.com/wso2/product-apim/issues/10183
         return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN}
         };
     }
 
@@ -174,9 +174,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
         apiRequest.setProvider(provider);
         apiRequest.setType("WS");
+        apiRequest.setApiTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         HttpResponse addAPIResponse = restAPIPublisher.addAPI(apiRequest);
-         websocketAPIID = addAPIResponse.getData();
-         createAPIRevisionAndDeployUsingRest(websocketAPIID,restAPIPublisher);
+        websocketAPIID = addAPIResponse.getData();
+        createAPIRevisionAndDeployUsingRest(websocketAPIID,restAPIPublisher);
         restAPIPublisher.changeAPILifeCycleStatus(websocketAPIID, APILifeCycleAction.PUBLISH.getAction(), null);
         waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
@@ -429,12 +430,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      */
     private void testThrottling(String accessToken) throws Exception {
 
-        /* Prevent API requests getting dispersed into two time units */
-        while (LocalDateTime.now().getSecond() > 20) {
-            Thread.sleep(5000L);
-        }
+        waitUntilClockHour();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
-
         int limit = 2;
         WebSocketClient client = new WebSocketClient();
         WebSocketClientImpl socket = new WebSocketClientImpl();
@@ -449,7 +446,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             for (int count = 1; count <= limit + 1; count++) {
                 if (count > limit) {
                     // Set time gap to allow throttle to take place
-                    Thread.sleep(15000L);
+                    Thread.sleep(5000L);
                 }
                 socket.sendMessage(testMessage);
                 waitForReply(socket);
@@ -463,7 +460,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                                 "separate units of time");
                         testThrottling(accessToken);
                     }
-                    assertEquals(socket.getResponseMessage(), "Websocket frame throttled out",
+                    assertEquals(socket.getResponseMessage(), "Error code: 4003 reason: Websocket frame throttled out",
                             "Received response is not matching");
                 }
                 socket.setResponseMessage(null);
@@ -509,51 +506,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             socket.setResponseMessage(null);
         } else {
             throw new APIManagerIntegrationTestException("Unable to create client connection");
-        }
-    }
-
-    /**
-     * Find a free port to start backend WebSocket server in given port range
-     *
-     * @param lowerPortLimit from port number
-     * @param upperPortLimit to port number
-     * @return Available Port Number
-     */
-    private int getAvailablePort(int lowerPortLimit, int upperPortLimit) {
-
-        while (lowerPortLimit < upperPortLimit) {
-            if (isPortFree(lowerPortLimit)) {
-                return lowerPortLimit;
-            }
-            lowerPortLimit += 1;
-        }
-        return -1;
-    }
-
-    /**
-     * Check whether give port is available
-     *
-     * @param port Port Number
-     * @return status
-     */
-    private boolean isPortFree(int port) {
-
-        Socket s = null;
-        try {
-            s = new Socket(webSocketServerHost, port);
-            // something is using the port and has responded.
-            return false;
-        } catch (IOException e) {
-            //port available
-            return true;
-        } finally {
-            if (s != null) {
-                try {
-                    s.close();
-                } catch (IOException e) {
-                    throw new RuntimeException("Unable to close connection ", e);
-                }
-            }
         }
     }
 

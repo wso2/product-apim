@@ -239,8 +239,8 @@
             </li>
             <li>
                 Execute the WSO2 ESB start script or the daemon script from the bin
-                directory. e.g. ./wso2server.sh OR ./daemon.sh start OR
-                ./wso2server.sh --console
+                directory. e.g. ./api-manager.sh OR ./daemon.sh start OR
+                ./api-manager.sh --console
             </li>
             <li>
                 Check your WSO2 ESB instance using the URL https://localhost:9443/carbon
@@ -271,7 +271,7 @@
                 Java installation, and the PATH environment variable to the Java /bin directory.
             </li>
             <li>
-                Execute the WSO2 ESB start script from the bin folder. e.g. wso2server.bat
+                Execute the WSO2 ESB start script from the bin folder. e.g. api-manager.bat
             </li>
             <li>
                 If you would like to install the WSO2 ESB as a Windows service, use the

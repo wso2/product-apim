@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **callbackUrl** | **String** | Callback URL |  [optional]
 **keyState** | **String** | Describes the state of the key generation. |  [optional]
 **keyType** | [**KeyTypeEnum**](#KeyTypeEnum) | Describes to which endpoint the key belongs |  [optional]
+**mode** | [**ModeEnum**](#ModeEnum) | Describe the which mode Application Mapped. |  [optional]
 **groupId** | **String** | Application group id (if any). |  [optional]
 **token** | [**ApplicationTokenDTO**](ApplicationTokenDTO.md) |  |  [optional]
 **additionalProperties** | [**Object**](.md) | additionalProperties (if any). |  [optional]
@@ -26,6 +27,15 @@ Name | Value
 ---- | -----
 PRODUCTION | &quot;PRODUCTION&quot;
 SANDBOX | &quot;SANDBOX&quot;
+
+
+
+## Enum: ModeEnum
+
+Name | Value
+---- | -----
+MAPPED | &quot;MAPPED&quot;
+CREATED | &quot;CREATED&quot;
 
 
 

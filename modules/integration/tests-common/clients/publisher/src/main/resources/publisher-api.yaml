@@ -19,7 +19,7 @@ info:
     This document specifies a **RESTful API** for WSO2 **API Manager** - **Publisher**.
 
     # Authentication
-    Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking
+    The Publisher REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking
     the the API you need to obtain an access token with the required scopes. This guide will walk you through the steps
     that you will need to follow to obtain an access token.
     First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types
@@ -67,11 +67,11 @@ info:
     ```
     curl -k -d "grant_type=password&username=<admin_username>&password=<admin_passowrd&scope=<scopes seperated by space>"
     \ -H "Authorization: Basic base64(cliet_id:client_secret)"
-    \ https://<host>:<gateway_port>/token
+    \ https://<host>:<servlet_port>/oauth2/token
     ```
     **Sample request**
     ```
-    curl https://localhost:8243/token -k \
+    curl https://localhost:9443/oauth2/token -k \
     -H "Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h" \
     -d "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create"
     ```
@@ -138,14 +138,13 @@ paths:
             "provider:wso2" will match an API if the provider of the API contains "wso2".
             "provider:"wso2"" will match an API if the provider of the API is exactly "wso2".
             "status:PUBLISHED" will match an API if the API is in PUBLISHED state.
-            "label:external" will match an API if it contains a Microgateway label called "external".
 
             Also you can use combined modifiers
             Eg.
             name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.
 
             Supported attribute modifiers are [**version, context, name, status,
-            description, subcontext, doc, provider, label**]
+            description, doc, provider**]
 
             If no advanced attribute modifier has been specified,  the API names containing
             the search term will be returned as a result.
@@ -505,6 +504,13 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/ecb5b300-422d-4ee8-88d2-364a0a122238/reimport-service"'
 
   /apis/{apiId}/swagger:
     get:
@@ -1402,7 +1408,7 @@ paths:
     get:
       tags:
         - API Revisions
-      summary: List available revisions of an API
+      summary: List Revisions
       description: |
         List available revisions of an API
       operationId: getAPIRevisions
@@ -1425,12 +1431,13 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
             - apim:api_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions?query=deployed:true"'
+            "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions?query=deployed:true"'
 
     #--------------------------------------------
     # Create a new API revision
@@ -1438,7 +1445,7 @@ paths:
     post:
       tags:
         - API Revisions
-      summary: Create a new API revision
+      summary: Create API Revision
       description: |
         Create a new API revision
       operationId: createAPIRevision
@@ -1465,13 +1472,14 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
             - apim:api_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
             -H "Content-Type: application/json" -d @data.json
-            "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions"'
+            "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions"'
 
   ######################################################
   # The "API Revisions" individual resource API
@@ -1484,7 +1492,7 @@ paths:
     get:
       tags:
         - API Revisions
-      summary: Retrieve a revision of an API
+      summary: Retrieve Revision
       description: |
         Retrieve a revision of an API
       operationId: getAPIRevision
@@ -1504,11 +1512,12 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
+            "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
 
     #--------------------------------------------
     # Delete a revision
@@ -1516,7 +1525,7 @@ paths:
     delete:
       tags:
         - API Revisions
-      summary: Delete a revision of an API
+      summary: Delete Revision
       description: |
         Delete a revision of an API
       operationId: deleteAPIRevision
@@ -1540,22 +1549,22 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
             - apim:api_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
+            "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
 
-  /apis/{apiId}/deploy-revision:
-
+  /apis/{apiId}/deployments:
     #--------------------------------------------
     # List available deployed revision deployment details of an API
     #--------------------------------------------
     get:
       tags:
         - API Revisions
-      summary: List available deployed revision deployment details of an API
+      summary: List Deployments
       description: |
         List available deployed revision deployment details of an API
       operationId: getAPIRevisionDeployments
@@ -1574,19 +1583,61 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-                "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision"'
+                "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deployments"'
 
+  /apis/{apiId}/deployments/{deploymentId}:
+    #--------------------------------------------
+    # Change Display On Devportal Field
+    #--------------------------------------------
+    put:
+      tags:
+        - API Revisions
+      summary: Update Deployment
+      description: |
+        Update deployment devportal visibility
+      operationId: updateAPIDeployment
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/deploymentId'
+      requestBody:
+        description: Deployment object that needs to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIRevisionDeployment'
+      responses:
+        200:
+          description: |
+            Created.
+            Successful response with the newly updated APIRevisionDeployment List object as the entity in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevisionDeployment'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -d @data.json
+                "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deployments/UHJvZHVjdGlvbiBhbmQgU2FuZGJveA"'
+
+  /apis/{apiId}/deploy-revision:
     #--------------------------------------------
     # Deploy a revision
     #--------------------------------------------
     post:
       tags:
         - API Revisions
-      summary: Deploy a revision
+      summary: Deploy Revision
       description: |
         Deploy a revision
       operationId: deployAPIRevision
@@ -1604,9 +1655,6 @@ paths:
       responses:
         200:
           description: |
-            OK.
-        201:
-          description: |
             Created.
             Successful response with the newly deployed APIRevisionDeployment List object as the entity in the body.
           content:
@@ -1615,15 +1663,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/APIRevisionDeployment'
+        400:
+          $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+            "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
 
   /apis/{apiId}/undeploy-revision:
     #--------------------------------------------
@@ -1632,9 +1683,9 @@ paths:
     post:
       tags:
         - API Revisions
-      summary: Un-Deploy a revision
+      summary: UnDeploy Revision
       description: |
-        Un-Deploy a revision
+        UnDeploy a revision
       operationId: undeployAPIRevision
       parameters:
         - $ref: '#/components/parameters/apiId'
@@ -1667,28 +1718,31 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/APIRevisionDeployment'
+        400:
+          $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
             - apim:api_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-                "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/undeploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+                "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/undeploy-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
 
   /apis/{apiId}/restore-revision:
 
     #--------------------------------------------------------
-    # Restore a revision to the working copy of the API
+    # Restore a revision to the current API of the API
     #--------------------------------------------------------
     post:
       tags:
         - API Revisions
-      summary: Restore a revision
+      summary: Restore API Revision
       description: |
-        Restore a revision to the working copy of the API
+        Restore a revision to the current API of the API
       operationId: restoreAPIRevision
       parameters:
         - $ref: '#/components/parameters/apiId'
@@ -1706,11 +1760,12 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://127.0.0.1:9443/api/am/publisher/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+            "https://127.0.0.1:9443/api/am/publisher/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
 
   /apis/import-service:
     post:
@@ -1726,6 +1781,7 @@ paths:
           schema:
             type: string
           description: ID of service that should be imported from Service Catalog
+          example: Pizzashack-1.0.0
       requestBody:
         content:
           application/json:
@@ -1756,6 +1812,13 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v2/apis/import-service?serviceKey=Pizzashack-1.0.0"'
 
   /apis/{apiId}/comments:
     get:
@@ -1780,13 +1843,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommentList'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-          - apim:comment_view
+            - apim:comment_view
       x-code-samples:
         - lang: Curl
           source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
@@ -1810,6 +1873,7 @@ paths:
               properties:
                 content:
                   type: string
+                  maxLength: 512
                   description: |
                     Content of the comment
                   example: This is a comment
@@ -1846,8 +1910,12 @@ paths:
           $ref: '#/components/responses/BadRequest'
         401:
           $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
         415:
           $ref: '#/components/responses/UnsupportedMediaType'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
             - apim:comment_write
@@ -1894,20 +1962,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Comment'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource.
-          content: {}
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
           $ref: '#/components/responses/NotFound'
         406:
           $ref: '#/components/responses/NotAcceptable'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-          - apim:comment_view
+            - apim:comment_view
       x-code-samples:
         - lang: Curl
           source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
@@ -1933,6 +1998,7 @@ paths:
               properties:
                 content:
                   type: string
+                  maxLength: 512
                   description: |
                     Content of the comment
                   example: This is a comment
@@ -1953,7 +2019,7 @@ paths:
                 Entity Tag of the response resource. Used by caches, or in conditional request.
               schema:
                 type: string
-            Location: #???
+            Location:
               description: |
                 Location to the newly created Comment.
               schema:
@@ -1966,16 +2032,20 @@ paths:
           $ref: '#/components/responses/BadRequest'
         401:
           $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
         415:
           $ref: '#/components/responses/UnsupportedMediaType'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
             - apim:comment_write
       x-code-samples:
         - lang: Curl
-          source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          source: 'curl -k -X PATCH -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
 
     delete:
@@ -1997,8 +2067,17 @@ paths:
           content: {}
         401:
           $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
+        405:
+          description: |
+            MethodNotAllowed.
+            Request method is known by the server but is not supported by the target resource.
+          content: {}
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
             - apim:comment_write
@@ -2046,23 +2125,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommentList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource.
-          content: {}
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
           $ref: '#/components/responses/NotFound'
         406:
           $ref: '#/components/responses/NotAcceptable'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-          - apim:comment_view
+            - apim:comment_view
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+          source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"
 
   /apis/import-openapi:
     post:
@@ -2090,6 +2166,9 @@ paths:
                 additionalProperties:
                   type: string
                   description: Additional attributes specified as a stringified JSON with API's schema
+                inlineAPIDefinition:
+                  type: string
+                  description: Inline content of the OpenAPI definition
       responses:
         201:
           description: |
@@ -2223,7 +2302,7 @@ paths:
     post:
       tags:
         - APIs
-      summary: Import API Definition
+      summary: Import a GraphQL SDL
       description: |
         This operation can be used to create api from api definition.APIMgtDAOTest
 
@@ -2320,6 +2399,9 @@ paths:
                   type: string
                   description: OpenAPI definition as a file
                   format: binary
+                inlineAPIDefinition:
+                  type: string
+                  description: Inline content of the OpenAPI definition
       responses:
         200:
           description: |
@@ -2502,7 +2584,7 @@ paths:
     post:
       tags:
         - Validation
-      summary: Validate GraphQL API Definition and Retrieve a Summary
+      summary: Validate a GraphQL SDL
       description: |
         This operation can be used to validate a graphQL definition and retrieve a summary.
       requestBody:
@@ -4270,6 +4352,7 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_import_export
+            - apim:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -4582,6 +4665,56 @@ paths:
           "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/api"'
 
   ######################################################
+  # The "Subscription Throttling Based on Quota Type" resource APIs
+  ######################################################
+  /throttling-policies/streaming/subscription:
+    get:
+      tags:
+        - Throttling Policies
+      summary: Get streaming throttling policies
+      description: |
+        This operation can be used to list the available streaming subscription policies
+      operationId: getSubscriptionThrottlingPolicies
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            List of subscription policies returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Content-Type:
+              description: The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPolicyList'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+          content: {}
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/subscription?tierQuotaType=RequestCountLimit"'
+
+  ######################################################
   # The "Individual Throttling Tier" resource APIs
   ######################################################
   /throttling-policies/{policyLevel}/{policyName}:
@@ -4639,56 +4772,6 @@ paths:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/api/Platinum"'
-
-  ######################################################
-  # The "Subscription Throttling Based on Quota Type" resource APIs
-  ######################################################
-  /throttling-policies/streaming/subscription:
-    get:
-      tags:
-        - Throttling Policies
-      summary: Get streaming throttling policies
-      description: |
-        This operation can be used to list the available streaming subscription policies
-      operationId: getSubscriptionThrottlingPolicies
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/If-None-Match'
-      responses:
-        200:
-          description: |
-            OK.
-            List of subscription policies returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Content-Type:
-              description: The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SubscriptionPolicyList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apim:api_view
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/throttling-policies/streaming/subscription"'
 
   ######################################################
   # The "Mediation Policy Collection" resource APIs
@@ -6378,7 +6461,7 @@ paths:
     get:
       tags:
         - API Product Revisions
-      summary: List available revisions of an API Product
+      summary: List Revisions
       description: |
         List available revisions of an API Product
       operationId: getAPIProductRevisions
@@ -6401,6 +6484,7 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
             - apim:api_product_import_export
       x-code-samples:
@@ -6441,6 +6525,7 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
       x-code-samples:
         - lang: Curl
@@ -6459,7 +6544,7 @@ paths:
     get:
       tags:
         - API Product Revisions
-      summary: Retrieve a revision of an API Product
+      summary: Retrieve Revision
       description: |
         Retrieve a revision of an API Product
       operationId: getAPIProductRevision
@@ -6479,6 +6564,7 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
       x-code-samples:
         - lang: Curl
@@ -6491,7 +6577,7 @@ paths:
     delete:
       tags:
         - API Product Revisions
-      summary: Delete a revision of an API Product
+      summary: Delete Revision
       description: |
         Delete a revision of an API Product
       operationId: deleteAPIProductRevision
@@ -6515,21 +6601,21 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
             "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/revisions/e0824883-3e86-403a-aec1-22bbc454eb7c"'
 
-  /api-products/{apiProductId}/deploy-revision:
-
+  /api-products/{apiProductId}/deployments:
     #--------------------------------------------
     # List available deployed revision deployment details of an API Product
     #--------------------------------------------
     get:
       tags:
         - API Product Revisions
-      summary: List available deployed revision deployment details of an API Product
+      summary: List Deployments
       description: |
         List available deployed revision deployment details of an API Product
       operationId: getAPIProductRevisionDeployments
@@ -6548,21 +6634,63 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-                "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deploy-revision"'
+                "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deployments"'
 
+  /api-products/{apiProductId}/deployments/{deploymentId}:
+    #--------------------------------------------
+    # Change Display On Devportal Field
+    #--------------------------------------------
+    put:
+      tags:
+        - API Product Revisions
+      summary: Update Deployment
+      description: |
+        Update deployment devportal visibility
+      operationId: updateAPIProductDeployment
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - $ref: '#/components/parameters/deploymentId'
+      requestBody:
+        description: Deployment object that needs to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIRevisionDeployment'
+      responses:
+        200:
+          description: |
+            Created.
+            Successful response with the newly updated APIRevisionDeployment List object as the entity in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIRevisionDeployment'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+            - apim:api_publish
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -d @data.json
+                "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/deployments/UHJvZHVjdGlvbiBhbmQgU2FuZGJveA"'
+
+  /api-products/{apiProductId}/deploy-revision:
     #--------------------------------------------
     # Deploy a revision
     #--------------------------------------------
     post:
       tags:
         - API Product Revisions
-      summary: Deploy a revision
+      summary: Deploy Revision
       description: |
-        Deploy a revision
+        Deploy an API Product Revision
       operationId: deployAPIProductRevision
       parameters:
         - $ref: '#/components/parameters/apiProductId'
@@ -6589,10 +6717,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/APIRevisionDeployment'
+        400:
+          $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
       x-code-samples:
         - lang: Curl
@@ -6606,9 +6737,9 @@ paths:
     post:
       tags:
         - API Product Revisions
-      summary: Un-Deploy a revision
+      summary: UnDeploy Revision
       description: |
-        Un-Deploy a revision
+        UnDeploy an API Product Revision
       operationId: undeployAPIProductRevision
       parameters:
         - $ref: '#/components/parameters/apiProductId'
@@ -6641,10 +6772,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/APIRevisionDeployment'
+        400:
+          $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
             - apim:api_product_import_export
       x-code-samples:
@@ -6655,14 +6789,14 @@ paths:
   /api-products/{apiProductId}/restore-revision:
 
     #--------------------------------------------------------
-    # Restore a revision to the working copy of the API Product
+    # Restore a revision to the Current API of the API Product
     #--------------------------------------------------------
     post:
       tags:
         - API Product Revisions
-      summary: Restore a revision
+      summary: Restore Revision
       description: |
-        Restore a revision to the working copy of the API Product
+        Restore a revision to the Current API of the API Product
       operationId: restoreAPIProductRevision
       parameters:
         - $ref: '#/components/parameters/apiProductId'
@@ -6680,6 +6814,7 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apim:api_create
             - apim:api_publish
       x-code-samples:
         - lang: Curl
@@ -7037,297 +7172,6 @@ paths:
       x-examples:
         $ref: docs/examples/tenants/tenants.yaml
 
-  ####################################################
-  # Publisher Alerts management REST API
-  ####################################################
-  /alert-types:
-    get:
-      tags:
-        - Alerts
-      summary: |
-        Get the list of API Publisher alert types.
-      description: |
-        This operation is used to get the list of supportd alert types for the 'publisher' agent.
-      operationId: getPublisherAlertTypes
-      responses:
-        200:
-          description: |
-            OK.
-            The list of publisher alert types are returned.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertTypesList'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:pub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/alert-types"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts.yaml#/get
-
-  /alert-subscriptions:
-    get:
-      tags:
-        - Alert Subscriptions
-      summary: |
-        Get the List of API Publisher Alert Types Subscribed by the User
-      description: |
-        This operation is used to get the list of subscribed alert types by the user.
-      operationId: getSubscribedAlertTypes
-      responses:
-        200:
-          description: |
-            OK.
-            The list of subscribed alert types are returned.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertsInfo'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:pub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/get
-
-    put:
-      tags:
-        - Alert Subscriptions
-      summary: |
-        Subscribe to the Selected Tlert types by the User
-      description: |
-        This operation is used to get the list of subscribed alert types by the user.
-      operationId: subscribeToAlerts
-      requestBody:
-        description: The alerts list and the email list to subscribe.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AlertsInfo'
-        required: true
-      responses:
-        201:
-          description: |
-            OK.
-            Successful response with the newly subscribed alerts.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertsInfoResponse'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:pub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/put
-
-    delete:
-      tags:
-        - Alert Subscriptions
-      summary: |
-        Unsubscribe User from All the Alert Types
-      description: |
-        This operation is used to unsubscribe the respective user from all the alert types.
-      operationId: unsubscribeAllAlerts
-      responses:
-        200:
-          description: |
-            OK.
-            The user is unsubscribed from the alerts successfully.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content: {}
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:pub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/alert-subscriptions"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_subscriptions.yaml#/delete
-
-  /alerts/{alertType}/configurations:
-    get:
-      tags:
-        - Alert Configuration
-      summary: |
-        Get All AbnormalRequestsPerMin Alert Configurations
-      description: |
-        This operation is used to get all configurations of the AbnormalRequestsPerMin alert type.
-      operationId: getAllAlertConfigs
-      parameters:
-        - $ref: '#/components/parameters/alertType'
-      responses:
-        200:
-          description: |
-            OK.
-            The Developer Portal alert configuration.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertConfigList'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:pub_alert_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/alerts/{alertType}/configurations"'
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/get
-
-  /alerts/{alertType}/configurations/{configurationId}:
-    put:
-      tags:
-        - Alert Configuration
-      summary: |
-        Add AbnormalRequestsPerMin Alert Configurations.
-      description: |
-        This operation is used to add configuration for the AbnormalRequestsPerMin alert type.
-      operationId: addAlertConfig
-      parameters:
-        - $ref: '#/components/parameters/alertType'
-        - $ref: '#/components/parameters/configurationId'
-      requestBody:
-        description: Configuration for AbnormalRequestCount alert type
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AlertConfigInfo'
-        required: true
-      responses:
-        201:
-          description: |
-            Created.
-            Successful response with newly created object as entity.
-            Location header contains URL of newly created entity.
-          headers:
-            Location:
-              description: |
-                The location of the newly created entity.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AlertConfig'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:pub_alert_manage
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/put
-
-    delete:
-      tags:
-        - Alert Configuration
-      summary: |
-        Delete the Selected Configuration from AbnormalRequestsPerMin Alert Type.
-      description: |
-        This operation is used to delete configuration from the AbnormalRequestsPerMin alert type.
-      operationId: deleteAlertConfig
-      parameters:
-        - $ref: '#/components/parameters/alertType'
-        - $ref: '#/components/parameters/configurationId'
-      responses:
-        200:
-          description: |
-            OK.
-            The alert config is deleted successfully.
-          content: {}
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:pub_alert_manage
-      x-examples:
-        $ref: docs/examples/alerts/alerts_config.yaml#/delete
-
-  ######################################################
-  # The "Label Collection" resource API
-  ######################################################
-  /labels:
-    get:
-      tags:
-        - Label Collection
-      summary: Get all Registered Labels
-      description: |
-        Get all registered Labels
-      responses:
-        200:
-          description: |
-            OK.
-            Labels returned
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LabelList'
-      security:
-        - OAuth2Security:
-            - apim:api_view
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/labels"'
-      operationId: getLabels
-
   ######################################################
   # The "API Category Collection" resource API
   ######################################################
@@ -7626,87 +7470,6 @@ paths:
           "https://127.0.0.1:9443/api/am/publisher/v2/key-managers"'
       operationId: getAllKeyManagers
 
-  ######################################################
-  # The "Deployments" resource APIs
-  ######################################################
-  /deployments:
-    get:
-      tags:
-        - Deployments
-      summary: Retrieve Deployment Environments Details
-      description: |
-        This operation can be used to retrieve cloud clusters information defines in tenant-conf.json file.
-
-        With that you can deploy an API to selected cloud environments.
-      operationId: deploymentsGet
-      responses:
-        200:
-          description: |
-            OK. Successful response with the list of deployment environments information in the body.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeploymentList'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:api_view
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/deployments"'
-
-  /apis/{apiId}/deployments:
-    get:
-      tags:
-        - DeploymentStatus
-      summary: Retrieve Deployment Status Details
-      description: |
-        This operation can be used to retrieve the status of deployments in cloud clusters.
-
-        With that you can get the status of the deployed APIs in cloud environments.
-      operationId: deploymentsGetStatus
-      parameters:
-        - $ref: '#/components/parameters/apiId'
-      responses:
-        200:
-          description: |
-            OK. Successful response with the list of deployment environments information in the body.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeploymentStatusList'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:api_view
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/apis/92bc1330-1848-4fe8-b992-c792186c212e/deployments/"'
-
   /apis/validate-asyncapi:
     post:
       tags:
@@ -7937,6 +7700,235 @@ paths:
         - OAuth2Security:
             - apim:api_create
 
+  /api-products/change-lifecycle:
+    post:
+      tags:
+        - API Product Lifecycle
+      summary: Change API Product LC Status
+      description: |
+        This operation is used to change the lifecycle of an API Product.
+        Eg: Publish an API Product which is in `CREATED` state. In order to change the lifecycle, we need to provide the
+        lifecycle `action` as a query parameter.
+
+        For example, to Publish an API Product, `action` should be `Publish`. Note that the `Re-publish` action is
+        available only after calling `Block`.
+
+        Some actions supports providing additional paramters which should be provided as `lifecycleChecklist` parameter.
+        Please see parameters table for more information.
+      parameters:
+        - name: action
+          in: query
+          description: |
+            The action to demote or promote the state of the API Product.
+
+            Supported actions are [ **Publish**, **Deploy as a Prototype**, **Demote to Created**, **Block**, **Deprecate**, **Re-Publish**, **Retire** ]
+          required: true
+          schema:
+            type: string
+            enum:
+              - Publish
+              - Deploy as a Prototype
+              - Demote to Created
+              - Block
+              - Deprecate
+              - Re-Publish
+              - Retire
+        - name: lifecycleChecklist
+          in: query
+          description: |2
+
+            Supported checklist items are as follows.
+            1. **Deprecate old versions after publishing the API**: Setting this to true will deprecate older versions of a particular API Product when it is promoted to Published state from Created state.
+            2. **Requires re-subscription when publishing the API**: If you set this to true, users need to re subscribe to the API Products although they may have subscribed to an older version.
+            You can specify additional checklist items by using an **"attribute:"** modifier.
+            Eg: "Deprecate old versions after publishing the API:true" will deprecate older versions of a particular API Product when it is promoted to Published state from Created state. Multiple checklist items can be given in "attribute1:true, attribute2:false" format.
+            **Sample CURL :**  curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -X POST "https://localhost:9443/api/am/publisher/v2/api-products/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish&lifecycleChecklist=Deprecate%20old%20versions%20after%20publishing%20the%20API%3Atrue,Requires%20re-subscription%20when%20publishing%20the%20API%3Afalse"
+          schema:
+            type: string
+        - $ref: '#/components/parameters/apiProductId-Q'
+        - $ref: '#/components/parameters/If-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Lifecycle changed successfully.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the changed API. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the API lifecycle has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+        202:
+          description: |
+            Accepted.
+            The request has been accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+            - apim:api_manage
+            - apim:api_import_export
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish"'
+      operationId: changeAPIProductLifecycle
+
+  /api-products/{apiProductId}/lifecycle-history:
+    get:
+      tags:
+        - API Product Lifecycle
+      summary: Get Lifecycle State Change History of the API Products.
+      description: |
+        This operation can be used to retrieve Lifecycle state change history of the API Products.
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Lifecycle state change history returned successfully.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifecycleHistory'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+            - apim:api_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-history"'
+      operationId: getAPIProductLifecycleHistory
+
+  /api-products/{apiProductId}/lifecycle-state:
+    get:
+      tags:
+        - API Product Lifecycle
+      summary: Get Lifecycle State Data of the API Product.
+      description: |
+        This operation can be used to retrieve Lifecycle state data of the API Product.
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Lifecycle state data returned successfully.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifecycleState'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+            - apim:api_create
+            - apim:api_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-state"'
+      operationId: getAPIProductLifecycleState
+
+  /api-products/{apiProductId}/lifecycle-state/pending-tasks:
+    delete:
+      tags:
+        - API Product Lifecycle
+      summary: Delete Pending Lifecycle State Change Tasks
+      description: |
+        This operation can be used to remove pending lifecycle state change requests that are in pending state
+      parameters:
+        - $ref: '#/components/parameters/apiProductId'
+      responses:
+        200:
+          description: |
+            OK.
+            Lifecycle state change pending task removed successfully.
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+            - apim:api_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-state/pending-tasks"'
+      operationId: deleteAPIProductLifecycleStatePendingTasks
+
+
 components:
   schemas:
     Comment:
@@ -7967,12 +7959,16 @@ components:
           example : 2021-02-12-19:57:25
         category:
           type: string
+          readOnly: true
           default: general
+          example : general
         parentCommentId:
           type: string
+          readOnly: true
           example: 6f38aea2-f41e-4ac9-b3f2-a9493d00ba97
         entryPoint:
           type: string
+          readOnly: true
           enum: [devPortal, publisher]
         commenterInfo:
           $ref: '#/components/schemas/CommenterInfo'
@@ -7984,11 +7980,13 @@ components:
       properties:
         count:
           type: integer
+          readOnly: true
           description: |
             Number of Comments returned.
           example: 1
         list:
           type: array
+          readOnly: true
           items:
             $ref: '#/components/schemas/Comment'
         pagination:
@@ -8076,15 +8074,15 @@ components:
           type: array
           items:
             type: string
-        websubSubscriptionConfiguration:
-          type: object
-          properties:
-            secret:
-              type: string
-            signingAlgorithm:
-              type: string
-            signatureHeader:
-              type: string
+        createdTime:
+          type: string
+          example : 2021-02-11 09:57:25
+        updatedTime:
+          type: string
+          example : 2021-02-11 09:57:25
+        gatewayVendor:
+          type: string
+          example: wso2
 
     Topic:
       title: Topic object
@@ -8102,7 +8100,7 @@ components:
         name:
           maxLength: 50
           minLength: 1
-          pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\s+]*$)'
+          pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\s+\[\]\/]*$)'
           type: string
           example: PizzaShackAPI
         mode:
@@ -8145,7 +8143,7 @@ components:
         name:
           maxLength: 50
           minLength: 1
-          pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\s+]*$)'
+          pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\s+\[\]\/]*$)'
           type: string
           example: PizzaShackAPI
         description:
@@ -8161,7 +8159,7 @@ components:
           maxLength: 30
           minLength: 1
           type: string
-          pattern: '^[^~!@#;:%^*()+={}|\\<>"'',&/$]+$'
+          pattern: '^[^~!@#;:%^*()+={}|\\<>"'',&/$\[\]\s+\/]+$'
           example: 1.0.0
         provider:
           maxLength: 50
@@ -8180,19 +8178,12 @@ components:
           type: string
           readOnly: true
           example: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
-        testKey:
-          type: string
-          readOnly: true
-          example: 8swdwj9080edejhj
         responseCachingEnabled:
           type: boolean
           example: true
         cacheTimeout:
           type: integer
           example: 300
-        destinationStatsEnabled:
-          type: string
-          example: Disabled
         hasThumbnail:
           type: boolean
           example: false
@@ -8214,11 +8205,6 @@ components:
         enableSchemaValidation:
           type: boolean
           example: false
-        enableStore:
-          type: boolean
-          example: true
-          x-otherScopes:
-            - apim:api_publish
         type:
           type: string
           description: The api creation type to be used. Accepted values are HTTP,
@@ -8268,6 +8254,7 @@ components:
             - apim:api_publish
         authorizationHeader:
           type: string
+          pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\s+]*$)'
           description: |
             Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified
             in tenant or system level will be used.
@@ -8308,33 +8295,6 @@ components:
           example: []
           items:
             type: string
-        endpointSecurity:
-          $ref: '#/components/schemas/APIEndpointSecurity'
-        gatewayEnvironments:
-          type: array
-          description: |
-            List of gateway environments the API is available
-          example:
-            - Default
-          items:
-            type: string
-          x-otherScopes:
-            - apim:api_publish
-        deploymentEnvironments:
-          type: array
-          description: |
-            List of selected deployment environments and clusters
-          items:
-            $ref: '#/components/schemas/DeploymentEnvironments'
-          x-otherScopes:
-            - apim:api_publish
-        labels:
-          type: array
-          description: |
-            Labels of micro-gateway environments attached to the API.
-          example: []
-          items:
-            type: string
         mediationPolicies:
           type: array
           example:
@@ -8364,10 +8324,17 @@ components:
           items:
             type: string
         additionalProperties:
-          type: object
-          additionalProperties:
-            type: string
+          type: array
           description: Map of custom properties of API
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              display:
+                type: boolean
           x-otherScopes:
             - apim:api_publish
         monetization:
@@ -8391,7 +8358,8 @@ components:
           items:
             type: string
         businessInformation:
-          $ref: '#/components/schemas/APIBusinessInformation'
+          allOf:
+            - $ref: '#/components/schemas/APIBusinessInformation'
           x-otherScopes:
             - apim:api_publish
         corsConfiguration:
@@ -8569,6 +8537,22 @@ components:
             outdated:
               type: boolean
               example: false
+        advertiseInfo:
+          $ref: '#/components/schemas/AdvertiseInfo'
+        gatewayVendor:
+          title: field to identify gateway vendor
+          type: string
+          example:
+            wso2
+        asyncTransportProtocols:
+          type: array
+          description: |
+            Supported transports for the async API (http and/or https).
+          example:
+            - http
+            - https
+          items:
+            type: string
       x-scopes:
         - apim:api_create
         - apim:api_import_export
@@ -8581,19 +8565,25 @@ components:
       properties:
         displayName:
           type: string
+          readOnly: true
           example: REVISION 1
         id:
           type: string
+          readOnly: true
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         description:
+          maxLength: 255
+          minLength: 0
           type: string
           example: removed a post resource
         createdTime:
+          readOnly: true
           type: string
         apiInfo:
           $ref: '#/components/schemas/APIRevisionAPIInfo'
         deploymentInfo:
           type: array
+          readOnly: true
           items:
             $ref: '#/components/schemas/APIRevisionDeployment'
 
@@ -8640,9 +8630,13 @@ components:
       title: APIRevisionDeployment Info object with basic API deployment details
       properties:
         revisionUuid:
+          maxLength: 255
+          minLength: 0
           type: string
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         name:
+          maxLength: 255
+          minLength: 1
           type: string
           example: default
         vhost:
@@ -8656,6 +8650,7 @@ components:
           type: boolean
           example: true
         deployedTime:
+          readOnly: true
           type: string
 
     AuditReport:
@@ -8732,6 +8727,10 @@ components:
           enum:
             - CREATED
             - PUBLISHED
+            - DEPRECATED
+            - RETIRED
+            - BLOCKED
+            - PROTOTYPED
         securityScheme:
           type: array
           description: |
@@ -8741,6 +8740,9 @@ components:
             - oauth2
           items:
             type: string
+        gatewayVendor:
+          type: string
+          example: wso2
     APIProduct:
       title: API Product object
       required:
@@ -8781,19 +8783,17 @@ components:
           type: string
           description: |
             State of the API product. Only published api products are visible on the Developer Portal
+          default: CREATED
           enum:
             - CREATED
             - PUBLISHED
+            - DEPRECATED
+            - RETIRED
+            - BLOCKED
+            - PROTOTYPED
         enableSchemaValidation:
           type: boolean
           example: false
-        enableStore:
-          type: boolean
-          example: true
-        testKey:
-          type: string
-          readOnly: true
-          example: 8swdwj9080edejhj
         isRevision:
           type: boolean
           example: false
@@ -8849,14 +8849,6 @@ components:
           description: The user roles that are able to view/modify as API Product
             publisher or creator.
           example: []
-          items:
-            type: string
-        gatewayEnvironments:
-          type: array
-          description: |
-            List of gateway environments the API Product is available
-          example:
-            - Default
           items:
             type: string
         apiType:
@@ -8926,9 +8918,16 @@ components:
           x-otherScopes:
             - apim:api_publish
         additionalProperties:
-          type: object
-          additionalProperties:
-            type: string
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              display:
+                type: boolean
           description: Map of custom properties of API
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
@@ -8940,6 +8939,11 @@ components:
           type: string
         lastUpdatedTime:
           type: string
+        gatewayVendor:
+          title: field to identify gateway vendor
+          type: string
+          example:
+            wso2
         apis:
           type: array
           description: |
@@ -8971,6 +8975,9 @@ components:
           example: []
           items:
             type: string
+        workflowStatus:
+          type: string
+          example: APPROVED
     ProductAPI:
       title: ProductAPI
       required:
@@ -9430,6 +9437,23 @@ components:
             type: string
           description: Properties of a tier plan which are related to monetization
           example: {}
+    SubscriptionPolicyList:
+      title: Subscription policy list
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Tiers returned.
+          example: 1
+        list:
+          type: array
+          description: |
+            Array of SubscriptionPolicies
+          items:
+            $ref: '#/components/schemas/SubscriptionPolicy'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     SubscriptionList:
       title: Subscription List
       type: object
@@ -9472,6 +9496,54 @@ components:
             - ON_HOLD
             - REJECTED
             - TIER_UPDATE_PENDING
+    ThrottlePolicy:
+      title: Generic Throttling Policy
+      required:
+        - policyName
+      type: object
+      properties:
+        policyId:
+          type: string
+          description: Id of policy
+          readOnly: true
+          example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+        policyName:
+          maxLength: 60
+          minLength: 1
+          type: string
+          description: Name of policy
+          example: 30PerMin
+        displayName:
+          type: string
+          description: Display name of the policy
+          example: 30PerMin
+          maxLength: 512
+        description:
+          maxLength: 1024
+          type: string
+          description: Description of the policy
+          example: Allows 30 request per minute
+        isDeployed:
+          type: boolean
+          description: Indicates whether the policy is deployed successfully or not.
+          default: false
+        type:
+          type: string
+          description: Indicates the type of throttle policy
+      discriminator:
+        propertyName: type
+    GraphQLQuery:
+      title: GraphQL Query
+      type: object
+      properties:
+        graphQLMaxComplexity:
+          type: integer
+          description: Maximum Complexity of the GraphQL query
+          example: 400
+        graphQLMaxDepth:
+          type: integer
+          description: Maximum Depth of the GraphQL query
+          example: 10
     ThrottleLimitBase:
       title: Throttle Limit Base
       required:
@@ -9575,23 +9647,6 @@ components:
               description: Maximum number of events allowed
               format: int64
               example: 3000
-    SubscriptionPolicyList:
-      title: Subscription policy list
-      type: object
-      properties:
-        count:
-          type: integer
-          description: |
-            Number of Tiers returned.
-          example: 1
-        list:
-          type: array
-          description: |
-            Array of SubscriptionPolicies
-          items:
-            $ref: '#/components/schemas/SubscriptionPolicy'
-        pagination:
-          $ref: '#/components/schemas/Pagination'
     SubscriptionPolicy:
       title: Subscription Throttling Policy
       allOf:
@@ -9805,15 +9860,24 @@ components:
         serverUrl:
           type: string
           example: https://localhost:9443/services/
+        provider:
+          type: string
+          example: wso2
         showInApiConsole:
           type: boolean
           example: true
-        endpoints:
-          $ref: '#/components/schemas/EnvironmentEndpoints'
         vhosts:
           type: array
           items:
             $ref: '#/components/schemas/VHost'
+        endpointURIs:
+          type: array
+          items:
+            $ref: '#/components/schemas/GatewayEnvironmentProtocolURI'
+        additionalProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdditionalProperty'
     EnvironmentList:
       title: Environment List
       type: object
@@ -9827,26 +9891,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Environment'
-    EnvironmentEndpoints:
-      title: Environment Endpoints
+    AdditionalProperty:
+      title: Additional Gateway Properties
       type: object
       properties:
-        http:
+        key:
           type: string
-          description: HTTP environment URL
-          example: http://localhost:8280
-        https:
+          example: Organization
+        value:
           type: string
-          description: HTTPS environment URL
-          example: https://localhost:8243
-        ws:
-          type: string
-          description: WS environment URL
-          example: http://localhost:9099
-        wss:
-          type: string
-          description: WSS environment URL
-          example: https://localhost:8099
+          example: wso2
     VHost:
       title: Virtual Host
       type: object
@@ -9893,22 +9947,6 @@ components:
           type: integer
           format: int64
           example: 1000
-    APIEndpointSecurity:
-      type: object
-      properties:
-        type:
-          type: string
-          description: Accepts one of the following, basic or digest.
-          example: BASIC
-          enum:
-            - BASIC
-            - DIGEST
-        username:
-          type: string
-          example: admin
-        password:
-          type: string
-          example: password
     APIBusinessInformation:
       type: object
       properties:
@@ -9931,6 +9969,10 @@ components:
     WebsubSubscriptionConfiguration:
       type: object
       properties:
+        enable:
+          type: boolean
+          default: false
+          description: Toggle enable WebSub subscription configuration
         secret:
           type: string
           description: Secret key to be used for subscription
@@ -10373,38 +10415,6 @@ components:
           type: string
           example: Gold
       description: Meta data of certificate
-    Label:
-      title: Label
-      required:
-        - name
-      type: object
-      properties:
-        name:
-          type: string
-          example: marketing_store
-        description:
-          type: string
-          example: Public microgateway for marketing
-        access_urls:
-          type: array
-          example: https://localhost:9095
-          items:
-            type: string
-    LabelList:
-      title: Label List
-      type: object
-      properties:
-        count:
-          type: integer
-          description: |
-            Number of Labels returned.
-          example: 1
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/Label'
-        pagination:
-          $ref: '#/components/schemas/Pagination'
     LifecycleState:
       title: Lifecycle State
       type: object
@@ -10799,6 +10809,7 @@ components:
                 - INLINE
                 - URL
                 - FILE
+                - MARKDOWN
             sourceUrl:
               type: string
               example: ""
@@ -10952,10 +10963,6 @@ components:
             Is Cross Tenant Subscriptions Enabled
           example: false
           default: false
-        deployments:
-          type: array
-          items:
-            $ref: '#/components/schemas/Deployments'
     SecurityAuditAttribute:
       title: SecurityAuditAttributeDTO
       type: object
@@ -11065,118 +11072,19 @@ components:
             $ref: '#/components/schemas/Tenant'
         pagination:
           $ref: '#/components/schemas/Pagination'
-    AlertTypesList:
-      title: Alert Types List
+    AdvertiseInfo:
+      title: API Advertise info object with advertise details
       type: object
       properties:
-        count:
-          type: integer
-          description: The number of alerts
-          example: 3
-        alerts:
-          type: array
-          items:
-            $ref: '#/components/schemas/AlertType'
-    AlertType:
-      title: Alert Type
-      type: object
-      properties:
-        id:
-          type: integer
-          description: The alert Id
-          example: 1
-        name:
-          type: string
-          description: The name of the alert.
-          example: AbnormalRequestTime
-        requireConfiguration:
+        advertised:
           type: boolean
-          description: Whether the alert type require additional configurations.
           example: true
-    Alert:
-      title: Alert
-      type: object
-      properties:
-        id:
-          type: integer
-          description: The alert Id
-          example: 1
-        name:
+        originalDevPortalUrl:
           type: string
-          description: The name of the alert.
-          example: AbnormalRequestsPerMin
-        configuration:
-          type: array
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-    AlertsInfo:
-      title: Alerts Info
-      type: object
-      properties:
-        alerts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Alert'
-        emailList:
-          type: array
-          items:
-            type: string
-    AlertsInfoResponse:
-      title: Alerts Info Response
-      type: object
-      properties:
-        alerts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Alert'
-        emailList:
-          type: array
-          items:
-            type: string
-        failedConfigurations:
-          type: array
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-    AlertConfigList:
-      title: Alert Configuration List
-      type: object
-      properties:
-        count:
-          type: integer
-          example: 1
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/AlertConfig'
-    AlertConfig:
-      title: Alert Configuration
-      type: object
-      properties:
-        configurationId:
+          example: https://localhost:9443/devportal
+        apiOwner:
           type: string
-          description: The alert config subscription id.
-          example: UGl6emFTaGFja0FQSSsxLjAuMCtEZWZhdWx0QXBwbGljYXRpb24K
-        configuration:
-          type: object
-          additionalProperties:
-            type: string
-          description: The config parameters.
-          example:
-            apiName: PizzaShackAPI
-            apiVersion: 1.0.0
-            applicationName: DefaultApplication
-            requestConunt: "12"
-    AlertConfigInfo:
-      title: Alert Configuration Info
-      type: object
-      additionalProperties:
-        type: string
-      description: The config parameters.
-      example:
-        apiName: PizzaShackAPI
-        apiVersion: 1.0.0
-        applicationName: DefaultApplication
-        requestConunt: "12"
+          example: admin
     APICategory:
       title: API Category
       required:
@@ -11262,135 +11170,6 @@ components:
           type: integer
           format: int32
           example: 3600
-    DeploymentList:
-      title: Deployment List
-      type: object
-      properties:
-        count:
-          type: integer
-          description: |
-            Number of deployment clusters returned.
-          example: 1
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/Deployments'
-    Deployments:
-      title: Deployments
-      required:
-        - clusters
-        - name
-      type: object
-      properties:
-        name:
-          type: string
-          example: Kubernetes
-        clusters:
-          type: array
-          items:
-            $ref: '#/components/schemas/DeploymentClusterInfo'
-    DeploymentClusterInfo:
-      title: DeploymentClusterInfo
-      required:
-        - accessURL
-        - clusterName
-        - displayName
-        - properties
-      type: object
-      properties:
-        clusterName:
-          type: string
-          example: minikube
-        accessURL:
-          type: string
-          example: https://api.com
-        displayName:
-          type: string
-          example: kubernetes-minikube
-        properties:
-          type: object
-          additionalProperties:
-            type: string
-    DeploymentStatusList:
-      title: DeploymentStatus List
-      type: object
-      properties:
-        count:
-          type: integer
-          description: |
-            Status of the deployments returned.
-          example: 1
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/DeploymentStatus'
-    DeploymentStatus:
-      title: DeploymentStatus
-      required:
-        - clusters
-        - type
-      type: object
-      properties:
-        type:
-          type: string
-          example: Kubernetes
-        clusters:
-          type: array
-          items:
-            $ref: '#/components/schemas/DeploymentClusterStatus'
-    DeploymentClusterStatus:
-      title: DeploymentClusterStatus
-      required:
-        - clusterName
-        - healthStatus
-        - podsRunning
-      type: object
-      properties:
-        clusterName:
-          type: string
-          example: Minikube
-        podsRunning:
-          type: integer
-        healthStatus:
-          type: array
-          items:
-            $ref: '#/components/schemas/PodStatus'
-    DeploymentEnvironments:
-      title: DeploymentEnvironments
-      required:
-        - clusterName
-        - type
-      type: object
-      properties:
-        type:
-          type: string
-          example: Kubernetes
-        clusterName:
-          type: array
-          example:
-            - minikube
-          items:
-            type: string
-    PodStatus:
-      title: PodStatus
-      required:
-        - name
-        - ready
-        - status
-      type: object
-      properties:
-        name:
-          type: string
-          example: petStore-677bb7cc65-shb2f
-        ready:
-          type: string
-          example: 1/1
-        status:
-          type: string
-          example: running
-        creationTimestamp:
-          type: string
-          example: 2020-05-12T06:12:00Z
     AsyncAPISpecificationValidationResponse:
       title: AsyncAPI Specification Validation Response
       required:
@@ -11424,6 +11203,9 @@ components:
             asyncAPIVersion:
               type: string
               example: 2.0
+            protocol:
+              type: string
+              example: WEBSUB
             endpoints:
               type: array
               description:
@@ -11431,6 +11213,15 @@ components:
               items:
                 type: string
                 example: "https://localhost:9443/am/sample/pizzashack/v1/api/"
+            gatewayVendor:
+              type: string
+              example: wso2
+            asyncTransportProtocols:
+              type: array
+              description: contains available transports for an async API
+              items:
+                type: string
+                example: http
           description:
             API definition information
         errors:
@@ -11440,6 +11231,19 @@ components:
             For example, list out validation error by each field.
           items:
             $ref: '#/components/schemas/ErrorListItem'
+    GatewayEnvironmentProtocolURI:
+      title: Gateway Environment protocols and URIs
+      required:
+        - protocol
+        - endpointURI
+      type: object
+      properties:
+        protocol:
+          type: string
+          example: default
+        endpointURI:
+          type: string
+          example: default
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
@@ -11752,6 +11556,14 @@ components:
         Revision Number of an API
       schema:
         type: string
+    deploymentId:
+      name: deploymentId
+      in: path
+      description: |
+        Base64 URL encoded value of the name of an environment
+      required: true
+      schema:
+        type: string
     policyName:
       name: policyName
       in: path
@@ -11916,6 +11728,16 @@ components:
       in: query
       schema:
         type: string
+    apiProductId-Q:
+      name: apiProductId
+      in: query
+      description: |
+        **API Product ID** consisting of the **UUID** of the API Product.
+        The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID.
+        Should be formatted as **provider-name-version**.
+      required: true
+      schema:
+        type: string
   requestBodies:
     threatProtectionPolicy:
       description: |
@@ -11939,7 +11761,6 @@ components:
             apim:api_publish: Publish API
             apim:subscription_view: View Subscription
             apim:subscription_block: Block Subscription
-            apim:external_services_discover: Discover External Services
             apim:threat_protection_policy_create: Create threat protection policies
             apim:threat_protection_policy_manage: Update and delete threat protection policies
             apim:document_create: Create API documents

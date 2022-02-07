@@ -38,6 +38,7 @@ import org.wso2.am.integration.clients.admin.api.dto.JWTClaimsConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.QueryParameterConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyPermissionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -100,6 +101,9 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        String INTERNAL_EVERYONE= "Internal/everyone";
+        List<String> roleList = new ArrayList<>();
+        SubscriptionThrottlePolicyPermissionDTO permissions;
 
         RequestCountLimitDTO requestCountLimit3PerMin =
                 DtoFactory.createRequestCountLimitDTO("min", 1, 3L);
@@ -122,12 +126,15 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         ApplicationThrottlePolicyDTO addedApplicationPolicyDTO = addedApplicationPolicy.getData();
         appPolicyId = addedApplicationPolicyDTO.getPolicyId();
         Assert.assertNotNull(appPolicyId, "The policy ID cannot be null or empty");
-
+        roleList.add(INTERNAL_EVERYONE);
+        permissions = DtoFactory.
+                createSubscriptionThrottlePolicyPermissionDTO(SubscriptionThrottlePolicyPermissionDTO.
+                        PermissionTypeEnum.ALLOW, roleList);
         //Create the subscription level policy
         SubscriptionThrottlePolicyDTO requestCountSubscriptionPolicyDTO = DtoFactory
                 .createSubscriptionThrottlePolicyDTO(subPolicyName, "", "", false, defaultLimit,
                         -1, -1, 100, "min", new ArrayList<>(),
-                        true, "", 0);
+                        true, "", 0, permissions);
         ApiResponse<SubscriptionThrottlePolicyDTO> addedSubscriptionPolicy =
                 restAPIAdmin.addSubscriptionThrottlingPolicy(requestCountSubscriptionPolicyDTO);
 
@@ -405,7 +412,7 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
 
     private boolean isThrottled(Map<String, String> requestHeaders, Map<String, String> queryParams,
                                 int expectedCount) throws InterruptedException, IOException {
-        Thread.sleep(1000);
+        waitUntilClockHour();
         StringBuilder url = new StringBuilder(gatewayUrl);
         if (queryParams != null) {
             int i = 0;

@@ -25,27 +25,33 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.codehaus.plexus.util.StringUtils;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
 
     private final Log log = LogFactory.getLog(SDKGenerationTestCase.class);
     //details of the second tenant
+    private final String SWAGGER_FOLDER = "swagger";
     private final String secondTenantDomain = "tenant2.com";
     private final String secondTenantAdminUserName = "secondAdmin";
     private final String secondTenantAdminPassword = "password2";
@@ -54,6 +60,7 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
     private final String apiVersion = "1.0.0";
     private String testApiId;
     private String privateApiId;
+    private String invalidSwaggerAPIId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public SDKGenerationTestCase(TestUserMode userMode) {
@@ -114,6 +121,57 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
         boolean isSDKGenerationSuccessfulAcrossTenants = generateSDK
                 (null, secondTenantAdminUserName, secondTenantAdminPassword,
                         testApiId, sdkLanguage, secondTenantDomain, user.getUserDomain());
+        Assert.assertTrue(isSDKGenerationSuccessfulInSameTenant && !isSDKGenerationSuccessfulAcrossTenants);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "SDK Generation for invalid swagger test case")
+    public void testSDKGenerationForInvalidSwagger() throws Exception {
+        String swaggerPath = getAMResourceLocation() + File.separator + SWAGGER_FOLDER +
+                File.separator + "invalid-petstore.json";
+
+        File definition = new File(swaggerPath);
+
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", "test.com");
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.SILVER);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        String uniqueName = "InvalidSwaggerAPI";
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", uniqueName);
+        apiProperties.put("context", "/" + uniqueName);
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", user.getUserName());
+        apiProperties.put("policies", tierList);
+        apiProperties.put("endpointConfig", endpointConfig);
+
+        APIDTO apiDto = restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
+        invalidSwaggerAPIId = apiDto.getId();
+
+        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(invalidSwaggerAPIId, false);
+
+        // Assert successful lifecycle change
+        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
+
+        //check for SDK generation in same tenant domain,
+        //(i.e - tenant admin of first tenant logs into the API store)
+        //we can use the apiProvider as the user name hence this is a login to the same tenant domain
+        String sdkLanguage = "java";
+        boolean isSDKGenerationSuccessfulInSameTenant = generateSDK(restAPIStore, user.getUserNameWithoutDomain(),
+                user.getPassword(), invalidSwaggerAPIId, sdkLanguage, user.getUserDomain(), null);
+
+        //check for SDK generation across tenant domains
+        //(i.e - tenant admin of second tenant should log into the API store)
+        boolean isSDKGenerationSuccessfulAcrossTenants = generateSDK
+                (null, secondTenantAdminUserName, secondTenantAdminPassword,
+                        invalidSwaggerAPIId, sdkLanguage, secondTenantDomain, user.getUserDomain());
         Assert.assertTrue(isSDKGenerationSuccessfulInSameTenant && !isSDKGenerationSuccessfulAcrossTenants);
     }
 
@@ -219,6 +277,9 @@ public class SDKGenerationTestCase extends APIMIntegrationBaseTest {
         }
         if (testApiId != null) {
             restAPIPublisher.deleteAPI(testApiId);
+        }
+        if (invalidSwaggerAPIId != null) {
+            restAPIPublisher.deleteAPI(invalidSwaggerAPIId);
         }
         tenantManagementServiceClient.deleteTenant(secondTenantDomain);
     }

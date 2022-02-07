@@ -31,6 +31,8 @@ import org.wso2.am.integration.clients.admin.api.ApplicationPolicyCollectionApi;
 import org.wso2.am.integration.clients.admin.api.ApplicationPolicyIndividualApi;
 import org.wso2.am.integration.clients.admin.api.CustomRulesCollectionApi;
 import org.wso2.am.integration.clients.admin.api.CustomRulesIndividualApi;
+import org.wso2.am.integration.clients.admin.api.DenyPoliciesCollectionApi;
+import org.wso2.am.integration.clients.admin.api.DenyPolicyIndividualApi;
 import org.wso2.am.integration.clients.admin.api.EnvironmentApi;
 import org.wso2.am.integration.clients.admin.api.EnvironmentCollectionApi;
 import org.wso2.am.integration.clients.admin.api.KeyManagerCollectionApi;
@@ -38,6 +40,8 @@ import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
 import org.wso2.am.integration.clients.admin.api.LabelApi;
 import org.wso2.am.integration.clients.admin.api.LabelCollectionApi;
 import org.wso2.am.integration.clients.admin.api.SettingsApi;
+import org.wso2.am.integration.clients.admin.api.TenantConfigApi;
+import org.wso2.am.integration.clients.admin.api.TenantConfigSchemaApi;
 import org.wso2.am.integration.clients.admin.api.WorkflowCollectionApi;
 import org.wso2.am.integration.clients.admin.api.WorkflowsIndividualApi;
 
@@ -48,6 +52,7 @@ import org.wso2.am.integration.clients.admin.api.dto.APICategoryDTO;
 import org.wso2.am.integration.clients.admin.api.dto.APICategoryListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationListDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
+import org.wso2.am.integration.clients.admin.api.dto.BlockingConditionDTO;
 import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EnvironmentListDTO;
@@ -83,6 +88,8 @@ public class RestAPIAdminImpl {
     private SubscriptionPolicyCollectionApi subscriptionPolicyCollectionApi = new SubscriptionPolicyCollectionApi();
     private CustomRulesIndividualApi customRulesIndividualApi = new CustomRulesIndividualApi();
     private CustomRulesCollectionApi customRulesCollectionApi = new CustomRulesCollectionApi();
+    private DenyPolicyIndividualApi denyPolicyIndividualApi = new DenyPolicyIndividualApi();
+    private DenyPoliciesCollectionApi denyPolicyCollectionApi = new DenyPoliciesCollectionApi();
     private AdvancedPolicyIndividualApi advancedPolicyIndividualApi = new AdvancedPolicyIndividualApi();
     private AdvancedPolicyCollectionApi advancedPolicyCollectionApi = new AdvancedPolicyCollectionApi();
     private ApplicationCollectionApi applicationCollectionApi = new ApplicationCollectionApi();
@@ -91,6 +98,8 @@ public class RestAPIAdminImpl {
     private LabelCollectionApi labelCollectionApi = new LabelCollectionApi();
     private EnvironmentApi environmentApi = new EnvironmentApi();
     private EnvironmentCollectionApi environmentCollectionApi = new EnvironmentCollectionApi();
+    private TenantConfigApi tenantConfigApi = new TenantConfigApi();
+    private TenantConfigSchemaApi tenantConfigSchemaApi = new TenantConfigSchemaApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -154,6 +163,8 @@ public class RestAPIAdminImpl {
         subscriptionPolicyCollectionApi.setApiClient(apiAdminClient);
         customRulesIndividualApi.setApiClient(apiAdminClient);
         customRulesCollectionApi.setApiClient(apiAdminClient);
+        denyPolicyCollectionApi.setApiClient(apiAdminClient);
+        denyPolicyIndividualApi.setApiClient(apiAdminClient);
         advancedPolicyIndividualApi.setApiClient(apiAdminClient);
         advancedPolicyCollectionApi.setApiClient(apiAdminClient);
         applicationCollectionApi.setApiClient(apiAdminClient);
@@ -166,6 +177,8 @@ public class RestAPIAdminImpl {
         workflowsIndividualApi.setApiClient(apiAdminClient);
         apiCategoryCollectionApi.setApiClient(apiAdminClient);
         apiCategoryIndividualApi.setApiClient(apiAdminClient);
+        tenantConfigApi.setApiClient(apiAdminClient);
+        tenantConfigSchemaApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -228,19 +241,19 @@ public class RestAPIAdminImpl {
         return keyManagerCollectionApi.keyManagersGet();
     }
 
-    public KeyManagerDTO getKeyManager(String uuid) throws ApiException {
+    public ApiResponse<KeyManagerDTO> getKeyManager(String uuid) throws ApiException {
 
-        return keyManagerIndividualApi.keyManagersKeyManagerIdGet(uuid);
+        return keyManagerIndividualApi.keyManagersKeyManagerIdGetWithHttpInfo(uuid);
     }
 
-    public KeyManagerDTO updateKeyManager(String uuid, KeyManagerDTO keyManagerDTO) throws ApiException {
+    public ApiResponse<KeyManagerDTO> updateKeyManager(String uuid, KeyManagerDTO keyManagerDTO) throws ApiException {
 
-        return keyManagerIndividualApi.keyManagersKeyManagerIdPut(uuid, keyManagerDTO);
+        return keyManagerIndividualApi.keyManagersKeyManagerIdPutWithHttpInfo(uuid, keyManagerDTO);
     }
 
-    public void deleteKeyManager(String uuid) throws ApiException {
+    public ApiResponse<Void> deleteKeyManager(String uuid) throws ApiException {
 
-        keyManagerIndividualApi.keyManagersKeyManagerIdDelete(uuid);
+        return keyManagerIndividualApi.keyManagersKeyManagerIdDeleteWithHttpInfo(uuid);
     }
 
     public SettingsDTO getSettings() throws ApiException {
@@ -413,6 +426,43 @@ public class RestAPIAdminImpl {
     public ApiResponse<Void> deleteCustomThrottlingPolicy(String policyId) throws ApiException {
 
         return customRulesIndividualApi.throttlingPoliciesCustomRuleIdDeleteWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * Creates an deny throttling policy.
+     *
+     * @param denyPolicyDTO deny throttling policy DTO to be added.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while creating the deny throttling policy.
+     */
+    public ApiResponse<BlockingConditionDTO> addDenyThrottlingPolicy(BlockingConditionDTO denyPolicyDTO) throws ApiException {
+
+        return denyPolicyCollectionApi
+                .throttlingDenyPoliciesPostWithHttpInfo(Constants.APPLICATION_JSON, denyPolicyDTO);
+    }
+
+    /**
+     * Retrieves a deny throttling policy.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving the deny throttling policy.
+     */
+    public ApiResponse<BlockingConditionDTO> getDenyThrottlingPolicy(String policyId) throws ApiException {
+
+        return denyPolicyIndividualApi
+                .throttlingDenyPolicyConditionIdGetWithHttpInfo(policyId, null, null);
+    }
+
+    /**
+     * Deletes a deny throttling policy.
+     *
+     * @param policyId policy id of the deny throttling policy to be deleted.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while deleting the deny throttling policy.
+     */
+    public ApiResponse<Void> deleteDenyThrottlingPolicy(String policyId) throws ApiException {
+
+        return denyPolicyIndividualApi.throttlingDenyPolicyConditionIdDeleteWithHttpInfo(policyId, null, null);
     }
 
     /**
@@ -641,5 +691,41 @@ public class RestAPIAdminImpl {
             return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
         return response;
+    }
+
+    /**
+     * This method is used to retrieve tenant Config.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving tenant Config.
+     */
+    public Object getTenantConfig() throws ApiException {
+        return tenantConfigApi.exportTenantConfig();
+    }
+
+    /**
+     * This method is used to update tenant config.
+     *
+     * @param tenantConf Tenant Configuration.
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs updating the tenant conf.
+     */
+    public Object updateTenantConfig(Object tenantConf) throws ApiException {
+        return tenantConfigApi.updateTenantConfig(tenantConf);
+    }
+
+    /**
+     * This method is used to retrieve tenant Config Schema.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving tenant Config schema.
+     */
+    public Object getTenantConfigSchema() throws ApiException {
+        return tenantConfigSchemaApi.exportTenantConfigSchema();
+    }
+
+
+    public WorkflowListDTO getWorkflowsByWorkflowType(String workflowType) throws ApiException {
+        return workflowCollectionApi.workflowsGet(null, null, null, null, workflowType);
     }
 }

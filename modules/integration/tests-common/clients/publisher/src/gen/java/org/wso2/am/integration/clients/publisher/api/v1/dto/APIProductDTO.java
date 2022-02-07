@@ -1,6 +1,6 @@
 /*
  * WSO2 API Manager - Publisher API
- * This document specifies a **RESTful API** for WSO2 **API Manager** - **Publisher**.  # Authentication Our REST APIs are protected using OAuth2 and access control is achieved through scopes. Before you start invoking the the API you need to obtain an access token with the required scopes. This guide will walk you through the steps that you will need to follow to obtain an access token. First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types in the payload. A Sample payload is shown below. ```   {   \"callbackUrl\":\"www.google.lk\",   \"clientName\":\"rest_api_publisher\",   \"owner\":\"admin\",   \"grantType\":\"client_credentials password refresh_token\",   \"saasApp\":true   } ``` Create a file (payload.json) with the above sample payload, and use the cURL shown bellow to invoke the DCR endpoint. Authorization header of this should contain the base64 encoded admin username and password. **Format of the request** ```   curl -X POST -H \"Authorization: Basic Base64(admin_username:admin_password)\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://<host>:<servlet_port>/client-registration/v0.17/register ``` **Sample request** ```   curl -X POST -H \"Authorization: Basic YWRtaW46YWRtaW4=\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://localhost:9443/client-registration/v0.17/register ``` Following is a sample response after invoking the above curl. ``` { \"clientId\": \"fOCi4vNJ59PpHucC2CAYfYuADdMa\", \"clientName\": \"rest_api_publisher\", \"callBackURL\": \"www.google.lk\", \"clientSecret\": \"a4FwHlq0iCIKVs2MPIIDnepZnYMa\", \"isSaasApplication\": true, \"appOwner\": \"admin\", \"jsonString\": \"{\\\"grant_types\\\":\\\"client_credentials password refresh_token\\\",\\\"redirect_uris\\\":\\\"www.google.lk\\\",\\\"client_name\\\":\\\"rest_api123\\\"}\", \"jsonAppAttribute\": \"{}\", \"tokenType\": null } ``` Next you must use the above client id and secret to obtain the access token. We will be using the password grant type for this, you can use any grant type you desire. You also need to add the proper **scope** when getting the access token. All possible scopes for publisher REST API can be viewed in **OAuth2 Security** section of this document and scope for each resource is given in **authorization** section of resource documentation. Following is the format of the request if you are using the password grant type. ``` curl -k -d \"grant_type=password&username=<admin_username>&password=<admin_passowrd&scope=<scopes seperated by space>\" \\ -H \"Authorization: Basic base64(cliet_id:client_secret)\" \\ https://<host>:<gateway_port>/token ``` **Sample request** ``` curl https://localhost:8243/token -k \\ -H \"Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h\" \\ -d \"grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create\" ``` Shown below is a sample response to the above request. ``` { \"access_token\": \"e79bda48-3406-3178-acce-f6e4dbdcbb12\", \"refresh_token\": \"a757795d-e69f-38b8-bd85-9aded677a97c\", \"scope\": \"apim:api_create apim:api_view\", \"token_type\": \"Bearer\", \"expires_in\": 3600 } ``` Now you have a valid access token, which you can use to invoke an API. Navigate through the API descriptions to find the required API, obtain an access token as described above and invoke the API with the authentication header. If you use a different authentication mechanism, this process may change.  # Try out in Postman If you want to try-out the embedded postman collection with \"Run in Postman\" option, please follow the guidelines listed below. * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes. * Make sure you have an API Manager instance up and running. * Update the `basepath` parameter to match the hostname and port of the APIM instance.  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/a09044034b5c3c1b01a9) 
+ * This document specifies a **RESTful API** for WSO2 **API Manager** - **Publisher**.  # Authentication The Publisher REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking the the API you need to obtain an access token with the required scopes. This guide will walk you through the steps that you will need to follow to obtain an access token. First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types in the payload. A Sample payload is shown below. ```   {   \"callbackUrl\":\"www.google.lk\",   \"clientName\":\"rest_api_publisher\",   \"owner\":\"admin\",   \"grantType\":\"client_credentials password refresh_token\",   \"saasApp\":true   } ``` Create a file (payload.json) with the above sample payload, and use the cURL shown bellow to invoke the DCR endpoint. Authorization header of this should contain the base64 encoded admin username and password. **Format of the request** ```   curl -X POST -H \"Authorization: Basic Base64(admin_username:admin_password)\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://<host>:<servlet_port>/client-registration/v0.17/register ``` **Sample request** ```   curl -X POST -H \"Authorization: Basic YWRtaW46YWRtaW4=\" -H \"Content-Type: application/json\"   \\ -d @payload.json https://localhost:9443/client-registration/v0.17/register ``` Following is a sample response after invoking the above curl. ``` { \"clientId\": \"fOCi4vNJ59PpHucC2CAYfYuADdMa\", \"clientName\": \"rest_api_publisher\", \"callBackURL\": \"www.google.lk\", \"clientSecret\": \"a4FwHlq0iCIKVs2MPIIDnepZnYMa\", \"isSaasApplication\": true, \"appOwner\": \"admin\", \"jsonString\": \"{\\\"grant_types\\\":\\\"client_credentials password refresh_token\\\",\\\"redirect_uris\\\":\\\"www.google.lk\\\",\\\"client_name\\\":\\\"rest_api123\\\"}\", \"jsonAppAttribute\": \"{}\", \"tokenType\": null } ``` Next you must use the above client id and secret to obtain the access token. We will be using the password grant type for this, you can use any grant type you desire. You also need to add the proper **scope** when getting the access token. All possible scopes for publisher REST API can be viewed in **OAuth2 Security** section of this document and scope for each resource is given in **authorization** section of resource documentation. Following is the format of the request if you are using the password grant type. ``` curl -k -d \"grant_type=password&username=<admin_username>&password=<admin_passowrd&scope=<scopes seperated by space>\" \\ -H \"Authorization: Basic base64(cliet_id:client_secret)\" \\ https://<host>:<servlet_port>/oauth2/token ``` **Sample request** ``` curl https://localhost:9443/oauth2/token -k \\ -H \"Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h\" \\ -d \"grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create\" ``` Shown below is a sample response to the above request. ``` { \"access_token\": \"e79bda48-3406-3178-acce-f6e4dbdcbb12\", \"refresh_token\": \"a757795d-e69f-38b8-bd85-9aded677a97c\", \"scope\": \"apim:api_create apim:api_view\", \"token_type\": \"Bearer\", \"expires_in\": 3600 } ``` Now you have a valid access token, which you can use to invoke an API. Navigate through the API descriptions to find the required API, obtain an access token as described above and invoke the API with the authentication header. If you use a different authentication mechanism, this process may change.  # Try out in Postman If you want to try-out the embedded postman collection with \"Run in Postman\" option, please follow the guidelines listed below. * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes. * Make sure you have an API Manager instance up and running. * Update the `basepath` parameter to match the hostname and port of the APIM instance.  [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/a09044034b5c3c1b01a9) 
  *
  * The version of the OpenAPI document: v2
  * Contact: architecture@wso2.com
@@ -24,9 +24,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIAdditionalPropertiesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductBusinessInformationDTO;
@@ -69,7 +68,15 @@ public class APIProductDTO {
 public enum StateEnum {
         CREATED("CREATED"),
         
-        PUBLISHED("PUBLISHED");
+        PUBLISHED("PUBLISHED"),
+        
+        DEPRECATED("DEPRECATED"),
+        
+        RETIRED("RETIRED"),
+        
+        BLOCKED("BLOCKED"),
+        
+        PROTOTYPED("PROTOTYPED");
 
 private String value;
 
@@ -111,19 +118,11 @@ public static StateEnum fromValue(String value) {
 
         public static final String SERIALIZED_NAME_STATE = "state";
         @SerializedName(SERIALIZED_NAME_STATE)
-            private StateEnum state;
+            private StateEnum state = StateEnum.CREATED;
 
         public static final String SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION = "enableSchemaValidation";
         @SerializedName(SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION)
             private Boolean enableSchemaValidation;
-
-        public static final String SERIALIZED_NAME_ENABLE_STORE = "enableStore";
-        @SerializedName(SERIALIZED_NAME_ENABLE_STORE)
-            private Boolean enableStore;
-
-        public static final String SERIALIZED_NAME_TEST_KEY = "testKey";
-        @SerializedName(SERIALIZED_NAME_TEST_KEY)
-            private String testKey;
 
         public static final String SERIALIZED_NAME_IS_REVISION = "isRevision";
         @SerializedName(SERIALIZED_NAME_IS_REVISION)
@@ -261,10 +260,6 @@ public static AccessControlEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_ACCESS_CONTROL_ROLES)
             private List<String> accessControlRoles = null;
 
-        public static final String SERIALIZED_NAME_GATEWAY_ENVIRONMENTS = "gatewayEnvironments";
-        @SerializedName(SERIALIZED_NAME_GATEWAY_ENVIRONMENTS)
-            private List<String> gatewayEnvironments = null;
-
             /**
 * The API type to be used. Accepted values are API, APIPRODUCT
 */
@@ -399,7 +394,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
         public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
         @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
-            private Map<String, String> additionalProperties = null;
+            private List<APIAdditionalPropertiesDTO> additionalProperties = null;
 
         public static final String SERIALIZED_NAME_MONETIZATION = "monetization";
         @SerializedName(SERIALIZED_NAME_MONETIZATION)
@@ -421,6 +416,10 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
             private String lastUpdatedTime;
 
+        public static final String SERIALIZED_NAME_GATEWAY_VENDOR = "gatewayVendor";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_VENDOR)
+            private String gatewayVendor;
+
         public static final String SERIALIZED_NAME_APIS = "apis";
         @SerializedName(SERIALIZED_NAME_APIS)
             private List<ProductAPIDTO> apis = null;
@@ -432,6 +431,10 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
         public static final String SERIALIZED_NAME_CATEGORIES = "categories";
         @SerializedName(SERIALIZED_NAME_CATEGORIES)
             private List<String> categories = null;
+
+        public static final String SERIALIZED_NAME_WORKFLOW_STATUS = "workflowStatus";
+        @SerializedName(SERIALIZED_NAME_WORKFLOW_STATUS)
+            private String workflowStatus;
 
 
         public APIProductDTO id(String id) {
@@ -614,52 +617,6 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     public void setEnableSchemaValidation(Boolean enableSchemaValidation) {
         this.enableSchemaValidation = enableSchemaValidation;
-    }
-
-
-        public APIProductDTO enableStore(Boolean enableStore) {
-        
-        this.enableStore = enableStore;
-        return this;
-        }
-
-    /**
-        * Get enableStore
-    * @return enableStore
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "true", value = "")
-    
-    public Boolean isEnableStore() {
-        return enableStore;
-    }
-
-
-    public void setEnableStore(Boolean enableStore) {
-        this.enableStore = enableStore;
-    }
-
-
-        public APIProductDTO testKey(String testKey) {
-        
-        this.testKey = testKey;
-        return this;
-        }
-
-    /**
-        * Get testKey
-    * @return testKey
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "8swdwj9080edejhj", value = "")
-    
-    public String getTestKey() {
-        return testKey;
-    }
-
-
-    public void setTestKey(String testKey) {
-        this.testKey = testKey;
     }
 
 
@@ -893,29 +850,6 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
-        public APIProductDTO gatewayEnvironments(List<String> gatewayEnvironments) {
-        
-        this.gatewayEnvironments = gatewayEnvironments;
-        return this;
-        }
-
-    /**
-        * List of gateway environments the API Product is available 
-    * @return gatewayEnvironments
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "[\"Default\"]", value = "List of gateway environments the API Product is available ")
-    
-    public List<String> getGatewayEnvironments() {
-        return gatewayEnvironments;
-    }
-
-
-    public void setGatewayEnvironments(List<String> gatewayEnvironments) {
-        this.gatewayEnvironments = gatewayEnvironments;
-    }
-
-
         public APIProductDTO apiType(ApiTypeEnum apiType) {
         
         this.apiType = apiType;
@@ -1123,7 +1057,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
-        public APIProductDTO additionalProperties(Map<String, String> additionalProperties) {
+        public APIProductDTO additionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
         
         this.additionalProperties = additionalProperties;
         return this;
@@ -1136,12 +1070,12 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
         @javax.annotation.Nullable
       @ApiModelProperty(value = "Map of custom properties of API")
     
-    public Map<String, String> getAdditionalProperties() {
+    public List<APIAdditionalPropertiesDTO> getAdditionalProperties() {
         return additionalProperties;
     }
 
 
-    public void setAdditionalProperties(Map<String, String> additionalProperties) {
+    public void setAdditionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
         this.additionalProperties = additionalProperties;
     }
 
@@ -1261,6 +1195,29 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
+        public APIProductDTO gatewayVendor(String gatewayVendor) {
+        
+        this.gatewayVendor = gatewayVendor;
+        return this;
+        }
+
+    /**
+        * Get gatewayVendor
+    * @return gatewayVendor
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2", value = "")
+    
+    public String getGatewayVendor() {
+        return gatewayVendor;
+    }
+
+
+    public void setGatewayVendor(String gatewayVendor) {
+        this.gatewayVendor = gatewayVendor;
+    }
+
+
         public APIProductDTO apis(List<ProductAPIDTO> apis) {
         
         this.apis = apis;
@@ -1330,6 +1287,29 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
+        public APIProductDTO workflowStatus(String workflowStatus) {
+        
+        this.workflowStatus = workflowStatus;
+        return this;
+        }
+
+    /**
+        * Get workflowStatus
+    * @return workflowStatus
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "APPROVED", value = "")
+    
+    public String getWorkflowStatus() {
+        return workflowStatus;
+    }
+
+
+    public void setWorkflowStatus(String workflowStatus) {
+        this.workflowStatus = workflowStatus;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -1347,8 +1327,6 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             Objects.equals(this.hasThumbnail, apIProduct.hasThumbnail) &&
             Objects.equals(this.state, apIProduct.state) &&
             Objects.equals(this.enableSchemaValidation, apIProduct.enableSchemaValidation) &&
-            Objects.equals(this.enableStore, apIProduct.enableStore) &&
-            Objects.equals(this.testKey, apIProduct.testKey) &&
             Objects.equals(this.isRevision, apIProduct.isRevision) &&
             Objects.equals(this.revisionedApiProductId, apIProduct.revisionedApiProductId) &&
             Objects.equals(this.revisionId, apIProduct.revisionId) &&
@@ -1359,7 +1337,6 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             Objects.equals(this.visibleTenants, apIProduct.visibleTenants) &&
             Objects.equals(this.accessControl, apIProduct.accessControl) &&
             Objects.equals(this.accessControlRoles, apIProduct.accessControlRoles) &&
-            Objects.equals(this.gatewayEnvironments, apIProduct.gatewayEnvironments) &&
             Objects.equals(this.apiType, apIProduct.apiType) &&
             Objects.equals(this.transport, apIProduct.transport) &&
             Objects.equals(this.tags, apIProduct.tags) &&
@@ -1375,14 +1352,16 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             Objects.equals(this.corsConfiguration, apIProduct.corsConfiguration) &&
             Objects.equals(this.createdTime, apIProduct.createdTime) &&
             Objects.equals(this.lastUpdatedTime, apIProduct.lastUpdatedTime) &&
+            Objects.equals(this.gatewayVendor, apIProduct.gatewayVendor) &&
             Objects.equals(this.apis, apIProduct.apis) &&
             Objects.equals(this.scopes, apIProduct.scopes) &&
-            Objects.equals(this.categories, apIProduct.categories);
+            Objects.equals(this.categories, apIProduct.categories) &&
+            Objects.equals(this.workflowStatus, apIProduct.workflowStatus);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, enableStore, testKey, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, gatewayEnvironments, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, apis, scopes, categories);
+        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, gatewayVendor, apis, scopes, categories, workflowStatus);
     }
 
 
@@ -1398,8 +1377,6 @@ sb.append("class APIProductDTO {\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    state: ").append(toIndentedString(state)).append("\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
-    sb.append("    enableStore: ").append(toIndentedString(enableStore)).append("\n");
-    sb.append("    testKey: ").append(toIndentedString(testKey)).append("\n");
     sb.append("    isRevision: ").append(toIndentedString(isRevision)).append("\n");
     sb.append("    revisionedApiProductId: ").append(toIndentedString(revisionedApiProductId)).append("\n");
     sb.append("    revisionId: ").append(toIndentedString(revisionId)).append("\n");
@@ -1410,7 +1387,6 @@ sb.append("class APIProductDTO {\n");
     sb.append("    visibleTenants: ").append(toIndentedString(visibleTenants)).append("\n");
     sb.append("    accessControl: ").append(toIndentedString(accessControl)).append("\n");
     sb.append("    accessControlRoles: ").append(toIndentedString(accessControlRoles)).append("\n");
-    sb.append("    gatewayEnvironments: ").append(toIndentedString(gatewayEnvironments)).append("\n");
     sb.append("    apiType: ").append(toIndentedString(apiType)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
@@ -1426,9 +1402,11 @@ sb.append("class APIProductDTO {\n");
     sb.append("    corsConfiguration: ").append(toIndentedString(corsConfiguration)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
+    sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
     sb.append("    apis: ").append(toIndentedString(apis)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    categories: ").append(toIndentedString(categories)).append("\n");
+    sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
 sb.append("}");
 return sb.toString();
 }
