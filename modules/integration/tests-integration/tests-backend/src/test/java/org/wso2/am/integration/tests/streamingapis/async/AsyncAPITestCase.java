@@ -106,7 +106,8 @@ public class AsyncAPITestCase extends APIMIntegrationBaseTest {
             response = restAPIPublisher
                     .importAsyncAPIDefinition(file, additionalPropertiesObj.toString());
         } catch (ApiException e) {
-            Assert.assertTrue(e.getResponseBody().contains("ASYNC API type supports only advertise only APIs"));
+            Assert.assertTrue(e.getResponseBody()
+                    .contains("API Creation is supported only for WebSocket, WebSub and SSE APIs"));
         }
         if (response != null) {
             Assert.fail();
