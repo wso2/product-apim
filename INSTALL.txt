@@ -13,7 +13,7 @@ Running WSO2 API Manager in standalone mode
    systems & api-manager.bat file on Windows operating systems.
 
 4. Either of the following commands can be used to start APIM
-      i)  ./api-manager.sh {console|start|stop|restart|status|dump|version}
+      i)  ./api-manager.sh {console|start|stop|restart|version}
      ii)  api-manager.bat {start|stop|version}
 
         Usage: api-manager.sh [command] [options] [system-properties]

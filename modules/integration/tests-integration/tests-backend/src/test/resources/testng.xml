@@ -378,6 +378,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEndPointSecurityPerTypeTestCase"/>
         </classes>
     </test>
+
     <test name="apim-integration-tests-external-idp" preserve-order="true" parallel="false"
           group-by-instances="true">
         <parameter name="group" value="group2"/>
@@ -386,6 +387,7 @@
             <class name="org.wso2.am.integration.tests.jwt.idp.ExternalIDPJWTTestCase"/>
         </classes>
     </test>
+
     <test name="apim-integration-emailusername-login" preserve-order="true" parallel="false"
           group-by-instances="true">
         <parameter name="group" value="group2"/>
@@ -394,6 +396,7 @@
             <class name="org.wso2.am.integration.tests.login.PasswordChangeTestCase"/>
         </classes>
     </test>
+
     <test name="apim-integration-tests-workflow" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group2"/>
         <classes>
@@ -401,6 +404,7 @@
             <class name="org.wso2.am.integration.tests.workflow.WorkflowApprovalExecutorTest"/>
         </classes>
     </test>
+
     <test name="apim-cross-tenant-scenario" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group2"/>
         <classes>
@@ -408,11 +412,19 @@
             <class name="org.wso2.am.integration.tests.crossSubscription.CrossTenantSubscriptionTestCase"/>
         </classes>
     </test>
+
     <test name="apim-solace-broker-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group2"/>
         <classes>
             <class name="org.wso2.am.integration.tests.solace.SolacePublisherPortalTestCase"/>
             <class name="org.wso2.am.integration.tests.solace.SolaceDeveloperPortalTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-logging-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group2"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.logging.APILoggingTest"/>
         </classes>
     </test>
 </suite>

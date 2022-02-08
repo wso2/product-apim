@@ -541,6 +541,7 @@
             <excludes>
                 <!--Need to remove after GA-->
                 <exclude>authenticationendpoint/basicauth.jsp</exclude>
+                <exclude>authenticationendpoint/identifierauth.jsp</exclude>
                 <exclude>authenticationendpoint/includes/cookie-policy-content.jsp</exclude>
                 <exclude>authenticationendpoint/includes/header.jsp</exclude>
                 <exclude>authenticationendpoint/includes/title.jsp</exclude>
@@ -577,6 +578,7 @@
             <includes>
                 <include>basicauth.jsp</include>
                 <include>login.jsp</include>
+                <include>identifierauth.jsp</include>
             </includes>
         </fileSet>
 
@@ -724,6 +726,16 @@
             </outputDirectory>
             <includes>
                 <include>api#am#gateway#v2.war</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>api#am#devops#v1.war</include>
             </includes>
         </fileSet>
         <fileSet>
