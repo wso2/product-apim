@@ -173,15 +173,6 @@ paths:
           type: string
         style: simple
       - description: |
-          Defines whether the returned response should contain full details of API
-        explode: true
-        in: query
-        name: expand
-        required: false
-        schema:
-          type: boolean
-        style: form
-      - description: |
           Media types acceptable for the response. Default is application/json.
         explode: false
         in: header
@@ -14597,16 +14588,6 @@ components:
       schema:
         type: string
       style: simple
-    expand:
-      description: |
-        Defines whether the returned response should contain full details of API
-      explode: true
-      in: query
-      name: expand
-      required: false
-      schema:
-        type: boolean
-      style: form
     threatProtectionPolicyId:
       description: |
         The UUID of a Policy
@@ -15013,21 +14994,6 @@ components:
         list:
           items:
             $ref: '#/components/schemas/APIInfo'
-          type: array
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-      title: API List
-      type: object
-    APIListExpanded:
-      properties:
-        count:
-          description: |
-            Number of APIs returned.
-          example: 1
-          type: integer
-        list:
-          items:
-            $ref: '#/components/schemas/API'
           type: array
         pagination:
           $ref: '#/components/schemas/Pagination'

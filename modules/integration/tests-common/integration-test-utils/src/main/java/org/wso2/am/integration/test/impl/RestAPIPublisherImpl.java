@@ -1003,7 +1003,7 @@ public class RestAPIPublisherImpl {
      */
     public APIListDTO getAllAPIs() throws APIManagerIntegrationTestException, ApiException {
 
-        APIListDTO apis = apIsApi.getAllAPIs(null, null, null, null, null, null, null);
+        APIListDTO apis = apIsApi.getAllAPIs(null, null, null, null, null, null);
         if (apis.getCount() > 0) {
             return apis;
         }
@@ -1036,7 +1036,7 @@ public class RestAPIPublisherImpl {
 
         setActivityID();
         ApiResponse<APIListDTO> apiResponse = apIsApi.getAllAPIsWithHttpInfo(limit, offset, this.tenantDomain, null,
-                null, false, null);
+                null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
