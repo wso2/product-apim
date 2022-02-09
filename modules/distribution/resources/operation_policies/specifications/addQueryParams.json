@@ -1,0 +1,34 @@
+{
+  "category": "Mediation",
+  "name": "addQueryParams",
+  "displayName": "Add a query param",
+  "description": "Add a query parameter to the request",
+  "multipleAllowed": true,
+  "policyAttributes": [
+    {
+      "name": "paramKey",
+      "displayName": "Parameter Key",
+      "description": "Query parameter's key",
+      "validationRegex": "/^\\S+$/",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "paramValue",
+      "displayName": "Parameter Value",
+      "description": "Query parameter's Value",
+      "validationRegex": "/^\\S+$/",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "REST"
+  ]
+}

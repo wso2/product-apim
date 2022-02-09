@@ -1,0 +1,26 @@
+{
+  "category": "Mediation",
+  "name": "changeHTTPMethod",
+  "displayName": "Change HTTP Method",
+  "description": "With this policy, user can change the HTTP Method",
+  "multipleAllowed": true,
+  "policyAttributes": [
+    {
+      "name": "httpMethod",
+      "displayName": "HTTP Method",
+      "description": "Method of the HTTP request",
+      "validationRegex": "/^\\S+$/",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "REST"
+  ]
+}

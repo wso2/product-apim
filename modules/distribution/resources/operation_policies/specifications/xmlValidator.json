@@ -1,0 +1,16 @@
+{
+  "category": "Mediation",
+  "name": "xmlValidator",
+  "displayName": "XML validator",
+  "description": "With this policy, you can validate the XML payload for the request",
+  "multipleAllowed": false,
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "REST"
+  ]
+}

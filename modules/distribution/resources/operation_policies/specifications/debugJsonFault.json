@@ -1,0 +1,16 @@
+{
+  "category": "Mediation",
+  "name": "debugJsonFault",
+  "displayName": "Debug JSON Fault",
+  "description": "Debug the fault payload in JSON format",
+  "multipleAllowed": false,
+  "applicableFlows": [
+    "fault"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "REST"
+  ]
+}

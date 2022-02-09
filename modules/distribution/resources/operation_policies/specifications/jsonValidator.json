@@ -1,0 +1,16 @@
+{
+  "category": "Mediation",
+  "name": "jsonValidator",
+  "displayName": "JSON validator",
+  "description": "With this policy, you can validate the JSON payload for the request",
+  "multipleAllowed": false,
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "REST"
+  ]
+}
