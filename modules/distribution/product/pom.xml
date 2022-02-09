@@ -64,6 +64,10 @@
             <groupId>javax.jms</groupId>
             <artifactId>javax.jms-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.orbit.com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

@@ -1262,6 +1262,12 @@
                 <artifactId>org.wso2.am.analytics.publisher.client.feature</artifactId>
                 <version>${apim.analytics.publisher.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.orbit.com.lmax</groupId>
+                <artifactId>disruptor</artifactId>
+                <version>${disruptor.orbit.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -1476,6 +1482,7 @@
         <pingfederate.keymanager.feature.version>1.0.3</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.0.2</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>1.0.1</apim.analytics.publisher.version>
+        <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
     </properties>
 
 </project>

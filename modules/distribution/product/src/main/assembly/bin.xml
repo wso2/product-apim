@@ -43,6 +43,7 @@
                 <exclude>**/conf/tomcat/catalina-server.xml.j2</exclude>
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
                 <exclude>**/log4j2.properties</exclude>
+                <exclude>**/pax-logging.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
                 <exclude>**/version.txt</exclude>
@@ -1097,6 +1098,12 @@
                 <include>javax.jms:javax.jms-api:jar</include>
             </includes>
         </dependencySet>
+        <dependencySet>
+            <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
+            <includes>
+                <include>org.wso2.orbit.com.lmax:disruptor:jar</include>
+            </includes>
+        </dependencySet>
 
     </dependencySets>
     <files>
@@ -1222,6 +1229,13 @@
             <destName>log4j2.properties</destName>
             <filtered>true</filtered>
         </file>
+        <file>
+            <source>src/main/conf/etc/pax-logging.properties</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>
+            <destName>pax-logging.properties</destName>
+            <filtered>true</filtered>
+        </file>
+
         <file>
             <source>src/main/conf/synapse.properties</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
