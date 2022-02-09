@@ -8208,7 +8208,7 @@ components:
         type:
           type: string
           description: The api creation type to be used. Accepted values are HTTP,
-            WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
+            WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, ASYNC
           example: HTTP
           default: HTTP
           enum:
@@ -8219,6 +8219,7 @@ components:
             - GRAPHQL
             - WEBSUB
             - SSE
+            - ASYNC
         transport:
           type: array
           description: |
@@ -11079,6 +11080,12 @@ components:
         advertised:
           type: boolean
           example: true
+        apiExternalProductionEndpoint:
+          type: string
+          example: https://localhost:9443/devportal
+        apiExternalSandboxEndpoint:
+          type: string
+          example: https://localhost:9443/devportal
         originalDevPortalUrl:
           type: string
           example: https://localhost:9443/devportal

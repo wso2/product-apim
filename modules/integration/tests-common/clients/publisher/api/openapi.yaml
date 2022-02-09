@@ -15182,6 +15182,8 @@ components:
         revisionedApiId: 01234567-0123-0123-0123-012345678901
         advertiseInfo:
           apiOwner: admin
+          apiExternalProductionEndpoint: https://localhost:9443/devportal
+          apiExternalSandboxEndpoint: https://localhost:9443/devportal
           advertised: true
           originalDevPortalUrl: https://localhost:9443/devportal
         additionalProperties:
@@ -15360,7 +15362,7 @@ components:
         type:
           default: HTTP
           description: The api creation type to be used. Accepted values are HTTP,
-            WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE
+            WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, ASYNC
           enum:
           - HTTP
           - WS
@@ -15369,6 +15371,7 @@ components:
           - GRAPHQL
           - WEBSUB
           - SSE
+          - ASYNC
           example: HTTP
           type: string
         transport:
@@ -18858,12 +18861,20 @@ components:
     AdvertiseInfo:
       example:
         apiOwner: admin
+        apiExternalProductionEndpoint: https://localhost:9443/devportal
+        apiExternalSandboxEndpoint: https://localhost:9443/devportal
         advertised: true
         originalDevPortalUrl: https://localhost:9443/devportal
       properties:
         advertised:
           example: true
           type: boolean
+        apiExternalProductionEndpoint:
+          example: https://localhost:9443/devportal
+          type: string
+        apiExternalSandboxEndpoint:
+          example: https://localhost:9443/devportal
+          type: string
         originalDevPortalUrl:
           example: https://localhost:9443/devportal
           type: string
