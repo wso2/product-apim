@@ -33,6 +33,14 @@ public class AdvertiseInfoDTO {
         @SerializedName(SERIALIZED_NAME_ADVERTISED)
             private Boolean advertised;
 
+        public static final String SERIALIZED_NAME_API_EXTERNAL_PRODUCTION_ENDPOINT = "apiExternalProductionEndpoint";
+        @SerializedName(SERIALIZED_NAME_API_EXTERNAL_PRODUCTION_ENDPOINT)
+            private String apiExternalProductionEndpoint;
+
+        public static final String SERIALIZED_NAME_API_EXTERNAL_SANDBOX_ENDPOINT = "apiExternalSandboxEndpoint";
+        @SerializedName(SERIALIZED_NAME_API_EXTERNAL_SANDBOX_ENDPOINT)
+            private String apiExternalSandboxEndpoint;
+
         public static final String SERIALIZED_NAME_ORIGINAL_DEV_PORTAL_URL = "originalDevPortalUrl";
         @SerializedName(SERIALIZED_NAME_ORIGINAL_DEV_PORTAL_URL)
             private String originalDevPortalUrl;
@@ -62,6 +70,52 @@ public class AdvertiseInfoDTO {
 
     public void setAdvertised(Boolean advertised) {
         this.advertised = advertised;
+    }
+
+
+        public AdvertiseInfoDTO apiExternalProductionEndpoint(String apiExternalProductionEndpoint) {
+        
+        this.apiExternalProductionEndpoint = apiExternalProductionEndpoint;
+        return this;
+        }
+
+    /**
+        * Get apiExternalProductionEndpoint
+    * @return apiExternalProductionEndpoint
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "https://localhost:9443/devportal", value = "")
+    
+    public String getApiExternalProductionEndpoint() {
+        return apiExternalProductionEndpoint;
+    }
+
+
+    public void setApiExternalProductionEndpoint(String apiExternalProductionEndpoint) {
+        this.apiExternalProductionEndpoint = apiExternalProductionEndpoint;
+    }
+
+
+        public AdvertiseInfoDTO apiExternalSandboxEndpoint(String apiExternalSandboxEndpoint) {
+        
+        this.apiExternalSandboxEndpoint = apiExternalSandboxEndpoint;
+        return this;
+        }
+
+    /**
+        * Get apiExternalSandboxEndpoint
+    * @return apiExternalSandboxEndpoint
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "https://localhost:9443/devportal", value = "")
+    
+    public String getApiExternalSandboxEndpoint() {
+        return apiExternalSandboxEndpoint;
+    }
+
+
+    public void setApiExternalSandboxEndpoint(String apiExternalSandboxEndpoint) {
+        this.apiExternalSandboxEndpoint = apiExternalSandboxEndpoint;
     }
 
 
@@ -121,13 +175,15 @@ public class AdvertiseInfoDTO {
         }
             AdvertiseInfoDTO advertiseInfo = (AdvertiseInfoDTO) o;
             return Objects.equals(this.advertised, advertiseInfo.advertised) &&
+            Objects.equals(this.apiExternalProductionEndpoint, advertiseInfo.apiExternalProductionEndpoint) &&
+            Objects.equals(this.apiExternalSandboxEndpoint, advertiseInfo.apiExternalSandboxEndpoint) &&
             Objects.equals(this.originalDevPortalUrl, advertiseInfo.originalDevPortalUrl) &&
             Objects.equals(this.apiOwner, advertiseInfo.apiOwner);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(advertised, originalDevPortalUrl, apiOwner);
+        return Objects.hash(advertised, apiExternalProductionEndpoint, apiExternalSandboxEndpoint, originalDevPortalUrl, apiOwner);
     }
 
 
@@ -136,6 +192,8 @@ public String toString() {
 StringBuilder sb = new StringBuilder();
 sb.append("class AdvertiseInfoDTO {\n");
     sb.append("    advertised: ").append(toIndentedString(advertised)).append("\n");
+    sb.append("    apiExternalProductionEndpoint: ").append(toIndentedString(apiExternalProductionEndpoint)).append("\n");
+    sb.append("    apiExternalSandboxEndpoint: ").append(toIndentedString(apiExternalSandboxEndpoint)).append("\n");
     sb.append("    originalDevPortalUrl: ").append(toIndentedString(originalDevPortalUrl)).append("\n");
     sb.append("    apiOwner: ").append(toIndentedString(apiOwner)).append("\n");
 sb.append("}");

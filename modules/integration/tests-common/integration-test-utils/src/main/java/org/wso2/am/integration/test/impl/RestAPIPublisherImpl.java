@@ -360,7 +360,8 @@ public class RestAPIPublisherImpl {
     private boolean isAsyncApi(APIRequest apiRequest) {
 
         String type = apiRequest.getType();
-        return "SSE".equalsIgnoreCase(type) || "WS".equalsIgnoreCase(type) || "WEBSUB".equalsIgnoreCase(type);
+        return "SSE".equalsIgnoreCase(type) || "WS".equalsIgnoreCase(type) || "WEBSUB".equalsIgnoreCase(type)
+                || "ASYNC".equalsIgnoreCase(type);
     }
 
     /**
@@ -1192,6 +1193,10 @@ public class RestAPIPublisherImpl {
         return apiDtoApiResponse;
     }
 
+    public ApiResponse<APIDTO> importAsyncAPIDefinition(File file, String properties) throws ApiException {
+        return apIsApi.importAsyncAPISpecificationWithHttpInfo(file, null, properties);
+    }
+
     public ResourcePolicyListDTO getApiResourcePolicies(String apiId, String sequenceType, String resourcePath,
             String verb) throws ApiException {
         ApiResponse<ResourcePolicyListDTO> policyListDTOApiResponse = apiResourcePoliciesApi
@@ -1498,7 +1503,7 @@ public class RestAPIPublisherImpl {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
             } else if (e.getCode() != 0) {
-                return new HttpResponse(null, e.getCode());
+                return new HttpResponse(e.getResponseBody(), e.getCode());
             }
             throw new ApiException(e);
         }
