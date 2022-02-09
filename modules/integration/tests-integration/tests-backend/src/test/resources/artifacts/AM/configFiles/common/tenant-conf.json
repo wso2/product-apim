@@ -354,6 +354,10 @@
     "DevOpsRole" : {
       "CreateOnTenantLoad" : true,
       "RoleName" : "Internal/devops"
+    },
+    "IntegrationDeveloperRole" : {
+      "CreateOnTenantLoad" : true,
+      "RoleName" : "Internal/integration_dev"
     }
   }
 }
