@@ -2637,7 +2637,6 @@
                                     <id>org.wso2.am.analytics.publisher.client.feature.group</id>
                                     <version>${apim.analytics.publisher.version}</version>
                                 </feature>
-
                                 <feature>
                                     <id>
                                         org.wso2.carbon.identity.multi.attribute.login.mgt.server.feature.group
@@ -2647,6 +2646,14 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.multi.attribute.login.service.server.feature.group</id>
                                     <version>${carbon.identity.governance.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.application.deployer.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.stream.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
                                 </feature>
                             </features>
                         </configuration>
