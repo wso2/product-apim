@@ -61,6 +61,66 @@ jobs:
       uses: codecov/codecov-action@v1.2.1
       with:
         flags: integration_tests
+  trivy-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2
+          restore-keys: ${{ runner.os }}-m2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v2
+        with:
+          java-version: 8.0.282+8
+          distribution: 'adopt'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+      - name: Build product-apim to get the distribution.
+        run: mvn clean install --file pom.xml -Dmaven.test.skip=true
+      - name: Build an image from Dockerfile
+        run: |
+          echo -e "
+          FROM adoptopenjdk:11.0.10_9-jdk-hotspot-focal
+          ARG USER=wso2carbon
+          ARG USER_ID=802
+          ARG USER_GROUP=wso2
+          ARG USER_GROUP_ID=802
+          ARG USER_HOME=/home/\${USER}
+          
+          RUN \
+          groupadd --system -g \${USER_GROUP_ID} \${USER_GROUP} \
+          && useradd --system --create-home --home-dir \${USER_HOME} --no-log-init -g \${USER_GROUP_ID} -u \${USER_ID} \${USER}
+          
+          COPY --chown=wso2carbon:wso2 modules/distribution/product/target/wso2am-4.1.0-SNAPSHOT.zip \${USER_HOME}/
+          
+          RUN \
+          apt-get update \
+          && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+          libxml2-utils \
+          netcat \
+          unzip \
+          && rm -rf /var/lib/apt/lists/*
+          
+          RUN  unzip -d \${USER_HOME} \${USER_HOME}/wso2am-4.1.0-SNAPSHOT.zip
+          
+          USER \${USER_ID}
+          WORKDIR \${USER_HOME}
+          " > Dockerfile
+          docker build -t wso2/wso2am:${{ github.sha }} .
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'wso2/wso2am:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'library'
+          severity: 'CRITICAL,HIGH,MEDIUM'
   run-benchmark-test:
     runs-on: ubuntu-latest
     steps:
