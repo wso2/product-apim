@@ -2646,6 +2646,7 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.multi.attribute.login.service.server.feature.group</id>
                                     <version>${carbon.identity.governance.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.application.deployer.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
