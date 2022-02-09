@@ -1,0 +1,33 @@
+{
+  "category": "Mediation",
+  "name": "rewriteResourcePath",
+  "displayName": "Rewrite resource path",
+  "description": "Rewrite the resource path of a request",
+  "multipleAllowed": true,
+  "policyAttributes": [
+    {
+      "name": "newResource",
+      "displayName": "Header Name",
+      "description": "Name of the header to be added",
+      "validationRegex": "/^\\S+$/",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "includeQueryParams",
+      "displayName": "Include query params",
+      "description": "Select whether to include exiting query params to the new resource path",
+      "type": "Boolean",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "REST"
+  ]
+}

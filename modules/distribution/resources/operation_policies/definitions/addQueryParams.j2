@@ -1,0 +1,12 @@
+<property name="rest_postfix" expression="get-property('axis2', 'REST_URL_POSTFIX')"/>
+<filter regex=".*\?.*" source="get-property('rest_postfix')">
+		<!-- if there are query params already defined -->
+		<then>
+			<property name="REST_URL_POSTFIX" expression="fn:concat(get-property('rest_postfix'), '&amp;{{paramKey}}={{paramValue}}')" scope="axis2" type="STRING"/>
+		</then>
+
+		<!-- if there are no query params defined -->
+		<else>
+			<property name="REST_URL_POSTFIX" expression="fn:concat(get-property('rest_postfix'), '?{{paramKey}}={{paramValue}}')" scope="axis2" type="STRING"/>
+		</else>
+</filter>

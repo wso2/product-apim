@@ -1,0 +1,28 @@
+{
+  "category": "Mediation",
+  "name": "removeHeader",
+  "displayName": "Remove a header",
+  "description": "Remove a header from the request",
+  "multipleAllowed": true,
+  "policyAttributes": [
+    {
+      "name": "headerName",
+      "displayName": "Header Name",
+      "description": "Name of the header to be added",
+      "validationRegex": "/^\\S+$/",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request",
+    "response",
+    "fault"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "REST"
+  ]
+}
