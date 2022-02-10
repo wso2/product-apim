@@ -1293,7 +1293,7 @@
         <carbon.governance.version>4.8.28</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.6.3-m6</carbon.kernel.version>
+        <carbon.kernel.version>4.6.3-m7</carbon.kernel.version>
         <apimserver.version>4.1.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.3</ws.feature.version>
 
