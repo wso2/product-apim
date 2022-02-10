@@ -108,6 +108,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTags(API_TAGS);
+        apiRequest.setProvider(user.getUserName());
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore,
                 applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
