@@ -3,7 +3,7 @@
   "name": "addLogMessage",
   "displayName": "Log Policy",
   "description": "Using this policy, you can log the important details of the request",
-  "multipleAllowed": true,
+  "multipleAllowed": false,
   "applicableFlows": [
     "request",
     "response",

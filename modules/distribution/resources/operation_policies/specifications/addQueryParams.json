@@ -1,7 +1,7 @@
 {
   "category": "Mediation",
-  "name": "addQueryParams",
-  "displayName": "Add a query param",
+  "name": "addQueryParam",
+  "displayName": "Add Query Param",
   "description": "Add a query parameter to the request",
   "multipleAllowed": true,
   "policyAttributes": [

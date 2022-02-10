@@ -1,7 +1,7 @@
 {
   "category": "Mediation",
   "name": "applyAcceptHeader",
-  "displayName": "Apply accept header",
+  "displayName": "Apply Accept Header",
   "description": "Apply accept header",
   "multipleAllowed": false,
   "applicableFlows": [

@@ -1,7 +1,7 @@
 {
   "category": "Mediation",
   "name": "jsonToXML",
-  "displayName": "JSON to XML policy",
+  "displayName": "JSON to XML",
   "description": "With this policy, user can change the payload from JSON to XML",
   "multipleAllowed": false,
   "applicableFlows": [

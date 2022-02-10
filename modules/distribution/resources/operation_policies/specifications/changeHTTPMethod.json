@@ -3,14 +3,14 @@
   "name": "changeHTTPMethod",
   "displayName": "Change HTTP Method",
   "description": "With this policy, user can change the HTTP Method",
-  "multipleAllowed": true,
+  "multipleAllowed": false,
   "policyAttributes": [
     {
       "name": "httpMethod",
       "displayName": "HTTP Method",
       "description": "Method of the HTTP request",
-      "validationRegex": "/^\\S+$/",
-      "type": "String",
+      "validationRegex": "/^(GET|PUT|POST|PATCH|DELETE|HEAD|OPTIONS)$/",
+      "type": "Enum",
       "required": true
     }
   ],

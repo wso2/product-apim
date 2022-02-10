@@ -1,8 +1,8 @@
 {
   "category": "Mediation",
   "name": "setHeader",
-  "displayName": "Set Header 33",
-  "description": "With this policy, user can add a new header to the request 22",
+  "displayName": "Set Header",
+  "description": "With this policy, user can add a new header to the request",
   "multipleAllowed": true,
   "policyAttributes": [
     {

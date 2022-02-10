@@ -1,24 +1,24 @@
 {
   "category": "Mediation",
   "name": "rewriteResourcePath",
-  "displayName": "Rewrite resource path",
+  "displayName": "Rewrite Resource Path",
   "description": "Rewrite the resource path of a request",
-  "multipleAllowed": true,
+  "multipleAllowed": false,
   "policyAttributes": [
     {
-      "name": "newResource",
-      "displayName": "Header Name",
-      "description": "Name of the header to be added",
+      "name": "newResourcePath",
+      "displayName": "New Resource Path",
+      "description": "Name of the new resource path",
       "validationRegex": "/^\\S+$/",
       "type": "String",
       "required": true
     },
     {
       "name": "includeQueryParams",
-      "displayName": "Include query params",
+      "displayName": "Include Query Parameters?",
       "description": "Select whether to include exiting query params to the new resource path",
       "type": "Boolean",
-      "required": true
+      "required": false
     }
   ],
   "applicableFlows": [
