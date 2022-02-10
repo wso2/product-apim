@@ -700,6 +700,10 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.governance:org.wso2.carbon.identity.multi.attribute.login.service.server.feature:${carbon.identity.governance.version}
                                 </featureArtifactDef>
+                                <!-- Transport HTTP-Netty -->
+                                <featureArtifactDef>
+                                    org.wso2.transport.http:org.wso2.transport.http.netty.feature:${transport.http.netty.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -2654,6 +2658,11 @@
                                 <feature>
                                     <id>org.wso2.carbon.event.stream.server.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
+                                </feature>
+                                <!-- Transport HTTP-Netty -->
+                                <feature>
+                                    <id>org.wso2.transport.http.netty.feature.group</id>
+                                    <version>${transport.http.netty.version}</version>
                                 </feature>
                             </features>
                         </configuration>

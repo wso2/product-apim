@@ -327,6 +327,15 @@
     </transportSender>
     {% endif %}
 
+    {% if transport.netty.http.sender.enable == true %}
+        <transportSender name="httpws" class="{{transport.netty.http.sender.class}}">
+            <parameter name="non-blocking" locked="false">true</parameter>
+            {% for parameter_key,parameter_value in transport.netty.http.sender.parameter.items() %}
+            <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
+            {% endfor %}
+        </transportSender>
+    {% endif %}
+
     <transportSender name="local" class="org.wso2.carbon.core.transports.local.CarbonLocalTransportSender"/>
 
     {% if transport.passthru_https.sender.enable %}
@@ -378,6 +387,36 @@
         </parameter>
         {% endif %}
     </transportSender>
+    {% endif %}
+
+    {% if transport.netty.http.sender.secured_enable == true %}
+        <transportSender name="httpswss" class="{{transport.netty.https.sender.class}}">
+            <parameter name="non-blocking" locked="false">true</parameter>
+            {% for parameter_key,parameter_value in transport.netty.https.sender.parameter.items() %}
+            <parameter name="{{parameter_key}}" locked="false">{{parameter_value}}</parameter>
+            {% endfor %}
+            <parameter name="keystore" locked="false">
+                <KeyStore>
+                    <Location>{{transport.netty.https.sender.keystore.location}}</Location>
+                    <Type>{{transport.netty.https.sender.keystore.type}}</Type>
+                    <Password>{{transport.netty.https.sender.keystore.password}}</Password>
+                    <KeyPassword>{{transport.netty.https.sender.keystore.key_password}}</KeyPassword>
+                </KeyStore>
+            </parameter>
+            <parameter name="truststore" locked="false">
+                <TrustStore>
+                    <Location>{{transport.netty.https.sender.truststore.location}}</Location>
+                    <Type>{{transport.netty.https.sender.truststore.type}}</Type>
+                    <Password>{{transport.netty.https.sender.truststore.password}}</Password>
+                </TrustStore>
+            </parameter>
+            {% if transport.netty.http.sender.certificate_revocation_verifier_enable is defined %}
+            <parameter name="CertificateRevocationVerifier" enable="{{transport.netty.http.sender.certificate_revocation_verifier_enable}}">
+                <CacheSize>{{transport.netty.http.sender.certificate_revocation_cache_size}}</CacheSize>
+                <CacheDelay>{{transport.netty.http.sender.certificate_revocation_cache_delay}}</CacheDelay>
+            </parameter>
+            {% endif %}
+        </transportSender>
     {% endif %}
 
 {% if transport.jms.sender_enable is defined %}
