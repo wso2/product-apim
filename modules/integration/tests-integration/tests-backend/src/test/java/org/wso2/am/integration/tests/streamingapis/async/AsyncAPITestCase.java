@@ -48,6 +48,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
@@ -107,7 +108,7 @@ public class AsyncAPITestCase extends APIMIntegrationBaseTest {
                     .importAsyncAPIDefinition(file, additionalPropertiesObj.toString());
         } catch (ApiException e) {
             Assert.assertTrue(e.getResponseBody()
-                    .contains("API Creation is supported only for WebSocket, WebSub and SSE APIs"));
+                    .contains("ASYNC type APIs only can be created as third party APIs"));
         }
         if (response != null) {
             Assert.fail();
@@ -127,6 +128,10 @@ public class AsyncAPITestCase extends APIMIntegrationBaseTest {
         additionalPropertiesObj.put("context", apiContext);
         additionalPropertiesObj.put("version", apiVersion);
         additionalPropertiesObj.put("type", ASYNC_TYPE);
+
+        ArrayList<String> policies = new ArrayList<>();
+        policies.add(APIMIntegrationConstants.API_TIER.ASYNC_WH_UNLIMITED);
+        additionalPropertiesObj.put("policies", policies);
 
         JSONObject advertiseInfo = new JSONObject();
         advertiseInfo.put("advertised", true);
@@ -160,7 +165,7 @@ public class AsyncAPITestCase extends APIMIntegrationBaseTest {
 
         // publish api
         restAPIPublisher.changeAPILifeCycleStatus(apiId, Constants.PUBLISHED);
-
+        waitForAPIDeployment();
         APIIdentifier apiIdentifier = new APIIdentifier(provider, apiName, apiVersion);
         APIListDTO apiPublisherAllAPIs = restAPIPublisher.getAllAPIs();
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiPublisherAllAPIs),
@@ -172,16 +177,10 @@ public class AsyncAPITestCase extends APIMIntegrationBaseTest {
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
                 "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
         appId = applicationResponse.getData();
-        SubscriptionDTO subscriptionDTO = null;
-        try {
-            subscriptionDTO = restAPIStore.subscribeToAPI(apiId, appId,
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, appId,
                     APIMIntegrationConstants.API_TIER.ASYNC_WH_UNLIMITED);
-        } catch (Exception e) {
-            Assert.assertTrue(true);
-        }
-        if (subscriptionDTO != null) {
-            Assert.fail();
-        }
+        // Validate Subscription of the API
+        Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
     }
 
     private File getTempFileWithContent(String asyncApi) throws Exception {
