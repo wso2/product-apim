@@ -322,11 +322,11 @@
         "Roles": "admin"
       },
       {
-        "Name": "apim:api_view_list",
+        "Name": "apim:api_list_view",
         "Roles": "Internal/integration_dev"
       },
       {
-        "Name": "apim:api_view_definition",
+        "Name": "apim:api_definition_view",
         "Roles": "Internal/integration_dev"
       }
     ]
