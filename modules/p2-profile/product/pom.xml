@@ -1222,6 +1222,11 @@
                                     <id>org.wso2.carbon.registry.extensions.server.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
+                                <!-- Transport HTTP-Netty -->
+                                <feature>
+                                    <id>org.wso2.transport.http.netty.feature.group</id>
+                                    <version>${transport.http.netty.version}</version>
+                                </feature>
 
                              
                                 <!--Governance Feature-->
