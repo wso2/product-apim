@@ -79,8 +79,11 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(SoapToRestTestCase.class);
 
     private final String SOAPTOREST_API_NAME = "PhoneVerification";
+    private final String SOAPTOREST_API_NAME_WITH_URL = "PhoneVerificationURL";
     private final String API_CONTEXT = "phoneverify";
+    private final String API_CONTEXT_WITH_URL = "phoneverifyurl";
     private final String API_VERSION_1_0_0 = "1.0";
+    private final String API_VERSION_2_0_0 = "2.0";
     private static final String SOAPTOREST_TEST_USER = "soaptorestuser";
     private static final String SOAPTOREST_TEST_USER_PASSWORD = "soaptorestuser";
     private static final String SOAPTOREST_ROLE = "soaptorestrole";
@@ -91,7 +94,9 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
     private int upperPortLimit = 9999;
     private String wsdlDefinition;
     private String soapToRestAPIId;
+    private String soapToRestAPIWithUrlId;
     private WireMockServer wireMockServer;
+    private String newVersionApiId;
     private String apiEndPointURL;
     private String wsdlURL;
     private String testAppId1;
@@ -104,6 +109,7 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
     private String resourceName = "/checkPhoneNumber";
     private String responseBody;
     private APIDTO apidto;
+    private APIDTO apiDtoWithUrl;
     private List<ResourcePolicyInfoDTO> resourcePoliciesIn;
     private List<ResourcePolicyInfoDTO> resourcePoliciesOut;
 
@@ -165,6 +171,24 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         // Publish API
         restAPIPublisher.changeAPILifeCycleStatus(soapToRestAPIId, Constants.PUBLISHED);
         waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        // Create SOAPTOREST API with WSDL URL
+        additionalPropertiesObj.put("name", SOAPTOREST_API_NAME_WITH_URL);
+        additionalPropertiesObj.put("context", API_CONTEXT_WITH_URL);
+        additionalPropertiesObj.put("version", API_VERSION_1_0_0);
+
+        apiDtoWithUrl = restAPIPublisher
+                .importWSDLSchemaDefinition(null, wsdlURL, additionalPropertiesObj.toString(), "SOAPTOREST");
+        soapToRestAPIWithUrlId = apiDtoWithUrl.getId();
+        createdApiResponse = restAPIPublisher.getAPI(soapToRestAPIWithUrlId);
+        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
+                SOAPTOREST_API_NAME_WITH_URL + " API creation is failed");
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(soapToRestAPIWithUrlId, restAPIPublisher);
+        // Publish API
+        restAPIPublisher.changeAPILifeCycleStatus(soapToRestAPIWithUrlId, Constants.PUBLISHED);
+        waitForAPIDeploymentSync(user.getUserName(), SOAPTOREST_API_NAME_WITH_URL, API_VERSION_1_0_0,
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
 
@@ -513,6 +537,24 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         });
     }
 
+    @Test(groups = "wso2.am", description = "In/Out sequence validation test case")
+    public void testCreateNewVersion() throws Exception {
+        //copy test api
+        HttpResponse serviceResponse = restAPIPublisher.copyAPI(API_VERSION_2_0_0, soapToRestAPIWithUrlId, false);
+        assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                SOAPTOREST_API_NAME_WITH_URL + " API's new version creation is failed");
+
+        newVersionApiId = serviceResponse.getData();
+
+        //test the copied api
+        serviceResponse = restAPIPublisher.getAPI(newVersionApiId);
+
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(serviceResponse.getData(), APIDTO.class);
+        String version = apidto.getVersion();
+        assertEquals(version, API_VERSION_2_0_0);
+    }
+
     private void startWiremockServer() {
         endpointPort = getAvailablePort();
         assertNotEquals(endpointPort, -1, "No available port in the range " + lowerPortLimit + "-" +
@@ -594,6 +636,7 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+        wireMockServer.stop();
         userManagementClient.deleteRole(SOAPTOREST_ROLE);
         userManagementClient.deleteUser(SOAPTOREST_TEST_USER);
         restAPIStore.deleteApplication(testAppId1);
@@ -602,7 +645,10 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(testAppId4);
         restAPIStore.deleteApplication(testAppId5);
         undeployAndDeleteAPIRevisionsUsingRest(soapToRestAPIId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(soapToRestAPIWithUrlId, restAPIPublisher);
         restAPIPublisher.deleteAPI(soapToRestAPIId);
+        restAPIPublisher.deleteAPI(soapToRestAPIWithUrlId);
+        restAPIPublisher.deleteAPI(newVersionApiId);
         wireMockServer.stop();
         super.cleanUp();
     }
