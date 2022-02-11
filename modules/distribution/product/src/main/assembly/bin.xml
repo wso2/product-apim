@@ -706,7 +706,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#service-catalog#v0.war</include>
+                <include>api#am#service-catalog#v1.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -736,7 +736,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#devops#v1.war</include>
+                <include>api#am#devops#v0.war</include>
             </includes>
         </fileSet>
         <fileSet>
