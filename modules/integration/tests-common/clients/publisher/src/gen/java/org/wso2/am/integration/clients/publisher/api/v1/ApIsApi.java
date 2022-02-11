@@ -1702,6 +1702,7 @@ public class ApIsApi {
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, doc, provider**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param expand Defines whether the returned response should contain full details of API  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
@@ -1714,7 +1715,7 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getAllAPIsCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, String accept, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAllAPIsCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -1732,6 +1733,10 @@ public class ApIsApi {
 
         if (query != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("query", query));
+        }
+
+        if (expand != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("expand", expand));
         }
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
@@ -1768,10 +1773,10 @@ public class ApIsApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call getAllAPIsValidateBeforeCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, String accept, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAllAPIsValidateBeforeCall(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = getAllAPIsCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, accept, _callback);
+        okhttp3.Call localVarCall = getAllAPIsCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, _callback);
         return localVarCall;
 
     }
@@ -1784,6 +1789,7 @@ public class ApIsApi {
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, doc, provider**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param expand Defines whether the returned response should contain full details of API  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @return APIListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -1795,8 +1801,8 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public APIListDTO getAllAPIs(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, String accept) throws ApiException {
-        ApiResponse<APIListDTO> localVarResp = getAllAPIsWithHttpInfo(limit, offset, xWSO2Tenant, query, ifNoneMatch, accept);
+    public APIListDTO getAllAPIs(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept) throws ApiException {
+        ApiResponse<APIListDTO> localVarResp = getAllAPIsWithHttpInfo(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept);
         return localVarResp.getData();
     }
 
@@ -1808,6 +1814,7 @@ public class ApIsApi {
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, doc, provider**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param expand Defines whether the returned response should contain full details of API  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @return ApiResponse&lt;APIListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -1819,8 +1826,8 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<APIListDTO> getAllAPIsWithHttpInfo(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, String accept) throws ApiException {
-        okhttp3.Call localVarCall = getAllAPIsValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, accept, null);
+    public ApiResponse<APIListDTO> getAllAPIsWithHttpInfo(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept) throws ApiException {
+        okhttp3.Call localVarCall = getAllAPIsValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, null);
         Type localVarReturnType = new TypeToken<APIListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -1833,6 +1840,7 @@ public class ApIsApi {
      * @param xWSO2Tenant For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  (optional)
      * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, doc, provider**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @param expand Defines whether the returned response should contain full details of API  (optional)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -1845,9 +1853,9 @@ public class ApIsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getAllAPIsAsync(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, String accept, final ApiCallback<APIListDTO> _callback) throws ApiException {
+    public okhttp3.Call getAllAPIsAsync(Integer limit, Integer offset, String xWSO2Tenant, String query, String ifNoneMatch, Boolean expand, String accept, final ApiCallback<APIListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = getAllAPIsValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, accept, _callback);
+        okhttp3.Call localVarCall = getAllAPIsValidateBeforeCall(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept, _callback);
         Type localVarReturnType = new TypeToken<APIListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

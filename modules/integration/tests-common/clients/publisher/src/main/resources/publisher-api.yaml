@@ -153,6 +153,7 @@ paths:
           schema:
             type: string
         - $ref: '#/components/parameters/If-None-Match'
+        - $ref: '#/components/parameters/expand'
         - $ref: '#/components/parameters/Accept'
       responses:
         200:
@@ -8017,6 +8018,21 @@ components:
             $ref: '#/components/schemas/APIInfo'
         pagination:
           $ref: '#/components/schemas/Pagination'
+    APIListExpanded:
+      title: API List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of APIs returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/API'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
 
     APIInfo:
       title: API Info object with basic API details.
@@ -11648,6 +11664,13 @@ components:
       required: true
       schema:
         type: string
+    expand:
+      name: expand
+      in: query
+      description: |
+        Defines whether the returned response should contain full details of API
+      schema:
+        type: boolean
     threatProtectionPolicyId:
       name: policyId
       in: path
