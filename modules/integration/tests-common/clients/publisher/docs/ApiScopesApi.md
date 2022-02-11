@@ -1,6 +1,6 @@
 # ApiScopesApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/publisher/v1.0*
+All URIs are relative to *https://apis.wso2.com/api/am/publisher/v3*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

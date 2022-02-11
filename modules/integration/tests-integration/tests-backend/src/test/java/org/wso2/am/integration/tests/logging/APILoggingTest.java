@@ -84,7 +84,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         header.put("Authorization", "Basic " + new String(encodedBytes, StandardCharsets.UTF_8));
         header.put("Content-Type", "application/json");
         HttpResponse loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
-                + "api/am/devops/v1/tenant-logs/carbon.super/apis", header);
+                + "api/am/devops/v0/tenant-logs/carbon.super/apis", header);
         assertEquals(loggingResponse.getData(), "{\"apis\":[]}");
 
         String API_NAME = "AddNewMediationAndInvokeAPITest";
@@ -114,18 +114,18 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
 
         // Get list of APIs with an API
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
-                + "api/am/devops/v1/tenant-logs/carbon.super/apis", header);
+                + "api/am/devops/v0/tenant-logs/carbon.super/apis", header);
         assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\","
                 + "\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\"}]}");
 
         // Change logLevel to FULL
         String addNewLoggerPayload = "{ \"logLevel\": \"FULL\" }";
-        HTTPSClientUtils.doPut(getStoreURLHttps() + "api/am/devops/v1/tenant-logs/carbon.super/apis/" + apiId, header,
+        HTTPSClientUtils.doPut(getStoreURLHttps() + "api/am/devops/v0/tenant-logs/carbon.super/apis/" + apiId, header,
                 addNewLoggerPayload);
 
         // Get list of APIs which have log-level=FULL
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
-                + "api/am/devops/v1/tenant-logs/carbon.super/apis?log-level=full", header);
+                + "api/am/devops/v0/tenant-logs/carbon.super/apis?log-level=full", header);
         assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\","
                 + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiId + "\"}]}");
 
