@@ -9,7 +9,7 @@
       "name": "newResourcePath",
       "displayName": "New Resource Path",
       "description": "Name of the new resource path",
-      "validationRegex": "/^\\S+$/",
+      "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
       "type": "String",
       "required": true
     },
