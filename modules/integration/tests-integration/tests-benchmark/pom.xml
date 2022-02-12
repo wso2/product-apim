@@ -20,7 +20,7 @@ under the License.
     <parent>
         <artifactId>org.wso2.carbon.am.integration.test</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>4.1.0-SNAPSHOT</version>
+        <version>4.1.0-m4</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -151,8 +151,8 @@ under the License.
                                 <configuration>
                                     <tasks>
                                         <property name="benchmarkTestsLogsDir" value="target/logs/benchmark-tests/" />
-                                        <delete dir="${benchmarkTestsLogsDir}"/>
-                                        <mkdir dir="${benchmarkTestsLogsDir}"/>
+                                        <delete dir="${benchmarkTestsLogsDir}" />
+                                        <mkdir dir="${benchmarkTestsLogsDir}" />
                                     </tasks>
                                 </configuration>
                                 <goals>
@@ -447,7 +447,7 @@ under the License.
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>
-            <version>4.1.0-SNAPSHOT</version>
+            <version>4.1.0-m4</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
