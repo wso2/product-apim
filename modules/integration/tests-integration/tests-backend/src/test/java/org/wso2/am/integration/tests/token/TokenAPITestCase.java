@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.token;
 
+import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -27,9 +28,12 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -59,6 +63,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     private String apiId;
     private String appId;
     private String oauthTokenTestAppId;
+    private String infiniteTokenTestAppId;
     private String gatewayUrl;
     private String consumerKey;
     private String consumerSecret;
@@ -301,10 +306,68 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         assertTrue(youTubeResponse.getData().contains("<Customer>"), "Response data mismatched");
     }
 
+    @Test(groups = { "wso2.am" }, description = "Infinite Token API Test other", dependsOnMethods = {
+            "testOauthTokenAPITestCase" })
+    public void testInfiniteTokenAPITestCase() throws Exception {
+        ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType("infiniteTokenTestAPI-Application",
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "test app for Infinite Token API invocation",
+                "JWT");
+        infiniteTokenTestAppId = applicationDTO.getApplicationId();
+
+        SubscriptionDTO subscriptionDTO = restAPIStore
+                .subscribeToAPI(apiId, infiniteTokenTestAppId, APIMIntegrationConstants.API_TIER.GOLD);
+        Assert.assertEquals(true, subscriptionDTO.getThrottlingPolicy().equals("Gold"));
+
+        // Set a negative value for the application token expiry time
+        Map<String, Object> additionalProperties = new HashMap<>();
+        additionalProperties.put("application_access_token_expiry_time", "-1");
+        // Generate a sandbox token and invoke with that
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        try {
+            ApiResponse<ApplicationKeyDTO> applicationKeyDTOApiResponse = restAPIStore
+                    .generateKeysWithApiResponse(infiniteTokenTestAppId, "3600", null,
+                            ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, null, grantTypes,
+                            additionalProperties, null);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), 400);
+            ErrorDTO errorDTO = new Gson().fromJson(e.getResponseBody(), ErrorDTO.class);
+            Assert.assertEquals(errorDTO.getCode().longValue(), 900970);
+            Assert.assertEquals(errorDTO.getMessage(), "Invalid application additional properties");
+            Assert.assertTrue(
+                    errorDTO.getDescription().contains("Application configuration values cannot have negative values"));
+        }
+
+        // Set a long for the application token expiry time (to get an infinite token)
+        additionalProperties.put("application_access_token_expiry_time", String.valueOf(Long.MAX_VALUE));
+        // Generate a sandbox token and invoke with that
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(infiniteTokenTestAppId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX, null, grantTypes, additionalProperties, null);
+        String sandboxAccessToken = applicationKeyDTO.getToken().getAccessToken();
+        Map<String, String> requestHeadersSandBox = new HashMap<>();
+        requestHeadersSandBox.put("Authorization", "Bearer " + sandboxAccessToken);
+        requestHeadersSandBox.put("accept", "text/xml");
+        HttpResponse youTubeResponseSandBox = HttpRequestUtil.doGet(gatewayUrl, requestHeadersSandBox);
+        log.info("Response " + youTubeResponseSandBox);
+        assertEquals(youTubeResponseSandBox.getResponseCode(), 200, "Response code mismatched");
+        // Generate a production token and invoke with that
+        applicationKeyDTO = restAPIStore.generateKeys(infiniteTokenTestAppId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes, additionalProperties, null);
+        String productionAccessToken = applicationKeyDTO.getToken().getAccessToken();
+        Map<String, String> requestHeadersProduction = new HashMap<>();
+        requestHeadersProduction.put("Authorization", "Bearer " + productionAccessToken);
+        requestHeadersProduction.put("accept", "text/xml");
+        HttpResponse youTubeResponseProduction = HttpRequestUtil.doGet(gatewayUrl, requestHeadersProduction);
+        log.info("Response " + youTubeResponseProduction);
+        assertEquals(youTubeResponseProduction.getResponseCode(), 200, "Response code mismatched");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(appId);
         restAPIStore.deleteApplication(oauthTokenTestAppId);
+        restAPIStore.deleteApplication(infiniteTokenTestAppId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
     }
