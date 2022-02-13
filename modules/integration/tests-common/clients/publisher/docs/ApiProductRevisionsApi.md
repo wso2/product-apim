@@ -1,6 +1,6 @@
 # ApiProductRevisionsApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/publisher/v2*
+All URIs are relative to *https://apis.wso2.com/api/am/publisher/v3*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -36,7 +36,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -107,7 +107,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -178,7 +178,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -251,7 +251,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -321,7 +321,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -389,7 +389,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -459,7 +459,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -529,7 +529,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -606,7 +606,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
