@@ -119,6 +119,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
     String throttleAppId;
     String complexAppId;
     String depthAppId;
+    Server websocketServer;
 
     private enum AUTH_IN {
         HEADER,
@@ -450,10 +451,10 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                 }
             };
 
-            Server server = new Server(serverPort);
-            server.setHandler(wsHandler);
+            websocketServer = new Server(serverPort);
+            websocketServer.setHandler(wsHandler);
             try {
-                server.start();
+                websocketServer.start();
                 log.info("GraphQL WebSocket backend server started at port: " + serverPort);
             } catch (InterruptedException ignore) {
             } catch (Exception e) {
@@ -902,6 +903,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(complexAppId);
         restAPIStore.deleteApplication(depthAppId);
         restAPIStore.deleteApplication(throttleAppId);
+        websocketServer.stop();
         executorService.shutdownNow();
         super.cleanUp();
     }
