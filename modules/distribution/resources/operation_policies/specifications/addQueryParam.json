@@ -17,7 +17,7 @@
       "name": "paramValue",
       "displayName": "Parameter Value",
       "description": "Query parameter's Value",
-      "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+      "validationRegex": "^([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
       "type": "String",
       "required": true
     }
