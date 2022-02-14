@@ -87,12 +87,12 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis", header);
         assertEquals(loggingResponse.getData(), "{\"apis\":[]}");
 
-        String API_NAME = "AddNewMediationAndInvokeAPITest";
-        String API_CONTEXT = "AddNewMediationAndInvokeAPI";
+        String API_NAME = "APILoggingTestAPI";
+        String API_CONTEXT = "apiloggingtestapi";
         String API_TAGS = "testTag1, testTag2, testTag3";
         String API_END_POINT_POSTFIX_URL = "xmlapi";
         String API_VERSION_1_0_0 = "1.0.0";
-        String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
+        String APPLICATION_NAME = "APILoggingTestApplication";
 
         // Create an application
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
@@ -115,7 +115,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         // Get list of APIs with an API
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis", header);
-        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\","
+        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/apiloggingtestapi/1.0.0\","
                 + "\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\"}]}");
 
         // Change logLevel to FULL
@@ -126,7 +126,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         // Get list of APIs which have log-level=FULL
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis?log-level=full", header);
-        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\","
+        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/apiloggingtestapi/1.0.0\","
                 + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiId + "\"}]}");
 
         // Invoke the API
@@ -149,7 +149,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(apiLogFilePath));
         String logLine;
         while ((logLine = bufferedReader.readLine()) != null) {
-            assertTrue(logLine.contains("INFO {API_LOG} AddNewMediationAndInvokeAPI"));
+            assertTrue(logLine.contains("INFO {API_LOG} apiloggingtestapi"));
         }
     }
 

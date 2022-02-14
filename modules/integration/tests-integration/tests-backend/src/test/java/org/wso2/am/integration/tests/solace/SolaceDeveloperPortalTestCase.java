@@ -764,5 +764,6 @@ public class SolaceDeveloperPortalTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(solaceApiId);
         restAPIPublisher.deleteAPI(solaceApiId2);
         solaceWireMockServer.stop();
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 }
