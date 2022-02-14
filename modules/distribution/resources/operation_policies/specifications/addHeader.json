@@ -17,7 +17,7 @@
       "name": "headerValue",
       "displayName": "Header Value",
       "description": "Value of the header",
-      "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+      "validationRegex": "^([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
       "type": "String",
       "required": true
     }
