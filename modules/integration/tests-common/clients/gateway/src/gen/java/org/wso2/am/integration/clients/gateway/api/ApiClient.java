@@ -52,7 +52,7 @@ import org.wso2.am.integration.clients.gateway.api.auth.OAuth;
 
 public class ApiClient {
 
-    private String basePath = "https://apis.wso2.com/api/am/gateway/v2.1";
+    private String basePath = "https://apis.wso2.com/api/am/gateway/v2";
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
     private String tempFolderPath = null;
