@@ -1,0 +1,12 @@
+<log level="custom">
+    <property name="IN_MESSAGE" value="Regular_expression_policy"/>
+</log>
+<property name="threatType" expression="get-property('threatType')" value="SQL-Injection"/>
+<property name="regex" expression="get-property('regex')" value=".*'.*|.*alter.*|.*alter \s*table.*|.*alter\s*view.*|
+    .*create\s*database.*|.*create\s*procedure.*|.*create\s*schema.*|.*create\s*table.*|.*create\s*view.*|
+    .*delete\s*from.*|.*drop\s*database.*|.*drop\s*procedure.*|.*drop\s*table.*|.*select\s*.*\s*from.*|
+    .*truncate\s*table.*|.*insert\s*into.*"/>
+<property name="enabledCheckBody" expression="get-property('checkBodyEnable')" value="true"/>
+<property name="enabledCheckHeaders" expression="get-property('enabledCheckHeaders')" value="true"/>
+<property name="enabledCheckPathParams" expression="get-property('enabledCheckPathParams')" value="true"/>
+<class name="org.wso2.carbon.apimgt.gateway.mediators.RegularExpressionProtector"/>

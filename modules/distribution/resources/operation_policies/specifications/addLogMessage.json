@@ -1,0 +1,18 @@
+{
+  "category": "Mediation",
+  "name": "addLogMessage",
+  "displayName": "Log Policy",
+  "description": "Using this policy, you can log the important details of the request",
+  "multipleAllowed": false,
+  "applicableFlows": [
+    "request",
+    "response",
+    "fault"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "REST"
+  ]
+}
