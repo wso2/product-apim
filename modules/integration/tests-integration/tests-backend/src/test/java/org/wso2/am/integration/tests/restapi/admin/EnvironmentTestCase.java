@@ -344,7 +344,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiProductId, apiProductRevisionId,
-                apiRevisionDeployRequestList, "API");
+                apiRevisionDeployRequestList, "APIProduct");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HttpStatus.SC_CREATED,
                 "Unable to deploy API Product Revisions:" + apiRevisionsDeployResponse.getData());
     }
