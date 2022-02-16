@@ -75,7 +75,7 @@
             <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIInvocationWithSimilarResourcesAndDifferentVerbsTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIResourceWithSpecialCharactersInvocation"/>
-            <class name="org.wso2.am.integration.tests.sequence.DefaultEndpointTestCase"/>
+<!--            <class name="org.wso2.am.integration.tests.sequence.DefaultEndpointTestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>
             <!--Disable the test case because of APIMANAGER-3378-->
@@ -130,7 +130,7 @@
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.GatewayRestAPITestCase"/>
+<!--            <class name="org.wso2.am.integration.tests.restapi.GatewayRestAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.AllowedScopesTestCase"/>
             <class name="org.wso2.am.integration.tests.other.SecondaryUserStoreCaseInsensitiveTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
@@ -181,7 +181,7 @@
             <!--<class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
             <class name="org.wso2.am.integration.tests.other.WSDLImportTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.SoapToRestTestCase"/>
+<!--            <class name="org.wso2.am.integration.tests.other.SoapToRestTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
