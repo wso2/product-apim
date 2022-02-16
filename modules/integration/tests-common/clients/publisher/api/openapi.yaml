@@ -89,7 +89,7 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: WSO2 API Manager - Publisher API
-  version: v2
+  version: v3
 servers:
 - url: https://apis.wso2.com/api/am/publisher/v3
 security:
@@ -123,6 +123,34 @@ paths:
         schema:
           default: 0
           type: integer
+        style: form
+      - description: |
+          Criteria for sorting.
+        explode: true
+        in: query
+        name: sortBy
+        required: false
+        schema:
+          default: createdTime
+          enum:
+          - apiName
+          - version
+          - createdTime
+          - status
+          type: string
+        style: form
+      - description: |
+          Order of sorting(ascending/descending).
+        explode: true
+        in: query
+        name: sortOrder
+        required: false
+        schema:
+          default: desc
+          enum:
+          - asc
+          - desc
+          type: string
         style: form
       - description: |
           For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
@@ -172,15 +200,6 @@ paths:
         schema:
           type: string
         style: simple
-      - description: |
-          Defines whether the returned response should contain full details of API
-        explode: true
-        in: query
-        name: expand
-        required: false
-        schema:
-          type: boolean
-        style: form
       - description: |
           Media types acceptable for the response. Default is application/json.
         explode: false
@@ -234,7 +253,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:api_import_export
+        - apim:api_list_view
       summary: |
         Retrieve/Search APIs
       tags:
@@ -332,6 +353,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Create a New API
       tags:
       - APIs
@@ -428,6 +450,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_delete
+        - apim:api_manage
         - apim:api_import_export
       summary: Delete an API
       tags:
@@ -535,6 +558,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:api_import_export
         - apim:api_product_import_export
       summary: Get Details of an API
@@ -684,6 +708,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Update an API
       tags:
@@ -763,6 +788,11 @@ paths:
               schema:
                 type: string
               style: simple
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:api_import_export
       summary: Update Topics
       tags:
       - APIs
@@ -835,6 +865,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update the Service that is used to create the API
       tags:
       - APIs
@@ -932,6 +963,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
+        - apim:api_definition_view
       summary: Get Swagger Definition
       tags:
       - APIs
@@ -1072,6 +1105,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update Swagger Definition
       tags:
       - APIs
@@ -1170,6 +1204,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Generate Mock Response Payloads
       tags:
       - APIs
@@ -1267,6 +1302,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Get Generated Mock Response Payloads
       tags:
       - APIs
@@ -1388,6 +1424,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get the Resource Policy(inflow/outflow) Definitions
       tags:
       - API Resource Policies
@@ -1506,6 +1543,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get the Resource Policy(inflow/outflow) Definition for a Given Resource
         Identifier.
       tags:
@@ -1648,6 +1686,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update the Resource Policy(inflow/outflow) Definition for the Given
         Resource Identifier
       tags:
@@ -1745,6 +1784,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get Thumbnail Image
       tags:
       - APIs
@@ -1869,6 +1909,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Upload a Thumbnail Image
       tags:
@@ -1974,6 +2015,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: |
         Get Details of the Subscription Throttling Policies of an API
       tags:
@@ -2070,6 +2112,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Create a New API Version
       tags:
       - APIs
@@ -2230,6 +2273,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
         - apim:api_import_export
       summary: Change API Status
       tags:
@@ -2308,7 +2352,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
+        - apim:api_manage
       summary: Get Lifecycle State Change History of the API.
       tags:
       - API Lifecycle
@@ -2407,8 +2453,10 @@ paths:
             one of the preconditions is not met.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
         - apim:api_create
+        - apim:api_manage
       summary: Get Lifecycle State Data of the API.
       tags:
       - API Lifecycle
@@ -2467,6 +2515,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Delete Pending Lifecycle State Change Tasks
       tags:
       - API Lifecycle
@@ -2520,7 +2569,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
         - apim:api_import_export
       summary: List Revisions
@@ -2589,6 +2640,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
         - apim:api_import_export
       summary: Create API Revision
@@ -2652,6 +2704,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
         - apim:api_import_export
       summary: Delete Revision
@@ -2708,7 +2761,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Retrieve Revision
       tags:
@@ -2756,7 +2811,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: List Deployments
       tags:
@@ -2820,6 +2877,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Update Deployment
       tags:
@@ -2900,6 +2958,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Deploy Revision
       tags:
@@ -3000,6 +3059,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
         - apim:api_import_export
       summary: UnDeploy Revision
@@ -3059,6 +3119,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Restore API Revision
       tags:
@@ -3141,6 +3202,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Import a Service from Service Catalog
       tags:
       - APIs
@@ -3241,13 +3303,15 @@ paths:
           description: Internal Server Error.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:comment_view
+        - apim:comment_manage
       summary: Retrieve API Comments
       tags:
       - Comments
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/publisher/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
+        source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
       x-accepts: application/json
     post:
       operationId: addCommentToAPI
@@ -3384,13 +3448,14 @@ paths:
       security:
       - OAuth2Security:
         - apim:comment_write
+        - apim:comment_manage
       summary: Add an API Comment
       tags:
       - Comments
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/publisher/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
       x-contentType: application/json
       x-accepts: application/json
   /apis/{apiId}/comments/{commentId}:
@@ -3491,6 +3556,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:comment_write
+        - apim:comment_manage
         - apim:admin
       summary: Delete an API Comment
       tags:
@@ -3498,7 +3564,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/publisher/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+          "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
       x-accepts: application/json
     get:
       description: |
@@ -3650,13 +3716,15 @@ paths:
           description: Internal Server Error.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:comment_view
+        - apim:comment_manage
       summary: Get Details of an API Comment
       tags:
       - Comments
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/publisher/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+        source: curl -k "https://localhost:9443/api/am/publisher/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
       x-accepts: application/json
     patch:
       description: |
@@ -3806,6 +3874,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:comment_write
+        - apim:comment_manage
       summary: Edit a comment
       tags:
       - Comments
@@ -3966,7 +4035,9 @@ paths:
           description: Internal Server Error.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:comment_view
+        - apim:comment_manage
       summary: Get replies of a comment
       tags:
       - Comments
@@ -4061,6 +4132,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Import an OpenAPI Definition
       tags:
       - APIs
@@ -4178,6 +4250,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Import a WSDL Definition
       tags:
       - APIs
@@ -4282,6 +4355,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Import a GraphQL SDL
       tags:
       - APIs
@@ -4368,6 +4442,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Validate an OpenAPI Definition
       tags:
       - Validation
@@ -4444,6 +4519,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Check Whether Given Endpoint URL is Valid
       tags:
       - Validation
@@ -4528,6 +4604,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Check Given API Context Name already Exists
       tags:
       - Validation
@@ -4600,6 +4677,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Validate a WSDL Definition
       tags:
       - Validation
@@ -4672,6 +4750,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Validate a GraphQL SDL
       tags:
       - Validation
@@ -4780,6 +4859,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get the Schema of a GraphQL API
       tags:
       - GraphQL Schema (Individual)
@@ -4913,6 +4993,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Add a Schema to a GraphQL API
       tags:
       - GraphQL Schema
@@ -4977,6 +5058,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Retrieve the ARNs of AWS Lambda Functions
       tags:
       - AWS Lambda (Individual)
@@ -5054,6 +5136,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Configure Monetization for a Given API
       tags:
       - API Monetization
@@ -5122,7 +5205,9 @@ paths:
           description: Not Acceptable. The requested media type is not supported.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
+        - apim:api_manage
       summary: Get Monetization Status for each Tier in a Given API
       tags:
       - API Monetization
@@ -5195,7 +5280,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
+        - apim:api_manage
       summary: Get Total Revenue Details of a Given Monetized API with Meterd Billing
       tags:
       - API Monetization
@@ -5305,6 +5392,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
+        - apim:document_manage
       summary: Get a List of Documents of an API
       tags:
       - API Documents
@@ -5404,7 +5493,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:document_create
+        - apim:document_manage
       summary: Add a New Document to an API
       tags:
       - API Documents
@@ -5482,6 +5573,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:document_manage
       summary: Delete a Document of an API
       tags:
@@ -5589,6 +5681,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
+        - apim:document_manage
       summary: Get a Document of an API
       tags:
       - API Documents
@@ -5717,6 +5811,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:document_manage
       summary: Update a Document of an API
       tags:
@@ -5850,6 +5945,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
+        - apim:document_manage
       summary: Get the Content of an API Document
       tags:
       - API Documents
@@ -5988,7 +6085,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:document_create
+        - apim:document_manage
       summary: Upload the Content of an API Document
       tags:
       - API Documents
@@ -6055,6 +6154,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
+        - apim:document_manage
         - apim:document_create
       summary: Check Whether a Document with the Provided Name Exist
       tags:
@@ -6065,702 +6166,6 @@ paths:
           "https://127.0.0.1:9443/api/am/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/documents/validate?name=CalculatorDoc"'
       x-examples:
         $ref: docs/examples/apis/apis_id_document_validate.yaml
-      x-accepts: application/json
-  /apis/{apiId}/mediation-policies:
-    get:
-      description: |
-        This operation provides you a list of available mediation policies of an API.
-      operationId: getAllAPIMediationPolicies
-      parameters:
-      - description: |
-          **API ID** consisting of the **UUID** of the API.
-        explode: false
-        in: path
-        name: apiId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Maximum size of resource array to return.
-        explode: true
-        in: query
-        name: limit
-        required: false
-        schema:
-          default: 25
-          type: integer
-        style: form
-      - description: |
-          Starting point within the complete list of items qualified.
-        explode: true
-        in: query
-        name: offset
-        required: false
-        schema:
-          default: 0
-          type: integer
-        style: form
-      - description: -Not supported yet-
-        explode: true
-        in: query
-        name: query
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: |
-          Validator for conditional requests; based on the ETag of the formerly retrieved
-          variant of the resource.
-        explode: false
-        in: header
-        name: If-None-Match
-        required: false
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MediationList'
-          description: |
-            OK.
-            List of qualifying APIs is returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-        "406":
-          content:
-            application/json:
-              example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Acceptable. The requested media type is not supported.
-      security:
-      - OAuth2Security:
-        - apim:api_view
-        - apim:mediation_policy_view
-      summary: |
-        Get All Mediation Policies of an API
-      tags:
-      - API Mediation Policies
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/mediation-policies"'
-      x-examples:
-        $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_get.yaml
-      x-accepts: application/json
-    post:
-      description: |
-        This operation can be used to add an API specifc mediation policy.
-      operationId: addAPIMediationPolicy
-      parameters:
-      - description: |
-          **API ID** consisting of the **UUID** of the API.
-        explode: false
-        in: path
-        name: apiId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Validator for conditional requests; based on ETag.
-        explode: false
-        in: header
-        name: If-Match
-        required: false
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              properties:
-                mediationPolicyFile:
-                  description: Mediation Policy to upload
-                  format: binary
-                  type: string
-                inlineContent:
-                  description: Inline content of the Mediation Policy
-                  type: string
-                type:
-                  description: Type of the mediation sequence
-                  type: string
-              required:
-              - type
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Mediation'
-          description: |
-            OK.
-            mediation policy uploaded
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Location:
-              description: |
-                The URL of the uploaded mediation policy of the API.
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "400":
-          content:
-            application/json:
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Bad Request. Invalid request or validation error.
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-        "412":
-          content:
-            application/json:
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the
-                  preconditions is not met
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Precondition Failed. The request has not been performed because
-            one of the preconditions is not met.
-      security:
-      - OAuth2Security:
-        - apim:api_create
-        - apim:mediation_policy_create
-      summary: Add an API Specific Mediation Policy
-      tags:
-      - API Mediation Policies
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: multipart/form-data" -F mediationPolicyFile=@TokenExchange.xml
-          -F type=in "https://127.0.0.1:9443/api/am/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/mediation-policies"'
-      x-examples:
-        $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_post.yaml
-      x-contentType: multipart/form-data
-      x-accepts: application/json
-  /apis/{apiId}/mediation-policies/{mediationPolicyId}:
-    delete:
-      description: |
-        This operation can be used to delete an existing API specific mediation policy providing the Id of the API and the Id of the mediation policy.
-      operationId: deleteAPIMediationPolicyByPolicyId
-      parameters:
-      - description: |
-          **API ID** consisting of the **UUID** of the API.
-        explode: false
-        in: path
-        name: apiId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Mediation policy Id
-        explode: false
-        in: path
-        name: mediationPolicyId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Validator for conditional requests; based on ETag.
-        explode: false
-        in: header
-        name: If-Match
-        required: false
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content: {}
-          description: |
-            OK.
-            Resource successfully deleted.
-        "403":
-          content:
-            application/json:
-              example:
-                code: 403
-                message: Forbidden
-                description: The request must be conditional but no condition has
-                  been specified
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Forbidden. The request must be conditional but no condition
-            has been specified.
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-        "412":
-          content:
-            application/json:
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the
-                  preconditions is not met
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Precondition Failed. The request has not been performed because
-            one of the preconditions is not met.
-      security:
-      - OAuth2Security:
-        - apim:api_create
-        - apim:mediation_policy_manage
-      summary: Delete an API Specific Mediation Policy
-      tags:
-      - API Mediation Policy
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/mediation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
-      x-examples:
-        $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_id_delete.yaml
-      x-accepts: application/json
-    get:
-      description: |
-        This operation can be used to retrieve a particular API specific mediation policy.
-      operationId: getAPIMediationPolicyByPolicyId
-      parameters:
-      - description: |
-          **API ID** consisting of the **UUID** of the API.
-        explode: false
-        in: path
-        name: apiId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Mediation policy Id
-        explode: false
-        in: path
-        name: mediationPolicyId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Validator for conditional requests; based on the ETag of the formerly retrieved
-          variant of the resource.
-        explode: false
-        in: header
-        name: If-None-Match
-        required: false
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Mediation'
-          description: |
-            OK.
-            Mediation policy returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-        "406":
-          content:
-            application/json:
-              example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Acceptable. The requested media type is not supported.
-      security:
-      - OAuth2Security:
-        - apim:api_view
-        - apim:mediation_policy_view
-      summary: Get an API Specific Mediation Policy
-      tags:
-      - API Mediation Policy
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/mediation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
-      x-examples:
-        $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_id_get.yaml
-      x-accepts: application/json
-  /apis/{apiId}/mediation-policies/{mediationPolicyId}/content:
-    get:
-      description: |
-        This operation can be used to download a particular API specific mediation policy.
-      operationId: getAPIMediationPolicyContentByPolicyId
-      parameters:
-      - description: |
-          **API ID** consisting of the **UUID** of the API.
-        explode: false
-        in: path
-        name: apiId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Mediation policy Id
-        explode: false
-        in: path
-        name: mediationPolicyId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Validator for conditional requests; based on the ETag of the formerly retrieved
-          variant of the resource.
-        explode: false
-        in: header
-        name: If-None-Match
-        required: false
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content: {}
-          description: |
-            OK.
-            Mediation policy returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-      security:
-      - OAuth2Security:
-        - apim:api_view
-        - apim:mediation_policy_view
-      summary: Download an API Specific Mediation Policy
-      tags:
-      - API Mediation Policy
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/mediation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
-      x-examples:
-        $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_id_content_get.yaml
-      x-accepts: application/json
-    put:
-      description: |
-        This operation can be used to update an existing mediation policy of an API.
-      operationId: updateAPIMediationPolicyContentByPolicyId
-      parameters:
-      - description: |
-          **API ID** consisting of the **UUID** of the API.
-        explode: false
-        in: path
-        name: apiId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Mediation policy Id
-        explode: false
-        in: path
-        name: mediationPolicyId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Validator for conditional requests; based on ETag.
-        explode: false
-        in: header
-        name: If-Match
-        required: false
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              properties:
-                file:
-                  description: Mediation Policy to upload
-                  format: binary
-                  type: string
-                inlineContent:
-                  description: Inline content of the Mediation Policy
-                  type: string
-                type:
-                  description: Type of the mediation sequence(in/out/fault)
-                  type: string
-              required:
-              - type
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Mediation'
-          description: |
-            OK.
-            Successful response with updated API object
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Location:
-              description: |
-                The URL of the newly created resource.
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "400":
-          content:
-            application/json:
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Bad Request. Invalid request or validation error.
-        "403":
-          content:
-            application/json:
-              example:
-                code: 403
-                message: Forbidden
-                description: The request must be conditional but no condition has
-                  been specified
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Forbidden. The request must be conditional but no condition
-            has been specified.
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-        "412":
-          content:
-            application/json:
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the
-                  preconditions is not met
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Precondition Failed. The request has not been performed because
-            one of the preconditions is not met.
-      security:
-      - OAuth2Security:
-        - apim:api_create
-        - apim:mediation_policy_manage
-      summary: Update an API Specific Mediation Policy
-      tags:
-      - API Mediation Policy
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@TokenExchange.xml -F type=@type.txt "https://127.0.0.1:9443/api/am/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/mediation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
-      x-examples:
-        $ref: docs/examples/mediation-policies/apis_id_mediationpolicies_id_content_put.yaml
-      x-contentType: multipart/form-data
       x-accepts: application/json
   /apis/{apiId}/wsdl-info:
     get:
@@ -6814,6 +6219,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get WSDL Meta Information
       tags:
       - APIs
@@ -6905,6 +6311,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get WSDL definition
       tags:
       - APIs
@@ -7043,6 +6450,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update WSDL Definition
       tags:
       - APIs
@@ -7101,7 +6509,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Get the Complexity Related Details of an API
       tags:
@@ -7152,6 +6562,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update Complexity Related Details of an API
       tags:
       - GraphQL Policies
@@ -7208,7 +6619,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
       summary: Retrieve Types and Fields of a GraphQL Schema
       tags:
@@ -7328,6 +6741,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get Resource Paths of an API
       tags:
       - APIs
@@ -7394,6 +6808,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Retrieve the Security Audit Report of the Audit API
       tags:
       - API Audit
@@ -7481,6 +6896,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get the List of External Stores to which an API is Published
       tags:
       - External Stores
@@ -7511,7 +6927,7 @@ paths:
         explode: true
         in: query
         name: externalStoreIds
-        required: true
+        required: false
         schema:
           type: string
         style: form
@@ -7578,6 +6994,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Publish an API to External Stores
       tags:
       - External Stores
@@ -7639,6 +7056,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_generate_key
+        - apim:api_manage
       summary: Generate internal API Key to invoke APIS.
       tags:
       - APIs
@@ -7773,9 +7191,11 @@ paths:
           description: Internal Server Error.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
         - apim:api_create
         - apim:api_import_export
+        - apim:api_manage
       summary: Export an API
       tags:
       - Import Export
@@ -8004,7 +7424,9 @@ paths:
           description: Not Acceptable. The requested media type is not supported.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:subscription_view
+        - apim:subscription_manage
       summary: Get all Subscriptions
       tags:
       - Subscriptions
@@ -8073,7 +7495,9 @@ paths:
             Requested Subscription does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:subscription_view
+        - apim:subscription_manage
       summary: Get Details of a Pending Invoice for a Monetized Subscription with
         Metered Billing.
       tags:
@@ -8121,7 +7545,9 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:subscription_view
+        - apim:subscription_manage
       summary: Get Details of a Subscriber
       tags:
       - Subscriber
@@ -8233,6 +7659,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:subscription_block
+        - apim:subscription_manage
       summary: Block a Subscription
       tags:
       - Subscriptions
@@ -8329,6 +7756,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:subscription_block
+        - apim:subscription_manage
       summary: Unblock a Subscription
       tags:
       - Subscriptions
@@ -8430,6 +7858,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:tier_view
+        - apim:tier_manage
       summary: Get All Throttling Policies for the Given Type
       tags:
       - Throttling Policies
@@ -8518,6 +7948,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:tier_view
+        - apim:tier_manage
       summary: Get streaming throttling policies
       tags:
       - Throttling Policies
@@ -8628,6 +8060,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:tier_view
+        - apim:tier_manage
       summary: Get Details of a Policy
       tags:
       - Throttling Policies
@@ -8723,7 +8157,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:mediation_policy_view
+        - apim:mediation_policy_manage
       summary: |
         Get all global level mediation policies
       tags:
@@ -8810,7 +8246,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:mediation_policy_view
+        - apim:mediation_policy_manage
       summary: Download a Global Mediation Policy
       tags:
       - Global Mediation Policy
@@ -8907,7 +8345,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:client_certificates_view
+        - apim:client_certificates_manage
       summary: Retrieve/ Search Uploaded Client Certificates
       tags:
       - Client Certificates
@@ -9004,7 +8444,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:client_certificates_add
+        - apim:client_certificates_manage
       summary: Upload a New Certificate
       tags:
       - Client Certificates
@@ -9093,6 +8535,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:client_certificates_update
       summary: Delete a Certificate
       tags:
@@ -9179,7 +8622,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:client_certificates_view
+        - apim:client_certificates_manage
       summary: Get the Certificate Information
       tags:
       - Client Certificates
@@ -9288,7 +8733,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:client_certificates_update
+        - apim:client_certificates_manage
       summary: Update a Certificate
       tags:
       - Client Certificates
@@ -9374,7 +8821,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:client_certificates_view
+        - apim:client_certificates_manage
       summary: Download a Certificate
       tags:
       - Client Certificates
@@ -9482,7 +8931,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:ep_certificates_view
+        - apim:ep_certificates_manage
       summary: Retrieve/Search Uploaded Certificates
       tags:
       - Endpoint Certificates
@@ -9569,7 +9020,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:ep_certificates_add
+        - apim:ep_certificates_manage
       summary: Upload a new Certificate.
       tags:
       - Endpoint Certificates
@@ -9649,7 +9102,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:ep_certificates_update
+        - apim:ep_certificates_manage
       summary: Delete a certificate.
       tags:
       - Endpoint Certificates
@@ -9726,7 +9181,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:ep_certificates_view
+        - apim:ep_certificates_manage
       summary: Get the Certificate Information
       tags:
       - Endpoint Certificates
@@ -9826,7 +9283,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
         - apim:ep_certificates_update
+        - apim:ep_certificates_manage
       summary: Update a certificate.
       tags:
       - Endpoint Certificates
@@ -9902,7 +9361,9 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:ep_certificates_view
+        - apim:ep_certificates_manage
       summary: Download a Certificate
       tags:
       - Endpoint Certificates
@@ -10001,6 +9462,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
         - apim:api_import_export
         - apim:api_product_import_export
       summary: |
@@ -10112,6 +9574,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: |
         Retrieve/Search API Products
       tags:
@@ -10192,6 +9655,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Create a New API Product
       tags:
       - API Products
@@ -10276,6 +9740,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
         - apim:api_product_import_export
       summary: Delete an API Product
       tags:
@@ -10384,7 +9849,9 @@ paths:
           description: Not Acceptable. The requested media type is not supported.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
+        - apim:api_manage
       summary: Get Details of an API Product
       tags:
       - API Products
@@ -10520,6 +9987,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Update an API Product
       tags:
       - API Products
@@ -10627,7 +10095,9 @@ paths:
           description: Not Acceptable. The requested media type is not supported.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
+        - apim:api_manage
       summary: Get Thumbnail Image
       tags:
       - API Products
@@ -10755,6 +10225,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Upload a Thumbnail Image
       tags:
       - API Products
@@ -10861,7 +10332,9 @@ paths:
           description: Not Acceptable. The requested media type is not supported.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
+        - apim:api_manage
       summary: Get Swagger Definition
       tags:
       - API Products
@@ -10970,7 +10443,9 @@ paths:
           description: Not Acceptable. The requested media type is not supported.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
+        - apim:api_manage
       summary: Check Whether API Product is Outdated
       tags:
       - API Products
@@ -11087,7 +10562,9 @@ paths:
           description: Not Acceptable. The requested media type is not supported.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
+        - apim:api_manage
       summary: Get a List of Documents of an API Product
       tags:
       - API Product Documents
@@ -11180,6 +10657,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Add a New Document to an API Product
       tags:
       - API Product Documents
@@ -11259,6 +10737,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Delete a Document of an API Product
       tags:
       - API Product Documents
@@ -11376,7 +10855,9 @@ paths:
           description: Not Acceptable. The requested media type is not supported.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
+        - apim:api_manage
       summary: Get a Document of an API Product
       tags:
       - API Product Documents
@@ -11507,6 +10988,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Update a Document of an API Product
       tags:
       - API Product Documents
@@ -11647,7 +11129,9 @@ paths:
           description: Not Acceptable. The requested media type is not supported.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_publish
+        - apim:api_manage
       summary: Get the Content of an API Product Document
       tags:
       - API Product Documents
@@ -11788,6 +11272,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_publish
+        - apim:api_manage
       summary: Upload the Content of an API Product Document
       tags:
       - API Product Documents
@@ -11844,8 +11329,10 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
         - apim:api_product_import_export
       summary: List Revisions
       tags:
@@ -11916,6 +11403,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Create a new API Product revision
       tags:
       - API Product Revisions
@@ -11980,6 +11468,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Delete Revision
       tags:
       - API Product Revisions
@@ -12036,8 +11525,10 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Retrieve Revision
       tags:
       - API Product Revisions
@@ -12086,8 +11577,10 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: List Deployments
       tags:
       - API Product Revisions
@@ -12153,6 +11646,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Update Deployment
       tags:
       - API Product Revisions
@@ -12238,6 +11732,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Deploy Revision
       tags:
       - API Product Revisions
@@ -12340,6 +11835,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
         - apim:api_product_import_export
       summary: UnDeploy Revision
       tags:
@@ -12401,6 +11897,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Restore Revision
       tags:
       - API Product Revisions
@@ -12527,7 +12024,8 @@ paths:
           description: Internal Server Error.
       security:
       - OAuth2Security:
-        - apim:api_import_export
+        - apim:api_view
+        - apim:api_product_import_export
       summary: Export an API Product
       tags:
       - Import Export
@@ -12706,6 +12204,7 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
       summary: Check Whether Given Role Name already Exist
       tags:
       - Roles
@@ -12750,6 +12249,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Validate Whether the Logged-in User has the Given Role
       tags:
       - Roles
@@ -12788,6 +12288,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Retrieve External Stores List to Publish an API
       tags:
       - External Stores
@@ -12824,6 +12325,7 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:publisher_settings
       summary: Retreive Publisher Settings
       tags:
@@ -12918,6 +12420,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: |
         Get Tenants by State
       tags:
@@ -12961,6 +12464,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Check Whether the Given Tenant already Exists
       tags:
       - Tenants
@@ -12988,6 +12492,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
       summary: Get all API categories
       tags:
       - API Category (Collection)
@@ -13055,6 +12560,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:shared_scope_manage
       summary: Get All Available Shared Scopes
       tags:
       - Scopes
@@ -13218,6 +12724,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:shared_scope_manage
       summary: Get a Shared Scope by Scope Id
       tags:
       - Scopes
@@ -13260,6 +12767,8 @@ paths:
       - OAuth2Security:
         - apim:api_create
         - apim:api_publish
+        - apim:api_manage
+        - apim:shared_scope_manage
       summary: Check Given Scope Name already Exists
       tags:
       - Scopes
@@ -13389,6 +12898,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
+        - apim:shared_scope_manage
       summary: Get usages of a Shared Scope by Scope Id
       tags:
       - Scopes
@@ -13413,7 +12924,9 @@ paths:
             Categories returned
       security:
       - OAuth2Security:
+        - apim:api_view
         - apim:api_create
+        - apim:api_manage
       summary: Get All Key Managers
       tags:
       - Key Managers (Collection)
@@ -13491,6 +13004,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Validate an AsyncAPI Specification
       tags:
       - Validation
@@ -13574,6 +13088,7 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: import an AsyncAPI Specification
       tags:
       - APIs
@@ -13667,6 +13182,8 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_view
+        - apim:api_manage
+        - apim:api_definition_view
       summary: Get AsyncAPI definition
       tags:
       - APIs
@@ -13802,10 +13319,1011 @@ paths:
       security:
       - OAuth2Security:
         - apim:api_create
+        - apim:api_manage
       summary: Update AsyncAPI definition
       tags:
       - APIs
       x-contentType: multipart/form-data
+      x-accepts: application/json
+  /apis/{apiId}/environments/{envId}/keys:
+    get:
+      description: |
+        This operation can be used to retrieve environment specific API properties from an existing API.
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Env ID** consisting of the **UUID** of the gateway environment.
+        explode: false
+        in: path
+        name: envId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentProperties'
+          description: |
+            OK.
+            Successful response with environment specific API properties
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+      summary: get environment specific API properties
+      tags:
+      - APIs
+      x-accepts: application/json
+    put:
+      description: |
+        This operation can be used to update the environment specific API properties of an existing API.
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **Env ID** consisting of the **UUID** of the gateway environment.
+        explode: false
+        in: path
+        name: envId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvironmentProperties'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentProperties'
+          description: |
+            OK.
+            Successful response with environment specific API properties
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+      summary: Update environment specific API properties
+      tags:
+      - APIs
+      x-contentType: application/json
+      x-accepts: application/json
+  /apis/{apiId}/operation-policies:
+    get:
+      description: |
+        This operation provides you a list of all applicabale operation policies for an API
+      operationId: getAllAPISpecificOperationPolicies
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: -Not supported yet-
+        explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationPolicyDataList'
+          description: |
+            OK.
+            List of qualifying policies is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:mediation_policy_view
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: |
+        Get all API specific operation policies for an API
+      tags:
+      - API Operation Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/operation-policies"'
+      x-accepts: application/json
+    post:
+      description: |
+        This operation can be used to add an API specifc operation policy. This policy cannot be used in other APIs.
+      operationId: addAPISpecificOperationPolicy
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                policySpecFile:
+                  description: Policy specification to upload
+                  format: binary
+                  type: string
+                synapsePolicyDefinitionFile:
+                  description: Operation policy definition of synapse gateway to upload
+                  format: binary
+                  type: string
+                ccPolicyDefinitionFile:
+                  description: Operation policy definition of choreo connect to upload
+                  format: binary
+                  type: string
+              required:
+              - type
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationPolicyData'
+          description: |
+            OK.
+            Operation policy uploaded
+          headers:
+            Location:
+              description: |
+                The URL of the uploaded operation policy of the API.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:mediation_policy_create
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: Add an API specific operation policy
+      tags:
+      - API Operation Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: multipart/form-data" -F policySpecFile=@setHeader.yaml
+          -F policyDefinitionFile=@setHeader.j2 "https://127.0.0.1:9443/api/am/publisher/v2/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/operation-policies"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /apis/{apiId}/operation-policies/{operationPolicyId}:
+    delete:
+      description: |
+        This operation can be used to delete an existing API specific opreation policy by providing the Id of the API and the Id of the policy.
+      operationId: deleteAPISpecificOperationPolicyByPolicyId
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Operation policy Id
+        explode: false
+        in: path
+        name: operationPolicyId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Resource successfully deleted.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: Delete an API Specific Operation Policy
+      tags:
+      - API Operation Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+      x-accepts: application/json
+    get:
+      description: |
+        This operation can be used to retrieve a particular API specific operation policy.
+      operationId: getOperationPolicyForAPIByPolicyId
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Operation policy Id
+        explode: false
+        in: path
+        name: operationPolicyId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationPolicyData'
+          description: |
+            OK.
+            Operation policy returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:mediation_policy_view
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: Get policy details of an API specific policy
+      tags:
+      - API Operation Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+      x-accepts: application/json
+  /apis/{apiId}/operation-policies/{operationPolicyId}/content:
+    get:
+      description: |
+        This operation can be used to download a particular API specific operation policy.
+      operationId: getAPISpecificOperationPolicyContentByPolicyId
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Operation policy Id
+        explode: false
+        in: path
+        name: operationPolicyId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: |
+            OK.
+            Operation policy returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:mediation_policy_view
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: Download an API Specific Operation Policy
+      tags:
+      - API Operation Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
+      x-accepts: application/json
+  /operation-policies:
+    get:
+      description: |
+        This operation provides you a list of all common operation policies that can be used by any API
+      operationId: getAllCommonOperationPolicies
+      parameters:
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: -Not supported yet-
+        explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationPolicyDataList'
+          description: |
+            OK.
+            List of qualifying policies is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:mediation_policy_view
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: |
+        Get all common operation policies to all the APIs
+      tags:
+      - Operation Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies"'
+      x-accepts: application/json
+    post:
+      description: |
+        This operation can be used to add a new common operation policy.
+      operationId: addCommonOperationPolicy
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                policySpecFile:
+                  description: Operation policy specification to upload
+                  format: binary
+                  type: string
+                synapsePolicyDefinitionFile:
+                  description: Operation policy definition of synapse gateway to upload
+                  format: binary
+                  type: string
+                ccPolicyDefinitionFile:
+                  description: Operation policy definition of choreo connect to upload
+                  format: binary
+                  type: string
+              required:
+              - type
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationPolicyData'
+          description: |
+            OK.
+            Shared operation policy uploaded
+          headers:
+            Location:
+              description: |
+                The URL of the uploaded mediation policy of the API.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:mediation_policy_create
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: Add a new common operation policy
+      tags:
+      - Operation Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: multipart/form-data" -F policySpecFile=@setHeader.yaml
+          -F policyDefinitionFile=@setHeader.j2 "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /operation-policies/{operationPolicyId}:
+    delete:
+      description: |
+        This operation can be used to delete an existing common opreation policy by providing the Id of the policy.
+      operationId: deleteCommonOperationPolicyByPolicyId
+      parameters:
+      - description: |
+          Operation policy Id
+        explode: false
+        in: path
+        name: operationPolicyId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Resource successfully deleted.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: Delete a common operation policy
+      tags:
+      - Operation Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+      x-accepts: application/json
+    get:
+      description: |
+        This operation can be used to retrieve a particular common operation policy.
+      operationId: getCommonOperationPolicyByPolicyId
+      parameters:
+      - description: |
+          Operation policy Id
+        explode: false
+        in: path
+        name: operationPolicyId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationPolicyData'
+          description: |
+            OK.
+            Operation policy returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:mediation_policy_view
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: Get the details of a common operation policy by providing policy ID
+      tags:
+      - Operation Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+      x-accepts: application/json
+  /operation-policies/{operationPolicyId}/content:
+    get:
+      description: |
+        This operation can be used to download a selected common operation policy.
+      operationId: getCommonOperationPolicyContentByPolicyId
+      parameters:
+      - description: |
+          Operation policy Id
+        explode: false
+        in: path
+        name: operationPolicyId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: |
+            OK.
+            Operation policy returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:mediation_policy_view
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: Download a common operation policy
+      tags:
+      - Operation Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
+      x-accepts: application/json
+  /operation-policies/specification/schema:
+    get:
+      description: |
+        This operation can be used to export the operation-policy-specification-schema.json used in deployment.
+      operationId: exportOperationPolicySpecificationSchema
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: |
+            OK.
+            Operation policy specification schema exported successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:mediation_policy_view
+        - apim:mediation_policy_manage
+        - apim:api_mediation_policy_manage
+      summary: Export the operation policies specification schema.
+      tags:
+      - Operation Policies
+      x-code-samples:
+      - lang: Shell
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/v2/operation-policies/specification/schema" > operation-policy-specification-schema.json'
       x-accepts: application/json
   /api-products/change-lifecycle:
     post:
@@ -13840,8 +14358,7 @@ paths:
           - Retire
           type: string
         style: form
-      - description: |2
-
+      - description: |
           Supported checklist items are as follows.
           1. **Deprecate old versions after publishing the API**: Setting this to true will deprecate older versions of a particular API Product when it is promoted to Published state from Created state.
           2. **Requires re-subscription when publishing the API**: If you set this to true, users need to re subscribe to the API Products although they may have subscribed to an older version.
@@ -13884,30 +14401,6 @@ paths:
           description: |
             OK.
             Lifecycle changed successfully.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the changed API. Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Last-Modified:
-              description: |
-                Date and time the API lifecycle has been modified the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "202":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkflowResponse'
-          description: |
-            Accepted.
-            The request has been accepted.
         "400":
           content:
             application/json:
@@ -13920,6 +14413,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Bad Request. Invalid request or validation error.
+        "401":
+          content:
+            application/json:
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized. The user is not authorized.
         "404":
           content:
             application/json:
@@ -13944,25 +14449,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Conflict. Specified resource already exists.
-        "412":
+        "500":
           content:
             application/json:
               example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the
-                  preconditions is not met
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
                 moreInfo: ""
                 error: []
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Precondition Failed. The request has not been performed because
-            one of the preconditions is not met.
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:api_publish
         - apim:api_manage
-        - apim:api_import_export
+        - apim:api_product_import_export
       summary: Change API Product LC Status
       tags:
       - API Product Lifecycle
@@ -14007,27 +14511,18 @@ paths:
           description: |
             OK.
             Lifecycle state change history returned successfully.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
+        "401":
+          content:
+            application/json:
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
               schema:
-                type: string
-              style: simple
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized. The user is not authorized.
         "404":
           content:
             application/json:
@@ -14040,6 +14535,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:api_publish
@@ -14088,34 +14596,18 @@ paths:
           description: |
             OK.
             Lifecycle state data returned successfully.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
+        "401":
+          content:
+            application/json:
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
               schema:
-                type: string
-              style: simple
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized. The user is not authorized.
         "404":
           content:
             application/json:
@@ -14128,20 +14620,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
-        "412":
+        "500":
           content:
             application/json:
               example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the
-                  preconditions is not met
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
                 moreInfo: ""
                 error: []
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Precondition Failed. The request has not been performed because
-            one of the preconditions is not met.
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:api_publish
@@ -14178,6 +14669,18 @@ paths:
           description: |
             OK.
             Lifecycle state change pending task removed successfully.
+        "401":
+          content:
+            application/json:
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized. The user is not authorized.
         "404":
           content:
             application/json:
@@ -14190,20 +14693,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
-        "412":
+        "500":
           content:
             application/json:
               example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the
-                  preconditions is not met
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
                 moreInfo: ""
                 error: []
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Precondition Failed. The request has not been performed because
-            one of the preconditions is not met.
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:api_publish
@@ -14437,6 +14939,16 @@ components:
       schema:
         type: string
       style: form
+    operationPolicyId:
+      description: |
+        Operation policy Id
+      explode: false
+      in: path
+      name: operationPolicyId
+      required: true
+      schema:
+        type: string
+      style: simple
     revisionId:
       description: |
         Revision ID of an API
@@ -14556,6 +15068,36 @@ components:
         default: 0
         type: integer
       style: form
+    sortBy:
+      description: |
+        Criteria for sorting.
+      explode: true
+      in: query
+      name: sortBy
+      required: false
+      schema:
+        default: createdTime
+        enum:
+        - apiName
+        - version
+        - createdTime
+        - status
+        type: string
+      style: form
+    sortOrder:
+      description: |
+        Order of sorting(ascending/descending).
+      explode: true
+      in: query
+      name: sortOrder
+      required: false
+      schema:
+        default: desc
+        enum:
+        - asc
+        - desc
+        type: string
+      style: form
     If-None-Match:
       description: |
         Validator for conditional requests; based on the ETag of the formerly retrieved
@@ -14597,16 +15139,6 @@ components:
       schema:
         type: string
       style: simple
-    expand:
-      description: |
-        Defines whether the returned response should contain full details of API
-      explode: true
-      in: query
-      name: expand
-      required: false
-      schema:
-        type: boolean
-      style: form
     threatProtectionPolicyId:
       description: |
         The UUID of a Policy
@@ -14689,6 +15221,16 @@ components:
       schema:
         type: string
       style: form
+    envId:
+      description: |
+        **Env ID** consisting of the **UUID** of the gateway environment.
+      explode: false
+      in: path
+      name: envId
+      required: true
+      schema:
+        type: string
+      style: simple
     apiProductId-Q:
       description: |
         **API Product ID** consisting of the **UUID** of the API Product.
@@ -14973,7 +15515,9 @@ components:
         count: 1
         list:
         - updatedTime: 2021-02-11 09:57:25
+          audience: PUBLIC
           hasThumbnail: true
+          advertiseOnly: true
           workflowStatus: APPROVED
           description: A calculator API that supports basic operations
           type: HTTP
@@ -14987,9 +15531,23 @@ components:
           context: CalculatorAPI
           createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
+          additionalProperties:
+          - display: true
+            name: name
+            value: value
+          - display: true
+            name: name
+            value: value
+          additionalPropertiesMap:
+            key:
+              display: false
+              name: name
+              value: value
           lifeCycleStatus: CREATED
         - updatedTime: 2021-02-11 09:57:25
+          audience: PUBLIC
           hasThumbnail: true
+          advertiseOnly: true
           workflowStatus: APPROVED
           description: A calculator API that supports basic operations
           type: HTTP
@@ -15003,6 +15561,18 @@ components:
           context: CalculatorAPI
           createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
+          additionalProperties:
+          - display: true
+            name: name
+            value: value
+          - display: true
+            name: name
+            value: value
+          additionalPropertiesMap:
+            key:
+              display: false
+              name: name
+              value: value
           lifeCycleStatus: CREATED
       properties:
         count:
@@ -15018,25 +15588,12 @@ components:
           $ref: '#/components/schemas/Pagination'
       title: API List
       type: object
-    APIListExpanded:
-      properties:
-        count:
-          description: |
-            Number of APIs returned.
-          example: 1
-          type: integer
-        list:
-          items:
-            $ref: '#/components/schemas/API'
-          type: array
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-      title: API List
-      type: object
     APIInfo:
       example:
         updatedTime: 2021-02-11 09:57:25
+        audience: PUBLIC
         hasThumbnail: true
+        advertiseOnly: true
         workflowStatus: APPROVED
         description: A calculator API that supports basic operations
         type: HTTP
@@ -15050,6 +15607,18 @@ components:
         context: CalculatorAPI
         createdTime: 2021-02-11 09:57:25
         id: 01234567-0123-0123-0123-012345678901
+        additionalProperties:
+        - display: true
+          name: name
+          value: value
+        - display: true
+          name: name
+          value: value
+        additionalPropertiesMap:
+          key:
+            display: false
+            name: name
+            value: value
         lifeCycleStatus: CREATED
       properties:
         id:
@@ -15064,6 +15633,15 @@ components:
         context:
           example: CalculatorAPI
           type: string
+        additionalProperties:
+          description: Map of custom properties of API
+          items:
+            $ref: '#/components/schemas/APIInfo_additionalProperties'
+          type: array
+        additionalPropertiesMap:
+          additionalProperties:
+            $ref: '#/components/schemas/APIInfo_additionalPropertiesMap'
+          type: object
         version:
           example: 1.0.0
           type: string
@@ -15074,6 +15652,13 @@ components:
           type: string
         type:
           example: HTTP
+          type: string
+        audience:
+          description: The audience of the API. Accepted values are PUBLIC, SINGLE
+          enum:
+          - PUBLIC
+          - SINGLE
+          example: PUBLIC
           type: string
         lifeCycleStatus:
           example: CREATED
@@ -15097,6 +15682,9 @@ components:
         gatewayVendor:
           example: wso2
           type: string
+        advertiseOnly:
+          example: true
+          type: boolean
       title: API Info object with basic API details.
       type: object
     Topic:
@@ -15160,6 +15748,7 @@ components:
         id: 01234567-0123-0123-0123-012345678901
         wsdlUrl: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
         accessControlRoles: []
+        audience: PUBLIC
         visibility: PUBLIC
         version: 1.0.0
         tags:
@@ -15185,6 +15774,7 @@ components:
           apiExternalProductionEndpoint: https://localhost:9443/devportal
           apiExternalSandboxEndpoint: https://localhost:9443/devportal
           advertised: true
+          vendor: WSO2
           originalDevPortalUrl: https://localhost:9443/devportal
         additionalProperties:
         - display: true
@@ -15249,6 +15839,11 @@ components:
         categories:
         - categories
         - categories
+        additionalPropertiesMap:
+          key:
+            display: false
+            name: name
+            value: value
         wsdlInfo:
           type: WSDL
         hasThumbnail: false
@@ -15296,9 +15891,9 @@ components:
           type: string
         name:
           example: PizzaShackAPI
-          maxLength: 50
+          maxLength: 60
           minLength: 1
-          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+\[\]\/]*$)
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\[\]\/]*$)
           type: string
         description:
           example: This is a simple API for Pizza Shack online pizza delivery store.
@@ -15306,7 +15901,7 @@ components:
           type: string
         context:
           example: pizza
-          maxLength: 82
+          maxLength: 232
           minLength: 1
           type: string
         version:
@@ -15326,6 +15921,7 @@ components:
           type: string
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         wsdlInfo:
           $ref: '#/components/schemas/WSDLInfo'
         wsdlUrl:
@@ -15362,7 +15958,7 @@ components:
         type:
           default: HTTP
           description: The api creation type to be used. Accepted values are HTTP,
-            WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, ASYNC
+            WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC
           enum:
           - HTTP
           - WS
@@ -15371,8 +15967,16 @@ components:
           - GRAPHQL
           - WEBSUB
           - SSE
+          - WEBHOOK
           - ASYNC
           example: HTTP
+          type: string
+        audience:
+          description: The audience of the API. Accepted values are PUBLIC, SINGLE
+          enum:
+          - PUBLIC
+          - SINGLE
+          example: PUBLIC
           type: string
         transport:
           description: |
@@ -15392,6 +15996,7 @@ components:
           type: array
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         policies:
           example:
           - Unlimited
@@ -15400,6 +16005,7 @@ components:
           type: array
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         apiThrottlingPolicy:
           description: The API level throttling policy selected for the particular
             API
@@ -15407,6 +16013,7 @@ components:
           type: string
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         authorizationHeader:
           description: |
             Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified
@@ -15437,6 +16044,7 @@ components:
           type: string
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         visibleRoles:
           description: The user roles that are able to access the API in Developer
             Portal
@@ -15446,6 +16054,7 @@ components:
           type: array
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         visibleTenants:
           example: []
           items:
@@ -15474,6 +16083,7 @@ components:
           type: string
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         subscriptionAvailableTenants:
           example: []
           items:
@@ -15482,10 +16092,18 @@ components:
         additionalProperties:
           description: Map of custom properties of API
           items:
-            $ref: '#/components/schemas/API_additionalProperties'
+            $ref: '#/components/schemas/APIInfo_additionalProperties'
           type: array
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
+        additionalPropertiesMap:
+          additionalProperties:
+            $ref: '#/components/schemas/APIInfo_additionalPropertiesMap'
+          type: object
+          x-otherScopes:
+          - apim:api_publish
+          - apim:api_manage
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
         accessControl:
@@ -15511,6 +16129,7 @@ components:
           - $ref: '#/components/schemas/APIBusinessInformation'
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         corsConfiguration:
           $ref: '#/components/schemas/APICorsConfiguration'
         websubSubscriptionConfiguration:
@@ -15524,6 +16143,7 @@ components:
           type: string
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         endpointConfig:
           description: |
             Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
@@ -15625,6 +16245,7 @@ components:
           enum:
           - INLINE
           - ENDPOINT
+          - MOCKED_OAS
           example: INLINE
           type: string
         scopes:
@@ -15686,6 +16307,7 @@ components:
       x-scopes:
       - apim:api_create
       - apim:api_import_export
+      - apim:api_manage
     APIRevision:
       example:
         displayName: REVISION 1
@@ -15698,11 +16320,13 @@ components:
           displayOnDevportal: true
           deployedTime: deployedTime
           name: default
+          successDeployedTime: successDeployedTime
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
           deployedTime: deployedTime
           name: default
+          successDeployedTime: successDeployedTime
         apiInfo:
           id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -15753,11 +16377,13 @@ components:
             displayOnDevportal: true
             deployedTime: deployedTime
             name: default
+            successDeployedTime: successDeployedTime
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
             deployedTime: deployedTime
             name: default
+            successDeployedTime: successDeployedTime
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
         - displayName: REVISION 1
@@ -15770,11 +16396,13 @@ components:
             displayOnDevportal: true
             deployedTime: deployedTime
             name: default
+            successDeployedTime: successDeployedTime
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
             deployedTime: deployedTime
             name: default
+            successDeployedTime: successDeployedTime
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -15796,11 +16424,13 @@ components:
           displayOnDevportal: true
           deployedTime: deployedTime
           name: default
+          successDeployedTime: successDeployedTime
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
           deployedTime: deployedTime
           name: default
+          successDeployedTime: successDeployedTime
       properties:
         list:
           items:
@@ -15814,6 +16444,7 @@ components:
         displayOnDevportal: true
         deployedTime: deployedTime
         name: default
+        successDeployedTime: successDeployedTime
       properties:
         revisionUuid:
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
@@ -15835,6 +16466,9 @@ components:
           example: true
           type: boolean
         deployedTime:
+          readOnly: true
+          type: string
+        successDeployedTime:
           readOnly: true
           type: string
       title: APIRevisionDeployment Info object with basic API deployment details
@@ -16011,6 +16645,11 @@ components:
         id: 01234567-0123-0123-0123-012345678901
         state: CREATED
         categories: []
+        additionalPropertiesMap:
+          key:
+            display: false
+            name: name
+            value: value
         revisionedApiProductId: 01234567-0123-0123-0123-012345678901
         accessControlRoles: []
         hasThumbnail: false
@@ -16226,11 +16865,16 @@ components:
           type: array
           x-otherScopes:
           - apim:api_publish
+          - apim:api_manage
         additionalProperties:
           description: Map of custom properties of API
           items:
-            $ref: '#/components/schemas/API_additionalProperties'
+            $ref: '#/components/schemas/APIInfo_additionalProperties'
           type: array
+        additionalPropertiesMap:
+          additionalProperties:
+            $ref: '#/components/schemas/APIInfo_additionalPropertiesMap'
+          type: object
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
         businessInformation:
@@ -16764,10 +17408,6 @@ components:
       title: MediationInfo
       type: object
     Mediation:
-      example:
-        name: json_fault.xml
-        id: 01234567-0123-0123-0123-012345678901
-        type: in
       properties:
         id:
           example: 01234567-0123-0123-0123-012345678901
@@ -17312,6 +17952,7 @@ components:
         displayName: Default
         serverUrl: https://localhost:9443/services/
         name: default
+        id: id
         additionalProperties:
         - value: wso2
           key: Organization
@@ -17319,19 +17960,25 @@ components:
           key: Organization
         type: hybrid
         vhosts:
-        - httpContext: pets
+        - websubHttpPort: 9021
+          httpContext: pets
           wssPort: 8099
           httpPort: 80
           wsPort: 9099
           host: mg.wso2.com
+          websubHttpsPort: 8021
           httpsPort: 443
-        - httpContext: pets
+        - websubHttpPort: 9021
+          httpContext: pets
           wssPort: 8099
           httpPort: 80
           wsPort: 9099
           host: mg.wso2.com
+          websubHttpsPort: 8021
           httpsPort: 443
       properties:
+        id:
+          type: string
         name:
           example: default
           type: string
@@ -17363,7 +18010,7 @@ components:
             $ref: '#/components/schemas/AdditionalProperty'
           type: array
       required:
-      - endpoints
+      - id
       - name
       - serverUrl
       - showInApiConsole
@@ -17398,11 +18045,13 @@ components:
       type: object
     VHost:
       example:
+        websubHttpPort: 9021
         httpContext: pets
         wssPort: 8099
         httpPort: 80
         wsPort: 9099
         host: mg.wso2.com
+        websubHttpsPort: 8021
         httpsPort: 443
       properties:
         host:
@@ -17422,6 +18071,12 @@ components:
           type: integer
         wssPort:
           example: 8099
+          type: integer
+        websubHttpPort:
+          example: 9021
+          type: integer
+        websubHttpsPort:
+          example: 8021
           type: integer
       title: Virtual Host
       type: object
@@ -17463,7 +18118,6 @@ components:
           type: string
         businessOwnerEmail:
           example: businessowner@wso2.com
-          pattern: ^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$
           type: string
         technicalOwner:
           example: technicalowner
@@ -17770,6 +18424,40 @@ components:
         usedProductIds: []
         payloadSchema: payloadSchema
         amznResourceName: amznResourceName
+        operationPolicies:
+          request:
+          - policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+            order: ""
+          - policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+            order: ""
+          response:
+          - policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+            order: ""
+          - policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+            order: ""
+          fault:
+          - policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+            order: ""
+          - policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+            order: ""
         verb: POST
         uriMapping: uriMapping
         id: postapiresource
@@ -17813,6 +18501,8 @@ components:
           type: string
         uriMapping:
           type: string
+        operationPolicies:
+          $ref: '#/components/schemas/APIOperationPolicies'
       title: Operation
       type: object
     ScopeList:
@@ -18263,6 +18953,40 @@ components:
           - usedProductIds: []
             payloadSchema: payloadSchema
             amznResourceName: amznResourceName
+            operationPolicies:
+              request:
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
+              response:
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
+              fault:
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
             verb: POST
             uriMapping: uriMapping
             id: postapiresource
@@ -18274,6 +18998,40 @@ components:
           - usedProductIds: []
             payloadSchema: payloadSchema
             amznResourceName: amznResourceName
+            operationPolicies:
+              request:
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
+              response:
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
+              fault:
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
+              - policyId: policyId
+                policyName: policyName
+                parameters:
+                  key: '{}'
+                order: ""
             verb: POST
             uriMapping: uriMapping
             id: postapiresource
@@ -18628,6 +19386,7 @@ components:
           displayName: Default
           serverUrl: https://localhost:9443/services/
           name: default
+          id: id
           additionalProperties:
           - value: wso2
             key: Organization
@@ -18635,17 +19394,21 @@ components:
             key: Organization
           type: hybrid
           vhosts:
-          - httpContext: pets
+          - websubHttpPort: 9021
+            httpContext: pets
             wssPort: 8099
             httpPort: 80
             wsPort: 9099
             host: mg.wso2.com
+            websubHttpsPort: 8021
             httpsPort: 443
-          - httpContext: pets
+          - websubHttpPort: 9021
+            httpContext: pets
             wssPort: 8099
             httpPort: 80
             wsPort: 9099
             host: mg.wso2.com
+            websubHttpsPort: 8021
             httpsPort: 443
         - endpointURIs:
           - protocol: default
@@ -18657,6 +19420,7 @@ components:
           displayName: Default
           serverUrl: https://localhost:9443/services/
           name: default
+          id: id
           additionalProperties:
           - value: wso2
             key: Organization
@@ -18664,24 +19428,30 @@ components:
             key: Organization
           type: hybrid
           vhosts:
-          - httpContext: pets
+          - websubHttpPort: 9021
+            httpContext: pets
             wssPort: 8099
             httpPort: 80
             wsPort: 9099
             host: mg.wso2.com
+            websubHttpsPort: 8021
             httpsPort: 443
-          - httpContext: pets
+          - websubHttpPort: 9021
+            httpContext: pets
             wssPort: 8099
             httpPort: 80
             wsPort: 9099
             host: mg.wso2.com
+            websubHttpsPort: 8021
             httpsPort: 443
         crossTenantSubscriptionEnabled: false
         securityAuditProperties: '{}'
         scopes:
         - apim:api_create
+        - apim:api_manage
         - apim:api_publish
         monetizationAttributes: []
+        authorizationHeader: authorization
         docVisibilityEnabled: false
       properties:
         devportalUrl:
@@ -18695,6 +19465,7 @@ components:
         scopes:
           example:
           - apim:api_create
+          - apim:api_manage
           - apim:api_publish
           items:
             type: string
@@ -18723,6 +19494,10 @@ components:
             Is Cross Tenant Subscriptions Enabled
           example: false
           type: boolean
+        authorizationHeader:
+          description: Authorization Header
+          example: authorization
+          type: string
       title: SettingsDTO
       type: object
     SecurityAuditAttribute:
@@ -18864,6 +19639,7 @@ components:
         apiExternalProductionEndpoint: https://localhost:9443/devportal
         apiExternalSandboxEndpoint: https://localhost:9443/devportal
         advertised: true
+        vendor: WSO2
         originalDevPortalUrl: https://localhost:9443/devportal
       properties:
         advertised:
@@ -18880,6 +19656,12 @@ components:
           type: string
         apiOwner:
           example: admin
+          type: string
+        vendor:
+          default: WSO2
+          enum:
+          - WSO2
+          - AWS
           type: string
       title: API Advertise info object with advertise details
       type: object
@@ -19015,6 +19797,14 @@ components:
           type: integer
       title: API Key details to invoke APIs
       type: object
+    EnvironmentProperties:
+      additionalProperties:
+        type: string
+      example:
+        productionEndpoint: https://localhost:9443/pizzashack/v1/api/
+        sandboxEndpoint: https://localhost:9443/pizzashack/v1/api/
+      title: Envionment specific API properties request body
+      type: object
     AsyncAPISpecificationValidationResponse:
       example:
         isValid: true
@@ -19062,6 +19852,77 @@ components:
       - isValid
       title: AsyncAPI Specification Validation Response
       type: object
+    OperationPolicy:
+      example:
+        policyId: policyId
+        policyName: policyName
+        parameters:
+          key: '{}'
+        order: ""
+      properties:
+        policyName:
+          type: string
+        policyId:
+          type: string
+        order:
+          type: int
+        parameters:
+          additionalProperties:
+            type: object
+          type: object
+      required:
+      - policyName
+      title: API Operation Policy
+      type: object
+    APIOperationPolicies:
+      example:
+        request:
+        - policyId: policyId
+          policyName: policyName
+          parameters:
+            key: '{}'
+          order: ""
+        - policyId: policyId
+          policyName: policyName
+          parameters:
+            key: '{}'
+          order: ""
+        response:
+        - policyId: policyId
+          policyName: policyName
+          parameters:
+            key: '{}'
+          order: ""
+        - policyId: policyId
+          policyName: policyName
+          parameters:
+            key: '{}'
+          order: ""
+        fault:
+        - policyId: policyId
+          policyName: policyName
+          parameters:
+            key: '{}'
+          order: ""
+        - policyId: policyId
+          policyName: policyName
+          parameters:
+            key: '{}'
+          order: ""
+      properties:
+        request:
+          items:
+            $ref: '#/components/schemas/OperationPolicy'
+          type: array
+        response:
+          items:
+            $ref: '#/components/schemas/OperationPolicy'
+          type: array
+        fault:
+          items:
+            $ref: '#/components/schemas/OperationPolicy'
+          type: array
+      title: API Operation Level Policies
     GatewayEnvironmentProtocolURI:
       example:
         protocol: default
@@ -19077,6 +19938,203 @@ components:
       - endpointURI
       - protocol
       title: Gateway Environment protocols and URIs
+      type: object
+    OperationPolicyDataList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 1
+        list:
+        - supportedApiTypes:
+          - REST
+          - REST
+          multipleAllowed: true
+          policyAttributes:
+          - displayName: Header Name
+            name: headerName
+            description: Name of the header to be removed
+            type: string
+            validationRegex: /^[a-z\s]{0,255}$/i
+            required: true
+          - displayName: Header Name
+            name: headerName
+            description: Name of the header to be removed
+            type: string
+            validationRegex: /^[a-z\s]{0,255}$/i
+            required: true
+          displayName: Remove Header Policy
+          supportedGateways:
+          - Synapse
+          - Synapse
+          name: removeHeaderPolicy
+          description: With this policy, user can add a new header to the request
+          id: 121223q41-24141-124124124-12414
+          applicableFlows:
+          - in
+          - in
+          category: Mediation
+          isAPISpecific: true
+          md5: 121223q41-24141-124124124-12414
+        - supportedApiTypes:
+          - REST
+          - REST
+          multipleAllowed: true
+          policyAttributes:
+          - displayName: Header Name
+            name: headerName
+            description: Name of the header to be removed
+            type: string
+            validationRegex: /^[a-z\s]{0,255}$/i
+            required: true
+          - displayName: Header Name
+            name: headerName
+            description: Name of the header to be removed
+            type: string
+            validationRegex: /^[a-z\s]{0,255}$/i
+            required: true
+          displayName: Remove Header Policy
+          supportedGateways:
+          - Synapse
+          - Synapse
+          name: removeHeaderPolicy
+          description: With this policy, user can add a new header to the request
+          id: 121223q41-24141-124124124-12414
+          applicableFlows:
+          - in
+          - in
+          category: Mediation
+          isAPISpecific: true
+          md5: 121223q41-24141-124124124-12414
+      properties:
+        count:
+          description: |
+            Number of operation policies returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/OperationPolicyData'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Operation policy List
+      type: object
+    OperationPolicyData:
+      example:
+        supportedApiTypes:
+        - REST
+        - REST
+        multipleAllowed: true
+        policyAttributes:
+        - displayName: Header Name
+          name: headerName
+          description: Name of the header to be removed
+          type: string
+          validationRegex: /^[a-z\s]{0,255}$/i
+          required: true
+        - displayName: Header Name
+          name: headerName
+          description: Name of the header to be removed
+          type: string
+          validationRegex: /^[a-z\s]{0,255}$/i
+          required: true
+        displayName: Remove Header Policy
+        supportedGateways:
+        - Synapse
+        - Synapse
+        name: removeHeaderPolicy
+        description: With this policy, user can add a new header to the request
+        id: 121223q41-24141-124124124-12414
+        applicableFlows:
+        - in
+        - in
+        category: Mediation
+        isAPISpecific: true
+        md5: 121223q41-24141-124124124-12414
+      properties:
+        category:
+          example: Mediation
+          type: string
+        id:
+          example: 121223q41-24141-124124124-12414
+          type: string
+        name:
+          example: removeHeaderPolicy
+          type: string
+        displayName:
+          example: Remove Header Policy
+          type: string
+        description:
+          example: With this policy, user can add a new header to the request
+          type: string
+        applicableFlows:
+          items:
+            example: in
+            type: string
+          type: array
+        supportedGateways:
+          items:
+            example: Synapse
+            type: string
+          type: array
+        supportedApiTypes:
+          items:
+            example: REST
+            type: string
+          type: array
+        multipleAllowed:
+          example: true
+          type: boolean
+        isAPISpecific:
+          example: true
+          type: boolean
+        md5:
+          example: 121223q41-24141-124124124-12414
+          type: string
+        policyAttributes:
+          items:
+            $ref: '#/components/schemas/OperationPolicySpecAttribute'
+          type: array
+      title: Operation Policy Data
+      type: object
+    OperationPolicySpecAttribute:
+      example:
+        displayName: Header Name
+        name: headerName
+        description: Name of the header to be removed
+        type: string
+        validationRegex: /^[a-z\s]{0,255}$/i
+        required: true
+      properties:
+        name:
+          description: Name of the attibute
+          example: headerName
+          type: string
+        displayName:
+          description: Display name of the attibute
+          example: Header Name
+          type: string
+        description:
+          description: Description of the attibute
+          example: Name of the header to be removed
+          type: string
+        validationRegex:
+          description: UI validation regex for the attibute
+          example: /^[a-z\s]{0,255}$/i
+          type: string
+        type:
+          description: Type of the attibute
+          example: string
+          type: string
+        required:
+          description: Is this attibute mandetory for the policy
+          example: true
+          type: boolean
+      title: OperationPolicySpecAttribute
       type: object
     Post_request_body:
       properties:
@@ -19110,7 +20168,7 @@ components:
           type: string
       title: Patch request body
       type: object
-    API_additionalProperties:
+    APIInfo_additionalProperties:
       example:
         display: true
         name: name
@@ -19121,6 +20179,19 @@ components:
         value:
           type: string
         display:
+          type: boolean
+    APIInfo_additionalPropertiesMap:
+      example:
+        display: false
+        name: name
+        value: value
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+        display:
+          default: false
           type: boolean
     API_threatProtectionPolicies_list:
       example:
@@ -19200,7 +20271,7 @@ components:
         policyId:
           description: Id of policy
           example: 1
-          type: int
+          type: integer
         uuid:
           description: policy uuid
           example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
@@ -19228,7 +20299,7 @@ components:
         tenantId:
           description: Throttling policy tenant domain id
           example: -1234
-          type: int
+          type: integer
         tenantDomain:
           description: Throttling policy tenant domain
           example: carbon.super
@@ -19412,6 +20483,40 @@ components:
         - usedProductIds: []
           payloadSchema: payloadSchema
           amznResourceName: amznResourceName
+          operationPolicies:
+            request:
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
+            response:
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
+            fault:
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
           verb: POST
           uriMapping: uriMapping
           id: postapiresource
@@ -19423,6 +20528,40 @@ components:
         - usedProductIds: []
           payloadSchema: payloadSchema
           amznResourceName: amznResourceName
+          operationPolicies:
+            request:
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
+            response:
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
+            fault:
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
+            - policyId: policyId
+              policyName: policyName
+              parameters:
+                key: '{}'
+              order: ""
           verb: POST
           uriMapping: uriMapping
           id: postapiresource
@@ -19448,6 +20587,10 @@ components:
           description: A string that represents the context of the user's request
           example: CalculatorAPI
           type: string
+        contextTemplate:
+          description: The templated context of the API
+          example: CalculatorAPI/{version}
+          type: string
         version:
           description: The version of the API
           example: 1.0.0
@@ -19464,6 +20607,9 @@ components:
         thumbnailUri:
           example: /apis/01234567-0123-0123-0123-012345678901/thumbnail
           type: string
+        advertiseOnly:
+          example: true
+          type: boolean
     APIProductSearchResult_allOf:
       properties:
         description:
@@ -19603,22 +20749,30 @@ components:
             apim:api_create: Create API
             apim:api_delete: Delete API
             apim:api_publish: Publish API
+            apim:api_manage: Manage all API related operations
             apim:subscription_view: View Subscription
             apim:subscription_block: Block Subscription
+            apim:subscription_manage: Manage all Subscription related operations
             apim:threat_protection_policy_create: Create threat protection policies
             apim:threat_protection_policy_manage: Update and delete threat protection
               policies
             apim:document_create: Create API documents
-            apim:document_manage: Update and delete API documents
+            apim:document_manage: Create, update and delete API documents
+            apim:api_mediation_policy_manage: View, create, update and remove API
+              specific mediation policies
             apim:mediation_policy_view: View mediation policies
             apim:mediation_policy_create: Create mediation policies
             apim:mediation_policy_manage: Update and delete mediation policies
             apim:client_certificates_view: View client certificates
             apim:client_certificates_add: Add client certificates
             apim:client_certificates_update: Update and delete client certificates
+            apim:client_certificates_manage: View, create, update and remove client
+              certificates
             apim:ep_certificates_view: View backend endpoint certificates
             apim:ep_certificates_add: Add backend endpoint certificates
             apim:ep_certificates_update: Update and delete backend endpoint certificates
+            apim:ep_certificates_manage: View, create, update and remove endpoint
+              certificates
             apim:publisher_settings: Retrieve store settings
             apim:pub_alert_manage: Get/ subscribe/ configure publisher alerts
             apim:shared_scope_manage: Manage shared scopes
@@ -19630,6 +20784,11 @@ components:
             apim:admin: Manage all admin operations
             apim:comment_view: Read permission to comments
             apim:comment_write: Write permission to comments
+            apim:comment_manage: Read and Write comments
+            apim:tier_view: View throttling policies
+            apim:tier_manage: View, update and delete throttling policies
+            apim:api_list_view: View, Retrieve API list
+            apim:api_definition_view: View, Retrieve API definition
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
 

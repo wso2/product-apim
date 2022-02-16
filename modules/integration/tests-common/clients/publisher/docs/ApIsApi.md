@@ -6,6 +6,8 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**apisApiIdAsyncapiGet**](ApIsApi.md#apisApiIdAsyncapiGet) | **GET** /apis/{apiId}/asyncapi | Get AsyncAPI definition
 [**apisApiIdAsyncapiPut**](ApIsApi.md#apisApiIdAsyncapiPut) | **PUT** /apis/{apiId}/asyncapi | Update AsyncAPI definition
+[**apisApiIdEnvironmentsEnvIdKeysGet**](ApIsApi.md#apisApiIdEnvironmentsEnvIdKeysGet) | **GET** /apis/{apiId}/environments/{envId}/keys | get environment specific API properties
+[**apisApiIdEnvironmentsEnvIdKeysPut**](ApIsApi.md#apisApiIdEnvironmentsEnvIdKeysPut) | **PUT** /apis/{apiId}/environments/{envId}/keys | Update environment specific API properties
 [**createAPI**](ApIsApi.md#createAPI) | **POST** /apis | Create a New API
 [**createNewAPIVersion**](ApIsApi.md#createNewAPIVersion) | **POST** /apis/copy-api | Create a New API Version
 [**deleteAPI**](ApIsApi.md#deleteAPI) | **DELETE** /apis/{apiId} | Delete an API
@@ -183,6 +185,152 @@ Name | Type | Description  | Notes
 **403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
+
+<a name="apisApiIdEnvironmentsEnvIdKeysGet"></a>
+# **apisApiIdEnvironmentsEnvIdKeysGet**
+> Map&lt;String, String&gt; apisApiIdEnvironmentsEnvIdKeysGet(apiId, envId)
+
+get environment specific API properties
+
+This operation can be used to retrieve environment specific API properties from an existing API. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    String envId = "envId_example"; // String | **Env ID** consisting of the **UUID** of the gateway environment. 
+    try {
+      Map<String, String> result = apiInstance.apisApiIdEnvironmentsEnvIdKeysGet(apiId, envId);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#apisApiIdEnvironmentsEnvIdKeysGet");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **envId** | **String**| **Env ID** consisting of the **UUID** of the gateway environment.  |
+
+### Return type
+
+**Map&lt;String, String&gt;**
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Successful response with environment specific API properties  |  -  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+
+<a name="apisApiIdEnvironmentsEnvIdKeysPut"></a>
+# **apisApiIdEnvironmentsEnvIdKeysPut**
+> Map&lt;String, String&gt; apisApiIdEnvironmentsEnvIdKeysPut(apiId, envId, requestBody)
+
+Update environment specific API properties
+
+This operation can be used to update the environment specific API properties of an existing API. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    String envId = "envId_example"; // String | **Env ID** consisting of the **UUID** of the gateway environment. 
+    Map<String, String> requestBody = new HashMap(); // Map<String, String> | 
+    try {
+      Map<String, String> result = apiInstance.apisApiIdEnvironmentsEnvIdKeysPut(apiId, envId, requestBody);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#apisApiIdEnvironmentsEnvIdKeysPut");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **envId** | **String**| **Env ID** consisting of the **UUID** of the gateway environment.  |
+ **requestBody** | [**Map&lt;String, String&gt;**](String.md)|  |
+
+### Return type
+
+**Map&lt;String, String&gt;**
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Successful response with environment specific API properties  |  -  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
 
 <a name="createAPI"></a>
 # **createAPI**
@@ -912,7 +1060,7 @@ null (empty response body)
 
 <a name="getAllAPIs"></a>
 # **getAllAPIs**
-> APIListDTO getAllAPIs(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept)
+> APIListDTO getAllAPIs(limit, offset, sortBy, sortOrder, xWSO2Tenant, query, ifNoneMatch, accept)
 
 Retrieve/Search APIs 
 
@@ -940,13 +1088,14 @@ public class Example {
     ApIsApi apiInstance = new ApIsApi(defaultClient);
     Integer limit = 25; // Integer | Maximum size of resource array to return. 
     Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
+    String sortBy = "createdTime"; // String | Criteria for sorting. 
+    String sortOrder = "desc"; // String | Order of sorting(ascending/descending). 
     String xWSO2Tenant = "xWSO2Tenant_example"; // String | For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from. 
     String query = "query_example"; // String | **Search condition**.  You can search in attributes by using an **\"<attribute>:\"** modifier.  Eg. \"provider:wso2\" will match an API if the provider of the API contains \"wso2\". \"provider:\"wso2\"\" will match an API if the provider of the API is exactly \"wso2\". \"status:PUBLISHED\" will match an API if the API is in PUBLISHED state.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, doc, provider**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl) 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
-    Boolean expand = true; // Boolean | Defines whether the returned response should contain full details of API 
     String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
     try {
-      APIListDTO result = apiInstance.getAllAPIs(limit, offset, xWSO2Tenant, query, ifNoneMatch, expand, accept);
+      APIListDTO result = apiInstance.getAllAPIs(limit, offset, sortBy, sortOrder, xWSO2Tenant, query, ifNoneMatch, accept);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApIsApi#getAllAPIs");
@@ -965,10 +1114,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
+ **sortBy** | **String**| Criteria for sorting.  | [optional] [default to createdTime] [enum: apiName, version, createdTime, status]
+ **sortOrder** | **String**| Order of sorting(ascending/descending).  | [optional] [default to desc] [enum: asc, desc]
  **xWSO2Tenant** | **String**| For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be   retirieved from.  | [optional]
  **query** | **String**| **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;provider:wso2\&quot; will match an API if the provider of the API contains \&quot;wso2\&quot;. \&quot;provider:\&quot;wso2\&quot;\&quot; will match an API if the provider of the API is exactly \&quot;wso2\&quot;. \&quot;status:PUBLISHED\&quot; will match an API if the API is in PUBLISHED state.  Also you can use combined modifiers Eg. name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.  Supported attribute modifiers are [**version, context, name, status, description, doc, provider**]  If no advanced attribute modifier has been specified,  the API names containing the search term will be returned as a result.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  | [optional]
  **ifNoneMatch** | **String**| Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  | [optional]
- **expand** | **Boolean**| Defines whether the returned response should contain full details of API  | [optional]
  **accept** | **String**| Media types acceptable for the response. Default is application/json.  | [optional] [default to &quot;application/json&quot;]
 
 ### Return type

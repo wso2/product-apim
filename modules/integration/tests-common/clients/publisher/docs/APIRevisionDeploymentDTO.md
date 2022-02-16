@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **vhost** | **String** |  |  [optional]
 **displayOnDevportal** | **Boolean** |  |  [optional]
 **deployedTime** | **String** |  |  [optional] [readonly]
+**successDeployedTime** | **String** |  |  [optional] [readonly]
 
 
 

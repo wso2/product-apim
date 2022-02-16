@@ -12,6 +12,8 @@ Name | Type | Description | Notes
 **httpsPort** | **Integer** |  |  [optional]
 **wsPort** | **Integer** |  |  [optional]
 **wssPort** | **Integer** |  |  [optional]
+**websubHttpPort** | **Integer** |  |  [optional]
+**websubHttpsPort** | **Integer** |  |  [optional]
 
 
 

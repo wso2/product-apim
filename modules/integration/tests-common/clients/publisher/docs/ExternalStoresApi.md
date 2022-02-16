@@ -194,7 +194,7 @@ public class Example {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
- **externalStoreIds** | **String**| External Store Ids of stores which the API needs to be published or updated. |
+ **externalStoreIds** | **String**| External Store Ids of stores which the API needs to be published or updated. | [optional]
  **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
 
 ### Return type

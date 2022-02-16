@@ -122,7 +122,7 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
         }
         restAPIPublisher = new RestAPIPublisherImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN, "https://localhost:9943/");
         try {
-            apiListDTO = restAPIPublisher.apIsApi.getAllAPIs(null, null, TENANT_DOMAIN, null, null, null, null);
+            apiListDTO = restAPIPublisher.apIsApi.getAllAPIs(null, null, TENANT_DOMAIN, null, null, null, null, null);
         } catch (ApiException e) {
             throw new APIManagerIntegrationTestException("Login to Publisher with email username failed due to " +
                     e.getMessage(), e);
@@ -156,7 +156,7 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
 
         try {
             apiListDTO = restAPIPublisher.apIsApi.getAllAPIs(null, null, "emailuserdomain.com",
-                    null, null, null, null);
+                    null, null, null, null, null);
         } catch (ApiException e) {
             throw new APIManagerIntegrationTestException("Login to Publisher with email username failed due to " +
                     e.getMessage(), e);
