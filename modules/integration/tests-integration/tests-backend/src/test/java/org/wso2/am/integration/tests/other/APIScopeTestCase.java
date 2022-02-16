@@ -473,7 +473,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(restAPIPublisherNegative.getAccessToken());
         try {
             restAPIPublisherNegative.apIsApi.getAllAPIs(null, null, keyManagerContext.getContextTenant().getDomain(),
-                    null, null, null, null);
+                    null, null, null, null, null);
             Assert.assertTrue(false);
         } catch (ApiException e) {
             Assert.assertTrue(true);
