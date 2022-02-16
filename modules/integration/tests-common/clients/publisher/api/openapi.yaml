@@ -16312,21 +16312,21 @@ components:
       example:
         displayName: REVISION 1
         description: removed a post resource
-        createdTime: 2000-01-23T04:56:07.000+00:00
+        createdTime: createdTime
         id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         deploymentInfo:
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: 2000-01-23T04:56:07.000+00:00
+          deployedTime: deployedTime
           name: default
-          successDeployedTime: 2000-01-23T04:56:07.000+00:00
+          successDeployedTime: successDeployedTime
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: 2000-01-23T04:56:07.000+00:00
+          deployedTime: deployedTime
           name: default
-          successDeployedTime: 2000-01-23T04:56:07.000+00:00
+          successDeployedTime: successDeployedTime
         apiInfo:
           id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -16344,7 +16344,6 @@ components:
           minLength: 0
           type: string
         createdTime:
-          format: date-time
           readOnly: true
           type: string
         apiInfo:
@@ -16370,40 +16369,40 @@ components:
         list:
         - displayName: REVISION 1
           description: removed a post resource
-          createdTime: 2000-01-23T04:56:07.000+00:00
+          createdTime: createdTime
           id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           deploymentInfo:
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: 2000-01-23T04:56:07.000+00:00
+            deployedTime: deployedTime
             name: default
-            successDeployedTime: 2000-01-23T04:56:07.000+00:00
+            successDeployedTime: successDeployedTime
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: 2000-01-23T04:56:07.000+00:00
+            deployedTime: deployedTime
             name: default
-            successDeployedTime: 2000-01-23T04:56:07.000+00:00
+            successDeployedTime: successDeployedTime
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
         - displayName: REVISION 1
           description: removed a post resource
-          createdTime: 2000-01-23T04:56:07.000+00:00
+          createdTime: createdTime
           id: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           deploymentInfo:
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: 2000-01-23T04:56:07.000+00:00
+            deployedTime: deployedTime
             name: default
-            successDeployedTime: 2000-01-23T04:56:07.000+00:00
+            successDeployedTime: successDeployedTime
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
-            deployedTime: 2000-01-23T04:56:07.000+00:00
+            deployedTime: deployedTime
             name: default
-            successDeployedTime: 2000-01-23T04:56:07.000+00:00
+            successDeployedTime: successDeployedTime
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -16423,15 +16422,15 @@ components:
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: 2000-01-23T04:56:07.000+00:00
+          deployedTime: deployedTime
           name: default
-          successDeployedTime: 2000-01-23T04:56:07.000+00:00
+          successDeployedTime: successDeployedTime
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
-          deployedTime: 2000-01-23T04:56:07.000+00:00
+          deployedTime: deployedTime
           name: default
-          successDeployedTime: 2000-01-23T04:56:07.000+00:00
+          successDeployedTime: successDeployedTime
       properties:
         list:
           items:
@@ -16443,9 +16442,9 @@ components:
         revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
         vhost: mg.wso2.com
         displayOnDevportal: true
-        deployedTime: 2000-01-23T04:56:07.000+00:00
+        deployedTime: deployedTime
         name: default
-        successDeployedTime: 2000-01-23T04:56:07.000+00:00
+        successDeployedTime: successDeployedTime
       properties:
         revisionUuid:
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
@@ -16467,11 +16466,9 @@ components:
           example: true
           type: boolean
         deployedTime:
-          format: date-time
           readOnly: true
           type: string
         successDeployedTime:
-          format: date-time
           readOnly: true
           type: string
       title: APIRevisionDeployment Info object with basic API deployment details

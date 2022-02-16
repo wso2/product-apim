@@ -8967,7 +8967,6 @@ components:
         createdTime:
           readOnly: true
           type: string
-          format: date-time
         apiInfo:
           $ref: '#/components/schemas/APIRevisionAPIInfo'
         deploymentInfo:
@@ -9041,11 +9040,9 @@ components:
         deployedTime:
           readOnly: true
           type: string
-          format: date-time
         successDeployedTime:
           readOnly: true
           type: string
-          format: date-time
     AuditReport:
       title: Resource for Audit Report
       type: object

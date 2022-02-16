@@ -23,7 +23,6 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * APIRevisionDeploymentDTO
@@ -48,11 +47,11 @@ public class APIRevisionDeploymentDTO {
 
         public static final String SERIALIZED_NAME_DEPLOYED_TIME = "deployedTime";
         @SerializedName(SERIALIZED_NAME_DEPLOYED_TIME)
-            private Date deployedTime;
+            private String deployedTime;
 
         public static final String SERIALIZED_NAME_SUCCESS_DEPLOYED_TIME = "successDeployedTime";
         @SerializedName(SERIALIZED_NAME_SUCCESS_DEPLOYED_TIME)
-            private Date successDeployedTime;
+            private String successDeployedTime;
 
 
         public APIRevisionDeploymentDTO revisionUuid(String revisionUuid) {
@@ -147,7 +146,7 @@ public class APIRevisionDeploymentDTO {
     }
 
 
-        public APIRevisionDeploymentDTO deployedTime(Date deployedTime) {
+        public APIRevisionDeploymentDTO deployedTime(String deployedTime) {
         
         this.deployedTime = deployedTime;
         return this;
@@ -160,17 +159,17 @@ public class APIRevisionDeploymentDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public Date getDeployedTime() {
+    public String getDeployedTime() {
         return deployedTime;
     }
 
 
-    public void setDeployedTime(Date deployedTime) {
+    public void setDeployedTime(String deployedTime) {
         this.deployedTime = deployedTime;
     }
 
 
-        public APIRevisionDeploymentDTO successDeployedTime(Date successDeployedTime) {
+        public APIRevisionDeploymentDTO successDeployedTime(String successDeployedTime) {
         
         this.successDeployedTime = successDeployedTime;
         return this;
@@ -183,12 +182,12 @@ public class APIRevisionDeploymentDTO {
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public Date getSuccessDeployedTime() {
+    public String getSuccessDeployedTime() {
         return successDeployedTime;
     }
 
 
-    public void setSuccessDeployedTime(Date successDeployedTime) {
+    public void setSuccessDeployedTime(String successDeployedTime) {
         this.successDeployedTime = successDeployedTime;
     }
 

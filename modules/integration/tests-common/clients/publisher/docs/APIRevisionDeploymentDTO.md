@@ -10,8 +10,8 @@ Name | Type | Description | Notes
 **name** | **String** |  |  [optional]
 **vhost** | **String** |  |  [optional]
 **displayOnDevportal** | **Boolean** |  |  [optional]
-**deployedTime** | [**Date**](Date.md) |  |  [optional] [readonly]
-**successDeployedTime** | [**Date**](Date.md) |  |  [optional] [readonly]
+**deployedTime** | **String** |  |  [optional] [readonly]
+**successDeployedTime** | **String** |  |  [optional] [readonly]
 
 
 
