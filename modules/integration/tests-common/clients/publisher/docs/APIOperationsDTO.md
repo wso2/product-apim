@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **amznResourceTimeout** | **Integer** |  |  [optional]
 **payloadSchema** | **String** |  |  [optional]
 **uriMapping** | **String** |  |  [optional]
+**operationPolicies** | [**APIOperationPoliciesDTO**](APIOperationPoliciesDTO.md) |  |  [optional]
 
 
 

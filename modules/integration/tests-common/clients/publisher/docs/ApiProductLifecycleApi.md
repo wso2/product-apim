@@ -40,7 +40,7 @@ public class Example {
     ApiProductLifecycleApi apiInstance = new ApiProductLifecycleApi(defaultClient);
     String action = "action_example"; // String | The action to demote or promote the state of the API Product.  Supported actions are [ **Publish**, **Deploy as a Prototype**, **Demote to Created**, **Block**, **Deprecate**, **Re-Publish**, **Retire** ] 
     String apiProductId = "apiProductId_example"; // String | **API Product ID** consisting of the **UUID** of the API Product. The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID. Should be formatted as **provider-name-version**. 
-    String lifecycleChecklist = "lifecycleChecklist_example"; // String |  Supported checklist items are as follows. 1. **Deprecate old versions after publishing the API**: Setting this to true will deprecate older versions of a particular API Product when it is promoted to Published state from Created state. 2. **Requires re-subscription when publishing the API**: If you set this to true, users need to re subscribe to the API Products although they may have subscribed to an older version. You can specify additional checklist items by using an **\"attribute:\"** modifier. Eg: \"Deprecate old versions after publishing the API:true\" will deprecate older versions of a particular API Product when it is promoted to Published state from Created state. Multiple checklist items can be given in \"attribute1:true, attribute2:false\" format. **Sample CURL :**  curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X POST \"https://localhost:9443/api/am/publisher/v3/api-products/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish&lifecycleChecklist=Deprecate%20old%20versions%20after%20publishing%20the%20API%3Atrue,Requires%20re-subscription%20when%20publishing%20the%20API%3Afalse\" 
+    String lifecycleChecklist = "lifecycleChecklist_example"; // String | Supported checklist items are as follows. 1. **Deprecate old versions after publishing the API**: Setting this to true will deprecate older versions of a particular API Product when it is promoted to Published state from Created state. 2. **Requires re-subscription when publishing the API**: If you set this to true, users need to re subscribe to the API Products although they may have subscribed to an older version. You can specify additional checklist items by using an **\"attribute:\"** modifier. Eg: \"Deprecate old versions after publishing the API:true\" will deprecate older versions of a particular API Product when it is promoted to Published state from Created state. Multiple checklist items can be given in \"attribute1:true, attribute2:false\" format. **Sample CURL :**  curl -k -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -X POST \"https://localhost:9443/api/am/publisher/v3/api-products/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish&lifecycleChecklist=Deprecate%20old%20versions%20after%20publishing%20the%20API%3Atrue,Requires%20re-subscription%20when%20publishing%20the%20API%3Afalse\" 
     String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
     try {
       WorkflowResponseDTO result = apiInstance.changeAPIProductLifecycle(action, apiProductId, lifecycleChecklist, ifMatch);
@@ -62,7 +62,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **action** | **String**| The action to demote or promote the state of the API Product.  Supported actions are [ **Publish**, **Deploy as a Prototype**, **Demote to Created**, **Block**, **Deprecate**, **Re-Publish**, **Retire** ]  | [enum: Publish, Deploy as a Prototype, Demote to Created, Block, Deprecate, Re-Publish, Retire]
  **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID. Should be formatted as **provider-name-version**.  |
- **lifecycleChecklist** | **String**|  Supported checklist items are as follows. 1. **Deprecate old versions after publishing the API**: Setting this to true will deprecate older versions of a particular API Product when it is promoted to Published state from Created state. 2. **Requires re-subscription when publishing the API**: If you set this to true, users need to re subscribe to the API Products although they may have subscribed to an older version. You can specify additional checklist items by using an **\&quot;attribute:\&quot;** modifier. Eg: \&quot;Deprecate old versions after publishing the API:true\&quot; will deprecate older versions of a particular API Product when it is promoted to Published state from Created state. Multiple checklist items can be given in \&quot;attribute1:true, attribute2:false\&quot; format. **Sample CURL :**  curl -k -H \&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v3/api-products/change-lifecycle?apiId&#x3D;890a4f4d-09eb-4877-a323-57f6ce2ed79b&amp;action&#x3D;Publish&amp;lifecycleChecklist&#x3D;Deprecate%20old%20versions%20after%20publishing%20the%20API%3Atrue,Requires%20re-subscription%20when%20publishing%20the%20API%3Afalse\&quot;  | [optional]
+ **lifecycleChecklist** | **String**| Supported checklist items are as follows. 1. **Deprecate old versions after publishing the API**: Setting this to true will deprecate older versions of a particular API Product when it is promoted to Published state from Created state. 2. **Requires re-subscription when publishing the API**: If you set this to true, users need to re subscribe to the API Products although they may have subscribed to an older version. You can specify additional checklist items by using an **\&quot;attribute:\&quot;** modifier. Eg: \&quot;Deprecate old versions after publishing the API:true\&quot; will deprecate older versions of a particular API Product when it is promoted to Published state from Created state. Multiple checklist items can be given in \&quot;attribute1:true, attribute2:false\&quot; format. **Sample CURL :**  curl -k -H \&quot;Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\&quot; -X POST \&quot;https://localhost:9443/api/am/publisher/v3/api-products/change-lifecycle?apiId&#x3D;890a4f4d-09eb-4877-a323-57f6ce2ed79b&amp;action&#x3D;Publish&amp;lifecycleChecklist&#x3D;Deprecate%20old%20versions%20after%20publishing%20the%20API%3Atrue,Requires%20re-subscription%20when%20publishing%20the%20API%3Afalse\&quot;  | [optional]
  **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
 
 ### Return type
@@ -81,12 +81,12 @@ Name | Type | Description  | Notes
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. Lifecycle changed successfully.  |  * ETag - Entity Tag of the changed API. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the API lifecycle has been modified the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  |
-**202** | Accepted. The request has been accepted.  |  -  |
+**200** | OK. Lifecycle changed successfully.  |  -  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
+**401** | Unauthorized. The user is not authorized. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **409** | Conflict. Specified resource already exists. |  -  |
-**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="deleteAPIProductLifecycleStatePendingTasks"></a>
 # **deleteAPIProductLifecycleStatePendingTasks**
@@ -153,8 +153,9 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK. Lifecycle state change pending task removed successfully.  |  -  |
+**401** | Unauthorized. The user is not authorized. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
-**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getAPIProductLifecycleHistory"></a>
 # **getAPIProductLifecycleHistory**
@@ -223,9 +224,10 @@ Name | Type | Description  | Notes
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. Lifecycle state change history returned successfully.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  |
-**304** | Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  |  -  |
+**200** | OK. Lifecycle state change history returned successfully.  |  -  |
+**401** | Unauthorized. The user is not authorized. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getAPIProductLifecycleState"></a>
 # **getAPIProductLifecycleState**
@@ -294,8 +296,8 @@ Name | Type | Description  | Notes
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK. Lifecycle state data returned successfully.  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Last-Modified - Date and time the resource has been modifed the last time. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Content-Type - The content type of the body.  <br>  |
-**304** | Not Modified. Empty body because the client has already the latest version of the requested resource (Will be supported in future).  |  -  |
+**200** | OK. Lifecycle state data returned successfully.  |  -  |
+**401** | Unauthorized. The user is not authorized. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
-**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
+**500** | Internal Server Error. |  -  |
 
