@@ -181,7 +181,7 @@
             <!--<class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
             <class name="org.wso2.am.integration.tests.other.WSDLImportTestCase"/>
-<!--            <class name="org.wso2.am.integration.tests.other.SoapToRestTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.SoapToRestTestCase"/>
             <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
@@ -410,16 +410,14 @@
     <test name="apim-solace-broker-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group2"/>
         <classes>
-            <class name="org.wso2.am.integration.tests.solace.SolacePublisherPortalTestCase"/>
-            <class name="org.wso2.am.integration.tests.solace.SolaceDeveloperPortalTestCase"/>
+            <class name="org.wso2.am.integration.tests.solace.SolaceTestCase"/>
         </classes>
     </test>
 
-    <!--Need to fix-->
-<!--    <test name="apim-logging-tests" preserve-order="true" parallel="false" group-by-instances="true">-->
-<!--        <parameter name="group" value="group2"/>-->
-<!--        <classes>-->
-<!--            <class name="org.wso2.am.integration.tests.logging.APILoggingTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <test name="apim-logging-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group1"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.logging.APILoggingTest"/>
+        </classes>
+    </test>
 </suite>

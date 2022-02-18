@@ -49,26 +49,7 @@ ws_endpoint = "ws://localhost:9099"
 http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
 
-[[apim.gateway.environment]]
-name = "publisherEnv"
-display_name = "Publisher portal Test Environment"
-type = "hybrid"
-display_in_api_console = false
-description = "development api gateway broker"
-provider = "solace"
-service_url = "http://localhost:9955/"
-username = "testUser"
-ws_endpoint = "ws://localhost:9955/"
-wss_endpoint = "wss://localhost:9955/"
-http_endpoint = "http://localhost:9955/"
-https_endpoint = "https://localhost:9955/"
-password = "testPassword"
-show_as_token_endpoint_url = false
 
-[apim.gateway.environment.properties]
-Organization = "TestWSO2"
-DisplayName = "Publisher portal Test Environment"
-DevAccountName = "publisherTestEnv"
 
 [apim.cors]
 allow_origins = "*"
