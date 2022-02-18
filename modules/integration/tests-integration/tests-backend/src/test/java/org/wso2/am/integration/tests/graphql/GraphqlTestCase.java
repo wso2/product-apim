@@ -350,7 +350,8 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Oauth Scopes")
+    @Test(groups = {"wso2.am"}, description = "Oauth Scopes",
+            dependsOnMethods = { "testOperationalLevelOAuthScopesForGraphql"})
     public void testOperationalLevelSecurityForGraphql() throws Exception {
         HttpResponse response = restAPIPublisher.getAPI(graphqlAPIId);
         Gson g = new Gson();
