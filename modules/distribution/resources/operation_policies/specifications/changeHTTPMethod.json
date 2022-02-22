@@ -9,7 +9,7 @@
       "name": "httpMethod",
       "displayName": "HTTP Method",
       "description": "Method of the HTTP request",
-      "validationRegex": "/^(GET|PUT|POST|PATCH|DELETE|HEAD|OPTIONS)$/",
+      "validationRegex": "^(GET|PUT|POST|PATCH|DELETE|HEAD|OPTIONS)$",
       "type": "Enum",
       "allowedValues" : ["GET","PUT","POST","PATCH","DELETE","HEAD","OPTIONS"],
       "required": true
