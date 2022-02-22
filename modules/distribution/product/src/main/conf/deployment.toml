@@ -32,6 +32,9 @@ password =  "wso2carbon"
 alias =  "wso2carbon"
 key_password =  "wso2carbon"
 
+#[keystore.listener_profile]
+#bind_address = "0.0.0.0"
+
 #[keystore.primary]
 #file_name =  "wso2carbon.jks"
 #type =  "JKS"
