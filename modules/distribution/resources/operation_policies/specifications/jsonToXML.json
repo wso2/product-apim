@@ -12,6 +12,6 @@
     "Synapse"
   ],
   "supportedApiTypes": [
-    "REST"
+    "HTTP"
   ]
 }
