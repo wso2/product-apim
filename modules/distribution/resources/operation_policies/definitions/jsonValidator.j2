@@ -1,10 +1,10 @@
 <log level="custom">
     <property name="MESSAGE" value="json_validator"/>
 </log>
-<property name="maxPropertyCount"  value = "100"/>
-<property name="maxStringLength"  value = "100"/>
-<property name="maxArrayElementCount"  value = "100"/>
-<property name="maxKeyLength"  value = "100"/>
-<property name="maxJsonDepth"  value = "100"/>
-<property name="RequestMessageBufferSize" value="1024"/>
-<class name="org.wso2.carbon.apimgt.gateway.mediators.JsonSchemaValidator"/>
+<property name="maxPropertyCount"  value = "{{maxPropertyCount}}"/>
+<property name="maxStringLength"  value = "{{maxStringLength}}"/>
+<property name="maxArrayElementCount"  value = "{{maxArrayElementCount}}"/>
+<property name="maxKeyLength"  value = "{{maxKeyLength}}"/>
+<property name="maxJsonDepth"  value = "{{maxJsonDepth}}"/>
+<property name="RequestMessageBufferSize" value="{{requestMessageBufferSize}}"/>
+<class name="{{jsonSchemaValidator}}"/>
