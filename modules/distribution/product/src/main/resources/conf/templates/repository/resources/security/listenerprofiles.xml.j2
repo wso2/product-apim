@@ -19,7 +19,7 @@
 
 <parameter name="SSLProfiles" xmlns:svns="http://org.wso2.securevault/configuration">
     <profile>
-        <bindAddress>0.0.0.0</bindAddress>
+        <bindAddress>{{keystore.listener_profile.bind_address}}</bindAddress>
          <KeyStore>
             <Location>repository/resources/security/{{keystore.tls.file_name}}</Location>
             <Type>{{keystore.tls.type}}</Type>
