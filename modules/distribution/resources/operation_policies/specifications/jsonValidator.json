@@ -18,7 +18,7 @@
       "name": "maxPropertyCount",
       "displayName": "Max Property Count",
       "description": "Maximum number of properties allowed in the json payload",
-      "validationRegex": "/^\\d{1,3}$/",
+      "validationRegex": "^\\d{1,3}$",
       "type": "Integer",
       "defaultValue": 100,
       "required": false
@@ -27,7 +27,7 @@
       "name": "maxStringLength",
       "displayName": "Max String Length",
       "description": "Maximum length of a string in the json payload",
-      "validationRegex": "/^\\d{1,3}$/",
+      "validationRegex": "^\\d{1,3}$",
       "type": "Integer",
       "defaultValue": 100,
       "required": false
@@ -36,7 +36,7 @@
       "name": "maxArrayElementCount",
       "displayName": "Max Array Element Count",
       "description": "Maximum number of array elements allowed in the json payload",
-      "validationRegex": "/^\\d{1,3}$/",
+      "validationRegex": "^\\d{1,3}$",
       "type": "Integer",
       "defaultValue": 100,
       "required": false
@@ -45,7 +45,7 @@
       "name": "maxKeyLength",
       "displayName": "Max Key Length",
       "description": "Maximum length of a key allowed in the json payload",
-      "validationRegex": "/^\\d{1,3}$/",
+      "validationRegex": "^\\d{1,3}$",
       "type": "Integer",
       "defaultValue": 100,
       "required": false
@@ -54,7 +54,7 @@
       "name": "maxJsonDepth",
       "displayName": "Max Json Depth",
       "description": "Maximum depth of the json payload",
-      "validationRegex": "/^\\d{1,3}$/",
+      "validationRegex": "^\\d{1,3}$",
       "type": "Integer",
       "defaultValue": 100,
       "required": false
@@ -63,7 +63,7 @@
       "name": "requestMessageBufferSize",
       "displayName": "Request message buffer size",
       "description": "Request message buffer size",
-      "validationRegex": "/^\\d{1,4}$/",
+      "validationRegex": "^\\d{1,4}$",
       "type": "Integer",
       "defaultValue": 1024,
       "required": false
