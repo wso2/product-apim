@@ -19,7 +19,6 @@ import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
-import org.wso2.am.admin.clients.service.mgt.ServiceAdminClient;
 import org.wso2.carbon.governance.lcm.stub.LifeCycleManagementServiceExceptionException;
 import org.wso2.carbon.governance.lcm.stub.LifeCycleManagementServiceStub;
 
@@ -27,7 +26,7 @@ import java.rmi.RemoteException;
 
 public class LifeCycleAdminClient {
 
-    private static final Log log = LogFactory.getLog(ServiceAdminClient.class);
+    private static final Log log = LogFactory.getLog(LifeCycleAdminClient.class);
     private final String serviceName = "LifeCycleManagementService";
     private LifeCycleManagementServiceStub lifeCycleServiceStub;
 

@@ -97,23 +97,11 @@ under the License.
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.mediation</groupId>
-            <artifactId>org.wso2.carbon.message.store.stub</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.mediation</groupId>
             <artifactId>org.wso2.carbon.message.processor.stub</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.mediation</groupId>
             <artifactId>org.wso2.carbon.mediation.artifactuploader.stub</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.mediation</groupId>
-            <artifactId>org.wso2.carbon.proxyadmin.stub</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.deployment</groupId>
-            <artifactId>org.wso2.carbon.service.mgt.stub</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.registry</groupId>

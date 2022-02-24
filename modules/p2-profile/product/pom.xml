@@ -195,9 +195,6 @@
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.role.mgt.core.server.feature:${carbon.identity.version}
                                 </featureArtifactDef>
 
-                                <featureArtifactDef>
-                                    org.wso2.carbon.deployment:org.wso2.carbon.service.mgt.server.feature:${carbon.deployment.version}
-                                </featureArtifactDef>
 
                            
 
@@ -323,6 +320,10 @@
                                 <featureArtifactDef>
                                     org.wso2.am:org.wso2.am.multitenancy.dashboard.ui.feature:${apimserver.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.am:org.wso2.am.security.feature:${apimserver.version}
+                                </featureArtifactDef>
+
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.cache.invalidation.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
@@ -673,9 +674,6 @@
                                     org.wso2.carbon.extension.identity.oauth2.grantType.token.exchange:org.wso2.carbon.extension.identity.oauth2.token.exchange.feature:${carbon.extension.identity.oauth2.grantType.token.exchange}
                                 </featureArtifactDef>
 
-                                <featureArtifactDef>
-                                    org.wso2.carbon.identity.inbound.auth.sts:org.wso2.carbon.sts.connector.feature:${carbon.identity-inbound-auth-sts.version}
-                                </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.user.functionality.mgt.feature:${carbon.identity.version}
                                 </featureArtifactDef>
@@ -1049,10 +1047,6 @@
                                     <id>org.wso2.carbon.identity.data.publisher.application.authentication.server.feature.group</id>
                                     <version>${carbon.identity-data-publisher-application-authentication.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>${carbon.deployment.version}</version>
-                                </feature>
 
                             
                                 <feature>
@@ -1092,6 +1086,10 @@
                                 
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.am.security.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
@@ -1516,10 +1514,6 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.sts.connector.feature.group</id>
-                                    <version>${carbon.identity-inbound-auth-sts.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -1735,10 +1729,6 @@
                                     <id>org.wso2.carbon.identity.data.publisher.application.authentication.server.feature.group</id>
                                     <version>${carbon.identity-data-publisher-application-authentication.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>${carbon.deployment.version}</version>
-                                </feature>
 
 
                                 <feature>
@@ -1770,6 +1760,10 @@
 
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.am.security.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
@@ -2160,10 +2154,6 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.sts.connector.feature.group</id>
-                                    <version>${carbon.identity-inbound-auth-sts.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -2348,10 +2338,6 @@
                                     <id>org.wso2.carbon.security.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>${carbon.deployment.version}</version>
-                                </feature>
                                 
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
@@ -2389,6 +2375,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.am.security.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
@@ -2635,10 +2625,6 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.sts.connector.feature.group</id>
-                                    <version>${carbon.identity-inbound-auth-sts.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -2851,11 +2837,7 @@
                                     <id>org.wso2.carbon.security.mgt.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>${carbon.deployment.version}</version>
-                                </feature>
-                                
+
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.registry.version}</version>
@@ -2882,6 +2864,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.am.security.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
@@ -3188,10 +3174,6 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.sts.connector.feature.group</id>
-                                    <version>${carbon.identity-inbound-auth-sts.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -3377,10 +3359,6 @@
                                     <id>org.wso2.carbon.security.mgt.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>${carbon.deployment.version}</version>
-                                </feature>
 
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
@@ -3409,6 +3387,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.am.security.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
@@ -3713,10 +3695,6 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.sts.connector.feature.group</id>
-                                    <version>${carbon.identity-inbound-auth-sts.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -3926,11 +3904,7 @@
                                     <id>org.wso2.carbon.security.mgt.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>${carbon.deployment.version}</version>
-                                </feature>
-                              
+
 
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
@@ -3962,6 +3936,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.am.security.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
                                 <feature>
@@ -4180,10 +4158,6 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.sts.connector.feature.group</id>
-                                    <version>${carbon.identity-inbound-auth-sts.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -4324,10 +4298,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.security.mgt.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>${carbon.deployment.version}</version>
                                 </feature>
 
                                 <feature>
@@ -4520,11 +4490,7 @@
                                     <id>org.wso2.carbon.identity.role.mgt.core.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.sts.connector.feature.group</id>
-                                    <version>${carbon.identity-inbound-auth-sts.version}</version>
-                                </feature>
-                                <feature>
+\                                <feature>
                                     <id>org.wso2.carbon.identity.user.functionality.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>

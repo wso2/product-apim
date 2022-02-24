@@ -30,12 +30,9 @@ import org.json.JSONObject;
 import org.wso2.am.admin.clients.endpoint.EndPointAdminClient;
 import org.wso2.am.admin.clients.localentry.LocalEntriesAdminClient;
 import org.wso2.am.admin.clients.mediation.MessageProcessorClient;
-import org.wso2.am.admin.clients.mediation.MessageStoreAdminClient;
 import org.wso2.am.admin.clients.mediation.PriorityMediationAdminClient;
-import org.wso2.am.admin.clients.proxy.admin.ProxyServiceAdminClient;
 import org.wso2.am.admin.clients.rest.api.RestApiAdminClient;
 import org.wso2.am.admin.clients.sequences.SequenceAdminServiceClient;
-import org.wso2.am.admin.clients.service.mgt.ServiceAdminClient;
 import org.wso2.am.admin.clients.tasks.TaskAdminClient;
 import org.wso2.am.admin.clients.template.EndpointTemplateAdminServiceClient;
 import org.wso2.am.admin.clients.template.SequenceTemplateAdminServiceClient;
@@ -47,7 +44,6 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.endpoint.stub.types.EndpointAdminEndpointAdminException;
 import org.wso2.carbon.localentry.stub.types.LocalEntryAdminException;
-import org.wso2.carbon.proxyadmin.stub.ProxyServiceAdminProxyAdminException;
 import org.wso2.carbon.rest.api.stub.RestApiAdminAPIException;
 import org.wso2.carbon.sequences.stub.types.SequenceEditorException;
 import org.wso2.carbon.task.stub.TaskManagementException;
@@ -155,7 +151,6 @@ public class APIMTestCaseUtils {
                                            String sessionCookie)
             throws Exception {
 
-        ProxyServiceAdminClient proxyAdmin = new ProxyServiceAdminClient(backendURL, sessionCookie);
         EndPointAdminClient endPointAdminClient =
                 new EndPointAdminClient(backendURL, sessionCookie);
         SequenceAdminServiceClient sequenceAdminClient =
@@ -164,9 +159,6 @@ public class APIMTestCaseUtils {
                 new LocalEntriesAdminClient(backendURL, sessionCookie);
         MessageProcessorClient messageProcessorClient =
                 new MessageProcessorClient(backendURL, sessionCookie);
-        MessageStoreAdminClient messageStoreAdminClient =
-                new MessageStoreAdminClient(backendURL, sessionCookie);
-        ServiceAdminClient adminServiceService = new ServiceAdminClient(backendURL, sessionCookie);
         EndpointTemplateAdminServiceClient endpointTemplateAdminServiceClient =
                 new EndpointTemplateAdminServiceClient(backendURL, sessionCookie);
         SequenceTemplateAdminServiceClient sequenceTemplateAdminServiceClient =
@@ -180,12 +172,6 @@ public class APIMTestCaseUtils {
         checkEndPoints(synapseConfig, backendURL, sessionCookie, endPointAdminClient);
 
         checkSequences(synapseConfig, backendURL, sessionCookie, sequenceAdminClient);
-
-        checkProxies(synapseConfig, backendURL, sessionCookie, proxyAdmin, adminServiceService);
-
-        checkMessageStores(synapseConfig, backendURL, sessionCookie, messageStoreAdminClient);
-
-        checkMessageProcessors(synapseConfig, backendURL, sessionCookie, messageProcessorClient);
 
         checkTemplates(synapseConfig, backendURL, sessionCookie, endpointTemplateAdminServiceClient, sequenceTemplateAdminServiceClient);
 
@@ -289,40 +275,6 @@ public class APIMTestCaseUtils {
         }
     }
 
-    private static void checkMessageStores(OMElement synapseConfig, String backendURL,
-                                    String sessionCookie,
-                                    MessageStoreAdminClient messageStoreAdminClient)
-            throws RemoteException, SequenceEditorException,
-                   org.wso2.carbon.message.store.stub.Exception {
-        Iterator messageStores = synapseConfig.getChildrenWithLocalName(MESSAGE_STORE);
-        while (messageStores.hasNext()) {
-            OMElement messageStore = (OMElement) messageStores.next();
-            String mStore = messageStore.getAttributeValue(new QName(NAME));
-            if (ArrayUtils.contains(messageStoreAdminClient.getMessageStores(), mStore)) {
-                messageStoreAdminClient.deleteMessageStore(mStore);
-                assertTrue(isMessageStoreUnDeployed(backendURL, sessionCookie, mStore),
-                        mStore + " Message Store undeployment failed");
-            }
-            messageStoreAdminClient.addMessageStore(messageStore);
-            log.info(mStore + " Message Store Uploaded");
-        }
-    }
-
-    private static void checkProxies(OMElement synapseConfig, String backendURL, String sessionCookie,
-                              ProxyServiceAdminClient proxyAdmin,
-                              ServiceAdminClient adminServiceService) throws Exception {
-        Iterator proxies = synapseConfig.getChildrenWithLocalName(PROXY);
-        while (proxies.hasNext()) {
-            OMElement proxy = (OMElement) proxies.next();
-            String proxyName = proxy.getAttributeValue(new QName(NAME));
-            if (adminServiceService.isServiceExists(proxyName)) {
-                proxyAdmin.deleteProxy(proxyName);
-                assertTrue(isProxyUnDeployed(backendURL, sessionCookie, proxyName), proxyName + " Undeployment failed");
-            }
-            proxyAdmin.addProxyService(proxy);
-            log.info(proxyName + " Proxy Uploaded");
-        }
-    }
 
     private static void checkSequences(OMElement synapseConfig, String backendURL, String sessionCookie,
                                 SequenceAdminServiceClient sequenceAdminClient)
@@ -379,16 +331,6 @@ public class APIMTestCaseUtils {
         }
     }
 
-    public static void addProxyService(String backEndUrl, String sessionCookie, OMElement proxyConfig)
-            throws Exception {
-        ProxyServiceAdminClient proxyAdmin = new ProxyServiceAdminClient(backEndUrl, sessionCookie);
-        proxyAdmin.addProxyService(proxyConfig);
-        String proxyName = proxyConfig.getAttributeValue(new QName(NAME));
-        assertTrue(isProxyDeployed(backEndUrl, sessionCookie, proxyName),
-                   "Proxy Deployment failed or time out");
-
-    }
-
     public static void addEndpoint(String backEndUrl, String sessionCookie, OMElement endpointConfig)
             throws Exception {
         EndPointAdminClient endPointAdminClient =
@@ -423,27 +365,6 @@ public class APIMTestCaseUtils {
         assertTrue(isSequenceDeployed(backEndUrl, sessionCookie, sqn),
                    sqn + "Sequence deployment not found or time out");
 
-    }
-
-    public static void addMessageStore(String backEndUrl, String sessionCookie, OMElement messageStore)
-            throws Exception {
-        MessageStoreAdminClient messageStoreAdminClient =
-                new MessageStoreAdminClient(backEndUrl, sessionCookie);
-        messageStoreAdminClient.addMessageStore(messageStore);
-        String mStoreName = messageStore.getAttributeValue(new QName(NAME));
-        assertTrue(isMessageStoreDeployed(backEndUrl, sessionCookie, mStoreName),
-                   "Message Store Deployment failed");
-    }
-
-    public static void addMessageProcessor(String backEndUrl, String sessionCookie,
-                                    OMElement messageProcessor)
-            throws Exception {
-        MessageProcessorClient messageProcessorClient =
-                new MessageProcessorClient(backEndUrl, sessionCookie);
-        messageProcessorClient.addMessageProcessor(messageProcessor);
-        String mProcessorName = messageProcessor.getAttributeValue(new QName(NAME));
-        assertTrue(isMessageProcessorDeployed(backEndUrl, sessionCookie, mProcessorName),
-                   "Message Processor deployment failed");
     }
 
     public static void addSequenceTemplate(String backEndUrl, String sessionCookie,
@@ -498,33 +419,6 @@ public class APIMTestCaseUtils {
         );
     }
 
-    public static boolean isProxyDeployed(String backEndUrl, String sessionCookie, String proxyName)
-            throws RemoteException {
-        log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Proxy deployment " +
-                 proxyName);
-
-        boolean isServiceDeployed = false;
-        ServiceAdminClient adminServiceService = new ServiceAdminClient(backEndUrl, sessionCookie);
-        Calendar startTime = Calendar.getInstance();
-        long time;
-        while ((time = (Calendar.getInstance().getTimeInMillis() - startTime.getTimeInMillis())) <
-               SERVICE_DEPLOYMENT_DELAY) {
-            if (adminServiceService.isServiceExists(proxyName)) {
-                isServiceDeployed = true;
-                log.info(proxyName + " Proxy Deployed in " + time + " millis");
-                break;
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ignored) {
-
-            }
-        }
-
-        return isServiceDeployed;
-
-    }
-
     public static boolean isEndpointDeployed(String backEndUrl, String sessionCookie, String endpointName)
             throws EndpointAdminEndpointAdminException, RemoteException {
         EndPointAdminClient endPointAdminClient = new EndPointAdminClient(backEndUrl,
@@ -556,42 +450,6 @@ public class APIMTestCaseUtils {
             }
         }
         return isEndpointExist;
-    }
-
-    public static boolean isMessageProcessorDeployed(String backEndUrl, String sessionCookie,
-                                              String messageProcessorName)
-            throws SequenceEditorException, RemoteException {
-        MessageProcessorClient messageProcessorClient =
-                new MessageProcessorClient(backEndUrl, sessionCookie);
-        log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Message Processor " +
-                messageProcessorName);
-        boolean isMessageStoreExist = false;
-        Calendar startTime = Calendar.getInstance();
-        long time;
-        while ((time = (Calendar.getInstance().getTimeInMillis() - startTime.getTimeInMillis())) <
-               SERVICE_DEPLOYMENT_DELAY) {
-            String[] messageProcessors = messageProcessorClient.getMessageProcessorNames();
-            if (messageProcessors != null && messageProcessors.length > 0) {
-                for (String mp : messageProcessors) {
-
-                    if (mp.equals(messageProcessorName)) {
-                        isMessageStoreExist = true;
-                        log.info(messageProcessorName + " Message Processor Found in " + time +
-                                 " millis");
-                        break;
-                    }
-                }
-            }
-            if (isMessageStoreExist) {
-                break;
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                //ignore
-            }
-        }
-        return isMessageStoreExist;
     }
 
     public static boolean isSequenceDeployed(String backEndUrl, String sessionCookie, String sequenceName)
@@ -626,41 +484,6 @@ public class APIMTestCaseUtils {
             }
         }
         return isSequenceExist;
-    }
-
-    public static boolean isMessageStoreDeployed(String backEndUrl, String sessionCookie,
-                                          String messageStoreName)
-            throws SequenceEditorException, RemoteException {
-        MessageStoreAdminClient messageStoreAdminClient =
-                new MessageStoreAdminClient(backEndUrl, sessionCookie);
-        log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Message Store " +
-                 messageStoreName);
-        boolean isMessageStoreExist = false;
-        Calendar startTime = Calendar.getInstance();
-        long time;
-        while ((time = (Calendar.getInstance().getTimeInMillis() - startTime.getTimeInMillis())) <
-               SERVICE_DEPLOYMENT_DELAY) {
-            String[] messageStores = messageStoreAdminClient.getMessageStores();
-            if (messageStores != null && messageStores.length > 0) {
-                for (String ms : messageStores) {
-
-                    if (ms.equals(messageStoreName)) {
-                        isMessageStoreExist = true;
-                        log.info(messageStoreName + " Message Store Found in " + time + " millis");
-                        break;
-                    }
-                }
-            }
-            if (isMessageStoreExist) {
-                break;
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                //ignore
-            }
-        }
-        return isMessageStoreExist;
     }
 
     public static boolean isSequenceTemplateDeployed(String backEndUrl, String sessionCookie,
@@ -825,13 +648,6 @@ public class APIMTestCaseUtils {
         return isTaskDeployed;
     }
 
-    public static boolean isProxyServiceExist(String backEndUrl, String sessionCookie, String proxyName)
-            throws RemoteException {
-        ServiceAdminClient adminServiceService = new ServiceAdminClient(backEndUrl, sessionCookie);
-        return adminServiceService.isServiceExists(proxyName);
-
-    }
-
     public static boolean isLocalEntryExist(String backEndUrl, String sessionCookie, String localEntryName)
             throws LocalEntryAdminException, RemoteException {
         LocalEntriesAdminClient localEntryAdminServiceClient =
@@ -865,23 +681,6 @@ public class APIMTestCaseUtils {
             return false;
         }
         return ArrayUtils.contains(endpoints, endpointName);
-    }
-
-    public static boolean isMessageStoreExist(String backEndUrl, String sessionCookie,
-                                       String messageProcessor) throws RemoteException {
-        MessageStoreAdminClient messageStoreAdminClient =
-                new MessageStoreAdminClient(backEndUrl, sessionCookie);
-        return ArrayUtils.contains(messageStoreAdminClient.getMessageStores(), messageProcessor);
-
-    }
-
-    public static boolean isMessageProcessorExist(String backEndUrl, String sessionCookie,
-                                           String messageProcessor) throws RemoteException {
-        MessageProcessorClient messageProcessorClient =
-                new MessageProcessorClient(backEndUrl, sessionCookie);
-        return ArrayUtils
-                .contains(messageProcessorClient.getMessageProcessorNames(), messageProcessor);
-
     }
 
     public static boolean isSequenceTemplateExist(String backEndUrl, String sessionCookie,
@@ -922,14 +721,6 @@ public class APIMTestCaseUtils {
         return taskAdminClient.getScheduleTaskList().contains(taskName);
     }
 
-    public static void deleteProxyService(String backEndUrl, String sessionCookie, String proxyServiceName)
-            throws ProxyServiceAdminProxyAdminException, RemoteException {
-        ProxyServiceAdminClient proxyAdmin = new ProxyServiceAdminClient(backEndUrl, sessionCookie);
-        proxyAdmin.deleteProxy(proxyServiceName);
-        assertTrue(isProxyUnDeployed(backEndUrl, sessionCookie, proxyServiceName),
-                   "Proxy service undeployment failed");
-    }
-
     public static void deleteLocalEntry(String backEndUrl, String sessionCookie, String localEntryName)
             throws LocalEntryAdminException, RemoteException {
         LocalEntriesAdminClient localEntryAdminServiceClient =
@@ -958,25 +749,6 @@ public class APIMTestCaseUtils {
         sequenceAdminServiceClient.deleteSequence(sequenceName);
         assertTrue(isSequenceUnDeployed(backEndUrl, sessionCookie, sequenceName),
                    "Sequence undeployment failed");
-    }
-
-    public static void deleteMessageStore(String backEndUrl, String sessionCookie, String messageStore)
-            throws RemoteException, SequenceEditorException {
-        MessageStoreAdminClient messageStoreAdminClient =
-                new MessageStoreAdminClient(backEndUrl, sessionCookie);
-        messageStoreAdminClient.deleteMessageStore(messageStore);
-        assertTrue(isMessageStoreUnDeployed(backEndUrl, sessionCookie, messageStore),
-                   "Message Store undeployment failed");
-    }
-
-    public static void deleteMessageProcessor(String backEndUrl, String sessionCookie,
-                                       String messageProcessor)
-            throws RemoteException, SequenceEditorException {
-        MessageProcessorClient messageProcessorClient =
-                new MessageProcessorClient(backEndUrl, sessionCookie);
-        messageProcessorClient.deleteMessageProcessor(messageProcessor);
-        assertTrue(isMessageProcessorUnDeployed(backEndUrl, sessionCookie, messageProcessor),
-                   "Message Processor undeployment failed");
     }
 
     public static void deleteEndpointTemplate(String backEndUrl, String sessionCookie,
@@ -1026,56 +798,6 @@ public class APIMTestCaseUtils {
         assertTrue(isScheduleTaskUnDeployed(backEndUrl, sessionCookie, taskName),
                    "ScheduleTask deployment failed");
 
-    }
-
-    public static boolean isProxyUnDeployed(String backEndUrl, String sessionCookie, String proxyName)
-            throws RemoteException {
-        log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Proxy undeployment");
-        ServiceAdminClient adminServiceService = new ServiceAdminClient(backEndUrl, sessionCookie);
-        boolean isServiceDeleted = false;
-        Calendar startTime = Calendar.getInstance();
-        long time;
-        while ((time = (Calendar.getInstance().getTimeInMillis() - startTime.getTimeInMillis())) <
-               SERVICE_DEPLOYMENT_DELAY) {
-            if (!adminServiceService.isServiceExists(proxyName)) {
-                isServiceDeleted = true;
-                log.info(proxyName + " Proxy undeployed in " + time + " millis");
-                break;
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-
-            }
-        }
-        return isServiceDeleted;
-    }
-
-    public static boolean isMessageStoreUnDeployed(String backEndUrl, String sessionCookie,
-                                            String messageStoreName)
-            throws SequenceEditorException, RemoteException {
-        MessageStoreAdminClient messageStoreAdminClient =
-                new MessageStoreAdminClient(backEndUrl, sessionCookie);
-        log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Undeployment Message Store " +
-                messageStoreName);
-        boolean isMessageStoreDeleted = false;
-        Calendar startTime = Calendar.getInstance();
-        long time;
-        while ((time = (Calendar.getInstance().getTimeInMillis() - startTime.getTimeInMillis())) <
-               SERVICE_DEPLOYMENT_DELAY) {
-            String[] mStores = messageStoreAdminClient.getMessageStores();
-            if (!ArrayUtils.contains(mStores, messageStoreName)) {
-                isMessageStoreDeleted = true;
-                break;
-            }
-
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                //ignore
-            }
-        }
-        return isMessageStoreDeleted;
     }
 
     public static boolean isMessageProcessorUnDeployed(String backEndUrl, String sessionCookie,
@@ -1380,30 +1102,8 @@ public class APIMTestCaseUtils {
                        sqn + " Sequence deployment not found or time out");
         }
 
-        Iterator proxies = synapseConfig.getChildrenWithLocalName(PROXY);
-        while (proxies.hasNext()) {
-            OMElement proxyOM = (OMElement) proxies.next();
-            String proxy = proxyOM.getAttributeValue(new QName(NAME));
-            assertTrue(isProxyDeployed(backendURL, sessionCookie, proxy),
-                       proxy + " Proxy Deployment not found or time out");
-        }
 
-        Iterator messageStores = synapseConfig.getChildrenWithLocalName(MESSAGE_STORE);
-        while (messageStores.hasNext()) {
-            OMElement mStoreOM = (OMElement) messageStores.next();
-            String mStore = mStoreOM.getAttributeValue(new QName(NAME));
-            assertTrue(isMessageStoreDeployed(backendURL, sessionCookie, mStore),
-                       mStore + " Message Store Deployment not found or time out");
-        }
 
-        Iterator messageProcessor =
-                synapseConfig.getChildrenWithLocalName(MESSAGE_PROCESSOR);
-        while (messageProcessor.hasNext()) {
-            OMElement mProcessorOM = (OMElement) messageProcessor.next();
-            String mProcessor = mProcessorOM.getAttributeValue(new QName(NAME));
-            assertTrue(isMessageProcessorDeployed(backendURL, sessionCookie, mProcessor),
-                       mProcessor + " Message Processor Deployment not found or time out");
-        }
 
         Iterator templates = synapseConfig.getChildrenWithLocalName(TEMPLATE);
 
