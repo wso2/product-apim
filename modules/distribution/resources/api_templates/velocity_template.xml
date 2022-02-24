@@ -247,6 +247,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                 #if( $endpoint_config.get("endpoint_type") == 'awslambda' )
                     #set( $accessKey = $!{endpoint_config.get("amznAccessKey")} )
                     #set( $secretKey = $!{endpoint_config.get("amznSecretKey")} )
+                    #set( $region = $!{endpoint_config.get("amznRegion")} )
                     #set( $resourceName = $!{resource.getAmznResourceName()} )
 <class name="org.wso2.carbon.apimgt.gateway.mediators.AWSLambdaMediator">
                     #if( $accessKey != '' )
@@ -258,6 +259,9 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                         #if( $secretKey != '' )
     <property name="secretKey" value="$secretKey"/>
                         #end
+                    #end
+                    #if( $region != '' )
+    <property name="region" value="$region"/>
                     #end
                     #if( $resourceName != '' )
     <property name="resourceName" value="$resourceName"/>
