@@ -1,0 +1,18 @@
+<opa>
+   <serverUrl>{{serverUrl}}</serverUrl>
+   {% if accessToken %}
+   <accessKey>{{accessKey}}</accessKey>
+   {% endif %}
+   <policy>{{policy}}</policy>
+   <rule>{{rule}}</rule>
+   <requestGenerator>org.wso2.carbon.apimgt.gateway.opa.APIMOPARequestGenerator</requestGenerator>
+   {% if additionalParameters %}
+   <additionalParameters>
+      <parameter name="sendAccessToken">{{sendAccessToken}}</parameter>
+      <parameter name="maxOpenConnections">{{maxOpenConnections}}</parameter>
+      <parameter name="maxPerRoute">{{maxPerRoute}}</parameter>
+      <parameter name="connectionTimeout">{{connectionTimeout}}</parameter>
+      <parameter name="additionalMCProperties">"{{additionalMCProperties}}"</parameter>
+   </additionalParameters>
+   {% endif %}
+</opa>
