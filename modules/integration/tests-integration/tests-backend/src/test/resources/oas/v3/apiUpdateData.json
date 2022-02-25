@@ -69,21 +69,21 @@
     "target": "/pets",
     "verb": "GET",
     "authType": "Application & Application User",
-    "throttlingPolicy": null,
+    "throttlingPolicy": "10KPerMin",
     "scopes": ["SwaggerPetstore_v3"]
   }, {
     "id": "",
     "target": "/newpets",
     "verb": "PUT",
     "authType": "Application & Application User",
-    "throttlingPolicy": null,
+    "throttlingPolicy": "10KPerMin",
     "scopes": ["SwaggerPetstore_v3"]
   }, {
     "id": "",
     "target": "/pets/{petId}",
     "verb": "GET",
     "authType": "Application & Application User",
-    "throttlingPolicy": null,
+    "throttlingPolicy": "10KPerMin",
     "scopes": []
   }],
   "threatProtectionPolicies": null
