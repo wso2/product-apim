@@ -41,7 +41,7 @@
       "name": "sendAccessToken",
       "displayName": "Send access token",
       "description": "Select whether to send access token to the OPA payload",
-      "validationRegex": "^(?i)(true|false)$",
+      "validationRegex": "^(true|false)$",
       "type": "Boolean",
       "defaultValue": false,
       "required": false
