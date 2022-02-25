@@ -530,6 +530,11 @@
                 <artifactId>org.wso2.am.multitenancy.dashboard.ui</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.security.feature</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
 
             <!--Test framework dependencies -->
             <dependency>
@@ -682,11 +687,6 @@
 
             <dependency>
                 <groupId>org.wso2.carbon.mediation</groupId>
-                <artifactId>org.wso2.carbon.message.store.stub</artifactId>
-                <version>${carbon.mediation.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.mediation</groupId>
                 <artifactId>org.wso2.carbon.message.processor.stub</artifactId>
                 <version>${carbon.mediation.version}</version>
             </dependency>
@@ -694,16 +694,6 @@
                 <groupId>org.wso2.carbon.mediation</groupId>
                 <artifactId>org.wso2.carbon.mediation.artifactuploader.stub</artifactId>
                 <version>${carbon.mediation.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.mediation</groupId>
-                <artifactId>org.wso2.carbon.proxyadmin.stub</artifactId>
-                <version>${carbon.mediation.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.deployment</groupId>
-                <artifactId>org.wso2.carbon.service.mgt.stub</artifactId>
-                <version>${carbon.deployment.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.registry</groupId>
@@ -834,7 +824,7 @@
             <dependency>
                 <groupId>org.apache.ws.security.wso2</groupId>
                 <artifactId>wss4j</artifactId>
-                <version>${ws.seccurity.version}</version>
+                <version>${wss4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
@@ -1267,7 +1257,26 @@
                 <artifactId>disruptor</artifactId>
                 <version>${disruptor.orbit.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.wso2.orbit.org.opensaml</groupId>
+                <artifactId>opensaml</artifactId>
+                <version>${opensaml2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rampart.wso2</groupId>
+                <artifactId>rampart-core</artifactId>
+                <version>${rampart.wso2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rampart.wso2</groupId>
+                <artifactId>rampart-trust</artifactId>
+                <version>${rampart.wso2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rampart.wso2</groupId>
+                <artifactId>rampart-policy</artifactId>
+                <version>${rampart.wso2.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1303,7 +1312,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.115</carbon.mediation.version>
+        <carbon.mediation.version>4.7.117</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.18.238</carbon.identity.version>
@@ -1349,7 +1358,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-	    <synapse.version>2.1.7-wso2v252</synapse.version>
+	    <synapse.version>2.1.7-wso2v253</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v76</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
@@ -1418,7 +1427,6 @@
 
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
-        <ws.seccurity.version>1.5.11-wso2v18</ws.seccurity.version>
         <jacoco.agent.version>0.8.2</jacoco.agent.version>
         <google.guava.version>27.0-jre</google.guava.version>
 
@@ -1483,6 +1491,9 @@
         <forgerock.keymanager.feature.version>1.0.2</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>1.0.5</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
+        <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
+        <rampart.wso2.version>1.6.1-wso2v43</rampart.wso2.version>
+        <wss4j.version>1.5.11-wso2v21</wss4j.version>
     </properties>
 
 </project>
