@@ -17,6 +17,7 @@
       "name": "includeQueryParams",
       "displayName": "Include Query Parameters?",
       "description": "Select whether to include exiting query params to the new resource path",
+      "validationRegex": "^(?i)(true|false)$",
       "type": "Boolean",
       "required": false
     }
