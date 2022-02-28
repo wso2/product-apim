@@ -1,5 +1,5 @@
 {
-  "category": "Mediation",
+  "category": "Security",
   "name": "opaPolicy",
   "displayName": "Validate Request With OPA Policy",
   "description": "With this policy, user can validate requests based on the OPA policy engine",
@@ -9,7 +9,7 @@
       "name": "serverUrl",
       "displayName": "OPA server URL",
       "description": "OPA server's URL",
-      "validationRegex": "([\\w+]+\\:\/\/)?([\\w\\d-]+\\.)*[\\w-]+[\\.\\:]\\w+([\/\\?\\=\\&\\#\\.]?[\\w-]+)*\/?",
+      "validationRegex": "([\\w+]+\\:\/\/)?([\\w\\d-]+\\.)*[\\w-]+[\\.\\:]?\\w+([\/\\?\\=\\&\\#\\.]?[\\w-]+)*\/?",
       "type": "String",
       "required": true
     },
@@ -17,7 +17,6 @@
       "name": "accessKey",
       "displayName": "Access Key",
       "description": "Access key for validation request",
-      "validationRegex": "([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
       "type": "String",
       "required": false
     },
@@ -33,7 +32,7 @@
       "name": "rule",
       "displayName": "Rule",
       "description": "Rule to validate",
-      "validationRegex": "([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
+      "validationRegex": "^([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
       "type": "String",
       "required": false
     },
@@ -58,7 +57,7 @@
       "name": "maxOpenConnections",
       "displayName": "Max open connections",
       "description": "Maximum number of open HTTP connections",
-      "validationRegex": "/^\\d{1,3}$/",
+      "validationRegex": "^\\d{1,3}$",
       "type": "Integer",
       "defaultValue": 500,
       "required": false
@@ -67,7 +66,7 @@
       "name": "maxPerRoute",
       "displayName": "Max per route",
       "description": "Maximum connections per a route",
-      "validationRegex": "/^\\d{1,3}$/",
+      "validationRegex": "^\\d{1,3}$",
       "type": "Integer",
       "defaultValue": 200,
       "required": false
@@ -76,7 +75,7 @@
       "name": "connectionTimeout",
       "displayName": "Connection timeout",
       "description": "Connection timeout",
-      "validationRegex": "/^\\d{1,3}$/",
+      "validationRegex": "^\\d{1,3}$",
       "type": "Integer",
       "defaultValue": 30,
       "required": false
@@ -86,7 +85,8 @@
     "request"
   ],
   "supportedGateways": [
-    "Synapse"
+    "Synapse",
+    "CC"
   ],
   "supportedApiTypes": [
     "HTTP"
