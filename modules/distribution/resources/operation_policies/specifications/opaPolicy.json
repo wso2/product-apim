@@ -84,7 +84,7 @@
   ],
   "supportedGateways": [
     "Synapse",
-    "CC"
+    "ChoreoConnect"
   ],
   "supportedApiTypes": [
     "HTTP"
