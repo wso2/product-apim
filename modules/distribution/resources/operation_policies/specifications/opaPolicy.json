@@ -24,7 +24,6 @@
       "name": "policy",
       "displayName": "Policy",
       "description": "Policy to be validated",
-      "validationRegex": "([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
       "type": "String",
       "required": true
     },
@@ -32,7 +31,6 @@
       "name": "rule",
       "displayName": "Rule",
       "description": "Rule to validate",
-      "validationRegex": "^([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
       "type": "String",
       "required": false
     },
@@ -49,7 +47,7 @@
       "name": "additionalMCProperties",
       "displayName": "Additional MC properties",
       "description": "Additional message context properties to be included in the OPA input. Add these properties in a comma seperated list.",
-      "validationRegex": "([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
+      "validationRegex": "^([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
       "type": "String",
       "required": false
     },
