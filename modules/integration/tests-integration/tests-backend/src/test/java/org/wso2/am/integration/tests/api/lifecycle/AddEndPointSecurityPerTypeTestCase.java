@@ -431,6 +431,12 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
         Assert.assertTrue(authorization.contains("Bearer"));
         String backendToken = authorization.replaceFirst("Bearer ", "");
         validateIntrospectionResponse(user, backendToken, applicationKeyBeanProduction.getConsumerKey());
+
+        // checking 2nd request also works
+        HttpResponse productionResponse2 =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(apiContext, API_VERSION_1_0_0), requestHeadersGet);
+        Assert.assertEquals(productionResponse2.getResponseCode(), 200);
+
         String sandAppTokenJti = TokenUtils.getJtiOfJwtToken(sandboxApplication.getToken().getAccessToken());
         requestHeadersGet.put("Authorization", "Bearer " + sandAppTokenJti);
         HttpResponse sandboxResponse =
