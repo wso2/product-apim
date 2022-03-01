@@ -3,7 +3,6 @@
   "name": "opaPolicy",
   "displayName": "Validate Request With OPA Policy",
   "description": "With this policy, user can validate requests based on the OPA policy engine",
-  "multipleAllowed": true,
   "policyAttributes": [
     {
       "name": "serverUrl",
