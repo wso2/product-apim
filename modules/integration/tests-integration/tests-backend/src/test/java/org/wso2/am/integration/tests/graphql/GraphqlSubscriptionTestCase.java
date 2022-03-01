@@ -569,6 +569,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = null;
 
+        request.setSubProtocols("graphql-ws");
         if (AUTH_IN.HEADER == in) {
             request.setHeader("Authorization", "Bearer " + accessToken);
             echoUri = new URI(apiEndPoint);
@@ -766,6 +767,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
 
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
@@ -816,6 +818,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
 
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
@@ -868,6 +871,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
 
+        request.setSubProtocols("graphql-ws");
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             String textMessage;
@@ -918,6 +922,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
 
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
@@ -970,6 +975,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         URI echoUri = new URI(apiEndPoint);
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
         client.connect(socket, echoUri, request);
         socket.getLatch().await(3L, TimeUnit.SECONDS);
         try {
