@@ -87,12 +87,12 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis", header);
         assertEquals(loggingResponse.getData(), "{\"apis\":[]}");
 
-        String API_NAME = "AddNewMediationAndInvokeAPITest";
-        String API_CONTEXT = "AddNewMediationAndInvokeAPI";
+        String API_NAME = "APILoggingTestAPI";
+        String API_CONTEXT = "apiloggingtest";
         String API_TAGS = "testTag1, testTag2, testTag3";
         String API_END_POINT_POSTFIX_URL = "xmlapi";
-        String API_VERSION_1_0_0 = "1.0.0";
-        String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
+        String API_VERSION = "1.0.0";
+        String APPLICATION_NAME = "APILoggingTestApp";
 
         // Create an application
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
@@ -102,9 +102,9 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
 
         // Create an API and subscribe to it using created application
         APIRequest apiRequest;
-        String apiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION_1_0_0);
+        String apiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION);
         apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiEndPointUrl));
-        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setVersion(API_VERSION);
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTags(API_TAGS);
@@ -115,7 +115,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         // Get list of APIs with an API
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis", header);
-        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\","
+        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + API_CONTEXT + "/" + API_VERSION + "\","
                 + "\"logLevel\":\"OFF\",\"apiId\":\"" + apiId + "\"}]}");
 
         // Change logLevel to FULL
@@ -126,7 +126,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         // Get list of APIs which have log-level=FULL
         loggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis?log-level=full", header);
-        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/AddNewMediationAndInvokeAPI/1.0.0\","
+        assertEquals(loggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + API_CONTEXT + "/" + API_VERSION + "\","
                 + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiId + "\"}]}");
 
         // Invoke the API
@@ -137,7 +137,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         assertNotNull(applicationKeyDTO.getToken());
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
-        HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
+        HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
         request.setHeader("Authorization", "Bearer " + accessToken);
         org.apache.http.HttpResponse response = client.execute(request);
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
@@ -149,7 +149,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(apiLogFilePath));
         String logLine;
         while ((logLine = bufferedReader.readLine()) != null) {
-            assertTrue(logLine.contains("INFO {API_LOG} AddNewMediationAndInvokeAPI"));
+            assertTrue(logLine.contains("INFO {API_LOG} " + API_NAME));
         }
     }
 
