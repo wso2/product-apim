@@ -3,7 +3,6 @@
   "name": "jsonFault",
   "displayName": "JSON Fault",
   "description": "Output the fault message in JSON",
-  "multipleAllowed": false,
   "applicableFlows": [
     "fault"
   ],

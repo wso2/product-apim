@@ -3,7 +3,6 @@
   "name": "applyAcceptHeader",
   "displayName": "Apply Accept Header",
   "description": "Apply accept header",
-  "multipleAllowed": false,
   "applicableFlows": [
     "request"
   ],

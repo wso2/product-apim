@@ -3,7 +3,6 @@
   "name": "setToHeader",
   "displayName": "Set To Header",
   "description": "With this policy, user can set To Header",
-  "multipleAllowed": true,
   "policyAttributes": [
     {
       "name": "value",
