@@ -1481,7 +1481,7 @@
         <auth0.keymanager.feature.version>1.0.1</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.3</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.0.2</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.0.5</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.0.6</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
     </properties>
 
