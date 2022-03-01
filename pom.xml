@@ -802,16 +802,6 @@
                 <version>${rampart.wso2.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.rampart.wso2</groupId>
-                <artifactId>rampart-trust</artifactId>
-                <version>${rampart.wso2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.rampart.wso2</groupId>
-                <artifactId>rampart-policy</artifactId>
-                <version>${rampart.wso2.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.api.version}</version>
@@ -1258,11 +1248,6 @@
                 <version>${disruptor.orbit.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.orbit.org.opensaml</groupId>
-                <artifactId>opensaml</artifactId>
-                <version>${opensaml2.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.rampart.wso2</groupId>
                 <artifactId>rampart-core</artifactId>
                 <version>${rampart.wso2.version}</version>
@@ -1391,8 +1376,7 @@
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
-        <opensaml.version>2.6.6</opensaml.version>
-        <opensaml2.wso2.version>2.6.6.wso2v4</opensaml2.wso2.version>
+        <opensaml2.wso2.version>3.3.1.wso2v4</opensaml2.wso2.version>
         <transport.http.netty.version>6.3.35</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
@@ -1492,8 +1476,8 @@
         <apim.analytics.publisher.version>1.0.5</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
-        <rampart.wso2.version>1.6.1-wso2v43</rampart.wso2.version>
-        <wss4j.version>1.5.11-wso2v21</wss4j.version>
+        <rampart.wso2.version>1.7.0-wso2v1</rampart.wso2.version>
+        <wss4j.version>1.6.0-wso2v2</wss4j.version>
     </properties>
 
 </project>
