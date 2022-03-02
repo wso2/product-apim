@@ -32,7 +32,8 @@
       "displayName": "Rule",
       "description": "Rule to validate",
       "type": "String",
-      "required": false
+      "defaultValue": "allow",
+      "required": true
     },
     {
       "name": "sendAccessToken",
