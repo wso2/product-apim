@@ -28,7 +28,7 @@
             <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.APIManager3152RefreshTokenTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>-->
+             <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>-->
         </classes>
     </test>
 
