@@ -37,6 +37,8 @@ import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AsyncAPISpecificationValidationResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
@@ -951,6 +953,19 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(storeAPI.getContext(), "/" + solaceApiContext + "/" + solaceApiVersion);
         assertEquals(storeAPI.getGatewayVendor(), solaceGatewayVendor);
         Assert.assertNotNull(storeAPI.getAsyncTransportProtocols());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Create a new application and generate Keys for Solace subscription",
+        dependsOnMethods = "showSolaceApiInDeveloperPortal")
+    public void testGenerateKeysForSolaceSubscriptions() throws Exception {
+
+        log.info("testGenerateKeysForSolaceSubscriptions initiated");
+
+        // Generate Keys for Solace subscription
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(newSubApplicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        Assert.assertNotNull("Access Token not found ", applicationKeyDTO.getConsumerKey());
+        Assert.assertNotNull("Access Token not found ", applicationKeyDTO.getConsumerSecret());
     }
 
     @Test(groups = {"wso2.am"}, description = "Create a new subscription for Solace API")
