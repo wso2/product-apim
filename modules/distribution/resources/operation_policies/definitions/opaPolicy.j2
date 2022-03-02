@@ -4,9 +4,7 @@
    <accessKey>{{accessKey}}</accessKey>
    {% endif %}
    <policy>{{policy}}</policy>
-   {% if rule %}
    <rule>{{rule}}</rule>
-   {% endif %}
    <requestGenerator>org.wso2.carbon.apimgt.gateway.opa.APIMOPARequestGenerator</requestGenerator>
    <additionalParameters>
       {% if sendAccessToken %}
