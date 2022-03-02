@@ -3,7 +3,6 @@
   "name": "addQueryParam",
   "displayName": "Add Query Param",
   "description": "Add a query parameter to the request",
-  "multipleAllowed": true,
   "policyAttributes": [
     {
       "name": "paramKey",

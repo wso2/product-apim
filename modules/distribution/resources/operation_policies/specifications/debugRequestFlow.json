@@ -3,7 +3,6 @@
   "name": "debugRequestFlow",
   "displayName": "Debug Request Flow",
   "description": "For debugging purposes, log the special properties of the request message",
-  "multipleAllowed": false,
   "applicableFlows": [
     "request"
   ],

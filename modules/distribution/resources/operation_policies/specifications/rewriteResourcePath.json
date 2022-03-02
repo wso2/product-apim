@@ -3,7 +3,6 @@
   "name": "rewriteResourcePath",
   "displayName": "Rewrite Resource Path",
   "description": "Rewrite the resource path of a request",
-  "multipleAllowed": false,
   "policyAttributes": [
     {
       "name": "newResourcePath",

@@ -3,7 +3,6 @@
   "name": "disableChunking",
   "displayName": "Disable Chunking",
   "description": "Disable chunking of the payload",
-  "multipleAllowed": false,
   "applicableFlows": [
     "request",
     "response"

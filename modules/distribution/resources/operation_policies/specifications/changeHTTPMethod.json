@@ -3,7 +3,6 @@
   "name": "changeHTTPMethod",
   "displayName": "Change HTTP Method",
   "description": "With this policy, user can change the HTTP Method",
-  "multipleAllowed": false,
   "policyAttributes": [
     {
       "name": "httpMethod",

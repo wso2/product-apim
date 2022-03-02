@@ -1271,10 +1271,10 @@
         <project.scm.id>scm-server</project.scm.id>
         <carbon.analytics.common.version>5.2.37</carbon.analytics.common.version>
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.0.256</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.0.258</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.20.2</carbon.apimgt.version>
+        <carbon.apimgt.version>9.20.5</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1473,7 +1473,7 @@
         <auth0.keymanager.feature.version>1.0.1</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.3</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.0.2</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.0.5</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.0.6</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
         <rampart.wso2.version>1.7.0-wso2v1</rampart.wso2.version>
