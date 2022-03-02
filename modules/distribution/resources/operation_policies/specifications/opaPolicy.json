@@ -47,7 +47,7 @@
       "name": "additionalProperties",
       "displayName": "Additional properties",
       "description": "Additional message context (request context) properties to be included in the OPA input. Add these properties in a comma seperated list.",
-      "validationRegex": "^([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
+      "validationRegex": "^(([a-zA-Z\\d_][a-zA-Z\\d_\\-]*)(,[a-zA-Z\\d_][a-zA-Z\\d_\\-]*)*)$",
       "type": "String",
       "required": false
     },
@@ -84,7 +84,7 @@
   ],
   "supportedGateways": [
     "Synapse",
-    "CC"
+    "ChoreoConnect"
   ],
   "supportedApiTypes": [
     "HTTP"

@@ -1,0 +1,35 @@
+{
+  "category": "Mediation",
+  "name": "ccCallInterceptorService",
+  "displayName": "Call Interceptor Service",
+  "description": "Call an interceptor service for message mediation",
+  "multipleAllowed": true,
+  "policyAttributes": [
+    {
+      "name": "interceptorServiceURL",
+      "displayName": "Service URL",
+      "description": "Interceptor Service URL",
+      "validationRegex": "^(([\\w+]+\\:\\/\\/)?([\\w\\d-]+\\.)*[\\w-]+([\\.\\:]\\w+)*([\\/\\?\\=\\&\\#\\.]?[\\w-]+)*\\/?)$",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "includes",
+      "displayName": "Includes to Payload",
+      "description": "Includes to the request payload of interceptor service as comma separated ",
+      "validationRegex": "^(([a-zA-Z\\d_][a-zA-Z\\d_\\-]*)(,[a-zA-Z\\d_][a-zA-Z\\d_\\-]*)*)$",
+      "type": "String",
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request",
+    "response"
+  ],
+  "supportedGateways": [
+    "ChoreoConnect"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}
