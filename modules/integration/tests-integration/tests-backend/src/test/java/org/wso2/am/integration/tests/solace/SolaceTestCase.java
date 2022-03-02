@@ -37,8 +37,6 @@ import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.AsyncAPISpecificationValidationResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
@@ -52,7 +50,6 @@ import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -64,6 +61,7 @@ import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.testng.Assert.*;
@@ -85,7 +83,6 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
     protected static final String SOLACE_ENVIRONMENT = "devportalEnv";
     protected static final String SOLACE_BASE_URL = "http://localhost:9960";
 
-    private ServerConfigurationManager serverConfigurationManager;
     private static WireMockServer solaceWireMockServer;
     private ArrayList<String> grantTypes;
     private final String solaceGatewayVendor = "solace";
@@ -98,15 +95,15 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
 
     // API1
     private String solaceApiId;
-    private final String solaceApiName = "SolaceSampleAPI";
-    private final String solaceApiContext = "SolaceSampleAPI";
+    private final String solaceApiName = "SolaceSampleAPI11";
+    private final String solaceApiContext = "SolaceSampleAPI11";
     private final String solaceApiProductName = SOLACE_ENVIRONMENT + "-" + solaceApiName + "-" + solaceApiContext + "-"
             + solaceApiVersion;
 
     // API2
     private String solaceApiId2;
-    private final String solaceApiName2 = "SolaceSampleAPI2";
-    private final String solaceApiContext2 = "SolaceSampleAPI2";
+    private final String solaceApiName2 = "SolaceSampleAPI12";
+    private final String solaceApiContext2 = "SolaceSampleAPI12";
     private final String solaceApiProductName2 = SOLACE_ENVIRONMENT + "-" + solaceApiName2 + "-" + solaceApiContext2 + "-"
             + solaceApiVersion;
 
@@ -160,28 +157,9 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         // Load request/response body
         String solaceDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "solace"
                 + File.separator + "APIMaintenance.yml";
-        String solaceDefinition = readFile(solaceDefinitionPath);
 
         // Start wiremock server
         startSolaceWiremockServer();
-    }
-
-    public static void main(String[] args) throws Exception {
-        System.setProperty("javax.net.ssl.keyStore",
-                "/home/sarangan/Work/APIMPacks/4.1.0/Feb/28.02/wso2am-4.1.0-SNAPSHOT/repository/resources/security/wso2carbon.jks");
-        System.setProperty("javax.net.ssl.trustStore",
-                "/home/sarangan/Work/APIMPacks/4.1.0/Feb/28.02/wso2am-4.1.0-SNAPSHOT/repository/resources/security/client-truststore.jks");
-        System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
-
-        System.setProperty("framework.resource.location", "/home/sarangan/Work/Repos/product-apim/modules/integration/tests-integration/tests-backend/src/test/resources/");
-        System.setProperty("user.dir", "/home/sarangan/Work/Repos/product-apim/modules/integration/tests-integration/tests-backend/src/");
-        SolaceTestCase solaceTestCase  =
-                new SolaceTestCase(TestUserMode.SUPER_TENANT_ADMIN);
-        try {
-            solaceTestCase.startSolaceWiremockServer();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public void startSolaceWiremockServer() {
@@ -421,7 +399,6 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                         .willSetStateTo("Cause Success")
 
         );
-
         // Get registered API2 in solace broker success
         solaceWireMockServer.stubFor(
                 WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration2)
@@ -432,7 +409,7 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
                                 .withStatus(HTTP_RESPONSE_CODE_OK)
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo(STARTED)
+                        .willSetStateTo("Cause Success")
         );
 
         // Get registered API3 in solace broker not found
@@ -662,7 +639,7 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                         .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
                         .willReturn(aResponse()
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
                         .willSetStateTo("Cause Success")
         );
@@ -677,7 +654,7 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
                                 .withStatus(HTTP_RESPONSE_CODE_OK)
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo("Cause Success")
+                        .willSetStateTo(STARTED)
         );
 
         // Get created APIProduct3 in Solace broker not found
@@ -863,7 +840,7 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
                                 .withStatus(HTTP_RESPONSE_CODE_OK)
                                 .withBody("{\n" +
-                                        "    \"name\": \"41756660-9948-4b6a-8040-571122e711dd\",\n" +
+                                        "    \"name\": \"SolaceNewSubApp\",\n" +
                                         "    \"displayName\": \"TestApp\",\n" +
                                         "    \"apiProducts\": [\n" +
                                         "        \"devportalEnv-SolaceSampleAPI-SolaceSampleAPI-1.0\",\n" +
@@ -877,14 +854,22 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
    /*
         Application PUT
     */
-        // Update created Application in Solace broker success
+        // Update created Application in Solace broker success - (Add a subscription)
         solaceWireMockServer.stubFor(
-                WireMock.put("/" + SOLACE_ORGANIZATION +
-                                "/developers/" + SOLACE_DEVELOPER_USER_NAME + "/apps/" + newSubApplicationId)
+                WireMock.patch(urlPathEqualTo("/" + SOLACE_ORGANIZATION +
+                        "/developers/" + SOLACE_DEVELOPER_USER_NAME + "/apps/" + newSubApplicationId))
                         .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
                         .willReturn(aResponse()
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
                                 .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withBody("{\n" +
+                                        "    \"name\": \"SolaceNewSubApp\",\n" +
+                                        "    \"displayName\": \"TestApp\",\n" +
+                                        "    \"apiProducts\": [\n" +
+                                        "        \"devportalEnv-SolaceSampleAPI-SolaceSampleAPI-1.0\",\n" +
+                                        "        \"devportalEnv-SolaceSampleAPI2-SolaceSampleAPI2-1.0\",\n" +
+                                        "    ]\n" +
+                                        "}")
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
         );
 
@@ -953,12 +938,14 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         // Deploy the revision and publish API
         createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId, restAPIPublisher);
         HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId, false);
+
         // Assert successful lifecycle change
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
         waitForAPIDeploymentSync(user.getUserName(), solaceApiName, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO storeAPI = restAPIStore.getAPI(solaceApiId);
+
         // Assert that Solace API is properly retrieved in store
         assertEquals(storeAPI.getName(), solaceApiName);
         assertEquals(storeAPI.getContext(), "/" + solaceApiContext + "/" + solaceApiVersion);
@@ -966,22 +953,7 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(storeAPI.getAsyncTransportProtocols());
     }
 
-    @Test(groups = {"wso2.am"}, description = "Create a new application and generate Keys for Solace subscription",
-            dependsOnMethods = "showSolaceApiInDeveloperPortal")
-    public void testGenerateKeysForSolaceSubscriptions() throws Exception {
-
-        log.info("testGenerateKeysForSolaceSubscriptions initiated");
-
-        // Generate Keys for Solace subscription
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(newSubApplicationId, "36000", "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        Assert.assertNotNull("Access Token not found ", accessToken);
-    }
-
-
-    @Test(groups = {"wso2.am"}, description = "Create a new subscription for Solace API",
-            dependsOnMethods = "testGenerateKeysForSolaceSubscriptions")
+    @Test(groups = {"wso2.am"}, description = "Create a new subscription for Solace API")
     public void testSolaceAPINewSubscriptionCreation() throws Exception {
 
         log.info("testSolaceAPINewSubscriptionCreation initiated");
@@ -999,104 +971,6 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO newSubApplication = restAPIStore.getApplicationById(newSubApplicationId);
         assertNotNull(newSubApplication.getSubscriptionCount());
         assertEquals(newSubApplication.getSubscriptionCount().intValue(),1);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Create a new subscription with an application already has Solace subscriptions",
-            dependsOnMethods = "testSolaceAPINewSubscriptionCreation")
-    public void testAddSolaceSubscriptionToApplicationWithExistingSolaceSubscriptions() throws Exception {
-
-        log.info("testAddSolaceSubscriptionToApplicationWithExistingSolaceSubscriptions initiated");
-
-        // Create additional properties object
-        JSONObject additionalPropertiesObj = new JSONObject();
-        additionalPropertiesObj.put("provider", user.getUserName());
-        additionalPropertiesObj.put("name", solaceApiName2);
-        additionalPropertiesObj.put("context", solaceApiContext2);
-        additionalPropertiesObj.put("version", solaceApiVersion);
-        additionalPropertiesObj.put("gatewayVendor", solaceGatewayVendor);
-        additionalPropertiesObj.put("type", "WEBSUB");
-
-        String solaceDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "solace"
-                + File.separator + "APIMaintenance.yml";
-        File file = new File(solaceDefinitionPath);
-
-        // Validate Async Definition of the Solace Specification
-        AsyncAPISpecificationValidationResponseDTO asyncAPISpecificationValidationResponseDTO = restAPIPublisher.
-                validateAsyncAPISchemaDefinition(null, file);
-        assertTrue(asyncAPISpecificationValidationResponseDTO.isIsValid());
-
-        // Create API by importing the Solace  definition
-        APIDTO solaceApiDto = restAPIPublisher
-                .importAsyncAPISchemaDefinition(file, null, additionalPropertiesObj.toString());
-
-        // Make sure API is created properly
-        solaceApiId2 = solaceApiDto.getId();
-        assertEquals(solaceApiDto.getGatewayVendor(), solaceGatewayVendor);
-
-        // Deploy the revision and publish API
-        createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId2, restAPIPublisher);
-        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId2, false);
-        // Assert successful lifecycle change
-        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
-        waitForAPIDeploymentSync(user.getUserName(), solaceApiName2, solaceApiVersion,
-                APIMIntegrationConstants.IS_API_EXISTS);
-
-        HttpClient httpClient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(SOLACE_BASE_URL +  "/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName2);
-        String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
-        httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
-        org.apache.http.HttpResponse response = httpClient.execute(httpGet);
-
-        // Add subscription
-        subscriptionDTO2 = restAPIStore.subscribeToAPI(solaceApiId2, newSubApplicationId,
-                APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
-
-        // Assert new Subscription count
-        ApplicationDTO newSubApplication = restAPIStore.getApplicationById(newSubApplicationId);
-        assertEquals(newSubApplication.getSubscriptionCount().intValue(),2);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Remove created subscription from an application that already has Solace subscriptions",
-            dependsOnMethods = "testAddSolaceSubscriptionToApplicationWithExistingSolaceSubscriptions")
-    public void testRemoveSolaceSubscriptionFromApplicationWithExistingSolaceSubscriptions() throws Exception {
-
-        log.info("testAddSolaceSubscriptionToApplicationWithExistingSolaceSubscriptions initiated");
-
-        // Remove subscription
-        restAPIStore.removeSubscription(subscriptionDTO2);
-
-        // Assert new Subscription count
-        ApplicationDTO newSubApplication = restAPIStore.getApplicationById(newSubApplicationId);
-        assertEquals(newSubApplication.getSubscriptionCount().intValue(),1);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Remove all the Solace subscriptions attached to an application and delete" +
-            " that from solace broker ", dependsOnMethods = "testRemoveSolaceSubscriptionFromApplicationWithExistingSolaceSubscriptions")
-    public void testRemoveAllSolaceSubscriptionsFromApplication() throws Exception {
-
-        log.info("testRemoveAllSolaceSubscriptionsFromApplication initiated");
-
-        // Remove subscription
-        restAPIStore.removeSubscription(subscriptionDTO1);
-
-        // Assert new Subscription count
-        ApplicationDTO newSubApplication = restAPIStore.getApplicationById(newSubApplicationId);
-        assertEquals(newSubApplication.getSubscriptionCount().intValue(),0);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Delete an application that has a solace subscription attached to it"
-            , dependsOnMethods = "testRemoveAllSolaceSubscriptionsFromApplication")
-    public void testDeleteApplicationWithSolaceSubscription() throws Exception {
-
-        log.info("testDeleteApplicationWithSolaceSubscription initiated");
-
-        // Add subscription
-//        subscriptionDTO2 = restAPIStore.subscribeToAPI(solaceApiId2, newSubApplicationId,
-//                APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
-
-        // Assert app deletion
-        HttpResponse appDeleteResponse = restAPIStore.deleteApplication(newSubApplicationId);
-        assertEquals(appDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing Solace Async API definition and create API")
@@ -1164,13 +1038,18 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
 
         log.info("testSolaceAPIUndeployFromSolaceBroker initiated");
 
-        // Assert that related artifacts are found in solace broker before undeploying
+        //Undeploy from Solace broker
+        undeployAndDeleteSolaceAPIRevisionsFromSolaceBroker(solaceApiId3, restAPIPublisher);
+        waitForAPIUnDeploymentSync(user.getUserName(), solaceApiName3, solaceApiVersion,
+                APIMIntegrationConstants.IS_API_EXISTS);
+
         HttpClient httpClient = HttpClients.createDefault();
         String apiNameForRegistration = solaceApiName3 + "-" + solaceApiVersion;
         HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
         String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
         httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
 
+        // Assert that related artifacts are found in solace broker before undeploy
         org.apache.http.HttpResponse response = httpClient.execute(httpGet);
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "Invocation fails for GET request");
@@ -1240,16 +1119,6 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         waitForAPIDeploymentSync(user.getUserName(), solaceApiName4, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
-        // Assert that related artifacts are found in solace broker
-        HttpClient httpClient = HttpClients.createDefault();
-        String apiNameForRegistration = solaceApiName4 + "-" + solaceApiVersion;
-        HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
-        String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
-        httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
-        org.apache.http.HttpResponse response = httpClient.execute(httpGet);
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
-                "Invocation fails for GET request");
-
         //Change lifeCycle to DEPRECATED and then RETIRED
         HttpResponse blockAPIActionResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(solaceApiId4, APILifeCycleAction.DEPRECATE.getAction(), null);
@@ -1266,6 +1135,11 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                         + solaceApiId4 + ")" + " Response Code:" + retiredAPIActionResponse.getResponseCode());
 
         // Assert that related artifacts are not found in solace broker
+        HttpClient httpClient = HttpClients.createDefault();
+        String apiNameForRegistration = solaceApiName4 + "-" + solaceApiVersion;
+        HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
+        String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
+        httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
         org.apache.http.HttpResponse response2 = httpClient.execute(httpGet);
         assertEquals(response2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Invocation Passes for GET request");
@@ -1324,21 +1198,26 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         waitForAPIDeploymentSync(user.getUserName(), solaceApiName5, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
-        // Delete API from publisher portal
-        HttpResponse apiDeleteResponse = restAPIPublisher.deleteAPI(solaceApiId5);
-        assertEquals(apiDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Unable to delete API :" + apiDeleteResponse.getData());
-
-        // Assert that related artifacts are not found in solace broker
         HttpClient httpClient = HttpClients.createDefault();
         String apiNameForRegistration = solaceApiName5 + "-" + solaceApiVersion;
         HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
         String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
         httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
 
+        // Assert that related artifacts are found in solace broker before API delete
         org.apache.http.HttpResponse response = httpClient.execute(httpGet);
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "Invocation fails for GET request");
+
+        // Delete API from publisher portal
+        HttpResponse apiDeleteResponse = restAPIPublisher.deleteAPI(solaceApiId5);
+        assertEquals(apiDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to delete API :" + apiDeleteResponse.getData());
+
+        // Assert that related artifacts are not found in solace broker
+        org.apache.http.HttpResponse response2 = httpClient.execute(httpGet);
+        assertEquals(response2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invocation passes for GET request");
     }
 
     /**
@@ -1458,13 +1337,11 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
 
         return  revisionUUID;
     }
+
     @AfterClass(alwaysRun = true)
     void destroy() throws Exception {
-        restAPIPublisher.deleteAPI(solaceApiId);
-        restAPIPublisher.deleteAPI(solaceApiId2);
         restAPIPublisher.deleteAPI(solaceApiId3);
         restAPIPublisher.deleteAPI(solaceApiId4);
-        restAPIPublisher.deleteAPI(solaceApiId5);
         solaceWireMockServer.stop();
     }
 }
