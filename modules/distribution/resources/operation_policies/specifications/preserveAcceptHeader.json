@@ -3,7 +3,6 @@
   "name": "preserveAcceptHeader",
   "displayName": "Preserve Accept Header",
   "description": "Preserve the accept header",
-  "multipleAllowed": false,
   "applicableFlows": [
     "request"
   ],

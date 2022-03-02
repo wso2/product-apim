@@ -3,7 +3,6 @@
   "name": "regexPolicy",
   "displayName": "Regex Policy",
   "description": "Regex policy",
-  "multipleAllowed": true,
   "applicableFlows": [
     "request"
   ],
