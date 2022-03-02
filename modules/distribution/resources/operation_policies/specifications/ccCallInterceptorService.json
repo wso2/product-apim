@@ -17,7 +17,7 @@
       "name": "includes",
       "displayName": "Includes to Payload",
       "description": "Includes to the request payload of interceptor service as comma separated ",
-      "validationRegex": "^(([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)(,\\s?[a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)*)$",
+      "validationRegex": "^(([a-zA-Z\\d_][a-zA-Z\\d_\\-]*)(,[a-zA-Z\\d_][a-zA-Z\\d_\\-]*)*)$",
       "type": "String",
       "required": true
     }
