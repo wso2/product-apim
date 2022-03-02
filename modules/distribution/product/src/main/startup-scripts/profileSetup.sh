@@ -304,7 +304,7 @@ case $1 in
 		removeSecureWebSocketInboundEndpoint
 		removeSynapseConfigs
 		replaceAxis2TemplateFile $pathToAxis2ControlPlaneXmlTemplate
-		replaceTenantAxis2TemplateFile $pathToTenantAxis2ControlPl  aneXmlTemplate
+		replaceTenantAxis2TemplateFile $pathToTenantAxis2ControlPlaneXmlTemplate
 		 # removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 \( -name 'api#am#gateway#v2.war' \)); do
 			rm -r $i

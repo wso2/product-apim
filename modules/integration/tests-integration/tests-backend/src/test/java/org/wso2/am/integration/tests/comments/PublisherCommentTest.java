@@ -411,6 +411,8 @@ public class PublisherCommentTest
     //Edit a comment
     @Test(dependsOnMethods = {"testVerifyDevPortalPaginationOfRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Edit Comment Test Case", dataProvider = "input-data-provider")
         public void testPublisherEditCommentTest(String content, String category) throws Exception {
+        // sleep added to wait between edit comments due to update time assertions
+        Thread.sleep(2000);
         HttpResponse editCommentResponse = restAPIPublisher
                 .editComment(rootCommentIdToAddReplies, apiId, content, category);
         assertNotNull(editCommentResponse, "Error adding comment");

@@ -802,16 +802,6 @@
                 <version>${rampart.wso2.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.rampart.wso2</groupId>
-                <artifactId>rampart-trust</artifactId>
-                <version>${rampart.wso2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.rampart.wso2</groupId>
-                <artifactId>rampart-policy</artifactId>
-                <version>${rampart.wso2.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.api.version}</version>
@@ -1258,11 +1248,6 @@
                 <version>${disruptor.orbit.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.orbit.org.opensaml</groupId>
-                <artifactId>opensaml</artifactId>
-                <version>${opensaml2.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.rampart.wso2</groupId>
                 <artifactId>rampart-core</artifactId>
                 <version>${rampart.wso2.version}</version>
@@ -1286,10 +1271,10 @@
         <project.scm.id>scm-server</project.scm.id>
         <carbon.analytics.common.version>5.2.37</carbon.analytics.common.version>
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.0.246</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.0.256</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.18.12</carbon.apimgt.version>
+        <carbon.apimgt.version>9.20.2</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1302,7 +1287,7 @@
         <carbon.governance.version>4.8.28</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.6.3-m7</carbon.kernel.version>
+        <carbon.kernel.version>4.6.3-m8</carbon.kernel.version>
         <apimserver.version>4.1.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.6.3</ws.feature.version>
 
@@ -1312,14 +1297,14 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.117</carbon.mediation.version>
+        <carbon.mediation.version>4.7.120</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.18.238</carbon.identity.version>
+        <carbon.identity.version>5.18.243</carbon.identity.version>
         <carbon.identity.governance.version>1.4.98</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.4.37</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.3.13</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.4.169</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.4.172</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-inbound-auth-sts.version>5.6.5</carbon.identity-inbound-auth-sts.version>
         <carbon.identity-data-publisher-oauth.version>1.3.1</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.4.1</carbon.identity-user-ws.version>
@@ -1358,7 +1343,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-	    <synapse.version>2.1.7-wso2v253</synapse.version>
+	    <synapse.version>2.1.7-wso2v258</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v76</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
@@ -1391,8 +1376,7 @@
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
-        <opensaml.version>2.6.6</opensaml.version>
-        <opensaml2.wso2.version>2.6.6.wso2v4</opensaml2.wso2.version>
+        <opensaml2.wso2.version>3.3.1.wso2v4</opensaml2.wso2.version>
         <transport.http.netty.version>6.3.35</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
@@ -1430,9 +1414,9 @@
         <jacoco.agent.version>0.8.2</jacoco.agent.version>
         <google.guava.version>27.0-jre</google.guava.version>
 
-        <carbon.metrics.version>1.3.7</carbon.metrics.version>
+        <carbon.metrics.version>1.3.11</carbon.metrics.version>
         <!-- MB Features -->
-        <carbon.messaging.version>3.3.18</carbon.messaging.version>
+        <carbon.messaging.version>3.3.19</carbon.messaging.version>
         <carbon.event-processing.version>2.3.0</carbon.event-processing.version>
         <andes.version>3.3.21</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
@@ -1457,9 +1441,9 @@
         <com.googlecode.json.version>1.1.1</com.googlecode.json.version>
 
         <!-- Forget-me tool -->
-        <forgetme.tool.version>1.3.6</forgetme.tool.version>
+        <forgetme.tool.version>1.3.7</forgetme.tool.version>
         <!--Consent Management dependencies-->
-        <carbon.consent.mgt.version>2.2.16</carbon.consent.mgt.version>
+        <carbon.consent.mgt.version>2.2.19</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.0.13</carbon.database.utils.version>
 
         <com.jayway.jsonpath.version>2.4.0.wso2v2</com.jayway.jsonpath.version>
@@ -1492,8 +1476,8 @@
         <apim.analytics.publisher.version>1.0.5</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
-        <rampart.wso2.version>1.6.1-wso2v43</rampart.wso2.version>
-        <wss4j.version>1.5.11-wso2v21</wss4j.version>
+        <rampart.wso2.version>1.7.0-wso2v1</rampart.wso2.version>
+        <wss4j.version>1.6.0-wso2v2</wss4j.version>
     </properties>
 
 </project>
