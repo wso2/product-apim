@@ -968,7 +968,8 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull("Access Token not found ", applicationKeyDTO.getConsumerSecret());
     }
 
-    @Test(groups = {"wso2.am"}, description = "Create a new subscription for Solace API")
+    @Test(groups = {"wso2.am"}, description = "Create a new subscription for Solace API",
+            dependsOnMethods = "testGenerateKeysForSolaceSubscriptions")
     public void testSolaceAPINewSubscriptionCreation() throws Exception {
 
         log.info("testSolaceAPINewSubscriptionCreation initiated");
@@ -986,6 +987,10 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO newSubApplication = restAPIStore.getApplicationById(newSubApplicationId);
         assertNotNull(newSubApplication.getSubscriptionCount());
         assertEquals(newSubApplication.getSubscriptionCount().intValue(),1);
+
+        //Delete Application
+        HttpResponse appDeleteResponse = restAPIStore.deleteApplication(newSubApplicationId);
+        assertEquals(appDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing Solace Async API definition and create API")
@@ -1142,6 +1147,16 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                 "API status Change is invalid when retire an API :" + solaceApiName4 + " with API ID ("
                         + solaceApiId4 + ")" + " Response Code:" + blockAPIActionResponse.getResponseCode());
 
+        HttpClient httpClient = HttpClients.createDefault();
+        String apiNameForRegistration = solaceApiName4 + "-" + solaceApiVersion;
+        HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
+        String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
+        httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
+
+        org.apache.http.HttpResponse response = httpClient.execute(httpGet);
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "Invocation Fails for GET request");
+
         HttpResponse retiredAPIActionResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(solaceApiId4, APILifeCycleAction.RETIRE.getAction(), null);
         assertEquals(retiredAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
@@ -1150,11 +1165,6 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                         + solaceApiId4 + ")" + " Response Code:" + retiredAPIActionResponse.getResponseCode());
 
         // Assert that related artifacts are not found in solace broker
-        HttpClient httpClient = HttpClients.createDefault();
-        String apiNameForRegistration = solaceApiName4 + "-" + solaceApiVersion;
-        HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
-        String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
-        httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
         org.apache.http.HttpResponse response2 = httpClient.execute(httpGet);
         assertEquals(response2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Invocation Passes for GET request");
@@ -1218,11 +1228,6 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
         String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
         httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
-
-        // Assert that related artifacts are found in solace broker before API delete
-        org.apache.http.HttpResponse response = httpClient.execute(httpGet);
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
-                "Invocation fails for GET request");
 
         // Delete API from publisher portal
         HttpResponse apiDeleteResponse = restAPIPublisher.deleteAPI(solaceApiId5);
@@ -1355,6 +1360,7 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     void destroy() throws Exception {
+        restAPIPublisher.deleteAPI(solaceApiId);
         restAPIPublisher.deleteAPI(solaceApiId3);
         restAPIPublisher.deleteAPI(solaceApiId4);
         solaceWireMockServer.stop();
