@@ -465,7 +465,7 @@
             <directory>../resources/operation_policies/definitions</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources/operation_policies/definitions</outputDirectory>
             <includes>
-                <include>**/**.gotmp</include>
+                <include>**/**.gotmpl</include>
                 <include>**/**.j2</include>
             </includes>
         </fileSet>
