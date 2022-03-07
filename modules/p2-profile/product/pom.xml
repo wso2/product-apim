@@ -500,7 +500,7 @@
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
-                                    org.wso2.carbon.metrics:org.wso2.carbon.metrics.feature:${carbon.metrics.version}
+                                    org.wso2.carbon.metrics:org.wso2.carbon.metrics.server.feature:${carbon.metrics.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.throttling.siddhi.extension.feature:${carbon.apimgt.version}
