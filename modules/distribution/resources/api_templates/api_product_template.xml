@@ -34,7 +34,7 @@
         #set( $endpointsecurity = $endpoint_security.get("${type}"))
 
         ## IF endpoint secured
-        #if($endpointsecurity.enabled)
+        #if($endpoint_security.get("$type").enabled)
         #if($endpointsecurity.type == "basic" || $endpointsecurity.type == "BASIC")
         #if($isSecureVaultEnabled)
 <property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$endpointsecurity.alias')"/>
