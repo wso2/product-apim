@@ -593,7 +593,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             socket.sendMessage(textMessage);
             Thread.sleep(20000);
             waitForReply(socket);
-            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
@@ -607,7 +606,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             socket.sendMessage(textMessage);
             Thread.sleep(20000);
             waitForReply(socket);
-            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"data\",\"id\":\"1\",\"payload\":{\"data\":"
@@ -791,7 +789,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             socket.sendMessage(textMessage);
             Thread.sleep(20000);
             waitForReply(socket);
-            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
@@ -805,7 +802,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             socket.sendMessage(textMessage);
             Thread.sleep(20000);
             waitForReply(socket);
-            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             String errorMessage = socket.getResponseMessage();
@@ -848,7 +844,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             socket.sendMessage(textMessage);
             Thread.sleep(20000);
             waitForReply(socket);
-            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
@@ -862,7 +857,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             socket.sendMessage(textMessage);
             Thread.sleep(20000);
             waitForReply(socket);
-            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             String errorMessage = socket.getResponseMessage();
@@ -906,7 +900,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             socket.sendMessage(textMessage);
             Thread.sleep(20000);
             waitForReply(socket);
-            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
@@ -920,7 +913,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             socket.sendMessage(textMessage);
             Thread.sleep(20000);
             waitForReply(socket);
-            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             String errorMessage = socket.getResponseMessage();
@@ -964,7 +956,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             socket.sendMessage(textMessage);
             Thread.sleep(20000);
             waitForReply(socket);
-            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
@@ -978,7 +969,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             socket.sendMessage(textMessage);
             Thread.sleep(20000);
             waitForReply(socket);
-            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             String errorMessage = socket.getResponseMessage();
