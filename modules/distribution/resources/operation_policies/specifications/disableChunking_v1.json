@@ -1,8 +1,9 @@
 {
   "category": "Mediation",
-  "name": "jsonToXML",
-  "displayName": "JSON to XML",
-  "description": "This policy allows you to change the payload from JSON to XML",
+  "name": "disableChunking",
+  "version": "v1",
+  "displayName": "Disable Chunking",
+  "description": "This policy disables chunking of the payload",
   "applicableFlows": [
     "request",
     "response"

@@ -1,6 +1,7 @@
 {
   "category": "Mediation",
   "name": "addLogMessage",
+  "version": "v1",
   "displayName": "Log Policy",
   "description": "This policy allows you to log the important details of the request",
   "applicableFlows": [

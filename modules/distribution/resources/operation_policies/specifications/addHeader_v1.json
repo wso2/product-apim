@@ -1,6 +1,7 @@
 {
   "category": "Mediation",
-  "name": "ccAddHeader",
+  "name": "addHeader",
+  "version": "v1",
   "displayName": "Add Header",
   "description": "This policy allows you to add a new header to the request",
   "policyAttributes": [
@@ -22,10 +23,12 @@
     }
   ],
   "applicableFlows": [
-    "request"
+    "request",
+    "response",
+    "fault"
   ],
   "supportedGateways": [
-    "ChoreoConnect"
+    "Synapse"
   ],
   "supportedApiTypes": [
     "HTTP"

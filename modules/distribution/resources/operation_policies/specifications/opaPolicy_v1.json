@@ -1,6 +1,7 @@
 {
   "category": "Security",
   "name": "opaPolicy",
+  "version": "v1",
   "displayName": "Validate Request with OPA Policy",
   "description": "This policy allows you to validate requests based on the OPA policy engine",
   "policyAttributes": [

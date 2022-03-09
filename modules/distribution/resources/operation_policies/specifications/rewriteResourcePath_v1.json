@@ -1,6 +1,7 @@
 {
   "category": "Mediation",
   "name": "rewriteResourcePath",
+  "version": "v1",
   "displayName": "Rewrite Resource Path",
   "description": "This policy allows you to rewrite the resource path of a request",
   "policyAttributes": [
