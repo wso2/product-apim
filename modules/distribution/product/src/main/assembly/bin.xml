@@ -515,15 +515,6 @@
             </includes>
         </fileSet>
 
-        <!-- API Custom Sequences -->
-        <fileSet>
-            <directory>../resources/customsequences</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/customsequences</outputDirectory>
-            <includes>
-                <include>**/**.xml</include>
-            </includes>
-        </fileSet>
-
         <!--copy the callhome jar -->
         <fileSet>
             <directory>../../callhome/target/callhomeCopied/jar</directory>
