@@ -324,6 +324,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         invocationStatusCodes.addScopeSpecificStatusCode(SCOPE, HttpStatus.SC_OK);
         apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes);
     }
+/*
+//TODO:rewrite the same tests with operation policies
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
             "on an API with an in mediation sequence")
@@ -500,6 +502,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, expectedResponse,
                 requestBody, headers);
     }
+*/
 
     @Test(groups = {"wso2.am"}, description = "Test creation of API Product with an Advertise only API")
     public void testCreateApiProductWithAdvertiseOnlyApi() throws Exception {
