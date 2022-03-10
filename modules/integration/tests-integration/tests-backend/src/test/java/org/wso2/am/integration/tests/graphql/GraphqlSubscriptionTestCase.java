@@ -105,6 +105,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
     private static final String GRAPHQL_ROLE = "graphqlSubRole";
     private static final String GRAPHQL_TEST_USER = "graphqlSubUser";
     private static final String GRAPHQL_TEST_USER_PASSWORD = "graphqlSubUser";
+    private static final String GRAPHQL_API_NAME = "SnowtoothGraphQLSubAPI";
+    private static final String GRAPHQL_API_CONTEXT = "snowtooth";
+    private static final String GRAPHQL_API_VERSION = "1.0.0";
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private int webSocketServerPort;
     private String webSocketServerHost;
@@ -129,8 +132,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN}};
+        // Removed the tenant user due to https://github.com/wso2/product-apim/issues/12621
+        // Need to revisit this
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN } };
     }
 
     @BeforeClass(alwaysRun = true)
@@ -192,12 +196,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         policies.add("QueryDepthPolicy");
 
         JSONObject additionalPropertiesObj = new JSONObject();
-        String API_NAME = "SnowtoothGraphQLSubAPI";
-        additionalPropertiesObj.put("name", API_NAME);
-        String API_CONTEXT = "snowtooth";
-        additionalPropertiesObj.put("context", API_CONTEXT);
-        String API_VERSION = "1.0.0";
-        additionalPropertiesObj.put("version", API_VERSION);
+        additionalPropertiesObj.put("name", GRAPHQL_API_NAME);
+        additionalPropertiesObj.put("context", GRAPHQL_API_CONTEXT);
+        additionalPropertiesObj.put("version", GRAPHQL_API_VERSION);
 
         JSONObject url = new JSONObject();
         url.put("url", "http://" + webSocketServerHost + ":" + webSocketServerPort);
@@ -215,22 +216,22 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         HttpResponse createdApiResponse = restAPIPublisher.getAPI(graphqlApiId);
         System.out.println(createdApiResponse.getData());
         assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode(),
-                API_NAME + " API creation is failed");
+                GRAPHQL_API_NAME + " API creation is failed");
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(graphqlApiId, restAPIPublisher);
         // publish api
         restAPIPublisher.changeAPILifeCycleStatus(graphqlApiId, Constants.PUBLISHED);
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION,
+        waitForAPIDeploymentSync(user.getUserName(), GRAPHQL_API_NAME, GRAPHQL_API_VERSION,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         // replace port with inbound endpoint port
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode) || TestUserMode.SUPER_TENANT_USER.equals(userMode)) {
-            apiEndPoint = getWebSocketAPIInvocationURL(API_CONTEXT, API_VERSION);
+            apiEndPoint = getWebSocketAPIInvocationURL(GRAPHQL_API_CONTEXT, GRAPHQL_API_VERSION);
         } else {
-            apiEndPoint = getWebSocketTenantAPIInvocationURL(API_CONTEXT, API_VERSION, user.getUserDomain());
+            apiEndPoint = getWebSocketTenantAPIInvocationURL(GRAPHQL_API_CONTEXT, GRAPHQL_API_VERSION, user.getUserDomain());
         }
         log.info("API Endpoint URL" + apiEndPoint);
-        APIIdentifier apiIdentifierWebSocket = new APIIdentifier(user.getUserName(), API_NAME, API_VERSION);
+        APIIdentifier apiIdentifierWebSocket = new APIIdentifier(user.getUserName(), GRAPHQL_API_NAME, GRAPHQL_API_VERSION);
         APIListDTO apiPublisherAllAPIs = restAPIPublisher.getAllAPIs();
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierWebSocket, apiPublisherAllAPIs),
                 "Published API is visible in API Publisher.");
@@ -322,6 +323,11 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         GraphQLQueryComplexityInfoDTO graphQLQueryComplexityInfoDTO = new GraphQLQueryComplexityInfoDTO();
         graphQLQueryComplexityInfoDTO.setList(complexityList);
         restAPIPublisher.addGraphQLComplexityDetails(graphQLQueryComplexityInfoDTO, graphqlApiId);
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(graphqlApiId, restAPIPublisher);
+        Thread.sleep(10000);
+        waitForAPIDeploymentSync(user.getUserName(), GRAPHQL_API_NAME, GRAPHQL_API_VERSION,
+                APIMIntegrationConstants.IS_API_EXISTS);
 
         //Get GraphQLComplexity Details
         HttpResponse complexityResponse = restAPIPublisher.getGraphQLComplexityResponse(graphqlApiId);
@@ -355,7 +361,8 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions for depth", dependsOnMethods = "testGraphQLAPIInvocationForComplexity")
+    @Test(groups = {
+            "wso2.am" }, description = "Invoke Subscriptions for depth", dependsOnMethods = "testGraphQLAPIInvocationForComplexity")
     public void testGraphQLAPIInvocationForDepth() throws Exception {
 
         //create new JWT Application
@@ -386,7 +393,8 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Invoke Subscriptions using token", dependsOnMethods = "testGraphQLAPIInvocationForDepth")
+    @Test(groups = {
+            "wso2.am" }, description = "Invoke Subscriptions using token", dependsOnMethods = "testGraphQLAPIInvocationForDepth")
     public void testGraphQLAPIInvocationWithScopes() throws Exception {
 
         List role = new ArrayList();
@@ -418,7 +426,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(graphqlApiId, restAPIPublisher);
         // Keep sufficient time to update map
-        Thread.sleep(10000);
+        Thread.sleep(20000);
         waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
         // generate token
@@ -482,7 +490,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(graphqlApiId, restAPIPublisher);
         // Keep sufficient time to update map
-        Thread.sleep(10000);
+        Thread.sleep(20000);
         waitForAPIDeploymentSync(apidto.getProvider(), apidto.getName(), apidto.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
@@ -569,6 +577,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = null;
 
+        request.setSubProtocols("graphql-ws");
         if (AUTH_IN.HEADER == in) {
             request.setHeader("Authorization", "Bearer " + accessToken);
             echoUri = new URI(apiEndPoint);
@@ -581,8 +590,10 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(20000);
             socket.sendMessage(textMessage);
             waitForReply(socket);
+            Thread.sleep(40000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
@@ -766,14 +777,18 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
 
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(20000);
             socket.sendMessage(textMessage);
+            Thread.sleep(20000);
             waitForReply(socket);
+            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
@@ -816,14 +831,18 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
 
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(20000);
             socket.sendMessage(textMessage);
+            Thread.sleep(20000);
             waitForReply(socket);
+            Thread.sleep(20000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
@@ -868,13 +887,17 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
 
+        request.setSubProtocols("graphql-ws");
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(40000);
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
+            Thread.sleep(30000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
@@ -918,14 +941,18 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = new URI(apiEndPoint);
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
 
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(40000);
             socket.sendMessage(textMessage);
+            Thread.sleep(30000);
             waitForReply(socket);
+            Thread.sleep(30000);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
@@ -970,12 +997,14 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         URI echoUri = new URI(apiEndPoint);
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setSubProtocols("graphql-ws");
         client.connect(socket, echoUri, request);
         socket.getLatch().await(3L, TimeUnit.SECONDS);
         try {
             String textMessage;
             //Send connection init message
             textMessage = "{\"type\":\"connection_init\",\"payload\":{}}";
+            Thread.sleep(10000);
             socket.sendMessage(textMessage);
             waitForReply(socket);
             assertFalse(StringUtils.isEmpty(socket.getResponseMessage()),
