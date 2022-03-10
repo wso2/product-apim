@@ -225,8 +225,7 @@ public class HTTPSClientUtils {
         SSLContext sslcontext = SSLContexts.custom().loadTrustMaterial(trustStore, new TrustSelfSignedStrategy())
                 .loadKeyMaterial(trustStore, "password".toCharArray()).build();
         
-        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext,
-                SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext);
                 
         return HttpClients.custom().setSSLSocketFactory(sslsf).disableRedirectHandling().setDefaultRequestConfig(config)
                 .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER).build();
