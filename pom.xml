@@ -1470,7 +1470,7 @@
         <wso2is.km.version>1.4.2</wso2is.km.version>
         <okta.keymanager.feature.version>3.0.6</okta.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.0.6</keycloak.keymanager.feature.version>
-        <auth0.keymanager.feature.version>1.0.1</auth0.keymanager.feature.version>
+        <auth0.keymanager.feature.version>1.0.4</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.3</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.0.2</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>1.0.7</apim.analytics.publisher.version>
