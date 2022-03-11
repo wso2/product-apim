@@ -123,6 +123,8 @@
   "n_http.\u0027rest_uri_api_regex\u0027": "\\\\w+://.+:\\\\d+/t/.*|\\\\w+://.+\\\\w+/t/.*|^(/t/).*",
   "n_http.\u0027rest_uri_proxy_regex\u0027": "\\\\w+://.+:\\\\d+/services/t/.*|\\\\w+://.+\\\\w+/services/t/.*|^(/services/t/).*",
   "n_http.\u0027http.socket.reuseaddr\u0027": "true",
+  "identity.auth_framework.endpoint.username": "$ref{super_admin.username}",
+  "identity.auth_framework.endpoint.password": "$ref{super_admin.password}",
   "transport.receiver.max_event_buffer_capacity": "10",
   "transport.receiver.type": "binary",
   "transport.thrift.receiver.enable": false,

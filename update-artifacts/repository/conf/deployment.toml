@@ -62,6 +62,11 @@ wss_endpoint = "wss://localhost:8099"
 http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
 
+[identity.auth_framework.endpoint]
+identity_server_service_url="https://localhost:9443/services"
+username="$ref{super_admin.username}"
+password="$ref{super_admin.password}"
+
 #[apim.cache.gateway_token]
 #enable = true
 #expiry_time = "900s"

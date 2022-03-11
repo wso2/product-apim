@@ -1,0 +1,25 @@
+#
+# Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#
+# WSO2 Inc. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+{% if identity.auth_framework.endpoint.identity_server_service_url is defined %}
+identity.server.service.contextURL={{identity.auth_framework.endpoint.identity_server_service_url}}
+{% endif %}
+identity.server.service.access.username={{identity.auth_framework.endpoint.username}}
+identity.server.service.access.password={{identity.auth_framework.endpoint.password}}
+app.name={{identity.auth_framework.endpoint.app_name}}
+app.password={{identity.auth_framework.endpoint.app_password}}
