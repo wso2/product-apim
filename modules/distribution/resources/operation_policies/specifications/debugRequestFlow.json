@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "debugRequestFlow",
   "displayName": "Debug Request Flow",
-  "description": "For debugging purposes, log the special properties of the request message",
+  "description": "This policy allows you to log the special properties of the request message for debugging purposes",
   "applicableFlows": [
     "request"
   ],

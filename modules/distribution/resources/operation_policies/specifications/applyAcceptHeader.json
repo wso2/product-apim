@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "applyAcceptHeader",
   "displayName": "Apply Accept Header",
-  "description": "Apply accept header",
+  "description": "This policy allows you to apply the Accept header",
   "applicableFlows": [
     "request"
   ],

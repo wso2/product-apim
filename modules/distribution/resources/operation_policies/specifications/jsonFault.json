@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "jsonFault",
   "displayName": "JSON Fault",
-  "description": "Output the fault message in JSON",
+  "description": "This policy allows you to get an output of the fault message in JSON",
   "applicableFlows": [
     "fault"
   ],

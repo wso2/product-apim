@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "addLogMessage",
   "displayName": "Log Policy",
-  "description": "Using this policy, you can log the important details of the request",
+  "description": "This policy allows you to log the important details of the request",
   "applicableFlows": [
     "request",
     "response",

@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "preserveAcceptHeader",
   "displayName": "Preserve Accept Header",
-  "description": "Preserve the accept header",
+  "description": "This policy allows you to preserve the Accept header",
   "applicableFlows": [
     "request"
   ],
