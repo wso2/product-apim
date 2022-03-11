@@ -2,12 +2,12 @@
   "category": "Mediation",
   "name": "ccRemoveHeader",
   "displayName": "Remove Header",
-  "description": "Remove a header from the request",
+  "description": "This policy allows tou to remove a header from the request",
   "policyAttributes": [
     {
       "name": "headerName",
       "displayName": "Header Name",
-      "description": "Name of the header to be added",
+      "description": "Name of the header to be removed",
       "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
       "type": "String",
       "required": true

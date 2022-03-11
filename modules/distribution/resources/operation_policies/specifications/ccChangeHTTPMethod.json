@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "ccChangeHTTPMethod",
   "displayName": "Change HTTP Method",
-  "description": "With this policy, user can change the HTTP Method",
+  "description": "This policy allows you to change the HTTP Method",
   "policyAttributes": [
     {
       "name": "currentMethod",
@@ -16,7 +16,7 @@
     {
       "name": "updatedMethod",
       "displayName": "Updated HTTP Method",
-      "description": "New, updated method of the HTTP request",
+      "description": "New updated method of the HTTP request",
       "validationRegex": "^(GET|PUT|POST|PATCH|DELETE|HEAD|OPTIONS)$",
       "type": "Enum",
       "allowedValues" : ["GET","PUT","POST","PATCH","DELETE","HEAD","OPTIONS"],
