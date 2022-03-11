@@ -18,10 +18,5 @@
         <name>//s:Server/s:OAuth/s:ScopeValidators</name>
     </remove>
 
-   <!-- Add the ntlm grant type validator config element -->
-   <add>
-      <after>//s:Server/s:OAuth/s:SupportedGrantTypes/s:SupportedGrantType[s:GrantTypeName='iwa:ntlm']/s:GrantTypeName</after>
-      <value>
-         <![CDATA[<GrantTypeValidatorImplClass>org.wso2.carbon.identity.oauth.common.NTLMAuthenticationValidator</GrantTypeValidatorImplClass>]]></value>
-   </add>
+
 </processor>
