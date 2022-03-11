@@ -1,0 +1,35 @@
+{
+  "category": "Mediation",
+  "name": "ccChangeHTTPMethod",
+  "displayName": "Change HTTP Method",
+  "description": "With this policy, user can change the HTTP Method",
+  "policyAttributes": [
+    {
+      "name": "currentMethod",
+      "displayName": "Current HTTP Method",
+      "description": "Method of the HTTP request to be updated",
+      "validationRegex": "^(GET|PUT|POST|PATCH|DELETE|HEAD|OPTIONS)$",
+      "type": "Enum",
+      "allowedValues" : ["GET","PUT","POST","PATCH","DELETE","HEAD","OPTIONS"],
+      "required": true
+    },
+    {
+      "name": "updatedMethod",
+      "displayName": "Updated HTTP Method",
+      "description": "New, updated method of the HTTP request",
+      "validationRegex": "^(GET|PUT|POST|PATCH|DELETE|HEAD|OPTIONS)$",
+      "type": "Enum",
+      "allowedValues" : ["GET","PUT","POST","PATCH","DELETE","HEAD","OPTIONS"],
+      "required": true
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "ChoreoConnect"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}

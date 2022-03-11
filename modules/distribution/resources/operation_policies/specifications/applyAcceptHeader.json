@@ -3,7 +3,6 @@
   "name": "applyAcceptHeader",
   "displayName": "Apply Accept Header",
   "description": "This policy allows you to apply the Accept header",
-  "multipleAllowed": false,
   "applicableFlows": [
     "request"
   ],

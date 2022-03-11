@@ -1,0 +1,7 @@
+definition:
+  action: REWRITE_RESOURCE_PATH
+  parameters:
+    resourcePath: {{ .newResourcePath }}
+    {{- if .includeQueryParams }}
+    includeQueryParams: {{ .includeQueryParams }}
+    {{- end }}

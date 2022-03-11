@@ -103,9 +103,6 @@
 #timeout( $ep.get('config') )
 </http>
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpointUrl)"/>
-#if( $isGQLSubscription )
-<property name="websocket.subprotocol" scope="axis2" value="graphql-ws"/>
-#end
 </endpoint>
         #end
 

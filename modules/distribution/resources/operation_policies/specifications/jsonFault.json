@@ -3,7 +3,6 @@
   "name": "jsonFault",
   "displayName": "JSON Fault",
   "description": "This policy allows you to get an output of the fault message in JSON",
-  "multipleAllowed": false,
   "applicableFlows": [
     "fault"
   ],

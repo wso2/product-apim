@@ -1,0 +1,92 @@
+{
+  "category": "Security",
+  "name": "opaPolicy",
+  "displayName": "Validate Request With OPA Policy",
+  "description": "With this policy, user can validate requests based on the OPA policy engine",
+  "policyAttributes": [
+    {
+      "name": "serverUrl",
+      "displayName": "OPA server URL",
+      "description": "OPA server's URL",
+      "validationRegex": "([\\w+]+\\:\/\/)?([\\w\\d-]+\\.)*[\\w-]+[\\.\\:]?\\w+([\/\\?\\=\\&\\#\\.]?[\\w-]+)*\/?",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "accessKey",
+      "displayName": "Access Key",
+      "description": "Access key for validation request",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "policy",
+      "displayName": "Policy",
+      "description": "Policy to be validated",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "rule",
+      "displayName": "Rule",
+      "description": "Rule to validate",
+      "type": "String",
+      "defaultValue": "allow",
+      "required": true
+    },
+    {
+      "name": "sendAccessToken",
+      "displayName": "Send access token",
+      "description": "Select whether to send access token to the OPA payload",
+      "validationRegex": "^(true|false)$",
+      "type": "Boolean",
+      "defaultValue": false,
+      "required": false
+    },
+    {
+      "name": "additionalProperties",
+      "displayName": "Additional properties",
+      "description": "Additional message context (request context) properties to be included in the OPA input. Add these properties in a comma seperated list.",
+      "validationRegex": "^(([a-zA-Z\\d_][a-zA-Z\\d_\\-]*)(,[a-zA-Z\\d_][a-zA-Z\\d_\\-]*)*)$",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "maxOpenConnections",
+      "displayName": "Max open connections",
+      "description": "Maximum number of open HTTP connections",
+      "validationRegex": "^\\d{1,3}$",
+      "type": "Integer",
+      "defaultValue": 500,
+      "required": false
+    },
+    {
+      "name": "maxPerRoute",
+      "displayName": "Max per route",
+      "description": "Maximum connections per a route",
+      "validationRegex": "^\\d{1,3}$",
+      "type": "Integer",
+      "defaultValue": 200,
+      "required": false
+    },
+    {
+      "name": "connectionTimeout",
+      "displayName": "Connection timeout",
+      "description": "Connection timeout",
+      "validationRegex": "^\\d{1,3}$",
+      "type": "Integer",
+      "defaultValue": 30,
+      "required": false
+    }
+  ],
+  "applicableFlows": [
+    "request"
+  ],
+  "supportedGateways": [
+    "Synapse",
+    "ChoreoConnect"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}

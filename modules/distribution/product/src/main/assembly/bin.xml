@@ -163,6 +163,8 @@
                 <exclude>**/repository/components/plugins/org.apache.aries.util*.jar</exclude>
                 <exclude>**/repository/components/plugins/slf4j*.jar</exclude>
                 <exclude>**/repository/components/plugins/commons-io_2.4.0.wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v2.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -463,7 +465,7 @@
             <directory>../resources/operation_policies/definitions</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources/operation_policies/definitions</outputDirectory>
             <includes>
-                <include>**/**.gotmp</include>
+                <include>**/**.gotmpl</include>
                 <include>**/**.j2</include>
             </includes>
         </fileSet>
@@ -510,15 +512,6 @@
             <outputDirectory>wso2am-${pom.version}/statistics</outputDirectory>
             <includes>
                 <include>**/*.*</include>
-            </includes>
-        </fileSet>
-
-        <!-- API Custom Sequences -->
-        <fileSet>
-            <directory>../resources/customsequences</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/customsequences</outputDirectory>
-            <includes>
-                <include>**/**.xml</include>
             </includes>
         </fileSet>
 

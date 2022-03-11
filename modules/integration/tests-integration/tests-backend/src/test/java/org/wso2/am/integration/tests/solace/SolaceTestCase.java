@@ -52,7 +52,6 @@ import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -64,6 +63,7 @@ import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.testng.Assert.*;
@@ -83,44 +83,53 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
     protected static final String SOLACE_ORGANIZATION = "TestWSO2";
     protected static final String SOLACE_DEVELOPER_USER_NAME = "devPortTestEnv";
     protected static final String SOLACE_ENVIRONMENT = "devportalEnv";
-    protected static final String SOLACE_BASE_URL = "http://localhost:9960/";
+    protected static final String SOLACE_BASE_URL = "http://localhost:9960";
 
-    private ServerConfigurationManager serverConfigurationManager;
     private static WireMockServer solaceWireMockServer;
     private ArrayList<String> grantTypes;
+    private final String solaceGatewayVendor = "solace";
 
     // Test artifact constants
     private String newSubApplicationId;
     private SubscriptionDTO subscriptionDTO1;
     private SubscriptionDTO subscriptionDTO2;
-    private String solaceApiId;
-    private final String solaceApiName = "SolaceSampleAPI";
-    private final String solaceApiContext = "SolaceSampleAPI";
     private final String solaceApiVersion = "1.0";
+
+    // API1
+    private String solaceApiId;
+    private final String solaceApiName = "SolaceSampleAPI11";
+    private final String solaceApiContext = "SolaceSampleAPI11";
     private final String solaceApiProductName = SOLACE_ENVIRONMENT + "-" + solaceApiName + "-" + solaceApiContext + "-"
             + solaceApiVersion;
+
+    // API2
     private String solaceApiId2;
-    private final String solaceApiName2 = "SolaceSampleAPI2";
-    private final String solaceApiContext2 = "SolaceSampleAPI2";
-    private final String solaceApiVersion2 = "1.0";
+    private final String solaceApiName2 = "SolaceSampleAPI12";
+    private final String solaceApiContext2 = "SolaceSampleAPI12";
     private final String solaceApiProductName2 = SOLACE_ENVIRONMENT + "-" + solaceApiName2 + "-" + solaceApiContext2 + "-"
             + solaceApiVersion;
-    private final String solaceGatewayVendor = "solace";
-    private final String solaceApi1Name = "SolaceSampleAPI3";
-    private final String solaceApi1Context = "SolaceSampleAPI3";
-    private final String solaceApiProduct1Name = SOLACE_ENVIRONMENT + "-" + solaceApi1Name + "-" + solaceApi1Context + "-"
+
+    // API3
+    private String solaceApiId3;
+    private final String solaceApiName3 = "SolaceSampleAPI3";
+    private final String solaceApiContext3 = "SolaceSampleAPI3";
+    private final String solaceApiVersion3 = "1.0";
+    private final String solaceApiProductName3 = SOLACE_ENVIRONMENT + "-" + solaceApiName3 + "-" + solaceApiContext3 + "-"
+            + solaceApiVersion3;
+
+   // API4
+    private String solaceApiId4;
+    private final String solaceApiName4 = "SolaceLifeCycleAPI";
+    private final String solaceApiContext4 = "SolaceLifeCycleAPI";
+    private final String solaceApiProductName4 = SOLACE_ENVIRONMENT + "-" + solaceApiName4 + "-" + solaceApiContext4 + "-"
             + solaceApiVersion;
-    private final String solaceApi2Name = "SolaceLifeCycleAPI";
-    private final String solaceApi2Context = "SolaceLifeCycleAPI";
-    private final String solaceApiProduct2Name = SOLACE_ENVIRONMENT + "-" + solaceApi2Name + "-" + solaceApi2Context + "-"
+
+    // API5
+    private String solaceApiId5;
+    private final String solaceApiName5 = "SolaceSampleAPI5";
+    private final String solaceApiContext5 = "SolaceSampleAPI5";
+    private final String solaceApiProductName5 = SOLACE_ENVIRONMENT + "-" + solaceApiName5 + "-" + solaceApiContext5 + "-"
             + solaceApiVersion;
-    private final String solaceApi3Name = "SolaceDeleteAPI";
-    private final String solaceApi3Context = "SolaceDeleteAPI";
-    private final String solaceApiProduct3Name = SOLACE_ENVIRONMENT + "-" + solaceApi3Name + "-" + solaceApi3Context + "-"
-            + solaceApiVersion;
-    private String solaceApi1Id;
-    private String solaceApi2Id;
-    private String solaceApi3Id;
 
     @Factory(dataProvider = "userModeDataProvider")
     public SolaceTestCase(TestUserMode userMode) {
@@ -150,7 +159,6 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         // Load request/response body
         String solaceDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "solace"
                 + File.separator + "APIMaintenance.yml";
-        String solaceDefinition = readFile(solaceDefinitionPath);
 
         // Start wiremock server
         startSolaceWiremockServer();
@@ -159,8 +167,11 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
     public void startSolaceWiremockServer() {
         int wireMockPort = 9960;
         solaceWireMockServer = new WireMockServer(options().port(wireMockPort));
-
         String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
+
+    /*
+        Developer GET
+    */
         // GET Solace developer
         solaceWireMockServer.stubFor(
                 WireMock.get("/" + SOLACE_ORGANIZATION + "/developers/" + SOLACE_DEVELOPER_USER_NAME)
@@ -174,10 +185,13 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                         "    \"userName\": \"dev-1\"\n" +
                                         "}")
                                 .withStatus(HTTP_RESPONSE_CODE_OK)
+
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
         );
 
-        //Get environment registered in Solace broker
+    /*
+        Environment GET
+    */
         String body = "{\n" +
                 "    \"description\": \"development api gateway broker\",\n" +
                 "    \"name\": \"devEnv\",\n" +
@@ -331,6 +345,8 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                 "        }\n" +
                 "    ]\n" +
                 "}";
+
+        //Get environment registered in Solace broker
         solaceWireMockServer.stubFor(
                 WireMock.get("/" + SOLACE_ORGANIZATION + "/environments/" + SOLACE_ENVIRONMENT)
                         .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
@@ -341,32 +357,10 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
         );
 
-        // Get created APIProduct in Solace broker not found
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName)
-                        .inScenario("Get APIProduct1")
-                        .whenScenarioStateIs(STARTED)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo("Cause Success")
-        );
-        // Get created APIProduct in Solace broker success
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName)
-                        .inScenario("Get APIProduct1")
-                        .whenScenarioStateIs("Cause Success")
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_OK)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo("Cause Success")
-        );
-
-        // Get registered API in solace broker not found
+    /*
+        API GET
+    */
+        // Get registered API1 in solace broker not found
         String apiNameForRegistration = solaceApiName + "-" + solaceApiVersion;
         solaceWireMockServer.stubFor(
                 WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration)
@@ -380,46 +374,10 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                         .willSetStateTo("Cause Success")
 
         );
-        // Get registered API in solace broker success
+        // Get registered API1 in solace broker success
         solaceWireMockServer.stubFor(
                 WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration)
                         .inScenario("Get API1")
-                        .whenScenarioStateIs("Cause Success")
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo("Cause Success")
-        );
-
-        // Register API in Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.post("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_CREATED)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-
-        // Get created APIProduct2 in Solace broker not found
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName2)
-                        .inScenario("Get APIProduct2")
-                        .whenScenarioStateIs(STARTED)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo("Cause Success")
-        );
-        // Get created APIProduct2 in Solace broker success
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName2)
-                        .inScenario("Get APIProduct2")
                         .whenScenarioStateIs("Cause Success")
                         .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
                         .willReturn(aResponse()
@@ -430,10 +388,10 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         );
 
         // Get registered API2 in solace broker not found
-        String apiNameForRegistration2 = solaceApiName2 + "-" + solaceApiVersion2;
+        String apiNameForRegistration2 = solaceApiName2 + "-" + solaceApiVersion;
         solaceWireMockServer.stubFor(
                 WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration2)
-                        .inScenario("Get API2")
+                        .inScenario("Get API1")
                         .whenScenarioStateIs(STARTED)
                         .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
                         .willReturn(aResponse()
@@ -443,11 +401,81 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                         .willSetStateTo("Cause Success")
 
         );
-        // Get registered API in solace broker success
+        // Get registered API2 in solace broker success
         solaceWireMockServer.stubFor(
                 WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration2)
-                        .inScenario("Get API2")
+                        .inScenario("Get API1")
                         .whenScenarioStateIs("Cause Success")
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo("Cause Success")
+        );
+
+        // Get registered API3 in solace broker not found
+        String apiNameForRegistration3 = solaceApiName3 + "-" + solaceApiVersion;
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration3)
+                        .inScenario("Get API1")
+                        .whenScenarioStateIs(STARTED)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo("Cause Success")
+
+        );
+
+        // Get registered API3 in solace broker success
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration3)
+                        .inScenario("Get API1")
+                        .whenScenarioStateIs("Cause Success")
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo(STARTED)
+        );
+
+        // Get registered API4 in solace broker not found
+        String apiNameForRegistration4 = solaceApiName4 + "-" + solaceApiVersion;
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration4)
+                        .inScenario("Get API1")
+                        .whenScenarioStateIs(STARTED)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo("Cause Success")
+
+        );
+
+        // Get registered API4 in solace broker success
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration4)
+                        .inScenario("Get API1")
+                        .whenScenarioStateIs("Cause Success")
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo(STARTED)
+        );
+
+        // Get registered API5 in solace broker not found
+        String apiNameForRegistration5 = solaceApiName5 + "-" + solaceApiVersion;
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration5)
+                        .inScenario("Get API1")
+                        .whenScenarioStateIs(STARTED)
                         .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
                         .willReturn(aResponse()
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
@@ -456,9 +484,25 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                         .willSetStateTo("Cause Success")
         );
 
-        // Register API in Solace broker
+        // Get registered API5 in solace broker success
         solaceWireMockServer.stubFor(
-                WireMock.post("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration)
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration5)
+                        .inScenario("Get API1")
+                        .whenScenarioStateIs("Cause Success")
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo(STARTED)
+        );
+
+    /*
+        API PUT
+    */
+        // Register API1 in Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.put("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration)
                         .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
                         .willReturn(aResponse()
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
@@ -466,9 +510,239 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
         );
 
+
+        // Register API2 in Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.put("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration2)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_CREATED)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Register API3 in Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.put("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration3)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_CREATED)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Register API4 in Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.put("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration4)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_CREATED)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Register API5 in Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.put("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration5)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_CREATED)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+    /*
+        API Delete
+    */
+        // Delete API1 from Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Delete API2 from Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration2)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Delete API3 from Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration3)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Delete API4 from Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration4)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Delete API5 from Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration5)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+    /*
+        API Product GET
+    */
+        // Get created APIProduct1 in Solace broker not found
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName)
+                        .inScenario("Get APIProduct1")
+                        .whenScenarioStateIs(STARTED)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo("Cause Success")
+        );
+
+        // Get created APIProduct1 in Solace broker success
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName)
+                        .inScenario("Get APIProduct1")
+                        .whenScenarioStateIs("Cause Success")
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo("Cause Success")
+        );
+
+        // Get created APIProduct2 in Solace broker not found
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName2)
+                        .inScenario("Get APIProduct1")
+                        .whenScenarioStateIs(STARTED)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo("Cause Success")
+        );
+
+        // Get created APIProduct2 in Solace broker success
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName2)
+                        .inScenario("Get APIProduct1")
+                        .whenScenarioStateIs("Cause Success")
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo(STARTED)
+        );
+
+        // Get created APIProduct3 in Solace broker not found
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName3)
+                        .inScenario("Get APIProduct1")
+                        .whenScenarioStateIs(STARTED)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo("Cause Success")
+        );
+
+        // Get created APIProduct3 in Solace broker success
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName3)
+                        .inScenario("Get APIProduct1")
+                        .whenScenarioStateIs("Cause Success")
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo(STARTED)
+        );
+
+        // Get created APIProduct4 in Solace broker not found
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName4)
+                        .inScenario("Get APIProduct1")
+                        .whenScenarioStateIs(STARTED)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo("Cause Success")
+        );
+
+        // Get created APIProduct4 in Solace broker success
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName4)
+                        .inScenario("Get APIProduct1")
+                        .whenScenarioStateIs("Cause Success")
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo(STARTED)
+        );
+
+        // Get created APIProduct5 in Solace broker not found
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName5)
+                        .inScenario("Get APIProduct1")
+                        .whenScenarioStateIs(STARTED)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo("Cause Success")
+        );
+
+        // Get created APIProduct5 in Solace broker success
+        solaceWireMockServer.stubFor(
+                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName5)
+                        .inScenario("Get APIProduct1")
+                        .whenScenarioStateIs("Cause Success")
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+                        .willSetStateTo(STARTED)
+        );
+
+    /*
+        API Product POST
+    */
         // Create APIProducts in Solace broker
         solaceWireMockServer.stubFor(
-                WireMock.post("/" + SOLACE_ORGANIZATION + "/apiProducts/" )
+                WireMock.post("/" + SOLACE_ORGANIZATION + "/apiProducts" )
                         .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
                         .willReturn(aResponse()
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
@@ -476,9 +750,65 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
         );
 
+    /*
+        API Product Delete
+    */
+        // Delete APIProduct1 from Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Delete APIProduct2 from Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName2)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Delete APIProduct3 from Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName3)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Delete APIProduct4 from Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName4)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+        // Delete APIProduct5 from Solace broker
+        solaceWireMockServer.stubFor(
+                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName5)
+                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
+                        .willReturn(aResponse()
+                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
+                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
+        );
+
+    /*
+        Application POST
+    */
         // Create Applications in Solace broker
         solaceWireMockServer.stubFor(
-                WireMock.post("/" + SOLACE_ORGANIZATION + "/developers/" + SOLACE_DEVELOPER_USER_NAME + "/apps/")
+                WireMock.post("/" + SOLACE_ORGANIZATION + "/developers/" + SOLACE_DEVELOPER_USER_NAME + "/apps")
                         .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
                         .willReturn(aResponse()
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
@@ -486,6 +816,9 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
         );
 
+    /*
+        Application GET
+    */
         // Get created Application in Solace broker not found
         solaceWireMockServer.stubFor(
                 WireMock.get("/" + SOLACE_ORGANIZATION + "/developers/" + SOLACE_DEVELOPER_USER_NAME + "/apps/" + newSubApplicationId)
@@ -498,6 +831,7 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
                         .willSetStateTo("Cause Success")
         );
+
         // Get created Application in Solace broker success
         solaceWireMockServer.stubFor(
                 WireMock.get("/" + SOLACE_ORGANIZATION + "/developers/" + SOLACE_DEVELOPER_USER_NAME + "/apps/" + newSubApplicationId)
@@ -508,7 +842,7 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
                                 .withStatus(HTTP_RESPONSE_CODE_OK)
                                 .withBody("{\n" +
-                                        "    \"name\": \"41756660-9948-4b6a-8040-571122e711dd\",\n" +
+                                        "    \"name\": \"SolaceNewSubApp\",\n" +
                                         "    \"displayName\": \"TestApp\",\n" +
                                         "    \"apiProducts\": [\n" +
                                         "        \"devportalEnv-SolaceSampleAPI-SolaceSampleAPI-1.0\",\n" +
@@ -519,17 +853,31 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                         .willSetStateTo("Cause Success")
         );
 
-        // Update created Application in Solace broker success
+   /*
+        Application PUT
+    */
+        // Update created Application in Solace broker success - (Add a subscription)
         solaceWireMockServer.stubFor(
-                WireMock.put("/" + SOLACE_ORGANIZATION +
-                                "/developers/" + SOLACE_DEVELOPER_USER_NAME + "/apps/" + newSubApplicationId)
+                WireMock.patch(urlPathEqualTo("/" + SOLACE_ORGANIZATION +
+                        "/developers/" + SOLACE_DEVELOPER_USER_NAME + "/apps/" + newSubApplicationId))
                         .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
                         .willReturn(aResponse()
                                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
                                 .withStatus(HTTP_RESPONSE_CODE_OK)
+                                .withBody("{\n" +
+                                        "    \"name\": \"SolaceNewSubApp\",\n" +
+                                        "    \"displayName\": \"TestApp\",\n" +
+                                        "    \"apiProducts\": [\n" +
+                                        "        \"devportalEnv-SolaceSampleAPI-SolaceSampleAPI-1.0\",\n" +
+                                        "        \"devportalEnv-SolaceSampleAPI2-SolaceSampleAPI2-1.0\",\n" +
+                                        "    ]\n" +
+                                        "}")
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
         );
 
+    /*
+        Application Delete
+    */
         // Delete created application
         solaceWireMockServer.stubFor(
                 WireMock.delete("/" + SOLACE_ORGANIZATION +
@@ -540,287 +888,7 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                                 .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
                                 .withHeader("Content-Type", "application/json", "charset=utf-8"))
         );
-        // GET Solace developer
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/developers/" + SOLACE_DEVELOPER_USER_NAME)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withBody("{\n" +
-                                        "    \"email\": \"dev-1@service-co.com\",\n" +
-                                        "    \"firstName\": \"Dev-1\",\n" +
-                                        "    \"lastName\": \"Developer-1\",\n" +
-                                        "    \"userName\": \"dev-1\"\n" +
-                                        "}")
-                                .withStatus(HTTP_RESPONSE_CODE_OK)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
 
-        //Get environment registered in Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/environments/" + SOLACE_ENVIRONMENT)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withBody(body)
-                                .withStatus(HTTP_RESPONSE_CODE_OK)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-        // Get created APIProduct1 in Solace broker not found
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProduct1Name)
-                        .inScenario("Get APIProduct1")
-                        .whenScenarioStateIs(STARTED)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo("Cause Success")
-        );
-        // Get created APIProduct1 in Solace broker success
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProduct1Name)
-                        .inScenario("Get APIProduct1")
-                        .whenScenarioStateIs("Cause Success")
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_OK)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo(STARTED)
-        );
-
-        // Get created APIProduct2 in Solace broker not found
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProduct2Name)
-                        .inScenario("Get APIProduct2")
-                        .whenScenarioStateIs(STARTED)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo("Cause Success")
-        );
-        // Get created APIProduct2 in Solace broker success
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProduct2Name)
-                        .inScenario("Get APIProduct2")
-                        .whenScenarioStateIs("Cause Success")
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_OK)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo(STARTED)
-        );
-
-        // Get created APIProduct3 in Solace broker not found
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProduct3Name)
-                        .inScenario("Get APIProduct3")
-                        .whenScenarioStateIs(STARTED)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo("Cause Success")
-        );
-        // Get created APIProduct3 in Solace broker success
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProduct2Name)
-                        .inScenario("Get APIProduct3")
-                        .whenScenarioStateIs("Cause Success")
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_OK)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo(STARTED)
-        );
-
-
-        // Get registered API1 in solace broker not found
-        String api1NameForRegistration = solaceApi1Name + "-" + solaceApiVersion;
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + api1NameForRegistration)
-                        .inScenario("Get API1")
-                        .whenScenarioStateIs(STARTED)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo("Cause Success")
-
-        );
-        // Get registered API1 in solace broker success
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + api1NameForRegistration)
-                        .inScenario("Get API1")
-                        .whenScenarioStateIs("Cause Success")
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo(STARTED)
-        );
-
-        // Get registered API2 in solace broker not found
-        String api2NameForRegistration = solaceApi2Name + "-" + solaceApiVersion;
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + api2NameForRegistration)
-                        .inScenario("Get API2")
-                        .whenScenarioStateIs(STARTED)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo("Cause Success")
-        );
-        // Get registered API2 in solace broker success
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + api2NameForRegistration)
-                        .inScenario("Get API2")
-                        .whenScenarioStateIs("Cause Success")
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo(STARTED)
-        );
-
-        // Get registered API3 in solace broker not found
-        String api3NameForRegistration = solaceApi3Name + "-" + solaceApiVersion;
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + api3NameForRegistration)
-                        .inScenario("Get API3")
-                        .whenScenarioStateIs(STARTED)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-        // Get registered API3 in solace broker success
-        solaceWireMockServer.stubFor(
-                WireMock.get("/" + SOLACE_ORGANIZATION + "/apis/" + api3NameForRegistration)
-                        .inScenario("Get API3")
-                        .whenScenarioStateIs("Cause Success")
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NOT_FOUND)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-                        .willSetStateTo(STARTED)
-        );
-
-        // Create APIProducts in Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.post("/" + SOLACE_ORGANIZATION + "/apiProducts/" )
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_CREATED)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-        // Register API1 in Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.post("/" + SOLACE_ORGANIZATION + "/apis/" + api1NameForRegistration)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_CREATED)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-        // Register API2 in Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.post("/" + SOLACE_ORGANIZATION + "/apis/" + api2NameForRegistration)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_CREATED)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-        // Register API3 in Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.post("/" + SOLACE_ORGANIZATION + "/apis/" + api2NameForRegistration)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_CREATED)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-
-        // Delete API1 from Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apis/" + api1NameForRegistration)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-        // Delete API2 from Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apis/" + api2NameForRegistration)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-        // Delete API3 from Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apis/" + api2NameForRegistration)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-        // Delete APIProduct1 from Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProduct1Name)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-        // Delete APIProduct2 from Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProduct2Name)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
-
-        // Delete APIProduct3 from Solace broker
-        solaceWireMockServer.stubFor(
-                WireMock.delete("/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProduct3Name)
-                        .withHeader("Authorization", equalTo("Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes())))
-                        .willReturn(aResponse()
-                                .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                                .withStatus(HTTP_RESPONSE_CODE_NO_CONTENT)
-                                .withHeader("Content-Type", "application/json", "charset=utf-8"))
-        );
         // Start mock server
         solaceWireMockServer.start();
     }
@@ -872,12 +940,14 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         // Deploy the revision and publish API
         createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId, restAPIPublisher);
         HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId, false);
+
         // Assert successful lifecycle change
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
         waitForAPIDeploymentSync(user.getUserName(), solaceApiName, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO storeAPI = restAPIStore.getAPI(solaceApiId);
+
         // Assert that Solace API is properly retrieved in store
         assertEquals(storeAPI.getName(), solaceApiName);
         assertEquals(storeAPI.getContext(), "/" + solaceApiContext + "/" + solaceApiVersion);
@@ -885,11 +955,30 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(storeAPI.getAsyncTransportProtocols());
     }
 
+    @Test(groups = {"wso2.am"}, description = "Create a new application and generate Keys for Solace subscription",
+        dependsOnMethods = "showSolaceApiInDeveloperPortal")
+    public void testGenerateKeysForSolaceSubscriptions() throws Exception {
+
+        log.info("testGenerateKeysForSolaceSubscriptions initiated");
+
+        // Generate Keys for Solace subscription
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(newSubApplicationId, "36000", "",
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        Assert.assertNotNull("Access Token not found ", applicationKeyDTO.getConsumerKey());
+        Assert.assertNotNull("Access Token not found ", applicationKeyDTO.getConsumerSecret());
+    }
+
     @Test(groups = {"wso2.am"}, description = "Create a new subscription for Solace API",
-            dependsOnMethods = "showSolaceApiInDeveloperPortal")
+            dependsOnMethods = "testGenerateKeysForSolaceSubscriptions")
     public void testSolaceAPINewSubscriptionCreation() throws Exception {
 
         log.info("testSolaceAPINewSubscriptionCreation initiated");
+
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpGet httpGet = new HttpGet(SOLACE_BASE_URL +  "/" + SOLACE_ORGANIZATION + "/apiProducts/" + solaceApiProductName);
+        String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
+        httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
+        org.apache.http.HttpResponse response = httpClient.execute(httpGet);
 
         // Add subscription
         subscriptionDTO1 = restAPIStore.subscribeToAPI(solaceApiId, newSubApplicationId,
@@ -898,112 +987,12 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         ApplicationDTO newSubApplication = restAPIStore.getApplicationById(newSubApplicationId);
         assertNotNull(newSubApplication.getSubscriptionCount());
         assertEquals(newSubApplication.getSubscriptionCount().intValue(),1);
-    }
 
-    @Test(groups = {"wso2.am"}, description = "Create a new application and generate Keys for Solace subscription",
-            dependsOnMethods = "testSolaceAPINewSubscriptionCreation")
-    public void testGenerateKeysForSolaceSubscriptions() throws Exception {
-
-        log.info("testGenerateKeysForSolaceSubscriptions initiated");
-
-        // Generate Keys for Solace subscription
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(newSubApplicationId, "36000", "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        Assert.assertNotNull("Access Token not found ", accessToken);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Create a new subscription with an application already has Solace subscriptions",
-            dependsOnMethods = "testGenerateKeysForSolaceSubscriptions")
-    public void testAddSolaceSubscriptionToApplicationWithExistingSolaceSubscriptions() throws Exception {
-
-        log.info("testAddSolaceSubscriptionToApplicationWithExistingSolaceSubscriptions initiated");
-
-        // Create additional properties object
-        JSONObject additionalPropertiesObj = new JSONObject();
-        additionalPropertiesObj.put("provider", user.getUserName());
-        additionalPropertiesObj.put("name", solaceApiName2);
-        additionalPropertiesObj.put("context", solaceApiContext2);
-        additionalPropertiesObj.put("version", solaceApiVersion2);
-        additionalPropertiesObj.put("gatewayVendor", solaceGatewayVendor);
-        additionalPropertiesObj.put("type", "WEBSUB");
-
-        String solaceDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "solace"
-                + File.separator + "APIMaintenance.yml";
-        File file = new File(solaceDefinitionPath);
-
-        // Validate Async Definition of the Solace Specification
-        AsyncAPISpecificationValidationResponseDTO asyncAPISpecificationValidationResponseDTO = restAPIPublisher.
-                validateAsyncAPISchemaDefinition(null, file);
-        assertTrue(asyncAPISpecificationValidationResponseDTO.isIsValid());
-
-        // Create API by importing the Solace  definition
-        APIDTO solaceApiDto = restAPIPublisher
-                .importAsyncAPISchemaDefinition(file, null, additionalPropertiesObj.toString());
-
-        // Make sure API is created properly
-        solaceApiId2 = solaceApiDto.getId();
-        assertEquals(solaceApiDto.getGatewayVendor(), solaceGatewayVendor);
-
-        // Deploy the revision and publish API
-        createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId2, restAPIPublisher);
-        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId2, false);
-        // Assert successful lifecycle change
-        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
-        waitForAPIDeploymentSync(user.getUserName(), solaceApiName2, solaceApiVersion2,
-                APIMIntegrationConstants.IS_API_EXISTS);
-
-        // Add subscription
-        subscriptionDTO2 = restAPIStore.subscribeToAPI(solaceApiId2, newSubApplicationId,
-                APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
-
-        // Assert new Subscription count
-        ApplicationDTO newSubApplication = restAPIStore.getApplicationById(newSubApplicationId);
-        assertEquals(newSubApplication.getSubscriptionCount().intValue(),2);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Remove created subscription from an application that already has Solace subscriptions",
-            dependsOnMethods = "testAddSolaceSubscriptionToApplicationWithExistingSolaceSubscriptions")
-    public void testRemoveSolaceSubscriptionFromApplicationWithExistingSolaceSubscriptions() throws Exception {
-
-        log.info("testAddSolaceSubscriptionToApplicationWithExistingSolaceSubscriptions initiated");
-
-        // Remove subscription
-        restAPIStore.removeSubscription(subscriptionDTO2);
-
-        // Assert new Subscription count
-        ApplicationDTO newSubApplication = restAPIStore.getApplicationById(newSubApplicationId);
-        assertEquals(newSubApplication.getSubscriptionCount().intValue(),1);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Remove all the Solace subscriptions attached to an application and delete" +
-            " that from solace broker ", dependsOnMethods = "testRemoveSolaceSubscriptionFromApplicationWithExistingSolaceSubscriptions")
-    public void testRemoveAllSolaceSubscriptionsFromApplication() throws Exception {
-
-        log.info("testRemoveAllSolaceSubscriptionsFromApplication initiated");
-
-        // Remove subscription
-        restAPIStore.removeSubscription(subscriptionDTO1);
-
-        // Assert new Subscription count
-        ApplicationDTO newSubApplication = restAPIStore.getApplicationById(newSubApplicationId);
-        assertEquals(newSubApplication.getSubscriptionCount().intValue(),0);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Delete an application that has a solace subscription attached to it"
-            , dependsOnMethods = "testRemoveAllSolaceSubscriptionsFromApplication")
-    public void testDeleteApplicationWithSolaceSubscription() throws Exception {
-
-        log.info("testDeleteApplicationWithSolaceSubscription initiated");
-
-        // Add subscription
-        subscriptionDTO2 = restAPIStore.subscribeToAPI(solaceApiId2, newSubApplicationId,
-                APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
-
-        // Assert app deletion
+        //Delete Application
         HttpResponse appDeleteResponse = restAPIStore.deleteApplication(newSubApplicationId);
         assertEquals(appDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK);
     }
+
     @Test(groups = {"wso2.am"}, description = "Importing Solace Async API definition and create API")
     public void testSolaceDefinitionImport() throws Exception {
 
@@ -1017,9 +1006,9 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         // Create additional properties object
         JSONObject additionalPropertiesObj = new JSONObject();
         additionalPropertiesObj.put("provider", user.getUserName());
-        additionalPropertiesObj.put("name", solaceApi1Name);
-        additionalPropertiesObj.put("context", solaceApi1Context);
-        additionalPropertiesObj.put("version", solaceApiVersion);
+        additionalPropertiesObj.put("name", solaceApiName3);
+        additionalPropertiesObj.put("context", solaceApiContext3);
+        additionalPropertiesObj.put("version", solaceApiVersion3);
         additionalPropertiesObj.put("gatewayVendor", solaceGatewayVendor);
         additionalPropertiesObj.put("type", "WEBSUB");
 
@@ -1037,9 +1026,9 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                 .importAsyncAPISchemaDefinition(file, null, additionalPropertiesObj.toString());
 
         // Make sure API is created properly
-        solaceApi1Id = solaceApiDto.getId();
-        assertEquals(solaceApiDto.getName(), solaceApi1Name);
-        assertEquals(solaceApiDto.getContext(), "/" + solaceApi1Context);
+        solaceApiId3 = solaceApiDto.getId();
+        assertEquals(solaceApiDto.getName(), solaceApiName3);
+        assertEquals(solaceApiDto.getContext(), "/" + solaceApiContext3);
 
         // Assert Solace specific API properties
         assertEquals(solaceApiDto.getGatewayVendor(), solaceGatewayVendor);
@@ -1056,8 +1045,8 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         log.info("testSolaceAPIDeployToSolaceBroker initiated");
 
         // Create revision and deploy to Solace broker
-        createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApi1Id, restAPIPublisher);
-        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApi1Id, false);
+        createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId3, restAPIPublisher);
+        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId3, false);
 
         // Assert successful lifecycle change
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
@@ -1070,19 +1059,30 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         log.info("testSolaceAPIUndeployFromSolaceBroker initiated");
 
         //Undeploy from Solace broker
-        undeployAndDeleteSolaceAPIRevisionsFromSolaceBroker(solaceApi1Id, restAPIPublisher);
-        waitForAPIUnDeploymentSync(user.getUserName(), solaceApi1Name, solaceApiVersion,
+        undeployAndDeleteSolaceAPIRevisionsFromSolaceBroker(solaceApiId3, restAPIPublisher);
+        waitForAPIUnDeploymentSync(user.getUserName(), solaceApiName3, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
-        // Assert that related artifacts are not found in solace broker
+
         HttpClient httpClient = HttpClients.createDefault();
-        String apiNameForRegistration = solaceApi1Name + "-" + solaceApiVersion;
+        String apiNameForRegistration = solaceApiName3 + "-" + solaceApiVersion;
         HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
         String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
         httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
 
+        // Assert that related artifacts are found in solace broker before undeploy
         org.apache.http.HttpResponse response = httpClient.execute(httpGet);
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "Invocation fails for GET request");
+
+        //Undeploy from Solace broker
+        undeployAndDeleteSolaceAPIRevisionsFromSolaceBroker(solaceApiId3, restAPIPublisher);
+        waitForAPIUnDeploymentSync(user.getUserName(), solaceApiName3, solaceApiVersion,
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        // Assert that related artifacts are not found in solace broker
+        org.apache.http.HttpResponse response2 = httpClient.execute(httpGet);
+        assertEquals(response2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invocation passes for GET request");
     }
 
     @Test(groups = {"wso2.am"}, description = "Deploy Solace API to solace broker and change life cycle as Retired and " +
@@ -1099,8 +1099,8 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         // Create additional properties object
         JSONObject additionalPropertiesObj = new JSONObject();
         additionalPropertiesObj.put("provider", user.getUserName());
-        additionalPropertiesObj.put("name", solaceApi2Name);
-        additionalPropertiesObj.put("context", solaceApi2Context);
+        additionalPropertiesObj.put("name", solaceApiName4);
+        additionalPropertiesObj.put("context", solaceApiContext4);
         additionalPropertiesObj.put("version", solaceApiVersion);
         additionalPropertiesObj.put("gatewayVendor", solaceGatewayVendor);
         additionalPropertiesObj.put("type", "WEBSUB");
@@ -1119,9 +1119,9 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                 .importAsyncAPISchemaDefinition(file, null, additionalPropertiesObj.toString());
 
         // Make sure API is created properly
-        solaceApi2Id = solaceApiDto.getId();
-        assertEquals(solaceApiDto.getName(), solaceApi2Name);
-        assertEquals(solaceApiDto.getContext(), "/" + solaceApi2Context);
+        solaceApiId4 = solaceApiDto.getId();
+        assertEquals(solaceApiDto.getName(), solaceApiName4);
+        assertEquals(solaceApiDto.getContext(), "/" + solaceApiContext4);
 
         // Assert Solace specific API properties
         assertEquals(solaceApiDto.getGatewayVendor(), solaceGatewayVendor);
@@ -1131,38 +1131,43 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(solaceApiDto.getAsyncTransportProtocols(), asyncProtocolsForAssertion);
 
         // Deploy API to Solace broker and publish API
-        createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApi2Id, restAPIPublisher);
+        createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId4, restAPIPublisher);
         HttpResponse lifecycleResponse = restAPIPublisher
-                .changeAPILifeCycleStatus(solaceApi2Id, APILifeCycleAction.PUBLISH.getAction(), null);
+                .changeAPILifeCycleStatus(solaceApiId4, APILifeCycleAction.PUBLISH.getAction(), null);
         // Assert successful lifecycle change
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
-        waitForAPIDeploymentSync(user.getUserName(), solaceApi2Name, solaceApiVersion,
+        waitForAPIDeploymentSync(user.getUserName(), solaceApiName4, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
         //Change lifeCycle to DEPRECATED and then RETIRED
         HttpResponse blockAPIActionResponse = restAPIPublisher
-                .changeAPILifeCycleStatus(solaceApi2Id, APILifeCycleAction.DEPRECATE.getAction(), null);
+                .changeAPILifeCycleStatus(solaceApiId4, APILifeCycleAction.DEPRECATE.getAction(), null);
         assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertTrue(APILifeCycleState.DEPRECATED.getState().equals(blockAPIActionResponse.getData()),
-                "API status Change is invalid when retire an API :" + solaceApi2Name + " with API ID ("
-                        + solaceApi2Id + ")" + " Response Code:" + blockAPIActionResponse.getResponseCode());
+                "API status Change is invalid when retire an API :" + solaceApiName4 + " with API ID ("
+                        + solaceApiId4 + ")" + " Response Code:" + blockAPIActionResponse.getResponseCode());
 
-        HttpResponse retiredAPIActionResponse = restAPIPublisher
-                .changeAPILifeCycleStatus(solaceApi2Id, APILifeCycleAction.RETIRE.getAction(), null);
-        assertEquals(retiredAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
-        assertTrue(APILifeCycleState.RETIRED.getState().equals(retiredAPIActionResponse.getData()),
-                "API status Change is invalid when retire an API :" + solaceApi2Name + " with API ID ("
-                        + solaceApi2Id + ")" + " Response Code:" + retiredAPIActionResponse.getResponseCode());
-
-        // Assert that related artifacts are not found in solace broker
         HttpClient httpClient = HttpClients.createDefault();
-        String apiNameForRegistration = solaceApi2Name + "-" + solaceApiVersion;
+        String apiNameForRegistration = solaceApiName4 + "-" + solaceApiVersion;
         HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
         String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
         httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
+
         org.apache.http.HttpResponse response = httpClient.execute(httpGet);
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
-                "Invocation fails for GET request");
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
+                "Invocation Fails for GET request");
+
+        HttpResponse retiredAPIActionResponse = restAPIPublisher
+                .changeAPILifeCycleStatus(solaceApiId4, APILifeCycleAction.RETIRE.getAction(), null);
+        assertEquals(retiredAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
+        assertTrue(APILifeCycleState.RETIRED.getState().equals(retiredAPIActionResponse.getData()),
+                "API status Change is invalid when retire an API :" + solaceApiName4 + " with API ID ("
+                        + solaceApiId4 + ")" + " Response Code:" + retiredAPIActionResponse.getResponseCode());
+
+        // Assert that related artifacts are not found in solace broker
+        org.apache.http.HttpResponse response2 = httpClient.execute(httpGet);
+        assertEquals(response2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invocation Passes for GET request");
     }
 
     @Test(groups = {"wso2.am"}, description = "Deploy Solace API to solace broker and delete API from publisher " +
@@ -1179,8 +1184,8 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         // Create additional properties object
         JSONObject additionalPropertiesObj = new JSONObject();
         additionalPropertiesObj.put("provider", user.getUserName());
-        additionalPropertiesObj.put("name", solaceApi3Name);
-        additionalPropertiesObj.put("context", solaceApi3Context);
+        additionalPropertiesObj.put("name", solaceApiName5);
+        additionalPropertiesObj.put("context", solaceApiContext5);
         additionalPropertiesObj.put("version", solaceApiVersion);
         additionalPropertiesObj.put("gatewayVendor", solaceGatewayVendor);
         additionalPropertiesObj.put("type", "WEBSUB");
@@ -1199,9 +1204,9 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                 .importAsyncAPISchemaDefinition(file, null, additionalPropertiesObj.toString());
 
         // Make sure API is created properly
-        solaceApi3Id = solaceApiDto.getId();
-        assertEquals(solaceApiDto.getName(), solaceApi3Name);
-        assertEquals(solaceApiDto.getContext(), "/" + solaceApi3Context);
+        solaceApiId5 = solaceApiDto.getId();
+        assertEquals(solaceApiDto.getName(), solaceApiName5);
+        assertEquals(solaceApiDto.getContext(), "/" + solaceApiContext5);
 
         // Assert Solace specific API properties
         assertEquals(solaceApiDto.getGatewayVendor(), solaceGatewayVendor);
@@ -1211,28 +1216,28 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(solaceApiDto.getAsyncTransportProtocols(), asyncProtocolsForAssertion);
 
         // Deploy API to Solace broker and publish API
-        createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApi3Id, restAPIPublisher);
-        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApi3Id, false);
+        createSolaceAPIRevisionAndDeployToSolaceBroker(solaceApiId5, restAPIPublisher);
+        HttpResponse lifecycleResponse = restAPIPublisher.changeAPILifeCycleStatusToPublish(solaceApiId5, false);
         // Assert successful lifecycle change
         Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
-        waitForAPIDeploymentSync(user.getUserName(), solaceApi3Name, solaceApiVersion,
+        waitForAPIDeploymentSync(user.getUserName(), solaceApiName5, solaceApiVersion,
                 APIMIntegrationConstants.IS_API_EXISTS);
 
-        // Delete API from publisher portal
-        HttpResponse apiDeleteResponse = restAPIPublisher.deleteAPI(solaceApi3Id);
-        assertEquals(apiDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Unable to delete API :" + apiDeleteResponse.getData());
-
-        // Assert that related artifacts are not found in solace broker
         HttpClient httpClient = HttpClients.createDefault();
-        String apiNameForRegistration = solaceApi3Name + "-" + solaceApiVersion;
+        String apiNameForRegistration = solaceApiName5 + "-" + solaceApiVersion;
         HttpGet httpGet = new HttpGet(SOLACE_BASE_URL + "/" + SOLACE_ORGANIZATION + "/apis/" + apiNameForRegistration);
         String toEncode = SOLACE_USER_NAME + ":" + SOLACE_PASSWORD;
         httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((toEncode).getBytes()));
 
-        org.apache.http.HttpResponse response = httpClient.execute(httpGet);
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
-                "Invocation fails for GET request");
+        // Delete API from publisher portal
+        HttpResponse apiDeleteResponse = restAPIPublisher.deleteAPI(solaceApiId5);
+        assertEquals(apiDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to delete API :" + apiDeleteResponse.getData());
+
+        // Assert that related artifacts are not found in solace broker
+        org.apache.http.HttpResponse response2 = httpClient.execute(httpGet);
+        assertEquals(response2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Invocation passes for GET request");
     }
 
     /**
@@ -1352,12 +1357,12 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
 
         return  revisionUUID;
     }
+
     @AfterClass(alwaysRun = true)
     void destroy() throws Exception {
         restAPIPublisher.deleteAPI(solaceApiId);
-        restAPIPublisher.deleteAPI(solaceApiId2);
-        restAPIPublisher.deleteAPI(solaceApi1Id);
-        restAPIPublisher.deleteAPI(solaceApi2Id);
+        restAPIPublisher.deleteAPI(solaceApiId3);
+        restAPIPublisher.deleteAPI(solaceApiId4);
         solaceWireMockServer.stop();
     }
 }

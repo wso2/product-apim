@@ -3,7 +3,6 @@
   "name": "jsonValidator",
   "displayName": "JSON Validator",
   "description": "This policy validates the JSON payload for the request",
-  "multipleAllowed": false,
   "applicableFlows": [
     "request"
   ],
@@ -72,7 +71,7 @@
       "name": "jsonSchemaValidator",
       "displayName": "Json schema validator",
       "description": "Json schema validator implementation class",
-      "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+      "validationRegex": "^([a-zA-Z_$][a-zA-Z\\d_$.]*)$",
       "type": "String",
       "defaultValue": "org.wso2.carbon.apimgt.gateway.mediators.JsonSchemaValidator",
       "required": false

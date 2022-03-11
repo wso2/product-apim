@@ -3,7 +3,6 @@
   "name": "rewriteResourcePath",
   "displayName": "Rewrite Resource Path",
   "description": "This policy allows you to rewrite the resource path of a request",
-  "multipleAllowed": false,
   "policyAttributes": [
     {
       "name": "newResourcePath",
@@ -17,6 +16,7 @@
       "name": "includeQueryParams",
       "displayName": "Include Query Parameters?",
       "description": "Select whether to include exiting query params to the new resource path",
+      "validationRegex": "^(true|false)$",
       "type": "Boolean",
       "required": false
     }
@@ -25,7 +25,8 @@
     "request"
   ],
   "supportedGateways": [
-    "Synapse"
+    "Synapse",
+    "ChoreoConnect"
   ],
   "supportedApiTypes": [
     "HTTP"

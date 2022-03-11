@@ -1,0 +1,25 @@
+definition:
+  action: OPA
+  parameters:
+    requestGenerator: ""
+    serverURL: {{ .serverUrl }}
+    {{- if .accessKey }}
+    accessKey: {{ .accessKey }}
+    {{- end }}
+    policy: {{ .policy }}
+    rule: {{ .rule }}
+    {{- if .sendAccessToken }}
+    sendAccessToken: {{ .sendAccessToken }}
+    {{- end }}
+    {{- if .additionalProperties }}
+    additionalProperties: {{ .additionalProperties }}
+    {{- end }}
+    {{- if .maxOpenConnections }}
+    maxOpenConnections: {{ .maxOpenConnections }}
+    {{- end }}
+    {{- if .maxPerRoute }}
+    maxPerRoute: {{ .maxPerRoute }}
+    {{- end }}
+    {{- if .connectionTimeout }}
+    connectionTimeout: {{ .connectionTimeout }}
+    {{- end }}

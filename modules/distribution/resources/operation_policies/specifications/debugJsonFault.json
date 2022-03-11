@@ -3,7 +3,6 @@
   "name": "debugJsonFault",
   "displayName": "Debug JSON Fault",
   "description": "This policy allows you to debug the fault payload in JSON format",
-  "multipleAllowed": false,
   "applicableFlows": [
     "fault"
   ],

@@ -3,7 +3,6 @@
   "name": "jsonToXML",
   "displayName": "JSON to XML",
   "description": "This policy allows you to change the payload from JSON to XML",
-  "multipleAllowed": false,
   "applicableFlows": [
     "request",
     "response"

@@ -3,7 +3,6 @@
   "name": "xmlValidator",
   "displayName": "XML Validator",
   "description": "This policy validates the XML payload for the request",
-  "multipleAllowed": false,
   "applicableFlows": [
     "request"
   ],

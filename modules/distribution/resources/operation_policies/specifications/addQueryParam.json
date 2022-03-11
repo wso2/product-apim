@@ -3,7 +3,6 @@
   "name": "addQueryParam",
   "displayName": "Add Query Param",
   "description": "This policy allows you to add a query parameter to the request",
-  "multipleAllowed": true,
   "policyAttributes": [
     {
       "name": "paramKey",
@@ -26,7 +25,8 @@
     "request"
   ],
   "supportedGateways": [
-    "Synapse"
+    "Synapse",
+    "ChoreoConnect"
   ],
   "supportedApiTypes": [
     "HTTP"

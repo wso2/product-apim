@@ -292,19 +292,7 @@
                
                                 <!--API Management related feature-->
                                 <featureArtifactDef>org.jaggeryjs:org.jaggeryjs.server.feature:${org.jaggery.version}</featureArtifactDef>
-                                <featureArtifactDef>org.jaggeryjs.modules:carbon.feature:${jaggery.modules.carbon.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>org.jaggeryjs.modules:process.feature:${jaggery.modules.process.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:uuid.feature:${jaggery.modules.uuid.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:i18n.feature:${jaggery.modules.i18n.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:sso.feature:${jaggery.modules.sso.feature.version}
-                                </featureArtifactDef>
+
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
@@ -479,37 +467,11 @@
                                 <featureArtifactDef>
                                     org.jaggeryjs:org.jaggeryjs.server.feature:${org.jaggery.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:caramel.feature:${caramel.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:handlebars.feature:${handlebars.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:markdown.feature:${markdown.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:carbon.feature:${jaggery.modules.carbon.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:process.feature:${jaggery.modules.process.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:uuid.feature:${jaggery.modules.uuid.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:i18n.feature:${jaggery.modules.i18n.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:sso.feature:${jaggery.modules.sso.feature.version}
-                                </featureArtifactDef>
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.registry:org.wso2.carbon.registry.task.feature:${carbon.registry.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.jaggeryjs.modules:ws.feature:${ws.feature.version}
-                                </featureArtifactDef>
+
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.publisher.feature:${carbon.apimgt.version}
@@ -538,7 +500,7 @@
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
-                                    org.wso2.carbon.metrics:org.wso2.carbon.metrics.feature:${carbon.metrics.version}
+                                    org.wso2.carbon.metrics:org.wso2.carbon.metrics.server.feature:${carbon.metrics.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.throttling.siddhi.extension.feature:${carbon.apimgt.version}
@@ -843,10 +805,7 @@
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                             <features>
 
-                                <feature>
-                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
-                                    <version>${ws.feature.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.core.feature.group</id>
                                     <version>${carbon.kernel.version}</version>
@@ -1180,27 +1139,7 @@
                                     <id>org.jaggeryjs.server.feature.group</id>
                                     <version>${org.jaggery.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.carbon.feature.group</id>
-                                    <version>${jaggery.modules.carbon.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.process.feature.group</id>
-                                    <version>${jaggery.modules.process.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
-                                    <version>${jaggery.modules.uuid.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.sso.feature.group</id>
-                                    <version>${jaggery.modules.sso.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
-                                    <version>${jaggery.modules.i18n.feature.version}</version>
-                                </feature>
-                                
+
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
@@ -1570,10 +1509,7 @@
                             </destination>
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                             <features>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
-                                    <version>${ws.feature.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.core.feature.group</id>
                                     <version>${carbon.kernel.version}</version>
@@ -1837,26 +1773,6 @@
                                 <feature>
                                     <id>org.jaggeryjs.server.feature.group</id>
                                     <version>${org.jaggery.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.carbon.feature.group</id>
-                                    <version>${jaggery.modules.carbon.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.process.feature.group</id>
-                                    <version>${jaggery.modules.process.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
-                                    <version>${jaggery.modules.uuid.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.sso.feature.group</id>
-                                    <version>${jaggery.modules.sso.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
-                                    <version>${jaggery.modules.i18n.feature.version}</version>
                                 </feature>
 
                                 <feature>
@@ -2941,30 +2857,6 @@
                                     <version>${org.jaggery.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.jaggeryjs.modules.carbon.feature.group</id>
-                                    <version>${jaggery.modules.carbon.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.process.feature.group</id>
-                                    <version>${jaggery.modules.process.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
-                                    <version>${jaggery.modules.i18n.feature.version}</version>
-                                </feature>
-				                <feature>
-                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
-                                    <version>${jaggery.modules.uuid.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.sso.feature.group</id>
-                                    <version>${jaggery.modules.sso.feature.version}</version>
-                                </feature>
-				                <feature>
-                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
-                                    <version>${ws.feature.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.apimgt.core.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -3462,31 +3354,6 @@
                                 <feature>
                                     <id>org.jaggeryjs.server.feature.group</id>
                                     <version>${org.jaggery.version}</version>
-                                </feature>
-				                <feature>
-                                    <id>org.jaggeryjs.modules.carbon.feature.group</id>
-                                    <version>${jaggery.modules.carbon.feature.version}</version>
-                                </feature>
-				                <feature>
-                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
-                                    <version>${jaggery.modules.uuid.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.sso.feature.group</id>
-                                    <version>${jaggery.modules.sso.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
-                                    <version>${jaggery.modules.i18n.feature.version}</version>
-                                </feature>
-                              
-                                <feature>
-                                    <id>org.jaggeryjs.modules.process.feature.group</id>
-                                    <version>${jaggery.modules.process.feature.version}</version>
-                                </feature>
-				                <feature>
-                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
-                                    <version>${ws.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.tokenmgt.feature.group</id>
