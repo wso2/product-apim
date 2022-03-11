@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "jsonValidator",
   "displayName": "JSON Validator",
-  "description": "This policy validates the JSON payload for the request",
+  "description": "This policy validates the request body of the JSON message",
   "applicableFlows": [
     "request"
   ],

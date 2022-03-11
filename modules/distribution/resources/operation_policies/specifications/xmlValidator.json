@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "xmlValidator",
   "displayName": "XML Validator",
-  "description": "This policy validates the XML payload for the request",
+  "description": "This policy validates the request body of the XML message",
   "applicableFlows": [
     "request"
   ],
