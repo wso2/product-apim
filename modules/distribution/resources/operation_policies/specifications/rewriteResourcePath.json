@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "rewriteResourcePath",
   "displayName": "Rewrite Resource Path",
-  "description": "Rewrite the resource path of a request",
+  "description": "This policy allows you to rewrite the resource path of a request",
   "multipleAllowed": false,
   "policyAttributes": [
     {

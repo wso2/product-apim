@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "changeHTTPMethod",
   "displayName": "Change HTTP Method",
-  "description": "With this policy, user can change the HTTP Method",
+  "description": "This policy allows you to change the HTTP Method",
   "multipleAllowed": false,
   "policyAttributes": [
     {
