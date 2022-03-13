@@ -85,6 +85,7 @@ Name | Type | Description  | Notes
 **201** | OK. Operation policy uploaded  |  * Location - The URL of the uploaded operation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="deleteAPISpecificOperationPolicyByPolicyId"></a>
 # **deleteAPISpecificOperationPolicyByPolicyId**
@@ -155,6 +156,7 @@ null (empty response body)
 **200** | OK. Resource successfully deleted.  |  -  |
 **403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getAPISpecificOperationPolicyContentByPolicyId"></a>
 # **getAPISpecificOperationPolicyContentByPolicyId**
@@ -225,6 +227,7 @@ Name | Type | Description  | Notes
 |-------------|-------------|------------------|
 **200** | OK. Operation policy returned.  |  * Content-Type - The content type of the body.  <br>  |
 **404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getAllAPISpecificOperationPolicies"></a>
 # **getAllAPISpecificOperationPolicies**
@@ -299,6 +302,7 @@ Name | Type | Description  | Notes
 |-------------|-------------|------------------|
 **200** | OK. List of qualifying policies is returned.  |  * Content-Type - The content type of the body. <br>  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getOperationPolicyForAPIByPolicyId"></a>
 # **getOperationPolicyForAPIByPolicyId**
@@ -370,4 +374,5 @@ Name | Type | Description  | Notes
 **200** | OK. Operation policy returned.  |  * Content-Type - The content type of the body.  <br>  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
+**500** | Internal Server Error. |  -  |
 

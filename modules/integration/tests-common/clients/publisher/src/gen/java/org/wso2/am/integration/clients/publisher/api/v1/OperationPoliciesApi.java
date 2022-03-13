@@ -68,9 +68,10 @@ public class OperationPoliciesApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> OK. Shared operation policy uploaded  </td><td>  * Location - The URL of the uploaded mediation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 201 </td><td> OK. Shared operation policy uploaded  </td><td>  * Location - The URL of the uploaded common operation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call addCommonOperationPolicyCall(File policySpecFile, File synapsePolicyDefinitionFile, File ccPolicyDefinitionFile, final ApiCallback _callback) throws ApiException {
@@ -134,9 +135,10 @@ public class OperationPoliciesApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> OK. Shared operation policy uploaded  </td><td>  * Location - The URL of the uploaded mediation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 201 </td><td> OK. Shared operation policy uploaded  </td><td>  * Location - The URL of the uploaded common operation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public OperationPolicyDataDTO addCommonOperationPolicy(File policySpecFile, File synapsePolicyDefinitionFile, File ccPolicyDefinitionFile) throws ApiException {
@@ -155,9 +157,10 @@ public class OperationPoliciesApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> OK. Shared operation policy uploaded  </td><td>  * Location - The URL of the uploaded mediation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 201 </td><td> OK. Shared operation policy uploaded  </td><td>  * Location - The URL of the uploaded common operation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public ApiResponse<OperationPolicyDataDTO> addCommonOperationPolicyWithHttpInfo(File policySpecFile, File synapsePolicyDefinitionFile, File ccPolicyDefinitionFile) throws ApiException {
@@ -178,9 +181,10 @@ public class OperationPoliciesApi {
      * @http.response.details
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 201 </td><td> OK. Shared operation policy uploaded  </td><td>  * Location - The URL of the uploaded mediation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
+        <tr><td> 201 </td><td> OK. Shared operation policy uploaded  </td><td>  * Location - The URL of the uploaded common operation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call addCommonOperationPolicyAsync(File policySpecFile, File synapsePolicyDefinitionFile, File ccPolicyDefinitionFile, final ApiCallback<OperationPolicyDataDTO> _callback) throws ApiException {
@@ -202,6 +206,7 @@ public class OperationPoliciesApi {
         <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call deleteCommonOperationPolicyByPolicyIdCall(String operationPolicyId, final ApiCallback _callback) throws ApiException {
@@ -259,6 +264,7 @@ public class OperationPoliciesApi {
         <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public void deleteCommonOperationPolicyByPolicyId(String operationPolicyId) throws ApiException {
@@ -277,6 +283,7 @@ public class OperationPoliciesApi {
         <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public ApiResponse<Void> deleteCommonOperationPolicyByPolicyIdWithHttpInfo(String operationPolicyId) throws ApiException {
@@ -297,125 +304,13 @@ public class OperationPoliciesApi {
         <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call deleteCommonOperationPolicyByPolicyIdAsync(String operationPolicyId, final ApiCallback<Void> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = deleteCommonOperationPolicyByPolicyIdValidateBeforeCall(operationPolicyId, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for exportOperationPolicySpecificationSchema
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Operation policy specification schema exported successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call exportOperationPolicySpecificationSchemaCall(final ApiCallback _callback) throws ApiException {
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/operation-policies/specification/schema";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-            
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        localVarHeaderParams.put("Content-Type", localVarContentType);
-
-        String[] localVarAuthNames = new String[] { "OAuth2Security" };
-        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call exportOperationPolicySpecificationSchemaValidateBeforeCall(final ApiCallback _callback) throws ApiException {
-        
-
-        okhttp3.Call localVarCall = exportOperationPolicySpecificationSchemaCall(_callback);
-        return localVarCall;
-
-    }
-
-    /**
-     * Export the operation policies specification schema.
-     * This operation can be used to export the operation-policy-specification-schema.json used in deployment. 
-     * @return String
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Operation policy specification schema exported successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public String exportOperationPolicySpecificationSchema() throws ApiException {
-        ApiResponse<String> localVarResp = exportOperationPolicySpecificationSchemaWithHttpInfo();
-        return localVarResp.getData();
-    }
-
-    /**
-     * Export the operation policies specification schema.
-     * This operation can be used to export the operation-policy-specification-schema.json used in deployment. 
-     * @return ApiResponse&lt;String&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Operation policy specification schema exported successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<String> exportOperationPolicySpecificationSchemaWithHttpInfo() throws ApiException {
-        okhttp3.Call localVarCall = exportOperationPolicySpecificationSchemaValidateBeforeCall(null);
-        Type localVarReturnType = new TypeToken<String>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Export the operation policies specification schema. (asynchronously)
-     * This operation can be used to export the operation-policy-specification-schema.json used in deployment. 
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table summary="Response Details" border="1">
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> OK. Operation policy specification schema exported successfully.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
-        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
-        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call exportOperationPolicySpecificationSchemaAsync(final ApiCallback<String> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = exportOperationPolicySpecificationSchemaValidateBeforeCall(_callback);
-        Type localVarReturnType = new TypeToken<String>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**
@@ -431,6 +326,7 @@ public class OperationPoliciesApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. List of qualifying policies is returned.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call getAllCommonOperationPoliciesCall(Integer limit, Integer offset, String query, final ApiCallback _callback) throws ApiException {
@@ -496,6 +392,7 @@ public class OperationPoliciesApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. List of qualifying policies is returned.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public OperationPolicyDataListDTO getAllCommonOperationPolicies(Integer limit, Integer offset, String query) throws ApiException {
@@ -516,6 +413,7 @@ public class OperationPoliciesApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. List of qualifying policies is returned.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public ApiResponse<OperationPolicyDataListDTO> getAllCommonOperationPoliciesWithHttpInfo(Integer limit, Integer offset, String query) throws ApiException {
@@ -538,6 +436,7 @@ public class OperationPoliciesApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. List of qualifying policies is returned.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call getAllCommonOperationPoliciesAsync(Integer limit, Integer offset, String query, final ApiCallback<OperationPolicyDataListDTO> _callback) throws ApiException {
@@ -559,6 +458,7 @@ public class OperationPoliciesApi {
         <tr><td> 200 </td><td> OK. Operation policy returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call getCommonOperationPolicyByPolicyIdCall(String operationPolicyId, final ApiCallback _callback) throws ApiException {
@@ -617,6 +517,7 @@ public class OperationPoliciesApi {
         <tr><td> 200 </td><td> OK. Operation policy returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public OperationPolicyDataDTO getCommonOperationPolicyByPolicyId(String operationPolicyId) throws ApiException {
@@ -636,6 +537,7 @@ public class OperationPoliciesApi {
         <tr><td> 200 </td><td> OK. Operation policy returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public ApiResponse<OperationPolicyDataDTO> getCommonOperationPolicyByPolicyIdWithHttpInfo(String operationPolicyId) throws ApiException {
@@ -657,6 +559,7 @@ public class OperationPoliciesApi {
         <tr><td> 200 </td><td> OK. Operation policy returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call getCommonOperationPolicyByPolicyIdAsync(String operationPolicyId, final ApiCallback<OperationPolicyDataDTO> _callback) throws ApiException {
@@ -677,6 +580,7 @@ public class OperationPoliciesApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. Operation policy returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call getCommonOperationPolicyContentByPolicyIdCall(String operationPolicyId, final ApiCallback _callback) throws ApiException {
@@ -734,6 +638,7 @@ public class OperationPoliciesApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. Operation policy returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public File getCommonOperationPolicyContentByPolicyId(String operationPolicyId) throws ApiException {
@@ -752,6 +657,7 @@ public class OperationPoliciesApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. Operation policy returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public ApiResponse<File> getCommonOperationPolicyContentByPolicyIdWithHttpInfo(String operationPolicyId) throws ApiException {
@@ -772,6 +678,7 @@ public class OperationPoliciesApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. Operation policy returned.  </td><td>  * Content-Type - The content type of the body.  <br>  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
     public okhttp3.Call getCommonOperationPolicyContentByPolicyIdAsync(String operationPolicyId, final ApiCallback<File> _callback) throws ApiException {

@@ -7,8 +7,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **policyName** | **String** |  | 
+**policyVersion** | **String** |  |  [optional]
 **policyId** | **String** |  |  [optional]
-**order** | **Integer** |  |  [optional]
 **parameters** | **Map&lt;String, Object&gt;** |  |  [optional]
 
 

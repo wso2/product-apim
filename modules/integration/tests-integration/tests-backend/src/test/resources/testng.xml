@@ -109,6 +109,7 @@
             <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.JWTBandwidthThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.BurstControlTestCase"/>
+            <class name="org.wso2.am.integration.tests.operationPolicy.OperationPolicyTestCase"/>
         </classes>
     </test>
 
@@ -130,7 +131,7 @@
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
-            <!--            <class name="org.wso2.am.integration.tests.restapi.GatewayRestAPITestCase"/>-->
+            <class name="org.wso2.am.integration.tests.restapi.GatewayRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.AllowedScopesTestCase"/>
             <class name="org.wso2.am.integration.tests.other.SecondaryUserStoreCaseInsensitiveTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>

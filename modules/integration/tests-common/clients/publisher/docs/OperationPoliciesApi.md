@@ -6,7 +6,6 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addCommonOperationPolicy**](OperationPoliciesApi.md#addCommonOperationPolicy) | **POST** /operation-policies | Add a new common operation policy
 [**deleteCommonOperationPolicyByPolicyId**](OperationPoliciesApi.md#deleteCommonOperationPolicyByPolicyId) | **DELETE** /operation-policies/{operationPolicyId} | Delete a common operation policy
-[**exportOperationPolicySpecificationSchema**](OperationPoliciesApi.md#exportOperationPolicySpecificationSchema) | **GET** /operation-policies/specification/schema | Export the operation policies specification schema.
 [**getAllCommonOperationPolicies**](OperationPoliciesApi.md#getAllCommonOperationPolicies) | **GET** /operation-policies | Get all common operation policies to all the APIs 
 [**getCommonOperationPolicyByPolicyId**](OperationPoliciesApi.md#getCommonOperationPolicyByPolicyId) | **GET** /operation-policies/{operationPolicyId} | Get the details of a common operation policy by providing policy ID
 [**getCommonOperationPolicyContentByPolicyId**](OperationPoliciesApi.md#getCommonOperationPolicyContentByPolicyId) | **GET** /operation-policies/{operationPolicyId}/content | Download a common operation policy
@@ -81,9 +80,10 @@ Name | Type | Description  | Notes
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**201** | OK. Shared operation policy uploaded  |  * Location - The URL of the uploaded mediation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  |
+**201** | OK. Shared operation policy uploaded  |  * Location - The URL of the uploaded common operation policy of the API.  <br>  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="deleteCommonOperationPolicyByPolicyId"></a>
 # **deleteCommonOperationPolicyByPolicyId**
@@ -150,71 +150,6 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK. Resource successfully deleted.  |  -  |
-**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
-**404** | Not Found. The specified resource does not exist. |  -  |
-
-<a name="exportOperationPolicySpecificationSchema"></a>
-# **exportOperationPolicySpecificationSchema**
-> String exportOperationPolicySpecificationSchema()
-
-Export the operation policies specification schema.
-
-This operation can be used to export the operation-policy-specification-schema.json used in deployment. 
-
-### Example
-```java
-// Import classes:
-import org.wso2.am.integration.clients.publisher.api.ApiClient;
-import org.wso2.am.integration.clients.publisher.api.ApiException;
-import org.wso2.am.integration.clients.publisher.api.Configuration;
-import org.wso2.am.integration.clients.publisher.api.auth.*;
-import org.wso2.am.integration.clients.publisher.api.models.*;
-import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
-
-public class Example {
-  public static void main(String[] args) {
-    ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
-    
-    // Configure OAuth2 access token for authorization: OAuth2Security
-    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
-    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
-
-    OperationPoliciesApi apiInstance = new OperationPoliciesApi(defaultClient);
-    try {
-      String result = apiInstance.exportOperationPolicySpecificationSchema();
-      System.out.println(result);
-    } catch (ApiException e) {
-      System.err.println("Exception when calling OperationPoliciesApi#exportOperationPolicySpecificationSchema");
-      System.err.println("Status code: " + e.getCode());
-      System.err.println("Reason: " + e.getResponseBody());
-      System.err.println("Response headers: " + e.getResponseHeaders());
-      e.printStackTrace();
-    }
-  }
-}
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-**String**
-
-### Authorization
-
-[OAuth2Security](../README.md#OAuth2Security)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**200** | OK. Operation policy specification schema exported successfully.  |  * Content-Type - The content type of the body.  <br>  |
 **403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
@@ -290,6 +225,7 @@ Name | Type | Description  | Notes
 |-------------|-------------|------------------|
 **200** | OK. List of qualifying policies is returned.  |  * Content-Type - The content type of the body. <br>  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getCommonOperationPolicyByPolicyId"></a>
 # **getCommonOperationPolicyByPolicyId**
@@ -359,6 +295,7 @@ Name | Type | Description  | Notes
 **200** | OK. Operation policy returned.  |  * Content-Type - The content type of the body.  <br>  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
+**500** | Internal Server Error. |  -  |
 
 <a name="getCommonOperationPolicyContentByPolicyId"></a>
 # **getCommonOperationPolicyContentByPolicyId**
@@ -427,4 +364,5 @@ Name | Type | Description  | Notes
 |-------------|-------------|------------------|
 **200** | OK. Operation policy returned.  |  * Content-Type - The content type of the body.  <br>  |
 **404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
 

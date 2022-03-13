@@ -23,6 +23,8 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
 * OperationPolicySpecAttributeDTO
@@ -52,6 +54,14 @@ public class OperationPolicySpecAttributeDTO {
         public static final String SERIALIZED_NAME_REQUIRED = "required";
         @SerializedName(SERIALIZED_NAME_REQUIRED)
             private Boolean required;
+
+        public static final String SERIALIZED_NAME_DEFAULT_VALUE = "defaultValue";
+        @SerializedName(SERIALIZED_NAME_DEFAULT_VALUE)
+            private String defaultValue;
+
+        public static final String SERIALIZED_NAME_ALLOWED_VALUES = "allowedValues";
+        @SerializedName(SERIALIZED_NAME_ALLOWED_VALUES)
+            private List<String> allowedValues = null;
 
 
         public OperationPolicySpecAttributeDTO name(String name) {
@@ -192,6 +202,52 @@ public class OperationPolicySpecAttributeDTO {
     }
 
 
+        public OperationPolicySpecAttributeDTO defaultValue(String defaultValue) {
+        
+        this.defaultValue = defaultValue;
+        return this;
+        }
+
+    /**
+        * Default value for the attribute
+    * @return defaultValue
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "true", value = "Default value for the attribute")
+    
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+
+        public OperationPolicySpecAttributeDTO allowedValues(List<String> allowedValues) {
+        
+        this.allowedValues = allowedValues;
+        return this;
+        }
+
+    /**
+        * If the attribute type is enum, this array should contain all the possible values for the enum.
+    * @return allowedValues
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "If the attribute type is enum, this array should contain all the possible values for the enum.")
+    
+    public List<String> getAllowedValues() {
+        return allowedValues;
+    }
+
+
+    public void setAllowedValues(List<String> allowedValues) {
+        this.allowedValues = allowedValues;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -206,12 +262,14 @@ public class OperationPolicySpecAttributeDTO {
             Objects.equals(this.description, operationPolicySpecAttribute.description) &&
             Objects.equals(this.validationRegex, operationPolicySpecAttribute.validationRegex) &&
             Objects.equals(this.type, operationPolicySpecAttribute.type) &&
-            Objects.equals(this.required, operationPolicySpecAttribute.required);
+            Objects.equals(this.required, operationPolicySpecAttribute.required) &&
+            Objects.equals(this.defaultValue, operationPolicySpecAttribute.defaultValue) &&
+            Objects.equals(this.allowedValues, operationPolicySpecAttribute.allowedValues);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, displayName, description, validationRegex, type, required);
+        return Objects.hash(name, displayName, description, validationRegex, type, required, defaultValue, allowedValues);
     }
 
 
@@ -225,6 +283,8 @@ sb.append("class OperationPolicySpecAttributeDTO {\n");
     sb.append("    validationRegex: ").append(toIndentedString(validationRegex)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    required: ").append(toIndentedString(required)).append("\n");
+    sb.append("    defaultValue: ").append(toIndentedString(defaultValue)).append("\n");
+    sb.append("    allowedValues: ").append(toIndentedString(allowedValues)).append("\n");
 sb.append("}");
 return sb.toString();
 }
