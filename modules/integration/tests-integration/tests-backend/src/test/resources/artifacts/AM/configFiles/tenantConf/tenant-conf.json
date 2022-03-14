@@ -328,6 +328,14 @@
       {
         "Name": "apim:api_definition_view",
         "Roles": "Internal/integration_dev"
+      },
+      {
+        "Name": "apim:common_operation_policy_view",
+        "Roles": "admin,Internal/creator,Internal/publisher"
+      },
+      {
+        "Name": "apim:common_operation_policy_manage",
+        "Roles": "admin,Internal/creator"
       }
     ]
   },
