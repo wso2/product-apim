@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "ccRemoveHeader",
   "displayName": "Remove Header",
-  "description": "This policy allows tou to remove a header from the request",
+  "description": "This policy allows you to remove a header from the request",
   "policyAttributes": [
     {
       "name": "headerName",
