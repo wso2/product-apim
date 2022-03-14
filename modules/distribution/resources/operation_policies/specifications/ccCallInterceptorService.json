@@ -2,7 +2,7 @@
   "category": "Mediation",
   "name": "ccCallInterceptorService",
   "displayName": "Call Interceptor Service",
-  "description": "Call an interceptor service for message mediation",
+  "description": "This policy allows you to call an interceptor service for a request message",
   "policyAttributes": [
     {
       "name": "interceptorServiceURL",
@@ -15,7 +15,7 @@
     {
       "name": "includes",
       "displayName": "Includes to Payload",
-      "description": "Includes to the request payload of interceptor service as comma separated ",
+      "description": "Includes a comma separated list of items (for example: request_header, request_body, response_header, response_body) to the request payload of interceptor service",
       "validationRegex": "^(([a-zA-Z\\d_][a-zA-Z\\d_\\-]*)(,[a-zA-Z\\d_][a-zA-Z\\d_\\-]*)*)$",
       "type": "String",
       "required": true
