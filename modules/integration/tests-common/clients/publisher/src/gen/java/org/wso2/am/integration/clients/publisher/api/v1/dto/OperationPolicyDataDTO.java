@@ -64,10 +64,6 @@ public class OperationPolicyDataDTO {
         @SerializedName(SERIALIZED_NAME_SUPPORTED_API_TYPES)
             private List<String> supportedApiTypes = null;
 
-        public static final String SERIALIZED_NAME_MULTIPLE_ALLOWED = "multipleAllowed";
-        @SerializedName(SERIALIZED_NAME_MULTIPLE_ALLOWED)
-            private Boolean multipleAllowed;
-
         public static final String SERIALIZED_NAME_IS_A_P_I_SPECIFIC = "isAPISpecific";
         @SerializedName(SERIALIZED_NAME_IS_A_P_I_SPECIFIC)
             private Boolean isAPISpecific;
@@ -265,29 +261,6 @@ public class OperationPolicyDataDTO {
     }
 
 
-        public OperationPolicyDataDTO multipleAllowed(Boolean multipleAllowed) {
-        
-        this.multipleAllowed = multipleAllowed;
-        return this;
-        }
-
-    /**
-        * Get multipleAllowed
-    * @return multipleAllowed
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "true", value = "")
-    
-    public Boolean isMultipleAllowed() {
-        return multipleAllowed;
-    }
-
-
-    public void setMultipleAllowed(Boolean multipleAllowed) {
-        this.multipleAllowed = multipleAllowed;
-    }
-
-
         public OperationPolicyDataDTO isAPISpecific(Boolean isAPISpecific) {
         
         this.isAPISpecific = isAPISpecific;
@@ -374,7 +347,6 @@ public class OperationPolicyDataDTO {
             Objects.equals(this.applicableFlows, operationPolicyData.applicableFlows) &&
             Objects.equals(this.supportedGateways, operationPolicyData.supportedGateways) &&
             Objects.equals(this.supportedApiTypes, operationPolicyData.supportedApiTypes) &&
-            Objects.equals(this.multipleAllowed, operationPolicyData.multipleAllowed) &&
             Objects.equals(this.isAPISpecific, operationPolicyData.isAPISpecific) &&
             Objects.equals(this.md5, operationPolicyData.md5) &&
             Objects.equals(this.policyAttributes, operationPolicyData.policyAttributes);
@@ -382,7 +354,7 @@ public class OperationPolicyDataDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(category, id, name, displayName, description, applicableFlows, supportedGateways, supportedApiTypes, multipleAllowed, isAPISpecific, md5, policyAttributes);
+        return Objects.hash(category, id, name, displayName, description, applicableFlows, supportedGateways, supportedApiTypes, isAPISpecific, md5, policyAttributes);
     }
 
 
@@ -398,7 +370,6 @@ sb.append("class OperationPolicyDataDTO {\n");
     sb.append("    applicableFlows: ").append(toIndentedString(applicableFlows)).append("\n");
     sb.append("    supportedGateways: ").append(toIndentedString(supportedGateways)).append("\n");
     sb.append("    supportedApiTypes: ").append(toIndentedString(supportedApiTypes)).append("\n");
-    sb.append("    multipleAllowed: ").append(toIndentedString(multipleAllowed)).append("\n");
     sb.append("    isAPISpecific: ").append(toIndentedString(isAPISpecific)).append("\n");
     sb.append("    md5: ").append(toIndentedString(md5)).append("\n");
     sb.append("    policyAttributes: ").append(toIndentedString(policyAttributes)).append("\n");

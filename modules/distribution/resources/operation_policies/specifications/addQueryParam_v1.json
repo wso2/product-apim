@@ -1,6 +1,7 @@
 {
   "category": "Mediation",
   "name": "addQueryParam",
+  "version": "v1",
   "displayName": "Add Query Param",
   "description": "This policy allows you to add a query parameter to the request",
   "policyAttributes": [

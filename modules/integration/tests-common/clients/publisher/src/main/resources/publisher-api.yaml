@@ -4524,123 +4524,6 @@ paths:
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v3/throttling-policies/api/Platinum"'
 
-  ######################################################
-  # The "Mediation Policy Collection" resource APIs
-  ######################################################
-  /mediation-policies:
-    get:
-      tags:
-        - Global Mediation Policies
-      summary: |
-        Get all global level mediation policies
-      description: |
-        This operation provides you a list of available all global level mediation policies.
-      operationId: getAllGlobalMediationPolicies
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-        - name: query
-          in: query
-          description: -Not supported yet-
-          schema:
-            type: string
-        - $ref: '#/components/parameters/If-None-Match'
-      responses:
-        200:
-          description: |
-            OK.
-            List of mediation policies is returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Content-Type:
-              description: The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MediationList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apim:api_view
-            - apim:api_manage
-            - apim:mediation_policy_view
-            - apim:mediation_policy_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v3/mediation-policies"'
-      x-examples:
-        $ref: docs/examples/mediation-policies/mediation_policies_get.yaml
-
-  ###################################################################
-  # The "Individual Mediation Policy" resource
-  ###################################################################
-  /mediation-policies/{mediationPolicyId}/content:
-    get:
-      tags:
-        - Global Mediation Policy
-      summary: Download a Global Mediation Policy
-      description: |
-        This operation can be used to download a particular global mediation policy.
-      operationId: getGlobalMediationPolicyContent
-      parameters:
-        - $ref: '#/components/parameters/mediationPolicyId'
-        - $ref: '#/components/parameters/If-None-Match'
-      responses:
-        200:
-          description: |
-            OK.
-            Mediation policy returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content: {}
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
-        404:
-          $ref: '#/components/responses/NotFound'
-      security:
-        - OAuth2Security:
-            - apim:api_view
-            - apim:api_manage
-            - apim:mediation_policy_view
-            - apim:mediation_policy_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v3/mediation-policies/d48a3412-1b85-49be-99f4-b81a3722ae73/content"
-          > mediation.xml'
-
   /apis/{apiId}/client-certificates:
     get:
       tags:
@@ -7631,9 +7514,11 @@ paths:
                 $ref: '#/components/schemas/OperationPolicyDataList'
         406:
           $ref: '#/components/responses/NotAcceptable'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_view
+            - apim:api_view    #This scope was added as the publisher user needs to access this resource. Mediation_policy_view scope is not included in the Internal/Publisher user.
             - apim:api_manage
             - apim:mediation_policy_view
             - apim:mediation_policy_manage
@@ -7696,9 +7581,10 @@ paths:
           $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_create #todo: consider removing this. There are some requirements to deny creating policies even though user has api_create scope.
             - apim:api_manage
             - apim:mediation_policy_create
             - apim:mediation_policy_manage
@@ -7740,9 +7626,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         406:
           $ref: '#/components/responses/NotAcceptable'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_view
+            - apim:api_view   #This scope was added as the publisher user needs to access this resource. Mediation_policy_view scope is not included in the Internal/Publisher user.
             - apim:api_manage
             - apim:mediation_policy_view
             - apim:mediation_policy_manage
@@ -7772,10 +7660,12 @@ paths:
           $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_create
             - apim:api_manage
+            - apim:mediation_policy_create
             - apim:mediation_policy_manage
             - apim:api_mediation_policy_manage
       x-code-samples:
@@ -7812,9 +7702,11 @@ paths:
                 format: binary
         404:
           $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_view
+            - apim:api_view  #This scope was added as the publisher user needs to access this resource. Mediation_policy_view scope is not included in the Internal/Publisher user.
             - apim:api_manage
             - apim:mediation_policy_view
             - apim:mediation_policy_manage
@@ -7857,13 +7749,12 @@ paths:
                 $ref: '#/components/schemas/OperationPolicyDataList'
         406:
           $ref: '#/components/responses/NotAcceptable'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:api_manage
-            - apim:mediation_policy_view
-            - apim:mediation_policy_manage
-            - apim:api_mediation_policy_manage
+            - apim:common_operation_policy_view
+            - apim:common_operation_policy_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -7904,7 +7795,7 @@ paths:
           headers:
             Location:
               description: |
-                The URL of the uploaded mediation policy of the API.
+                The URL of the uploaded common operation policy of the API.
               schema:
                 type: string
             Content-Type:
@@ -7920,13 +7811,11 @@ paths:
           $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_create #todo: consider removing this. There are some requirements to deny creating policies even though user has api_create scope.
-            - apim:api_manage
-            - apim:mediation_policy_create
-            - apim:mediation_policy_manage
-            - apim:api_mediation_policy_manage
+            - apim:common_operation_policy_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -7962,13 +7851,12 @@ paths:
           $ref: '#/components/responses/NotFound'
         406:
           $ref: '#/components/responses/NotAcceptable'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:api_manage
-            - apim:mediation_policy_view
-            - apim:mediation_policy_manage
-            - apim:api_mediation_policy_manage
+            - apim:common_operation_policy_view
+            - apim:common_operation_policy_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -7993,12 +7881,11 @@ paths:
           $ref: '#/components/responses/Forbidden'
         404:
           $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_create
-            - apim:api_manage
-            - apim:mediation_policy_manage
-            - apim:api_mediation_policy_manage
+            - apim:common_operation_policy_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -8032,59 +7919,16 @@ paths:
                 format: binary
         404:
           $ref: '#/components/responses/NotFound'
-      security:
-        - OAuth2Security:
-            - apim:api_view
-            - apim:api_manage
-            - apim:mediation_policy_view
-            - apim:mediation_policy_manage
-            - apim:api_mediation_policy_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
-
-  /operation-policies/specification/schema:
-    get:
-      tags:
-        - Operation Policies
-      summary: Export the operation policies specification schema.
-      description: |
-        This operation can be used to export the operation-policy-specification-schema.json used in deployment.
-      operationId: exportOperationPolicySpecificationSchema
-      responses:
-        200:
-          description: |
-            OK.
-            Operation policy specification schema exported successfully.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                type: string
-        403:
-          $ref: '#/components/responses/Forbidden'
-        404:
-          $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:api_manage
-            - apim:mediation_policy_view
-            - apim:mediation_policy_manage
-            - apim:api_mediation_policy_manage
+            - apim:common_operation_policy_view
+            - apim:common_operation_policy_manage
       x-code-samples:
-        - lang: Shell
+        - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/v2/operation-policies/specification/schema" > operation-policy-specification-schema.json'
-
+          "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
 
   /api-products/change-lifecycle:
     post:
@@ -9683,62 +9527,6 @@ components:
             - name
           items:
             type: string
-    MediationList:
-      title: Mediation List
-      type: object
-      properties:
-        count:
-          type: integer
-          description: |
-            Number of mediation sequences returned.
-          example: 1
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/MediationInfo'
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-    MediationInfo:
-      title: MediationInfo
-      required:
-        - id
-        - name
-        - type
-      type: object
-      properties:
-        name:
-          type: string
-          example: json_fault.xml
-        id:
-          type: string
-          example: 01234567-0123-0123-0123-012345678901
-        type:
-          type: string
-          example: in
-          enum:
-            - in
-            - out
-            - fault
-    Mediation:
-      title: Mediation
-      required:
-        - name
-        - type
-      type: object
-      properties:
-        id:
-          type: string
-          example: 01234567-0123-0123-0123-012345678901
-        name:
-          type: string
-          example: json_fault.xml
-        type:
-          type: string
-          example: in
-          enum:
-            - in
-            - out
-            - fault
     ThrottlingPolicyList:
       title: Throttling policy list
       type: object
@@ -11683,10 +11471,11 @@ components:
       properties:
         policyName:
           type: string
+        policyVersion:
+          type: string
+          default: v1
         policyId:
           type: string
-        order:
-          type: int
         parameters:
           type: object
           additionalProperties:
@@ -11768,9 +11557,6 @@ components:
           items:
             type: string
             example: REST
-        multipleAllowed:
-          type: boolean
-          example: true
         isAPISpecific:
           type: boolean
           example: true
@@ -11809,6 +11595,16 @@ components:
           type: boolean
           description: Is this attibute mandetory for the policy
           example: true
+        defaultValue:
+          type: string
+          description: Default value for the attribute
+          example: true
+        allowedValues:
+          type: array
+          description: If the attribute type is enum, this array should contain all the possible values for the enum.
+          items:
+            type: string
+            example: ["GET","POST","PUT"]
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
@@ -12066,14 +11862,6 @@ components:
       in: path
       description: |
         Subscription Id
-      required: true
-      schema:
-        type: string
-    mediationPolicyId:
-      name: mediationPolicyId
-      in: path
-      description: |
-        Mediation policy Id
       required: true
       schema:
         type: string
@@ -12369,6 +12157,8 @@ components:
             apim:mediation_policy_view: View mediation policies
             apim:mediation_policy_create: Create mediation policies
             apim:mediation_policy_manage: Update and delete mediation policies
+            apim:common_operation_policy_view: View common operation policies
+            apim:common_operation_policy_manage: Add, Update and Delete common operation policies
             apim:client_certificates_view: View client certificates
             apim:client_certificates_add: Add client certificates
             apim:client_certificates_update: Update and delete client certificates

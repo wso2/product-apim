@@ -193,34 +193,12 @@ public class ApiTestHelper {
         return restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
     }
 
-    public APIDTO createInMediationSequenceApi(String backendUrl) throws IOException, ApiException {
+    public APIDTO createAnApi(String backendUrl) throws IOException, ApiException {
         String swaggerPath = resourceLocation + File.separator + SWAGGER_FOLDER +
                 File.separator + "customer-info-api.yaml";
 
         String additionalPropertiesPath = resourceLocation + File.separator + ADDITIONAL_PROPERTIES_FOLDER +
-                File.separator + "in-mediation-api-properties.json";
-
-        File definition = new File(swaggerPath);
-
-        String content = new String(Files.readAllBytes(Paths.get(additionalPropertiesPath)));
-        JSONObject apiProperties = new JSONObject(content);
-
-        String uniqueName = UUID.randomUUID().toString();
-        apiProperties.put("name", uniqueName);
-        apiProperties.put("context", "/" + uniqueName);
-        apiProperties.put("provider", user.getUserName());
-        ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("production_endpoints")).put("url", backendUrl);
-        ((JSONObject) ((JSONObject) apiProperties.get("endpointConfig")).get("sandbox_endpoints")).put("url", backendUrl);
-
-        return restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
-    }
-
-    public APIDTO createOutMediationSequenceApi(String backendUrl) throws IOException, ApiException {
-        String swaggerPath = resourceLocation + File.separator + SWAGGER_FOLDER +
-                File.separator + "customer-info-api.yaml";
-
-        String additionalPropertiesPath = resourceLocation + File.separator + ADDITIONAL_PROPERTIES_FOLDER +
-                File.separator + "out-mediation-api-properties.json";
+                File.separator + "api-properties.json";
 
         File definition = new File(swaggerPath);
 

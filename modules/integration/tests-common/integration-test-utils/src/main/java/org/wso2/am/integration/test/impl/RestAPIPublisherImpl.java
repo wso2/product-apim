@@ -32,6 +32,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiOperationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
@@ -40,10 +41,10 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GlobalMediationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
+import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
@@ -77,9 +78,10 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeLis
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PatchRequestBodyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.PostRequestBodyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyInfoDTO;
@@ -110,7 +112,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO.SubscriptionAvailabilityEnum.ALL_TENANTS;
 
@@ -145,7 +149,6 @@ public class RestAPIPublisherImpl {
     public ApiAuditApi apiAuditApi = new ApiAuditApi();
     public GraphQlPoliciesApi graphQlPoliciesApi = new GraphQlPoliciesApi();
     public UnifiedSearchApi unifiedSearchApi = new UnifiedSearchApi();
-    public GlobalMediationPoliciesApi globalMediationPoliciesApi = new GlobalMediationPoliciesApi();
     public ScopesApi sharedScopesApi = new ScopesApi();
     public ApiProductLifecycleApi productLifecycleApi = new ApiProductLifecycleApi();
     public ApiClient apiPublisherClient = new ApiClient();
@@ -154,6 +157,9 @@ public class RestAPIPublisherImpl {
     private ApiProductsApi apiProductsApi = new ApiProductsApi();
     private RestAPIGatewayImpl restAPIGateway;
     private String disableVerification = System.getProperty("disableVerification");
+    private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
+    private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
+
 
     @Deprecated
     public RestAPIPublisherImpl() {
@@ -175,7 +181,7 @@ public class RestAPIPublisherImpl {
                                 "apim:client_certificates_update apim:ep_certificates_view " +
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
                                 "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
-                                "apim:comment_write",
+                                "apim:comment_write apim:common_operation_policy_view apim:common_operation_policy_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -203,7 +209,8 @@ public class RestAPIPublisherImpl {
         apiAuditApi.setApiClient(apiPublisherClient);
         unifiedSearchApi.setApiClient(apiPublisherClient);
         sharedScopesApi.setApiClient(apiPublisherClient);
-        globalMediationPoliciesApi.setApiClient(apiPublisherClient);
+        operationPoliciesApi.setApiClient(apiPublisherClient);
+        apisOperationPoliciesApi.setApiClient(apiPublisherClient);
         endpointCertificatesApi.setApiClient(apiPublisherClient);
         productLifecycleApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
@@ -1353,6 +1360,26 @@ public class RestAPIPublisherImpl {
     }
 
     /**
+     * Update an API
+     *
+     * @param apidto
+     * @return
+     * @throws ApiException
+     */
+    public HttpResponse updateAPIWithHttpInfo(APIDTO apidto) {
+
+        HttpResponse response;
+        Gson gson = new Gson();
+        try {
+            ApiResponse<APIDTO> apiResponse = apIsApi.updateAPIWithHttpInfo(apidto.getId(), apidto, null);
+            response = new HttpResponse(gson.toJson(apiResponse), apiResponse.getStatusCode());
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
+    }
+
+    /**
      * Get subscription of an API
      *
      * @param apiID
@@ -1847,10 +1874,6 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
-    public MediationListDTO retrieveMediationPolicies() throws ApiException {
-
-        return globalMediationPoliciesApi.getAllGlobalMediationPolicies(100, 0, null, null);
-    }
 
     /**
      * This method is used to create an API Product Revision.
@@ -2290,5 +2313,170 @@ public class RestAPIPublisherImpl {
     private void setActivityID() {
 
         apiPublisherClient.addDefaultHeader("activityID", System.getProperty(testNameProperty));
+    }
+
+    /**
+     * Method to get all common operation policies
+     *
+     * @return A map of policy name and policy UUID
+     * @throws ApiException - Throws if policy information cannot be retrieved.
+     */
+    public Map<String, String> getAllCommonOperationPolicies() throws ApiException {
+
+        setActivityID();
+        ApiResponse<OperationPolicyDataListDTO> apiResponse =
+                operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(50, 0, "");
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Unable to retrieve common policies " + apiResponse.getData());
+        if (apiResponse != null && apiResponse.getData().getCount() >= 0) {
+            return mapPolicyNameToId(apiResponse.getData());
+        }
+        return null;
+    }
+
+    /**
+     * Method to get all API specific operation policies
+     *
+     * @param apiId - API uuid
+     * @return A map of policy name and policy UUID
+     * @throws ApiException - Throws if policy information cannot be retrieved.
+     */
+    public Map<String, String> getAllAPISpecificOperationPolicies(String apiId) throws ApiException {
+
+        setActivityID();
+        ApiResponse<OperationPolicyDataListDTO> apiResponse =
+                apisOperationPoliciesApi.getAllAPISpecificOperationPoliciesWithHttpInfo(apiId, 50, 0, "");
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Unable to retrieve common policies " + apiResponse.getData());
+        if (apiResponse != null && apiResponse.getData().getCount() >= 0) {
+            return mapPolicyNameToId(apiResponse.getData());
+        }
+        return null;
+    }
+
+    /**
+     * Method to get Common operation policy by PolicyID
+     *
+     * @param policyId - PolicyUUID
+     * @return OperationPolicyDataDTO
+     * @throws ApiException - Throws if policy information cannot be retrieved.
+     */
+    public OperationPolicyDataDTO getCommonOperationPolicy(String policyId) throws ApiException {
+
+        setActivityID();
+        ApiResponse<OperationPolicyDataDTO> apiResponse =
+                operationPoliciesApi.getCommonOperationPolicyByPolicyIdWithHttpInfo(policyId);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Unable to retrieve common policy for policy Id " + policyId + " " + apiResponse.getData());
+
+        return apiResponse.getData();
+    }
+
+    /**
+     * Method to get API specific operation policy by policyId
+     *
+     * @param policyId - PolicyUUID
+     * @return OperationPolicyDataDTO
+     * @throws ApiException - Throws if policy information cannot be retrieved.
+     */
+    public OperationPolicyDataDTO getAPISpecificOperationPolicy(String policyId, String apiId) throws ApiException {
+
+        setActivityID();
+        ApiResponse<OperationPolicyDataDTO> apiResponse =
+                apisOperationPoliciesApi.getOperationPolicyForAPIByPolicyIdWithHttpInfo(apiId, policyId);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Unable to retrieve common policy for policy Id " + policyId + " " + apiResponse.getData());
+
+        return apiResponse.getData();
+    }
+
+    /**
+     * Add common operation policy
+     *
+     * @param policySpecFile              - Policy specification file
+     * @param synapsePolicyDefinitionFile - Synapse policy definition
+     * @param ccPolicyDefinitionFile      - Choreo connect policy definition
+     * @return - http response of add common policy
+     * @throws ApiException - throws if add common policy fails
+     */
+
+    public HttpResponse addCommonOperationPolicy(File policySpecFile, File synapsePolicyDefinitionFile,
+                                                 File ccPolicyDefinitionFile) throws ApiException {
+
+        Gson gson = new Gson();
+        ApiResponse<OperationPolicyDataDTO> apiResponse = operationPoliciesApi
+                .addCommonOperationPolicyWithHttpInfo(policySpecFile, synapsePolicyDefinitionFile,
+                        ccPolicyDefinitionFile);
+        return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
+    }
+
+    /**
+     * Add an API specific operation policy
+     *
+     * @param apiId                       - UUID of the API
+     * @param policySpecFile              - Policy specification file
+     * @param synapsePolicyDefinitionFile - Synapse policy definition
+     * @param ccPolicyDefinitionFile      - Choreo connect policy definition
+     * @return - http response of add common policy
+     * @throws ApiException - throws if add common policy fails
+     */
+
+    public HttpResponse addAPISpecificOperationPolicy(String apiId, File policySpecFile,
+                                                      File synapsePolicyDefinitionFile,
+                                                      File ccPolicyDefinitionFile) throws ApiException {
+
+        Gson gson = new Gson();
+        ApiResponse<OperationPolicyDataDTO> apiResponse = apisOperationPoliciesApi
+                .addAPISpecificOperationPolicyWithHttpInfo(apiId, policySpecFile, synapsePolicyDefinitionFile,
+                        ccPolicyDefinitionFile);
+        return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
+    }
+
+    /**
+     * Delete common operation policy
+     *
+     * @param policyId - Policy Id
+     * @throws ApiException - throws if remove comment fails
+     */
+    public HttpResponse deleteCommonOperationPolicy(String policyId) throws ApiException {
+
+        HttpResponse response;
+        try {
+            ApiResponse<Void> apiResponse =
+                    operationPoliciesApi.deleteCommonOperationPolicyByPolicyIdWithHttpInfo(policyId);
+            response = new HttpResponse("Common policy delete response", apiResponse.getStatusCode());
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            response = new HttpResponse("Failed to delete the common policy", e.getCode());
+        }
+        return response;
+    }
+
+    /**
+     * Delete API specific policy in given API
+     *
+     * @param policyId - policy Id
+     * @param apiId    - api Id
+     * @throws ApiException - throws if remove comment fails
+     */
+    public HttpResponse deleteAPISpecificPolicy(String policyId, String apiId) throws ApiException {
+
+        HttpResponse response;
+        try {
+            ApiResponse<Void> apiResponse =
+                    apisOperationPoliciesApi.deleteAPISpecificOperationPolicyByPolicyIdWithHttpInfo(apiId, policyId);
+            response = new HttpResponse("API specific policy delete response", apiResponse.getStatusCode());
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            response = new HttpResponse("Failed to delete the common policy", e.getCode());
+        }
+        return response;
+    }
+
+    public Map<String, String> mapPolicyNameToId(OperationPolicyDataListDTO policyList) {
+
+        Map<String, String> policyMap = new HashMap<>();
+        for (OperationPolicyDataDTO policyDataDTO : policyList.getList()) {
+            policyMap.put(policyDataDTO.getName(), policyDataDTO.getId());
+        }
+        return policyMap;
     }
 }

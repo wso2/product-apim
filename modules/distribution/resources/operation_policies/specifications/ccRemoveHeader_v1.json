@@ -1,6 +1,7 @@
 {
   "category": "Mediation",
-  "name": "removeHeader",
+  "name": "ccRemoveHeader",
+  "version": "v1",
   "displayName": "Remove Header",
   "description": "This policy allows you to remove a header from the request",
   "policyAttributes": [
@@ -14,12 +15,10 @@
     }
   ],
   "applicableFlows": [
-    "request",
-    "response",
-    "fault"
+    "request"
   ],
   "supportedGateways": [
-    "Synapse"
+    "ChoreoConnect"
   ],
   "supportedApiTypes": [
     "HTTP"

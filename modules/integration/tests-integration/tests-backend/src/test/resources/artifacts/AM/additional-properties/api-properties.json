@@ -7,15 +7,5 @@
     "endpoint_type" : "http",
     "production_endpoints" : { "url" : "http://localhost" },
     "sandbox_endpoints" : { "url" : "http://localhost" }
-  },
-  "mediationPolicies":[
-    {
-      "name": "json_to_xml_in_message",
-      "type": "in"
-    },
-    {
-      "name": "json_fault",
-      "type": "fault"
-    }
-  ]
+  }
 }

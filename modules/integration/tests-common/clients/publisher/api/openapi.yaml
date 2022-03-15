@@ -8070,194 +8070,6 @@ paths:
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v3/throttling-policies/api/Platinum"'
       x-accepts: application/json
-  /mediation-policies:
-    get:
-      description: |
-        This operation provides you a list of available all global level mediation policies.
-      operationId: getAllGlobalMediationPolicies
-      parameters:
-      - description: |
-          Maximum size of resource array to return.
-        explode: true
-        in: query
-        name: limit
-        required: false
-        schema:
-          default: 25
-          type: integer
-        style: form
-      - description: |
-          Starting point within the complete list of items qualified.
-        explode: true
-        in: query
-        name: offset
-        required: false
-        schema:
-          default: 0
-          type: integer
-        style: form
-      - description: -Not supported yet-
-        explode: true
-        in: query
-        name: query
-        required: false
-        schema:
-          type: string
-        style: form
-      - description: |
-          Validator for conditional requests; based on the ETag of the formerly retrieved
-          variant of the resource.
-        explode: false
-        in: header
-        name: If-None-Match
-        required: false
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MediationList'
-          description: |
-            OK.
-            List of mediation policies is returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-        "406":
-          content:
-            application/json:
-              example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Acceptable. The requested media type is not supported.
-      security:
-      - OAuth2Security:
-        - apim:api_view
-        - apim:api_manage
-        - apim:mediation_policy_view
-        - apim:mediation_policy_manage
-      summary: |
-        Get all global level mediation policies
-      tags:
-      - Global Mediation Policies
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v3/mediation-policies"'
-      x-examples:
-        $ref: docs/examples/mediation-policies/mediation_policies_get.yaml
-      x-accepts: application/json
-  /mediation-policies/{mediationPolicyId}/content:
-    get:
-      description: |
-        This operation can be used to download a particular global mediation policy.
-      operationId: getGlobalMediationPolicyContent
-      parameters:
-      - description: |
-          Mediation policy Id
-        explode: false
-        in: path
-        name: mediationPolicyId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - description: |
-          Validator for conditional requests; based on the ETag of the formerly retrieved
-          variant of the resource.
-        explode: false
-        in: header
-        name: If-None-Match
-        required: false
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content: {}
-          description: |
-            OK.
-            Mediation policy returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              explode: false
-              schema:
-                type: string
-              style: simple
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "304":
-          content: {}
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
-      security:
-      - OAuth2Security:
-        - apim:api_view
-        - apim:api_manage
-        - apim:mediation_policy_view
-        - apim:mediation_policy_manage
-      summary: Download a Global Mediation Policy
-      tags:
-      - Global Mediation Policy
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v3/mediation-policies/d48a3412-1b85-49be-99f4-b81a3722ae73/content"
-          > mediation.xml'
-      x-accepts: application/json
   /apis/{apiId}/client-certificates:
     get:
       description: |
@@ -13558,6 +13370,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:api_view
@@ -13656,9 +13481,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
-        - apim:api_create
         - apim:api_manage
         - apim:mediation_policy_create
         - apim:mediation_policy_manage
@@ -13729,10 +13566,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
-        - apim:api_create
         - apim:api_manage
+        - apim:mediation_policy_create
         - apim:mediation_policy_manage
         - apim:api_mediation_policy_manage
       summary: Delete an API Specific Operation Policy
@@ -13807,6 +13657,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:api_view
@@ -13876,6 +13739,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
         - apim:api_view
@@ -13953,13 +13829,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
-        - apim:api_view
-        - apim:api_manage
-        - apim:mediation_policy_view
-        - apim:mediation_policy_manage
-        - apim:api_mediation_policy_manage
+        - apim:common_operation_policy_view
+        - apim:common_operation_policy_manage
       summary: |
         Get all common operation policies to all the APIs
       tags:
@@ -14005,7 +13891,7 @@ paths:
           headers:
             Location:
               description: |
-                The URL of the uploaded mediation policy of the API.
+                The URL of the uploaded common operation policy of the API.
               explode: false
               schema:
                 type: string
@@ -14041,13 +13927,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
-        - apim:api_create
-        - apim:api_manage
-        - apim:mediation_policy_create
-        - apim:mediation_policy_manage
-        - apim:api_mediation_policy_manage
+        - apim:common_operation_policy_manage
       summary: Add a new common operation policy
       tags:
       - Operation Policies
@@ -14105,12 +14000,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
-        - apim:api_create
-        - apim:api_manage
-        - apim:mediation_policy_manage
-        - apim:api_mediation_policy_manage
+        - apim:common_operation_policy_manage
       summary: Delete a common operation policy
       tags:
       - Operation Policies
@@ -14174,13 +14079,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Acceptable. The requested media type is not supported.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
       security:
       - OAuth2Security:
-        - apim:api_view
-        - apim:api_manage
-        - apim:mediation_policy_view
-        - apim:mediation_policy_manage
-        - apim:api_mediation_policy_manage
+        - apim:common_operation_policy_view
+        - apim:common_operation_policy_manage
       summary: Get the details of a common operation policy by providing policy ID
       tags:
       - Operation Policies
@@ -14234,69 +14149,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Not Found. The specified resource does not exist.
-      security:
-      - OAuth2Security:
-        - apim:api_view
-        - apim:api_manage
-        - apim:mediation_policy_view
-        - apim:mediation_policy_manage
-        - apim:api_mediation_policy_manage
-      summary: Download a common operation policy
-      tags:
-      - Operation Policies
-      x-code-samples:
-      - lang: Curl
-        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
-      x-accepts: application/json
-  /operation-policies/specification/schema:
-    get:
-      description: |
-        This operation can be used to export the operation-policy-specification-schema.json used in deployment.
-      operationId: exportOperationPolicySpecificationSchema
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                type: string
-          description: |
-            OK.
-            Operation policy specification schema exported successfully.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              explode: false
-              schema:
-                type: string
-              style: simple
-        "403":
-          content:
-            application/json:
-              example:
-                code: 403
-                message: Forbidden
-                description: The request must be conditional but no condition has
-                  been specified
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Forbidden. The request must be conditional but no condition
-            has been specified.
-        "404":
-          content:
-            application/json:
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Not Found. The specified resource does not exist.
         "500":
           content:
             application/json:
@@ -14312,18 +14164,15 @@ paths:
           description: Internal Server Error.
       security:
       - OAuth2Security:
-        - apim:api_view
-        - apim:api_manage
-        - apim:mediation_policy_view
-        - apim:mediation_policy_manage
-        - apim:api_mediation_policy_manage
-      summary: Export the operation policies specification schema.
+        - apim:common_operation_policy_view
+        - apim:common_operation_policy_manage
+      summary: Download a common operation policy
       tags:
       - Operation Policies
       x-code-samples:
-      - lang: Shell
+      - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/v2/operation-policies/specification/schema" > operation-policy-specification-schema.json'
+          "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
       x-accepts: application/json
   /api-products/change-lifecycle:
     post:
@@ -14905,16 +14754,6 @@ components:
       explode: false
       in: path
       name: subscriptionId
-      required: true
-      schema:
-        type: string
-      style: simple
-    mediationPolicyId:
-      description: |
-        Mediation policy Id
-      explode: false
-      in: path
-      name: mediationPolicyId
       required: true
       schema:
         type: string
@@ -17352,81 +17191,6 @@ components:
           type: array
       title: Single type and corresponding fields found within the GraphQL Schema
       type: object
-    MediationList:
-      example:
-        pagination:
-          next: next
-          total: 10
-          offset: 0
-          previous: previous
-          limit: 1
-        count: 1
-        list:
-        - name: json_fault.xml
-          id: 01234567-0123-0123-0123-012345678901
-          type: in
-        - name: json_fault.xml
-          id: 01234567-0123-0123-0123-012345678901
-          type: in
-      properties:
-        count:
-          description: |
-            Number of mediation sequences returned.
-          example: 1
-          type: integer
-        list:
-          items:
-            $ref: '#/components/schemas/MediationInfo'
-          type: array
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-      title: Mediation List
-      type: object
-    MediationInfo:
-      example:
-        name: json_fault.xml
-        id: 01234567-0123-0123-0123-012345678901
-        type: in
-      properties:
-        name:
-          example: json_fault.xml
-          type: string
-        id:
-          example: 01234567-0123-0123-0123-012345678901
-          type: string
-        type:
-          enum:
-          - in
-          - out
-          - fault
-          example: in
-          type: string
-      required:
-      - id
-      - name
-      - type
-      title: MediationInfo
-      type: object
-    Mediation:
-      properties:
-        id:
-          example: 01234567-0123-0123-0123-012345678901
-          type: string
-        name:
-          example: json_fault.xml
-          type: string
-        type:
-          enum:
-          - in
-          - out
-          - fault
-          example: in
-          type: string
-      required:
-      - name
-      - type
-      title: Mediation
-      type: object
     ThrottlingPolicyList:
       example:
         pagination:
@@ -18426,38 +18190,38 @@ components:
         amznResourceName: amznResourceName
         operationPolicies:
           request:
-          - policyId: policyId
+          - policyVersion: v1
+            policyId: policyId
             policyName: policyName
             parameters:
               key: '{}'
-            order: ""
-          - policyId: policyId
+          - policyVersion: v1
+            policyId: policyId
             policyName: policyName
             parameters:
               key: '{}'
-            order: ""
           response:
-          - policyId: policyId
+          - policyVersion: v1
+            policyId: policyId
             policyName: policyName
             parameters:
               key: '{}'
-            order: ""
-          - policyId: policyId
+          - policyVersion: v1
+            policyId: policyId
             policyName: policyName
             parameters:
               key: '{}'
-            order: ""
           fault:
-          - policyId: policyId
+          - policyVersion: v1
+            policyId: policyId
             policyName: policyName
             parameters:
               key: '{}'
-            order: ""
-          - policyId: policyId
+          - policyVersion: v1
+            policyId: policyId
             policyName: policyName
             parameters:
               key: '{}'
-            order: ""
         verb: POST
         uriMapping: uriMapping
         id: postapiresource
@@ -18955,38 +18719,38 @@ components:
             amznResourceName: amznResourceName
             operationPolicies:
               request:
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
               response:
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
               fault:
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
             verb: POST
             uriMapping: uriMapping
             id: postapiresource
@@ -19000,38 +18764,38 @@ components:
             amznResourceName: amznResourceName
             operationPolicies:
               request:
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
               response:
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
               fault:
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
-              - policyId: policyId
+              - policyVersion: v1
+                policyId: policyId
                 policyName: policyName
                 parameters:
                   key: '{}'
-                order: ""
             verb: POST
             uriMapping: uriMapping
             id: postapiresource
@@ -19854,18 +19618,19 @@ components:
       type: object
     OperationPolicy:
       example:
+        policyVersion: v1
         policyId: policyId
         policyName: policyName
         parameters:
           key: '{}'
-        order: ""
       properties:
         policyName:
           type: string
+        policyVersion:
+          default: v1
+          type: string
         policyId:
           type: string
-        order:
-          type: int
         parameters:
           additionalProperties:
             type: object
@@ -19877,38 +19642,38 @@ components:
     APIOperationPolicies:
       example:
         request:
-        - policyId: policyId
+        - policyVersion: v1
+          policyId: policyId
           policyName: policyName
           parameters:
             key: '{}'
-          order: ""
-        - policyId: policyId
+        - policyVersion: v1
+          policyId: policyId
           policyName: policyName
           parameters:
             key: '{}'
-          order: ""
         response:
-        - policyId: policyId
+        - policyVersion: v1
+          policyId: policyId
           policyName: policyName
           parameters:
             key: '{}'
-          order: ""
-        - policyId: policyId
+        - policyVersion: v1
+          policyId: policyId
           policyName: policyName
           parameters:
             key: '{}'
-          order: ""
         fault:
-        - policyId: policyId
+        - policyVersion: v1
+          policyId: policyId
           policyName: policyName
           parameters:
             key: '{}'
-          order: ""
-        - policyId: policyId
+        - policyVersion: v1
+          policyId: policyId
           policyName: policyName
           parameters:
             key: '{}'
-          order: ""
       properties:
         request:
           items:
@@ -19952,15 +19717,22 @@ components:
         - supportedApiTypes:
           - REST
           - REST
-          multipleAllowed: true
           policyAttributes:
-          - displayName: Header Name
+          - allowedValues:
+            - '["GET","POST","PUT"]'
+            - '["GET","POST","PUT"]'
+            displayName: Header Name
+            defaultValue: "true"
             name: headerName
             description: Name of the header to be removed
             type: string
             validationRegex: /^[a-z\s]{0,255}$/i
             required: true
-          - displayName: Header Name
+          - allowedValues:
+            - '["GET","POST","PUT"]'
+            - '["GET","POST","PUT"]'
+            displayName: Header Name
+            defaultValue: "true"
             name: headerName
             description: Name of the header to be removed
             type: string
@@ -19982,15 +19754,22 @@ components:
         - supportedApiTypes:
           - REST
           - REST
-          multipleAllowed: true
           policyAttributes:
-          - displayName: Header Name
+          - allowedValues:
+            - '["GET","POST","PUT"]'
+            - '["GET","POST","PUT"]'
+            displayName: Header Name
+            defaultValue: "true"
             name: headerName
             description: Name of the header to be removed
             type: string
             validationRegex: /^[a-z\s]{0,255}$/i
             required: true
-          - displayName: Header Name
+          - allowedValues:
+            - '["GET","POST","PUT"]'
+            - '["GET","POST","PUT"]'
+            displayName: Header Name
+            defaultValue: "true"
             name: headerName
             description: Name of the header to be removed
             type: string
@@ -20028,15 +19807,22 @@ components:
         supportedApiTypes:
         - REST
         - REST
-        multipleAllowed: true
         policyAttributes:
-        - displayName: Header Name
+        - allowedValues:
+          - '["GET","POST","PUT"]'
+          - '["GET","POST","PUT"]'
+          displayName: Header Name
+          defaultValue: "true"
           name: headerName
           description: Name of the header to be removed
           type: string
           validationRegex: /^[a-z\s]{0,255}$/i
           required: true
-        - displayName: Header Name
+        - allowedValues:
+          - '["GET","POST","PUT"]'
+          - '["GET","POST","PUT"]'
+          displayName: Header Name
+          defaultValue: "true"
           name: headerName
           description: Name of the header to be removed
           type: string
@@ -20086,9 +19872,6 @@ components:
             example: REST
             type: string
           type: array
-        multipleAllowed:
-          example: true
-          type: boolean
         isAPISpecific:
           example: true
           type: boolean
@@ -20103,7 +19886,11 @@ components:
       type: object
     OperationPolicySpecAttribute:
       example:
+        allowedValues:
+        - '["GET","POST","PUT"]'
+        - '["GET","POST","PUT"]'
         displayName: Header Name
+        defaultValue: "true"
         name: headerName
         description: Name of the header to be removed
         type: string
@@ -20134,6 +19921,17 @@ components:
           description: Is this attibute mandetory for the policy
           example: true
           type: boolean
+        defaultValue:
+          description: Default value for the attribute
+          example: "true"
+          type: string
+        allowedValues:
+          description: If the attribute type is enum, this array should contain all
+            the possible values for the enum.
+          items:
+            example: '["GET","POST","PUT"]'
+            type: string
+          type: array
       title: OperationPolicySpecAttribute
       type: object
     Post_request_body:
@@ -20485,38 +20283,38 @@ components:
           amznResourceName: amznResourceName
           operationPolicies:
             request:
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
             response:
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
             fault:
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
           verb: POST
           uriMapping: uriMapping
           id: postapiresource
@@ -20530,38 +20328,38 @@ components:
           amznResourceName: amznResourceName
           operationPolicies:
             request:
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
             response:
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
             fault:
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
-            - policyId: policyId
+            - policyVersion: v1
+              policyId: policyId
               policyName: policyName
               parameters:
                 key: '{}'
-              order: ""
           verb: POST
           uriMapping: uriMapping
           id: postapiresource
@@ -20763,6 +20561,9 @@ components:
             apim:mediation_policy_view: View mediation policies
             apim:mediation_policy_create: Create mediation policies
             apim:mediation_policy_manage: Update and delete mediation policies
+            apim:common_operation_policy_view: View common operation policies
+            apim:common_operation_policy_manage: Add, Update and Delete common operation
+              policies
             apim:client_certificates_view: View client certificates
             apim:client_certificates_add: Add client certificates
             apim:client_certificates_update: Update and delete client certificates

@@ -1,15 +1,18 @@
 package org.wso2.am.integration.tests.restapi;
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.gateway.api.v2.dto.APIArtifactDTO;
 import org.wso2.am.integration.clients.gateway.api.v2.dto.EndpointsDTO;
 import org.wso2.am.integration.clients.gateway.api.v2.dto.LocalEntryDTO;
 import org.wso2.am.integration.clients.gateway.api.v2.dto.SequencesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.test.impl.RestAPIGatewayImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -22,7 +25,9 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class GatewayRestAPITestCase extends APIMIntegrationBaseTest {
@@ -31,11 +36,13 @@ public class GatewayRestAPITestCase extends APIMIntegrationBaseTest {
 
     @Factory(dataProvider = "userModeDataProvider")
     public GatewayRestAPITestCase(TestUserMode userMode) {
+
         this.userMode = userMode;
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
+
         return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN},
                 new Object[]{TestUserMode.SUPER_TENANT_USER_STORE_USER},
@@ -46,11 +53,13 @@ public class GatewayRestAPITestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+
         super.init(userMode);
     }
 
     @Test(groups = {"wso2.am"}, description = "Comment Rating Test case")
     public void testGatewayRestAPI() throws Exception {
+
         String name = "GatewayRestAPITestCase";
         String context = "GatewayRestAPITestCase";
         String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
@@ -65,36 +74,30 @@ public class GatewayRestAPITestCase extends APIMIntegrationBaseTest {
         //add api
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         apiId = serviceResponse.getData();
-        MediationListDTO mediationListDTO = restAPIPublisher.retrieveMediationPolicies();
-        MediationInfoDTO inMediationInfoDTO, outMediationInfoDTO, faultMediationInfoDTO;
-        List<MediationPolicyDTO> mediationPolicyDTOS = new ArrayList<>();
-        if (mediationListDTO.getList() != null) {
-            for (MediationInfoDTO mediationInfoDTO : mediationListDTO.getList()) {
-                MediationPolicyDTO mediationPolicyDTO = new MediationPolicyDTO();
-                MediationInfoDTO selectedMediationInfo = null;
-                if (mediationInfoDTO.getType().equals(MediationInfoDTO.TypeEnum.IN) &&
-                        "log_in_message".equals(mediationInfoDTO.getName())) {
-                    selectedMediationInfo = mediationInfoDTO;
-                }
-                if (mediationInfoDTO.getType().equals(MediationInfoDTO.TypeEnum.OUT) &&
-                        "log_out_message".equals(mediationInfoDTO.getName())) {
-                    selectedMediationInfo = mediationInfoDTO;
-                }
-                if (mediationInfoDTO.getType().equals(MediationInfoDTO.TypeEnum.FAULT) &&
-                        "debug_json_fault".equals(mediationInfoDTO.getName())) {
-                    selectedMediationInfo = mediationInfoDTO;
-                }
-                if (selectedMediationInfo != null) {
-                    mediationPolicyDTO.setId(mediationInfoDTO.getId());
-                    mediationPolicyDTO.setName(mediationInfoDTO.getName());
-                    mediationPolicyDTO.setType(mediationInfoDTO.getType().getValue());
-                    mediationPolicyDTO.setShared(true);
-                    mediationPolicyDTOS.add(mediationPolicyDTO);
-                }
-            }
-        }
+
+        Map<String, String> commonPolicyMap = restAPIPublisher.getAllCommonOperationPolicies();
+
+        String policyName = "addHeader";
+        Map<String, Object> requestAttributeMap = new HashMap<>();
+        requestAttributeMap.put("headerName", "RequestTestHeader");
+        requestAttributeMap.put("headerValue", "RequestTestValue");
+
+        Map<String, Object> responseAttributeMap = new HashMap<>();
+        responseAttributeMap.put("headerName", "ResponseTestHeader");
+        responseAttributeMap.put("headerValue", "ResponseTestValue");
+
+        Map<String, Object> faultAttributeMap = new HashMap<>();
+        faultAttributeMap.put("headerName", "FaultTestHeader");
+        faultAttributeMap.put("headerValue", "FaultTestValue");
+
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, commonPolicyMap, requestAttributeMap));
+        apiOperationPoliciesDTO.setResponse(getPolicyList(policyName, commonPolicyMap, responseAttributeMap));
+        apiOperationPoliciesDTO.setFault(getPolicyList(policyName, commonPolicyMap, faultAttributeMap));
+
         APIDTO api = restAPIPublisher.getAPIByID(apiId);
-        api.setMediationPolicies(mediationPolicyDTOS);
+        api.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
+
         restAPIPublisher.updateAPI(api);
         //publish the api
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
@@ -129,20 +132,33 @@ public class GatewayRestAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(sequencesDTO.getSequences().size(), 3);
         for (String sequence : sequencesDTO.getSequences()) {
             if (sequence.contains("--In")) {
-                Assert.assertTrue(sequence.contains("IN_MESSAGE"));
+                Assert.assertTrue(sequence.contains("RequestTestHeader"));
             }
             if (sequence.contains("--Out")) {
-                Assert.assertTrue(sequence.contains("OUT_MESSAGE"));
+                Assert.assertTrue(sequence.contains("ResponseTestHeader"));
             }
             if (sequence.contains("--Fault")) {
-                Assert.assertTrue(sequence.contains("ERROR_MESSAGE"));
-                Assert.assertTrue(sequence.contains("Correlation_Id"));
+                Assert.assertTrue(sequence.contains("FaultTestHeader"));
             }
         }
     }
 
+    public List<OperationPolicyDTO> getPolicyList(String policyName, Map<String, String> commonPolicyMap,
+                                                  Map<String, Object> attributeMap) {
+
+        List<OperationPolicyDTO> policyList = new ArrayList<>();
+        OperationPolicyDTO policyDTO = new OperationPolicyDTO();
+        policyDTO.setPolicyName(policyName);
+        policyDTO.setPolicyId(commonPolicyMap.get(policyName));
+        policyDTO.setParameters(attributeMap);
+        policyList.add(policyDTO);
+
+        return policyList;
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+
         restAPIPublisher.deleteAPI(apiId);
         super.cleanUp();
     }

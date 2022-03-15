@@ -32,10 +32,12 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.MediationPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -324,16 +326,21 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         invocationStatusCodes.addScopeSpecificStatusCode(SCOPE, HttpStatus.SC_OK);
         apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes);
     }
-/*
-//TODO:rewrite the same tests with operation policies
+
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
-            "on an API with an in mediation sequence")
-    public void testCreateAndInvokeApiProductWithInMediationApi() throws Exception {
+            "on an API with operation policies in request flow")
+    public void testCreateAndInvokeApiProductWithOperationPoliciesInRequestApi() throws Exception {
         // Pre-Conditions : Create APIs
         List<APIDTO> apisToBeUsed = new ArrayList<>();
-        APIDTO api = apiTestHelper.
-                createInMediationSequenceApi(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        APIDTO api = apiTestHelper.createAnApi(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(getPolicyList("jsonToXML", null));
+        apiOperationPoliciesDTO.setFault(getPolicyList("jsonFault", null));
+        for (APIOperationsDTO operationsDTO : api.getOperations()) {
+            operationsDTO.setOperationPolicies(apiOperationPoliciesDTO);
+        }
+        restAPIPublisher.updateAPI(api);
         apisToBeUsed.add(api);
 
         // Step 1 : Create APIProduct
@@ -372,7 +379,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 new ArrayList<>(), grantTypes);
 
         // Step 6 : Invoke API Product with Application Access tokens
-        String requestBody = "{ \"foo\" : \"bar\" }";
+        String requestBody = "{\"foo\":\"bar\"}";
         String expectedResponse = "<jsonObject><foo>bar</foo></jsonObject>";
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
@@ -396,11 +403,9 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 expectedResponse, headers);
         // Step 9 : Change In mediation Sequence in base API and verify change reflect in APIProduct.
         Assert.assertNotNull(api);
-        for (MediationPolicyDTO mediationPolicy : api.getMediationPolicies()) {
-            if ("in".equals(mediationPolicy.getType())) {
-                mediationPolicy.setId(null);
-                mediationPolicy.setName("xml_to_json_in_message");
-            }
+        apiOperationPoliciesDTO.setRequest(getPolicyList("xmlToJson", null));
+        for (APIOperationsDTO operationsDTO : api.getOperations()) {
+            operationsDTO.setOperationPolicies(apiOperationPoliciesDTO);
         }
         restAPIPublisher.updateAPI(api);
         apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, requestBody,
@@ -416,12 +421,18 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
-            "on an API with an out mediation sequence")
-    public void testCreateAndInvokeApiProductWithOutMediationApi() throws Exception {
+            "on an API with operation policies in response flow")
+    public void testCreateAndInvokeApiProductWithOperationPoliciesInResponseApi() throws Exception {
         // Pre-Conditions : Create APIs
         List<APIDTO> apisToBeUsed = new ArrayList<>();
-        APIDTO api = apiTestHelper
-                .createOutMediationSequenceApi(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        APIDTO api = apiTestHelper.createAnApi(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setResponse(getPolicyList("xmlToJson", null));
+        apiOperationPoliciesDTO.setFault(getPolicyList("jsonFault", null));
+        for (APIOperationsDTO operationsDTO : api.getOperations()) {
+            operationsDTO.setOperationPolicies(apiOperationPoliciesDTO);
+        }
+        restAPIPublisher.updateAPI(api);
         apisToBeUsed.add(api);
 
         // Step 1 : Create APIProduct
@@ -460,14 +471,16 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 new ArrayList<>(), grantTypes);
 
         // Step 6 : Invoke API Product with Application Access tokens
-        String requestBody = "<foo>bar</foo>";
-        String expectedResponse = "{\"text\":\"<foo>bar</foo>\"}";
+        String xmlRequestBody = "<foo>bar</foo>";
+        String jsonResponseBody = "{\"text\":\"<foo>bar</foo>\"}";
+        String jsonRequestBody = "{\"foo\":\"bar\"}";
+        String xmlResponseBody = "{\"text\":\"<jsonObject><foo>bar</foo></jsonObject>\"}";
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/xml");
         InvocationStatusCodes invocationStatusCodes = new InvocationStatusCodes();
 
         apiTestHelper.verifyInvocation(apiDTO, productionAppKey.getToken().getAccessToken(),
-                sandboxAppKey.getToken().getAccessToken(), invocationStatusCodes, requestBody, expectedResponse,
+                sandboxAppKey.getToken().getAccessToken(), invocationStatusCodes, xmlRequestBody, jsonResponseBody,
                 headers);
 
         // Step 7 : Generate Production and Sandbox tokens with scopes
@@ -480,29 +493,26 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
                 Collections.emptyList());
 
         // Step 8 : Invoke API Product
-        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, requestBody,
-                expectedResponse, headers);
+        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, xmlRequestBody,
+                jsonResponseBody, headers);
         // Step 9 : Change In mediation Sequence in base API and verify change reflect in APIProduct.
         Assert.assertNotNull(api);
-        for (MediationPolicyDTO mediationPolicy : api.getMediationPolicies()) {
-            if ("out".equals(mediationPolicy.getType())) {
-                mediationPolicy.setId(null);
-                mediationPolicy.setName("json_to_xml_out_message");
-            }
+        apiOperationPoliciesDTO.setRequest(getPolicyList("jsonToXML", null));
+        for (APIOperationsDTO operationsDTO : api.getOperations()) {
+            operationsDTO.setOperationPolicies(apiOperationPoliciesDTO);
         }
         restAPIPublisher.updateAPI(api);
-        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, requestBody,
-                expectedResponse, headers);
+        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, xmlRequestBody,
+                jsonResponseBody, headers);
         // Step10 : Update and deploy APIProduct with base API changes.
         ApiResponse<APIProductDTO> apiProductDTOApiResponse = restAPIPublisher.updateAPIProduct(apiProductDTO);
         Assert.assertEquals(apiProductDTOApiResponse.getStatusCode(), 200);
         createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
         headers.put("Content-Type", "application/json");
-        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, expectedResponse,
-                requestBody, headers);
+        apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes, jsonRequestBody,
+                xmlResponseBody, headers);
     }
-*/
 
     @Test(groups = {"wso2.am"}, description = "Test creation of API Product with an Advertise only API")
     public void testCreateApiProductWithAdvertiseOnlyApi() throws Exception {
@@ -599,6 +609,17 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         assert APILifeCycleState.PUBLISHED.getState().equals(lifecycleStateDTO.getState());
 
         return restAPIPublisher.getApiProduct(uuid);
+    }
+
+    public List<OperationPolicyDTO> getPolicyList(String policyName, Map<String, Object> attributeMap) {
+
+        List<OperationPolicyDTO> policyList = new ArrayList<>();
+        OperationPolicyDTO policyDTO = new OperationPolicyDTO();
+        policyDTO.setPolicyName(policyName);
+        policyDTO.setParameters(attributeMap);
+        policyList.add(policyDTO);
+
+        return policyList;
     }
 }
 

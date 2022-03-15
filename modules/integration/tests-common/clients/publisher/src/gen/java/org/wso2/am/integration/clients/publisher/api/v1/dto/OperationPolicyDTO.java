@@ -36,13 +36,13 @@ public class OperationPolicyDTO {
         @SerializedName(SERIALIZED_NAME_POLICY_NAME)
             private String policyName;
 
+        public static final String SERIALIZED_NAME_POLICY_VERSION = "policyVersion";
+        @SerializedName(SERIALIZED_NAME_POLICY_VERSION)
+            private String policyVersion = "v1";
+
         public static final String SERIALIZED_NAME_POLICY_ID = "policyId";
         @SerializedName(SERIALIZED_NAME_POLICY_ID)
             private String policyId;
-
-        public static final String SERIALIZED_NAME_ORDER = "order";
-        @SerializedName(SERIALIZED_NAME_ORDER)
-            private Integer order = null;
 
         public static final String SERIALIZED_NAME_PARAMETERS = "parameters";
         @SerializedName(SERIALIZED_NAME_PARAMETERS)
@@ -71,6 +71,29 @@ public class OperationPolicyDTO {
     }
 
 
+        public OperationPolicyDTO policyVersion(String policyVersion) {
+        
+        this.policyVersion = policyVersion;
+        return this;
+        }
+
+    /**
+        * Get policyVersion
+    * @return policyVersion
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getPolicyVersion() {
+        return policyVersion;
+    }
+
+
+    public void setPolicyVersion(String policyVersion) {
+        this.policyVersion = policyVersion;
+    }
+
+
         public OperationPolicyDTO policyId(String policyId) {
         
         this.policyId = policyId;
@@ -91,29 +114,6 @@ public class OperationPolicyDTO {
 
     public void setPolicyId(String policyId) {
         this.policyId = policyId;
-    }
-
-
-        public OperationPolicyDTO order(Integer order) {
-        
-        this.order = order;
-        return this;
-        }
-
-    /**
-        * Get order
-    * @return order
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
-    
-    public Integer getOrder() {
-        return order;
-    }
-
-
-    public void setOrder(Integer order) {
-        this.order = order;
     }
 
 
@@ -150,14 +150,14 @@ public class OperationPolicyDTO {
         }
             OperationPolicyDTO operationPolicy = (OperationPolicyDTO) o;
             return Objects.equals(this.policyName, operationPolicy.policyName) &&
+            Objects.equals(this.policyVersion, operationPolicy.policyVersion) &&
             Objects.equals(this.policyId, operationPolicy.policyId) &&
-            Objects.equals(this.order, operationPolicy.order) &&
             Objects.equals(this.parameters, operationPolicy.parameters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(policyName, policyId, order, parameters);
+        return Objects.hash(policyName, policyVersion, policyId, parameters);
     }
 
 
@@ -166,8 +166,8 @@ public String toString() {
 StringBuilder sb = new StringBuilder();
 sb.append("class OperationPolicyDTO {\n");
     sb.append("    policyName: ").append(toIndentedString(policyName)).append("\n");
+    sb.append("    policyVersion: ").append(toIndentedString(policyVersion)).append("\n");
     sb.append("    policyId: ").append(toIndentedString(policyId)).append("\n");
-    sb.append("    order: ").append(toIndentedString(order)).append("\n");
     sb.append("    parameters: ").append(toIndentedString(parameters)).append("\n");
 sb.append("}");
 return sb.toString();

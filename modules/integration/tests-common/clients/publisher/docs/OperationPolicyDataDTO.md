@@ -14,7 +14,6 @@ Name | Type | Description | Notes
 **applicableFlows** | **List&lt;String&gt;** |  |  [optional]
 **supportedGateways** | **List&lt;String&gt;** |  |  [optional]
 **supportedApiTypes** | **List&lt;String&gt;** |  |  [optional]
-**multipleAllowed** | **Boolean** |  |  [optional]
 **isAPISpecific** | **Boolean** |  |  [optional]
 **md5** | **String** |  |  [optional]
 **policyAttributes** | [**List&lt;OperationPolicySpecAttributeDTO&gt;**](OperationPolicySpecAttributeDTO.md) |  |  [optional]
