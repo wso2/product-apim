@@ -443,6 +443,14 @@
                 <include>**/**.jmx</include>
             </includes>
         </fileSet>
+        <!-- Adding common XMLSchema.xsd file -->
+        <fileSet>
+            <directory>../resources/xsds</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/xsds</outputDirectory>
+            <includes>
+                <include>**/*.xsd</include>
+            </includes>
+        </fileSet>
         <!-- API Templates -->
         <fileSet>
             <directory>../resources/api_templates</directory>
