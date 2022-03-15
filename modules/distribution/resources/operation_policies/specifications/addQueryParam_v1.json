@@ -8,16 +8,16 @@
     {
       "name": "paramKey",
       "displayName": "Parameter Key",
-      "description": "Query parameter's key",
-      "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+      "description": "Query parameter's key (URL encoded format)",
+      "validationRegex": "^([a-zA-Z_\\%][a-zA-Z\\d_\\-\\ \\%]*)$",
       "type": "String",
       "required": true
     },
     {
       "name": "paramValue",
       "displayName": "Parameter Value",
-      "description": "Query parameter's Value",
-      "validationRegex": "^([a-zA-Z\\d_][a-zA-Z\\d_\\-\\ ]*)$",
+      "description": "Query parameter's value (URL encoded format)",
+      "validationRegex": "^([a-zA-Z\\d_\\%][a-zA-Z\\d_\\-\\ \\%]*)$",
       "type": "String",
       "required": true
     }
