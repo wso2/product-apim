@@ -17,7 +17,7 @@
       "name": "headerValue",
       "displayName": "Header Value",
       "description": "Value of the header",
-      "validationRegex": ".*",
+      "validationRegex": "^.+$",
       "type": "String",
       "required": true
     }
