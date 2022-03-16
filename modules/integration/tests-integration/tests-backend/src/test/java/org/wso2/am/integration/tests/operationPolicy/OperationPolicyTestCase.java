@@ -29,6 +29,8 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -42,6 +44,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.apache.http.client.HttpClient;
 
@@ -73,6 +76,21 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
     private String newVersionAPIId;
     private String accessToken;
     private Map<String, String> policyMap;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public OperationPolicyTestCase(TestUserMode userMode) {
+
+        this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
+    }
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
