@@ -550,6 +550,12 @@
         <Observer>org.wso2.carbon.apimgt.impl.observers.SimpleLoggingObserver</Observer>
     </StatusObservers-->
 
+    <!-- Configuration to configure the email recipient field (To/cc/bcc) and delimeter(, or ;)-->
+    <SubscriberContactConfiguration>
+    <EmailRecipientField>{{subscriber.contact.email_recipient_field}}</EmailRecipientField>
+        <EmailAddressDelimiter>{{subscriber.contact.email_address_delimeter}}</EmailAddressDelimiter>
+    </SubscriberContactConfiguration>
+
     <!-- Configuration to enable/disable sending CORS headers in the Gateway response
          and define the Access-Control-Allow-Origin header value.-->
     <CORSConfiguration>
