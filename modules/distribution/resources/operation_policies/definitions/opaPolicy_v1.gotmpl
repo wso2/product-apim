@@ -3,23 +3,23 @@ definition:
   parameters:
     requestGenerator: ""
     serverURL: {{ .serverUrl }}
-    {{- if .accessKey }}
+    {{- if isParamExists . "accessKey" }}
     accessKey: {{ .accessKey }}
     {{- end }}
     policy: {{ .policy }}
     rule: {{ .rule }}
-    {{- if .sendAccessToken }}
+    {{- if isParamExists . "sendAccessToken" }}
     sendAccessToken: {{ .sendAccessToken }}
     {{- end }}
-    {{- if .additionalProperties }}
+    {{- if isParamExists . "additionalProperties" }}
     additionalProperties: {{ .additionalProperties }}
     {{- end }}
-    {{- if .maxOpenConnections }}
+    {{- if isParamExists . "maxOpenConnections" }}
     maxOpenConnections: {{ .maxOpenConnections }}
     {{- end }}
-    {{- if .maxPerRoute }}
+    {{- if isParamExists . "maxPerRoute" }}
     maxPerRoute: {{ .maxPerRoute }}
     {{- end }}
-    {{- if .connectionTimeout }}
+    {{- if isParamExists . "connectionTimeout" }}
     connectionTimeout: {{ .connectionTimeout }}
     {{- end }}
