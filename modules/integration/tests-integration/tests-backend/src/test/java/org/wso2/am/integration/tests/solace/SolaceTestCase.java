@@ -67,12 +67,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class SolaceTestCase extends APIManagerLifecycleBaseTest {
 
     private final Log log = LogFactory.getLog(SolaceTestCase.class);
-    private ServerConfigurationManager serverConfigurationManager;
 
     protected static final int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
@@ -157,16 +158,6 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
                 "New Subscription for API Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
         newSubApplicationId = applicationResponse.getData();
-
-        // Load request/response body
-        String solaceDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "solace"
-                + File.separator + "APIMaintenance.yml";
-
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-               + File.separator + "solace" + File.separator + "deployment.toml"));
-        serverConfigurationManager.restartGracefully();
 
         // Start wiremock server
         startSolaceWiremockServer();
