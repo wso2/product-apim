@@ -52,6 +52,7 @@ import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -71,6 +72,7 @@ import static org.testng.Assert.*;
 public class SolaceTestCase extends APIManagerLifecycleBaseTest {
 
     private final Log log = LogFactory.getLog(SolaceTestCase.class);
+    private ServerConfigurationManager serverConfigurationManager;
 
     protected static final int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
@@ -159,6 +161,13 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         // Load request/response body
         String solaceDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "solace"
                 + File.separator + "APIMaintenance.yml";
+
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "solace" +
+                File.separator + "deployment.toml"));
+        serverConfigurationManager.restartGracefully();
 
         // Start wiremock server
         startSolaceWiremockServer();
