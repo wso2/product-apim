@@ -165,8 +165,7 @@ public class SolaceTestCase extends APIManagerLifecycleBaseTest {
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
 
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "solace" +
-                File.separator + "deployment.toml"));
+               + File.separator + "solace" + File.separator + "deployment.toml"));
         serverConfigurationManager.restartGracefully();
 
         // Start wiremock server
