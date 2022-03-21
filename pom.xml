@@ -1269,9 +1269,9 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.2.40</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.2.41</carbon.analytics.common.version>
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.0.274</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.0.292</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>9.20.49</carbon.apimgt.version>
@@ -1300,7 +1300,7 @@
         <carbon.mediation.version>4.7.126</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.18.245</carbon.identity.version>
+        <carbon.identity.version>5.18.246</carbon.identity.version>
         <carbon.identity.governance.version>1.4.98</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.4.37</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.3.13</carbon.identity.event.handler.notification.version>
@@ -1310,7 +1310,7 @@
         <carbon.identity-user-ws.version>5.4.1</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.7.0</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>6.3.57</carbon.identity-local-auth-basicauth.version>
-        <carbon.identity-outbound-auth-samlsso.version>5.3.18</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.3.34</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.4.14</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.3.25</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>1.0.31</carbon.extension.identity.oauth2.grantType.jwt.version>
@@ -1416,7 +1416,7 @@
 
         <carbon.metrics.version>1.3.12</carbon.metrics.version>
         <!-- MB Features -->
-        <carbon.messaging.version>3.3.23</carbon.messaging.version>
+        <carbon.messaging.version>3.3.24</carbon.messaging.version>
         <carbon.event-processing.version>2.3.1</carbon.event-processing.version>
         <andes.version>3.3.22</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
@@ -1468,12 +1468,12 @@
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.4.2</wso2is.km.version>
-        <okta.keymanager.feature.version>3.0.6</okta.keymanager.feature.version>
-        <keycloak.keymanager.feature.version>2.0.6</keycloak.keymanager.feature.version>
+        <okta.keymanager.feature.version>3.1.0</okta.keymanager.feature.version>
+        <keycloak.keymanager.feature.version>2.1.0</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.4</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.6</pingfederate.keymanager.feature.version>
         <forgerock.keymanager.feature.version>1.1.0</forgerock.keymanager.feature.version>
-        <apim.analytics.publisher.version>1.0.7</apim.analytics.publisher.version>
+        <apim.analytics.publisher.version>1.0.8</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
         <rampart.wso2.version>1.7.0-wso2v1</rampart.wso2.version>

@@ -2,6 +2,6 @@ definition:
   action: REWRITE_RESOURCE_PATH
   parameters:
     resourcePath: {{ .newResourcePath }}
-    {{- if .includeQueryParams }}
+    {{- if isParamExists . "includeQueryParams" }}
     includeQueryParams: {{ .includeQueryParams }}
     {{- end }}
