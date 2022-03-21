@@ -44,6 +44,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRe
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.InvocationStatusCodes;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -598,7 +599,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         return new HttpResponse(content, response.getStatusLine().getStatusCode(), outputHeaders);
     }
 
-    private APIProductDTO publishAPIProduct(String uuid) throws ApiException {
+    private APIProductDTO publishAPIProduct(String uuid) throws ApiException, APIManagerIntegrationTestException {
 
         WorkflowResponseDTO workflowResponseDTO = apiProductTestHelper.changeLifecycleStateOfApiProduct(uuid,
                 "Publish", null);
