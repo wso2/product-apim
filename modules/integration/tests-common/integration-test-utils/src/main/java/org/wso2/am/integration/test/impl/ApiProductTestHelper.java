@@ -18,32 +18,19 @@
 
 package org.wso2.am.integration.test.impl;
 
-import org.apache.synapse.unittest.testcase.data.classes.AssertNotNull;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductBusinessInformationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ProductAPIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.APITiersDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ScopeInfoDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.*;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -91,7 +78,7 @@ public class ApiProductTestHelper {
     }
 
     public WorkflowResponseDTO changeLifecycleStateOfApiProduct(String apiProductId, String action,
-                                                                String lifecycleChecklist) throws ApiException {
+                                                                String lifecycleChecklist) throws ApiException, APIManagerIntegrationTestException {
 
         WorkflowResponseDTO workflowResponseDTO = restAPIPublisher.changeAPIProductLifeCycleStatus(apiProductId, action,
                 lifecycleChecklist);
