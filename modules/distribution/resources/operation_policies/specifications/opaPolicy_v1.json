@@ -2,7 +2,7 @@
   "category": "Security",
   "name": "opaPolicy",
   "version": "v1",
-  "displayName": "Validate Request with OPA Policy",
+  "displayName": "Validate Request with OPA",
   "description": "This policy allows you to validate requests based on the response from OPA policy engine. The Open Policy Agent is an open source, general-purpose policy engine that unifies policy enforcement across different technologies and systems. Before applying the policy, please make sure that the OPA policy engine is configured properly. Once a gateway receives a request, gateway will extract a predefined set of meta-data from the request and query OPA via HTTP/HTTPS. OPA Policy engine will evaluate the request meta-data against the configured policy and return it's validation response.Based on the response, gateway will allow or block the request.",
   "policyAttributes": [
     {
