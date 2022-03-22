@@ -8,7 +8,7 @@
     {
       "name": "serverUrl",
       "displayName": "OPA server URL",
-      "description": "OPA server's URL. This can be an HTTP or HTTPS endpoint. If you are using a HTTPS endpoint, make sure the relevant certificates are added to the trust-store.",
+      "description": "OPA server's URL. Sample URL: https://opa-server-host:8181/v1/data. This can be an HTTP or HTTPS endpoint. If you are using a HTTPS endpoint, make sure the relevant certificates are added to the trust-store.",
       "validationRegex": "([\\w+]+\\:\/\/)?([\\w\\d-]+\\.)*[\\w-]+[\\.\\:]?\\w+([\/\\?\\=\\&\\#\\.]?[\\w-]+)*\/?",
       "type": "String",
       "required": true
