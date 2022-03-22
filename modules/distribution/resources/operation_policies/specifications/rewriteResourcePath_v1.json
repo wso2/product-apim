@@ -15,10 +15,11 @@
     },
     {
       "name": "includeQueryParams",
-      "displayName": "Include Query Parameters?",
+      "displayName": "Include Query Parameters",
       "description": "Select whether to include exiting query params to the new resource path",
       "validationRegex": "^(true|false)$",
       "type": "Boolean",
+      "defaultValue": true,
       "required": false
     }
   ],

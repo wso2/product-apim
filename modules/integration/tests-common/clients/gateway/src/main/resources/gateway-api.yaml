@@ -3,7 +3,7 @@ swagger: '2.0'
 # Prolog
 ######################################################
 info:
-  version: "v2"
+  version: "v2.1"
   title: "WSO2 API Manager - Gateway"
   description: |
     This document specifies a **RESTful API** for WSO2 **API Manager** - Gateway.
@@ -133,6 +133,35 @@ paths:
           - lang: Curl
             source: 'curl -k -X POST "https://127.0.0.1:9443/api/am/gateway/v2/undeploy-api?apiName=PizzaAPI&version=1.0&tenantDomain=registry.com\"
             -H "Authorization: Basic YWRtaW46YWRtaW4="'
+
+  /server-startup-healthcheck:
+    get:
+      summary: |
+        Health check to check if all the API are deployed during the server startup
+      description: |
+        Health check to check if all the API are deployed during the server startup
+      responses:
+        200:
+          description: |
+            OK.
+          content:
+            text/plain:
+              schema:
+                type: "string"
+                default: "OK"
+        500:
+          description: |
+            Internal Server Error.
+          content:
+            text/plain:
+              schema:
+                type: "string"
+                default: "Internal Server Error."
+      security:
+        - OAuth2Security: []
+      x-code-samples:
+        - lang: Curl
+          source: curl -k "https://localhost:9443/api/am/gateway/v2/server-startup-healthcheck"
 
   /api-artifact:
 
@@ -458,7 +487,7 @@ paths:
         200:
           description: |
             OK.
-            End-points successfully retrieved from the storage for the API.
+            Subscriptions successfully retrieved from the storage.
           schema:
             $ref: '#/definitions/Subscription'
         400:
@@ -703,6 +732,10 @@ definitions:
         type: boolean
         description: Whether this is the default version of the API.
         example: false
+      status:
+        type: string
+        description: Status of API.
+        example: "Published"
       urlMappings:
         type: array
         items:
@@ -855,6 +888,10 @@ definitions:
         type: boolean
         description: Whether this is the default version of the API.
         example: false
+      status:
+        type: string
+        description: Status of API.
+        example: "Published"
 
   #-----------------------------------------------------
   # The Application List resource
