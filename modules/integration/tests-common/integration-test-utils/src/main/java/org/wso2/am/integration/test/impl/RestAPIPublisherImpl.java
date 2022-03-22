@@ -2493,7 +2493,7 @@ public class RestAPIPublisherImpl {
             APIInfoDTO apiInfo = restAPIGateway.getAPIInfo(apiId);
             if (apiInfo != null) {
                 if (!StringUtils.equalsIgnoreCase(Constants.BLOCKED, apiInfo.getStatus())) {
-                    log.info("API " + apiId + " not Blocked waiting for 500ms");
+                    log.info("API " + apiId + " not Blocked. Waiting for 500ms");
                     int retries = 0;
                     while (retries <= 20) {
                         try {
@@ -2501,11 +2501,11 @@ public class RestAPIPublisherImpl {
                         } catch (InterruptedException ignored) {
                         }
                         apiInfo = restAPIGateway.getAPIInfo(apiId);
-                        if (!StringUtils.equals(Constants.BLOCKED, apiInfo.getStatus())) {
-                            log.info("API " + apiId + " not Blocked waiting for 500ms");
+                        if (!StringUtils.equalsIgnoreCase(Constants.BLOCKED, apiInfo.getStatus())) {
+                            log.info("API " + apiId + " not Blocked. Waiting for 500ms");
                             retries++;
                         } else {
-                            log.info("API " + apiId + "Blocked.");
+                            log.info("API " + apiId + " Blocked.");
                             break;
                         }
                     }
