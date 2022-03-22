@@ -1043,12 +1043,6 @@
                 <artifactId>jaxb-api</artifactId>
                 <version>${version.org.wso2.orbit.javax.xml.bind}</version>
             </dependency>
-            <!-- Forget-me tool -->
-            <dependency>
-                <groupId>org.wso2.carbon.privacy</groupId>
-                <artifactId>org.wso2.carbon.privacy.forgetme.tool</artifactId>
-                <version>${forgetme.tool.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>
                 <artifactId>org.wso2.carbon.identity.oauth</artifactId>

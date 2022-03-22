@@ -92,14 +92,6 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target</outputDirectory>
                                 </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon.privacy</groupId>
-                                    <artifactId>org.wso2.carbon.privacy.forgetme.tool</artifactId>
-                                    <version>${forgetme.tool.version}</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target/forget-me</outputDirectory>
-                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
