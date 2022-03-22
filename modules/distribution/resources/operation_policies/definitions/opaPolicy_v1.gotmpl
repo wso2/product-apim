@@ -16,9 +16,7 @@ definition:
     {{- end }}
     {{- if isParamExists . "maxOpenConnections" }}
     maxOpenConnections: {{ .maxOpenConnections }}
-    {{- end }}
-    {{- if isParamExists . "maxPerRoute" }}
-    maxPerRoute: {{ .maxPerRoute }}
+    maxPerRoute: {{ .maxOpenConnections }}
     {{- end }}
     {{- if isParamExists . "connectionTimeout" }}
     connectionTimeout: {{ .connectionTimeout }}

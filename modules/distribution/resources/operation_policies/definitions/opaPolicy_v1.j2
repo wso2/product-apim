@@ -1,6 +1,6 @@
 <opa>
    <serverUrl>{{serverUrl}}</serverUrl>
-   {% if accessToken %}
+   {% if accessKey %}
    <accessKey>{{accessKey}}</accessKey>
    {% endif %}
    <policy>{{policy}}</policy>
@@ -12,9 +12,7 @@
       {% endif %}
       {% if maxOpenConnections %}
       <parameter name="maxOpenConnections">{{maxOpenConnections}}</parameter>
-      {% endif %}
-      {% if maxPerRoute %}
-      <parameter name="maxPerRoute">{{maxPerRoute}}</parameter>
+      <parameter name="maxPerRoute">{{maxOpenConnections}}</parameter>
       {% endif %}
       {% if connectionTimeout %}
       <parameter name="connectionTimeout">{{connectionTimeout}}</parameter>
