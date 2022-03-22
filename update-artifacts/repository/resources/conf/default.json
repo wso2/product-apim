@@ -571,6 +571,7 @@
   "apim.cors.allow_methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
   "apim.cors.allow_headers": "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction",
   "apim.cors.allow_credentials": false,
+  "apim.cors.enable_validation_for_ws": "false",
   "apim.throttling.username": "$ref{super_admin.username}",
   "apim.throttling.password": "$ref{super_admin.password}",
   "apim.throttling.enable_advanced_throttling": "true",

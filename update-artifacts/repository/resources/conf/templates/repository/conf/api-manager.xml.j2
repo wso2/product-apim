@@ -581,6 +581,10 @@
         <!-- Specifying this header to true means that the server allows cookies (or other user credentials) to be included on cross-origin requests.
              It is false by default and if you set it to true then make sure that the Access-Control-Allow-Origin header does not contain the wildcard (*) -->
         <Access-Control-Allow-Credentials>{{apim.cors.allow_credentials}}</Access-Control-Allow-Credentials>
+        <!-- Configuration to enable/disable CORS validation for WebSocket APIs. If enabled (true), the 'Origin' header
+             will be validated for CORS in the handshake of Webscoket API invocations. Else (false), no CORS validation will
+             take place with 'Origin' header -->
+        <EnableValidationForWS>{{apim.cors.enable_validation_for_ws}}</EnableValidationForWS>
     </CORSConfiguration>
 
     <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.
