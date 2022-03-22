@@ -85,7 +85,7 @@ under the License.
                         <version>3.0.0-M5</version>
                         <inherited>false</inherited>
                         <configuration>
-                            <argLine>-Xmx2048m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
+                            <argLine>-Xmx2048m</argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -205,7 +205,7 @@ under the License.
                         <inherited>false</inherited>
                         <version>2.22.1</version>
                         <configuration>
-                            <argLine>-Xmx2048m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
+                            <argLine>-Xmx2048m</argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -303,7 +303,7 @@ under the License.
                         <inherited>false</inherited>
                         <version>2.22.1</version>
                         <configuration>
-                            <argLine>-Xmx2048m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
+                            <argLine>-Xmx2048m</argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -547,16 +547,28 @@ under the License.
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.ops4j.pax.logging</groupId>
+                    <groupId>org.wso2.org.ops4j.pax.logging</groupId>
                     <artifactId>pax-logging-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.ops4j.pax.logging</groupId>
+                    <artifactId>pax-logging-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wso2.org.ops4j.pax.logging</groupId>
                     <artifactId>pax-logging-log4j2</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
                     <artifactId>log4j-slf4j-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -796,6 +808,10 @@ under the License.
             <version>5.19.48</version>
             <scope>test</scope>
             <exclusions>
+                <exclusion>
+                    <groupId>org.wso2.org.ops4j.pax.logging</groupId>
+                    <artifactId>pax-logging-api</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.ops4j.pax.logging</groupId>
                     <artifactId>pax-logging-api</artifactId>
