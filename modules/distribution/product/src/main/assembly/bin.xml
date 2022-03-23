@@ -311,74 +311,6 @@
         </fileSet>
         <fileSet>
             <directory>
-                ../resources/migration-1.0.0_to_1.2.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.0.0_to_1.2.0</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>
-                ../resources/migration-1.2.0_to_1.3.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.2.0_to_1.3.0</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>
-                ../resources/migration-1.3.0_to_1.4.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.3.0_to_1.4.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../resources/migration-1.4.0_to_1.5.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.4.0_to_1.5.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../resources/migration-1.5.0_to_1.6.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.5.0_to_1.6.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../resources/migration-1.6.0_to_1.7.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.6.0_to_1.7.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../resources/migration-1.7.0_to_1.8.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.7.0_to_1.8.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../resources/migration-1.8.0_to_1.9.0/readme/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.8.0_to_1.9.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../statistics/target/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/stat/migration-1.9.0_to_1.10.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin-old/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin-old</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/publisher/
             </directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher
@@ -427,22 +359,6 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/resources/rxts</outputDirectory>
             <includes>
                 <include>*.rxt</include>
-            </includes>
-        </fileSet>
-        <!-- Jmeter Intergration Tests -->
-        <fileSet>
-            <directory>../../integration/tests/src/test/resources/artifacts/AM/scripts</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/scripts</outputDirectory>
-            <includes>
-                <include>**/**.jmx</include>
-            </includes>
-        </fileSet>
-        <!-- Sample Jmeter scripts for Tenant Creation -->
-        <fileSet>
-            <directory>../resources/scripts/tenant_Creation</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/scripts/tenantCreation</outputDirectory>
-            <includes>
-                <include>**/**.jmx</include>
             </includes>
         </fileSet>
         <!-- Adding common XMLSchema.xsd file -->
@@ -509,13 +425,6 @@
             </excludes>
         </fileSet>
 
-        <fileSet>
-            <directory>src/main/business-processes</directory>
-            <outputDirectory>wso2am-${pom.version}/business-processes</outputDirectory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-        </fileSet>
 
         <fileSet>
             <directory>src/main/statistics/target</directory>
