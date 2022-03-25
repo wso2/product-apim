@@ -32,12 +32,12 @@ jobs:
       with:
         node-version: '10.x'
     - name: Build product-apim without Test.
-      run: mvn clean install --file pom.xml -Dmaven.test.skip=true
+      run: mvn clean install --file pom.xml -DskipTests=true
     - name: Archive testng report
       if: always()
       uses: actions/upload-artifact@v2
       with:
-        name: wso2am-*.zip
+        name: "wso2am-*.zip"
         path: |
-          /home/runner/work/product-apim/product-apim/modules/distribution/product/target/wso2am-*.zip
+          "/home/runner/work/product-apim/product-apim/modules/distribution/product/target/wso2am-*.zip"
         if-no-files-found: warn
