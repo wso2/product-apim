@@ -165,10 +165,8 @@ public class MultipleWebSubSubcriptionTestCase extends APIMIntegrationBaseTest {
     public void testPublishWebSubApi() throws Exception {
         provider = user.getUserName();
 
-        URI endpointUri = new URI("http://" + serverHost + ":" + callbackReceiverPort1 + "/receiver");
-
         //Create the api creation request object
-        apiRequest = new APIRequest(apiName, apiContext, endpointUri, endpointUri);
+        apiRequest = new APIRequest(apiName, apiContext);
         apiRequest.setVersion(apiVersion);
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.ASYNC_WH_UNLIMITED);
         apiRequest.setProvider(provider);
