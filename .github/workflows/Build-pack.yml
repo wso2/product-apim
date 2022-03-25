@@ -1,0 +1,43 @@
+name: APIM Pack Builder
+
+on:
+  workflow_dispatch:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run hostname
+      run: hostname
+    - name: Fix host entry
+      run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
+    - name: Show hosts
+      run: cat /etc/hosts
+    - name: Checkout master
+      uses: actions/checkout@v2
+    - name: Cache Maven packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2
+        restore-keys: ${{ runner.os }}-m2
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v2
+      with:
+        java-version: 8.0.282+8
+        distribution: 'adopt'
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '10.x'
+    - name: Build product-apim without Test.
+      run: mvn clean install --file pom.xml -Dmaven.test.skip=true
+    - name: Archive testng report
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: wso2am-*.zip
+        path: |
+          /home/runner/work/product-apim/product-apim/modules/distribution/product/target/wso2am-*.zip
+        if-no-files-found: warn
