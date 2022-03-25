@@ -1,4 +1,4 @@
-name: APIM builder
+name: APIM Pack Builder
 
 on:
   workflow_dispatch:
