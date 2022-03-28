@@ -218,6 +218,8 @@ set CMD_LINE_ARGS=%CMD_LINE_ARGS% -Dorg.apache.jasper.runtime.BodyContentImpl.LI
 set CMD_LINE_ARGS=%CMD_LINE_ARGS% -Dorg.terracotta.quartz.skipUpdateCheck=true -Dcarbon.classpath=%CARBON_CLASSPATH% -Dfile.encoding=UTF8 -DworkerNode=false -Dcarbon.new.config.dir.path="%CARBON_HOME%\repository\resources\conf"
 set CMD_LINE_ARGS=%CMD_LINE_ARGS% -Djava.endorsed.dirs=%JAVA_ENDORSED% -Dorg.opensaml.httpclient.https.disableHostnameVerification=true -Dhttpclient.hostnameVerifier="DefaultAndLocalhost"
 set CMD_LINE_ARGS=%CMD_LINE_ARGS% -Dlog4j2.contextSelector="org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
+set CMD_LINE_ARGS=%CMD_LINE_ARGS% -Dorg.ops4j.pax.logging.logReaderEnabled="false"
+set CMD_LINE_ARGS=%CMD_LINE_ARGS% -Dorg.ops4j.pax.logging.eventAdminEnabled="false"
 
 :runJava
 echo JAVA_HOME environment variable is set to %JAVA_HOME%

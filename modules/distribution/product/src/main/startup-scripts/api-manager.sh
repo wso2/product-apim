@@ -354,6 +354,8 @@ do
     -Dcarbon.new.config.dir.path="$CARBON_HOME/repository/resources/conf" \
     -Djavax.xml.xpath.XPathFactory:http://java.sun.com/jaxp/xpath/dom=net.sf.saxon.xpath.XPathFactoryImpl \
     -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector \
+    -Dorg.ops4j.pax.logging.logReaderEnabled=false \
+    -Dorg.ops4j.pax.logging.eventAdminEnabled=false \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?
 done
