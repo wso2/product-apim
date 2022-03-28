@@ -19,6 +19,8 @@ package org.wso2.am.integration.test.impl;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -122,6 +124,7 @@ import static org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO.Subscr
  * This util class performs the actions related to APIDTOobjects.
  */
 public class RestAPIPublisherImpl {
+    private static final Log log = LogFactory.getLog(RestAPIPublisherImpl.class);
 
     public static final String appName = "Integration_Test_App_Publisher";
     public static final String callBackURL = "test.com";
@@ -412,7 +415,7 @@ public class RestAPIPublisherImpl {
      *               return ApiResponse<WorkflowResponseDTO> change response.
      * @throws ApiException throws if an error occurred when publishing the API.
      */
-    public HttpResponse changeAPILifeCycleStatus(String apiId, String action, String lifecycleChecklist) throws ApiException {
+    public HttpResponse changeAPILifeCycleStatus(String apiId, String action, String lifecycleChecklist) throws ApiException, APIManagerIntegrationTestException {
 
         setActivityID();
         WorkflowResponseDTO workflowResponseDTO = this.apiLifecycleApi
@@ -421,14 +424,16 @@ public class RestAPIPublisherImpl {
         if (StringUtils.isNotEmpty(workflowResponseDTO.getLifecycleState().getState())) {
             response = new HttpResponse(workflowResponseDTO.getLifecycleState().getState(), 200);
         }
+        waitUntilStatusToBlock(apiId, action);
         return response;
     }
 
-    public WorkflowResponseDTO changeAPILifeCycleStatus(String apiId, String action) throws ApiException {
+    public WorkflowResponseDTO changeAPILifeCycleStatus(String apiId, String action) throws ApiException, APIManagerIntegrationTestException {
 
         ApiResponse<WorkflowResponseDTO> workflowResponseDTOApiResponse =
                 this.apiLifecycleApi.changeAPILifecycleWithHttpInfo(action, apiId, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, workflowResponseDTOApiResponse.getStatusCode());
+        waitUntilStatusToBlock(apiId, action);
         return workflowResponseDTOApiResponse.getData();
     }
 
@@ -2272,11 +2277,13 @@ public class RestAPIPublisherImpl {
      * @throws ApiException If error when changing the lifecycle state of api product
      */
     public WorkflowResponseDTO changeAPIProductLifeCycleStatus(String apiProductId, String action, String lifecycleChecklist)
-            throws ApiException {
+            throws ApiException, APIManagerIntegrationTestException {
 
         setActivityID();
-        return this.productLifecycleApi
+        WorkflowResponseDTO workflowResponseDTO = productLifecycleApi
                 .changeAPIProductLifecycle(action, apiProductId, lifecycleChecklist, null);
+        waitUntilStatusToBlock(apiProductId, action);
+        return workflowResponseDTO;
     }
 
     /**
@@ -2478,5 +2485,33 @@ public class RestAPIPublisherImpl {
             policyMap.put(policyDataDTO.getName(), policyDataDTO.getId());
         }
         return policyMap;
+    }
+
+    private void waitUntilStatusToBlock(String apiId, String action) throws APIManagerIntegrationTestException {
+        if (Constants.BLOCK.equals(action)) {
+            log.info("Wait until " + apiId + " to be Blocked");
+            APIInfoDTO apiInfo = restAPIGateway.getAPIInfo(apiId);
+            if (apiInfo != null) {
+                if (!StringUtils.equalsIgnoreCase(Constants.BLOCKED, apiInfo.getStatus())) {
+                    log.info("API " + apiId + " not Blocked. Waiting for 500ms");
+                    int retries = 0;
+                    while (retries <= 20) {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException ignored) {
+                        }
+                        apiInfo = restAPIGateway.getAPIInfo(apiId);
+                        if (!StringUtils.equalsIgnoreCase(Constants.BLOCKED, apiInfo.getStatus())) {
+                            log.info("API " + apiId + " not Blocked. Waiting for 500ms");
+                            retries++;
+                        } else {
+                            log.info("API " + apiId + " Blocked.");
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }

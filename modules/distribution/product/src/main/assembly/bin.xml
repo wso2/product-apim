@@ -127,6 +127,7 @@
                 <exclude>**/repository/components/plugins/wsdl4j_1.6.2.wso2v4.jar</exclude>
                 <exclude>**/repository/components/plugins/org.antlr.antlr4-runtime-osgi_4.5.0.jar</exclude>
                 <exclude>**/repository/components/plugins/org.objectweb.asm_5.2.0.jar</exclude>
+                <exclude>**/repository/components/plugins/httpcore_4.4.14.wso2v1.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/org.wso2.carbon.tenant.redirector.servlet*.jar</exclude>-->
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
@@ -311,74 +312,6 @@
         </fileSet>
         <fileSet>
             <directory>
-                ../resources/migration-1.0.0_to_1.2.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.0.0_to_1.2.0</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>
-                ../resources/migration-1.2.0_to_1.3.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.2.0_to_1.3.0</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>
-                ../resources/migration-1.3.0_to_1.4.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.3.0_to_1.4.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../resources/migration-1.4.0_to_1.5.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.4.0_to_1.5.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../resources/migration-1.5.0_to_1.6.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.5.0_to_1.6.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../resources/migration-1.6.0_to_1.7.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.6.0_to_1.7.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../resources/migration-1.7.0_to_1.8.0/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.7.0_to_1.8.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../resources/migration-1.8.0_to_1.9.0/readme/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.8.0_to_1.9.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../statistics/target/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/stat/migration-1.9.0_to_1.10.0</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin-old/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin-old</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/publisher/
             </directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher
@@ -427,22 +360,6 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/resources/rxts</outputDirectory>
             <includes>
                 <include>*.rxt</include>
-            </includes>
-        </fileSet>
-        <!-- Jmeter Intergration Tests -->
-        <fileSet>
-            <directory>../../integration/tests/src/test/resources/artifacts/AM/scripts</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/scripts</outputDirectory>
-            <includes>
-                <include>**/**.jmx</include>
-            </includes>
-        </fileSet>
-        <!-- Sample Jmeter scripts for Tenant Creation -->
-        <fileSet>
-            <directory>../resources/scripts/tenant_Creation</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/scripts/tenantCreation</outputDirectory>
-            <includes>
-                <include>**/**.jmx</include>
             </includes>
         </fileSet>
         <!-- Adding common XMLSchema.xsd file -->
@@ -509,13 +426,6 @@
             </excludes>
         </fileSet>
 
-        <fileSet>
-            <directory>src/main/business-processes</directory>
-            <outputDirectory>wso2am-${pom.version}/business-processes</outputDirectory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-        </fileSet>
 
         <fileSet>
             <directory>src/main/statistics/target</directory>
@@ -1017,29 +927,6 @@
             <includes>
                 <include>**/*.jar</include>
             </includes>
-        </fileSet>
-
-        <!-- Copying forget me tool -->
-        <fileSet>
-            <directory>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me</outputDirectory>
-            <excludes>
-                <exclude>**/forgetme.sh</exclude>
-                <exclude>**/forgetme.bat</exclude>
-                <exclude>**/conf/sql/identity/idn-oauth-consumer-apps.sql</exclude>
-                <exclude>**/conf/sql/identity/sp-app.sql</exclude>
-                <exclude>**/conf/sql/identity/um-system-user.sql</exclude>
-                <exclude>**/conf/sql/identity/um-system-user.sql.properties</exclude>
-            </excludes>
-            <includes>
-                <include>**/lib/**</include>
-                <include>**/conf/log-config/apim-patterns.xml</include>
-                <include>**/conf/sql/apim/**</include>
-                <include>**/conf/sql/identity/**</include>
-                <include>**/conf/datasources/sample-apim-datasources.xml</include>
-                <include>**/conf/datasources/sample-um-datasources.xml</include>
-            </includes>
-            <fileMode>644</fileMode>
         </fileSet>
 
         <!--Copying the relevant XSD for API RXT with micro-gateway labels-->
@@ -1691,50 +1578,6 @@
             <fileMode>644</fileMode>
         </file>
 
-        <!-- Copying files related to forget me tool -->
-        <file>
-            <source>src/main/bin/forgetme/forgetme.sh</source>
-            <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
-            <fileMode>744</fileMode>
-        </file>
-        <file>
-            <source>src/main/bin/forgetme/forgetme.bat</source>
-            <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
-            <fileMode>744</fileMode>
-        </file>
-        <file>
-            <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/bin/forgetme.sh</source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me/bin/</outputDirectory>
-            <fileMode>744</fileMode>
-        </file>
-
-        <file>
-            <source>target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/bin/forgetme.bat</source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me/bin/</outputDirectory>
-            <fileMode>744</fileMode>
-        </file>
-        <file>
-            <source>
-                target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/conf/sql/identity/um-system-user.sql
-            </source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me/conf/sql/um/</outputDirectory>
-            <fileMode>644</fileMode>
-        </file>
-        <file>
-            <source>
-                target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/conf/sql/identity/um-system-user.sql.properties
-            </source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me/conf/sql/um/</outputDirectory>
-            <fileMode>644</fileMode>
-        </file>
-        <file>
-            <source>
-                target/forget-me/identity-anonymization-tool-${forgetme.tool.version}/conf/product-config/config-apim.json
-            </source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/tools/forget-me/conf/</outputDirectory>
-            <destName>config.json</destName>
-            <fileMode>744</fileMode>
-        </file>
         <!--Add trust store-->
         <file>
             <source>src/main/resources/client-truststore.jks</source>
