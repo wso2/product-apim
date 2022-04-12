@@ -21,6 +21,9 @@ package org.wso2.am.integration.tests.websocket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
@@ -60,6 +63,7 @@ import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
@@ -77,6 +81,8 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -117,8 +123,11 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private String wsRequestEventPublisherSource = "WS_Req_Logger.xml";
     private String wsThrottleOutEventPublisherSource = "WS_Throttle_Out_Logger.xml";
     private String websocketAPIID;
+    private final String originHeaderName = "http://global.config1.com";
     String appId;
     String appJWTId;
+    ApplicationKeyDTO applicationKeyDTO;
+    long throttleMarkTime = 0;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPITestCase(TestUserMode userMode) {
@@ -222,7 +231,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
+        applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
         String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
@@ -230,8 +239,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, tokenJti, AUTH_IN.HEADER);
-            invokeAPI(client, tokenJti, AUTH_IN.QUERY);
+            invokeAPI(client, tokenJti, AUTH_IN.HEADER, null);
+            invokeAPI(client, tokenJti, AUTH_IN.QUERY, null);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -257,15 +266,13 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appJWTId, "3600", null,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
         //consumerKey = applicationKeyDTO.getConsumerKey();
         //consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, accessToken, AUTH_IN.HEADER);
-            invokeAPI(client, accessToken, AUTH_IN.QUERY);
+            invokeAPI(client, accessToken, AUTH_IN.HEADER, null);
+            invokeAPI(client, accessToken, AUTH_IN.QUERY, null);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -352,21 +359,98 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
         String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
         testThrottling(tokenJti);
+        throttleMarkTime =  System.currentTimeMillis();
     }
 
     @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebSocketAPIThrottling")
     public void testWebSocketAPIInvalidTokenInvocation() throws Exception {
-
+        while ( System.currentTimeMillis() < throttleMarkTime + 60000) {
+            Thread.sleep(5000L);
+        }
         WebSocketClient client = new WebSocketClient();
+        boolean apiInvocationFailed = false;
         try {
-            invokeAPI(client, "00000000-0000-0000-0000-000000000000", AUTH_IN.HEADER);
+            invokeAPI(client, "00000000-0000-0000-0000-000000000000", AUTH_IN.HEADER, null);
         } catch (APIManagerIntegrationTestException e) {
             log.error("Exception in connecting to server", e);
+            apiInvocationFailed = true;
             assertTrue(true, "Client cannot connect to server");
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
         } finally {
+            if (!apiInvocationFailed) {
+                Assert.fail("WS API was invoked with invalid token");
+            }
+            client.stop();
+        }
+    }
+
+    /**
+      *  Test CORS origin header validation for Websocket API invocations.
+      *  This test is added for the fix of https://github.com/wso2/product-apim/issues/12414
+      *  Note: This test is better to be executed as the final test as the default deployment.toml configurations are
+      *  changed for this test.
+      *  Added configs:
+      *      [apim.cors]
+      *          allow_origins = ["http://global.config1.com", "http://global.config2.com", "http://global.config3.com"]
+      *          enable_validation_for_ws = true
+     */
+    @Test(description = "Test CORS origin header validation for Websocket API invocations", dependsOnMethods = "testWebSocketAPIInvalidTokenInvocation")
+    public void testWebsocketAPICORSValidation() throws Exception {
+        // Set the configurations
+        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                TestUserMode.SUPER_TENANT_ADMIN);
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "webSocketTest" + File.separator
+                + "corsValidationEnabledTests" + File.separator + "deployment.toml"));
+        serverConfigurationManager.restartGracefully();
+
+        // Generate access token
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appJWTId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+
+        WebSocketClient client = new WebSocketClient();
+
+        // Invoke API with 'Origin' header which is configured in deployement.toml
+        HttpHeaders headers1 = new DefaultHttpHeaders();
+        headers1.add(HttpHeaderNames.ORIGIN, originHeaderName);
+        while ( System.currentTimeMillis() < throttleMarkTime + 60000) {
+            Thread.sleep(5000L);
+        }
+
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.HEADER, headers1);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+
+        // Invoke API without 'Origin' header
+        HttpHeaders headers2 = new DefaultHttpHeaders();
+        boolean apiInvocationFailed = false;
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.HEADER, headers2);
+        } catch (APIManagerIntegrationTestException e) {
+            log.error("Exception in connecting to server", e);
+            apiInvocationFailed = true;
+            assertTrue(true, "Websocket handshake failed as expected");
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            if (!apiInvocationFailed) {
+                Assert.fail("CORS origin header validation has not been successful");
+            }
             client.stop();
         }
     }
@@ -481,7 +565,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      * @param in location of the Auth header. {@code query} or {@code header}
      * @throws Exception If an error occurs while invoking WebSocket API
      */
-    private void invokeAPI(WebSocketClient client, String accessToken, AUTH_IN in) throws Exception {
+    private void invokeAPI(WebSocketClient client, String accessToken, AUTH_IN in, HttpHeaders optionalRequestHeaders) throws Exception {
 
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
@@ -495,10 +579,19 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             echoUri = new URI(apiEndPoint + "?access_token=" + accessToken);
         }
 
+        if (optionalRequestHeaders != null) {
+            for (Map.Entry<String, String> headerEntry : optionalRequestHeaders.entries()) {
+                request.setHeader(headerEntry.getKey(), headerEntry.getValue());
+            }
+        }
+
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             socket.sendMessage(testMessage);
             waitForReply(socket);
+            if (StringUtils.isEmpty(socket.getResponseMessage())) {
+                throw new APIManagerIntegrationTestException("Unable to create client connection");
+            }
             assertEquals(StringUtils.isEmpty(socket.getResponseMessage()), false,
                     "Client did not receive response from server");
             assertEquals(socket.getResponseMessage(), testMessage.toUpperCase(),
