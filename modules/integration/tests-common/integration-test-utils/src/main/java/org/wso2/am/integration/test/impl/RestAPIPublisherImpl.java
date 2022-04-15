@@ -1367,4 +1367,8 @@ public class RestAPIPublisherImpl {
     public ApiResponse<Void> deleteEndpointCertificate(String alias) throws ApiException {
         return endpointCertificatesApi.endpointCertificatesAliasDeleteWithHttpInfo(alias);
     }
+
+    public void blockSubscription(String subscriptionId, String blockState, String ifMatch) throws ApiException {
+        subscriptionsApi.subscriptionsBlockSubscriptionPost(subscriptionId, blockState, ifMatch);
+    }
 }
