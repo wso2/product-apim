@@ -3,6 +3,8 @@ package org.wso2.am.integration.test;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
 import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
@@ -32,6 +34,7 @@ import static org.wso2.am.integration.test.Constants.CHAR_AT;
 
 public class ClientAuthenticator {
 
+    private static final Log log = LogFactory.getLog(ClientAuthenticator.class);
     public static final double JAVA_VERSION;
     private static TrustManager trustAll;
     private static String consumerKey = null;
@@ -162,6 +165,7 @@ public class ClientAuthenticator {
                 String responseStr = getResponseString(urlConn.getInputStream());
                 ApplicationKeyBean applicationKeyBean = new ApplicationKeyBean();
                 JsonParser parser = new JsonParser();
+                log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DCR Response= " + responseStr);
                 JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
                 applicationKeyBean.setConsumerKey(jObj.getAsJsonPrimitive("clientId").getAsString());
                 applicationKeyBean.setConsumerSecret(jObj.getAsJsonPrimitive("clientSecret").getAsString());
