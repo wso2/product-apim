@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-- name: '📚 Documentation Issue'
-  about: If Something is missing in the project or official documentation.
-  url: https://github.com/wso2/docs-apim/issues/new/choose
+- name: '📚 Create an Issue'
+  about: Create an issue if something does not work as expected or suggest new functionality/improvements to the poduct suite.
+  url: https://github.com/wso2/api-manager/issues/new/choose
 - name: '💬 Slack Channel'
   url: 'https://apim-slack.wso2.com/'
   about: |
