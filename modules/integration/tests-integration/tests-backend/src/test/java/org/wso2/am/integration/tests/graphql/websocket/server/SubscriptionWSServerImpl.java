@@ -54,7 +54,7 @@ public class SubscriptionWSServerImpl {
                         String messageId = (String) clientMessage.get("id");
                         if ("2".equals(messageId)) {
                             isThrottleInitRequest = true;
-                            for (int i = 1; i < 5; i++) {
+                            for (int i = 1; i < 4; i++) {
                                 response = "{\"type\":\"data\",\"id\":\"2\",\"payload\":{\"data\":"
                                         + "{\"liftStatusChange\":{\"name\":\"Astra Express\"}}}}";
                                 Thread.sleep(1000L);
