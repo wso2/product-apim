@@ -1,0 +1,44 @@
+<!--
+~ Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+~
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~
+~ http://www.apache.org/licenses/LICENSE-2.0
+~
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+ -->
+<handlers xmlns:svns="http://org.wso2.securevault/configuration">
+{% for handler_key in enabled_global_handlers %}
+    {% if handler_key == "default_api_handler" and apim.global_handlers.properties.skip_default_api_handler is defined %}
+        {% if not apim.global_handlers.properties.skip_default_api_handler %}
+            <handler name="{{synapse_handlers[handler_key].name}}" class="{{synapse_handlers[handler_key].class}}"/>
+        {% endif %}
+    {% else %}
+        <handler name="{{synapse_handlers[handler_key].name}}" class="{{synapse_handlers[handler_key].class}}"/>
+    {% endif %}
+{% endfor %}
+{% if apim.transport_headers is defined %}
+{% if apim.transport_headers.enable %}
+    <handler name="TransportHeaderHandler" class="org.wso2.carbon.apimgt.gateway.handlers.common.TransportHeaderHandler">
+    {% if apim.transport_headers.removeRequestHeaders is defined %}
+        <parameter name="removeRequestHeaders" value="{{apim.transport_headers.removeRequestHeaders}}"/>
+    {% endif %}
+    {% if apim.transport_headers.preserveRequestHeaders is defined %}
+        <parameter name="preserveRequestHeaders" value="{{apim.transport_headers.preserveRequestHeaders}}"/>
+    {% endif %}
+    {% if apim.transport_headers.excludeRequestHeaders is defined %}
+        <parameter name="excludeRequestHeaders" value="{{apim.transport_headers.excludeRequestHeaders}}"/>
+    {% endif %}
+    {% if apim.transport_headers.excludeResponseHeaders is defined %}
+        <parameter name="excludeResponseHeaders" value="{{apim.transport_headers.excludeResponseHeaders}}"/>
+    {% endif %}
+    </handler>
+{% endif %}
+{% endif %}
+</handlers>
