@@ -1373,6 +1373,16 @@
       </LambdaMediatorConfig>
      {% endif %}
 
+     {% if apim.global_handlers.properties is defined %}
+      <GlobalHandlers.Properties>
+          <SkipDefaultAPIHandler>{{apim.global_handlers.properties.skip_default_api_handler}}</SkipDefaultAPIHandler>
+      </GlobalHandlers.Properties>
+     {% else %}
+      <GlobalHandlers.Properties>
+          <SkipDefaultAPIHandler>false</SkipDefaultAPIHandler>
+      </GlobalHandlers.Properties>
+     {% endif %}
+
      {% if apim.mediator_config.oauth is defined %}
        <MediatorConfigs>
          <OAuth>
@@ -1380,5 +1390,5 @@
           <ExpiresIn>{{apim.mediator_config.oauth.expires_in}}</ExpiresIn>
          </OAuth>
        </MediatorConfigs>
-      {% endif %}
+     {% endif %}
 </APIManager>
