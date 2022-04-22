@@ -425,7 +425,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         List role = new ArrayList();
         role.add(GRAPHQL_ROLE);
         ScopeDTO scopeObject = new ScopeDTO();
-        scopeObject.setName("subscriber");
+        scopeObject.setName("graphql_subscriber");
         scopeObject.setBindings(role);
 
         APIScopeDTO apiScopeDTO = new APIScopeDTO();
@@ -437,7 +437,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         APIDTO apidto = g.fromJson(createdApiResponse.getData(), APIDTO.class);
         apidto.setScopes(apiScopeList);
         List scope = new ArrayList();
-        scope.add("subscriber");
+        scope.add("graphql_subscriber");
         List<APIOperationsDTO> operations = apidto.getOperations();
         operations.forEach((item) ->
                 {
@@ -482,7 +482,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         }
         requestBody =
                 "grant_type=password&username=" + username + "&password=" + GRAPHQL_TEST_USER_PASSWORD +
-                        "&scope=subscriber";
+                        "&scope=graphql_subscriber";
         response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
         accessTokenGenerationResponse = new JSONObject(response.getData());
         log.info("Access Token response with scope: " + response.getData());
