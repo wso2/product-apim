@@ -1,0 +1,513 @@
+                                        WSO2 SOFTWARE LICENSE AGREEMENT 
+
+  This WSO2 Software License Agreement (the "Agreement") is entered into by you and the applicable WSO2 entity, as
+  described below. If you are an individual accepting this Agreement on behalf of a company or other legal entity, you
+  represent that you are authorized to bind the entity to the terms of this Agreement and "You" or "Your" will refer
+  to the entity bound to this Agreement, not to you as an individual.
+
+  By using or accessing the Software, signing this Agreement or any document that references this Agreement (such as
+  an Order), or by clicking "I agree to the Terms" (or similar button or checkbox) upon downloading or installing the
+  Software, You indicate Your assent to be bound by this Agreement. If You do not agree to this Agreement, do not use
+  or access the Software.
+
+  1.  Definitions
+
+      a)  "Order" is a document submitted by You authorizing the purchase of the Products requested by You, the
+          Support Plan, associated fees, and any additional terms.
+      b)  "Products" means collectively Software, Support and/or other Services obtained by You from WSO2 subject to
+          the terms of this Agreement.
+      c)  "Software" means the computer programs developed and owned by WSO2 to which this License Agreement is
+          attached, however you obtain or access them. Software includes security patches, updates, or other
+          modifications to the Software supplied by WSO2.
+      d)  "Services" means training, consulting and other services, other than Support, specified in an Order.
+      e)  "Support" means support provided by WSO2 to a Subscriber for the Software according to the terms of the WSO2
+          Support Services described in Section 4.1.
+      f)  "Support Plan" means the service level specified in an Order, from among the levels defined in the Support
+          Services Policy.
+      g)  "Subscription" is a commercial offering from WSO2 consisting of a license to use, and access to Support for,
+          the Software, for a specific period of time.
+      h)  "Subscription Period" is the commencement date and duration of a Subscription, as specified in an Order.
+
+  2.  License Grant
+
+      2.1   Free License for Non-commercial, Educational, or Trial use. WSO2 hereby grants You a worldwide,
+            non-exclusive, royalty-free, non-transferable, non-sublicensable, terminable license to use the Software
+            for Non-commercial, Educational, or Trial purposes. Non-commercial, as used in this Agreement, means
+            personal use whereby no commercial advantage or monetary compensation is sought or received for use of the
+            Software or for works, data or services that use the Software. Educational or Trial Use, as used in this
+            Agreement, means use for the purpose of learning to use the Software, teaching others to use the Software,
+            evaluating or demonstrating Software capabilities, or for scholarly or artistic purposes.
+
+      2.2   License for commercial use. If You purchase a Subscription from WSO2 or one of its authorized Resellers,
+            WSO2 hereby grants to You, as "Subscriber", a world wide, non-exclusive, non-transferable,
+            non-sublicensable, renewable license to use the Software for the duration of the Subscription Period.
+            This license is limited to the specific Software configuration or limit defined in the Order. The Order
+            will specify the scope of the Subscription purchased by Subscriber, including: (1) product versions; (2)
+            production or non-production use; (3) usage limits (e.g. cores or transaction limits); and (4) any other
+            license parameters.
+
+  3.  Copyright. All right, title and interest, including but not limited to intellectual property rights such as
+      copyrights, in and to the Software and any copies thereof, are owned by WSO2 or its suppliers. All right, title
+      and interest, including but not limited to intellectual property rights such as copyrights, in and to the
+      content which may be accessed through use of the Software is the property of the respective content owner and
+      may be protected by applicable copyright or other intellectual property laws and treaties. All rights not
+      expressly granted are reserved by WSO2.
+
+  4.  Conditions of Use. A license granted to You by this Agreement is valid only if You adhere to the following
+      conditions.
+
+      4.1   Maintenance of Copyright Notices.  You shall not remove or alter any copyright or license notices that
+            appear in or on the Software.
+
+      4.2   Modification.  You shall not modify, alter, decompile, decrypt, disassemble, translate, or reverse
+            engineer the Software.
+
+      4.3   Distribution.  You shall not sublicense, transfer, lease, rent, or otherwise distribute or make available
+            the Software to any third party.
+
+      4.4   SaaS.  Unless authorized by WSO2, You shall not make the Software available as commercial
+            Software-as-a-Service.
+
+      4.5   Compliance with Applicable Laws.  You shall comply with all applicable laws regarding use of the Software.
+
+  5.  Subscription Terms and Conditions. If You purchase a Subscription, the following terms and conditions apply.
+
+      5.1   Support. WSO2 will provide Subscriber with Support for the Software during the Subscription Period
+            according to the Support Plan indicated in the applicable Order, and subject to the WSO2 Support Policy
+            set forth at https://wso2.com/licenses/support-policy. Each Subscription includes Query Support subject to
+            a maximum hours limit as indicated in the Order.  Limits can be increased subject to additional fees. The
+            maximum hours limit is reset upon renewal for a subsequent annual period; unused hours cannot be rolled
+            over into the next annual period.
+
+      5.2   Technical Currency.  WSO2 will provide Subscriber with all new versions of the Software that it generally
+            releases, including all updates, security updates, improvements, enhancements and bug fixes. All new
+            versions of the Software are provided subject to the terms of the Agreement.
+
+      5.3   Online Services.  A Subscription may include online services.  Use of these online services is governed by
+            the WSO2.com Terms of Use at https://wso2.com/terms-of-use, the WSO2 Privacy Policy at
+            https://wso2.com/privacy-policy, and the WSO2 Cloud Terms of Use at https://wso2.com/cloud/terms-of-use.
+
+      5.4   Increases in Software Use. Subscriber may increase its use of the Software during the Subscription Period
+            beyond the scope specified in the applicable Orders, provided that Subscriber promptly notifies WSO2 of
+            the additional use and pays the applicable Fees.
+
+      5.5   Bursting Use. Subscriber may temporarily exceed the Subscription limits, at no extra Fee, within the
+            bursting limits for the Product ("Authorized Bursting Use"). If Subscriber increases its use beyond
+            Authorized Bursting Use, it must notify WSO2, increase the allowed usage limits retroactively to the
+            period where limits were exceeded, and pay the applicable Fees.  For products limited to a maximum number
+            of cores, Authorized Bursting Use allows up to 3 days (discrete 24-hour periods) within an annual
+            Subscription period during which the core count may exceed the Subscription limit by no more than 25%.
+            For products limited to a maximum number of monthly transactions, Authorized Bursting Use allows
+            transactions up to 25% over the monthly cap, within a single calendar month per annual Subscription
+            period.
+
+      5.6   Subscription Renewal. Subscriptions automatically renew for additional periods equal to one year unless
+            Subscriber notifies WSO2 in writing that it wishes to renew for a longer period, or to end the
+            Subscription at least 90 days prior to the end of the Subscription Period. Upon renewal, unit fees
+            increase by 5%, unless provided otherwise in an Order. Renewal of promotional or one-time priced
+            Subscriptions will be at WSO2's applicable price list in effect at the time of the discount was granted.
+            Fees for renewal are due according to the Fees and Payment terms of this Agreement.
+
+      5.7   Termination for Change in Services.  WSO2 may change the terms of Support or Services from time to time
+            without affecting the validity of this Agreement.  In the event of any material changes, WSO2 will attempt
+            to provide Subscriber notice by sending an email to the point of contact address provided by Subscriber.
+            In the event of a material and adverse change to the terms of Support or Services, Subscriber has the
+            right to terminate this Agreement upon 30 days notice to WSO2 at the following email address:
+            support@wso2.com. In the event of such termination, WSO2 shall reimburse Subscriber a pro rata amount of
+            any fees actually prepaid by Subscriber.
+
+      5.8   Remedies. WSO2'S SOLE OBLIGATION AND SUBSCRIBER'S SOLE REMEDY FOR WSO2'S BREACH OF ANY REPRESENTATIONS,
+            WARRANTIES OR OBLIGATIONS OF THIS AGREEMENT IS TO (I) IN THE CASE OF A DEFECTIVE OR FAULTY BUG FIX, PATCH
+            OR THE LIKE, DELIVER TO SUBSCRIBER A CORRECTED VERSION WHICH ALLOWS FOR PROPER INSTALLATION; OR (II) IF
+            OPTION (I) IS NOT RELEVANT OR IS DEEMED NOT TO BE COMMERCIALLY FEASIBLE BY WSO2, TERMINATE THIS AGREEMENT
+            AND REFUND A PRO RATA PORTION OF THE FEES PAID BY SUBSCRIBER.
+
+      5.9   Audit. Upon WSO2's request with reasonable notice, Subscriber will permit technical and operational audits
+            of Subscriber related to the subject matter of this Agreement. Audits may include verifying Subscriber's
+            usage of the Software conforms to the usage limits purchased by Subscriber. Audits shall be carried out
+            within Subscriber's regular business hours and WSO2 will honor confidentiality and data protection
+            requirements. If non-compliance is discovered in an audit, Subscriber will be responsible for all costs
+            associated with carrying out such audit. In addition, where such audit reveals Subscriber has exceeded the
+            usage subscribed-for, Subscriber shall pay WSO2 prorated fees for the excess usage at the same rate(s)
+            designated in the most proximate Order. If the date excess usage began cannot be determined to WSO2's  
+            satisfaction, excess usage shall be deemed to have commenced on the start date of the Subscription.
+
+  6.  WSO2 Consulting Services. QuickStarts, Training, Technical Account Management, Managed Services, and other
+      services WSO2 may offer to Subscriber are subject to the following terms.
+
+      6.1   Consulting Services Terms. WSO2 provides on-site and remote consulting services according to the
+            Consulting Service Terms at https://wso2.com/licenses/consulting-terms, as updated or amended from time to
+            time.
+
+      6.2   Managed Services Terms. WSO2 provides Managed Services according to the WSO2 Managed Services Terms and
+            Service Level Agreement at https://wso2.com/licenses/managed-services-terms.
+
+      6.3   Cloud Services Terms. WSO2 provides Cloud Services according to the WSO2 Cloud Services Terms and Service
+            Level Agreement at https://wso2.com/licenses/cloud-services-terms.
+
+      6.4   Independent Contractor. The relationship of the parties is that of independent contractors. Neither party,
+            nor any partner, agent or employee of either party, has authority to enter into contracts that bind the
+            other or create obligations on the part of the other without the prior written authorization of such party
+
+      6.5   Non-solicitation. During  the term of this Agreement and for a period of one (1) year after its
+            termination, neither party will directly or indirectly (a) solicit for hire or engagement any of the
+            other party's personnel who were involved in the provision or receipt of Services under this Agreement or
+            (b) hire or engage any person or entity who is or was employed or engaged by the other party and who was
+            involved in the provision or receipt of Services under this Agreement until one hundred  eighty (180)
+            calendar days following the termination of the person's or entity's employment or engagement with the
+            other party. For purposes herein, "solicit" does not include broad-based recruiting efforts, including
+            without limitation help wanted advertising and posting of open positions on a party's internet site. If
+            You hire or engage directly or indirectly any personnel of WSO2 in violation of this section, You will pay
+            WSO2 a contractual penalty equal to three times the monthly billing rate (assuming 168 hours per month)
+            for such personnel.
+
+  7.  Reseller Orders. This Section applies if You purchase Products through an authorized reseller of WSO2
+      ("Reseller").
+
+      7.1   Instead of paying WSO2, You will pay the applicable amounts to the Reseller, as agreed between You and the
+            Reseller. WSO2 may suspend or terminate Your Subscription if WSO2 does not receive the corresponding
+            payment from the Reseller.
+
+      7.2   Instead of an Order submitted to WSO2, Your order details will be as stated in the order placed with WSO2
+            by the Reseller on Your behalf, and the Reseller is responsible for the accuracy of any such order as
+            communicated to WSO2.
+
+      7.3   If You are entitled to a refund under this Agreement, then unless otherwise specified by WSO2, WSO2 will
+            refund any applicable fees to the Reseller and the Reseller will be solely responsible for refunding the
+            appropriate amounts to You.
+
+      7.4   Resellers are not authorized to modify this Agreement or make any promises or commitments on WSO2's
+            behalf, and WSO2 is not bound by any obligations to You other than as set forth in this Agreement.
+
+      7.5   The amount paid or payable by the Reseller to WSO2 for Your use of the applicable Software under this
+            Agreement will be deemed the amount actually paid or payable by You to WSO2 under this Agreement for
+            purposes of calculating the liability cap in Section 13.
+
+  8.  Publicity and Feedback
+
+      8.1   WSO2 Logos. WSO2 products may include features for theming the product user interfaces.  You will retain
+            the "WSO2" or "powered by WSO2" logos in conformance with WSO2 Logo Usage Guidelines at https://wso2
+            .com/brand.
+
+      8.2   Publicity. You may state publicly that You are a user of the Products. Any identification or use of a
+            party's brand, logo, or trademark shall conform with the trademark use guidelines provided by one party to
+            the other. WSO2 may reference you as a Customer and use Your logo on the WSO2 website. You will
+            participate in a success story/case study related to WSO2.
+
+      8.3   Feedback. If You provide any suggestions, corrections, or feedback regarding the Products, WSO2 may use
+            that information without obligation to You, and You hereby irrevocably assign to WSO2 all right, title,
+            and interest in the suggestions, corrections, or feedback.
+
+  9.  Fees and Payment
+
+      9.1   Fees. After You authorize an Order, upon renewal of a Subscription, or for other fees due to WSO2, WSO2
+            will send you an invoice. You will pay all fees specified in invoices. All payments are due within thirty
+            (30) calendar days of receipt of an invoice from WSO2 and are non-refundable. WSO2 may suspend or cancel
+            performance of all or part of the Subscription or Services and may change its credit terms (after
+            notifying You) if actual payment is not received within sixty (60) calendar days of Your receipt of WSO2's
+            invoice. Payments past due sixty (60) calendar days will incur interest at the rate of one and one-half
+            percent (1.5%) per month or the highest rate permitted by law, whichever is less. In any proceeding
+            rought by WSO2 to collect amounts due, WSO2 will also receive its actual costs of collection, including
+            reasonable attorneys' fees.
+
+      9.2   Taxes. All fees are exclusive of any applicable Taxes. You will pay to WSO2 an amount equal to any taxes
+            arising from or relating to this Agreement, including without limitation, sales, service, use or value
+            added taxes, which are paid by or are payable by WSO2. "Taxes" means any form of taxation, levy, duty,
+            customs fee, charge, contribution or impost of whatever nature and by whatever authority imposed
+            (including without limitation any fine, penalty, surcharge or interest), excluding, however, any taxes
+            based solely on the net income of WSO2. If You are required under any applicable law or regulation,
+            domestic or foreign, to withhold or deduct any portion of the payments due to WSO2, then the sum payable
+            to WSO2 will be increased by the amount necessary so that WSO2 receives an amount equal to the sum it
+            would have received had Subscriber made no withholdings or deductions.
+
+      9.3   Purchase Orders. Any pre-printed terms on any purchase order that is issued by You that are in addition to
+            or in conflict with the terms of this Agreement are null and void.
+
+  10. Term & Termination
+
+      10.1  Termination. This Agreement terminates when:
+            a.  Your Subscription terminates,
+            b.  when You cease using the Software, or
+            c.  if You do not have an active Subscription, 90 days after WSO2 notifies You that it wishes to terminate
+                the Agreement.
+
+      10.2  Termination for Cause.  Either party may terminate this Agreement on written notice to the other if the
+            other party fails to comply with this Agreement after it has been notified in writing of the nature of the
+            failure and been provided with 30 days after receiving the written notice to cure the failure.
+
+      10.3  Effect of Termination. Upon termination of this Agreement:
+            a.  the rights granted by one party to the other immediately cease;
+            b.  all fees owed by Subscriber are immediately due upon receipt of the final invoice; and
+            c.  You will delete the Software immediately.
+
+      10.4  Survival.  Sections 6.5, 9.1, 11.2, 13, and 15.9, and those provisions intended by their nature to survive
+            termination of this Agreement survive termination. Section 14 will survive termination of this Agreement
+            for 3 years.
+
+  11. Limited Warranties.
+
+      11.1  Warranties for Subscriber. If You are a Subscriber, WSO2 warrants that:
+            a.  the Software will perform substantially in accordance with its documentation (located at
+                https://docs.wso2.com);
+            b.  it will perform Support and Consulting Services in a diligent and workmanlike manner consistent with
+                industry standards; and
+            c.  to its knowledge, the Software does not, at the time of delivery to you, include malicious mechanisms
+                or code for the purpose of damaging or corrupting the Software.
+
+      Subscriber's exclusive remedy for WSO2's material breach of warranty is to have WSO2 resolve such breach as
+      provided in the WSO2 Support Services Policy, or at WSO2's option and upon Subscriber's deletion of the
+      Software, refund the unused portion of any fees paid for the Subscription.
+
+      11.2  EXCEPT AS EXPRESSLY PROVIDED IN THE AGREEMENT, AND TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, ALL
+            SERVICES, SOFTWARE, AND SUPPORT PROVIDED BY WSO2 ARE PROVIDED "AS IS" WITHOUT ANY WARRANTIES OR CONDITIONS
+            OF ANY KIND, INCLUDING IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+            PURPOSE, TITLE, AND NON-INFRINGEMENT. NO WARRANTY, WRITTEN OR ORAL, IS EXPRESSED OR IMPLIED BY WSO2 OR MAY
+            BE INFERRED FROM A COURSE OF DEALING OR USAGE OF TRADE. NOTHING STATED IN THIS AGREEMENT IMPLIES THAT THE
+            OPERATION OF ANY SOFTWARE WILL BE UNINTERRUPTED OR ERROR FREE, OR THAT ERRORS WILL BE CORRECTED.
+
+  12. Indemnification. If You are a Subscriber, the provisions of this section apply to You.
+
+      12.1  Subject to the provisions of this Section 12, and commencing from the start of the Subscription Period,
+            WSO2 will defend at its expense any suit brought against Subscriber, and will pay any settlement WSO2
+            makes or approves, or any direct damages (excluding amounts awarded for reputation harm or
+            business impact) finally awarded in such suit, insofar as such suit is based on a claim by any third party
+            alleging that the Products misappropriate any trade secret recognized under the Uniform Trade Secrets Act
+            or infringe any copyright or United States patent valid within the Subscription Period (an "IP Claim").
+            WSO2's indemnification obligations are limited to US $7,000,000.
+      12.2  If any portion of the Software or the Services becomes, or in WSO2's opinion is likely to become, the
+            subject of an IP Claim, WSO2 may, at WSO2's option: (i) procure for Subscriber the right to continue using
+            the Products; (ii) replace the Products with non-infringing software or services which do not materially
+            impair the functionality of the Products; (iii) modify the Products so that it becomes non-infringing; or
+            (iv) terminate this Agreement and refund any fees actually paid by Subscriber to WSO2 for the remainder
+            of the Term then in effect, and upon such termination, Subscriber will immediately cease all use of the
+            Software, documentation, and Services.
+
+      12.3  Notwithstanding anything to the contrary herein, WSO2 has no obligation with respect to any IP Claim based
+            upon (i) any open source software components included in the Software; (ii) any use of the Software or the
+            Services not in accordance with this Agreement or as specified in the documentation; (iii) any use of the
+            Software in combination with other products, equipment, software or data not supplied by WSO2; or (iv) any
+            modification of the Software by any person other than WSO2 or its authorized agents. This Section states
+            the sole and exclusive remedy of Subscriber and the entire liability of WSO2, or any of the officers,
+            directors, employees, shareholders, contractors or representatives of either party, for IP Claims.
+
+
+      12.4  The indemnifying party's obligations as set forth above are expressly conditioned upon complying with each
+            of the following: (i) the indemnified party must promptly notify the indemnifying party in writing of any
+            threatened or actual claim or suit; (ii) the indemnifying party will have sole control of the defense or
+            settlement of any claim or suit; and (iii) the indemnified party must cooperate with the indemnifying
+            party to facilitate the settlement or defense of any claim or suit.
+
+  13. Limitation of Liability. EXCEPT FOR DAMAGES FOR BODILY INJURY (INCLUDING DEATH), WSO2'S TOTAL AGGREGATE
+      LIABILITY UNDER THIS AGREEMENT IS LIMITED TO THE AMOUNT OF FEES PAID BY YOU DURING THE PERIOD OF A MATERIAL
+      BREACH UP TO A MAXIMUM OF ONE YEAR. IF YOU HAVE PAID NO FEES, OR ARE A NON-COMMERCIAL, EDUCATIONAL, OR TRIAL
+      LICENSEE, WSO2'S MAXIMUM  AGGREGATE LIABILITY TO YOU IS $100. IN NO EVENT WILL WSO2 OR ITS AFFILIATES BE LIABLE
+      FOR ANY INCIDENTAL INDIRECT,  SPECIAL, OR CONSEQUENTIAL COSTS OR DAMAGES INCLUDING, WITHOUT LIMITATION, DOWNTIME
+      COSTS; LOST BUSINESS, REVENUES,  GOODWILL, OR PROFITS; FAILURE TO REALIZE EXPECTED SAVINGS; LOSS OF OR DAMAGE TO
+      DATA; OR SOFTWARE RESTORATION,  REGARDLESS OF WHETHER ANY OF THE FOREGOING ARE FORESEEABLE, AND REGARDLESS OF
+      WHETHER WSO2 HAS BEEN NOTIFIED OF THE  POSSIBILITY OF ANY OF THE FOREGOING. THESE LIMITATIONS APPLY REGARDLESS
+      OF THE BASIS OF LIABILITY; INCLUDING  NEGLIGENCE; MISREPRESENTATION; BREACH; LIBEL; INFRINGEMENT OF PUBLICITY,
+      PRIVACY, OR INTELLECTUAL PROPERTY RIGHTS; OR  ANY OTHER CONTRACT OR TORT CLAIM.
+
+  14. Confidentiality.
+
+      14.1  Definition. "Confidential Information" means any information, documentation, system, or process disclosed
+            by a party or a party's Affiliate that is:
+            a.  designated as confidential (or a similar designation) at the time of disclosure;
+            b.  disclosed in circumstances of confidence; or
+            c.  understood by the parties, exercising reasonable business judgment, to be confidential.
+
+            Confidential Information expressly includes proposals or price quotes created by WSO2 for You, Orders, and
+            any changes or amendments to this Agreement. "Affiliate" means any entity that directly or indirectly
+            controls, is controlled by, or is under common control with a party to this Agreement.
+
+      14.2  Exclusions. Confidential Information does not include information that:
+            a.  was lawfully known or received by the receiving party prior to disclosure;
+            b.  is or becomes part of the public domain other than as a result of a breach of this Agreement;
+            c.  was disclosed to the receiving party by a third party, provided such third party, or any other party
+                from whom such third party receives such information, is not in breach of any confidentiality
+                obligation in respect to such information; or d. is independently developed by the receiving party as
+                evidenced by independent written materials.
+
+      14.3  Nondisclosure. Each party shall treat as confidential all Confidential Information of the other party,
+            shall not use Confidential Information except as set forth in this Agreement, and shall use best efforts
+            not to disclose Confidential Information to any third party. Without limiting the foregoing, each of the
+            parties shall use at least the same degree of care that it uses to prevent the disclosure of its own
+            Confidential Information of like importance to prevent the disclosure of Confidential Information
+            disclosed to it by the other party under this Agreement. Each party shall promptly notify the other party
+            of any actual or suspected misuse or unauthorized disclosure of the other party's Confidential Information
+            .
+
+      14.4  Return of Confidential Information. Upon expiration or termination of this Agreement, each party shall
+            return or destroy all Confidential Information received from the other party.
+
+      14.5  Remedies. Any breach of the restrictions contained in this section is a breach of this Agreement that may
+            cause irreparable harm to the non-breaching party. Any such breach shall entitle the non-breaching party
+            to injunctive relief in addition to all other legal remedies.
+
+  15. General
+
+      15.1  Severability.  If any provision of this Agreement is held by a court of competent jurisdiction to be
+            contrary to law, such provision shall be changed and interpreted so as to best accomplish the objectives
+            of the original provision to the fullest extent allowed by law and the remaining provisions of this
+            Agreement shall remain in full force and effect.
+
+      15.2  Force Majeure.  Neither party will be liable for performance delays or for non-performance due to causes
+            beyond its reasonable control; however, this provision will not apply to Subscriber's payment obligations.
+
+      15.3  Headings.  The headings in this Agreement are inserted for convenience only and do not affect its
+            interpretation.
+
+      15.4  Assignment.  You may not assign this Agreement, whether by operation of law, merger or reorganization or
+            otherwise, without the prior written consent of WSO2; any attempted assignment in violation of the
+            foregoing will be void. WSO2 may assign its rights and delegate its duties under this Agreement without
+            Your written consent in connection with a reorganization, reincorporation, merger, or sale of all, or
+            substantially all of the shares or assets of WSO2 or the business of WSO2 to which this Agreement relates.
+
+      15.5  Export Compliance / Sanctions. The Software may be subject to export laws and regulations of the United
+            States and other jurisdictions. The parties represent that each of them is not named on any U.S.
+            Government denied-party list. You will not use the Software in violation of any U.S. export law or
+            regulation.
+
+      15.6  Complete Agreement. This Agreement, and any terms, policies, or writings referenced within it, constitutes
+            the final and complete agreement between the parties with respect to the Products, and supersedes any
+            prior or contemporaneous representations or agreements, whether written or oral.
+
+      15.7  Notices. Notice may be directed to WSO2 at legal@wso2.com.
+
+      15.8  WSO2 Contracting Entity, Governing Law, and Venue. The WSO2 entity entering into this Agreement, the law
+            that will apply in any dispute arising out of this Agreement, and the venue for any dispute depend on
+            where You are domiciled.
+
+      +--------------------------+---------------------------+--------------------+---------------------------------+
+      | If You are domiciled in: | The WSO2 entity entering  | Governing law is:  | Method of dispute resolution    |
+      |                          | into this Agreement is:   |                    | is:                             |
+      +--------------------------+---------------------------+--------------------+---------------------------------+
+      | USA, Canada, any         | WSO2, Inc., a Delaware    | California         | Arbitration in Santa Clara,     |
+      | country not listed       | corporation               | without giving     | California in accordance        |
+      | below                    |                           | effect to the      | with the rules of the           |
+      |                          |                           | principles of      | American Arbitration            |
+      |                          |                           | conflict of        | Association ("AAA")             |
+      |                          |                           | laws               |                                 |
+      +--------------------------+---------------------------+--------------------+---------------------------------+
+      | United Kingdom, Europe   | WSO2 UK Limited, a        | English            | Arbitration in London,          |
+      | (except for Germany)     | company incorporated      |                    | United Kingdom, in              |
+      |                          | under the laws of         |                    | accordance with the             |
+      |                          | England                   |                    | rules of the International      |
+      |                          |                           |                    | Chamber of Commerce ("ICC")     |
+      +--------------------------+---------------------------+--------------------+---------------------------------+
+      | Sri Lanka, India,        | WSO2 LANKA (PRIVATE)      | Sri Lanka          | Arbitration in Colombo,         |
+      | Malaysia, Mauritius,     | LIMITED, a company        |                    | Sri Lanka in accordance         |
+      | Macau                    | incorporated under        |                    | with the rules of the           |
+      |                          | the laws of Sri Lanka     |                    | Arbitration Act No 11           |
+      |                          |                           |                    | of 1995                         |
+      +--------------------------+---------------------------+--------------------+---------------------------------+
+      | South America, Belize,   | WSO2 BRASIL TECNOLOGIA    | Brazil             | Arbitration in Sao Paulo,       |
+      | Costa Rica,              | E SOFTWARE EIRELI,        |                    | Brazil in accordance with       |
+      | El Salvador,             | a company incorporated    |                    | the rules of the                |
+      | Guatemala, Honduras,     | in Brazil                 |                    | International Chamber of        |
+      | Nicaragua, Panama.       |                           |                    | Commerce ("ICC")                |
+      +--------------------------+---------------------------+--------------------+---------------------------------+
+      | Australia or             | WSO2 Australia Pty        | New South Wales,   | Each party submits to the       |
+      | New Zealand              | Limited, ABN 90 623       | Australia without  | exclusive jurisdiction of the   |
+      |                          | 311 348                   | giving effect to   | courts of New South Wales,      |
+      |                          |                           | the principles of  | Australia (and any relevant     |
+      |                          |                           | conflict of laws.  | appellate courts). Each         |
+      |                          |                           |                    | party's designated              |
+      |                          |                           |                    | representatives will meet       |
+      |                          |                           |                    | within ten (10) days following  |
+      |                          |                           |                    | receipt of notice of the        |
+      |                          |                           |                    | dispute and will attempt to     |
+      |                          |                           |                    | resolve the dispute within      |
+      |                          |                           |                    | 15 days. If the parties agree   |
+      |                          |                           |                    | in writing, a dispute may be    |
+      |                          |                           |                    | mediated or arbitrated. If any  |
+      |                          |                           |                    | dispute is not resolved         |
+      |                          |                           |                    | informally or referred to       |
+      |                          |                           |                    | mediation or arbitration,       |
+      |                          |                           |                    | either party                    |
+      +--------------------------+---------------------------+--------------------+---------------------------------+
+
+      15.9  Agreement to Governing Law and Dispute Resolution.  Each party agrees to the applicable governing law
+            above, and to the exclusive method of dispute resolution. Where the applicable dispute resolution
+            procedure is arbitration, the award rendered by the arbitrator shall be final and binding on the parties,
+            and judgment may be entered in any court of competent jurisdiction. Nothing in the above provision
+            prevents either party from applying to a court of competent jurisdiction for equitable or injunctive
+            relief. Any dispute or other action arising out of this Agreement must be brought within one year of the
+            date the cause of action accrued. An action for nonpayment may be brought within two years of the date of
+            last payment.
+
+      15.10 Regional Agreement Variations: WSO2 Australia Pty Limited. Based upon the above, If You enter into this
+            Agreement with WSO2 Australia Pty Limited, Sections 5.8, 9.2, and 13 are replaced with the following:
+
+            5.8   Remedies. IF ANY WARRANTY OR GUARANTEE CANNOT BE EXCLUDED AT LAW, THEN TO THE EXTENT PERMITTED BY
+                  LAW, WSO2'S SOLE LIABILITY AND SUBSCRIBER'S SOLE REMEDY FOR BREACH OF A WARRANTY, GUARANTEE, OR
+                  OBLIGATION OF THIS AGREEMENT IS LIMITED (AT WSO2'S OPTION) IN THE CASE OF: (A) SERVICES, TO THE
+                  RESUPPLY OF THE SERVICES OR PAYMENT OF THE COST OF THE SAME; AND (B) GOODS (INCLUDING SOFTWARE), TO
+                  THE REPAIR OR REPLACEMENT OF THE GOODS, SUPPLY OF EQUIVALENT GOODS OR PAYMENT OF THE COST OF THE
+                  SAME.
+
+            9.2   Taxes. All fees are exclusive of any applicable Taxes. You will pay to WSO2 an amount equal to any
+                  taxes arising from or relating to this Agreement, including without limitation, GST, use or value
+                  added taxes, which are paid by or are payable by WSO2. "Taxes" means any form of taxation, levy,
+                  duty, customs fee, charge, contribution or impost of whatever nature and by whatever authority
+                  imposed (including without limitation any fine, penalty, surcharge or interest), excluding, however,
+                  any taxes based solely on the net income of WSO2. If You are required under any applicable law or
+                  regulation, domestic or foreign, to withhold or deduct any portion of the payments due to WSO2, then
+                  the sum payable to WSO2 will be increased by the amount necessary so that WSO2 receives an amount
+                  equal to the sum it would have received had Subscriber made no withholdings or deductions.
+
+                  Where a supply under this Agreement is a taxable supply, all amounts payable or other consideration
+                  provided must be increased by the amount of GST payable in relation to the supply.  All GST must be
+                  paid at the time any payment for any supply to which it relates is payable (provided a valid tax
+                  invoice has been issued for the supply).  In this Section, "GST", "tax invoice" and "taxable supply"
+                  have the meanings given to them in the A New Tax Systems (Goods and Services Tax) Act 1999 (Cth).
+
+            13.   Limitation of Liability. EXCEPT FOR LIABILITY DAMAGES FOR BODILY INJURY (INCLUDING DEATH) WHICH
+                  SHALL BE UNLIMITED, WSO2'S TOTAL AGGREGATE LIABILITY FOR ALL CLAIMS ARISING OUT OF OR IN CONNECTION
+                  WITH THIS AGREEMENT, REGARDLESS OF THE FORM OF ACTION (INCLUDING NEGLIGENCE), IS LIMITED IN ANY
+                  CALENDAR YEAR TO THE AMOUNT PAID BY SUBSCRIBER FOR SERVICES DURING  THAT CALENDAR YEAR. IF YOU HAVE
+                  PAID NO FEES, OR ARE A NON-COMMERCIAL, EDUCATIONAL, OR TRIAL LICENSEE, WSO2'S MAXIMUM AGGREGATE
+                  LIABILITY TO YOU IS $100. IN NO EVENT WILL WSO2 BE LIABLE FOR ANY "INDIRECT LOSSES" BEING: (A)
+                  DOWNTIME COSTS, LOST BUSINESS, REVENUES, OR PROFITS, FAILURE TO REALIZE EXPECTED SAVINGS OR
+                  OPPORTUNITY, LOSS OF OR DAMAGE TO DATA, LOSS OF GOODWILL OR REPUTATION, COSTS OF SOFTWARE
+                  RESTORATION; AND (B) ANY LOSS THAT DOES NOT ARISE NATURALLY OR ACCORDING TO THE USUAL COURSE OF
+                  THINGS FROM A BREACH, ACT OR OMISSION RELATING TO THIS AGREEMENT REGARDLESS OF WHETHER ANY OF THE
+                  FOREGOING ARE FORESEEABLE, AND REGARDLESS OF WHETHER WSO2 HAS BEEN NOTIFIED OF THE POSSIBILITY OF
+                  ANY OF THE FOREGOING. THESE LIMITATIONS WILL APPLY REGARDLESS OF THE BASIS OF LIABILITY, INCLUDING
+                  NEGLIGENCE, MISREPRESENTATION, BREACH, DEFAMATION, INFRINGEMENT OF PUBLICITY, PRIVACY, OR
+                  INTELLECTUAL PROPERTY RIGHTS, OR ANY OTHER CONTRACT OR TORT CLAIM.
+
+      15.11 Regional Agreement Variations: WSO2 Germany GmbH. Based upon the above, If You enter into this Agreement
+            with WSO2 Germany GmbH, Sections 6.5, 9.1, and 9.2 are replaced with the following:
+
+            6.5   Non-solicitation. During the term of this Agreement and for a period of one (1) year after its
+                  termination, neither party will directly (a) solicit for hire or engagement any of the other party's
+                  personnel who were involved in the provision or receipt of Services under this Agreement or (b) hire
+                  or engage any person or entity who is or was employed or engaged by the other party and who was
+                  involved in the provision or receipt of Services under this Agreement until one hundred eighty (180)
+                  calendar days following the termination of the person's or entity's employment or engagement with
+                  the other party. For purposes herein, "solicit" does not include broad-based recruiting efforts,
+                  including without limitation help wanted advertising and posting of open positions on a party's
+                  internet site. If You hire or engage directly or indirectly any personnel of WSO2 in violation of
+                  this section, You will pay WSO2 a contractual penalty equal to three times the monthly billing rate
+                  (assuming 168 hours per month) for such personnel.
+
+            9.1   Fees. After You sign an Order, or upon renewal of a Subscription, WSO2 will send you an invoice. You
+                  will pay all fees specified in invoices. All payments are due within thirty (30) calendar days of
+                  receipt of an invoice from WSO2 and are non-refundable. WSO2 may suspend or cancel performance of
+                  all or part of the Subscription or Services and may change its credit terms (after notifying You) if
+                  actual payment is not received within sixty (60) calendar days of Your receipt of WSO2's invoice.
+                  Payments past due sixty (60) calendar days will incur interest at the rate of 9 percentage points
+                  above the ECB basic interest rate per year. In addition, Subscriber has to pay 40 EUR in recovering
+                  charges. In any proceeding brought by WSO2 to collect amounts due, WSO2 will also receive its actual
+                  costs of collection, including reasonable attorneys' fees.
+
+            9.2   Taxes. All fees are exclusive of any applicable Taxes. You will pay to WSO2 an amount equal to any
+                  taxes arising from or relating to this Agreement, including without limitation, VAT which is paid by
+                  or is payable by WSO2. "Taxes" means any form of taxation, levy, duty, customs fee, charge,
+                  contribution or impost of whatever nature and by whatever authority imposed (including without
+                  limitation any fine, penalty, surcharge or interest), excluding, however, any taxes based solely on
+                  the net income of WSO2. If You are required under any applicable law or regulation, domestic or
+                  foreign, to withhold or deduct any portion of the payments due to WSO2, then the sum payable to WSO2
+                  will be increased by the amount necessary so that WSO2 receives an amount equal to the sum it would
+                  have received had Subscriber made no withholdings or deductions.
