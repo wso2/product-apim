@@ -50,6 +50,10 @@ if [ ! -d  "${APIM_IS_PLUGIN_AUDIT}" ]; then
    echo "[INFO] APIM-IS-PLUGIN audit folder [""${APIM_IS_PLUGIN_AUDIT}""] is created";
 else
    echo "[INFO] APIM-IS-PLUGIN audit folder is present at [""${APIM_IS_PLUGIN_AUDIT}""]";
+   if [ -d  "${APIM_IS_PLUGIN_AUDIT_BACKUP}" ]; then
+     rm -rf "${APIM_IS_PLUGIN_AUDIT_BACKUP}"/webapps/*
+     rm -rf "${APIM_IS_PLUGIN_AUDIT_BACKUP}"/dropins/*
+   fi
 fi
 
 echo "[INFO] Backup original product files.."
@@ -62,10 +66,7 @@ echo "[INFO] Clean up extracted webapps.."
 rm -rf "${IS_HOME}"/repository/deployment/server/webapps/keymanager-operations/
 
 echo "[INFO] Clean up keymanager-operations.war"
-KEY_MANAGER_WAR_FILE="${IS_HOME}"/repository/deployment/server/webapps/keymanager-operations.war
-if [ -f "$KEY_MANAGER_WAR_FILE" ] ; then
-  rm "$KEY_MANAGER_WAR_FILE"
-fi
+rm -f "${IS_HOME}"/repository/deployment/server/webapps/keymanager-operations.war
 
 echo "[INFO] Clean up key-manager jars from dropins.."
 rm -f "${IS_HOME}"/repository/components/dropins/wso2is.key.manager.core-1.0.16*.jar

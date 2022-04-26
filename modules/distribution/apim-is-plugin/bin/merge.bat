@@ -41,6 +41,10 @@ set APIM_IS_PLUGIN_AUDIT_BACKUP=%APIM_IS_PLUGIN_AUDIT%\backup
 
 if exist %APIM_IS_PLUGIN_AUDIT% (
 	echo [INFO] APIM-IS-PLUGIN audit folder is present at %APIM_IS_PLUGIN_AUDIT%
+	if exist %APIM_IS_PLUGIN_AUDIT_BACKUP% (
+	    del /q %APIM_IS_PLUGIN_AUDIT_BACKUP%\webapps\*
+	    del /q %APIM_IS_PLUGIN_AUDIT_BACKUP%\dropins\*
+	)
 ) else (
 	mkdir %APIM_IS_PLUGIN_AUDIT_BACKUP%
 	mkdir %APIM_IS_PLUGIN_AUDIT_BACKUP%\webapps
