@@ -48,6 +48,7 @@ public class RestAPIGatewayImpl {
     GetApiInfoApi apiInfoApi = new GetApiInfoApi();
     GetApplicationInfoApi applicationInfoApi = new GetApplicationInfoApi();
     GetSubscriptionInfoApi subscriptionInfoApi = new GetSubscriptionInfoApi();
+
     public RestAPIGatewayImpl(String username, String password, String tenantDomain) {
         ApiClient apiClient = new ApiClient();
         String basicEncoded =

@@ -1610,6 +1610,7 @@ public class RestAPIPublisherImpl {
             apiRevisionDeploymentDTO.setName(apiRevisionDeployRequest.getName());
             apiRevisionDeploymentDTO.setVhost(apiRevisionDeployRequest.getVhost());
             apiRevisionDeploymentDTO.setDisplayOnDevportal(apiRevisionDeployRequest.isDisplayOnDevportal());
+            apiRevisionDeploymentDTO.setRevisionUuid(revisionUUID);
             apiRevisionDeploymentDTOList.add(apiRevisionDeploymentDTO);
         }
         try {

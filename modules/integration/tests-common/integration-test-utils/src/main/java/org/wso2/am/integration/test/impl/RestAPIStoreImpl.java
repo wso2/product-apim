@@ -122,6 +122,7 @@ public class RestAPIStoreImpl {
     private RestAPIGatewayImpl restAPIGateway;
     private String accessToken;
     private String disableVerification = System.getProperty("disableVerification");
+    private static final long WAIT_TIME = 60 * 1000;
 
     public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
         // token/DCR of Store node itself will be used
@@ -2020,7 +2021,67 @@ public class RestAPIStoreImpl {
         return response;
     }
 
+    /**
+     * Check whether the specific api is available in dev portal.
+     *
+     * @param apiId        apiID
+     * @return
+     */
+    public boolean isAvailableInDevPortal(String apiId) {
+        boolean isAvailable = false;
+        long waitTime = System.currentTimeMillis() + WAIT_TIME;
+        APIDTO response = null;
+        while (waitTime > System.currentTimeMillis()) {
+            try {
+                response = apIsApi.apisApiIdGet(apiId, tenantDomain, null);
+            } catch (ApiException e) {
+                log.info("Waiting for api " + apiId + " to be available in dev portal.");
+            }
+            if (response != null && response.getId().equals(apiId)) {
+                isAvailable = true;
+                break;
+            } else {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {
+                }
+                log.info("Waiting for api " + apiId + " to be available in dev portal.");
+            }
+        }
+        return isAvailable;
+    }
 
+    /**
+     * Check whether the specific tag is available in dev portal.
+     *
+     * @param tag        tag
+     * @return
+     */
+    public boolean isTagAvailableInDevPortal(String tag) {
+        boolean isAvailable = false;
+        long waitTime = System.currentTimeMillis() + WAIT_TIME;
+        TagListDTO response = null;
+
+        while (waitTime > System.currentTimeMillis()) {
+            try {
+                response = tagsApi.tagsGet(25, 0, tenantDomain, "");
+            } catch (ApiException e) {
+                log.info("Waiting for tag " + tag + " to be available in tag cloud.");
+            }
+            if (response != null && response.toString().contains(tag)) {
+                log.info("Tag: " + tag + " is available in tag cloud.");
+                isAvailable = true;
+                break;
+            } else {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {
+                }
+                log.info("Waiting for tag " + tag + " to be available in tag cloud.");
+            }
+        }
+        return isAvailable;
+    }
 
     private void setActivityID() {
 
