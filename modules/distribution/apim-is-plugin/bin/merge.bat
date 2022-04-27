@@ -66,12 +66,12 @@ if exist %IS_HOME%\repository\deployment\server\webapps\keymanager-operations.wa
 	copy %IS_HOME%\repository\deployment\server\webapps\keymanager-operations.war %APIM_IS_PLUGIN_AUDIT_BACKUP%\webapps
 )
 
-if exist %IS_HOME%\repository\components\dropins\wso2is.key.manager.core-1.0.16*.jar (
-	copy %IS_HOME%\repository\components\dropins\wso2is.key.manager.core-1.0.16*.jar %APIM_IS_PLUGIN_AUDIT_BACKUP%\dropins
+if exist %IS_HOME%\repository\components\dropins\wso2is.key.manager.core*.jar (
+	copy %IS_HOME%\repository\components\dropins\wso2is.key.manager.core*.jar %APIM_IS_PLUGIN_AUDIT_BACKUP%\dropins
 )
 
-if exist %IS_HOME%\repository\components\dropins\wso2is.notification.event.handlers-1.0.16*.jar (
-	copy %IS_HOME%\repository\components\dropins\wso2is.notification.event.handlers-1.0.16*.jar %APIM_IS_PLUGIN_AUDIT_BACKUP%\dropins
+if exist %IS_HOME%\repository\components\dropins\wso2is.notification.event.handlers*.jar (
+	copy %IS_HOME%\repository\components\dropins\wso2is.notification.event.handlers*.jar %APIM_IS_PLUGIN_AUDIT_BACKUP%\dropins
 )
 
 echo [INFO] Clean up extracted webapps..
@@ -85,12 +85,12 @@ if exist %IS_HOME%\repository\deployment\server\webapps\keymanager-operations.wa
 )
 
 echo [INFO] Clean up key-manager jars from dropins..
-if exist %IS_HOME%\repository\components\dropins\wso2is.key.manager.core-1.0.16*.jar (
-	del %IS_HOME%\repository\components\dropins\wso2is.key.manager.core-1.0.16*.jar
+if exist %IS_HOME%\repository\components\dropins\wso2is.key.manager.core*.jar (
+	del %IS_HOME%\repository\components\dropins\wso2is.key.manager.core*.jar
 )
 
-if exist %IS_HOME%\repository\components\dropins\wso2is.notification.event.handlers-1.0.16*.jar (
-	del %IS_HOME%\repository\components\dropins\wso2is.notification.event.handlers-1.0.16*.jar
+if exist %IS_HOME%\repository\components\dropins\wso2is.notification.event.handlers*.jar (
+	del %IS_HOME%\repository\components\dropins\wso2is.notification.event.handlers*.jar
 )
 
 echo [INFO] Copying APIM Key Manager connector artifacts to dropins

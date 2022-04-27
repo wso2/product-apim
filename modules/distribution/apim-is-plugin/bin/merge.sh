@@ -59,8 +59,8 @@ fi
 echo "[INFO] Backup original product files.."
 cp -R "${IS_HOME}"/repository/deployment/server/webapps/keymanager-operations/ "${APIM_IS_PLUGIN_AUDIT_BACKUP}"/webapps/keymanager-operations 2>/dev/null
 cp "${IS_HOME}"/repository/deployment/server/webapps/keymanager-operations.war "${APIM_IS_PLUGIN_AUDIT_BACKUP}"/webapps 2>/dev/null
-cp "${IS_HOME}"/repository/components/dropins/wso2is.key.manager.core-1.0.16*.jar "${APIM_IS_PLUGIN_AUDIT_BACKUP}"/dropins 2>/dev/null
-cp "${IS_HOME}"/repository/components/dropins/wso2is.notification.event.handlers-1.0.16*.jar "${APIM_IS_PLUGIN_AUDIT_BACKUP}"/dropins 2>/dev/null
+cp "${IS_HOME}"/repository/components/dropins/wso2is.key.manager.core*.jar "${APIM_IS_PLUGIN_AUDIT_BACKUP}"/dropins 2>/dev/null
+cp "${IS_HOME}"/repository/components/dropins/wso2is.notification.event.handlers*.jar "${APIM_IS_PLUGIN_AUDIT_BACKUP}"/dropins 2>/dev/null
 
 echo "[INFO] Clean up extracted webapps.."
 rm -rf "${IS_HOME}"/repository/deployment/server/webapps/keymanager-operations/
@@ -69,8 +69,8 @@ echo "[INFO] Clean up keymanager-operations.war"
 rm -f "${IS_HOME}"/repository/deployment/server/webapps/keymanager-operations.war
 
 echo "[INFO] Clean up key-manager jars from dropins.."
-rm -f "${IS_HOME}"/repository/components/dropins/wso2is.key.manager.core-1.0.16*.jar
-rm -f "${IS_HOME}"/repository/components/dropins/wso2is.notification.event.handlers-1.0.16*.jar
+rm -f "${IS_HOME}"/repository/components/dropins/wso2is.key.manager.core*.jar
+rm -f "${IS_HOME}"/repository/components/dropins/wso2is.notification.event.handlers*.jar
 
 echo "[INFO] Copying APIM Key Manager connector artifacts to dropins"
 echo "================================================"
