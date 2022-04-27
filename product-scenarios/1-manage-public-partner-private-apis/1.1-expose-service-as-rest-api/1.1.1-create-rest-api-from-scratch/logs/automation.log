@@ -1,0 +1,44 @@
+2020-05-12 22:46:42,484 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2020-05-12 22:46:42,512 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2020-05-12 22:46:43,182 INFO  [org.wso2.carbon.integration.common.admin.client.AuthenticatorClient] - Login Successful
+2020-05-12 22:46:44,485 INFO  [org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient] - Tenant domain wso2.com created and activated successfully
+2020-05-12 22:46:46,094 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2020-05-12 22:46:46,094 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2020-05-12 22:46:46,178 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2020-05-12 22:46:46,178 INFO  [org.wso2.am.scenario.test.common.APIPublisherRestClient] - Login to Publisher https://localhost:9443/publisher as the user micheal
+2020-05-12 22:46:48,044 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:48,044 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "PhoneVerification", "version" : "1.0.0", "provider" : "micheal"}}
+2020-05-12 22:46:48,720 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:48,720 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "123567890", "version" : "1.0.0", "provider" : "micheal"}}
+2020-05-12 22:46:49,484 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:49,484 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "eñe", "version" : "1.0.0", "provider" : "micheal"}}
+2020-05-12 22:46:50,044 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:50,045 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "Pho_ne-verify?api.", "version" : "1.0.0", "provider" : "micheal"}}
+2020-05-12 22:46:50,529 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:50,529 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "PhoneVerification123567890", "version" : "1.0.0", "provider" : "micheal"}}
+2020-05-12 22:46:50,564 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2020-05-12 22:46:50,564 INFO  [org.wso2.am.scenario.test.common.APIPublisherRestClient] - Login to Publisher https://localhost:9443/publisher as the user andrew@wso2.com
+2020-05-12 22:46:51,209 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:51,209 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "PhoneVerification", "version" : "1.0.0", "provider" : "andrew@wso2.com"}}
+2020-05-12 22:46:51,731 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:51,732 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "123567890", "version" : "1.0.0", "provider" : "andrew@wso2.com"}}
+2020-05-12 22:46:52,687 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:52,687 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "eñe", "version" : "1.0.0", "provider" : "andrew@wso2.com"}}
+2020-05-12 22:46:53,264 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:53,264 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "Pho_ne-verify?api.", "version" : "1.0.0", "provider" : "andrew@wso2.com"}}
+2020-05-12 22:46:53,744 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:53,744 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "PhoneVerification123567890", "version" : "1.0.0", "provider" : "andrew@wso2.com"}}
+2020-05-12 22:46:54,330 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:54,330 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false}
+2020-05-12 22:46:54,804 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:54,804 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false}
+2020-05-12 22:46:55,367 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:55,367 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "APIWildCard", "version" : "1.0.0", "provider" : "micheal"}}
+2020-05-12 22:46:56,546 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:56,546 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "APIWildCard", "version" : "1.0.0", "provider" : "andrew@wso2.com"}}
+2020-05-12 22:46:57,118 WARN  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Deployment property file not found: null/deployment.properties
+2020-05-12 22:46:57,119 INFO  [org.wso2.am.scenario.test.common.APIPublisherRestClient] - Login to Publisher https://localhost:9443/publisher as the user admin
+2020-05-12 22:46:57,659 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:57,659 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false, "data" : {"apiName" : "PhoneVerificationNeg", "version" : "1.0.0", "provider" : "admin"}}
+2020-05-12 22:46:58,296 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Code : 200
+2020-05-12 22:46:58,296 INFO  [org.wso2.am.scenario.test.common.ScenarioTestBase] - Response Message : {"error" : false}
