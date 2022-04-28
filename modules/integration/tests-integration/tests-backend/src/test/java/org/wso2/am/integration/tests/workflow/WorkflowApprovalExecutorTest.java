@@ -22,6 +22,7 @@ import java.io.File;
 import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
@@ -54,6 +55,8 @@ import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
 import static org.testng.Assert.assertEquals;
 import static org.wso2.am.integration.test.utils.base.APIMIntegrationConstants.SUPER_TENANT_DOMAIN;
 
@@ -88,6 +91,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private RestAPIStoreImpl APIStoreClient;
+    private String apiName = "WorkflowTestAPI";
+    private String applicationName = "AppCreationWorkflowTestAPP";
 
     @Factory(dataProvider = "userModeDataProvider")
     public WorkflowApprovalExecutorTest(TestUserMode userMode) {
@@ -131,7 +136,6 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     public void testAPIWorkflowProcess() throws Exception {
 
         //add API
-        String apiName = "WorkflowCheckAPI";
         String apiVersion = "1.0.0";
         String apiContext = "workflowCheck";
         String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
@@ -172,14 +176,18 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonResponse = response.getData();
-        Gson gsonResponse = new Gson();
-        WorkflowListDTO workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
-        List<WorkflowInfoDTO> list = new ArrayList<WorkflowInfoDTO>();
-        list = workflowListDTO.getList();
-        String externalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : list) {
-            externalWorkflowRef = workflowinfo.getReferenceId();
+        JSONObject workflowRespObj = new JSONObject(response.getData());
+        String externalWorkflowRef = null;
+        JSONArray arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            JSONObject properties = (JSONObject) listItem.get("properties");
+            if (properties.has("apiName") && apiName.equals(properties.get("apiName"))) {
+                externalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
+
+        assertNotNull("Workflow reference is not available ", externalWorkflowRef);
 
         //get workflow pending request by external workflow reference by admin
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(externalWorkflowRef);
@@ -219,7 +227,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     public void testApplicationWorkflowProcess() throws Exception {
 
         //create Application
-        HttpResponse applicationResponse = restAPIStore.createApplication("ThisApp",
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
                 "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.OAUTH);
         applicationID = applicationResponse.getData();
@@ -241,14 +249,17 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonResponse = response.getData();
-        Gson gsonResponse = new Gson();
-        WorkflowListDTO workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
-        List<WorkflowInfoDTO> list = new ArrayList<WorkflowInfoDTO>();
-        list = workflowListDTO.getList();
-        String externalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : list) {
-            externalWorkflowRef = workflowinfo.getReferenceId();
+        JSONObject workflowRespObj = new JSONObject(response.getData());
+        String externalWorkflowRef = null;
+        JSONArray arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            JSONObject properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))) {
+                externalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
+        assertNotNull("Workflow reference is not available ", externalWorkflowRef);
 
         //get workflow pending requests by external workflow reference by Admin
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(externalWorkflowRef);
@@ -282,7 +293,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Subscription workflow process check", dependsOnMethods =
-            "testApplicationWorkflowProcess")
+            {"testApplicationWorkflowProcess", "testAPIWorkflowProcess" })
     public void testSubscriptionWorkflowProcess() throws Exception {
 
         //create Subscription
@@ -297,7 +308,11 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         subscriptionList = subscriptionListDTO.getList();
         SubscriptionDTO.SubscriptionStatusEnum SubscriptionStatus = SubscriptionDTO.SubscriptionStatusEnum.BLOCKED;
         for (SubscriptionDTO subscriptioninfo : subscriptionList) {
-            SubscriptionStatus = subscriptioninfo.getSubscriptionStatus();
+            if (applicationID.equals(subscriptioninfo.getApplicationInfo().getApplicationId())) {
+                SubscriptionStatus = subscriptioninfo.getSubscriptionStatus();
+                log.info("Found valid subscription for the application");
+                break;
+            }
         }
 
         //Subscription Status should not change
@@ -314,14 +329,18 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonResponse = response.getData();
-        Gson gsonResponse = new Gson();
-        WorkflowListDTO workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
-        List<WorkflowInfoDTO> list = new ArrayList<WorkflowInfoDTO>();
-        list = workflowListDTO.getList();
-        String externalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : list) {
-            externalWorkflowRef = workflowinfo.getReferenceId();
+        JSONObject workflowRespObj = new JSONObject(response.getData());
+        String externalWorkflowRef = null;
+        JSONArray arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            JSONObject properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))
+                    && properties.has("apiName") &&  apiName.equals(properties.get("apiName"))) {
+                externalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
+        assertNotNull("Workflow reference is not available ", externalWorkflowRef);
 
         //get pending workflow request by ExternalWorkflow Reference by Admin
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(externalWorkflowRef);
@@ -352,7 +371,11 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         List<SubscriptionDTO> subscriptionFinalList = new ArrayList<SubscriptionDTO>();
         subscriptionFinalList = subscriptionFinalListDTO.getList();
         for (SubscriptionDTO subscriptioninfo : subscriptionFinalList) {
-            SubscriptionStatus = subscriptioninfo.getSubscriptionStatus();
+            if (applicationID.equals(subscriptioninfo.getApplicationInfo().getApplicationId())) {
+                SubscriptionStatus = subscriptioninfo.getSubscriptionStatus();
+                log.info("Found valid subscription for the application");
+                break;
+            }
         }
 
         //Subscription state should change as UNBLOCKED
@@ -385,14 +408,17 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonResponse = response.getData();
-        Gson gsonResponse = new Gson();
-        WorkflowListDTO workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
-        List<WorkflowInfoDTO> list = new ArrayList<WorkflowInfoDTO>();
-        list = workflowListDTO.getList();
-        String externalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : list) {
-            externalWorkflowRef = workflowinfo.getReferenceId();
+        JSONObject workflowRespObj = new JSONObject(response.getData());
+        String externalWorkflowRef = null;
+        JSONArray arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            JSONObject properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))) {
+                externalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
+        assertNotNull("Workflow reference is not available ", externalWorkflowRef);
 
         //get pending workflow requests by external workflow reference by admin
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(externalWorkflowRef);
@@ -452,14 +478,17 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonResponse = response.getData();
-        Gson gsonResponse = new Gson();
-        WorkflowListDTO workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
-        List<WorkflowInfoDTO> list = new ArrayList<WorkflowInfoDTO>();
-        list = workflowListDTO.getList();
-        String externalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : list) {
-            externalWorkflowRef = workflowinfo.getReferenceId();
+        JSONObject workflowRespObj = new JSONObject(response.getData());
+        String externalWorkflowRef = null;
+        JSONArray arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            JSONObject properties = (JSONObject) listItem.get("properties");
+            if (properties.has("tenantAwareUserName") && username.equals(properties.get("tenantAwareUserName"))) {
+                externalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
+        assertNotNull("Workflow reference is not available ", externalWorkflowRef);
 
         //get workflow pending requests by external workflow reference by admin
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(externalWorkflowRef);
@@ -495,18 +524,18 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "clean up workflow process check", dependsOnMethods =
             "testUserSignUpWorkflowProcess")
     public void testCleanUpWorkflowProcess() throws Exception {
-
+        String applicationName = "MyApp";
         //create application
-        HttpResponse applicationResponse = restAPIStore.createApplication("MyApp",
+        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
                 "Testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.OAUTH);
         String applicationIDNew = applicationResponse.getData();
         //create api
-        String apiName = "WorkflowCheckingAPI";
+        String apiName = "WorkflowCheckingAPINew";
         String apiVersion = "1.0.0";
         String apiContext = "workflowChecking";
         String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
-
+        JSONObject properties;
         APIRequest apiRequest;
         apiRequest = new APIRequest(apiName, apiContext, new URL(url));
         apiRequest.setVersion(apiVersion);
@@ -514,8 +543,8 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setProvider(USER_SMITH);
         HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-        //request to publish the API
         String apiIdNew = apiResponse.getData();
+        //request to publish the API
         HttpResponse lifeCycleChangeResponse = restAPIPublisher
                 .changeAPILifeCycleStatus(apiIdNew, APILifeCycleAction.PUBLISH.getAction(), null);
 
@@ -526,16 +555,18 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonAPIStateChangeGetResponse = response.getData();
-        Gson gsonAPIStateChangeGetResponse = new Gson();
-        WorkflowListDTO workflowListDTO = gsonAPIStateChangeGetResponse.fromJson(jsonAPIStateChangeGetResponse,
-                WorkflowListDTO.class);
-        List<WorkflowInfoDTO> apiStateChangelist = new ArrayList<WorkflowInfoDTO>();
-        apiStateChangelist = workflowListDTO.getList();
-        String apiStateChangeExternalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : apiStateChangelist) {
-            apiStateChangeExternalWorkflowRef = workflowinfo.getReferenceId();
+        String apiStateChangeExternalWorkflowRef = null;
+        JSONObject workflowRespObj = new JSONObject(response.getData());
+        String externalWorkflowRef = null;
+        JSONArray arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            properties = (JSONObject) listItem.get("properties");
+            if (properties.has("apiName") && apiName.equals(properties.get("apiName"))) {
+                apiStateChangeExternalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
-
+        assertNotNull("Workflow reference is not available ", apiStateChangeExternalWorkflowRef);
         //get workflow pending request by external workflow reference by admin
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(apiStateChangeExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 200,
@@ -547,15 +578,17 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonApplicationCreationGetResponse = response.getData();
-        Gson gsonApplicationCreationGetResponse = new Gson();
-        workflowListDTO = gsonApplicationCreationGetResponse.fromJson(jsonApplicationCreationGetResponse,
-                WorkflowListDTO.class);
-        List<WorkflowInfoDTO> applicationCreationlist = new ArrayList<WorkflowInfoDTO>();
-        applicationCreationlist = workflowListDTO.getList();
-        String applicationCreationExternalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : applicationCreationlist) {
-            applicationCreationExternalWorkflowRef = workflowinfo.getReferenceId();
+        String applicationCreationExternalWorkflowRef = null;
+        workflowRespObj = new JSONObject(response.getData());
+        arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))) {
+                applicationCreationExternalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
+        assertNotNull("Workflow reference is not available ", applicationCreationExternalWorkflowRef);
 
         //get workflow pending request by external workflow reference by admin
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(applicationCreationExternalWorkflowRef);
@@ -573,7 +606,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Clean up pending task process is failed for API state change");
 
         //create Application
-        HttpResponse applicationResponseNew = restAPIStore.createApplication("MyApp",
+        HttpResponse applicationResponseNew = restAPIStore.createApplication(applicationName,
                 "Testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.OAUTH);
         String applicationIDSecond = applicationResponseNew.getData();
@@ -589,15 +622,17 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonAPIStateGetResponse = response.getData();
-        Gson gsonAPIStateGetResponse = new Gson();
-        workflowListDTO = gsonAPIStateGetResponse.fromJson(jsonAPIStateGetResponse, WorkflowListDTO.class);
-        List<WorkflowInfoDTO> apiStateChangenewlist = new ArrayList<WorkflowInfoDTO>();
-        apiStateChangenewlist = workflowListDTO.getList();
-        String apiStateChangeNewExternalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : apiStateChangenewlist) {
-            apiStateChangeNewExternalWorkflowRef = workflowinfo.getReferenceId();
+        String apiStateChangeNewExternalWorkflowRef = null;
+        workflowRespObj = new JSONObject(response.getData());
+        arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            properties = (JSONObject) listItem.get("properties");
+            if (properties.has("apiName") && apiName.equals(properties.get("apiName"))) {
+                apiStateChangeNewExternalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
-
+        assertNotNull("Workflow reference is not available ", apiStateChangeNewExternalWorkflowRef);
         //update workflow request and approve the API state change
         response = restAPIAdmin.updateWorkflowStatus(apiStateChangeNewExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 200,
@@ -609,15 +644,17 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonApplicationCreation = response.getData();
-        Gson gsonApplicationCreation = new Gson();
-        workflowListDTO = gsonApplicationCreation.fromJson(jsonApplicationCreation, WorkflowListDTO.class);
-        List<WorkflowInfoDTO> applicationCreationNewlist = new ArrayList<WorkflowInfoDTO>();
-        applicationCreationNewlist = workflowListDTO.getList();
-        String applicationCreationNewExternalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : applicationCreationNewlist) {
-            applicationCreationNewExternalWorkflowRef = workflowinfo.getReferenceId();
+        String applicationCreationNewExternalWorkflowRef = null;
+        workflowRespObj = new JSONObject(response.getData());
+        arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))) {
+                applicationCreationNewExternalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
-
+        assertNotNull("Application workflow reference is not available ", applicationCreationNewExternalWorkflowRef);
         //update workflow pending task of application creation
         response = restAPIAdmin.updateWorkflowStatus(applicationCreationNewExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 200,
@@ -635,15 +672,18 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonSubscriptionCreationGet = response.getData();
-        Gson gsonSubscriptionCreationGet = new Gson();
-        workflowListDTO = gsonSubscriptionCreationGet.fromJson(jsonSubscriptionCreationGet, WorkflowListDTO.class);
-        List<WorkflowInfoDTO> subscriptionCreationlist = new ArrayList<WorkflowInfoDTO>();
-        subscriptionCreationlist = workflowListDTO.getList();
-        String subscriptionCreationExternalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : subscriptionCreationlist) {
-            subscriptionCreationExternalWorkflowRef = workflowinfo.getReferenceId();
+        String subscriptionCreationExternalWorkflowRef = null;
+        workflowRespObj = new JSONObject(response.getData());
+        arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))
+                    && properties.has("apiName") &&  apiName.equals(properties.get("apiName"))) {
+                subscriptionCreationExternalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
-
+        assertNotNull("Subscription workflow reference is not available ", subscriptionCreationExternalWorkflowRef);
         //get workflow pending task by external workflow reference by admin
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(subscriptionCreationExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 200,
@@ -661,15 +701,17 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending requests failed for User Admin");
 
         String jsonKeyGenerationGetResponse = response.getData();
-        Gson gsonKeyGenerationGetResponse = new Gson();
-        workflowListDTO = gsonKeyGenerationGetResponse.fromJson(jsonKeyGenerationGetResponse, WorkflowListDTO.class);
-        List<WorkflowInfoDTO> keyGenerationlist = new ArrayList<WorkflowInfoDTO>();
-        keyGenerationlist = workflowListDTO.getList();
-        String keyGenerationExternalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : keyGenerationlist) {
-            keyGenerationExternalWorkflowRef = workflowinfo.getReferenceId();
+        String keyGenerationExternalWorkflowRef = null;
+        workflowRespObj = new JSONObject(response.getData());
+        arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))) {
+                keyGenerationExternalWorkflowRef = (String) listItem.get("referenceId");
+            }
         }
-
+        assertNotNull("application key workflow reference is not available ", keyGenerationExternalWorkflowRef);
         //get workflow pending request by external workflow reference
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(keyGenerationExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 200,
@@ -684,127 +726,6 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(keyGenerationExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 500,
                 "Clean up pending task process is failed for Application Key generation");
-    }
-
-    @Test(groups = {"wso2.am"}, description = "pending tasks workflow process check", dependsOnMethods =
-            "testCleanUpWorkflowProcess")
-    public void testPendingTaskWorkflowProcess() throws Exception {
-
-        //create application
-        HttpResponse applicationResponse = restAPIStore.createApplication("AppApp",
-                "Testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                ApplicationDTO.TokenTypeEnum.OAUTH);
-        String applicationIDNew = applicationResponse.getData();
-        //get workflow pending requests by admin
-        String workflowType = null;
-        org.wso2.am.integration.test.HttpResponse response = restAPIAdmin.getWorkflows(workflowType);
-        assertEquals(response.getResponseCode(), 200,
-                "Get Workflow Pending requests failed for User Admin");
-
-        String jsonResponse = response.getData();
-        Gson gsonResponse = new Gson();
-        WorkflowListDTO workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
-        int count = workflowListDTO.getCount();
-        assertEquals(count, 1,
-                "Correct Number of Workflow requests never received");
-        List<WorkflowInfoDTO> firstlist = new ArrayList<WorkflowInfoDTO>();
-        firstlist = workflowListDTO.getList();
-        String firstExternalWorkflowRef = "";
-        for (WorkflowInfoDTO workflowinfo : firstlist) {
-            firstExternalWorkflowRef = workflowinfo.getReferenceId();
-        }
-
-        //create API and request to publish API
-        String apiName = "WorkflowCheckCount";
-        String apiVersion = "1.0.0";
-        String apiContext = "workflowCheckCount";
-        String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
-
-        APIRequest apiRequest;
-        apiRequest = new APIRequest(apiName, apiContext, new URL(url));
-        apiRequest.setVersion(apiVersion);
-        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiRequest.setProvider(USER_SMITH);
-        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
-        String apiIdFirst = apiResponse.getData();
-        HttpResponse lifeCycleChangeResponse = restAPIPublisher
-                .changeAPILifeCycleStatus(apiIdFirst, APILifeCycleAction.PUBLISH.getAction(), null);
-
-        //get workflow pending requests by admin
-        response = restAPIAdmin.getWorkflows(workflowType);
-        assertEquals(response.getResponseCode(), 200,
-                "Get Workflow Pending requests failed for User Admin");
-
-        jsonResponse = response.getData();
-        workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
-        count = workflowListDTO.getCount();
-        assertEquals(count, 2,
-                "Correct Number of Workflow requests never received");
-        List<WorkflowInfoDTO> secondlist = new ArrayList<WorkflowInfoDTO>();
-        secondlist = workflowListDTO.getList();
-        String secondExternalWorkflowRef = "";
-
-        //update workflow status by user admin
-        response = restAPIAdmin.updateWorkflowStatus(firstExternalWorkflowRef);
-        assertEquals(response.getResponseCode(), 200,
-                "Workflow request can only be viewed for the admin");
-
-        for (WorkflowInfoDTO workflowinfo : secondlist) {
-            secondExternalWorkflowRef = workflowinfo.getReferenceId();
-        }
-
-        //upload workflow status by user admin
-        response = restAPIAdmin.updateWorkflowStatus(secondExternalWorkflowRef);
-        assertEquals(response.getResponseCode(), 200,
-                "Workflow request can only be viewed for the admin");
-        //create subscription
-        HttpResponse SubscribeResponse = restAPIStore.createSubscription(apiIdFirst, applicationIDNew,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
-        subscriptionId = SubscribeResponse.getData();
-        assertEquals(SubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Subscribe of old API version request not successful");
-        //get workflow pending requests for user admin
-        response = restAPIAdmin.getWorkflows(workflowType);
-        assertEquals(response.getResponseCode(), 200,
-                "Get Workflow Pending requests failed for User Admin");
-
-        jsonResponse = response.getData();
-        workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
-        count = workflowListDTO.getCount();
-        assertEquals(count, 1,
-                "Correct Number of Workflow requests never received");
-
-        //generate keys
-        ArrayList grantTypes = new ArrayList();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationIDNew,
-                APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME, "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        //get workflow pending requests by admin
-        response = restAPIAdmin.getWorkflows(workflowType);
-        assertEquals(response.getResponseCode(), 200,
-                "Get Workflow Pending requests failed for User Admin");
-
-        jsonResponse = response.getData();
-        workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
-        count = workflowListDTO.getCount();
-        assertEquals(count, 2,
-                "Correct Number of Workflow requests never received");
-
-        //delete application and delete API clean up pending task process
-        restAPIStore.deleteApplication(applicationIDNew);
-        restAPIPublisher.deleteAPI(apiIdFirst);
-        //get workflow pending requests by admin
-        response = restAPIAdmin.getWorkflows(workflowType);
-        assertEquals(response.getResponseCode(), 200,
-                "Get Workflow Pending requests failed for User Admin");
-
-        jsonResponse = response.getData();
-        workflowListDTO = gsonResponse.fromJson(jsonResponse, WorkflowListDTO.class);
-        count = workflowListDTO.getCount();
-        assertEquals(count, 0,
-                "Correct Number of Workflow requests never received");
     }
 
     @AfterClass(alwaysRun = true)
