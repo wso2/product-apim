@@ -50,12 +50,16 @@ public class RestAPIGatewayImpl {
     GetSubscriptionInfoApi subscriptionInfoApi = new GetSubscriptionInfoApi();
 
     public RestAPIGatewayImpl(String username, String password, String tenantDomain) {
+        this(username, password, tenantDomain, "https://localhost:9943/");
+    }
+
+    public RestAPIGatewayImpl(String username, String password, String tenantDomain, String gatewayURL) {
         ApiClient apiClient = new ApiClient();
         String basicEncoded =
                 DatatypeConverter.printBase64Binary((username + ':' + password).getBytes(StandardCharsets.UTF_8));
         apiClient.addDefaultHeader("Authorization", "Basic " + basicEncoded);
         apiClient.setDebugging(true);
-        apiClient.setBasePath("https://localhost:9443/api/am/gateway/v2");
+        apiClient.setBasePath(gatewayURL + "api/am/gateway/v2");
         apiClient.setReadTimeout(600000);
         apiClient.setConnectTimeout(600000);
         apiClient.setWriteTimeout(600000);

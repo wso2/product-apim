@@ -211,7 +211,7 @@ public class RESTApiCreationUsingOASDocNegativeTestCase extends ScenarioTestBase
     @AfterMethod(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(ADMIN_USERNAME, ADMIN_PW, publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(ADMIN_USERNAME, ADMIN_PW, publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL);
         try {
             for (String apiId : apiIdList) {
                 restAPIPublisherNew.deleteAPI(apiId);

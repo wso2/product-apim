@@ -163,14 +163,7 @@ public class RestAPIPublisherImpl {
     private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
 
-
-    @Deprecated
-    public RestAPIPublisherImpl() {
-
-        this(username, password, "", "https://localhost:9943");
-    }
-
-    public RestAPIPublisherImpl(String username, String password, String tenantDomain, String publisherURL) {
+    public RestAPIPublisherImpl(String username, String password, String tenantDomain, String publisherURL, String gatewayURL) {
         // token/DCR of Publisher node itself will be used
         String tokenURL = publisherURL + "oauth2/token";
         String dcrURL = publisherURL + "client-registration/v0.17/register";
@@ -217,7 +210,7 @@ public class RestAPIPublisherImpl {
         endpointCertificatesApi.setApiClient(apiPublisherClient);
         productLifecycleApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
-        this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
+        this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain, gatewayURL);
     }
 
     public String getAccessToken() {

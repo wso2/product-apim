@@ -109,6 +109,7 @@ public class ScenarioTestBase {
     protected String publisherURLHttps;
     protected String keyManagerHTTPSURL;
     protected String gatewayHTTPSURL;
+    protected String gatewayInternalURL;
     protected String storeURLHttp;
     protected String storeURLHttps;
     protected TestUserMode userMode;
@@ -198,6 +199,7 @@ public class ScenarioTestBase {
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
             keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
             gatewayHTTPSURL = gatewayUrlsWrk.getWebAppURLNhttps();
+            gatewayInternalURL = gatewayUrlsWrk.getWebAppURLNhttps();
 
             storeURLHttp = storeUrls.getWebAppURLHttp();
             storeURLHttps = storeUrls.getWebAppURLHttps();
@@ -230,7 +232,7 @@ public class ScenarioTestBase {
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
-                    publisherContext.getContextTenant().getDomain(), baseUrl);
+                    publisherContext.getContextTenant().getDomain(), baseUrl, gatewayInternalURL);
             restAPIStore =
                     new RestAPIStoreImpl(
                             storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
