@@ -74,7 +74,7 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
     private final String GRAPHQL_API_NAME = "CountriesGraphqlAPI";
     private final String API_CONTEXT = "info";
     private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String END_POINT_URL = "https://localhost:9943/am-graphQL-sample/api/graphql/";
+    private final String END_POINT_URL = "https://localhost:9443/am-graphQL-sample/api/graphql/";
     private final String RESPONSE_DATA = "[{\"name\":\"Afrikaans\",\"code\":\"af\"},{\"name\":\"Amharic\",\"code\":\"am\"}," +
             "{\"name\":\"Arabic\",\"code\":\"ar\"},{\"name\":\"Aymara\",\"code\":\"ay\"},{\"name\":\"Azerbaijani\"," +
             "\"code\":\"az\"},{\"name\":\"Belarusian\",\"code\":\"be\"}]";

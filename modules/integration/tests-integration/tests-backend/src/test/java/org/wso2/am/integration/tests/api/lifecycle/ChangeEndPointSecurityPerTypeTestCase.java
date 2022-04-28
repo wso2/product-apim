@@ -340,7 +340,7 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
                 "  \"production\":{\n" +
                 "    \"enabled\":true,\n" +
                 "    \"type\":\"OAUTH\",\n" +
-                "    \"tokenUrl\":\"https://localhost:9943/oauth2/token\",\n" +
+                "    \"tokenUrl\":\"https://localhost:9443/oauth2/token\",\n" +
                 "    \"clientId\":\"" + applicationKeyBeanProduction.getConsumerKey() + "\",\n" +
                 "    \"clientSecret\":\"" + applicationKeyBeanProduction.getConsumerSecret() + "\",\n" +
                 "    \"customParameters\":{},\n" +
@@ -349,7 +349,7 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
                 "  \"sandbox\":{\n" +
                 "    \"enabled\":true,\n" +
                 "    \"type\":\"OAUTH\",\n" +
-                "    \"tokenUrl\":\"https://localhost:9943/oauth2/token\",\n" +
+                "    \"tokenUrl\":\"https://localhost:9443/oauth2/token\",\n" +
                 "    \"clientId\":\"" + applicationKeyBeanSandbox.getConsumerKey() + "\",\n" +
                 "    \"clientSecret\":\"" + applicationKeyBeanSandbox.getConsumerSecret() + "\",\n" +
                 "    \"customParameters\":{},\n" +
@@ -381,7 +381,7 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         Map sandboxEndpointSecurityModel = (Map) endpointSecurityModel.get("sandbox");
         Assert.assertTrue((Boolean) sandboxEndpointSecurityModel.get("enabled"));
         Assert.assertEquals(sandboxEndpointSecurityModel.get("type"), "OAUTH");
-        Assert.assertEquals(sandboxEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
+        Assert.assertEquals(sandboxEndpointSecurityModel.get("tokenUrl"), "https://localhost:9443/oauth2/token");
         Assert.assertEquals(sandboxEndpointSecurityModel.get("clientId"), applicationKeyBeanSandbox.getConsumerKey());
         Assert.assertEquals(sandboxEndpointSecurityModel.get("clientSecret"),
                 applicationKeyBeanSandbox.getConsumerSecret());
@@ -389,7 +389,7 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         Map productionEndpointSecurityModel = (Map) endpointSecurityModel.get("production");
         Assert.assertTrue((Boolean) productionEndpointSecurityModel.get("enabled"));
         Assert.assertEquals(productionEndpointSecurityModel.get("type"), "OAUTH");
-        Assert.assertEquals(productionEndpointSecurityModel.get("tokenUrl"), "https://localhost:9943/oauth2/token");
+        Assert.assertEquals(productionEndpointSecurityModel.get("tokenUrl"), "https://localhost:9443/oauth2/token");
         Assert.assertEquals(productionEndpointSecurityModel.get("clientId"),
                 applicationKeyBeanProduction.getConsumerKey());
         Assert.assertEquals(productionEndpointSecurityModel.get("clientSecret"),
@@ -430,9 +430,9 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
 
     private void validateIntrospectionResponse(User user, String accessToken, String clientId) throws UnsupportedEncodingException {
 
-        String introspectionUrl = "https://localhost:9943/oauth2/introspect";
+        String introspectionUrl = "https://localhost:9443/oauth2/introspect";
         if (!"carbon.super".equals(user.getUserDomain())) {
-            introspectionUrl = "https://localhost:9943/t/" + user.getUserDomain() + "/oauth2/introspect";
+            introspectionUrl = "https://localhost:9443/t/" + user.getUserDomain() + "/oauth2/introspect";
         }
         CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
         HttpPost httpPost = new HttpPost();

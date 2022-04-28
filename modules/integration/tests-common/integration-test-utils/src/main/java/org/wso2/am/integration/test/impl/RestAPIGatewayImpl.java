@@ -50,7 +50,7 @@ public class RestAPIGatewayImpl {
     GetSubscriptionInfoApi subscriptionInfoApi = new GetSubscriptionInfoApi();
 
     public RestAPIGatewayImpl(String username, String password, String tenantDomain) {
-        this(username, password, tenantDomain, "https://localhost:9943/");
+        this(username, password, tenantDomain, "https://localhost:9443/");
     }
 
     public RestAPIGatewayImpl(String username, String password, String tenantDomain, String gatewayURL) {

@@ -91,7 +91,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        storeURLHttp = "https://localhost:9943/";
+        storeURLHttp = "https://localhost:9443/";
 
     }
 

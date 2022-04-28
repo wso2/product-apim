@@ -200,8 +200,8 @@ public class MicroGWJWTRevocationTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "JWT revocation test", dependsOnMethods = "revokeRequestTestCase")
     public void checkETCDForRevokedJTITestCase() throws Exception {
         log.info("checkETCDForRevokedJTITTestCase  Initiated");
-        String etcdEndpointURLs = "https://localhost:9943/etcdmock/v2/keys/jti/2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d";
-        URL etcdEndpointURL = new URL("https://localhost:9943/etcdmock/v2/keys/jti/2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d");
+        String etcdEndpointURLs = "https://localhost:9443/etcdmock/v2/keys/jti/2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d";
+        URL etcdEndpointURL = new URL("https://localhost:9443/etcdmock/v2/keys/jti/2f3c1e3a-fe4c-4cd4-b049-156e3c63fc5d");
         Map<String, String> authenticationRequestHeaders = new HashMap<>();
         authenticationRequestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
         String retrievedETCDJTIKey = "";

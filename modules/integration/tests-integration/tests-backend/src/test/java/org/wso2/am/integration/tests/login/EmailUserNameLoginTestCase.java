@@ -120,7 +120,7 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
         } catch (IOException ignored) {
             log.error(ignored);
         }
-        restAPIPublisher = new RestAPIPublisherImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN, "https://localhost:9943/");
+        restAPIPublisher = new RestAPIPublisherImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN, "https://localhost:9443/");
         try {
             apiListDTO = restAPIPublisher.apIsApi.getAllAPIs(null, null, TENANT_DOMAIN, null, null, null, null, null);
         } catch (ApiException e) {
@@ -128,13 +128,13 @@ public class EmailUserNameLoginTestCase extends APIManagerLifecycleBaseTest {
                     e.getMessage(), e);
         }
         // check for store login with email user name
-        restAPIStore = new RestAPIStoreImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN,"https://localhost:9943/"
+        restAPIStore = new RestAPIStoreImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN,"https://localhost:9443/"
         );
         ApplicationListDTO responseData = restAPIStore.getAllApps();
         assertNotNull(responseData, "Login to Store with email username failed");
 
         // check for Admin Portal login with email user name
-        restAPIAdmin = new RestAPIAdminImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN, "https://localhost:9943/");
+        restAPIAdmin = new RestAPIAdminImpl(TENANT_ADMIN_USERNAME, PASSWORD, TENANT_DOMAIN, "https://localhost:9443/");
         ApplicationThrottlePolicyListDTO listDTO =
                 restAPIAdmin.applicationPolicyCollectionApi.throttlingPoliciesApplicationGet(null, null, null);
         assertNotNull(listDTO, "Login to Admin portal with email username failed");

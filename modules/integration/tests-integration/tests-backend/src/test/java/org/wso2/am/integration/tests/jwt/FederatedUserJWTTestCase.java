@@ -111,7 +111,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
     private String jwtApplicationId;
     private String apiId;
     private int idpPort;
-    private String callbackUrl = "https://localhost:9943/services/Version";
+    private String callbackUrl = "https://localhost:9443/services/Version";
     private String authorizeURL;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -200,7 +200,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         wireMockServer =
                 new WireMockServer(WireMockConfiguration.options().port(idpPort).extensions(new ResponseTemplateTransformer(false)));
         wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo("/authorize"))
-                .willReturn(WireMock.aResponse().withHeader("Location", "https://localhost:9943/commonauth?code" +
+                .willReturn(WireMock.aResponse().withHeader("Location", "https://localhost:9443/commonauth?code" +
                         "=" + UUID.randomUUID().toString() + "&state={{request.query.state}}")
                         .withStatus(302).withTransformers("response-template")));
         wireMockServer.stubFor(WireMock.post(WireMock.urlPathMatching("/token")).willReturn(WireMock.aResponse()
@@ -435,13 +435,13 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
                 Assert.assertEquals(responseFromFedIDP.getStatusLine().getStatusCode(), 302);
                 Assert.assertNotNull(responseFromFedIDP.getFirstHeader("Location"));
                 Header locationFromFedIDP = responseFromFedIDP.getFirstHeader("Location");
-                Assert.assertTrue(locationFromFedIDP.getValue().contains("https://localhost:9943/commonauth?code="));
+                Assert.assertTrue(locationFromFedIDP.getValue().contains("https://localhost:9443/commonauth?code="));
                 try (CloseableHttpResponse responseFromCommonAuth =
                              executeRequest(new HttpGet(locationFromFedIDP.getValue()), context)) {
                     Assert.assertEquals(responseFromCommonAuth.getStatusLine().getStatusCode(), 302);
                     Assert.assertNotNull(responseFromCommonAuth.getFirstHeader("Location"));
                     Header locationFromCommonAuth = responseFromCommonAuth.getFirstHeader("Location");
-                    Assert.assertTrue(locationFromCommonAuth.getValue().contains("https://localhost:9943/oauth2" +
+                    Assert.assertTrue(locationFromCommonAuth.getValue().contains("https://localhost:9443/oauth2" +
                             "/authorize?sessionDataKey="));
                     try (CloseableHttpResponse response =
                                  executeRequest(new HttpGet(locationFromCommonAuth.getValue()), context)) {
@@ -618,7 +618,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         properties[5] = property;
         property = new Property();
         property.setName(IdentityApplicationConstants.Authenticator.OIDC.CALLBACK_URL);
-        property.setValue("https://localhost:9943:/commonauth");
+        property.setValue("https://localhost:9443:/commonauth");
         properties[6] = property;
         property = new Property();
         property.setName(IdentityApplicationConstants.Authenticator.OIDC.OIDC_LOGOUT_URL);

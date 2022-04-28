@@ -26,16 +26,16 @@
                     <then>
                         <send>
                             <endpoint name="admin--PizzaShackAPI_APIproductionEndpoint_1">
-                                <http uri-template="https://localhost:9943/am/sample/pizzashack/v1/api/"/>
-                                <property name="ENDPOINT_ADDRESS" value="https://localhost:9943/am/sample/pizzashack/v1/api/"/>
+                                <http uri-template="https://localhost:9443/am/sample/pizzashack/v1/api/"/>
+                                <property name="ENDPOINT_ADDRESS" value="https://localhost:9443/am/sample/pizzashack/v1/api/"/>
                             </endpoint>
                         </send>
                     </then>
                     <else>
                         <send>
                             <endpoint name="admin--PizzaShackAPI_APIsandboxEndpoint_1">
-                                <http uri-template="https://localhost:9943/am/sample/pizzashack/v1/api/"/>
-                                <property name="ENDPOINT_ADDRESS" value="https://localhost:9943/am/sample/pizzashack/v1/api/"/>
+                                <http uri-template="https://localhost:9443/am/sample/pizzashack/v1/api/"/>
+                                <property name="ENDPOINT_ADDRESS" value="https://localhost:9443/am/sample/pizzashack/v1/api/"/>
                             </endpoint>
                         </send>
                     </else>
