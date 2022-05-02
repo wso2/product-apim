@@ -38,7 +38,7 @@ public class APISecurityAuditTestCase extends APIManagerLifecycleBaseTest {
     private final String AUDIT_API_NAME = "TestAuditAPI";
     private final String API_CONTEXT = "audit";
     private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String ENDPOINT_URL = "https://localhost:9943/am-auditApi-sample/api/auditapi";
+    private final String ENDPOINT_URL = "https://localhost:9443/am-auditApi-sample/api/auditapi";
 
     private String apiId;
 

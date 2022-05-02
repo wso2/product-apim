@@ -18,7 +18,7 @@ public class RestAPIInternalImpl {
                 DatatypeConverter.printBase64Binary((username + ':' + password).getBytes(StandardCharsets.UTF_8));
         apiClient.addDefaultHeader("Authorization", "Basic " + basicEncoded);
         apiClient.setDebugging(true);
-        apiClient.setBasePath("https://localhost:9943/internal/data/v1");
+        apiClient.setBasePath("https://localhost:9443/internal/data/v1");
         apiClient.setReadTimeout(600000);
         apiClient.setConnectTimeout(600000);
         apiClient.setWriteTimeout(600000);

@@ -127,6 +127,7 @@ public class APIMIntegrationBaseTest {
     protected String adminURLHttps;
     protected String keyManagerHTTPSURL;
     protected String gatewayHTTPSURL;
+    protected String gatewayInternalURL;
     protected String storeURLHttp;
     protected String storeURLHttps;
     protected String keymanagerSessionCookie;
@@ -210,6 +211,7 @@ public class APIMIntegrationBaseTest {
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
             keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
             gatewayHTTPSURL = gatewayUrlsWrk.getWebAppURLNhttps();
+            gatewayInternalURL = gatewayUrlsWrk.getWebAppURLNhttps();
             adminURLHttps =  adminUrls.getWebAppURLHttps();
             adminURLHttp = adminUrls.getWebAppURLHttps();
 
@@ -221,7 +223,7 @@ public class APIMIntegrationBaseTest {
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
-                    publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+                    publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL);
             restAPIStore =
                     new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getContextUser().getPassword(),
@@ -741,10 +743,6 @@ public class APIMIntegrationBaseTest {
             }
         }
         return null;
-    }
-
-    protected RestAPIPublisherImpl getRestAPIPublisherForUser(String user, String pass, String tenantDomain) {
-        return new RestAPIPublisherImpl(user, pass, tenantDomain, publisherURLHttps);
     }
 
     protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain) {

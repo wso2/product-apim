@@ -283,7 +283,7 @@
             <Property name="ttl">5000</Property>
         </RealtimeNotifier>
         <PersistentNotifier>
-            <Property name="hostname">https://localhost:9943/etcdmock/v2/keys/jti/</Property>
+            <Property name="hostname">https://localhost:9443/etcdmock/v2/keys/jti/</Property>
             <Property name="ttl">5000</Property>
             <Property name="username">root</Property>
             <Property name="password">root</Property>

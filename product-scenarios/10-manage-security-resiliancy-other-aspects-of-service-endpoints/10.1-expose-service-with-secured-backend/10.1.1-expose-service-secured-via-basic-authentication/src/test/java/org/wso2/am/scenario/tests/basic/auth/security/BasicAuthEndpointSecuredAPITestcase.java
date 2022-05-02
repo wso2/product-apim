@@ -52,7 +52,7 @@ import static org.testng.Assert.assertTrue;
 
 public class BasicAuthEndpointSecuredAPITestcase extends ScenarioTestBase {
     private static final Log log = LogFactory.getLog(BasicAuthEndpointSecuredAPITestcase.class);
-    private final String apiName = "BasicAuthEndpointSecuredAPITestcaseAPI";
+    private final String apiName = "BasicAuthEndpointSecuredAPITestcaseAIPI";
     private final String TEST_API_1_CONTEXT = "security";
     private final String TEST_API_1_CONTEXT_TENANT = "t/wso2.com/" + TEST_API_1_CONTEXT;
     private final String apiVersion = "1.0.0";

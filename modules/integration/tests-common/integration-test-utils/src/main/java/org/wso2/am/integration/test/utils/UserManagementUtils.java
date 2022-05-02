@@ -52,7 +52,7 @@ public class UserManagementUtils {
     public static void signupUser(String userName, String password, String firstName,
                                   String organization)  throws IOException, APIManagerIntegrationTestException {
         CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();
-        HttpPost postRequest = new HttpPost("https://localhost:9943/api/identity/user/v1.0/me");
+        HttpPost postRequest = new HttpPost("https://localhost:9443/api/identity/user/v1.0/me");
         postRequest.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
                 "Basic " + encodeCredentials("admin", "admin".toCharArray()));
         postRequest.addHeader("Content-Type", APPLICATION_JSON);
@@ -86,7 +86,7 @@ public class UserManagementUtils {
     public static void signupUser(String userName, String password, String firstName,
                                   String organization, String email)  throws IOException, APIManagerIntegrationTestException {
         CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();
-        HttpPost postRequest = new HttpPost("https://localhost:9943/api/identity/user/v1.0/me");
+        HttpPost postRequest = new HttpPost("https://localhost:9443/api/identity/user/v1.0/me");
         postRequest.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
                 "Basic " + encodeCredentials("admin", "admin".toCharArray()));
         postRequest.addHeader("Content-Type", APPLICATION_JSON);

@@ -134,7 +134,7 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         restAPIPublisher = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getTenantUserList().get(1).getPassword(),
-                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL);
 
         try {
             restAPIPublisher.deleteAPI(apiID);
@@ -144,7 +144,7 @@ public class DeleteAPINegativeTestCases extends ScenarioTestBase {
         restAPIPublisher = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
-                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL);
         restAPIPublisher.deleteAPI(apiID);
     }
 
