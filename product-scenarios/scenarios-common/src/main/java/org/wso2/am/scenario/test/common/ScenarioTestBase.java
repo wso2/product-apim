@@ -253,6 +253,10 @@ public class ScenarioTestBase {
             log.info("storeURLHttps: " + storeURLHttps);
             log.info("publisherURLHttps: " + publisherURLHttps);
             log.info("DCR end point: " + dcrURL);
+            log.info("gatewayHTTPSURL: " + gatewayHTTPSURL);
+            log.info("gatewayInternalURL: " + gatewayInternalURL);
+            log.info("gatewayHttpsURL: " + gatewayHttpsURL);
+
             log.info("Logging URL's ENDED");
 
             try {
