@@ -122,4 +122,3 @@ source ${HOME}/code-coverage/code-coverage.sh
 generate_code_coverage ${INPUT_DIR} ${OUTPUT_DIR}
 
 sleep 5000
-
