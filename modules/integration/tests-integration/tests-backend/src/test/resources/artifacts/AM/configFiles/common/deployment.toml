@@ -91,10 +91,11 @@ display_multiple_versions = true
 display_deprecated_apis = true
 
 [apim.cors]
-allow_origins = "*"
+allow_origins = ["http://global.config1.com", "http://global.config2.com", "http://global.config3.com"]
 allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
-allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","apikey", "testKey"]
 allow_credentials = false
+enable_validation_for_ws = true
 
 [apim.workflow]
 enable = false
