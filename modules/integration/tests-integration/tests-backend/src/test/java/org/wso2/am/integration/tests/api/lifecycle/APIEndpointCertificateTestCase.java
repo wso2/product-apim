@@ -223,10 +223,10 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
             if ("endpoint-1".equals(certificate.getAlias())) {
                 CertificateInfoDTO certificateInfoDTO = restAPIPublisher.getendpointCertificateContent("endpoint-1");
                 Assert.assertEquals(certificateInfoDTO.getStatus(), "Active");
-                Assert.assertEquals(certificateInfoDTO.getSubject(), "CN=localhost");
+                Assert.assertEquals(certificateInfoDTO.getSubject(), "CN=localhost, OU=localhost, C=LK");
                 Assert.assertEquals(certificateInfoDTO.getVersion(), "3");
-                Date to = simpleDateFormat.parse("Wed Apr 27 17:14:25 IST 2022");
-                Date from = simpleDateFormat.parse("Tue Apr 27 17:14:25 IST 2021");
+                Date to = simpleDateFormat.parse("Thu May 06 23:41:14 IST 2032");
+                Date from = simpleDateFormat.parse("Fri May 06 23:41:14 IST 2022");
                 SimpleDateFormat convertedSimpleDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
                 Assert.assertEquals(certificateInfoDTO.getValidity(),
                         new CertificateValidityDTO().to(convertedSimpleDateFormat.format(to)).from(convertedSimpleDateFormat.format(from)));
@@ -240,11 +240,11 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
             if ("endpoint-2".equals(certificate.getAlias())) {
                 CertificateInfoDTO certificateInfoDTO = restAPIPublisher.getendpointCertificateContent("endpoint-2");
                 Assert.assertEquals(certificateInfoDTO.getStatus(), "Active");
-                Assert.assertEquals(certificateInfoDTO.getSubject(), "CN=wso2apim, OU=integration, O=WSO2, " +
-                        "ST=Colombo, C=LK");
+                Assert.assertEquals(certificateInfoDTO.getSubject(), "CN=wso2apim, OU=integration, O=WSO2," +
+                        " ST=Colombo, C=LK");
                 Assert.assertEquals(certificateInfoDTO.getVersion(), "3");
-                Date to = simpleDateFormat.parse("Wed Apr 27 20:15:14 IST 2022");
-                Date from = simpleDateFormat.parse("Tue Apr 27 20:15:14 IST 2021");
+                Date to = simpleDateFormat.parse("Fri May 07 00:31:00 IST 2032");
+                Date from = simpleDateFormat.parse("Sat May 07 00:31:00 IST 2022");
                 SimpleDateFormat convertedSimpleDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
 
                 Assert.assertEquals(certificateInfoDTO.getValidity(),
