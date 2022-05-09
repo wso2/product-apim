@@ -219,8 +219,8 @@ public class APIEndpointsCertificateTestCase extends APIManagerLifecycleBaseTest
                 Assert.assertEquals(certificateInfoDTO.getStatus(), "Active");
                 Assert.assertEquals(certificateInfoDTO.getSubject(), "CN=localhost");
                 Assert.assertEquals(certificateInfoDTO.getVersion(), "3");
-                Date to = simpleDateFormat.parse("Wed Apr 27 17:14:25 IST 2022");
-                Date from = simpleDateFormat.parse("Tue Apr 27 17:14:25 IST 2021");
+                Date to = simpleDateFormat.parse("Thu May 06 13:39:35 IST 2032");
+                Date from = simpleDateFormat.parse("Mon May 09 13:39:35 IST 2022");
                 SimpleDateFormat convertedSimpleDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
                 Assert.assertEquals(certificateInfoDTO.getValidity(),
                         new CertificateValidityDTO().to(convertedSimpleDateFormat.format(to)).from(convertedSimpleDateFormat.format(from)));
@@ -237,8 +237,8 @@ public class APIEndpointsCertificateTestCase extends APIManagerLifecycleBaseTest
                 Assert.assertEquals(certificateInfoDTO.getSubject(), "CN=wso2apim, OU=integration, O=WSO2, " +
                         "ST=Colombo, C=LK");
                 Assert.assertEquals(certificateInfoDTO.getVersion(), "3");
-                Date to = simpleDateFormat.parse("Wed Apr 27 20:15:14 IST 2022");
-                Date from = simpleDateFormat.parse("Tue Apr 27 20:15:14 IST 2021");
+                Date to = simpleDateFormat.parse("Thu May 06 13:22:04 IST 2032");
+                Date from = simpleDateFormat.parse("Mon May 09 13:22:04 IST 2022");
                 SimpleDateFormat convertedSimpleDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
 
                 Assert.assertEquals(certificateInfoDTO.getValidity(),
