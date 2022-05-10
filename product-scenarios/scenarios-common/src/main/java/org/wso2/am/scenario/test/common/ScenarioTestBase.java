@@ -108,8 +108,8 @@ public class ScenarioTestBase {
     protected String publisherURLHttp;
     protected String publisherURLHttps;
     protected String keyManagerHTTPSURL;
-    protected String gatewayHTTPSURL;
-    protected String gatewayInternalURL;
+    protected static String gatewayHTTPSURL;
+    protected static String gatewayInternalURL;
     protected String storeURLHttp;
     protected String storeURLHttps;
     protected TestUserMode userMode;
@@ -318,6 +318,16 @@ public class ScenarioTestBase {
         gatewayHttpsURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
         if (gatewayHttpsURL == null) {
             gatewayHttpsURL = "https://localhost:8243";
+        }
+
+        gatewayInternalURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
+        if (gatewayInternalURL == null) {
+            gatewayInternalURL = "https://localhost:8243";
+        }
+
+        gatewayHTTPSURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
+        if (gatewayHTTPSURL == null) {
+            gatewayHTTPSURL = "https://localhost:8243";
         }
         serviceEndpoint = infraProperties.getProperty(SERVICE_ENDPOINT);
         if (serviceEndpoint == null) {

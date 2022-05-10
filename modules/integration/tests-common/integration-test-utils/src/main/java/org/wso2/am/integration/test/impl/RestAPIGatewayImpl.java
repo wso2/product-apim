@@ -63,6 +63,7 @@ public class RestAPIGatewayImpl {
         apiClient.setReadTimeout(600000);
         apiClient.setConnectTimeout(600000);
         apiClient.setWriteTimeout(600000);
+        apiClient.setVerifyingSsl(false);
         getApiArtifactsApi.setApiClient(apiClient);
         deployApiApi.setApiClient(apiClient);
         undeployApiApi.setApiClient(apiClient);
