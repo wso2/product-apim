@@ -154,6 +154,7 @@ public class RestAPIAdminImpl {
         apiAdminClient.setReadTimeout(600000);
         apiAdminClient.setConnectTimeout(600000);
         apiAdminClient.setWriteTimeout(600000);
+        apiAdminClient.setVerifyingSsl(false);
         keyManagerCollectionApi.setApiClient(apiAdminClient);
         keyManagerIndividualApi.setApiClient(apiAdminClient);
         settingsApi.setApiClient(apiAdminClient);

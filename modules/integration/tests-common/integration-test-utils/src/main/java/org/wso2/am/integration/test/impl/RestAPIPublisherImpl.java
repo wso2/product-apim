@@ -186,6 +186,7 @@ public class RestAPIPublisherImpl {
         apiPublisherClient.setReadTimeout(600000);
         apiPublisherClient.setConnectTimeout(600000);
         apiPublisherClient.setWriteTimeout(600000);
+        apiPublisherClient.setVerifyingSsl(false);
         apIsApi.setApiClient(apiPublisherClient);
         apiProductsApi.setApiClient(apiPublisherClient);
         apiRevisionsApi.setApiClient(apiPublisherClient);

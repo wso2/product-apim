@@ -157,6 +157,7 @@ public class RestAPIStoreImpl {
         usersApi.setApiClient(apiStoreClient);
         throttlingPoliciesApi.setApiClient(apiStoreClient);
         apiStoreClient.setDebugging(true);
+        apiStoreClient.setVerifyingSsl(false);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
@@ -174,6 +175,7 @@ public class RestAPIStoreImpl {
         tagsApi.setApiClient(apiStoreClient);
         keyManagersCollectionApi.setApiClient(apiStoreClient);
         usersApi.setApiClient(apiStoreClient);
+        apiStoreClient.setVerifyingSsl(false);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
