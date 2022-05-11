@@ -124,7 +124,8 @@ public class RestAPIStoreImpl {
     private String disableVerification = System.getProperty("disableVerification");
     private static final long WAIT_TIME = 60 * 1000;
 
-    public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
+
+    public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL, String gatewayUrl) {
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
         String dcrURL = storeURL + "client-registration/v0.17/register";
@@ -160,25 +161,7 @@ public class RestAPIStoreImpl {
         apiStoreClient.setVerifyingSsl(false);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
-        this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
-    }
-
-    public RestAPIStoreImpl(String tenantDomain, String storeURL) {
-
-        apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
-        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
-        apiStoreClient.setDebugging(true);
-        apIsApi.setApiClient(apiStoreClient);
-        applicationsApi.setApiClient(apiStoreClient);
-        subscriptionIndividualApi.setApiClient(apiStoreClient);
-        applicationKeysApi.setApiClient(apiStoreClient);
-        tagsApi.setApiClient(apiStoreClient);
-        keyManagersCollectionApi.setApiClient(apiStoreClient);
-        usersApi.setApiClient(apiStoreClient);
-        apiStoreClient.setVerifyingSsl(false);
-        this.storeURL = storeURL;
-        this.tenantDomain = tenantDomain;
-        this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
+        this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain , gatewayUrl);
     }
 
     public String getAccessToken() {
