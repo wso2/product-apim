@@ -39,15 +39,9 @@ import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
-import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
-import org.wso2.am.integration.test.utils.bean.APIMURLBean;
-import org.wso2.am.integration.test.utils.bean.DCRParamRequest;
+import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.am.scenario.test.common.clients.UserMgtClient;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -61,7 +55,6 @@ import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceCl
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
-import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.ws.rs.core.Response;
@@ -73,12 +66,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -127,6 +115,7 @@ public class ScenarioTestBase {
     protected UserManagementClient userManagementClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected User user;
+    private RestAPIGatewayImpl restAPIGateway;
 
 
     /**
@@ -233,14 +222,15 @@ public class ScenarioTestBase {
                     new RestAPIStoreImpl(
                             storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getTenantUserList().get(1).getPassword(),
-                            storeContext.getContextTenant().getDomain(), baseUrl);
+                            storeContext.getContextTenant().getDomain(), baseUrl, gatewayHttpsURL);
 
             restAPIAdmin = new RestAPIAdminImpl(
                     storeContext.getContextTenant().getTenantAdmin().getUserNameWithoutDomain(),
                     storeContext.getContextTenant().getTenantAdmin().getPassword(),
                     storeContext.getContextTenant().getDomain(), baseUrl);
 
-            RestAPIGatewayImpl restAPIGateway = new RestAPIGatewayImpl(RestAPIPublisherImpl.username, RestAPIPublisherImpl.password, publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain());
+            restAPIGateway = new RestAPIGatewayImpl(RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
+                    publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(), gatewayHttpsURL);
 
             storeURLHttps = baseUrl;
             publisherURLHttps = baseUrl;
@@ -313,7 +303,7 @@ public class ScenarioTestBase {
         if (gatewayHttpsURL == null) {
             gatewayHttpsURL = "https://localhost:8243";
         }
-        
+
         serviceEndpoint = infraProperties.getProperty(SERVICE_ENDPOINT);
         if (serviceEndpoint == null) {
             serviceEndpoint = "https://localhost:9443/services/";
@@ -541,7 +531,7 @@ public class ScenarioTestBase {
                                 ScenarioTestConstants.PUBLISHER_ROLE});
             }
         } catch (Exception e) {
-            throw new APIManagementException("Unable to create user "+ username +" with publisher and creator role ", e);
+            throw new APIManagementException("Unable to create user " + username + " with publisher and creator role ", e);
         }
     }
 
@@ -595,7 +585,7 @@ public class ScenarioTestBase {
         UserManagementClient userManagementClient = null;
         try {
             userManagementClient = getRemoteUserManagerClient(adminUsername, adminPassword);
-            if (!userManagementClient.roleNameExists(role)){
+            if (!userManagementClient.roleNameExists(role)) {
                 userManagementClient.addRole(role,
                         new String[]{},
                         permisionArray
@@ -979,19 +969,20 @@ public class ScenarioTestBase {
 
     /**
      * This returns "tenatDomain/tenantId/" string
+     *
      * @param apiProvider
      */
     private String getTenantIdentifier(String apiProvider) throws APIManagerIntegrationTestException {
         int tenantId = -1234;
         String providerTenantDomain = MultitenantUtils.getTenantDomain(apiProvider);
-        try{
-            if(!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(providerTenantDomain)){
+        try {
+            if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(providerTenantDomain)) {
                 keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
                 tenantManagementServiceClient = new TenantManagementServiceClient(
                         superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
                         keymanagerSuperTenantSessionCookie);
                 TenantInfoBean tenant = tenantManagementServiceClient.getTenant(providerTenantDomain);
-                if(tenant == null){
+                if (tenant == null) {
                     log.info("tenant is null: " + providerTenantDomain);
                 } else {
                     tenantId = tenant.getTenantId();
@@ -1089,7 +1080,7 @@ public class ScenarioTestBase {
     /**
      * Create API Revision and Deploy to gateway using REST API.
      *
-     * @param apiId          - API UUID
+     * @param apiId            - API UUID
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String createAPIRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
@@ -1108,7 +1099,7 @@ public class ScenarioTestBase {
                 "Create API Response Code is invalid." + apiRevisionResponse.getData());
 
         // Retrieve Revision Info
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, null);
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
         List<JSONObject> revisionList = new ArrayList<>();
@@ -1118,7 +1109,7 @@ public class ScenarioTestBase {
         for (int i = 0, l = arrayList.length(); i < l; i++) {
             revisionList.add(arrayList.getJSONObject(i));
         }
-        for (JSONObject revision :revisionList) {
+        for (JSONObject revision : revisionList) {
             revisionUUID = revision.getString("id");
         }
 
@@ -1132,7 +1123,7 @@ public class ScenarioTestBase {
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
                 apiRevisionDeployRequestList, "API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
-                "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
+                "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
 
         //Waiting for API deployment
         HttpResponse response = restAPIPublisher.getAPI(apiId);
@@ -1140,14 +1131,14 @@ public class ScenarioTestBase {
         APIDTO apiDto = g.fromJson(response.getData(), APIDTO.class);
         waitForAPIDeploymentSync(user.getUserName(), apiDto.getName(), apiDto.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
-        return  revisionUUID;
+        return revisionUUID;
     }
 
 
     /**
      * Undeploy and Delete API Revisions using REST API.
      *
-     * @param apiId          - API UUID
+     * @param apiId            - API UUID
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String undeployAndDeleteAPIRevisionsUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
@@ -1157,7 +1148,7 @@ public class ScenarioTestBase {
         String revisionUUID = null;
 
         // Get Deployed Revisions
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,"deployed:true");
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
         List<JSONObject> revisionList = new ArrayList<>();
@@ -1167,7 +1158,7 @@ public class ScenarioTestBase {
         for (int i = 0, l = arrayList.length(); i < l; i++) {
             revisionList.add(arrayList.getJSONObject(i));
         }
-        for (JSONObject revision :revisionList) {
+        for (JSONObject revision : revisionList) {
             revisionUUID = revision.getString("id");
         }
 
@@ -1187,7 +1178,7 @@ public class ScenarioTestBase {
                 "Unable to Undeploy API Revisions:" + apiRevisionsUnDeployResponse.getData());
 
         // Get Revisions
-        HttpResponse apiRevisionsFullGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
+        HttpResponse apiRevisionsFullGetResponse = restAPIPublisher.getAPIRevisions(apiId, null);
         assertEquals(apiRevisionsFullGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve revisions" + apiRevisionsFullGetResponse.getData());
         List<JSONObject> revisionFullList = new ArrayList<>();
@@ -1197,7 +1188,7 @@ public class ScenarioTestBase {
         for (int i = 0, l = arrayFullList.length(); i < l; i++) {
             revisionFullList.add(arrayFullList.getJSONObject(i));
         }
-        for (JSONObject revision :revisionFullList) {
+        for (JSONObject revision : revisionFullList) {
             revisionUUID = revision.getString("id");
             HttpResponse apiRevisionsDeleteResponse = restAPIPublisher.deleteAPIRevision(apiId, revisionUUID);
             assertEquals(apiRevisionsDeleteResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -1211,13 +1202,13 @@ public class ScenarioTestBase {
         waitForAPIDeploymentSync(user.getUserName(), apiDto.getName(), apiDto.getVersion(),
                 APIMIntegrationConstants.IS_API_NOT_EXISTS);
 
-        return  revisionUUID;
+        return revisionUUID;
     }
 
     /**
      * Create API Product Revision and Deploy to gateway using REST API.
      *
-     * @param apiId          - API UUID
+     * @param apiId            - API UUID
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String createAPIProductRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
@@ -1236,7 +1227,7 @@ public class ScenarioTestBase {
                 "Create API Response Code is invalid." + apiRevisionResponse.getData());
 
         // Retrieve Revision Info
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId,null);
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, null);
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
         List<JSONObject> revisionList = new ArrayList<>();
@@ -1246,7 +1237,7 @@ public class ScenarioTestBase {
         for (int i = 0, l = arrayList.length(); i < l; i++) {
             revisionList.add(arrayList.getJSONObject(i));
         }
-        for (JSONObject revision :revisionList) {
+        for (JSONObject revision : revisionList) {
             revisionUUID = revision.getString("id");
         }
 
@@ -1259,17 +1250,17 @@ public class ScenarioTestBase {
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiId, revisionUUID,
                 apiRevisionDeployRequestList, "APIProduct");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
-                "Unable to deploy API Product Revisions:" +apiRevisionsDeployResponse.getData());
+                "Unable to deploy API Product Revisions:" + apiRevisionsDeployResponse.getData());
         //Waiting for API deployment
         waitForAPIDeployment();
-        return  revisionUUID;
+        return revisionUUID;
     }
 
 
     /**
      * Undeploy and Delete API Product Revisions using REST API.
      *
-     * @param apiId          - API UUID
+     * @param apiId            - API UUID
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String undeployAndDeleteAPIProductRevisionsUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)

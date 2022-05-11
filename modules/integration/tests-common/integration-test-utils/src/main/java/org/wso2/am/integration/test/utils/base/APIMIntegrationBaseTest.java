@@ -227,7 +227,7 @@ public class APIMIntegrationBaseTest {
             restAPIStore =
                     new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getContextUser().getPassword(),
-                            storeContext.getContextTenant().getDomain(), storeURLHttps);
+                            storeContext.getContextTenant().getDomain(), storeURLHttps, gatewayInternalURL);
             restAPIAdmin = new RestAPIAdminImpl(publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
                     publisherContext.getContextTenant().getDomain(), publisherURLHttps);
@@ -747,12 +747,12 @@ public class APIMIntegrationBaseTest {
 
     protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain) {
 
-        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps);
+        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps, gatewayInternalURL);
     }
 
-    protected RestAPIStoreImpl getRestAPIStoreForAnonymousUser(String tenantDomain) {
-        return new RestAPIStoreImpl(tenantDomain, storeURLHttps);
-    }
+//    protected RestAPIStoreImpl getRestAPIStoreForAnonymousUser(String tenantDomain) {
+//        return new RestAPIStoreImpl(tenantDomain, storeURLHttps);
+//    }
 
     protected void waitForKeyManagerDeployment(String tenantDomain, String keyManagerName)
             throws XPathExpressionException, UnsupportedEncodingException {
