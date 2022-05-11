@@ -59,7 +59,7 @@ public class RestAPIGatewayImpl {
                 DatatypeConverter.printBase64Binary((username + ':' + password).getBytes(StandardCharsets.UTF_8));
         apiClient.addDefaultHeader("Authorization", "Basic " + basicEncoded);
         apiClient.setDebugging(true);
-        apiClient.setBasePath(gatewayURL + "api/am/gateway/v2");
+        apiClient.setBasePath(gatewayURL + "/api/am/gateway/v2");
         apiClient.setReadTimeout(600000);
         apiClient.setConnectTimeout(600000);
         apiClient.setWriteTimeout(600000);
