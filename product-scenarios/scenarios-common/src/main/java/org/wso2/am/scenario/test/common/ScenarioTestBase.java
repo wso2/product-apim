@@ -108,8 +108,6 @@ public class ScenarioTestBase {
     protected String publisherURLHttp;
     protected String publisherURLHttps;
     protected String keyManagerHTTPSURL;
-    protected static String gatewayHTTPSURL;
-    protected static String gatewayInternalURL;
     protected String storeURLHttp;
     protected String storeURLHttps;
     protected TestUserMode userMode;
@@ -198,8 +196,6 @@ public class ScenarioTestBase {
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
             keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
-            gatewayHTTPSURL = gatewayUrlsWrk.getWebAppURLNhttps();
-            gatewayInternalURL = gatewayUrlsWrk.getWebAppURLNhttps();
 
             storeURLHttp = storeUrls.getWebAppURLHttp();
             storeURLHttps = storeUrls.getWebAppURLHttps();
@@ -232,7 +228,7 @@ public class ScenarioTestBase {
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
-                    publisherContext.getContextTenant().getDomain(), baseUrl, gatewayInternalURL);
+                    publisherContext.getContextTenant().getDomain(), baseUrl, gatewayHttpsURL);
             restAPIStore =
                     new RestAPIStoreImpl(
                             storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
@@ -253,8 +249,6 @@ public class ScenarioTestBase {
             log.info("storeURLHttps: " + storeURLHttps);
             log.info("publisherURLHttps: " + publisherURLHttps);
             log.info("DCR end point: " + dcrURL);
-            log.info("gatewayHTTPSURL: " + gatewayHTTPSURL);
-            log.info("gatewayInternalURL: " + gatewayInternalURL);
             log.info("gatewayHttpsURL: " + gatewayHttpsURL);
 
             log.info("Logging URL's ENDED");
@@ -319,16 +313,7 @@ public class ScenarioTestBase {
         if (gatewayHttpsURL == null) {
             gatewayHttpsURL = "https://localhost:8243";
         }
-
-        gatewayInternalURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
-        if (gatewayInternalURL == null) {
-            gatewayInternalURL = "https://localhost:8243";
-        }
-
-        gatewayHTTPSURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
-        if (gatewayHTTPSURL == null) {
-            gatewayHTTPSURL = "https://localhost:8243";
-        }
+        
         serviceEndpoint = infraProperties.getProperty(SERVICE_ENDPOINT);
         if (serviceEndpoint == null) {
             serviceEndpoint = "https://localhost:9443/services/";
