@@ -72,7 +72,7 @@
 
     <handler class="org.wso2.carbon.registry.extensions.handlers.ServiceMediaTypeHandler">
         <!--property name="disableWSDLValidation">true</property-->
-        <property name="defaultServiceVersion">1.0.0-SNAPSHOT</property>
+        <property name="defaultServiceVersion">1.0.0</property>
         <property name="disableSymlinkCreation">true</property>
         <property name="smartLifecycleLinks" type="xml">
             <key>dev</key>
