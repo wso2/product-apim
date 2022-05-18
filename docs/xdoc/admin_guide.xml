@@ -166,12 +166,12 @@ on the console.
   [2010-03-23 10:34:32,561]  INFO - ClusterBuilder Clustering has been disabled
   [2010-03-23 10:34:32,742]  INFO - DeploymentInterceptor Deploying Axis2 module : relay-3.0
   [2010-03-23 10:34:32,799]  INFO - DeploymentInterceptor Deploying Axis2 module : wso2mex-3.0
-  [2010-03-23 10:34:32,818]  INFO - DeploymentInterceptor Deploying Axis2 module : rampart-SNAPSHOT
+  [2010-03-23 10:34:32,818]  INFO - DeploymentInterceptor Deploying Axis2 module : rampart
   [2010-03-23 10:34:32,862]  INFO - DeploymentInterceptor Deploying Axis2 module : sandesha2-3.0
   [2010-03-23 10:34:32,916]  INFO - DeploymentInterceptor Deploying Axis2 module : wso2caching-3.0
   [2010-03-23 10:34:32,989]  INFO - DeploymentInterceptor Deploying Axis2 module : wso2xfer-3.0
-  [2010-03-23 10:34:33,001]  INFO - DeploymentInterceptor Deploying Axis2 module : rahas-SNAPSHOT
-  [2010-03-23 10:34:33,019]  INFO - DeploymentInterceptor Deploying Axis2 module : savan-SNAPSHOT
+  [2010-03-23 10:34:33,001]  INFO - DeploymentInterceptor Deploying Axis2 module : rahas
+  [2010-03-23 10:34:33,019]  INFO - DeploymentInterceptor Deploying Axis2 module : savan
   [2010-03-23 10:34:33,034]  INFO - DeploymentInterceptor Deploying Axis2 module : wso2throttle-3.0
   [2010-03-23 10:34:33,125]  INFO - DeploymentInterceptor Deploying Axis2 module : addressing-1.6-wso2v1
   [2010-03-23 10:34:33,202]  INFO - HttpCoreNIOSSLSender Loading Identity Keystore from : resources/security/wso2carbon.jks

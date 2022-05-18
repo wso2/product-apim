@@ -545,9 +545,9 @@ From: 'WSO2' (http://www.wso2.org/)
     License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
   - WSO2 Carbon - New Data Sources Stub (http://wso2.org) org.wso2.carbon.commons:org.wso2.carbon.ndatasource.stub:bundle:4.4.8
     License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
-  - WSO2 Carbon - User Profile Management Stub (http://wso2.org) org.wso2.carbon.identity:org.wso2.carbon.identity.user.profile.stub:bundle:4.6.0-SNAPSHOT
+  - WSO2 Carbon - User Profile Management Stub (http://wso2.org) org.wso2.carbon.identity:org.wso2.carbon.identity.user.profile.stub:bundle:4.6.0
     License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
-  - WSO2 Carbon - Security Stub (http://wso2.org) org.wso2.carbon.identity:org.wso2.carbon.security.mgt.stub:bundle:4.6.0-SNAPSHOT
+  - WSO2 Carbon - Security Stub (http://wso2.org) org.wso2.carbon.identity:org.wso2.carbon.security.mgt.stub:bundle:4.6.0
     License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
   - WSO2 Carbon - User Management Stub (http://wso2.org) org.wso2.carbon.identity:org.wso2.carbon.user.mgt.stub:bundle:4.5.4
     License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)

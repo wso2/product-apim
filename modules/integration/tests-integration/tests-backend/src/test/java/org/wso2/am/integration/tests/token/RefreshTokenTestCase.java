@@ -148,7 +148,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         HttpResponse httpResponse = HttpRequestUtil.doGet(apiUrl, requestHeaders);
 
         //TODO - Remove the second request below. This is a temporary workaround to avoid the issue caused by a bug in
-        // carbon-mediation 4.4.11-SNAPSHOT See the thread "[Dev] [ESB] EmptyStackException when resuming a paused
+        // carbon-mediation 4.4.11 See the thread "[Dev] [ESB] EmptyStackException when resuming a paused
         // message processor" on dev@wso2.org for information about the bug.
         Thread.sleep(5000);
         httpResponse = HttpRequestUtil.doGet(apiUrl, requestHeaders);
