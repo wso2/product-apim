@@ -1388,7 +1388,7 @@
         <rampart.wso2.version>1.6.1-wso2v43</rampart.wso2.version>
         <slf4j.api.version>1.7.28</slf4j.api.version>
         <org.slf4j.version>1.7.30</org.slf4j.version>
-        <google.code.gson.version>2.8.5</google.code.gson.version>
+        <google.code.gson.version>2.8.9</google.code.gson.version>
         <carbon.extension.identity.oauth2.grantType.token.exchange>1.0.1</carbon.extension.identity.oauth2.grantType.token.exchange>
 
         <!-- Developer Portal -->
