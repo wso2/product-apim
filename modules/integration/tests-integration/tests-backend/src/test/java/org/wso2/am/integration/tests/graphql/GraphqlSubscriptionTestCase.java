@@ -1100,8 +1100,6 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-//        userManagementClient.deleteRole(GRAPHQL_ROLE);
-//        userManagementClient.deleteUser(GRAPHQL_TEST_USER);
         restAPIStore.deleteApplication(appJWTId);
         restAPIStore.deleteApplication(complexAppId);
         restAPIStore.deleteApplication(depthAppId);

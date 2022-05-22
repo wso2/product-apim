@@ -447,14 +447,6 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         for (String applicationId: applicationIdList){
             restAPIStore.deleteApplication(applicationId);
         }
-
-//        restAPIPublisher.deleteAPI(graphqlAPIId);
-//        restAPIPublisher.deleteAPI(graphqlAPIWithInterfaceId);
-
-//        if (userManagementClient != null) {
-//            userManagementClient.deleteUser(GRAPHQL_TEST_USER);
-//            userManagementClient.deleteRole(GRAPHQL_ROLE);
-//        }
         super.cleanUp();
     }
 }
