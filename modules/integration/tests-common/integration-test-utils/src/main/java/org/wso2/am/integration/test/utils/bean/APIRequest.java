@@ -302,6 +302,18 @@ public class APIRequest extends AbstractRequest {
         }
     }
 
+    public APIRequest(String apiName, String context) {
+        this.name = apiName;
+        this.context = context;
+        this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                "\"accessControlAllowOrigins\" : [\"*\"], " +
+                "\"accessControlAllowCredentials\" : true, " +
+                "\"accessControlAllowHeaders\" : " +
+                "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
+    }
+
     public APIRequest(String apiName, String context, URI productionEndpointUri, URI sandboxEndpointUri)
             throws APIManagerIntegrationTestException {
         this.name = apiName;
