@@ -81,6 +81,7 @@ public class ScenarioTestBase {
     protected static String storeURL;
     protected static String keyManagerURL;
     protected static String gatewayHttpsURL;
+    protected static String gatewayInternalURL;
     protected static String serviceEndpoint;
     protected static String adminURL;
     protected static String baseUrl;
@@ -240,6 +241,7 @@ public class ScenarioTestBase {
             log.info("publisherURLHttps: " + publisherURLHttps);
             log.info("DCR end point: " + dcrURL);
             log.info("gatewayHttpsURL: " + gatewayHttpsURL);
+            log.info("gatewayInternalURL: " + gatewayInternalURL);
 
             log.info("Logging URL's ENDED");
 
@@ -302,6 +304,10 @@ public class ScenarioTestBase {
         gatewayHttpsURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
         if (gatewayHttpsURL == null) {
             gatewayHttpsURL = "https://localhost:8243";
+        }
+        gatewayInternalURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
+        if (gatewayInternalURL == null) {
+            gatewayInternalURL = "https://localhost:8243";
         }
 
         serviceEndpoint = infraProperties.getProperty(SERVICE_ENDPOINT);
