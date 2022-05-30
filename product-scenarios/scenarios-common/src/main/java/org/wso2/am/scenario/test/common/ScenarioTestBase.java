@@ -307,9 +307,8 @@ public class ScenarioTestBase {
         }
         gatewayInternalURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
         if (gatewayInternalURL == null) {
-            gatewayInternalURL = "https://localhost:8243";
+            gatewayInternalURL = "https://localhost:9443";
         }
-
         serviceEndpoint = infraProperties.getProperty(SERVICE_ENDPOINT);
         if (serviceEndpoint == null) {
             serviceEndpoint = "https://localhost:9443/services/";
