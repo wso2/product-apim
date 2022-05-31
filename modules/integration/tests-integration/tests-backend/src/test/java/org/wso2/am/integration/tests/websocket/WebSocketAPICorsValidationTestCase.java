@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *   Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -34,11 +34,7 @@ import org.eclipse.jetty.websocket.server.WebSocketHandler;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
@@ -55,7 +51,6 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
@@ -73,39 +68,33 @@ import org.wso2.carbon.utils.xml.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
-public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
+public class WebSocketAPICorsValidationTestCase extends APIMIntegrationBaseTest {
 
-    private final Log log = LogFactory.getLog(WebSocketAPITestCase.class);
+    private final Log log = LogFactory.getLog(WebSocketAPICorsValidationTestCase.class);
     enum AUTH_IN {
         HEADER,
         QUERY
     }
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private final String apiName = "WebSocketAPI";
-    private final String applicationName = "WebSocketApplication";
-    private final String applicationJWTName = "WebSocketJWTTypeApplication";
+    private final String apiName = "WebSocketAPICorsValidation";
+    private final String applicationName = "WebSocketApplicationCorsValidation";
+    private final String applicationJWTName = "WebSocketJWTTypeApplicationCorsValidation";
     private final String testMessage = "Web Socket Test Message";
     private String apiEndPoint;
-    private APIPublisherRestClient apiPublisher;
     private String provider;
     private String consumerKey;
     private String consumerSecret;
@@ -130,7 +119,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     long throttleMarkTime = 0;
 
     @Factory(dataProvider = "userModeDataProvider")
-    public WebSocketAPITestCase(TestUserMode userMode) {
+    public WebSocketAPICorsValidationTestCase(TestUserMode userMode) {
 
         this.userMode = userMode;
     }
@@ -138,7 +127,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
 
-        // Removing Tenant_ADMIN due to https://github.com/wso2/product-apim/issues/10183
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN}
@@ -214,40 +202,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 "Published API is visible in API Store.");
     }
 
-    @Test(description = "Create Application and subscribe", dependsOnMethods = "publishWebSocketAPI")
-    public void testWebSocketAPIApplicationSubscription() throws Exception {
-        HttpResponse applicationResponse = restAPIStore.createApplication(applicationName,
-                "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
-        appId = applicationResponse.getData();
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(websocketAPIID, appId,
-                APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
-        //Validate Subscription of the API
-        Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
-    }
-
-    @Test(description = "Invoke API using token", dependsOnMethods = "testWebSocketAPIApplicationSubscription")
-    public void testWebSocketAPIInvocation() throws Exception {
-        ArrayList grantTypes = new ArrayList();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
-        consumerKey = applicationKeyDTO.getConsumerKey();
-        consumerSecret = applicationKeyDTO.getConsumerSecret();
-        WebSocketClient client = new WebSocketClient();
-        try {
-            invokeAPI(client, tokenJti, AUTH_IN.HEADER, null);
-            invokeAPI(client, tokenJti, AUTH_IN.QUERY, null);
-        } catch (Exception e) {
-            log.error("Exception in connecting to server", e);
-            Assert.fail("Client cannot connect to server");
-        } finally {
-            client.stop();
-        }
-    }
 
     @Test(description = "Create JWT Type Application and subscribe", dependsOnMethods = "publishWebSocketAPI")
     public void testWebSocketAPIJWTApplicationSubscription() throws Exception {
@@ -260,127 +214,62 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
     }
 
-    @Test(description = "Invoke API using token", dependsOnMethods = "testWebSocketAPIJWTApplicationSubscription")
-    public void testWebSocketAPIInvocationWithJWTToken() throws Exception {
+
+
+    /**
+      *  Test CORS origin header validation for Websocket API invocations.
+      *  This test is added for the fix of https://github.com/wso2/product-apim/issues/12414
+      *  Note: This test is better to be executed as the final test as the default deployment.toml configurations are
+      *  changed for this test.
+      *  Added configs:
+      *      [apim.cors]
+      *          allow_origins = ["http://global.config1.com", "http://global.config2.com", "http://global.config3.com"]
+      *          enable_validation_for_ws = true
+     */
+    @Test(description = "Test CORS origin header validation for Websocket API invocations", dependsOnMethods = "testWebSocketAPIJWTApplicationSubscription")
+    public void testWebsocketAPICORSValidation() throws Exception {
+        // Generate access token
         ArrayList grantTypes = new ArrayList();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appJWTId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        //consumerKey = applicationKeyDTO.getConsumerKey();
-        //consumerSecret = applicationKeyDTO.getConsumerSecret();
+
         WebSocketClient client = new WebSocketClient();
+
+        // Invoke API with 'Origin' header which is configured in deployement.toml
+        HttpHeaders headers1 = new DefaultHttpHeaders();
+        headers1.add(HttpHeaderNames.ORIGIN, originHeaderName);
+        while ( System.currentTimeMillis() < throttleMarkTime + 60000) {
+            Thread.sleep(5000L);
+        }
+
         try {
-            invokeAPI(client, accessToken, AUTH_IN.HEADER, null);
-            invokeAPI(client, accessToken, AUTH_IN.QUERY, null);
+            invokeAPI(client, accessToken, AUTH_IN.HEADER, headers1);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
         } finally {
             client.stop();
         }
-    }
-    @Test(description = "Test Throttling for WebSocket API", dependsOnMethods = "testWebSocketAPIInvocation")
-    public void testWebSocketAPIThrottling() throws Exception {
-            // Deploy Throttling policy with throttle limit set as 8 frames. One message is two frames, therefore 4
-        // messages can be sent.
-        InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
-                "configFiles" + File.separator + "webSocketTest" + File.separator + "policy.json");
 
-        //Extract the field values from the input stream
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonMap = mapper.readTree(inputStream);
-        String policyName = jsonMap.get("policyName").textValue();
-        String policyDescription = jsonMap.get("policyDescription").textValue();
-        JsonNode defaultLimitJson = jsonMap.get("defaultLimit");
-        JsonNode requestCountJson = defaultLimitJson.get("requestCount");
-        Long requestCountLimit = Long.valueOf(String.valueOf(requestCountJson.get("requestCount")));
-        String timeUnit = requestCountJson.get("timeUnit").textValue();
-        Integer unitTime = Integer.valueOf(String.valueOf(requestCountJson.get("unitTime")));
-
-        //Create the advanced throttling policy with request count quota type
-        RequestCountLimitDTO requestCountLimitDTO = DtoFactory.createRequestCountLimitDTO(timeUnit, unitTime,
-                requestCountLimit);
-        ThrottleLimitDTO defaultLimit =
-                DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT, requestCountLimitDTO,
-                        null);
-        AdvancedThrottlePolicyDTO bandwidthAdvancedPolicyDTO = DtoFactory
-                .createAdvancedThrottlePolicyDTO(policyName, "", policyDescription, false, defaultLimit,
-                        new ArrayList<>());
-
-        //Add the advanced throttling policy
-        ApiResponse<AdvancedThrottlePolicyDTO> addedPolicy =
-                restAPIAdmin.addAdvancedThrottlingPolicy(bandwidthAdvancedPolicyDTO);
-        //Assert the status code and policy ID
-        Assert.assertEquals(addedPolicy.getStatusCode(), HttpStatus.SC_CREATED);
-        AdvancedThrottlePolicyDTO addedAdvancedPolicyDTO = addedPolicy.getData();
-        String apiPolicyId = addedAdvancedPolicyDTO.getPolicyId();
-        Assert.assertNotNull(apiPolicyId, "The policy ID cannot be null or empty");
-
-        //Update Throttling policy of the API
-        HttpResponse response = restAPIPublisher.getAPI(websocketAPIID);
-        Gson g = new Gson();
-        APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
-        apidto.setApiThrottlingPolicy("WebSocketTestThrottlingPolicy");
-        APIDTO updatedAPI = restAPIPublisher.updateAPI(apidto);
-        createAPIRevisionAndDeployUsingRest(updatedAPI.getId(), restAPIPublisher);
-        waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
-                APIMIntegrationConstants.IS_API_EXISTS);
-        Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), "WebSocketTestThrottlingPolicy");
-        //Get an Access Token from the user who is logged into the API Store.
-        URL tokenEndpointURL = new URL(getKeyManagerURLHttps() + "/oauth2/token");
-        String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(),
-                user.getPassword());
-        JSONObject subsAccessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret, subsAccessTokenPayload,
-                        tokenEndpointURL).getData());
-
-        String subsRefreshToken = subsAccessTokenGenerationResponse.getString("refresh_token");
-
-        assertFalse(org.apache.commons.lang.StringUtils.isEmpty(subsRefreshToken),
-                "Refresh token of access token generated by subscriber is empty");
-
-        //Obtain user access token
-        String requestBody = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(), user.getPassword());
-        JSONObject accessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                        tokenEndpointURL).getData());
-
-        // get Access Token and Refresh Token
-        String refreshToken = accessTokenGenerationResponse.getString("refresh_token");
-        String getAccessTokenFromRefreshTokenRequestBody =
-                "grant_type=refresh_token&refresh_token=" + refreshToken;
-        accessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                        getAccessTokenFromRefreshTokenRequestBody,
-                        tokenEndpointURL).getData());
-        String userAccessToken = accessTokenGenerationResponse.getString("access_token");
-
-        Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
-        String tokenJti = TokenUtils.getJtiOfJwtToken(userAccessToken);
-        testThrottling(tokenJti);
-        throttleMarkTime =  System.currentTimeMillis();
-    }
-
-    @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebSocketAPIThrottling")
-    public void testWebSocketAPIInvalidTokenInvocation() throws Exception {
-        while ( System.currentTimeMillis() < throttleMarkTime + 60000) {
-            Thread.sleep(5000L);
-        }
-        WebSocketClient client = new WebSocketClient();
+        // Invoke API without 'Origin' header
+        HttpHeaders headers2 = new DefaultHttpHeaders();
         boolean apiInvocationFailed = false;
         try {
-            invokeAPI(client, "00000000-0000-0000-0000-000000000000", AUTH_IN.HEADER, null);
+            invokeAPI(client, accessToken, AUTH_IN.HEADER, headers2);
         } catch (APIManagerIntegrationTestException e) {
             log.error("Exception in connecting to server", e);
             apiInvocationFailed = true;
-            assertTrue(true, "Client cannot connect to server");
+            assertTrue(true, "Websocket handshake failed as expected");
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
         } finally {
             if (!apiInvocationFailed) {
-                Assert.fail("WS API was invoked with invalid token");
+                Assert.fail("CORS origin header validation has not been successful");
             }
             client.stop();
         }
@@ -439,56 +328,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     }
 
     /**
-     * Test throttling by invoking API with throttling policy
-     *
-     * @param accessToken API accessToken
-     */
-    private void testThrottling(String accessToken) throws Exception {
-
-        waitUntilClockHour();
-        int startingDistinctUnitTime = LocalDateTime.now().getMinute();
-        int limit = 2;
-        WebSocketClient client = new WebSocketClient();
-        WebSocketClientImpl socket = new WebSocketClientImpl();
-        client.start();
-        URI echoUri = new URI(apiEndPoint);
-        ClientUpgradeRequest request = new ClientUpgradeRequest();
-        request.setHeader("Authorization", "Bearer " + accessToken);
-        client.connect(socket, echoUri, request);
-        socket.getLatch().await(3L, TimeUnit.SECONDS);
-        // Send 3 WebSocket messages when throttle limit is 2.
-        try {
-            for (int count = 1; count <= limit + 1; count++) {
-                if (count > limit) {
-                    // Set time gap to allow throttle to take place
-                    Thread.sleep(5000L);
-                }
-                socket.sendMessage(testMessage);
-                waitForReply(socket);
-                log.info("Count :" + count + " Message :" + socket.getResponseMessage());
-                // At the 3rd message check frame is throttled out.
-                if (count > limit) {
-                    //If throttling testing time duration is dispersed into two separate unit times, repeat the test
-                    if (LocalDateTime.now().getMinute() != startingDistinctUnitTime) {
-                        //repeat the test
-                        log.info("Repeating the test as throttling testing time duration is dispersed into two " +
-                                "separate units of time");
-                        testThrottling(accessToken);
-                    }
-                    assertEquals(socket.getResponseMessage(), "Error code: 4003 reason: Websocket frame throttled out",
-                            "Received response is not matching");
-                }
-                socket.setResponseMessage(null);
-            }
-        } catch (Exception ex) {
-            log.error("Error occurred while calling API.", ex);
-            Assert.fail("Client cannot connect to server");
-        } finally {
-            client.stop();
-        }
-    }
-
-    /**
      * Invoke deployed API via WebSocketClient and wait for reply
      *
      * @param client      WebSocketClient object
@@ -535,8 +374,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
-        serverConfigurationManager.restoreToLastConfiguration(false);
         executorService.shutdownNow();
         super.cleanUp();
     }
