@@ -476,6 +476,14 @@ public static AccessControlEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_ENDPOINT_CONFIG)
             private Object endpointConfig;
 
+        public static final String SERIALIZED_NAME_PRIMARY_PRODUCTION_ENDPOINT_ID = "primaryProductionEndpointId";
+        @SerializedName(SERIALIZED_NAME_PRIMARY_PRODUCTION_ENDPOINT_ID)
+            private String primaryProductionEndpointId;
+
+        public static final String SERIALIZED_NAME_PRIMARY_SANDBOX_ENDPOINT_ID = "primarySandboxEndpointId";
+        @SerializedName(SERIALIZED_NAME_PRIMARY_SANDBOX_ENDPOINT_ID)
+            private String primarySandboxEndpointId;
+
             /**
 * Gets or Sets endpointImplementationType
 */
@@ -1575,6 +1583,52 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO primaryProductionEndpointId(String primaryProductionEndpointId) {
+        
+        this.primaryProductionEndpointId = primaryProductionEndpointId;
+        return this;
+        }
+
+    /**
+        * Get primaryProductionEndpointId
+    * @return primaryProductionEndpointId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "232ewe-342d23", value = "")
+    
+    public String getPrimaryProductionEndpointId() {
+        return primaryProductionEndpointId;
+    }
+
+
+    public void setPrimaryProductionEndpointId(String primaryProductionEndpointId) {
+        this.primaryProductionEndpointId = primaryProductionEndpointId;
+    }
+
+
+        public APIDTO primarySandboxEndpointId(String primarySandboxEndpointId) {
+        
+        this.primarySandboxEndpointId = primarySandboxEndpointId;
+        return this;
+        }
+
+    /**
+        * Get primarySandboxEndpointId
+    * @return primarySandboxEndpointId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "232ewe-342d23", value = "")
+    
+    public String getPrimarySandboxEndpointId() {
+        return primarySandboxEndpointId;
+    }
+
+
+    public void setPrimarySandboxEndpointId(String primarySandboxEndpointId) {
+        this.primarySandboxEndpointId = primarySandboxEndpointId;
+    }
+
+
         public APIDTO endpointImplementationType(EndpointImplementationTypeEnum endpointImplementationType) {
         
         this.endpointImplementationType = endpointImplementationType;
@@ -1858,6 +1912,8 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.createdTime, API.createdTime) &&
             Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime) &&
             Objects.equals(this.endpointConfig, API.endpointConfig) &&
+            Objects.equals(this.primaryProductionEndpointId, API.primaryProductionEndpointId) &&
+            Objects.equals(this.primarySandboxEndpointId, API.primarySandboxEndpointId) &&
             Objects.equals(this.endpointImplementationType, API.endpointImplementationType) &&
             Objects.equals(this.scopes, API.scopes) &&
             Objects.equals(this.operations, API.operations) &&
@@ -1872,7 +1928,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, primaryProductionEndpointId, primarySandboxEndpointId, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
     }
 
 
@@ -1924,6 +1980,8 @@ sb.append("class APIDTO {\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
     sb.append("    endpointConfig: ").append(toIndentedString(endpointConfig)).append("\n");
+    sb.append("    primaryProductionEndpointId: ").append(toIndentedString(primaryProductionEndpointId)).append("\n");
+    sb.append("    primarySandboxEndpointId: ").append(toIndentedString(primarySandboxEndpointId)).append("\n");
     sb.append("    endpointImplementationType: ").append(toIndentedString(endpointImplementationType)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    operations: ").append(toIndentedString(operations)).append("\n");

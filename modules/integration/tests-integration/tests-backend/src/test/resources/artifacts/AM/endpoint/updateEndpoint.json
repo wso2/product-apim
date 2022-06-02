@@ -1,0 +1,12 @@
+{
+  "name": "test1",
+  "endpointConfig": {
+    "url": "https://google.com",
+    "timeout": 200,
+    "endpoint_security": {
+      "enabled": false,
+      "username": "test_user2",
+      "password": "password123"
+    }
+  }
+}

@@ -16,6 +16,8 @@ Name | Type | Description | Notes
 **amznResourceName** | **String** |  |  [optional]
 **amznResourceTimeout** | **Integer** |  |  [optional]
 **payloadSchema** | **String** |  |  [optional]
+**sandBoxEndpointId** | **String** |  |  [optional]
+**productionEndpointId** | **String** |  |  [optional]
 **uriMapping** | **String** |  |  [optional]
 **operationPolicies** | [**APIOperationPoliciesDTO**](APIOperationPoliciesDTO.md) |  |  [optional]
 

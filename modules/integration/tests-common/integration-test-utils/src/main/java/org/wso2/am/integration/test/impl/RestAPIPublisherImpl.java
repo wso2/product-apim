@@ -16,6 +16,7 @@
 
 package org.wso2.am.integration.test.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,72 +31,8 @@ import org.wso2.am.integration.clients.gateway.api.v2.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
-import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiOperationPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductLifecycleApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
-import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionDeploymentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ApiEndpointValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.AsyncAPISpecificationValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.AuditReportDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CertMetadataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CertificatesDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ClientCertMetadataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleHistoryDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.MockResponsePayloadListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.PatchRequestBodyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.PostRequestBodyDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyInfoDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ScopeListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SearchResultListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WSDLValidationResponseDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -162,7 +99,7 @@ public class RestAPIPublisherImpl {
     private String disableVerification = System.getProperty("disableVerification");
     private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
-
+    private ApiEndpointsApi apiEndpointsApi = new ApiEndpointsApi();
 
     @Deprecated
     public RestAPIPublisherImpl() {
@@ -2513,5 +2450,60 @@ public class RestAPIPublisherImpl {
             }
         }
 
+    }
+
+    public HttpResponse addAPIEndpoint(String apiId, File apiEndpointFile)
+            throws APIManagerIntegrationTestException, ApiException {
+        Gson gson = new Gson();
+        ObjectMapper mapper = new ObjectMapper();
+        /**
+         * Read object from file
+         */
+        APIEndpointDTO apiEndpointDTO;
+        try {
+            apiEndpointDTO = mapper.readValue(apiEndpointFile, APIEndpointDTO.class);
+        } catch (IOException e) {
+            throw new APIManagerIntegrationTestException(
+                    "Error occurred in while transforming json to apiEndpointDTO.", e);
+        }
+        ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.addApiEndpointWithHttpInfo(apiId, apiEndpointDTO);
+        return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
+    }
+
+    public HttpResponse getAllAPIEndpoints(String apiId) throws ApiException {
+        Gson gson = new Gson();
+        ApiResponse<APIEndpointListDTO> apiResponse = apiEndpointsApi.getApiEndpointsWithHttpInfo(
+                apiId, Integer.MAX_VALUE, 0);
+        return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
+    }
+
+    public HttpResponse getAPIEndpointById(String apiId, String endpointId) throws ApiException {
+        Gson gson = new Gson();
+        ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.getApiEndpointWithHttpInfo(apiId, endpointId);
+        return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
+    }
+
+    public HttpResponse updateAPIEndpoint(String apiId, String endpointId, File apiEndpointFile)
+            throws APIManagerIntegrationTestException, ApiException {
+        Gson gson = new Gson();
+        ObjectMapper mapper = new ObjectMapper();
+        /**
+         * Read object from file
+         */
+        APIEndpointDTO apiEndpointDTO;
+        try {
+            apiEndpointDTO = mapper.readValue(apiEndpointFile, APIEndpointDTO.class);
+        } catch (IOException e) {
+            throw new APIManagerIntegrationTestException(
+                    "Error occurred in while transforming json to apiEndpointDTO.", e);
+        }
+        ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.updateApiEndpointWithHttpInfo(
+                apiId, endpointId, apiEndpointDTO);
+        return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
+    }
+
+    public HttpResponse deleteAPIEndpointById(String apiId, String endpointId) throws ApiException {
+        ApiResponse<Void> apiResponse = apiEndpointsApi.deleteApiEndpointWithHttpInfo(apiId, endpointId);
+        return new HttpResponse("API Endpoint delete response", apiResponse.getStatusCode());
     }
 }
