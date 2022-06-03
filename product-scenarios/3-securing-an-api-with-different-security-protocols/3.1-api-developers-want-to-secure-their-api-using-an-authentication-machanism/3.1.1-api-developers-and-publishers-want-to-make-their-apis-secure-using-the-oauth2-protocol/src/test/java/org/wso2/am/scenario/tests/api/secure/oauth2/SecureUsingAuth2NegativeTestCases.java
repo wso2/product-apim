@@ -460,7 +460,7 @@ public class SecureUsingAuth2NegativeTestCases extends ScenarioTestBase {
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
             deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
             deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            // deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 
