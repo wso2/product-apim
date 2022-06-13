@@ -27,6 +27,8 @@ import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
 import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.VHostDTO;
+import org.wso2.am.integration.clients.admin.api.dto.RoleAliasListDTO;
+import org.wso2.am.integration.clients.admin.api.dto.RoleAliasDTO;
 
 /**
  * A collection of helper methods to aid Admin REST API related tests
@@ -275,6 +277,32 @@ public class AdminApiTestHelper {
                 "Key Manager additional properties does not match with the expected Key Manager " +
                         "additional properties");
 
+    }
+
+
+    /**
+     * Verify whether the field values of the role alias list DTO contains the expected values.
+     *
+     * @param expectedRoleAliasListDTO Expected role alias list which contains the expected field values.
+     * @param actualRoleAliasListDTO   Role alias list object of which the field values should be verified.
+     */
+    public void verifyRoleAliasListDTO(RoleAliasListDTO expectedRoleAliasListDTO, RoleAliasListDTO actualRoleAliasListDTO) {
+
+        Assert.assertEquals(expectedRoleAliasListDTO.getCount(), actualRoleAliasListDTO.getCount(),
+                "Expected role alias count does not match with the actual role alias count");
+
+        if (!expectedRoleAliasListDTO.getList().isEmpty() && !actualRoleAliasListDTO.getList().isEmpty()) {
+
+            RoleAliasDTO expectedRoleAliasDTO =  expectedRoleAliasListDTO.getList().get(0);
+            RoleAliasDTO actualRoleAliasDTO =  actualRoleAliasListDTO.getList().get(0);
+
+            Assert.assertEquals(expectedRoleAliasDTO.getRole(), actualRoleAliasDTO.getRole(),
+                    "Expected role does not match with the actial role");
+            for (String alias: expectedRoleAliasDTO.getAliases()) {
+                Assert.assertTrue(actualRoleAliasDTO.getAliases().contains(alias),
+                        "Expected aliases does not contain the actual alias");
+            }
+        }
     }
 
 }
