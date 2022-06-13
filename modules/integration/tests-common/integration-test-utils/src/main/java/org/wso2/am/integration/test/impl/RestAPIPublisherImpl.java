@@ -16,7 +16,6 @@
 
 package org.wso2.am.integration.test.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -2452,20 +2451,9 @@ public class RestAPIPublisherImpl {
 
     }
 
-    public HttpResponse addAPIEndpoint(String apiId, File apiEndpointFile)
-            throws APIManagerIntegrationTestException, ApiException {
+    public HttpResponse addAPIEndpoint(String apiId, APIEndpointDTO apiEndpointDTO) throws ApiException {
         Gson gson = new Gson();
-        ObjectMapper mapper = new ObjectMapper();
-        /**
-         * Read object from file
-         */
-        APIEndpointDTO apiEndpointDTO;
-        try {
-            apiEndpointDTO = mapper.readValue(apiEndpointFile, APIEndpointDTO.class);
-        } catch (IOException e) {
-            throw new APIManagerIntegrationTestException(
-                    "Error occurred in while transforming json to apiEndpointDTO.", e);
-        }
+
         ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.addApiEndpointWithHttpInfo(apiId, apiEndpointDTO);
         return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
     }
@@ -2483,20 +2471,9 @@ public class RestAPIPublisherImpl {
         return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
     }
 
-    public HttpResponse updateAPIEndpoint(String apiId, String endpointId, File apiEndpointFile)
-            throws APIManagerIntegrationTestException, ApiException {
+    public HttpResponse updateAPIEndpoint(String apiId, String endpointId, APIEndpointDTO apiEndpointDTO)
+            throws ApiException {
         Gson gson = new Gson();
-        ObjectMapper mapper = new ObjectMapper();
-        /**
-         * Read object from file
-         */
-        APIEndpointDTO apiEndpointDTO;
-        try {
-            apiEndpointDTO = mapper.readValue(apiEndpointFile, APIEndpointDTO.class);
-        } catch (IOException e) {
-            throw new APIManagerIntegrationTestException(
-                    "Error occurred in while transforming json to apiEndpointDTO.", e);
-        }
         ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.updateApiEndpointWithHttpInfo(
                 apiId, endpointId, apiEndpointDTO);
         return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());

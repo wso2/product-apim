@@ -24,8 +24,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.*;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -40,6 +42,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
@@ -55,7 +58,6 @@ public class APIEndpointTestCase extends APIManagerLifecycleBaseTest {
     private final String API_END_POINT_POSTFIX_URL = "xmlapi";
     private String applicationId;
     private String apiId;
-    private String accessToken;
     private Map<String, String> apiEndpoints;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -91,25 +93,41 @@ public class APIEndpointTestCase extends APIManagerLifecycleBaseTest {
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        ArrayList grantTypes = new ArrayList();
-        grantTypes.add("client_credentials");
-
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        accessToken = applicationKeyDTO.getToken().getAccessToken();
+//        ArrayList grantTypes = new ArrayList();
+//        grantTypes.add("client_credentials");
+//
+//        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600", null,
+//                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+//        accessToken = applicationKeyDTO.getToken().getAccessToken();
         apiEndpoints = new HashMap<>();
     }
 
     @Test(groups = {"wso2.am"}, description = "Add API Endpoint.")
     public void testAddNewAPIEndpoint() throws Exception {
+        APIEndpointDTO apiEndpointDTO = new APIEndpointDTO();
+        apiEndpointDTO.setName("TestingEndpoint");
+        apiEndpointDTO.setEndpointType("REST");
 
-        HttpResponse addEndpointResponse = addAPIEndpoint(apiId, "newEndpoint.json");
+        Map<String,Object> endpointConfig = new HashMap<>();
+        endpointConfig.put("url", "https://google.lk");
+        endpointConfig.put("timeout", 1000);
+
+        Map<String,Object> endpointSecurity = new HashMap<>();
+        endpointSecurity.put("enabled", true);
+        endpointSecurity.put("username", "test_user");
+        endpointSecurity.put("password", "password123");
+
+        endpointConfig.put("endpoint_security", endpointSecurity);
+
+        apiEndpointDTO.setEndpointConfig(endpointConfig);
+
+        HttpResponse addEndpointResponse = addAPIEndpoint(apiId, apiEndpointDTO);
 
         assertNotNull(addEndpointResponse, "Error adding API Endpoint.");
         assertEquals(addEndpointResponse.getResponseCode(), 201, "Response code mismatched");
 
-        APIEndpointDTO apiEndpointDTO = new Gson().fromJson(addEndpointResponse.getData(), APIEndpointDTO.class);
-        String createdApiEndpointId = apiEndpointDTO.getId();
+        APIEndpointDTO createdApiEndpointDTO = new Gson().fromJson(addEndpointResponse.getData(), APIEndpointDTO.class);
+        String createdApiEndpointId = createdApiEndpointDTO.getId();
         assertNotNull(createdApiEndpointId, "APIEndpoint Id is null");
 
         apiEndpoints.put("createdApiEndpoint", createdApiEndpointId);
@@ -130,24 +148,31 @@ public class APIEndpointTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Update API Endpoint By UUID of Endpoint.",
             dependsOnMethods = {"testAddNewAPIEndpoint"})
     public void testUpdateAPIEndpointById() throws Exception {
-        HttpResponse updateEndpointResponse = updateAPIEndpoint(apiId, "updateEndpoint.json");
+        APIEndpointDTO apiEndpointDTO = new APIEndpointDTO();
+        apiEndpointDTO.setName("test1");
+        apiEndpointDTO.setEndpointType("REST");
+
+        Map<String,Object> endpointConfig = new HashMap<>();
+        endpointConfig.put("url", "https://youtube.lk");
+        endpointConfig.put("timeout", 1000);
+
+        Map<String,Object> endpointSecurity = new HashMap<>();
+        endpointSecurity.put("enabled", true);
+        endpointSecurity.put("username", "test_user2");
+        endpointSecurity.put("password", "QWE@#!QWE");
+
+        endpointConfig.put("endpoint_security", endpointSecurity);
+
+        apiEndpointDTO.setEndpointConfig(endpointConfig);
+
+        HttpResponse updateEndpointResponse = updateAPIEndpoint(apiId, apiEndpointDTO);
 
         assertNotNull(updateEndpointResponse, "Error updating API Endpoint By UUID.");
         assertEquals(updateEndpointResponse.getResponseCode(), 200, "Response code mismatched");
 
-        APIEndpointDTO apiEndpointDTO = new Gson().fromJson(updateEndpointResponse.getData(), APIEndpointDTO.class);
-        String createdApiEndpointId = apiEndpointDTO.getId();
+        APIEndpointDTO updatedApiEndpointDTO = new Gson().fromJson(updateEndpointResponse.getData(), APIEndpointDTO.class);
+        String createdApiEndpointId = updatedApiEndpointDTO.getId();
         assertNotNull(createdApiEndpointId, "APIEndpoint Id is null");
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Delete API Endpoint By UUID of Endpoint.",
-            dependsOnMethods = {"testAddNewAPIEndpoint"})
-    public void testDeleteAPIEndpointById() throws Exception {
-        HttpResponse getEndpointResponse = restAPIPublisher.deleteAPIEndpointById(
-                apiId, apiEndpoints.get("createdApiEndpoint"));
-
-        assertEquals(getEndpointResponse.getResponseCode(), 200, "Response code mismatched");
-        apiEndpoints.remove("createdApiEndpoint");
     }
 
 
@@ -166,27 +191,78 @@ public class APIEndpointTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
+    @Test(groups = {"wso2.am"}, description = "Testing for Primary APIEndpoint to API.",
+            dependsOnMethods = {"testAddNewAPIEndpoint"})
+    public void testPrimaryMappingWithAnEndpoint() throws Exception {
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
 
-    public HttpResponse addAPIEndpoint(String apiId, String fileName)
-            throws APIManagerIntegrationTestException, ApiException {
-        String apiEndpointPath = getAMResourceLocation() + File.separator + "endpoint" +
-                File.separator + fileName;
+        //Set primary api endpoint
+        apidto.setPrimaryProductionEndpointId(apiEndpoints.get("createdApiEndpoint"));
 
-        File apiEndpointFile = new File(apiEndpointPath);
-        HttpResponse addApiEndpointResponse = restAPIPublisher.addAPIEndpoint(apiId, apiEndpointFile);
+        APIDTO updatedApiDTO =  restAPIPublisher.updateAPI(apidto);
+        assertEquals(updatedApiDTO.getPrimaryProductionEndpointId(), apiEndpoints.get("createdApiEndpoint"),
+                "Fail to mapped primary APIEndpoint to API.");
+    }
 
+    @Test(groups = {"wso2.am"}, description = "Testing for APIEndpoint for operation mapping.",
+            dependsOnMethods = {"testAddNewAPIEndpoint"})
+    public void testOperationMappingWithAnEndpoint() throws Exception {
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        //Set an APIEndpoint to an operation
+        List<APIOperationsDTO> apiOperationsDTOS =  apidto.getOperations();
+        APIOperationsDTO apiOperationsDTO = apiOperationsDTOS.get(0);
+        apiOperationsDTO.setProductionEndpointId(apiEndpoints.get("createdApiEndpoint"));
+        apiOperationsDTOS.set(0, apiOperationsDTO);
+        apidto.setOperations(apiOperationsDTOS);
+
+        APIDTO updatedApiDTO =  restAPIPublisher.updateAPI(apidto);
+        assertNotNull(updatedApiDTO);
+        assertEquals(updatedApiDTO.getOperations().get(0).getProductionEndpointId(),
+                apiEndpoints.get("createdApiEndpoint"), "Fail to mapped the created endpoint to an operation.");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Testing for none case APIEndpoint for operation mapping.")
+    public void testOperationMappingWithNoneEndpoint() throws Exception {
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        //Set none case for an operation's endpoint
+        List<APIOperationsDTO> apiOperationsDTOS =  apidto.getOperations();
+        APIOperationsDTO apiOperationsDTO = apiOperationsDTOS.get(0);
+        apiOperationsDTO.setProductionEndpointId("none");
+        apiOperationsDTOS.set(0, apiOperationsDTO);
+        apidto.setOperations(apiOperationsDTOS);
+
+        APIDTO updatedApiDTO =  restAPIPublisher.updateAPI(apidto);
+        assertNotNull(updatedApiDTO);
+        assertEquals(updatedApiDTO.getOperations().get(0).getProductionEndpointId(), "none",
+                "Fail to mapped the none endpoint to an operation.");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Delete API Endpoint By UUID of Endpoint.",
+            dependsOnMethods = {"testAddNewAPIEndpoint"})
+    public void testDeleteAPIEndpointById() throws Exception {
+        HttpResponse getEndpointResponse = restAPIPublisher.deleteAPIEndpointById(
+                apiId, apiEndpoints.get("createdApiEndpoint"));
+
+        assertEquals(getEndpointResponse.getResponseCode(), 200, "Response code mismatched");
+        apiEndpoints.remove("createdApiEndpoint");
+    }
+
+
+    private HttpResponse addAPIEndpoint(String apiId, APIEndpointDTO apiEndpointDTO) throws ApiException {
+
+        HttpResponse addApiEndpointResponse = restAPIPublisher.addAPIEndpoint(apiId, apiEndpointDTO);
         return addApiEndpointResponse;
     }
 
-    public HttpResponse updateAPIEndpoint(String apiId, String fileName)
-            throws APIManagerIntegrationTestException, ApiException {
-        String apiEndpointPath = getAMResourceLocation() + File.separator + "endpoint" +
-                File.separator + fileName;
+    private HttpResponse updateAPIEndpoint(String apiId, APIEndpointDTO apiEndpointDTO) throws ApiException {
 
-        File apiEndpointFile = new File(apiEndpointPath);
         HttpResponse updateApiEndpointResponse = restAPIPublisher.updateAPIEndpoint(
-                apiId, apiEndpoints.get("createdApiEndpoint"), apiEndpointFile);
-
+                apiId, apiEndpoints.get("createdApiEndpoint"), apiEndpointDTO);
         return updateApiEndpointResponse;
     }
 
