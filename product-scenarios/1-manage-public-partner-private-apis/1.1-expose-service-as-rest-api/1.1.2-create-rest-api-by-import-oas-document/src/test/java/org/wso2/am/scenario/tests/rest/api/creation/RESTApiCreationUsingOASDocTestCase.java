@@ -79,6 +79,8 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
 
     private final static String OAS_V2 = "v2";
     private final static String OAS_V3 = "v3";
+    private final static String GET_VERB = "GET";
+    private final static String POST_VERB = "POST";
 
     String resourceLocation = System.getProperty("test.resource.location");
 
@@ -153,8 +155,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         Assert.assertEquals(updatedResponse.get("version"), apiVersion, "API version was not imported correctly");
 
         //Assert resources
-        JSONObject resource = (JSONObject) resources.get(0);
-        assertGETResource(resource);
+        assertResources(resources);
 
         HttpResponse response = restAPIPublisher.deleteAPI(apiId);
         verifyResponse(response);
@@ -203,10 +204,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         Assert.assertEquals(updatedResponse.get("version"), apiVersion, "API version was not imported correctly");
 
         //Assert resources
-        JSONObject resourcePOST = (JSONObject) resources.get(0);
-        JSONObject resourceGET = (JSONObject) resources.get(1);
-        assertPOSTResource(resourcePOST);
-        assertGETResource(resourceGET);
+        assertResources(resources);
 
         HttpResponse response = restAPIPublisher.deleteAPI(apiId);
         verifyResponse(response);
@@ -259,8 +257,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         Assert.assertEquals(updatedResponse.get("version"), apiVersion, "API version was not imported correctly");
 
         //Assert resources
-        JSONObject resource = (JSONObject) resources.get(0);
-        assertGETResource(resource);
+        assertResources(resources);
 
         HttpResponse response = restAPIPublisher.deleteAPI(apiId);
         verifyResponse(response);
@@ -311,10 +308,7 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         Assert.assertEquals(updatedResponse.get("version"), apiVersion, "API version was not imported correctly");
 
         //Assert resources
-        JSONObject resourcePOST = (JSONObject) resources.get(0);
-        JSONObject resourceGET = (JSONObject) resources.get(1);
-        assertPOSTResource(resourcePOST);
-        assertGETResource(resourceGET);
+        assertResources(resources);
 
         HttpResponse response = restAPIPublisher.deleteAPI(apiId);
         verifyResponse(response);
@@ -432,6 +426,18 @@ public class RESTApiCreationUsingOASDocTestCase extends ScenarioTestBase {
         HttpResponse response = restAPIPublisher.deleteAPI(apiId);
         verifyResponse(response);
 
+    }
+
+    private void assertResources(JSONArray resources) throws JSONException {
+        for (int i = 0; i < resources.length(); i++) {
+            JSONObject resource = (JSONObject) resources.get(i);
+            String httpMethod = resource.get("verb").toString();
+            if (httpMethod.equals(GET_VERB)) {
+                assertGETResource(resource);
+            } else if (httpMethod.equals(POST_VERB)) {
+                assertPOSTResource(resource);
+            }
+        }
     }
 
     private void assertGETResource(JSONObject resource) throws JSONException {
