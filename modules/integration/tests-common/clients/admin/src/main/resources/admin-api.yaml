@@ -109,6 +109,49 @@ servers:
   - url: https://apis.wso2.com/api/am/admin/v3
 paths:
   ######################################################
+  # The "Content Search Results" Throttling Policies
+  ######################################################
+  /throttling/policies/search:
+    get:
+      tags:
+        - Unified Search
+      summary: |
+        Retrieve/Search Throttling Polcies
+      description: |
+        This operation provides you a list of available Throttling Policies qualifying the given keyword match.
+      parameters:
+        - name: query
+          in: query
+          description: |
+            **Search**.
+            You can search by providing a keyword. Allowed to search by type only.
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+            List of qualifying Throttling Policies is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThrottlePolicyDetailsList'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:tier_view
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v3/search?query=type:sub"'
+      operationId: throttlingPolicySearch
+
+  ######################################################
   # The "Application Throttling Policy Collection" resource API
   ######################################################
   /throttling/policies/application:
@@ -1636,6 +1679,156 @@ paths:
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/advanced/229a3c46-c836-43c8-b988-8eebd9c7774b"'
 
+  ######################################################
+  # "Export Throttling Policy" resource API
+  ######################################################
+  /throttling/policies/export:
+    get:
+      tags:
+        - Import Export
+      summary: Export a Throttling Policy
+      description: |
+        This operation can be used to export the details of a particular Throttling Policy.
+      parameters:
+        - name: policyId
+          in: query
+          description: UUID of the ThrottlingPolicy
+          schema:
+            type: string
+        - name: name
+          in: query
+          description: |
+            Throttling Policy Name
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: |
+            Type of the Throttling Policy
+          schema:
+            type: string
+            enum:
+              - sub
+              - app
+              - api
+              - global
+        - name: format
+          in: query
+          description: |
+            Format of output documents. Can be YAML or JSON.
+          schema:
+            type: string
+            enum:
+              - JSON
+              - YAML
+      responses:
+        200:
+          description: |
+            OK.
+            Export Successful.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportThrottlePolicy'
+              example:
+                type: rate-limiting policy
+                subtype: application
+                version: v4.1.0
+                data:
+                  policyId: cd828243-a0db-430c-97e9-9e41fd865d48
+                  policyName: 50PerMin
+                  displayName: 50PerMin
+                  description: Allows 50 request per minute
+                  isDeployed: true
+                  type: ApplicationThrottlePolicy
+                  defaultLimit:
+                    type: BANDWIDTHLIMIT
+                    requestCount:
+                      timeUnit: min
+                      unitTime: 1
+                      requestCount: 50
+                    bandwidth:
+                      timeUnit: min
+                      unitTime: 5
+                      dataAmount: 100
+                      dataUnit: MB
+                    eventCount:
+                      timeUnit: min
+                      unitTime: 5
+                      eventCount: 16
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:tier_manage
+            - apim:policies_import_export
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/export?policyId=96077508-fd01-4fae-bc64-5de0e2baf43c&name=Bronze&type=subscription&format=YAML"'
+      operationId: exportThrottlingPolicy
+  ####################################################################
+  # Import Throttling Policy
+  ####################################################################
+  /throttling/policies/import:
+    post:
+      tags:
+        - Import Export
+      summary: Import a Throttling Policy
+      description: |
+        This operation can be used to import a Throttling Policy
+      parameters:
+        - name: overwrite
+          in: query
+          description: |
+            Update an existing throttlingpolicy with the same name
+          required: false
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  description: Json File
+                  format: binary
+        required: true
+      responses:
+        200:
+          description: |
+            Created.
+            Throttling Policy Imported Successfully.
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:tier_manage
+            - apim:policies_import_export
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/import?overwrite=True"'
+      operationId: importThrottlingPolicy
   ######################################################
   # The "Deny Policy Collection" resource API
   ######################################################
@@ -4128,6 +4321,60 @@ components:
           type: string
           description: |
             Description about individual errors occurred
+    ThrottlePolicyDetailsList:
+      title: Policy List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Throttling Policies returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/ThrottlePolicyDetails'
+    ThrottlePolicyDetails:
+      title: Generic Policy
+      required:
+        - policyName
+      type: object
+      properties:
+        policyId:
+          type: integer
+          description: Id of policy
+          readOnly: true
+          example: 3
+        uuid:
+          type: string
+          description: UUId of policy
+          readOnly: true
+          example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+        policyName:
+          maxLength: 60
+          minLength: 1
+          type: string
+          description: Name of policy
+          example: 30PerMin
+        displayName:
+          type: string
+          description: Display name of the policy
+          example: 30PerMin
+          maxLength: 512
+        description:
+          maxLength: 1024
+          type: string
+          description: Description of the policy
+          example: Allows 30 request per minute
+        isDeployed:
+          type: boolean
+          description: Indicates whether the policy is deployed successfully or not.
+          default: false
+        type:
+          type: string
+          description: Indicates the type of throttle policy
+      discriminator:
+        propertyName: type
     ThrottlePolicy:
       title: Generic Throttling Policy
       required:
@@ -4164,6 +4411,18 @@ components:
           description: Indicates the type of throttle policy
       discriminator:
         propertyName: type
+    ExportThrottlePolicy:
+      title: Export Throttling Policy
+      type : object
+      properties:
+        type:
+          type: string
+        subtype:
+          type: string
+        version:
+          type: string
+        data:
+          type: object
     AdvancedThrottlePolicyInfo:
       title: Advanced Throttling Policy
       allOf:
@@ -5992,6 +6251,7 @@ components:
           tokenUrl: https://localhost:9443/oauth2/token
           scopes:
             openid: Authorize access to user details
+            apim:policies_import_export: Export and import policies related operations
             apim:admin: Manage all admin operations
             apim:tier_view: View throttling policies
             apim:tier_manage: Update and delete throttling policies
