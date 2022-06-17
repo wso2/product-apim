@@ -55,10 +55,6 @@ import static org.testng.Assert.assertEquals;
 import static org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils.encodeCredentials;
 
 public class GetThrottlingPoliciesTestCase extends APIMIntegrationBaseTest {
-    private final String ADMIN1_USERNAME = "admin1";
-    private final String PASSWORD = "admin1";
-    private final String ADMIN_ROLE = "admin";
-    private AdminApiTestHelper adminApiTestHelper;
     private final String getThrottlePoliciesResource = "/throttling/policies/search";
     private final  String appPolicyName="50PerMin";
     private final String subPolicyName ="Gold";
@@ -77,8 +73,6 @@ public class GetThrottlingPoliciesTestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true) public void setEnvironment() throws Exception {
         super.init(userMode);
-        adminApiTestHelper = new AdminApiTestHelper();
-
         getThrottlePoliciesUrl =
                 adminURLHttps + APIMIntegrationConstants.REST_API_ADMIN_CONTEXT_FULL_0 + getThrottlePoliciesResource;
     }
