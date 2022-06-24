@@ -28,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 * ThrottlePolicyDetailsDTO
 */
 
-
 public class ThrottlePolicyDetailsDTO {
         public static final String SERIALIZED_NAME_POLICY_ID = "policyId";
         @SerializedName(SERIALIZED_NAME_POLICY_ID)
@@ -56,11 +55,8 @@ public class ThrottlePolicyDetailsDTO {
 
         public static final String SERIALIZED_NAME_TYPE = "type";
         @SerializedName(SERIALIZED_NAME_TYPE)
-            protected String type;
+            private String type;
 
-            public ThrottlePolicyDetailsDTO() {
-            this.type = this.getClass().getSimpleName();
-            }
 
         public ThrottlePolicyDetailsDTO policyId(Integer policyId) {
         

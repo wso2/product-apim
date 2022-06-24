@@ -131,13 +131,13 @@ paths:
         - apim:admin
         - apim:tier_view
       summary: |
-        Retrieve/Search Throttling Polcies
+        Retrieve/Search Throttling Policies
       tags:
-      - Unified Search
+      - Throttling Policy Search
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/search?query=type:sub"'
+          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/search?query=type:sub"'
       x-accepts: application/json
   /throttling/policies/application:
     get:
@@ -3093,7 +3093,7 @@ paths:
         - apim:policies_import_export
       summary: Export a Throttling Policy
       tags:
-      - Import Export
+      - Import Export Throttling Policy
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -3189,7 +3189,7 @@ paths:
         - apim:policies_import_export
       summary: Import a Throttling Policy
       tags:
-      - Import Export
+      - Import Export Throttling Policy
       x-code-samples:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -7552,8 +7552,6 @@ components:
       title: Policy List
       type: object
     ThrottlePolicyDetails:
-      discriminator:
-        propertyName: type
       example:
         policyId: 3
         policyName: 30PerMin

@@ -35,14 +35,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UnifiedSearchApi {
+public class ThrottlingPolicySearchApi {
     private ApiClient localVarApiClient;
 
-    public UnifiedSearchApi() {
+    public ThrottlingPolicySearchApi() {
         this(Configuration.getDefaultApiClient());
     }
 
-    public UnifiedSearchApi(ApiClient apiClient) {
+    public ThrottlingPolicySearchApi(ApiClient apiClient) {
         this.localVarApiClient = apiClient;
     }
 
@@ -109,7 +109,7 @@ public class UnifiedSearchApi {
     }
 
     /**
-     * Retrieve/Search Throttling Polcies 
+     * Retrieve/Search Throttling Policies 
      * This operation provides you a list of available Throttling Policies qualifying the given keyword match. 
      * @param query **Search**. You can search by providing a keyword. Allowed to search by type only.  (optional)
      * @return ThrottlePolicyDetailsListDTO
@@ -126,7 +126,7 @@ public class UnifiedSearchApi {
     }
 
     /**
-     * Retrieve/Search Throttling Polcies 
+     * Retrieve/Search Throttling Policies 
      * This operation provides you a list of available Throttling Policies qualifying the given keyword match. 
      * @param query **Search**. You can search by providing a keyword. Allowed to search by type only.  (optional)
      * @return ApiResponse&lt;ThrottlePolicyDetailsListDTO&gt;
@@ -144,7 +144,7 @@ public class UnifiedSearchApi {
     }
 
     /**
-     * Retrieve/Search Throttling Polcies  (asynchronously)
+     * Retrieve/Search Throttling Policies  (asynchronously)
      * This operation provides you a list of available Throttling Policies qualifying the given keyword match. 
      * @param query **Search**. You can search by providing a keyword. Allowed to search by type only.  (optional)
      * @param _callback The callback to be executed when the API call finishes

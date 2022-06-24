@@ -1,6 +1,6 @@
 /*
  *
- *   Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *   Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -23,16 +23,7 @@ package org.wso2.am.integration.tests.restapi.admin.throttlingpolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
@@ -49,15 +40,11 @@ import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -65,39 +52,34 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.testng.Assert.assertEquals;
-import static org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils.encodeCredentials;
 
 /**
  * This test case is used to test the Throttle Policy Import Export
  */
 public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest {
-    private final String displayName = "Test Policy";
-    private final String timeUnit = "min";
-    private final Integer unitTime = 1;
+    private final String DISPLAY_NAME = "Test Policy";
+    private final String TIME_UNIT = "min";
+    private final Integer UNIT_TIME = 1;
     private final String APIM_VERSION = "v4.1.0";
-    private final String description = "This is a test throttle policy";
-    private final String advancedPolicyName = "TestPolicyAdvanced";
-    private final String applicationPolicyName = "TestPolicyApplication";
-    private final String customPolicyName = "TestPolicyCustom";
-    private final String subscriptionPolicyName = "TestPolicySubscription";
+    private final String DESCRIPTION = "This is a test throttle policy";
+    private final String ADVANCED_POLICY_NAME = "TestPolicyAdvanced";
+    private final String APPLICATION_POLICY_NAME = "TestPolicyApplication";
+    private final String CUSTOM_POLICY_NAME = "TestPolicyCustom";
+    private final String SUBSCRIPTION_POLICY_NAME = "TestPolicySubscription";
     private final String THROTTLE_POLICY_TYPE = "throttling policy";
     private final String ADVANCED_POLICY_SUBTYPE = "advanced policy";
     private final String APPLICATION_POLICY_SUBTYPE = "application policy";
     private final String SUBSCRIPTION_POLICY_SUBTYPE = "subscription policy";
     private final String CUSTOM_POLICY_SUBTYPE = "custom rule";
-    private final String advancedPolicyType = "api";
-    private final String applicationPolicyType = "app";
-    private final String subscriptionPolicyType = "sub";
-    private final String customPolicyType = "global";
-    private final String exportRestAPIResource = "/throttling/policies/export";
-    private final String importRestAPIResource = "/throttling/policies/import";
+    private final String ADVANCED_POLICY_TYPE = "api";
+    private final String APPLICATION_POLICY_TYPE = "app";
+    private final String SUBSCRIPTION_POLICY_TYPE = "sub";
+    private final String CUSTOM_POLICY_TYPE = "global";
     private AdvancedThrottlePolicyDTO AdvancedPolicyDTO;
     private ApplicationThrottlePolicyDTO ApplicationPolicyDTO;
     private CustomRuleDTO CustomPolicyDTO;
     private SubscriptionThrottlePolicyDTO SubscriptionPolicyDTO;
     private AdminApiTestHelper adminApiTestHelper;
-    private String exportUrl;
-    private String importUrl;
     private String advancedPolicyId;
     private String applicationPolicyId;
     private String subscriptionPolicyId;
@@ -122,9 +104,6 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
         super.init(userMode);
         adminApiTestHelper = new AdminApiTestHelper();
 
-        exportUrl = adminURLHttps + APIMIntegrationConstants.REST_API_ADMIN_CONTEXT_FULL_0 + exportRestAPIResource;
-        importUrl = adminURLHttps + APIMIntegrationConstants.REST_API_ADMIN_CONTEXT_FULL_0 + importRestAPIResource;
-
         addAdvancedPolicy();
         addApplicationPolicy();
         addSubscriptionPolicy();
@@ -136,7 +115,6 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
      */
     public void addSubscriptionPolicy() throws Exception {
 
-        String internal_creator = "Internal/creator";
         String timeUnit = "min";
         Integer unitTime = 1;
         int graphQLMaxComplexity = 400;
@@ -154,7 +132,7 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
         customAttributes.add(attribute);
         Long requestCount = 50L;
         ArrayList<String> roleList = new ArrayList<>();
-        roleList.add(internal_creator);
+        roleList.add(APIMIntegrationConstants.APIM_INTERNAL_ROLE.CREATOR);
         monetization.setMonetizationPlan(MonetizationInfoDTO.MonetizationPlanEnum.DYNAMICRATE);
         RequestCountLimitDTO requestCountLimit = DtoFactory.createRequestCountLimitDTO(timeUnit, unitTime,
                 requestCount);
@@ -162,8 +140,8 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
                 requestCountLimit, null);
         SubscriptionThrottlePolicyPermissionDTO permissions = DtoFactory.createSubscriptionThrottlePolicyPermissionDTO(
                 SubscriptionThrottlePolicyPermissionDTO.PermissionTypeEnum.ALLOW, roleList);
-        SubscriptionPolicyDTO = DtoFactory.createSubscriptionThrottlePolicyDTO(subscriptionPolicyName, displayName,
-                description, false, defaultLimit, graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount,
+        SubscriptionPolicyDTO = DtoFactory.createSubscriptionThrottlePolicyDTO(SUBSCRIPTION_POLICY_NAME, DISPLAY_NAME,
+                DESCRIPTION, false, defaultLimit, graphQLMaxComplexity, graphQLMaxDepth, rateLimitCount,
                 rateLimitTimeUnit, customAttributes, stopQuotaOnReach, billingPlan, subscriberCount, permissions);
         SubscriptionPolicyDTO.setMonetization(monetization);
         //Add the subscription throttling policy
@@ -185,16 +163,17 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
      * Adds a new advanced policy
      */
     public void addAdvancedPolicy() throws Exception {
+
         Long requestCount = 50L;
         List<ConditionalGroupDTO> conditionalGroups = new ArrayList<>();
-        RequestCountLimitDTO requestCountLimit = DtoFactory.createRequestCountLimitDTO(timeUnit, unitTime,
+        RequestCountLimitDTO requestCountLimit = DtoFactory.createRequestCountLimitDTO(TIME_UNIT, UNIT_TIME,
                 requestCount);
         ThrottleLimitDTO defaultLimit = DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT,
                 requestCountLimit, null);
         AdvancedThrottlingPolicyTestCase advancedThrottlingPolicyTestCase = new AdvancedThrottlingPolicyTestCase(
                 userMode);
         conditionalGroups.add(advancedThrottlingPolicyTestCase.createConditionalGroup(defaultLimit));
-        AdvancedPolicyDTO = DtoFactory.createAdvancedThrottlePolicyDTO(advancedPolicyName, displayName, description,
+        AdvancedPolicyDTO = DtoFactory.createAdvancedThrottlePolicyDTO(ADVANCED_POLICY_NAME, DISPLAY_NAME, DESCRIPTION,
                 false, defaultLimit, conditionalGroups);
         //Add the advanced throttling policy
         ApiResponse<AdvancedThrottlePolicyDTO> addedPolicy = restAPIAdmin.addAdvancedThrottlingPolicy(
@@ -214,13 +193,14 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
      * Adds a new application policy
      */
     public void addApplicationPolicy() throws Exception {
+
         Long requestCount = 50L;
-        RequestCountLimitDTO requestCountLimit = DtoFactory.createRequestCountLimitDTO(timeUnit, unitTime,
+        RequestCountLimitDTO requestCountLimit = DtoFactory.createRequestCountLimitDTO(TIME_UNIT, UNIT_TIME,
                 requestCount);
         ThrottleLimitDTO defaultLimit = DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT,
                 requestCountLimit, null);
-        ApplicationPolicyDTO = DtoFactory.createApplicationThrottlePolicyDTO(applicationPolicyName, displayName,
-                description, false, defaultLimit);
+        ApplicationPolicyDTO = DtoFactory.createApplicationThrottlePolicyDTO(APPLICATION_POLICY_NAME, DISPLAY_NAME,
+                DESCRIPTION, false, defaultLimit);
         //Add the application throttling policy
         ApiResponse<ApplicationThrottlePolicyDTO> addedPolicy = restAPIAdmin.addApplicationThrottlingPolicy(
                 ApplicationPolicyDTO);
@@ -239,6 +219,7 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
      * Adds a new custom policy
      */
     public void addCustomPolicy() {
+
         //Create the custom throttling policy DTO
         String description = "This is a test custom throttle policy";
         String siddhiQuery = "FROM RequestStream\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible, "
@@ -246,7 +227,7 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
                 + "EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \nSELECT throttleKey, (count(userId) >= 10) "
                 + "as isThrottled, expiryTimeStamp group by throttleKey \nINSERT ALL EVENTS into ResultStream;";
         String keyTemplate = "$userId";
-        CustomPolicyDTO = DtoFactory.createCustomThrottlePolicyDTO(customPolicyName, description, false, siddhiQuery,
+        CustomPolicyDTO = DtoFactory.createCustomThrottlePolicyDTO(CUSTOM_POLICY_NAME, description, false, siddhiQuery,
                 keyTemplate);
 
         ApiResponse<CustomRuleDTO> addedPolicy;
@@ -270,17 +251,13 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Exported Sample Custom ThrottlePolicy" )
+    @Test(groups = {"wso2.am"}, description = "Exporting Sample Custom ThrottlePolicy" )
     public void testCustomThrottlePolicyExport() throws Exception {
+
         if (userMode == TestUserMode.TENANT_ADMIN) {
             throw new SkipException("Skipping the export custom policy");
         }
-        exportedFileCustomPolicy = exportArtifact(user.getUserName(), user.getPassword(), customPolicyName,
-                customPolicyType);
-        CustomPolicyDTO.setIsDeployed(false);
-        CustomPolicyDTO.setType("CustomRule");
-        ExportThrottlePolicyDTO customPolicyExportedDTO = DtoFactory.createExportThrottlePolicyDTO(THROTTLE_POLICY_TYPE,
-                CUSTOM_POLICY_SUBTYPE, APIM_VERSION, CustomPolicyDTO);
+        exportedFileCustomPolicy = exportArtifact(CUSTOM_POLICY_NAME, CUSTOM_POLICY_TYPE);
 
         StringBuilder contentBuilder = new StringBuilder();
         try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(String.valueOf(exportedFileCustomPolicy)),
@@ -292,28 +269,23 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
         }
 
         String exportedThrottlePolicyContent = contentBuilder.toString();
-        JSONParser parser = new JSONParser();
-        JSONObject exportedThrottlePolicyJson = (JSONObject) parser.parse(exportedThrottlePolicyContent);
+        JSONObject exportedThrottlePolicyJson = (JSONObject) new JSONParser().parse(exportedThrottlePolicyContent);
         CustomPolicyDTO.setIsDeployed(false);
         CustomPolicyDTO.setType("CustomRule");
-        customPolicyExportedDTO = DtoFactory.createExportThrottlePolicyDTO(THROTTLE_POLICY_TYPE, CUSTOM_POLICY_SUBTYPE,
+        ExportThrottlePolicyDTO customPolicyExportedDTO = DtoFactory.createExportThrottlePolicyDTO(THROTTLE_POLICY_TYPE, CUSTOM_POLICY_SUBTYPE,
                 APIM_VERSION, CustomPolicyDTO);
 
-        Gson gson = new Gson();
-        ObjectMapper mapper = new ObjectMapper();
-        ExportThrottlePolicyDTO expectedExportedPolicy = gson.fromJson(exportedThrottlePolicyJson.toJSONString(),
+        ExportThrottlePolicyDTO expectedExportedPolicy =  new Gson().fromJson(exportedThrottlePolicyJson.toJSONString(),
                 ExportThrottlePolicyDTO.class);
-        CustomRuleDTO customPolicy = mapper.convertValue(expectedExportedPolicy.getData(), CustomRuleDTO.class);
+        CustomRuleDTO customPolicy = new ObjectMapper().convertValue(expectedExportedPolicy.getData(), CustomRuleDTO.class);
         expectedExportedPolicy.setData(customPolicy);
         Assert.assertEquals(expectedExportedPolicy, customPolicyExportedDTO);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Exported Sample Subscription ThrottlePolicy")
+    @Test(groups = {"wso2.am"}, description = "Exporting Sample Subscription ThrottlePolicy")
     public void testSubscriptionThrottlePolicyExport() throws Exception {
 
-        exportedFileSubscriptionPolicy = exportArtifact(user.getUserName(), user.getPassword(), subscriptionPolicyName,
-                subscriptionPolicyType);
-
+        exportedFileSubscriptionPolicy = exportArtifact(SUBSCRIPTION_POLICY_NAME, SUBSCRIPTION_POLICY_TYPE);
         StringBuilder contentBuilder = new StringBuilder();
         try (Stream<String> stream = java.nio.file.Files.lines(
                 Paths.get(String.valueOf(exportedFileSubscriptionPolicy)), StandardCharsets.UTF_8)) {
@@ -324,29 +296,24 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
         }
 
         String exportedThrottlePolicyContent = contentBuilder.toString();
-        JSONParser parser = new JSONParser();
-        JSONObject exportedThrottlePolicyJson = (JSONObject) parser.parse(exportedThrottlePolicyContent);
+        JSONObject exportedThrottlePolicyJson = (JSONObject) new JSONParser().parse(exportedThrottlePolicyContent);
         SubscriptionPolicyDTO.setIsDeployed(false);
         SubscriptionPolicyDTO.setType("SubscriptionThrottlePolicy");
         ExportThrottlePolicyDTO subscriptionPolicyExportedDTO = DtoFactory.createExportThrottlePolicyDTO(
                 THROTTLE_POLICY_TYPE, SUBSCRIPTION_POLICY_SUBTYPE, APIM_VERSION, SubscriptionPolicyDTO);
 
-        Gson gson = new Gson();
-        ObjectMapper mapper = new ObjectMapper();
-        ExportThrottlePolicyDTO expectedExportedPolicy = gson.fromJson(exportedThrottlePolicyJson.toJSONString(),
+        ExportThrottlePolicyDTO expectedExportedPolicy = new Gson().fromJson(exportedThrottlePolicyJson.toJSONString(),
                 ExportThrottlePolicyDTO.class);
-        SubscriptionThrottlePolicyDTO subPolicy = mapper.convertValue(expectedExportedPolicy.getData(),
+        SubscriptionThrottlePolicyDTO subPolicy = new ObjectMapper().convertValue(expectedExportedPolicy.getData(),
                 SubscriptionThrottlePolicyDTO.class);
         expectedExportedPolicy.setData(subPolicy);
         Assert.assertEquals(subscriptionPolicyExportedDTO, expectedExportedPolicy);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Exported Sample Application ThrottlePolicy")
+    @Test(groups = {"wso2.am"}, description = "Exporting Sample Application ThrottlePolicy")
     public void testApplicationThrottlePolicyExport() throws Exception {
 
-        exportedFileApplicationPolicy = exportArtifact(user.getUserName(), user.getPassword(), applicationPolicyName,
-                applicationPolicyType);
-
+        exportedFileApplicationPolicy = exportArtifact(APPLICATION_POLICY_NAME, APPLICATION_POLICY_TYPE);
         StringBuilder contentBuilder = new StringBuilder();
         try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(String.valueOf(exportedFileApplicationPolicy)),
                 StandardCharsets.UTF_8)) {
@@ -357,29 +324,24 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
         }
 
         String exportedThrottlePolicyContent = contentBuilder.toString();
-        JSONParser parser = new JSONParser();
-        JSONObject exportedThrottlePolicyJson = (JSONObject) parser.parse(exportedThrottlePolicyContent);
+        JSONObject exportedThrottlePolicyJson = (JSONObject) new JSONParser().parse(exportedThrottlePolicyContent);
         ApplicationPolicyDTO.setIsDeployed(false);
         ApplicationPolicyDTO.setType("ApplicationThrottlePolicy");
         ExportThrottlePolicyDTO applicationPolicyExportedDTO = DtoFactory.createExportThrottlePolicyDTO(
                 THROTTLE_POLICY_TYPE, APPLICATION_POLICY_SUBTYPE, APIM_VERSION, ApplicationPolicyDTO);
 
-        Gson gson = new Gson();
-        ObjectMapper mapper = new ObjectMapper();
-        ExportThrottlePolicyDTO expectedExportedPolicy = gson.fromJson(exportedThrottlePolicyJson.toJSONString(),
+        ExportThrottlePolicyDTO expectedExportedPolicy = new Gson().fromJson(exportedThrottlePolicyJson.toJSONString(),
                 ExportThrottlePolicyDTO.class);
-        ApplicationThrottlePolicyDTO appPolicy = mapper.convertValue(expectedExportedPolicy.getData(),
+        ApplicationThrottlePolicyDTO appPolicy = new ObjectMapper().convertValue(expectedExportedPolicy.getData(),
                 ApplicationThrottlePolicyDTO.class);
         expectedExportedPolicy.setData(appPolicy);
         Assert.assertEquals(applicationPolicyExportedDTO, expectedExportedPolicy);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Exported Sample Advanced ThrottlePolicy")
+    @Test(groups = {"wso2.am"}, description = "Exporting Sample Advanced ThrottlePolicy")
     public void testAdvancedThrottlePolicyExport() throws Exception {
 
-        exportedFileAdvancedPolicy = exportArtifact(user.getUserName(), user.getPassword(), advancedPolicyName,
-                advancedPolicyType);
-
+        exportedFileAdvancedPolicy = exportArtifact(ADVANCED_POLICY_NAME, ADVANCED_POLICY_TYPE);
         StringBuilder contentBuilder = new StringBuilder();
         try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(String.valueOf(exportedFileAdvancedPolicy)),
                 StandardCharsets.UTF_8)) {
@@ -390,18 +352,15 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
         }
 
         String exportedThrottlePolicyContent = contentBuilder.toString();
-        JSONParser parser = new JSONParser();
-        JSONObject exportedThrottlePolicyJson = (JSONObject) parser.parse(exportedThrottlePolicyContent);
+        JSONObject exportedThrottlePolicyJson = (JSONObject) new JSONParser().parse(exportedThrottlePolicyContent);
         AdvancedPolicyDTO.setIsDeployed(false);
         AdvancedPolicyDTO.setType("AdvancedThrottlePolicy");
         ExportThrottlePolicyDTO advancedPolicyExportedDTO = DtoFactory.createExportThrottlePolicyDTO(
                 THROTTLE_POLICY_TYPE, ADVANCED_POLICY_SUBTYPE, APIM_VERSION, AdvancedPolicyDTO);
 
-        Gson gson = new Gson();
-        ObjectMapper mapper = new ObjectMapper();
-        ExportThrottlePolicyDTO expectedExportedPolicy = gson.fromJson(exportedThrottlePolicyJson.toJSONString(),
+        ExportThrottlePolicyDTO expectedExportedPolicy = new Gson().fromJson(exportedThrottlePolicyJson.toJSONString(),
                 ExportThrottlePolicyDTO.class);
-        AdvancedThrottlePolicyDTO advancedPolicy = mapper.convertValue(expectedExportedPolicy.getData(),
+        AdvancedThrottlePolicyDTO advancedPolicy = new ObjectMapper().convertValue(expectedExportedPolicy.getData(),
                 AdvancedThrottlePolicyDTO.class);
         expectedExportedPolicy.setData(advancedPolicy);
         Assert.assertEquals(advancedPolicyExportedDTO, expectedExportedPolicy);
@@ -410,74 +369,82 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
 
     @Test(groups = {"wso2.am"}, description = "Importing an existing Custom Throttle Policy without update",
             dependsOnMethods = "testCustomThrottlePolicyExport")
-    public void testCustomThrottlePolicyUpdateConflict() throws Exception {
-        URL importRequest = new URL(importUrl + "?overwrite=" + "false");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileCustomPolicy, user.getUserName(),
-                user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CONFLICT);
+    public void testCustomThrottlePolicyUpdateConflict() {
+
+        try {
+            ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileCustomPolicy, false);
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_CONFLICT);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT);
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing an existing Subscription Throttle Policy without update",
             dependsOnMethods = "testSubscriptionThrottlePolicyExport")
-    public void testSubscriptionThrottlePolicyUpdateConflict() throws Exception {
-        URL importRequest = new URL(importUrl + "?overwrite=" + "false");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileSubscriptionPolicy,
-                user.getUserName(), user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CONFLICT);
+    public void testSubscriptionThrottlePolicyUpdateConflict() {
+
+        try {
+            ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileSubscriptionPolicy, false);
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_CONFLICT);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT);
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing an existing Application Throttle Policy without update",
             dependsOnMethods = "testApplicationThrottlePolicyExport")
-    public void testApplicationThrottlePolicyUpdateConflict() throws Exception {
-        URL importRequest = new URL(importUrl + "?overwrite=" + "false");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileApplicationPolicy,
-                user.getUserName(), user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CONFLICT);
+    public void testApplicationThrottlePolicyUpdateConflict() {
+
+        try {
+            ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileApplicationPolicy, false);
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_CONFLICT);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT);
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing an existing Advanced Throttle Policy without update",
             dependsOnMethods = "testAdvancedThrottlePolicyExport")
-    public void testAdvancedThrottlePolicyUpdateConflict() throws Exception {
-        URL importRequest = new URL(importUrl + "?overwrite=" + "false");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileAdvancedPolicy, user.getUserName(),
-                user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CONFLICT);
+    public void testAdvancedThrottlePolicyUpdateConflict() {
+
+        try {
+            ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileAdvancedPolicy, false);
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_CONFLICT);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_CONFLICT);
+        }
     }
 
     @Test(groups = {"wso2.am" }, description = "Importing an existing Custom Throttle Policy with update",
             dependsOnMethods = "testCustomThrottlePolicyExport")
     public void testCustomThrottlePolicyUpdate() throws Exception {
-        URL importRequest = new URL(importUrl + "?overwrite=" + "true");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileCustomPolicy, user.getUserName(),
-                user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
+
+        ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileCustomPolicy, true);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing an existing Subscription Throttle Policy with update",
             dependsOnMethods = "testSubscriptionThrottlePolicyExport")
     public void testSubscriptionThrottlePolicyUpdate() throws Exception {
-        URL importRequest = new URL(importUrl + "?overwrite=" + "true");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileSubscriptionPolicy,
-                user.getUserName(), user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
+
+        ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileSubscriptionPolicy, true);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing an existing Application Throttle Policy with update",
             dependsOnMethods = "testApplicationThrottlePolicyExport")
     public void testApplicationThrottlePolicyUpdate() throws Exception {
-        URL importRequest = new URL(importUrl + "?overwrite=" + "true");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileApplicationPolicy,
-                user.getUserName(), user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
+
+        ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileApplicationPolicy, true);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing an existing Advanced Throttle Policy with update",
             dependsOnMethods = "testAdvancedThrottlePolicyExport")
     public void testAdvancedThrottlePolicyUpdate() throws Exception {
-        URL importRequest = new URL(importUrl + "?overwrite=" + "true");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileAdvancedPolicy, user.getUserName(),
-                user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
+
+        ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileAdvancedPolicy, true);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
     }
 
     @Test(groups = {"wso2.am" }, description = "Importing a new Custom ThrottlePolicy",
@@ -486,112 +453,58 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
 
         ApiResponse<Void> ApiResponse = restAPIAdmin.deleteCustomThrottlingPolicy(customPolicyId);
         Assert.assertEquals(ApiResponse.getStatusCode(), HttpStatus.SC_OK);
-        URL importRequest = new URL(importUrl + "?overwrite=" + "false");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileCustomPolicy, user.getUserName(),
-                user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
+        ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileCustomPolicy, false);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_CREATED);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing a new Subscription ThrottlePolicy",
             dependsOnMethods = "testSubscriptionThrottlePolicyUpdate")
     public void testSubscriptionThrottlePolicyNewImport() throws Exception {
+
         ApiResponse<Void> ApiResponse = restAPIAdmin.deleteSubscriptionThrottlingPolicy(subscriptionPolicyId);
         Assert.assertEquals(ApiResponse.getStatusCode(), HttpStatus.SC_OK);
-        URL importRequest = new URL(importUrl + "?overwrite=" + "false");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileSubscriptionPolicy,
-                user.getUserName(), user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
+        ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileSubscriptionPolicy, false);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_CREATED);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing a new Application ThrottlePolicy",
             dependsOnMethods = "testApplicationThrottlePolicyUpdate")
     public void testApplicationThrottlePolicyNewImport() throws Exception {
+
         ApiResponse<Void> ApiResponse = restAPIAdmin.deleteApplicationThrottlingPolicy(applicationPolicyId);
         Assert.assertEquals(ApiResponse.getStatusCode(), HttpStatus.SC_OK);
-        URL importRequest = new URL(importUrl + "?overwrite=" + "false");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileApplicationPolicy,
-                user.getUserName(), user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
+        ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileApplicationPolicy, false);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_CREATED);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing a new Advanced ThrottlePolicy",
             dependsOnMethods = "testAdvancedThrottlePolicyUpdate")
     public void testAdvancedThrottlePolicyNewImport() throws Exception {
+
         ApiResponse<Void> ApiResponse = restAPIAdmin.deleteAdvancedThrottlingPolicy(advancedPolicyId);
         Assert.assertEquals(ApiResponse.getStatusCode(), HttpStatus.SC_OK);
-        URL importRequest = new URL(importUrl + "?overwrite=" + "false");
-        CloseableHttpResponse response = importArtifact(importRequest, exportedFileAdvancedPolicy, user.getUserName(),
-                user.getPassword().toCharArray());
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
-    }
-
-    /**
-     * Setting Request Headers and executing export throttle policy request
-     * @param exportRequest url with query parameters
-     * @return Exported Throttle policy details response
-     * @throws IOException throws if connection issues occurred
-     * @throws URISyntaxException throws if URL is malformed
-     */
-    private CloseableHttpResponse exportThrottlePolicyRequest(URL exportRequest, String username, String password)
-            throws IOException, URISyntaxException {
-        CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();
-        HttpGet get = new HttpGet(exportRequest.toURI());
-        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                "Basic " + encodeCredentials(username, password.toCharArray()));
-        return client.execute(get);
+        ApiResponse<Void> response = restAPIAdmin.importThrottlePolicy(exportedFileAdvancedPolicy, false);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_CREATED);
     }
 
     /**
      * Exports the required throttling policy and writes to a temporary location
+     *
      * @param policyName Throttle Policy name
      * @param policyType Throttling Policy type
      * @return Exported Throttle policy file
-     * @throws URISyntaxException throws if URI is malformed
-     * @throws IOException throws if connection issues occurred
+     * @throws IOException        throws if connection issues occurred
      */
-    private File exportArtifact(String username, String password, String policyName, String policyType)
-            throws URISyntaxException, IOException {
-        //construct export Throttle Policy url
-        URL exportRequest = new URL(exportUrl + "?name=" + policyName + "&type=" + policyType);
+    private File exportArtifact(String policyName, String policyType) throws IOException, ApiException {
+
         File TempDir = Files.createTempDir();
         String fileName = policyType + "_" + policyName;
         File newExportedFile = new File(TempDir.getAbsolutePath() + File.separator + fileName + ".json");
-        CloseableHttpResponse response = exportThrottlePolicyRequest(exportRequest, username, password);
-        HttpEntity entity = response.getEntity();
-
-        if (entity != null) {
-            try (FileOutputStream outStream = new FileOutputStream(newExportedFile)) {
-                entity.writeTo(outStream);
-            }
-        }
-        assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK, "Response code is not as expected");
+        ApiResponse<ExportThrottlePolicyDTO> response = restAPIAdmin.exportThrottlePolicy(policyName, policyType);
+        ExportThrottlePolicyDTO entity = response.getData();
+        new ObjectMapper().writeValue(newExportedFile, entity);
+        assertEquals(response.getStatusCode(), HttpStatus.SC_OK, "Response code is not as expected");
         Assert.assertTrue(newExportedFile.exists(), "File save was not successful");
         return newExportedFile;
     }
-
-    /**
-     * Execute POST request to send the exported throttle policy file
-     * @param importUrl URL for the importing throttle policy with query params
-     * @param fileName Exported Throttle Policy File
-     * @return response of the importation
-     * @throws IOException throws if connection issues occurred
-     */
-    private static CloseableHttpResponse importArtifact(URL importUrl, File fileName, String username, char[] password)
-            throws IOException {
-        try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-            HttpPost request = new HttpPost(importUrl.toURI());
-            FileBody fileBody = new FileBody(fileName);
-            MultipartEntity multipartEntity = new MultipartEntity(HttpMultipartMode.STRICT);
-            multipartEntity.addPart("file", fileBody);
-            request.setEntity(multipartEntity);
-            request.setHeader("Content-Type", multipartEntity.getContentType().getValue());
-            request.setHeader("Accept", "application/json");
-            request.setHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Basic " + encodeCredentials(username, password));
-            return client.execute(request);
-        } catch (URISyntaxException e) {
-            String message="Invalid URI";
-            throw new RuntimeException(message,e);
-        }
-    }
-
 }

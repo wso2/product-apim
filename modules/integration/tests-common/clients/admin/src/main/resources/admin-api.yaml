@@ -114,9 +114,9 @@ paths:
   /throttling/policies/search:
     get:
       tags:
-        - Unified Search
+        - Throttling Policy Search
       summary: |
-        Retrieve/Search Throttling Polcies
+        Retrieve/Search Throttling Policies
       description: |
         This operation provides you a list of available Throttling Policies qualifying the given keyword match.
       parameters:
@@ -148,7 +148,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/search?query=type:sub"'
+          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/search?query=type:sub"'
       operationId: throttlingPolicySearch
 
   ######################################################
@@ -1685,7 +1685,7 @@ paths:
   /throttling/policies/export:
     get:
       tags:
-        - Import Export
+        - Import Export Throttling Policy
       summary: Export a Throttling Policy
       description: |
         This operation can be used to export the details of a particular Throttling Policy.
@@ -1782,7 +1782,7 @@ paths:
   /throttling/policies/import:
     post:
       tags:
-        - Import Export
+        - Import Export Throttling Policy
       summary: Import a Throttling Policy
       description: |
         This operation can be used to import a Throttling Policy
@@ -4373,8 +4373,6 @@ components:
         type:
           type: string
           description: Indicates the type of throttle policy
-      discriminator:
-        propertyName: type
     ThrottlePolicy:
       title: Generic Throttling Policy
       required:

@@ -37,14 +37,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ImportExportApi {
+public class ImportExportThrottlingPolicyApi {
     private ApiClient localVarApiClient;
 
-    public ImportExportApi() {
+    public ImportExportThrottlingPolicyApi() {
         this(Configuration.getDefaultApiClient());
     }
 
-    public ImportExportApi(ApiClient apiClient) {
+    public ImportExportThrottlingPolicyApi(ApiClient apiClient) {
         this.localVarApiClient = apiClient;
     }
 
