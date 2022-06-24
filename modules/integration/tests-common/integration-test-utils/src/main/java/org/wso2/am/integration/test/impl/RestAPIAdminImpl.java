@@ -157,6 +157,7 @@ public class RestAPIAdminImpl {
      * @throws ApiException Throws if an error occurred while getting throttling policy details
      */
     public ThrottlePolicyDetailsListDTO getThrottlePolicies (String query) throws ApiException {
+
         return throttlingPolicySearchApi.throttlingPolicySearch(query);
     }
 
