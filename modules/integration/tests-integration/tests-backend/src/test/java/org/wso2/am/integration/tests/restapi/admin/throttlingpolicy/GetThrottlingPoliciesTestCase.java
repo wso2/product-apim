@@ -1,5 +1,4 @@
 /*
- *
  *   Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
@@ -15,7 +14,6 @@
  *   KIND, either express or implied.  See the License for the
  *   specific language governing permissions and limitations
  *   under the License.
- *
  */
 
 package org.wso2.am.integration.tests.restapi.admin.throttlingpolicy;
