@@ -23,104 +23,104 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import com.fasterxml.jackson.annotation.JsonCreator;
+
 /**
-* VerifierDTO
-*/
+ * VerifierDTO
+ */
 
 public class VerifierDTO {
-        public static final String SERIALIZED_NAME_KEY = "key";
-        @SerializedName(SERIALIZED_NAME_KEY)
-            private String key;
+  public static final String SERIALIZED_NAME_KEY = "key";
+  @SerializedName(SERIALIZED_NAME_KEY)
+  private String key;
 
-        public static final String SERIALIZED_NAME_MD5 = "md5";
-        @SerializedName(SERIALIZED_NAME_MD5)
-            private String md5;
+  public static final String SERIALIZED_NAME_MD5 = "md5";
+  @SerializedName(SERIALIZED_NAME_MD5)
+  private String md5;
 
 
-        public VerifierDTO key(String key) {
-        
-        this.key = key;
-        return this;
-        }
-
-    /**
-        * Get key
-    * @return key
-    **/
-      @ApiModelProperty(example = "petStore-1.0.0", required = true, value = "")
+  public VerifierDTO key(String key) {
     
-    public String getKey() {
-        return key;
-    }
+    this.key = key;
+    return this;
+  }
+
+   /**
+   * Get key
+   * @return key
+  **/
+  @ApiModelProperty(example = "petStore-1.0.0", required = true, value = "")
+
+  public String getKey() {
+    return key;
+  }
 
 
-    public void setKey(String key) {
-        this.key = key;
-    }
+  public void setKey(String key) {
+    this.key = key;
+  }
 
 
-        public VerifierDTO md5(String md5) {
-        
-        this.md5 = md5;
-        return this;
-        }
-
-    /**
-        * Get md5
-    * @return md5
-    **/
-      @ApiModelProperty(example = "e27ef979af14c72783b8112dc41c3434c09763ddb230e1a829d5f9134d1abd07", required = true, value = "")
+  public VerifierDTO md5(String md5) {
     
-    public String getMd5() {
-        return md5;
+    this.md5 = md5;
+    return this;
+  }
+
+   /**
+   * Get md5
+   * @return md5
+  **/
+  @ApiModelProperty(example = "e27ef979af14c72783b8112dc41c3434c09763ddb230e1a829d5f9134d1abd07", required = true, value = "")
+
+  public String getMd5() {
+    return md5;
+  }
+
+
+  public void setMd5(String md5) {
+    this.md5 = md5;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
-
-
-    public void setMd5(String md5) {
-        this.md5 = md5;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    VerifierDTO verifier = (VerifierDTO) o;
+    return Objects.equals(this.key, verifier.key) &&
+        Objects.equals(this.md5, verifier.md5);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, md5);
+  }
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-        return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-        return false;
-        }
-            VerifierDTO verifier = (VerifierDTO) o;
-            return Objects.equals(this.key, verifier.key) &&
-            Objects.equals(this.md5, verifier.md5);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(key, md5);
-    }
-
-
-@Override
-public String toString() {
-StringBuilder sb = new StringBuilder();
-sb.append("class VerifierDTO {\n");
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class VerifierDTO {\n");
     sb.append("    key: ").append(toIndentedString(key)).append("\n");
     sb.append("    md5: ").append(toIndentedString(md5)).append("\n");
-sb.append("}");
-return sb.toString();
-}
+    sb.append("}");
+    return sb.toString();
+  }
 
-/**
-* Convert the given object to string with each line indented by 4 spaces
-* (except the first line).
-*/
-private String toIndentedString(Object o) {
-if (o == null) {
-return "null";
-}
-return o.toString().replace("\n", "\n    ");
-}
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 
 }
 

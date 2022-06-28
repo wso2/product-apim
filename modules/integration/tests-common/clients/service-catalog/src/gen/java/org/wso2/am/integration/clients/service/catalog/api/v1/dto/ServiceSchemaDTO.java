@@ -25,134 +25,134 @@ import io.swagger.annotations.ApiModelProperty;
 import java.io.File;
 import java.io.IOException;
 import org.wso2.am.integration.clients.service.catalog.api.v1.dto.ServiceDTO;
-import com.fasterxml.jackson.annotation.JsonCreator;
+
 /**
-* ServiceSchemaDTO
-*/
+ * ServiceSchemaDTO
+ */
 
 public class ServiceSchemaDTO {
-        public static final String SERIALIZED_NAME_SERVICE_METADATA = "serviceMetadata";
-        @SerializedName(SERIALIZED_NAME_SERVICE_METADATA)
-            private ServiceDTO serviceMetadata;
+  public static final String SERIALIZED_NAME_SERVICE_METADATA = "serviceMetadata";
+  @SerializedName(SERIALIZED_NAME_SERVICE_METADATA)
+  private ServiceDTO serviceMetadata;
 
-        public static final String SERIALIZED_NAME_DEFINITION_FILE = "definitionFile";
-        @SerializedName(SERIALIZED_NAME_DEFINITION_FILE)
-            private File definitionFile;
+  public static final String SERIALIZED_NAME_DEFINITION_FILE = "definitionFile";
+  @SerializedName(SERIALIZED_NAME_DEFINITION_FILE)
+  private File definitionFile;
 
-        public static final String SERIALIZED_NAME_INLINE_CONTENT = "inlineContent";
-        @SerializedName(SERIALIZED_NAME_INLINE_CONTENT)
-            private String inlineContent;
+  public static final String SERIALIZED_NAME_INLINE_CONTENT = "inlineContent";
+  @SerializedName(SERIALIZED_NAME_INLINE_CONTENT)
+  private String inlineContent;
 
 
-        public ServiceSchemaDTO serviceMetadata(ServiceDTO serviceMetadata) {
-        
-        this.serviceMetadata = serviceMetadata;
-        return this;
-        }
-
-    /**
-        * Get serviceMetadata
-    * @return serviceMetadata
-    **/
-      @ApiModelProperty(required = true, value = "")
+  public ServiceSchemaDTO serviceMetadata(ServiceDTO serviceMetadata) {
     
-    public ServiceDTO getServiceMetadata() {
-        return serviceMetadata;
-    }
+    this.serviceMetadata = serviceMetadata;
+    return this;
+  }
+
+   /**
+   * Get serviceMetadata
+   * @return serviceMetadata
+  **/
+  @ApiModelProperty(required = true, value = "")
+
+  public ServiceDTO getServiceMetadata() {
+    return serviceMetadata;
+  }
 
 
-    public void setServiceMetadata(ServiceDTO serviceMetadata) {
-        this.serviceMetadata = serviceMetadata;
-    }
+  public void setServiceMetadata(ServiceDTO serviceMetadata) {
+    this.serviceMetadata = serviceMetadata;
+  }
 
 
-        public ServiceSchemaDTO definitionFile(File definitionFile) {
-        
-        this.definitionFile = definitionFile;
-        return this;
-        }
-
-    /**
-        * Get definitionFile
-    * @return definitionFile
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+  public ServiceSchemaDTO definitionFile(File definitionFile) {
     
-    public File getDefinitionFile() {
-        return definitionFile;
-    }
+    this.definitionFile = definitionFile;
+    return this;
+  }
+
+   /**
+   * Get definitionFile
+   * @return definitionFile
+  **/
+  @javax.annotation.Nullable
+  @ApiModelProperty(value = "")
+
+  public File getDefinitionFile() {
+    return definitionFile;
+  }
 
 
-    public void setDefinitionFile(File definitionFile) {
-        this.definitionFile = definitionFile;
-    }
+  public void setDefinitionFile(File definitionFile) {
+    this.definitionFile = definitionFile;
+  }
 
 
-        public ServiceSchemaDTO inlineContent(String inlineContent) {
-        
-        this.inlineContent = inlineContent;
-        return this;
-        }
-
-    /**
-        * Inline content of the document
-    * @return inlineContent
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "Inline content of the document")
+  public ServiceSchemaDTO inlineContent(String inlineContent) {
     
-    public String getInlineContent() {
-        return inlineContent;
+    this.inlineContent = inlineContent;
+    return this;
+  }
+
+   /**
+   * Inline content of the document
+   * @return inlineContent
+  **/
+  @javax.annotation.Nullable
+  @ApiModelProperty(value = "Inline content of the document")
+
+  public String getInlineContent() {
+    return inlineContent;
+  }
+
+
+  public void setInlineContent(String inlineContent) {
+    this.inlineContent = inlineContent;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
-
-
-    public void setInlineContent(String inlineContent) {
-        this.inlineContent = inlineContent;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    ServiceSchemaDTO serviceSchema = (ServiceSchemaDTO) o;
+    return Objects.equals(this.serviceMetadata, serviceSchema.serviceMetadata) &&
+        Objects.equals(this.definitionFile, serviceSchema.definitionFile) &&
+        Objects.equals(this.inlineContent, serviceSchema.inlineContent);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(serviceMetadata, definitionFile, inlineContent);
+  }
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-        return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-        return false;
-        }
-            ServiceSchemaDTO serviceSchema = (ServiceSchemaDTO) o;
-            return Objects.equals(this.serviceMetadata, serviceSchema.serviceMetadata) &&
-            Objects.equals(this.definitionFile, serviceSchema.definitionFile) &&
-            Objects.equals(this.inlineContent, serviceSchema.inlineContent);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(serviceMetadata, definitionFile, inlineContent);
-    }
-
-
-@Override
-public String toString() {
-StringBuilder sb = new StringBuilder();
-sb.append("class ServiceSchemaDTO {\n");
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class ServiceSchemaDTO {\n");
     sb.append("    serviceMetadata: ").append(toIndentedString(serviceMetadata)).append("\n");
     sb.append("    definitionFile: ").append(toIndentedString(definitionFile)).append("\n");
     sb.append("    inlineContent: ").append(toIndentedString(inlineContent)).append("\n");
-sb.append("}");
-return sb.toString();
-}
+    sb.append("}");
+    return sb.toString();
+  }
 
-/**
-* Convert the given object to string with each line indented by 4 spaces
-* (except the first line).
-*/
-private String toIndentedString(Object o) {
-if (o == null) {
-return "null";
-}
-return o.toString().replace("\n", "\n    ");
-}
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 
 }
 

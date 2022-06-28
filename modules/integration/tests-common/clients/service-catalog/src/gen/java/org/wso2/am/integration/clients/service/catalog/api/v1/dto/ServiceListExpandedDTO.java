@@ -27,135 +27,143 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.service.catalog.api.v1.dto.PaginationDTO;
 import org.wso2.am.integration.clients.service.catalog.api.v1.dto.ServiceDTO;
-import com.fasterxml.jackson.annotation.JsonCreator;
+
 /**
-* ServiceListExpandedDTO
-*/
+ * ServiceListExpandedDTO
+ */
 
 public class ServiceListExpandedDTO {
-        public static final String SERIALIZED_NAME_COUNT = "count";
-        @SerializedName(SERIALIZED_NAME_COUNT)
-            private Integer count;
+  public static final String SERIALIZED_NAME_COUNT = "count";
+  @SerializedName(SERIALIZED_NAME_COUNT)
+  private Integer count;
 
-        public static final String SERIALIZED_NAME_LIST = "list";
-        @SerializedName(SERIALIZED_NAME_LIST)
-            private List<ServiceDTO> list = null;
+  public static final String SERIALIZED_NAME_LIST = "list";
+  @SerializedName(SERIALIZED_NAME_LIST)
+  private List<ServiceDTO> list = null;
 
-        public static final String SERIALIZED_NAME_PAGINATION = "pagination";
-        @SerializedName(SERIALIZED_NAME_PAGINATION)
-            private PaginationDTO pagination;
+  public static final String SERIALIZED_NAME_PAGINATION = "pagination";
+  @SerializedName(SERIALIZED_NAME_PAGINATION)
+  private PaginationDTO pagination;
 
 
-        public ServiceListExpandedDTO count(Integer count) {
-        
-        this.count = count;
-        return this;
-        }
-
-    /**
-        * MD5 hashes of services returned. 
-    * @return count
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(example = "1", value = "MD5 hashes of services returned. ")
+  public ServiceListExpandedDTO count(Integer count) {
     
-    public Integer getCount() {
-        return count;
-    }
+    this.count = count;
+    return this;
+  }
+
+   /**
+   * MD5 hashes of services returned. 
+   * @return count
+  **/
+  @javax.annotation.Nullable
+  @ApiModelProperty(example = "1", value = "MD5 hashes of services returned. ")
+
+  public Integer getCount() {
+    return count;
+  }
 
 
-    public void setCount(Integer count) {
-        this.count = count;
-    }
+  public void setCount(Integer count) {
+    this.count = count;
+  }
 
 
-        public ServiceListExpandedDTO list(List<ServiceDTO> list) {
-        
-        this.list = list;
-        return this;
-        }
-
-    /**
-        * Get list
-    * @return list
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+  public ServiceListExpandedDTO list(List<ServiceDTO> list) {
     
-    public List<ServiceDTO> getList() {
-        return list;
+    this.list = list;
+    return this;
+  }
+
+  public ServiceListExpandedDTO addListItem(ServiceDTO listItem) {
+    if (this.list == null) {
+      this.list = new ArrayList<ServiceDTO>();
     }
+    this.list.add(listItem);
+    return this;
+  }
+
+   /**
+   * Get list
+   * @return list
+  **/
+  @javax.annotation.Nullable
+  @ApiModelProperty(value = "")
+
+  public List<ServiceDTO> getList() {
+    return list;
+  }
 
 
-    public void setList(List<ServiceDTO> list) {
-        this.list = list;
-    }
+  public void setList(List<ServiceDTO> list) {
+    this.list = list;
+  }
 
 
-        public ServiceListExpandedDTO pagination(PaginationDTO pagination) {
-        
-        this.pagination = pagination;
-        return this;
-        }
-
-    /**
-        * Get pagination
-    * @return pagination
-    **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+  public ServiceListExpandedDTO pagination(PaginationDTO pagination) {
     
-    public PaginationDTO getPagination() {
-        return pagination;
+    this.pagination = pagination;
+    return this;
+  }
+
+   /**
+   * Get pagination
+   * @return pagination
+  **/
+  @javax.annotation.Nullable
+  @ApiModelProperty(value = "")
+
+  public PaginationDTO getPagination() {
+    return pagination;
+  }
+
+
+  public void setPagination(PaginationDTO pagination) {
+    this.pagination = pagination;
+  }
+
+
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
     }
-
-
-    public void setPagination(PaginationDTO pagination) {
-        this.pagination = pagination;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    ServiceListExpandedDTO serviceListExpanded = (ServiceListExpandedDTO) o;
+    return Objects.equals(this.count, serviceListExpanded.count) &&
+        Objects.equals(this.list, serviceListExpanded.list) &&
+        Objects.equals(this.pagination, serviceListExpanded.pagination);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(count, list, pagination);
+  }
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-        return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-        return false;
-        }
-            ServiceListExpandedDTO serviceListExpanded = (ServiceListExpandedDTO) o;
-            return Objects.equals(this.count, serviceListExpanded.count) &&
-            Objects.equals(this.list, serviceListExpanded.list) &&
-            Objects.equals(this.pagination, serviceListExpanded.pagination);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(count, list, pagination);
-    }
-
-
-@Override
-public String toString() {
-StringBuilder sb = new StringBuilder();
-sb.append("class ServiceListExpandedDTO {\n");
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class ServiceListExpandedDTO {\n");
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
     sb.append("    list: ").append(toIndentedString(list)).append("\n");
     sb.append("    pagination: ").append(toIndentedString(pagination)).append("\n");
-sb.append("}");
-return sb.toString();
-}
+    sb.append("}");
+    return sb.toString();
+  }
 
-/**
-* Convert the given object to string with each line indented by 4 spaces
-* (except the first line).
-*/
-private String toIndentedString(Object o) {
-if (o == null) {
-return "null";
-}
-return o.toString().replace("\n", "\n    ");
-}
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(java.lang.Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 
 }
 
