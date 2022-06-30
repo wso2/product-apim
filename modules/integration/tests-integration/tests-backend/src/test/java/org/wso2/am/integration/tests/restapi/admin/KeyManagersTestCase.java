@@ -75,6 +75,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String authorizeEndpoint = "https://dev-ted144kt.us.auth0.com/authorize";
         String consumerKeyClaim = "azp";
         String scopesClaim = "scope";
+        String issuer = "https://dev-ted144kt.us.auth0.com";
         List<String> availableGrantTypes = Collections.emptyList();
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("client_id", "clientIdValue");
@@ -83,7 +84,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         jsonObject.addProperty("self_validate_jwt", true);
         Object additionalProperties = new Gson().fromJson(jsonObject, Map.class);
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
-                null, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null, authorizeEndpoint,
+                issuer, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null, authorizeEndpoint,
                 null, consumerKeyClaim, scopesClaim, availableGrantTypes, additionalProperties,
                 null);
 
@@ -118,6 +119,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         String authorizeEndpoint = "https://dev-ted144kt.us.auth0.com/authorize";
         String consumerKeyClaim = "azp";
         String scopesClaim = "scope";
+        String issuer = "https://dev-ted144kt.us.auth0.com";
         List<String> availableGrantTypes = Collections.emptyList();
         //Connector Configurations - client Id, client secret and audience are not provided
         JsonObject jsonObject = new JsonObject();
@@ -126,7 +128,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         KeyManagerCertificatesDTO keyManagerCertificates =
                 DtoFactory.createKeyManagerCertificatesDTO(KeyManagerCertificatesDTO.TypeEnum.PEM, certificateValue);
         keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
-                null, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null, authorizeEndpoint,
+                issuer, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null, authorizeEndpoint,
                 null, consumerKeyClaim, scopesClaim, availableGrantTypes, additionalProperties,
                 keyManagerCertificates);
 
