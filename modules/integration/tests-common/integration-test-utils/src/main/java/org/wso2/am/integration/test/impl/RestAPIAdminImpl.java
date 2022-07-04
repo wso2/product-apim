@@ -21,57 +21,13 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.am.integration.clients.admin.ApiClient;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.AdvancedPolicyCollectionApi;
-import org.wso2.am.integration.clients.admin.api.AdvancedPolicyIndividualApi;
-import org.wso2.am.integration.clients.admin.api.ApiCategoryIndividualApi;
-import org.wso2.am.integration.clients.admin.api.ApiCategoryCollectionApi;
-import org.wso2.am.integration.clients.admin.api.ApplicationApi;
-import org.wso2.am.integration.clients.admin.api.ApplicationCollectionApi;
-import org.wso2.am.integration.clients.admin.api.ApplicationPolicyCollectionApi;
-import org.wso2.am.integration.clients.admin.api.ApplicationPolicyIndividualApi;
-import org.wso2.am.integration.clients.admin.api.CustomRulesCollectionApi;
-import org.wso2.am.integration.clients.admin.api.CustomRulesIndividualApi;
-import org.wso2.am.integration.clients.admin.api.DenyPoliciesCollectionApi;
-import org.wso2.am.integration.clients.admin.api.DenyPolicyIndividualApi;
-import org.wso2.am.integration.clients.admin.api.EnvironmentApi;
-import org.wso2.am.integration.clients.admin.api.EnvironmentCollectionApi;
-import org.wso2.am.integration.clients.admin.api.KeyManagerCollectionApi;
-import org.wso2.am.integration.clients.admin.api.KeyManagerIndividualApi;
-import org.wso2.am.integration.clients.admin.api.LabelApi;
-import org.wso2.am.integration.clients.admin.api.LabelCollectionApi;
-import org.wso2.am.integration.clients.admin.api.SettingsApi;
-import org.wso2.am.integration.clients.admin.api.TenantConfigApi;
-import org.wso2.am.integration.clients.admin.api.TenantConfigSchemaApi;
-import org.wso2.am.integration.clients.admin.api.WorkflowCollectionApi;
-import org.wso2.am.integration.clients.admin.api.WorkflowsIndividualApi;
-import org.wso2.am.integration.clients.admin.api.SystemScopesApi;
-
-import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyCollectionApi;
-import org.wso2.am.integration.clients.admin.api.SubscriptionPolicyIndividualApi;
-import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
-import org.wso2.am.integration.clients.admin.api.dto.APICategoryDTO;
-import org.wso2.am.integration.clients.admin.api.dto.APICategoryListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ApplicationListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyDTO;
-import org.wso2.am.integration.clients.admin.api.dto.BlockingConditionDTO;
-import org.wso2.am.integration.clients.admin.api.dto.CustomRuleDTO;
-import org.wso2.am.integration.clients.admin.api.dto.EnvironmentDTO;
-import org.wso2.am.integration.clients.admin.api.dto.EnvironmentListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
-import org.wso2.am.integration.clients.admin.api.dto.KeyManagerListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.LabelDTO;
-import org.wso2.am.integration.clients.admin.api.dto.LabelListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.SettingsDTO;
-import org.wso2.am.integration.clients.admin.api.dto.SubscriptionThrottlePolicyDTO;
-import org.wso2.am.integration.clients.admin.api.dto.WorkflowDTO;
-import org.wso2.am.integration.clients.admin.api.dto.WorkflowInfoDTO;
-import org.wso2.am.integration.clients.admin.api.dto.WorkflowListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.RoleAliasListDTO;
-import org.wso2.am.integration.clients.admin.api.dto.BlockingConditionStatusDTO;
-
+import org.wso2.am.integration.clients.admin.api.*;
+import org.wso2.am.integration.clients.admin.api.dto.*;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.HttpResponse;
+
+import java.io.File;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -97,6 +53,8 @@ public class RestAPIAdminImpl {
     private AdvancedPolicyIndividualApi advancedPolicyIndividualApi = new AdvancedPolicyIndividualApi();
     private AdvancedPolicyCollectionApi advancedPolicyCollectionApi = new AdvancedPolicyCollectionApi();
     private ApplicationCollectionApi applicationCollectionApi = new ApplicationCollectionApi();
+    private ImportExportThrottlingPolicyApi exportImportThrottlingPolicyApi = new ImportExportThrottlingPolicyApi();
+    private ThrottlingPolicySearchApi throttlingPolicySearchApi = new ThrottlingPolicySearchApi();
     private SystemScopesApi systemScopesApi = new SystemScopesApi();
     private ApplicationApi applicationApi = new ApplicationApi();
     private LabelApi labelApi = new LabelApi();
@@ -146,6 +104,7 @@ public class RestAPIAdminImpl {
                 "apim:api_workflow_view " +
                 "apim:api_workflow_approve " +
                 "apim:admin_operation " +
+                "apim:policies_import_export" +
                 "apim:scope_manage";
 
         String accessToken = ClientAuthenticator
@@ -172,6 +131,8 @@ public class RestAPIAdminImpl {
         denyPolicyIndividualApi.setApiClient(apiAdminClient);
         advancedPolicyIndividualApi.setApiClient(apiAdminClient);
         advancedPolicyCollectionApi.setApiClient(apiAdminClient);
+        exportImportThrottlingPolicyApi.setApiClient(apiAdminClient);
+        throttlingPolicySearchApi.setApiClient(apiAdminClient);
         applicationCollectionApi.setApiClient(apiAdminClient);
         applicationApi.setApiClient(apiAdminClient);
         labelApi.setApiClient(apiAdminClient);
@@ -186,6 +147,45 @@ public class RestAPIAdminImpl {
         tenantConfigApi.setApiClient(apiAdminClient);
         tenantConfigSchemaApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
+    }
+
+    /**
+     * This method is used to get a list throttling policy details
+     *
+     * @param query Filters by throttling policy type
+     * @return Throttling Policy details list
+     * @throws ApiException Throws if an error occurred while getting throttling policy details
+     */
+    public ThrottlePolicyDetailsListDTO getThrottlePolicies (String query) throws ApiException {
+
+        return throttlingPolicySearchApi.throttlingPolicySearch(query);
+    }
+
+    /**
+     * This method is used to export a Throttling Policy
+     *
+     * @param policyName Throttling Policy name to be exported
+     * @param policyType Throttling Policy type
+     * @return ExportThrottlePolicyApi response returned by the API call
+     * @throws ApiException Throws if an error occurred while exporting Throttling policy
+     */
+    public ApiResponse<ExportThrottlePolicyDTO> exportThrottlePolicy(String policyName, String policyType)
+            throws ApiException {
+
+        return exportImportThrottlingPolicyApi.exportThrottlingPolicyWithHttpInfo(null, policyName, policyType, null);
+    }
+
+    /**
+     * This method is used to import a Throttling Policy
+     *
+     * @param file      Exported throttling policy file
+     * @param overwrite overwrites already existing throttling policy
+     * @return ImportThrottlePolicyApi response returned by the API call
+     * @throws ApiException Throws if an error occurred while importing Throttling policy
+     */
+    public ApiResponse<Void> importThrottlePolicy(File file, Boolean overwrite) throws ApiException {
+
+        return exportImportThrottlingPolicyApi.importThrottlingPolicyWithHttpInfo(file, overwrite);
     }
 
     /***
