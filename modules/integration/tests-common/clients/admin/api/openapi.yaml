@@ -94,6 +94,51 @@ info:
 servers:
 - url: https://apis.wso2.com/api/am/admin/v3
 paths:
+  /throttling/policies/search:
+    get:
+      description: |
+        This operation provides you a list of available Throttling Policies qualifying the given keyword match.
+      operationId: throttlingPolicySearch
+      parameters:
+      - description: |
+          **Search**.
+          You can search by providing a keyword. Allowed to search by type only.
+        explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThrottlePolicyDetailsList'
+          description: |
+            OK.
+            List of qualifying Throttling Policies is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:tier_view
+      summary: |
+        Retrieve/Search Throttling Policies
+      tags:
+      - Throttling Policy Search
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/search?query=type:sub"'
+      x-accepts: application/json
   /throttling/policies/application:
     get:
       description: |
@@ -2923,6 +2968,233 @@ paths:
         source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/advanced/229a3c46-c836-43c8-b988-8eebd9c7774b"'
       x-contentType: application/json
+      x-accepts: application/json
+  /throttling/policies/export:
+    get:
+      description: |
+        This operation can be used to export the details of a particular Throttling Policy.
+      operationId: exportThrottlingPolicy
+      parameters:
+      - description: UUID of the ThrottlingPolicy
+        explode: true
+        in: query
+        name: policyId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          Throttling Policy Name
+        explode: true
+        in: query
+        name: name
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          Type of the Throttling Policy
+        explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          enum:
+          - sub
+          - app
+          - api
+          - global
+          type: string
+        style: form
+      - description: |
+          Format of output documents. Can be YAML or JSON.
+        explode: true
+        in: query
+        name: format
+        required: false
+        schema:
+          enum:
+          - JSON
+          - YAML
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                type: rate-limiting policy
+                subtype: application
+                version: v4.1.0
+                data:
+                  policyId: cd828243-a0db-430c-97e9-9e41fd865d48
+                  policyName: 50PerMin
+                  displayName: 50PerMin
+                  description: Allows 50 request per minute
+                  isDeployed: true
+                  type: ApplicationThrottlePolicy
+                  defaultLimit:
+                    type: BANDWIDTHLIMIT
+                    requestCount:
+                      timeUnit: min
+                      unitTime: 1
+                      requestCount: 50
+                    bandwidth:
+                      timeUnit: min
+                      unitTime: 5
+                      dataAmount: 100
+                      dataUnit: MB
+                    eventCount:
+                      timeUnit: min
+                      unitTime: 5
+                      eventCount: 16
+              schema:
+                $ref: '#/components/schemas/ExportThrottlePolicy'
+          description: |
+            OK.
+            Export Successful.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:tier_manage
+        - apim:policies_import_export
+      summary: Export a Throttling Policy
+      tags:
+      - Import Export Throttling Policy
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/export?policyId=96077508-fd01-4fae-bc64-5de0e2baf43c&name=Bronze&type=subscription&format=YAML"'
+      x-accepts: application/json
+  /throttling/policies/import:
+    post:
+      description: |
+        This operation can be used to import a Throttling Policy
+      operationId: importThrottlingPolicy
+      parameters:
+      - description: |
+          Update an existing throttlingpolicy with the same name
+        explode: true
+        in: query
+        name: overwrite
+        required: false
+        schema:
+          type: boolean
+        style: form
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file:
+                  description: Json File
+                  format: binary
+                  type: string
+              required:
+              - file
+        required: true
+      responses:
+        "200":
+          description: |
+            Created.
+            Throttling Policy Imported Successfully.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "409":
+          content:
+            application/json:
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict. Specified resource already exists.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:tier_manage
+        - apim:policies_import_export
+      summary: Import a Throttling Policy
+      tags:
+      - Import Export Throttling Policy
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/import?overwrite=True"'
+      x-contentType: multipart/form-data
       x-accepts: application/json
   /throttling/deny-policies:
     get:
@@ -7249,6 +7521,83 @@ components:
       - message
       title: Description of individual errors that may have occurred during a request.
       type: object
+    ThrottlePolicyDetailsList:
+      example:
+        count: 1
+        list:
+        - policyId: 3
+          policyName: 30PerMin
+          displayName: 30PerMin
+          isDeployed: false
+          description: Allows 30 request per minute
+          type: type
+          uuid: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+        - policyId: 3
+          policyName: 30PerMin
+          displayName: 30PerMin
+          isDeployed: false
+          description: Allows 30 request per minute
+          type: type
+          uuid: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+      properties:
+        count:
+          description: |
+            Number of Throttling Policies returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/ThrottlePolicyDetails'
+          type: array
+      title: Policy List
+      type: object
+    ThrottlePolicyDetails:
+      example:
+        policyId: 3
+        policyName: 30PerMin
+        displayName: 30PerMin
+        isDeployed: false
+        description: Allows 30 request per minute
+        type: type
+        uuid: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+      properties:
+        policyId:
+          description: Id of policy
+          example: 3
+          readOnly: true
+          type: integer
+        uuid:
+          description: UUId of policy
+          example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+          readOnly: true
+          type: string
+        policyName:
+          description: Name of policy
+          example: 30PerMin
+          maxLength: 60
+          minLength: 1
+          type: string
+        displayName:
+          description: Display name of the policy
+          example: 30PerMin
+          maxLength: 512
+          type: string
+        description:
+          description: Description of the policy
+          example: Allows 30 request per minute
+          maxLength: 1024
+          type: string
+        isDeployed:
+          default: false
+          description: Indicates whether the policy is deployed successfully or not.
+          type: boolean
+        type:
+          description: Indicates the type of throttle policy
+          type: string
+      required:
+      - policyName
+      title: Generic Policy
+      type: object
     ThrottlePolicy:
       discriminator:
         propertyName: type
@@ -7284,6 +7633,23 @@ components:
       required:
       - policyName
       title: Generic Throttling Policy
+      type: object
+    ExportThrottlePolicy:
+      example:
+        data: '{}'
+        subtype: subtype
+        type: type
+        version: version
+      properties:
+        type:
+          type: string
+        subtype:
+          type: string
+        version:
+          type: string
+        data:
+          type: object
+      title: Export Throttling Policy
       type: object
     AdvancedThrottlePolicyInfo:
       allOf:
@@ -9433,6 +9799,7 @@ components:
         password:
           scopes:
             openid: Authorize access to user details
+            apim:policies_import_export: Export and import policies related operations
             apim:admin: Manage all admin operations
             apim:tier_view: View throttling policies
             apim:tier_manage: Update and delete throttling policies
