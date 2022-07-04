@@ -2451,32 +2451,25 @@ public class RestAPIPublisherImpl {
 
     }
 
-    public HttpResponse addAPIEndpoint(String apiId, APIEndpointDTO apiEndpointDTO) throws ApiException {
-        Gson gson = new Gson();
-
-        ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.addApiEndpointWithHttpInfo(apiId, apiEndpointDTO);
-        return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
+    public APIEndpointDTO addAPIEndpoint(String apiId, APIEndpointDTO apiEndpointDTO) throws ApiException {
+        APIEndpointDTO apiResponse = apiEndpointsApi.addApiEndpoint(apiId, apiEndpointDTO);
+        return apiResponse;
     }
 
-    public HttpResponse getAllAPIEndpoints(String apiId) throws ApiException {
-        Gson gson = new Gson();
-        ApiResponse<APIEndpointListDTO> apiResponse = apiEndpointsApi.getApiEndpointsWithHttpInfo(
-                apiId, Integer.MAX_VALUE, 0);
-        return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
+    public APIEndpointListDTO getAllAPIEndpoints(String apiId) throws ApiException {
+        APIEndpointListDTO apiResponse = apiEndpointsApi.getApiEndpoints(apiId, Integer.MAX_VALUE, 0);
+        return apiResponse;
     }
 
-    public HttpResponse getAPIEndpointById(String apiId, String endpointId) throws ApiException {
-        Gson gson = new Gson();
-        ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.getApiEndpointWithHttpInfo(apiId, endpointId);
-        return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
+    public APIEndpointDTO getAPIEndpointById(String apiId, String endpointId) throws ApiException {
+       APIEndpointDTO apiResponse = apiEndpointsApi.getApiEndpoint(apiId, endpointId);
+        return apiResponse;
     }
 
-    public HttpResponse updateAPIEndpoint(String apiId, String endpointId, APIEndpointDTO apiEndpointDTO)
+    public APIEndpointDTO updateAPIEndpoint(String apiId, String endpointId, APIEndpointDTO apiEndpointDTO)
             throws ApiException {
-        Gson gson = new Gson();
-        ApiResponse<APIEndpointDTO> apiResponse = apiEndpointsApi.updateApiEndpointWithHttpInfo(
-                apiId, endpointId, apiEndpointDTO);
-        return new HttpResponse(gson.toJson(apiResponse.getData()), apiResponse.getStatusCode());
+        APIEndpointDTO apiResponse = apiEndpointsApi.updateApiEndpoint(apiId, endpointId, apiEndpointDTO);
+        return apiResponse;
     }
 
     public HttpResponse deleteAPIEndpointById(String apiId, String endpointId) throws ApiException {

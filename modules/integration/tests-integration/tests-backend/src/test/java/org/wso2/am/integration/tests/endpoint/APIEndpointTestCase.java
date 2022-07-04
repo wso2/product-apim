@@ -121,12 +121,10 @@ public class APIEndpointTestCase extends APIManagerLifecycleBaseTest {
 
         apiEndpointDTO.setEndpointConfig(endpointConfig);
 
-        HttpResponse addEndpointResponse = addAPIEndpoint(apiId, apiEndpointDTO);
+        APIEndpointDTO createdApiEndpointDTO = addAPIEndpoint(apiId, apiEndpointDTO);
 
-        assertNotNull(addEndpointResponse, "Error adding API Endpoint.");
-        assertEquals(addEndpointResponse.getResponseCode(), 201, "Response code mismatched");
+        assertNotNull(createdApiEndpointDTO, "Error adding API Endpoint.");
 
-        APIEndpointDTO createdApiEndpointDTO = new Gson().fromJson(addEndpointResponse.getData(), APIEndpointDTO.class);
         String createdApiEndpointId = createdApiEndpointDTO.getId();
         assertNotNull(createdApiEndpointId, "APIEndpoint Id is null");
 
@@ -137,12 +135,10 @@ public class APIEndpointTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Get API Endpoint By UUID of Endpoint.",
             dependsOnMethods = {"testAddNewAPIEndpoint"})
     public void testGetAPIEndpointById() throws Exception {
-        HttpResponse getEndpointResponse = restAPIPublisher.getAPIEndpointById(
+        APIEndpointDTO apiEndpointDTO = restAPIPublisher.getAPIEndpointById(
                 apiId, apiEndpoints.get("createdApiEndpoint"));
 
-        assertNotNull(getEndpointResponse, "Error getting API Endpoint By UUID.");
-        assertEquals(getEndpointResponse.getResponseCode(), 200, "Response code mismatched");
-
+        assertNotNull(apiEndpointDTO, "Error getting API Endpoint By UUID.");
     }
 
     @Test(groups = {"wso2.am"}, description = "Update API Endpoint By UUID of Endpoint.",
@@ -165,28 +161,23 @@ public class APIEndpointTestCase extends APIManagerLifecycleBaseTest {
 
         apiEndpointDTO.setEndpointConfig(endpointConfig);
 
-        HttpResponse updateEndpointResponse = updateAPIEndpoint(apiId, apiEndpointDTO);
+        APIEndpointDTO updatedApiEndpointDTO = updateAPIEndpoint(apiId, apiEndpointDTO);
 
-        assertNotNull(updateEndpointResponse, "Error updating API Endpoint By UUID.");
-        assertEquals(updateEndpointResponse.getResponseCode(), 200, "Response code mismatched");
+        assertNotNull(updatedApiEndpointDTO, "Error updating API Endpoint By UUID.");
 
-        APIEndpointDTO updatedApiEndpointDTO = new Gson().fromJson(updateEndpointResponse.getData(), APIEndpointDTO.class);
-        String createdApiEndpointId = updatedApiEndpointDTO.getId();
-        assertNotNull(createdApiEndpointId, "APIEndpoint Id is null");
+        String updatedApiEndpointDTOId = updatedApiEndpointDTO.getId();
+        assertNotNull(updatedApiEndpointDTOId, "APIEndpoint Id is null");
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Get all API Endpoints.")
     public void testGetAllAPIEndpoints() throws Exception {
 
-        HttpResponse getEndpointListResponse = restAPIPublisher.getAllAPIEndpoints(apiId);
+        APIEndpointListDTO getEndpointListResponse = restAPIPublisher.getAllAPIEndpoints(apiId);
 
         assertNotNull(getEndpointListResponse, "Error getting all API Endpoints.");
-        assertEquals(getEndpointListResponse.getResponseCode(), 200, "Response code mismatched");
 
-        APIEndpointListDTO apiEndpointListDTO = new Gson().fromJson(
-                getEndpointListResponse.getData(), APIEndpointListDTO.class);
-        for (APIEndpointDTO apiEndpointDTO : apiEndpointListDTO.getList()) {
+        for (APIEndpointDTO apiEndpointDTO : getEndpointListResponse.getList()) {
             apiEndpoints.put(apiEndpointDTO.getName(), apiEndpointDTO.getId());
         }
     }
@@ -253,15 +244,15 @@ public class APIEndpointTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    private HttpResponse addAPIEndpoint(String apiId, APIEndpointDTO apiEndpointDTO) throws ApiException {
+    private APIEndpointDTO addAPIEndpoint(String apiId, APIEndpointDTO apiEndpointDTO) throws ApiException {
 
-        HttpResponse addApiEndpointResponse = restAPIPublisher.addAPIEndpoint(apiId, apiEndpointDTO);
+        APIEndpointDTO addApiEndpointResponse = restAPIPublisher.addAPIEndpoint(apiId, apiEndpointDTO);
         return addApiEndpointResponse;
     }
 
-    private HttpResponse updateAPIEndpoint(String apiId, APIEndpointDTO apiEndpointDTO) throws ApiException {
+    private APIEndpointDTO updateAPIEndpoint(String apiId, APIEndpointDTO apiEndpointDTO) throws ApiException {
 
-        HttpResponse updateApiEndpointResponse = restAPIPublisher.updateAPIEndpoint(
+        APIEndpointDTO updateApiEndpointResponse = restAPIPublisher.updateAPIEndpoint(
                 apiId, apiEndpoints.get("createdApiEndpoint"), apiEndpointDTO);
         return updateApiEndpointResponse;
     }
