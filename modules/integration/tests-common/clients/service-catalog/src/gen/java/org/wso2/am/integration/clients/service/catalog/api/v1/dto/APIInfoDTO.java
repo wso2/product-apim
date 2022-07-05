@@ -23,193 +23,193 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * APIInfoDTO
- */
+* APIInfoDTO
+*/
 
 public class APIInfoDTO {
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
-  private String id;
+        public static final String SERIALIZED_NAME_ID = "id";
+        @SerializedName(SERIALIZED_NAME_ID)
+            private String id;
 
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
 
-  public static final String SERIALIZED_NAME_CONTEXT = "context";
-  @SerializedName(SERIALIZED_NAME_CONTEXT)
-  private String context;
+        public static final String SERIALIZED_NAME_CONTEXT = "context";
+        @SerializedName(SERIALIZED_NAME_CONTEXT)
+            private String context;
 
-  public static final String SERIALIZED_NAME_VERSION = "version";
-  @SerializedName(SERIALIZED_NAME_VERSION)
-  private String version;
+        public static final String SERIALIZED_NAME_VERSION = "version";
+        @SerializedName(SERIALIZED_NAME_VERSION)
+            private String version;
 
-  public static final String SERIALIZED_NAME_PROVIDER = "provider";
-  @SerializedName(SERIALIZED_NAME_PROVIDER)
-  private String provider;
+        public static final String SERIALIZED_NAME_PROVIDER = "provider";
+        @SerializedName(SERIALIZED_NAME_PROVIDER)
+            private String provider;
 
 
-  public APIInfoDTO id(String id) {
+        public APIInfoDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
+
+    /**
+        * Get id
+    * @return id
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "")
     
-    this.id = id;
-    return this;
-  }
-
-   /**
-   * Get id
-   * @return id
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "")
-
-  public String getId() {
-    return id;
-  }
-
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-
-  public APIInfoDTO name(String name) {
-    
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * Get name
-   * @return name
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "CalculatorAPI", value = "")
-
-  public String getName() {
-    return name;
-  }
-
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-
-  public APIInfoDTO context(String context) {
-    
-    this.context = context;
-    return this;
-  }
-
-   /**
-   * Get context
-   * @return context
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "CalculatorAPI", value = "")
-
-  public String getContext() {
-    return context;
-  }
-
-
-  public void setContext(String context) {
-    this.context = context;
-  }
-
-
-  public APIInfoDTO version(String version) {
-    
-    this.version = version;
-    return this;
-  }
-
-   /**
-   * Get version
-   * @return version
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "1.0.0", value = "")
-
-  public String getVersion() {
-    return version;
-  }
-
-
-  public void setVersion(String version) {
-    this.version = version;
-  }
-
-
-  public APIInfoDTO provider(String provider) {
-    
-    this.provider = provider;
-    return this;
-  }
-
-   /**
-   * Get provider
-   * @return provider
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "admin", value = "")
-
-  public String getProvider() {
-    return provider;
-  }
-
-
-  public void setProvider(String provider) {
-    this.provider = provider;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getId() {
+        return id;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setId(String id) {
+        this.id = id;
     }
-    APIInfoDTO apIInfo = (APIInfoDTO) o;
-    return Objects.equals(this.id, apIInfo.id) &&
-        Objects.equals(this.name, apIInfo.name) &&
-        Objects.equals(this.context, apIInfo.context) &&
-        Objects.equals(this.version, apIInfo.version) &&
-        Objects.equals(this.provider, apIInfo.provider);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, name, context, version, provider);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class APIInfoDTO {\n");
+        public APIInfoDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
+
+    /**
+        * Get name
+    * @return name
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "CalculatorAPI", value = "")
+    
+    public String getName() {
+        return name;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+        public APIInfoDTO context(String context) {
+        
+        this.context = context;
+        return this;
+        }
+
+    /**
+        * Get context
+    * @return context
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "CalculatorAPI", value = "")
+    
+    public String getContext() {
+        return context;
+    }
+
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+
+
+        public APIInfoDTO version(String version) {
+        
+        this.version = version;
+        return this;
+        }
+
+    /**
+        * Get version
+    * @return version
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1.0.0", value = "")
+    
+    public String getVersion() {
+        return version;
+    }
+
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+
+        public APIInfoDTO provider(String provider) {
+        
+        this.provider = provider;
+        return this;
+        }
+
+    /**
+        * Get provider
+    * @return provider
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "admin", value = "")
+    
+    public String getProvider() {
+        return provider;
+    }
+
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            APIInfoDTO apIInfo = (APIInfoDTO) o;
+            return Objects.equals(this.id, apIInfo.id) &&
+            Objects.equals(this.name, apIInfo.name) &&
+            Objects.equals(this.context, apIInfo.context) &&
+            Objects.equals(this.version, apIInfo.version) &&
+            Objects.equals(this.provider, apIInfo.provider);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, context, version, provider);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class APIInfoDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

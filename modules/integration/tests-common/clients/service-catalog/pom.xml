@@ -64,7 +64,7 @@
                             </configOptions>
                             <output>.</output>
                             <templateDirectory>
-                                ${project.basedir}/src/main/resources/server-templates
+                                ../publisher/src/main/resources/server-templates
                             </templateDirectory>
                             <skipOverwrite>false</skipOverwrite>
                             <modelNameSuffix>DTO</modelNameSuffix>

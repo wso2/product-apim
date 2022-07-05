@@ -27,114 +27,106 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.service.catalog.api.v1.dto.PaginationDTO;
 import org.wso2.am.integration.clients.service.catalog.api.v1.dto.ServiceDTO;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ServiceListDTO
- */
+* ServiceListDTO
+*/
 
 public class ServiceListDTO {
-  public static final String SERIALIZED_NAME_LIST = "list";
-  @SerializedName(SERIALIZED_NAME_LIST)
-  private List<ServiceDTO> list = null;
+        public static final String SERIALIZED_NAME_LIST = "list";
+        @SerializedName(SERIALIZED_NAME_LIST)
+            private List<ServiceDTO> list = null;
 
-  public static final String SERIALIZED_NAME_PAGINATION = "pagination";
-  @SerializedName(SERIALIZED_NAME_PAGINATION)
-  private PaginationDTO pagination;
+        public static final String SERIALIZED_NAME_PAGINATION = "pagination";
+        @SerializedName(SERIALIZED_NAME_PAGINATION)
+            private PaginationDTO pagination;
 
 
-  public ServiceListDTO list(List<ServiceDTO> list) {
+        public ServiceListDTO list(List<ServiceDTO> list) {
+        
+        this.list = list;
+        return this;
+        }
+
+    /**
+        * Get list
+    * @return list
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.list = list;
-    return this;
-  }
-
-  public ServiceListDTO addListItem(ServiceDTO listItem) {
-    if (this.list == null) {
-      this.list = new ArrayList<ServiceDTO>();
+    public List<ServiceDTO> getList() {
+        return list;
     }
-    this.list.add(listItem);
-    return this;
-  }
-
-   /**
-   * Get list
-   * @return list
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public List<ServiceDTO> getList() {
-    return list;
-  }
 
 
-  public void setList(List<ServiceDTO> list) {
-    this.list = list;
-  }
+    public void setList(List<ServiceDTO> list) {
+        this.list = list;
+    }
 
 
-  public ServiceListDTO pagination(PaginationDTO pagination) {
+        public ServiceListDTO pagination(PaginationDTO pagination) {
+        
+        this.pagination = pagination;
+        return this;
+        }
+
+    /**
+        * Get pagination
+    * @return pagination
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    this.pagination = pagination;
-    return this;
-  }
-
-   /**
-   * Get pagination
-   * @return pagination
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
-
-  public PaginationDTO getPagination() {
-    return pagination;
-  }
-
-
-  public void setPagination(PaginationDTO pagination) {
-    this.pagination = pagination;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public PaginationDTO getPagination() {
+        return pagination;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setPagination(PaginationDTO pagination) {
+        this.pagination = pagination;
     }
-    ServiceListDTO serviceList = (ServiceListDTO) o;
-    return Objects.equals(this.list, serviceList.list) &&
-        Objects.equals(this.pagination, serviceList.pagination);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(list, pagination);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ServiceListDTO {\n");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ServiceListDTO serviceList = (ServiceListDTO) o;
+            return Objects.equals(this.list, serviceList.list) &&
+            Objects.equals(this.pagination, serviceList.pagination);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(list, pagination);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ServiceListDTO {\n");
     sb.append("    list: ").append(toIndentedString(list)).append("\n");
     sb.append("    pagination: ").append(toIndentedString(pagination)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 

@@ -23,184 +23,193 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 /**
- * ServiceInfoDTO
- */
+* ServiceInfoDTO
+*/
 
 public class ServiceInfoDTO {
-  public static final String SERIALIZED_NAME_ID = "id";
-  @SerializedName(SERIALIZED_NAME_ID)
-  private String id;
+        public static final String SERIALIZED_NAME_ID = "id";
+        @SerializedName(SERIALIZED_NAME_ID)
+            private String id;
 
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+        public static final String SERIALIZED_NAME_NAME = "name";
+        @SerializedName(SERIALIZED_NAME_NAME)
+            private String name;
 
-  public static final String SERIALIZED_NAME_KEY = "key";
-  @SerializedName(SERIALIZED_NAME_KEY)
-  private String key;
+        public static final String SERIALIZED_NAME_KEY = "key";
+        @SerializedName(SERIALIZED_NAME_KEY)
+            private String key;
 
-  public static final String SERIALIZED_NAME_VERSION = "version";
-  @SerializedName(SERIALIZED_NAME_VERSION)
-  private String version;
+        public static final String SERIALIZED_NAME_VERSION = "version";
+        @SerializedName(SERIALIZED_NAME_VERSION)
+            private String version;
 
-  public static final String SERIALIZED_NAME_MD5 = "md5";
-  @SerializedName(SERIALIZED_NAME_MD5)
-  private String md5;
-
-
-   /**
-   * Get id
-   * @return id
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "")
-
-  public String getId() {
-    return id;
-  }
+        public static final String SERIALIZED_NAME_MD5 = "md5";
+        @SerializedName(SERIALIZED_NAME_MD5)
+            private String md5;
 
 
+        public ServiceInfoDTO id(String id) {
+        
+        this.id = id;
+        return this;
+        }
 
-
-  public ServiceInfoDTO name(String name) {
+    /**
+        * Get id
+    * @return id
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", value = "")
     
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * Get name
-   * @return name
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "PizzashackEndpoint", value = "")
-
-  public String getName() {
-    return name;
-  }
-
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-
-  public ServiceInfoDTO key(String key) {
-    
-    this.key = key;
-    return this;
-  }
-
-   /**
-   * Get key
-   * @return key
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "PizzashackEndpoint-1.0.0", value = "")
-
-  public String getKey() {
-    return key;
-  }
-
-
-  public void setKey(String key) {
-    this.key = key;
-  }
-
-
-  public ServiceInfoDTO version(String version) {
-    
-    this.version = version;
-    return this;
-  }
-
-   /**
-   * Get version
-   * @return version
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "v1", value = "")
-
-  public String getVersion() {
-    return version;
-  }
-
-
-  public void setVersion(String version) {
-    this.version = version;
-  }
-
-
-  public ServiceInfoDTO md5(String md5) {
-    
-    this.md5 = md5;
-    return this;
-  }
-
-   /**
-   * Get md5
-   * @return md5
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(example = "36583a6a249b410e7fc4f892029709cac09763ddb230e1a829d5f9134d1abd07", value = "")
-
-  public String getMd5() {
-    return md5;
-  }
-
-
-  public void setMd5(String md5) {
-    this.md5 = md5;
-  }
-
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
+    public String getId() {
+        return id;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+
+    public void setId(String id) {
+        this.id = id;
     }
-    ServiceInfoDTO serviceInfo = (ServiceInfoDTO) o;
-    return Objects.equals(this.id, serviceInfo.id) &&
-        Objects.equals(this.name, serviceInfo.name) &&
-        Objects.equals(this.key, serviceInfo.key) &&
-        Objects.equals(this.version, serviceInfo.version) &&
-        Objects.equals(this.md5, serviceInfo.md5);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, name, key, version, md5);
-  }
 
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ServiceInfoDTO {\n");
+        public ServiceInfoDTO name(String name) {
+        
+        this.name = name;
+        return this;
+        }
+
+    /**
+        * Get name
+    * @return name
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "PizzashackEndpoint", value = "")
+    
+    public String getName() {
+        return name;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+        public ServiceInfoDTO key(String key) {
+        
+        this.key = key;
+        return this;
+        }
+
+    /**
+        * Get key
+    * @return key
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "PizzashackEndpoint-1.0.0", value = "")
+    
+    public String getKey() {
+        return key;
+    }
+
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+
+        public ServiceInfoDTO version(String version) {
+        
+        this.version = version;
+        return this;
+        }
+
+    /**
+        * Get version
+    * @return version
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "v1", value = "")
+    
+    public String getVersion() {
+        return version;
+    }
+
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+
+        public ServiceInfoDTO md5(String md5) {
+        
+        this.md5 = md5;
+        return this;
+        }
+
+    /**
+        * Get md5
+    * @return md5
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "36583a6a249b410e7fc4f892029709cac09763ddb230e1a829d5f9134d1abd07", value = "")
+    
+    public String getMd5() {
+        return md5;
+    }
+
+
+    public void setMd5(String md5) {
+        this.md5 = md5;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+        return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+        return false;
+        }
+            ServiceInfoDTO serviceInfo = (ServiceInfoDTO) o;
+            return Objects.equals(this.id, serviceInfo.id) &&
+            Objects.equals(this.name, serviceInfo.name) &&
+            Objects.equals(this.key, serviceInfo.key) &&
+            Objects.equals(this.version, serviceInfo.version) &&
+            Objects.equals(this.md5, serviceInfo.md5);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, key, version, md5);
+    }
+
+
+@Override
+public String toString() {
+StringBuilder sb = new StringBuilder();
+sb.append("class ServiceInfoDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    key: ").append(toIndentedString(key)).append("\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    md5: ").append(toIndentedString(md5)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
+sb.append("}");
+return sb.toString();
+}
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+/**
+* Convert the given object to string with each line indented by 4 spaces
+* (except the first line).
+*/
+private String toIndentedString(Object o) {
+if (o == null) {
+return "null";
+}
+return o.toString().replace("\n", "\n    ");
+}
 
 }
 
