@@ -30,7 +30,7 @@ under the License.
     <packaging>jar</packaging>
 
     <properties>
-        <jetty.version>9.2.11.v20150529</jetty.version>
+        <jetty.version>10.0.10</jetty.version>
     </properties>
 
     <profiles>
