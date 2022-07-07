@@ -95,6 +95,10 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
     private String jwtApplicationName = "JWTAppFOrJWTTest";
     private static final String ISSUER_1 = "https://test.apim.integration";
     private static final String ISSUER_2 = "https://test2.apim.integration";
+    private static final String ISSUER_3 = "https://test3.apim.integration";
+    private static final String ISSUER_4 = "https://test4.apim.integration";
+    private static final String ISSUER_5 = "https://test5.apim.integration";
+    private static final String ISSUER_6 = "https://test6.apim.integration";
     private String endpointURL;
     private String jwtApplicationId;
     private String apiId;
@@ -339,6 +343,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManagerDTO.setDisplayTokenEndpoint(display_token_ep);
         keyManagerDTO.setRevokeEndpoint(revoke_ep);
         keyManagerDTO.setDisplayRevokeEndpoint(display_revoke_ep);
+        keyManagerDTO.setIssuer(ISSUER_3);
 
         org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
                 keyManagerDTOApiResponse = restAPIAdmin.addKeyManager(keyManagerDTO);
@@ -355,6 +360,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManagerDTO1.setDisplayTokenEndpoint("");
         keyManagerDTO1.setRevokeEndpoint(revoke_ep);
         keyManagerDTO1.setDisplayRevokeEndpoint("");
+        keyManagerDTO.setIssuer(ISSUER_4);
 
         org.wso2.am.integration.clients.admin.ApiResponse<KeyManagerDTO>
                 keyManagerDTOApiResponse1 = restAPIAdmin.addKeyManager(keyManagerDTO1);
@@ -388,7 +394,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManagerDTO.enabled(true);
         keyManagerDTO.alias("https://default");
         keyManagerDTO.tokenEndpoint("http://test.apim.integration/oauth/token");
-        keyManagerDTO.setIssuer("https://http://test.apim.integration/default");
+        keyManagerDTO.setIssuer(ISSUER_5);
         keyManagerDTO.enableSelfValidationJWT(false);
         keyManagerDTO.enableOAuthAppCreation(false);
         keyManagerDTO.tokenType(KeyManagerDTO.TokenTypeEnum.EXCHANGED);
@@ -444,7 +450,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManagerDTO.enabled(true);
         keyManagerDTO.alias("https://default");
         keyManagerDTO.tokenEndpoint("http://test.apim.integration/oauth/token");
-        keyManagerDTO.setIssuer("https://http://exchange.apim.integration/default");
+        keyManagerDTO.setIssuer(ISSUER_6);
         keyManagerDTO.enableSelfValidationJWT(true);
         keyManagerDTO.enableOAuthAppCreation(false);
         keyManagerDTO.setEnableMapOAuthConsumerApps(true);
@@ -483,7 +489,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         String generatedJWT =
                 JWTGeneratorUtil
                         .generatedJWT(keyStoreFile, "idp2certificate", "idp1", "wso2carbon", "wso2carbon",
-                                "userexternal", "https://http://exchange.apim.integration/default", attributes);
+                                "userexternal", ISSUER_6, attributes);
         //Invoke from Direct Token
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
@@ -533,7 +539,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         String generatedJWT =
                 JWTGeneratorUtil
                         .generatedJWT(keyStoreFile, "idp2certificate", "idp1", "wso2carbon", "wso2carbon",
-                                "userexternal", "https://http://exchange.apim.integration/default", attributes);
+                                "userexternal", ISSUER_6, attributes);
         //Invoke from Direct Token
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
@@ -580,7 +586,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         String generatedJWT =
                 JWTGeneratorUtil
                         .generatedJWT(keyStoreFile, "idp2certificate", "idp1", "wso2carbon", "wso2carbon",
-                                "userexternal", "https://http://exchange.apim.integration/default", attributes);
+                                "userexternal", "http://exchange.apim.integration/default", attributes);
         // Generate Exchange Token
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse =
                 invokeTokenEndpoint(applicationKeyDTO.getConsumerKey(), applicationKeyDTO.getConsumerSecret(),
@@ -625,7 +631,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         String generatedJWT =
                 JWTGeneratorUtil
                         .generatedJWT(keyStoreFile, "idp2certificate", "idp1", "wso2carbon", "wso2carbon",
-                                "userexternal", "https://http://exchange.apim.integration/default", attributes);
+                                "userexternal", ISSUER_6, attributes);
         //Invoke from Direct Token
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
@@ -654,7 +660,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManagerDTO.setName(KEY_MANAGER_1);
         keyManagerDTO.setDescription("This is Key Manager");
         keyManagerDTO.setEnabled(true);
-        keyManagerDTO.setIssuer("https://test.apim.integration");
+        keyManagerDTO.setIssuer(ISSUER_1);
         keyManagerDTO.setEnableMapOAuthConsumerApps(true);
         keyManagerDTO.setEnableTokenGeneration(false);
         keyManagerDTO.setEnableOAuthAppCreation(false);
@@ -687,7 +693,7 @@ public class ExternalIDPJWTTestCase extends APIManagerLifecycleBaseTest {
         keyManagerDTO.setName(KEY_MANAGER_2);
         keyManagerDTO.setDescription("This is Key Manager");
         keyManagerDTO.setEnabled(true);
-        keyManagerDTO.setIssuer("https://test2.apim.integration");
+        keyManagerDTO.setIssuer(ISSUER_2);
         KeyManagerCertificatesDTO keyManagerCertificatesDTO = new KeyManagerCertificatesDTO();
         keyManagerCertificatesDTO.setType(KeyManagerCertificatesDTO.TypeEnum.JWKS);
         keyManagerCertificatesDTO.setValue("https://localhost:8743/jwks/1.0");
