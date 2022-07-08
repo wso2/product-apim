@@ -96,6 +96,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setVersion(apiVersion);
         apiRequest.setVisibility(apiVisibility);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
+        apiRequest.setProvider(apiProviderName);
 
         //Design API with name,context, version,visibility, URL and apiResource
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
@@ -129,6 +130,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setVisibility(apiVisibility);
         apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
+        apiRequest.setProvider(apiProviderName);
 
         //Try to add API with same api name with uppercase
         serviceResponse = restAPIPublisher.addAPI(apiRequest);
@@ -150,6 +152,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setVisibility(apiVisibility);
         apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
+        apiRequest.setProvider(apiProviderName);
 
         //Try to add API with same api context
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
@@ -171,6 +174,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setVisibility(apiVisibility);
         apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
+        apiRequest.setProvider(apiProviderName);
 
         //Try to add API with api name with max characters (185)
         try {
@@ -195,6 +199,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setVisibility(apiVisibility);
         apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
+        apiRequest.setProvider(apiProviderName);
 
         //Try to add API with api name with not allowed special characters
         try {
@@ -266,6 +271,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setVisibility(apiVisibility);
         apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
+        apiRequest.setProvider(apiProviderName);
 
         //Design API without an API name
 
@@ -293,6 +299,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setVisibility(apiVisibility);
         apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
+        apiRequest.setProvider(apiProviderName);
 
         //Design API without an API context
         try {
@@ -319,6 +326,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setVisibility(apiVisibility);
         apiRequest.setTiersCollection(tiersCollection);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
+        apiRequest.setProvider(apiProviderName);
 
         //Design API without an API version
         try {
