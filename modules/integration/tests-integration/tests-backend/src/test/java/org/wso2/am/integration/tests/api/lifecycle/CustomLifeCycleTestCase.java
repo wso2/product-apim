@@ -39,9 +39,14 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
 
     private static final String API_NAME = "APICustomLifecycleTestApi";
     private LifeCycleAdminClient lifeCycleAdminClient;
-    private String customizedAPILifecyclePath =
+    private final String customizedAPILifecyclePath =
             FrameworkPathUtil.getSystemResourceLocation() + "artifacts" + File.separator + "AM" + File.separator
-                    + "configFiles" + File.separator + "customLifecycleTest" + File.separator + "APILifeCycle.xml";
+                    + "configFiles" + File.separator + "customLifecycleTest" + File.separator + "custom"
+                    + File.separator + "APILifeCycle.xml";
+    private final String defaultAPILifecyclePath =
+            FrameworkPathUtil.getSystemResourceLocation() + "artifacts" + File.separator + "AM" + File.separator
+                    + "configFiles" + File.separator + "customLifecycleTest" + File.separator + "default"
+                    + File.separator + "APILifeCycle.xml";
     private String originalLifeCycleContent;
     private String apiEndPointUrl;
     private AuthenticatorClient loginClient;
@@ -107,6 +112,9 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
     public void cleanupArtifacts() throws Exception {
         //Remove test api and revert to original lifecycle config
         restAPIPublisher.deleteAPI(apiId);
+        //Update the APILifeCycle.xml back to default
+        String defaultAPILifecycleContent = FileManager.readFile(defaultAPILifecyclePath);
+        lifeCycleAdminClient.editLifeCycle(apiLifeCycleName, defaultAPILifecycleContent);
         super.cleanUp();
     }
 }
