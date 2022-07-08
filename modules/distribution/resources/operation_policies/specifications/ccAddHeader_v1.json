@@ -23,7 +23,8 @@
     }
   ],
   "applicableFlows": [
-    "request"
+    "request",
+    "response"
   ],
   "supportedGateways": [
     "ChoreoConnect"
