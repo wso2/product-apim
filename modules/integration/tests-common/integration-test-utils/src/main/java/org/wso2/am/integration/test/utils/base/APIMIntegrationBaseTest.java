@@ -48,6 +48,7 @@ import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.RestAPIInternalImpl;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
+import org.wso2.am.integration.test.impl.RestAPIServiceCatalogImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
@@ -111,6 +112,7 @@ public class APIMIntegrationBaseTest {
     protected APIStoreRestClient apiStore;
     protected AdminDashboardRestClient apiAdmin;
     protected RestAPIPublisherImpl restAPIPublisher;
+    protected RestAPIServiceCatalogImpl restAPIServiceCatalog;
     protected RestAPIStoreImpl restAPIStore;
     protected RestAPIAdminImpl restAPIAdmin;
     protected UserManagementClient userManagementClient;
@@ -222,6 +224,7 @@ public class APIMIntegrationBaseTest {
                     publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
                     publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+            restAPIServiceCatalog = new RestAPIServiceCatalogImpl(user.getUserName(), user.getPassword(), user.getUserDomain());
             restAPIStore =
                     new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getContextUser().getPassword(),

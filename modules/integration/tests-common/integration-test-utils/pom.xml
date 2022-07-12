@@ -132,7 +132,10 @@ under the License.
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.clients.gateway.api</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.am.integration.clients.service.catalog.api</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.clients.store.api</artifactId>
