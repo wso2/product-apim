@@ -26,19 +26,19 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
 
     private ServiceDTO serviceMetadataSampleThree;
 
-    private File definitionFile1;
+    private File definitionFileSampleOne;
 
-    private File definitionFile2;
+    private File definitionFileSampleTwo;
 
     private File servicesFile;
 
-    private String serviceID = "";
+    private String serviceIdOne = "";
 
-    private String serviceID2 = "";
+    private String serviceIdTwo = "";
 
-    private String invalidServiceID = "01234567-0123-0123-0123";
+    private String invalidServiceId = "01234567-0123-0123-0123";
 
-    private String emptyServiceID = null;
+    private String emptyServiceId = null;
 
     @Factory(dataProvider = "userModeDataProvider")
     public ServiceCatalogRestAPITestCase(TestUserMode userMode) {
@@ -79,19 +79,19 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         serviceMetadataSampleOne.setDefinitionUrl("https://petstore.swagger.io/v2/swagger.json");
 
         String filePath = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" + File.separator + "definition1.yaml";
-        definitionFile1 = new File(filePath);
+        definitionFileSampleOne = new File(filePath);
 
         /**
          * Create service
          */
-        ServiceDTO createServiceRes = restAPIServiceCatalog.createService(serviceMetadataSampleOne, definitionFile1, null);
+        ServiceDTO createServiceRes = restAPIServiceCatalog.createService(serviceMetadataSampleOne, definitionFileSampleOne, null);
         Assert.assertNotNull(createServiceRes);
         Assert.assertNotNull(createServiceRes.getName());
         Assert.assertEquals(createServiceRes.getName(), "Pizzashack-Endpoint");
         Assert.assertEquals(createServiceRes.getVersion(), "v1");
         Assert.assertEquals(createServiceRes.getServiceKey(), "Pizzashack-Endpoint-1.0.0");
         Assert.assertNotNull(createServiceRes.getId());
-        serviceID = createServiceRes.getId();
+        serviceIdOne = createServiceRes.getId();
 
         serviceMetadataSampleTwo = new ServiceDTO();
         serviceMetadataSampleTwo.setName("Petstore-Endpoint-1");
@@ -104,22 +104,22 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         serviceMetadataSampleTwo.setMutualSSLEnabled(false);
 
         String filePath1 = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" + File.separator + "definition2.yaml";
-        definitionFile2 = new File(filePath1);
+        definitionFileSampleTwo = new File(filePath1);
 
-        ServiceDTO createServiceRes1 = restAPIServiceCatalog.createService(serviceMetadataSampleTwo, definitionFile2, null);
+        ServiceDTO createServiceRes1 = restAPIServiceCatalog.createService(serviceMetadataSampleTwo, definitionFileSampleTwo, null);
         Assert.assertNotNull(createServiceRes1);
         Assert.assertNotNull(createServiceRes1.getName());
         Assert.assertEquals(createServiceRes1.getName(), "Petstore-Endpoint-1");
         Assert.assertEquals(createServiceRes1.getVersion(), "1.0.0");
         Assert.assertEquals(createServiceRes1.getServiceKey(), "Petstore-Endpoint-1");
         Assert.assertNotNull(createServiceRes1.getId());
-        serviceID2 = createServiceRes1.getId();
+        serviceIdTwo = createServiceRes1.getId();
 
         /**
          * Create service without mandatory properties
          */
         try {
-            restAPIServiceCatalog.createService(null, definitionFile1, null);
+            restAPIServiceCatalog.createService(null, definitionFileSampleOne, null);
         } catch (ApiException e) {
             Assert.assertEquals("Missing the required parameter 'serviceMetadata' when calling addService(Async)", e.getMessage());
         }
@@ -129,7 +129,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
          * Use the above serviceMetaData file and definition file
          */
         try {
-            restAPIServiceCatalog.createService(serviceMetadataSampleOne, definitionFile1, null);
+            restAPIServiceCatalog.createService(serviceMetadataSampleOne, definitionFileSampleOne, null);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_CONFLICT, e.getCode());
         }
@@ -192,8 +192,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         /**
          * Retrieve Service by UUID
          */
-        if (!serviceID.equals("")) {
-            ServiceDTO getServiceByIDRes = restAPIServiceCatalog.retrieveServiceById(serviceID);
+        if (!serviceIdOne.equals("")) {
+            ServiceDTO getServiceByIDRes = restAPIServiceCatalog.retrieveServiceById(serviceIdOne);
             Assert.assertNotNull(getServiceByIDRes);
             Assert.assertEquals(getServiceByIDRes.getName(), "Pizzashack-Endpoint");
             Assert.assertEquals(getServiceByIDRes.getVersion(), "v1");
@@ -203,7 +203,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
          * Retrieve Service with invalid service id
          */
         try {
-            restAPIServiceCatalog.retrieveServiceByIdWithHttpInfo(invalidServiceID);
+            restAPIServiceCatalog.retrieveServiceById(invalidServiceId);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
         }
@@ -212,7 +212,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
          * Retrieve Service with empty service id
          */
         try {
-            restAPIServiceCatalog.retrieveServiceByIdWithHttpInfo(emptyServiceID);
+            restAPIServiceCatalog.retrieveServiceById(emptyServiceId);
         } catch (ApiException e) {
             Assert.assertEquals("Missing the required parameter 'serviceId' when calling getServiceById(Async)", e.getMessage());
         }
@@ -226,8 +226,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         /**
          * Get service definition
          */
-        if (!serviceID.equals("")) {
-            String serviceDefinitionRes = restAPIServiceCatalog.retrieveServiceDefinition(serviceID);
+        if (!serviceIdOne.equals("")) {
+            String serviceDefinitionRes = restAPIServiceCatalog.retrieveServiceDefinition(serviceIdOne);
             Assert.assertNotNull(serviceDefinitionRes);
         }
 
@@ -235,7 +235,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
          * Get Service Definition by Invalid UUID
          */
         try {
-            restAPIServiceCatalog.retrieveServiceDefinition(invalidServiceID);
+            restAPIServiceCatalog.retrieveServiceDefinition(invalidServiceId);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
         }
@@ -248,8 +248,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         /**
          * Get service usage
          */
-        if (!serviceID.equals("")) {
-            APIListDTO serviceUsageRes = restAPIServiceCatalog.retrieveServiceUsage(serviceID);
+        if (!serviceIdOne.equals("")) {
+            APIListDTO serviceUsageRes = restAPIServiceCatalog.retrieveServiceUsage(serviceIdOne);
             Assert.assertTrue(serviceUsageRes.getList().isEmpty());
         }
 
@@ -257,7 +257,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
          * Get Service Usage by Invalid UUID
          */
         try {
-            restAPIServiceCatalog.retrieveServiceUsage(invalidServiceID);
+            restAPIServiceCatalog.retrieveServiceUsage(invalidServiceId);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
         }
@@ -281,10 +281,10 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         serviceMetadataSampleThree.setMutualSSLEnabled(false);
         serviceMetadataSampleThree.setMd5("36583a6a249b410e7fc4f892029709cac09763ddb230e1a829d5f9134d1abd07");
         serviceMetadataSampleThree.setDefinitionUrl("https://petstore.swagger.io/v2/swagger.json");
-        if (!serviceID.equals("")) {
-            ServiceDTO updateServiceRes = restAPIServiceCatalog.updateService(serviceID, serviceMetadataSampleThree, definitionFile1, null);
+        if (!serviceIdOne.equals("")) {
+            ServiceDTO updateServiceRes = restAPIServiceCatalog.updateService(serviceIdOne, serviceMetadataSampleThree, definitionFileSampleOne, null);
             Assert.assertNotNull(updateServiceRes);
-            Assert.assertEquals(updateServiceRes.getId(), serviceID);
+            Assert.assertEquals(updateServiceRes.getId(), serviceIdOne);
             Assert.assertEquals(updateServiceRes.getName(), "Pizzashack-Endpoint");
             Assert.assertEquals(updateServiceRes.getVersion(), "v1");
             Assert.assertEquals(updateServiceRes.getServiceKey(), "Pizzashack-Endpoint-1.0.0");
@@ -295,7 +295,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
          * Update service with invalid UUID
          */
         try {
-            restAPIServiceCatalog.updateService(invalidServiceID, serviceMetadataSampleThree, definitionFile1, null);
+            restAPIServiceCatalog.updateService(invalidServiceId, serviceMetadataSampleThree, definitionFileSampleOne, null);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
         }
@@ -304,7 +304,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
          * Update service without definition file
          */
         try {
-            restAPIServiceCatalog.updateService(serviceID, serviceMetadataSampleThree, null, null);
+            restAPIServiceCatalog.updateService(serviceIdOne, serviceMetadataSampleThree, null, null);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_BAD_REQUEST, e.getCode());
         }
@@ -367,8 +367,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         /**
          * Delete Service
          */
-        if (!serviceID.equals("")) {
-          ApiResponse deleteServiceRes =  restAPIServiceCatalog.deleteService(serviceID);
+        if (!serviceIdOne.equals("")) {
+          ApiResponse deleteServiceRes =  restAPIServiceCatalog.deleteService(serviceIdOne);
           Assert.assertEquals(HttpStatus.SC_NO_CONTENT, deleteServiceRes.getStatusCode());
         }
 
@@ -376,7 +376,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
          * Delete Service By Invalid UUID
          */
         try {
-            restAPIServiceCatalog.deleteService(invalidServiceID);
+            restAPIServiceCatalog.deleteService(invalidServiceId);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
         }
@@ -386,7 +386,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        restAPIServiceCatalog.deleteService(serviceID2);
+        restAPIServiceCatalog.deleteService(serviceIdTwo);
         super.cleanUp();
     }
 }

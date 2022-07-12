@@ -45,10 +45,6 @@ public class RestAPIServiceCatalogImpl {
         return servicesApi.getServiceById(serviceId);
     }
 
-    public ApiResponse retrieveServiceByIdWithHttpInfo(String serviceId) throws ApiException{
-        return servicesApi.getServiceByIdWithHttpInfo(serviceId);
-    }
-
     public ServiceDTO updateService(String serviceId, ServiceDTO serviceMetadata, File definitionFile, String inlineContent) throws ApiException {
         return servicesApi.updateService(serviceId, serviceMetadata, definitionFile, inlineContent);
     }
