@@ -1471,6 +1471,11 @@
         <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
         <rampart.wso2.version>1.7.0-wso2v1</rampart.wso2.version>
         <wss4j.version>1.6.0-wso2v2</wss4j.version>
+
+        <!-- Service Catalog Client Dependencies -->
+        <com.squareup.okhttp3.version>4.9.0</com.squareup.okhttp3.version>
+        <io.gsonfire.version>1.8.3</io.gsonfire.version>
+        <org.apache.oltu.oauth2.version>1.0.1</org.apache.oltu.oauth2.version>
     </properties>
 
 </project>
