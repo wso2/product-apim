@@ -100,6 +100,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
         //Design API with name,context, version,visibility, URL and apiResource
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        Thread.sleep(5000);
         apiId = serviceResponse.getData();
         apiIdList.add(apiId);
 
