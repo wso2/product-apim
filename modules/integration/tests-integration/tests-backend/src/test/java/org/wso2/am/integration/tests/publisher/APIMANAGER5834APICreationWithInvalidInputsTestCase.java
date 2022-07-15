@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.publisher;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -27,13 +28,22 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 public class APIMANAGER5834APICreationWithInvalidInputsTestCase extends APIMIntegrationBaseTest {
     private final String apiNameTest = "APIM18PublisherTest";
+    private final String apiProductionEndpointPostfixUrl =
+            "jaxrs_basic/services/customers/customerservice/customers/123";
+    private final String contextMisMatchErrorMsg = "API Context does not exist";
+    private String apiProductionEndPointUrl;
+    private String apiId;
+    private String apiProviderName;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIMANAGER5834APICreationWithInvalidInputsTestCase(TestUserMode userMode) {
@@ -51,7 +61,8 @@ public class APIMANAGER5834APICreationWithInvalidInputsTestCase extends APIMInte
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-
+        apiProviderName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiProductionEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + apiProductionEndpointPostfixUrl;
     }
 
     @Test(groups = { "wso2.am" }, description = "Test API creation with invalid context", expectedExceptions = {ApiException.class})
@@ -60,6 +71,37 @@ public class APIMANAGER5834APICreationWithInvalidInputsTestCase extends APIMInte
         String backendEndPoint = getBackendEndServiceEndPointHttp("jaxrs_basic/services/customers/customerservice");
         APIRequest apiRequest = new APIRequest(apiNameTest, "/", new URL(backendEndPoint));
         restAPIPublisher.addAPI(apiRequest);
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Validate if the context matches the previous API version(s)")
+    public void testContextMatchesPreviousAPIVersions()
+            throws ApiException, MalformedURLException, APIManagerIntegrationTestException {
+
+        APIRequest apiRequest = new APIRequest(apiNameTest, "/test/v1.0.0", new URL(apiProductionEndPointUrl));
+        apiRequest.setVersion("1.0.0");
+        apiRequest.setProvider(apiProviderName);
+        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId = apiCreationResponse.getData();
+
+        APIRequest duplicateRequest = new APIRequest(apiNameTest, "/test/v2.0.0", new URL(apiProductionEndPointUrl));
+        duplicateRequest.setVersion("2.0.0");
+        duplicateRequest.setProvider(apiProviderName);
+        try {
+            HttpResponse duplicateApiCreationResponse = restAPIPublisher.addAPI(duplicateRequest);
+            restAPIPublisher.deleteAPIByID(duplicateApiCreationResponse.getData());
+            fail("Added an API with invalid context");
+        } catch (ApiException e) {
+            ApiException apiException = (ApiException) e.getCause();
+            assertTrue(apiException.getResponseBody().contains(contextMisMatchErrorMsg), "Invalid API Context");
+        }
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void cleanUpArtifacts() throws Exception {
+        if (apiId != null) {
+            restAPIPublisher.deleteAPIByID(apiId);
+        }
+        super.cleanUp();
     }
 
 }
