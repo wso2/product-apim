@@ -4,6 +4,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -57,6 +59,8 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
     protected TestUserMode userMode;
 
+    private final static Log log = LogFactory.getLog(RestApiCreationNegativeTestCase.class);
+
     @Factory(dataProvider = "userModeDataProvider")
     public RestApiCreationNegativeTestCase(TestUserMode userMode) {
         this.userMode = userMode;
@@ -98,8 +102,15 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
         apiRequest.setProvider(apiProviderName);
 
+
+
         //Design API with name,context, version,visibility, URL and apiResource
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        log.info("Creating API>>>>>>");
+        log.info(userMode.toString());
+        log.info(apiRequest.toString());
+        log.info(restAPIPublisher.apiPublisherClient.toString());
+        log.info("Creating API>>>>>>");
         Thread.sleep(5000);
         apiId = serviceResponse.getData();
         apiIdList.add(apiId);
@@ -157,6 +168,11 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
 
         //Try to add API with same api context
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        log.info("Creating API>>>>>> Inside testRESTAPICreationWithExistingContext");
+        log.info(userMode.toString());
+        log.info(apiRequest.toString());
+        log.info(restAPIPublisher.apiPublisherClient.toString());
+        log.info("Creating API>>>>>> Inside testRESTAPICreationWithExistingContext");
         Assert.assertTrue(serviceResponse == null, "API created with existing context!");
     }
 
