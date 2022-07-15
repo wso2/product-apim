@@ -3,6 +3,7 @@ package org.wso2.am.integration.tests.restapi;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.clients.service.catalog.api.ApiException;
 import org.wso2.am.integration.clients.service.catalog.api.ApiResponse;
 import org.wso2.am.integration.clients.service.catalog.api.v1.dto.APIListDTO;
@@ -16,6 +17,9 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
@@ -84,14 +88,14 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         /**
          * Create service
          */
-        ServiceDTO createServiceRes = restAPIServiceCatalog.createService(serviceMetadataSampleOne, definitionFileSampleOne, null);
-        Assert.assertNotNull(createServiceRes);
-        Assert.assertNotNull(createServiceRes.getName());
-        Assert.assertEquals(createServiceRes.getName(), "Pizzashack-Endpoint");
-        Assert.assertEquals(createServiceRes.getVersion(), "v1");
-        Assert.assertEquals(createServiceRes.getServiceKey(), "Pizzashack-Endpoint-1.0.0");
-        Assert.assertNotNull(createServiceRes.getId());
-        serviceIdOne = createServiceRes.getId();
+        ServiceDTO createServiceResOne = restAPIServiceCatalog.createService(serviceMetadataSampleOne, definitionFileSampleOne, null);
+        Assert.assertNotNull(createServiceResOne);
+        Assert.assertNotNull(createServiceResOne.getName());
+        Assert.assertEquals(createServiceResOne.getName(), "Pizzashack-Endpoint");
+        Assert.assertEquals(createServiceResOne.getVersion(), "v1");
+        Assert.assertEquals(createServiceResOne.getServiceKey(), "Pizzashack-Endpoint-1.0.0");
+        Assert.assertNotNull(createServiceResOne.getId());
+        serviceIdOne = createServiceResOne.getId();
 
         serviceMetadataSampleTwo = new ServiceDTO();
         serviceMetadataSampleTwo.setName("Petstore-Endpoint-1");
@@ -106,14 +110,14 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         String filePath1 = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" + File.separator + "definition2.yaml";
         definitionFileSampleTwo = new File(filePath1);
 
-        ServiceDTO createServiceRes1 = restAPIServiceCatalog.createService(serviceMetadataSampleTwo, definitionFileSampleTwo, null);
-        Assert.assertNotNull(createServiceRes1);
-        Assert.assertNotNull(createServiceRes1.getName());
-        Assert.assertEquals(createServiceRes1.getName(), "Petstore-Endpoint-1");
-        Assert.assertEquals(createServiceRes1.getVersion(), "1.0.0");
-        Assert.assertEquals(createServiceRes1.getServiceKey(), "Petstore-Endpoint-1");
-        Assert.assertNotNull(createServiceRes1.getId());
-        serviceIdTwo = createServiceRes1.getId();
+        ServiceDTO createServiceResTwo = restAPIServiceCatalog.createService(serviceMetadataSampleTwo, definitionFileSampleTwo, null);
+        Assert.assertNotNull(createServiceResTwo);
+        Assert.assertNotNull(createServiceResTwo.getName());
+        Assert.assertEquals(createServiceResTwo.getName(), "Petstore-Endpoint-1");
+        Assert.assertEquals(createServiceResTwo.getVersion(), "1.0.0");
+        Assert.assertEquals(createServiceResTwo.getServiceKey(), "Petstore-Endpoint-1");
+        Assert.assertNotNull(createServiceResTwo.getId());
+        serviceIdTwo = createServiceResTwo.getId();
 
         /**
          * Create service without mandatory properties
@@ -242,7 +246,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         System.out.println("=======================End Get Service Definition Tests=======================");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Get Service Usage by UUID through the Service Catalog Rest API", dependsOnMethods = "testCreateAService")
+    @Test(groups = {"wso2.am"}, description = "Get Service Usage by UUID through the Service Catalog Rest API", dependsOnMethods = "testCreateAnAPIThroughPublisher")
     public void testGetServiceUsage() throws Exception {
         System.out.println("=======================Start Get Service Usage Tests=======================");
         /**
@@ -250,7 +254,9 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
          */
         if (!serviceIdOne.equals("")) {
             APIListDTO serviceUsageRes = restAPIServiceCatalog.retrieveServiceUsage(serviceIdOne);
-            Assert.assertTrue(serviceUsageRes.getList().isEmpty());
+            Assert.assertNotNull(serviceUsageRes);
+            Assert.assertEquals(serviceUsageRes.getList().size(), 1);
+            Assert.assertEquals(serviceUsageRes.getList().get(0).getName(), "PizzaShackAPI");
         }
 
         /**
@@ -360,15 +366,81 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         System.out.println("=======================End Export Service Tests=======================");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API", dependsOnMethods = "testCreateAService")
+    public void testCreateAnAPIThroughPublisher() throws Exception {
+
+        System.out.println("=======================Start Create API Tests=======================");
+
+        APIDTO apiCreationDTO = new APIDTO();
+        apiCreationDTO.setName("PizzaShackAPI");
+        apiCreationDTO.setDescription("This is a simple API for Pizza Shack online pizza delivery store.");
+        apiCreationDTO.setContext("pizza");
+        apiCreationDTO.setVersion("1.0.0");
+        apiCreationDTO.setProvider("admin");
+        apiCreationDTO.setLifeCycleStatus("CREATED");
+
+        apiCreationDTO.setType(APIDTO.TypeEnum.HTTP);
+        apiCreationDTO.setAudience(APIDTO.AudienceEnum.PUBLIC);
+        apiCreationDTO.setIsDefaultVersion(false);
+
+        apiCreationDTO.setAccessControl(APIDTO.AccessControlEnum.NONE);
+
+        APIBusinessInformationDTO apiBusinessInformationDTO = new APIBusinessInformationDTO();
+        apiBusinessInformationDTO.setBusinessOwner("businessowner");
+        apiBusinessInformationDTO.setBusinessOwnerEmail("businessowner@wso2.com");
+        apiBusinessInformationDTO.setTechnicalOwner("technicalowner");
+        apiBusinessInformationDTO.setTechnicalOwnerEmail("technicalowner@wso2.com");
+        apiCreationDTO.setBusinessInformation(apiBusinessInformationDTO);
+
+        APIOperationsDTO apiOperationsDTOSampleOne = new APIOperationsDTO();
+        apiOperationsDTOSampleOne.setVerb("GET");
+        apiOperationsDTOSampleOne.setTarget("/menu");
+
+        APIOperationsDTO apiOperationsDTOSampleTwo = new APIOperationsDTO();
+        apiOperationsDTOSampleTwo.setVerb("POST");
+        apiOperationsDTOSampleTwo.setTarget("/order/{orderId}");
+
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTOSampleOne);
+        operationsDTOS.add(apiOperationsDTOSampleTwo);
+        apiCreationDTO.setOperations(operationsDTOS);
+
+        APIServiceInfoDTO apiServiceInfoDTO = new APIServiceInfoDTO();
+        apiServiceInfoDTO.setKey("Pizzashack-Endpoint-1.0.0");
+        apiServiceInfoDTO.setName("Pizzashack-Endpoint");
+        apiServiceInfoDTO.setVersion("v1");
+        apiServiceInfoDTO.setOutdated(false);
+        apiCreationDTO.setServiceInfo(apiServiceInfoDTO);
+
+        APIDTO apidto = restAPIPublisher.addAPI(apiCreationDTO, "v3");
+        Assert.assertNotNull(apidto);
+        Assert.assertNotNull(apidto.getServiceInfo());
+        Assert.assertEquals(apidto.getServiceInfo().getName(), "Pizzashack-Endpoint");
+        Assert.assertEquals(apidto.getServiceInfo().getKey(), "Pizzashack-Endpoint-1.0.0");
+
+        System.out.println("=======================End Create API Tests=======================");
+    }
+
     @Test(groups = {"wso2.am"}, description = "Delete Service through the Service Catalog Rest API",
             dependsOnMethods = {"testUpdateService"})
     public void testDeleteService() throws Exception {
         System.out.println("=======================Start Delete Service Tests=======================");
         /**
-         * Delete Service
+         * Try to delete a service used by an API
          */
         if (!serviceIdOne.equals("")) {
-          ApiResponse deleteServiceRes =  restAPIServiceCatalog.deleteService(serviceIdOne);
+            try {
+                restAPIServiceCatalog.deleteService(serviceIdOne);
+            } catch (ApiException e) {
+                Assert.assertEquals(HttpStatus.SC_CONFLICT, e.getCode());
+            }
+        }
+
+        /**
+         * Delete Service
+         */
+        if (!serviceIdTwo.equals("")) {
+          ApiResponse deleteServiceRes =  restAPIServiceCatalog.deleteService(serviceIdTwo);
           Assert.assertEquals(HttpStatus.SC_NO_CONTENT, deleteServiceRes.getStatusCode());
         }
 
@@ -386,7 +458,6 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        restAPIServiceCatalog.deleteService(serviceIdTwo);
         super.cleanUp();
     }
 }
