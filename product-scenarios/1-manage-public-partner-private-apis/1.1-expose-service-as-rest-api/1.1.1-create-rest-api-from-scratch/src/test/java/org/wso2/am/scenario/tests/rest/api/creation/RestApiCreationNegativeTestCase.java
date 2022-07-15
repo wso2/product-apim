@@ -111,6 +111,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         log.info(apiRequest.toString());
         log.info(restAPIPublisher.apiPublisherClient.toString());
         log.info("Creating API>>>>>>");
+        Thread.sleep(5000);
         apiId = serviceResponse.getData();
         apiIdList.add(apiId);
 
@@ -168,7 +169,7 @@ public class RestApiCreationNegativeTestCase extends ScenarioTestBase {
         //Try to add API with same api context
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         log.info("Creating API>>>>>> Inside testRESTAPICreationWithExistingContext");
-        log.info(userMode.toString()
+        log.info(userMode.toString());
         log.info(apiRequest.toString());
         log.info(restAPIPublisher.apiPublisherClient.toString());
         log.info("Creating API>>>>>> Inside testRESTAPICreationWithExistingContext");
