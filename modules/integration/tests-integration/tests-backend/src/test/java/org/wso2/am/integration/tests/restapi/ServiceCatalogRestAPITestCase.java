@@ -42,10 +42,10 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-                new Object[]{TestUserMode.SUPER_TENANT_USER_STORE_USER},
-                new Object[]{TestUserMode.SUPER_TENANT_EMAIL_USER},
-                new Object[]{TestUserMode.TENANT_EMAIL_USER},
+//                new Object[]{TestUserMode.TENANT_ADMIN},
+//                new Object[]{TestUserMode.SUPER_TENANT_USER_STORE_USER},
+//                new Object[]{TestUserMode.SUPER_TENANT_EMAIL_USER},
+//                new Object[]{TestUserMode.TENANT_EMAIL_USER},
         };
     }
 
