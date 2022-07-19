@@ -61,6 +61,8 @@ import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
+import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilException;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
@@ -121,6 +123,7 @@ public class APIMIntegrationBaseTest {
     protected String keymanagerSuperTenantSessionCookie;
     protected final int inboundWebSocketPort = 9099;
     protected final int portOffset = 500;  //This need to be properly fixed rather than hard coding
+    protected ServerConfigurationManager serverConfigurationManager;
 
     /**
      * This method will initialize test environment
@@ -246,6 +249,15 @@ public class APIMIntegrationBaseTest {
             log.error("APIM test environment initialization failed", e);
             throw new APIManagerIntegrationTestException("APIM test environment initialization failed", e);
         }
+        try {
+            serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+            // Add settings to log4j2.properties
+            serverConfigurationManager.applyConfigurationWithoutRestart(
+                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator
+                            + "default" + File.separator + "log4j2.properties"));
+        } catch (XPathExpressionException | IOException | AutomationUtilException e) {
+            log.error("Error reading the log4j properties file", e);
+        }
 
     }
 
@@ -298,7 +310,15 @@ public class APIMIntegrationBaseTest {
             log.error("Init failed", e);
             throw new APIManagerIntegrationTestException("APIM test environment initialization failed", e);
         }
-
+        try {
+            serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+            // Add settings to log4j2.properties
+            serverConfigurationManager.applyConfigurationWithoutRestart(
+                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator
+                            + "default" + File.separator + "log4j2.properties"));
+        } catch (XPathExpressionException | IOException | AutomationUtilException e) {
+            log.error("Error reading the log4j properties file", e);
+        }
     }
 
     /**
