@@ -7733,6 +7733,16 @@ paths:
           description: -Not supported yet-
           schema:
             type: string
+        - name: name
+          in: query
+          description: Policy Name to fetch ID
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: Policy Version to fetch ID
+          schema:
+            type: string
       responses:
         200:
           description: |
@@ -7755,6 +7765,7 @@ paths:
         - OAuth2Security:
             - apim:common_operation_policy_view
             - apim:common_operation_policy_manage
+            - apim:policies_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -7857,6 +7868,7 @@ paths:
         - OAuth2Security:
             - apim:common_operation_policy_view
             - apim:common_operation_policy_manage
+            - apim:policies_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -7890,6 +7902,98 @@ paths:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
             "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+
+  /operation-policies/export:
+    get:
+      tags:
+        - Import Export
+      summary: |
+        Export common operation policies by their names and versions
+      description: |
+        This operation provides you to export preferred common operation policies
+      operationId: exportOperationPolicy
+      parameters:
+        - name: name
+          in: query
+          description: Policy name
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: Version of the policy
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+            Export Successful.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              schema:
+                type: string
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        500:
+          $ref: '#/components/responses/InternalServerError'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:common_operation_policy_view
+            - apim:common_operation_policy_manage
+            - apim:policies_import_export
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/export?name=addHeader&version=v1"
+            > addHeader_v1.zip'
+
+  /operation-policies/import:
+    post:
+      tags:
+        - Import Export
+      summary: Import a Policy
+      description: |
+        This operation can be used to import an Policy.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  description: Zip archive consisting on exported policy configuration
+                  format: binary
+      responses:
+        200:
+          description: |
+            Created.
+            Policy Imported Successfully.
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:policies_import_export
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -F file=add_header_v1.zip "https://127.0.0.1:9443/api/am/publisher/v3/operation-policies/import"'
+      operationId: importOperationPolicy
+
 
   /operation-policies/{operationPolicyId}/content:
     get:
@@ -11524,6 +11628,19 @@ components:
             $ref: '#/components/schemas/OperationPolicyData'
         pagination:
           $ref: '#/components/schemas/Pagination'
+    OperationPolicyImportExportData:
+      title: Operation Policy Import Export Data
+      type: object
+      properties:
+        type:
+          type: string
+          example: operation_policy_specification
+        version:
+          type: string
+          example: v4.1.0
+        data:
+#          type: object
+          $ref: '#/components/schemas/OperationPolicyData'
     OperationPolicyData:
       title: Operation Policy Data
       type: object
@@ -12183,3 +12300,4 @@ components:
             apim:tier_manage: View, update and delete throttling policies
             apim:api_list_view: View, Retrieve API list
             apim:api_definition_view: View, Retrieve API definition
+            apim:policies_import_export: Export and import policies related operations

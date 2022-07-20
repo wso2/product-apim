@@ -318,6 +318,8 @@ public class OperationPoliciesApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
+     * @param name Policy Name to fetch ID (optional)
+     * @param version Policy Version to fetch ID (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -329,7 +331,7 @@ public class OperationPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getAllCommonOperationPoliciesCall(Integer limit, Integer offset, String query, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAllCommonOperationPoliciesCall(Integer limit, Integer offset, String query, String name, String version, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -347,6 +349,14 @@ public class OperationPoliciesApi {
 
         if (query != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("query", query));
+        }
+
+        if (name != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("name", name));
+        }
+
+        if (version != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("version", version));
         }
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
@@ -371,10 +381,10 @@ public class OperationPoliciesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call getAllCommonOperationPoliciesValidateBeforeCall(Integer limit, Integer offset, String query, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAllCommonOperationPoliciesValidateBeforeCall(Integer limit, Integer offset, String query, String name, String version, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = getAllCommonOperationPoliciesCall(limit, offset, query, _callback);
+        okhttp3.Call localVarCall = getAllCommonOperationPoliciesCall(limit, offset, query, name, version, _callback);
         return localVarCall;
 
     }
@@ -385,6 +395,8 @@ public class OperationPoliciesApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
+     * @param name Policy Name to fetch ID (optional)
+     * @param version Policy Version to fetch ID (optional)
      * @return OperationPolicyDataListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -395,8 +407,8 @@ public class OperationPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public OperationPolicyDataListDTO getAllCommonOperationPolicies(Integer limit, Integer offset, String query) throws ApiException {
-        ApiResponse<OperationPolicyDataListDTO> localVarResp = getAllCommonOperationPoliciesWithHttpInfo(limit, offset, query);
+    public OperationPolicyDataListDTO getAllCommonOperationPolicies(Integer limit, Integer offset, String query, String name, String version) throws ApiException {
+        ApiResponse<OperationPolicyDataListDTO> localVarResp = getAllCommonOperationPoliciesWithHttpInfo(limit, offset, query, name, version);
         return localVarResp.getData();
     }
 
@@ -406,6 +418,8 @@ public class OperationPoliciesApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
+     * @param name Policy Name to fetch ID (optional)
+     * @param version Policy Version to fetch ID (optional)
      * @return ApiResponse&lt;OperationPolicyDataListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -416,8 +430,8 @@ public class OperationPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<OperationPolicyDataListDTO> getAllCommonOperationPoliciesWithHttpInfo(Integer limit, Integer offset, String query) throws ApiException {
-        okhttp3.Call localVarCall = getAllCommonOperationPoliciesValidateBeforeCall(limit, offset, query, null);
+    public ApiResponse<OperationPolicyDataListDTO> getAllCommonOperationPoliciesWithHttpInfo(Integer limit, Integer offset, String query, String name, String version) throws ApiException {
+        okhttp3.Call localVarCall = getAllCommonOperationPoliciesValidateBeforeCall(limit, offset, query, name, version, null);
         Type localVarReturnType = new TypeToken<OperationPolicyDataListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -428,6 +442,8 @@ public class OperationPoliciesApi {
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
      * @param query -Not supported yet- (optional)
+     * @param name Policy Name to fetch ID (optional)
+     * @param version Policy Version to fetch ID (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -439,9 +455,9 @@ public class OperationPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getAllCommonOperationPoliciesAsync(Integer limit, Integer offset, String query, final ApiCallback<OperationPolicyDataListDTO> _callback) throws ApiException {
+    public okhttp3.Call getAllCommonOperationPoliciesAsync(Integer limit, Integer offset, String query, String name, String version, final ApiCallback<OperationPolicyDataListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = getAllCommonOperationPoliciesValidateBeforeCall(limit, offset, query, _callback);
+        okhttp3.Call localVarCall = getAllCommonOperationPoliciesValidateBeforeCall(limit, offset, query, name, version, _callback);
         Type localVarReturnType = new TypeToken<OperationPolicyDataListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

@@ -156,7 +156,7 @@ null (empty response body)
 
 <a name="getAllCommonOperationPolicies"></a>
 # **getAllCommonOperationPolicies**
-> OperationPolicyDataListDTO getAllCommonOperationPolicies(limit, offset, query)
+> OperationPolicyDataListDTO getAllCommonOperationPolicies(limit, offset, query, name, version)
 
 Get all common operation policies to all the APIs 
 
@@ -185,8 +185,10 @@ public class Example {
     Integer limit = 25; // Integer | Maximum size of resource array to return. 
     Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
     String query = "query_example"; // String | -Not supported yet-
+    String name = "name_example"; // String | Policy Name to fetch ID
+    String version = "version_example"; // String | Policy Version to fetch ID
     try {
-      OperationPolicyDataListDTO result = apiInstance.getAllCommonOperationPolicies(limit, offset, query);
+      OperationPolicyDataListDTO result = apiInstance.getAllCommonOperationPolicies(limit, offset, query, name, version);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling OperationPoliciesApi#getAllCommonOperationPolicies");
@@ -206,6 +208,8 @@ Name | Type | Description  | Notes
  **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
  **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
  **query** | **String**| -Not supported yet- | [optional]
+ **name** | **String**| Policy Name to fetch ID | [optional]
+ **version** | **String**| Policy Version to fetch ID | [optional]
 
 ### Return type
 

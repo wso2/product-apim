@@ -16,6 +16,7 @@
 
 package org.wso2.am.integration.test.impl;
 
+import com.google.common.io.Files;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,29 +31,7 @@ import org.wso2.am.integration.clients.gateway.api.v2.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
-import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiOperationPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductLifecycleApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
-import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
-import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
-import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+import org.wso2.am.integration.clients.publisher.api.v1.*;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -99,15 +78,13 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.APIResourceBean;
-import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
-import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -163,6 +140,8 @@ public class RestAPIPublisherImpl {
     private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
 
+    private ImportExportApi importExportApi = new ImportExportApi();
+
 
     @Deprecated
     public RestAPIPublisherImpl() {
@@ -184,7 +163,8 @@ public class RestAPIPublisherImpl {
                                 "apim:client_certificates_update apim:ep_certificates_view " +
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
                                 "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
-                                "apim:comment_write apim:common_operation_policy_view apim:common_operation_policy_manage",
+                                "apim:comment_write apim:common_operation_policy_view apim:common_operation_policy_manage " +
+                                "apim:policies_import_export",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -216,6 +196,7 @@ public class RestAPIPublisherImpl {
         apisOperationPoliciesApi.setApiClient(apiPublisherClient);
         endpointCertificatesApi.setApiClient(apiPublisherClient);
         productLifecycleApi.setApiClient(apiPublisherClient);
+        importExportApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
@@ -2332,7 +2313,20 @@ public class RestAPIPublisherImpl {
 
         setActivityID();
         ApiResponse<OperationPolicyDataListDTO> apiResponse =
-                operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(50, 0, "");
+                operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(50, 0, "", null, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Unable to retrieve common policies " + apiResponse.getData());
+        if (apiResponse != null && apiResponse.getData().getCount() >= 0) {
+            return mapPolicyNameToId(apiResponse.getData());
+        }
+        return null;
+    }
+
+    public Map<String, String> getAllCommonOperationPolicies(int limit) throws ApiException {
+
+        setActivityID();
+        ApiResponse<OperationPolicyDataListDTO> apiResponse =
+                operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(limit, 0, "", null, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
                 "Unable to retrieve common policies " + apiResponse.getData());
         if (apiResponse != null && apiResponse.getData().getCount() >= 0) {
@@ -2476,6 +2470,26 @@ public class RestAPIPublisherImpl {
             response = new HttpResponse("Failed to delete the common policy", e.getCode());
         }
         return response;
+    }
+
+    /**
+     * Export Common API Policy
+     *
+     * @param policyName - policy name
+     * @param policyVersion - policy version
+     * @throws ApiException - throws if remove comment fails
+     */
+    public ApiResponse<File> exportOperationPolicy(String policyName, String policyVersion) throws Exception {
+
+//        okhttp3.Call call = importExportApi.exportOperationPolicyCall(policyName, policyVersion, null);
+//        return apiPublisherClient.execute(call);
+
+        return importExportApi.exportOperationPolicyWithHttpInfo(policyName, policyVersion);
+
+    }
+
+    public ApiResponse<Void> importOperationPolicy(File file) throws ApiException {
+        return importExportApi.importOperationPolicyWithHttpInfo(file);
     }
 
     public Map<String, String> mapPolicyNameToId(OperationPolicyDataListDTO policyList) {
