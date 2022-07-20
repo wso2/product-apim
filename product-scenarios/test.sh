@@ -18,6 +18,7 @@ set -o xtrace
 
 HOME=`pwd`
 TEST_SCRIPT=test.sh
+MVNSTATE=1
 
 function usage()
 {
@@ -107,6 +108,7 @@ cd $HOME
 #-fae -B -f pom.xml
 #sleep 5000
 mvn clean install -fae
+MVNSTATE=$?
 
 #=============== Copy Surefire Reports ===========================================
 
