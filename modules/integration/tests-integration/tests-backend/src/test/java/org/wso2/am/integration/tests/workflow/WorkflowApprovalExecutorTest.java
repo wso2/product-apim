@@ -588,7 +588,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Subscription workflow process check", dependsOnMethods =
-            {"testApplicationWorkflowProcess", "testAPIWorkflowProcess"})
+            {"testApplicationWorkflowProcess", "testAPIWorkflowProcess", "testSubscriptionWorkflowProcess"})
     public void testSubscriptionDeletionWorkflowProcess() throws Exception {
 
         //create Application
