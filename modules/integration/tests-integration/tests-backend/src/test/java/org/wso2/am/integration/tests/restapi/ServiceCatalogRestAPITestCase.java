@@ -2,7 +2,11 @@ package org.wso2.am.integration.tests.restapi;
 
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
 import org.wso2.am.integration.clients.service.catalog.api.ApiException;
 import org.wso2.am.integration.clients.service.catalog.api.ApiResponse;
@@ -28,6 +32,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
     private String serviceIdOne = "";
 
     private String serviceIdTwo = "";
+
+    private String importedServiceId = "";
 
     private final String invalidServiceId = "01234567-0123-0123-0123";
 
@@ -68,18 +74,15 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         serviceMetadataSampleOne.setMutualSSLEnabled(false);
         serviceMetadataSampleOne.setDefinitionUrl("https://petstore.swagger.io/v2/swagger.json");
 
-        String filePath = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" + File.separator + "definition1.yaml";
+        String filePath = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" +
+                File.separator + "definition1.yaml";
         definitionFileSampleOne = new File(filePath);
 
         // Create service
-        ServiceDTO createServiceResOne = restAPIServiceCatalog.createService(serviceMetadataSampleOne, definitionFileSampleOne, null);
-        Assert.assertNotNull(createServiceResOne);
-        Assert.assertNotNull(createServiceResOne.getName());
-        Assert.assertEquals(createServiceResOne.getName(), "Pizzashack-Endpoint");
-        Assert.assertEquals(createServiceResOne.getVersion(), "v1");
-        Assert.assertEquals(createServiceResOne.getServiceKey(), "Pizzashack-Endpoint-1.0.0");
-        Assert.assertNotNull(createServiceResOne.getId());
-        serviceIdOne = createServiceResOne.getId();
+        ServiceDTO createServiceResOne = restAPIServiceCatalog.createService(serviceMetadataSampleOne,
+                definitionFileSampleOne, null);
+        serviceIdOne = validateCreateServiceRes(createServiceResOne, "Pizzashack-Endpoint", "v1",
+                "Pizzashack-Endpoint-1.0.0");
 
         ServiceDTO serviceMetadataSampleTwo = new ServiceDTO();
         serviceMetadataSampleTwo.setName("Petstore-Endpoint-1");
@@ -91,7 +94,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         serviceMetadataSampleTwo.setSecurityType(ServiceDTO.SecurityTypeEnum.BASIC);
         serviceMetadataSampleTwo.setMutualSSLEnabled(false);
 
-        String filePath1 = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" + File.separator + "definition2.yaml";
+        String filePath1 = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" +
+                File.separator + "definition2.yaml";
         File definitionFileSampleTwo = new File(filePath1);
 
         // Create service without definition file
@@ -102,20 +106,17 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         }
 
         //Create second service
-        ServiceDTO createServiceResTwo = restAPIServiceCatalog.createService(serviceMetadataSampleTwo, definitionFileSampleTwo, null);
-        Assert.assertNotNull(createServiceResTwo);
-        Assert.assertNotNull(createServiceResTwo.getName());
-        Assert.assertEquals(createServiceResTwo.getName(), "Petstore-Endpoint-1");
-        Assert.assertEquals(createServiceResTwo.getVersion(), "1.0.0");
-        Assert.assertEquals(createServiceResTwo.getServiceKey(), "Petstore-Endpoint-1");
-        Assert.assertNotNull(createServiceResTwo.getId());
-        serviceIdTwo = createServiceResTwo.getId();
+        ServiceDTO createServiceResTwo = restAPIServiceCatalog.createService(serviceMetadataSampleTwo,
+                definitionFileSampleTwo, null);
+        serviceIdTwo = validateCreateServiceRes(createServiceResTwo, "Petstore-Endpoint-1", "1.0.0",
+                "Petstore-Endpoint-1");
 
         // Create service without serviceMetaData file
         try {
             restAPIServiceCatalog.createService(null, definitionFileSampleOne, null);
         } catch (ApiException e) {
-            Assert.assertEquals("Missing the required parameter 'serviceMetadata' when calling addService(Async)", e.getMessage());
+            Assert.assertEquals("Missing the required parameter 'serviceMetadata' when calling addService(Async)",
+                    e.getMessage());
         }
 
         /*
@@ -129,7 +130,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Get Service by UUID through the Service Catalog Rest API", dependsOnMethods = "testCreateAService")
+    @Test(groups = {"wso2.am"}, description = "Get Service by UUID through the Service Catalog Rest API",
+            dependsOnMethods = "testCreateAService")
     public void testGetServiceByUUID() throws Exception {
 
         // Retrieve Service by UUID
@@ -151,98 +153,82 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         try {
             restAPIServiceCatalog.retrieveServiceById(emptyServiceId);
         } catch (ApiException e) {
-            Assert.assertEquals("Missing the required parameter 'serviceId' when calling getServiceById(Async)", e.getMessage());
+            Assert.assertEquals("Missing the required parameter 'serviceId' when calling getServiceById(Async)",
+                    e.getMessage());
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Search Services through the Service Catalog Rest API", dependsOnMethods = "testGetServiceByUUID")
+    @Test(groups = {"wso2.am"}, description = "Search Services through the Service Catalog Rest API",
+            dependsOnMethods = "testGetServiceByUUID")
     public void testSearchService() throws Exception {
 
         // Search by Name
-        ServiceListDTO getServiceByNameRes = restAPIServiceCatalog.retrieveServices("Pizzashack-Endpoint", null, null, null, null, null, null, 25, 0);
-        Assert.assertNotNull(getServiceByNameRes);
-        Assert.assertNotNull(getServiceByNameRes.getList());
-        Assert.assertNotNull(getServiceByNameRes.getList().get(0));
-        Assert.assertEquals(getServiceByNameRes.getList().get(0).getName(), "Pizzashack-Endpoint");
+        ServiceListDTO getServiceByNameRes = restAPIServiceCatalog.retrieveServices("Pizzashack-Endpoint",
+                null, null, null, null, null, null, 25, 0);
+        validateSearchRes(getServiceByNameRes, "name", "Pizzashack-Endpoint");
 
         // Search by Version
-        ServiceListDTO getServiceByVersionRes = restAPIServiceCatalog.retrieveServices(null, "v1", null, null, null, null, null, 25, 0);
-        Assert.assertNotNull(getServiceByVersionRes);
-        Assert.assertNotNull(getServiceByVersionRes.getList());
-        Assert.assertNotNull(getServiceByVersionRes.getList().get(0));
-        Assert.assertEquals(getServiceByVersionRes.getList().get(0).getVersion(), "v1");
+        ServiceListDTO getServiceByVersionRes = restAPIServiceCatalog.retrieveServices(null, "v1",
+                null, null, null, null, null, 25, 0);
+        validateSearchRes(getServiceByVersionRes, "version", "v1");
 
         // Search by Definition Type
-        ServiceListDTO getServiceByDefTypeRes = restAPIServiceCatalog.retrieveServices(null, null, "OAS3", null, null, null, null, 25, 0);
-        Assert.assertNotNull(getServiceByDefTypeRes);
-        Assert.assertNotNull(getServiceByDefTypeRes.getList());
-        Assert.assertNotNull(getServiceByDefTypeRes.getList().get(0));
-        Assert.assertEquals(getServiceByDefTypeRes.getList().get(0).getDefinitionType(), ServiceDTO.DefinitionTypeEnum.OAS3);
+        ServiceListDTO getServiceByDefTypeRes = restAPIServiceCatalog.retrieveServices(null, null,
+                "OAS3", null, null, null, null, 25, 0);
+        validateSearchRes(getServiceByDefTypeRes, "definitionType", ServiceDTO.DefinitionTypeEnum.OAS3.getValue());
 
         // Search by Service Key
-        ServiceListDTO getServiceByKeyRes = restAPIServiceCatalog.retrieveServices(null, null, null, "Pizzashack-Endpoint-1.0.0", null, null, null, 25, 0);
-        Assert.assertNotNull(getServiceByKeyRes);
-        Assert.assertNotNull(getServiceByKeyRes.getList());
-        Assert.assertNotNull(getServiceByKeyRes.getList().get(0));
-        Assert.assertEquals(getServiceByKeyRes.getList().get(0).getServiceKey(), "Pizzashack-Endpoint-1.0.0");
+        ServiceListDTO getServiceByKeyRes = restAPIServiceCatalog.retrieveServices(null, null,
+                null, "Pizzashack-Endpoint-1.0.0", null, null, null, 25, 0);
+        validateSearchRes(getServiceByKeyRes, "serviceKey", "Pizzashack-Endpoint-1.0.0");
 
         // Search by name in Asc order
-        ServiceListDTO getServiceAscOrderRes = restAPIServiceCatalog.retrieveServices(null, null, null, null, null, "name", "asc", 25, 0);
-        Assert.assertNotNull(getServiceAscOrderRes);
-        Assert.assertNotNull(getServiceAscOrderRes.getList());
-        Assert.assertNotNull(getServiceAscOrderRes.getList().get(0));
-        Assert.assertEquals(getServiceAscOrderRes.getList().get(0).getName(), "Petstore-Endpoint-1");
-        Assert.assertNotNull(getServiceAscOrderRes.getList().get(1));
-        Assert.assertEquals(getServiceAscOrderRes.getList().get(1).getName(), "Pizzashack-Endpoint");
+        ServiceListDTO getServiceAscOrderRes = restAPIServiceCatalog.retrieveServices(null, null,
+                null, null, null, "name", "asc", 25, 0);
+        validateSortedListRes(getServiceAscOrderRes, "Petstore-Endpoint-1", "Pizzashack-Endpoint");
 
         // Search by name in Desc order
-        ServiceListDTO getServiceDescOrderRes = restAPIServiceCatalog.retrieveServices(null, null, null, null, null, "name", "desc", 25, 0);
-        Assert.assertNotNull(getServiceDescOrderRes);
-        Assert.assertNotNull(getServiceDescOrderRes.getList());
-        Assert.assertNotNull(getServiceDescOrderRes.getList().get(0));
-        Assert.assertEquals(getServiceDescOrderRes.getList().get(0).getName(), "Pizzashack-Endpoint");
-        Assert.assertNotNull(getServiceDescOrderRes.getList().get(1));
-        Assert.assertEquals(getServiceDescOrderRes.getList().get(1).getName(), "Petstore-Endpoint-1");
+        ServiceListDTO getServiceDescOrderRes = restAPIServiceCatalog.retrieveServices(null, null,
+                null, null, null, "name", "desc", 25, 0);
+        validateSortedListRes(getServiceDescOrderRes, "Pizzashack-Endpoint", "Petstore-Endpoint-1");
 
         //Retrieve services in N limit
-        ServiceListDTO getServiceByLimitRes = restAPIServiceCatalog.retrieveServices(null, null, null, null, null, "name", null, 1, 0);
-        Assert.assertNotNull(getServiceByLimitRes);
-        Assert.assertNotNull(getServiceByLimitRes.getList());
-        Assert.assertEquals(getServiceByLimitRes.getList().size(), 1);
-        Assert.assertNotNull(getServiceByLimitRes.getList().get(0));
-        Assert.assertEquals(getServiceByLimitRes.getList().get(0).getName(), "Petstore-Endpoint-1");
+        ServiceListDTO getServiceByLimitRes = restAPIServiceCatalog.retrieveServices(null, null,
+                null, null, null, "name", null, 1, 0);
+        validateLimitAndOffsetRes(getServiceByLimitRes, 1, "Petstore-Endpoint-1");
 
         //Retrieve services after N offset
-        ServiceListDTO getServiceByOffsetRes = restAPIServiceCatalog.retrieveServices(null, null, null, null, null, "name", null, 1, 1);
-        Assert.assertNotNull(getServiceByOffsetRes);
-        Assert.assertNotNull(getServiceByOffsetRes.getList());
-        Assert.assertEquals(getServiceByOffsetRes.getList().size(), 1);
-        Assert.assertNotNull(getServiceByOffsetRes.getList().get(0));
-        Assert.assertEquals(getServiceByOffsetRes.getList().get(0).getName(), "Pizzashack-Endpoint");
+        ServiceListDTO getServiceByOffsetRes = restAPIServiceCatalog.retrieveServices(null, null,
+                null, null, null, "name", null, 1, 1);
+        validateLimitAndOffsetRes(getServiceByOffsetRes, 1, "Pizzashack-Endpoint");
 
         //Search by invalid definitionType
         try {
-            restAPIServiceCatalog.retrieveServices(null, null, "OS3", null, null, null, null, 25, 0);
+            restAPIServiceCatalog.retrieveServices(null, null, "OS3", null, null,
+                    null, null, 25, 0);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_BAD_REQUEST, e.getCode());
         }
 
         //Search by invalid sortBy value
         try {
-            restAPIServiceCatalog.retrieveServices(null, null, null, null, null, "defType", "asc", 25, 0);
+            restAPIServiceCatalog.retrieveServices(null, null, null, null, null,
+                    "defType", "asc", 25, 0);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_BAD_REQUEST, e.getCode());
         }
 
         //Search by invalid sortOrder value
         try {
-            restAPIServiceCatalog.retrieveServices(null, null, null, null, null, "name", "acs", 25, 0);
+            restAPIServiceCatalog.retrieveServices(null, null, null, null, null,
+                    "name", "acs", 25, 0);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_BAD_REQUEST, e.getCode());
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Get Service Definition by UUID through the Service Catalog Rest API", dependsOnMethods = "testSearchService")
+    @Test(groups = {"wso2.am"}, description = "Get Service Definition by UUID through the Service Catalog Rest API",
+            dependsOnMethods = "testSearchService")
     public void testGetServiceDefinition() throws Exception {
 
         // Get service definition
@@ -259,7 +245,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Update Service through the Service Catalog Rest API", dependsOnMethods = "testGetServiceDefinition")
+    @Test(groups = {"wso2.am"}, description = "Update Service through the Service Catalog Rest API",
+            dependsOnMethods = "testGetServiceDefinition")
     public void testUpdateService() throws Exception {
 
         // Update service
@@ -274,7 +261,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         serviceMetadataSampleThree.setMutualSSLEnabled(false);
         serviceMetadataSampleThree.setDefinitionUrl("https://petstore.swagger.io/v2/swagger.json");
         if (!serviceIdOne.equals("")) {
-            ServiceDTO updateServiceRes = restAPIServiceCatalog.updateService(serviceIdOne, serviceMetadataSampleThree, definitionFileSampleOne, null);
+            ServiceDTO updateServiceRes = restAPIServiceCatalog.updateService(serviceIdOne, serviceMetadataSampleThree,
+                    definitionFileSampleOne, null);
             Assert.assertNotNull(updateServiceRes);
             Assert.assertEquals(updateServiceRes.getId(), serviceIdOne);
             Assert.assertEquals(updateServiceRes.getName(), "Pizzashack-Endpoint");
@@ -301,15 +289,18 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         try {
             restAPIServiceCatalog.updateService(serviceIdOne, null, definitionFileSampleOne, null);
         } catch (ApiException e) {
-            Assert.assertEquals("Missing the required parameter 'serviceMetadata' when calling updateService(Async)", e.getMessage());
+            Assert.assertEquals("Missing the required parameter 'serviceMetadata' when calling updateService(Async)",
+                    e.getMessage());
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Import Service through the Service Catalog Rest API", dependsOnMethods = "testUpdateService")
+    @Test(groups = {"wso2.am"}, description = "Import Service through the Service Catalog Rest API",
+            dependsOnMethods = "testUpdateService")
     public void testImportService() throws Exception {
 
         // Import Service
-        String zipFilePathOne = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" + File.separator + "service1.zip";
+        String zipFilePathOne = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" +
+                File.separator + "service1.zip";
         File servicesFileOne = new File(zipFilePathOne);
 
         ServiceInfoListDTO importServiceInfoListRes = restAPIServiceCatalog.importService(servicesFileOne, true, null);
@@ -317,6 +308,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(importServiceInfoListRes.getList());
         Assert.assertNotNull(importServiceInfoListRes.getList().get(0).getName());
         Assert.assertEquals(importServiceInfoListRes.getList().get(0).getName(), "Pizzashack-Endpoint-v2");
+        importedServiceId = importServiceInfoListRes.getList().get(0).getId();
 
         // Import a service without a zip file
         try {
@@ -325,7 +317,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
             Assert.assertEquals("Missing the required parameter 'file' when calling importService(Async)", e.getMessage());
         }
 
-        String zipFilePathTwo = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" + File.separator + "service2.zip";
+        String zipFilePathTwo = TestConfigurationProvider.getResourceLocation() + File.separator + "service-catalog" +
+                File.separator + "service2.zip";
         File servicesFileTwo = new File(zipFilePathTwo);
 
         // Import service with existing name and version with overwrite = false
@@ -339,12 +332,12 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         ServiceInfoListDTO importServiceOverwriteRes = restAPIServiceCatalog.importService(servicesFileTwo, true, null);
         Assert.assertNotNull(importServiceOverwriteRes);
         Assert.assertNotNull(importServiceOverwriteRes.getList());
-        Assert.assertNotNull(importServiceOverwriteRes.getList().get(0).getName());
         Assert.assertEquals(importServiceOverwriteRes.getList().get(0).getName(), "Pizzashack-Endpoint");
         Assert.assertEquals(importServiceOverwriteRes.getList().get(0).getKey(), "Pizzashack-Endpoint-1.0.0");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Export Service through the Service Catalog Rest API", dependsOnMethods = "testImportService")
+    @Test(groups = {"wso2.am"}, description = "Export Service through the Service Catalog Rest API",
+            dependsOnMethods = "testImportService")
     public void testExportService() throws Exception {
 
         // Export Services
@@ -359,7 +352,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API", dependsOnMethods = "testExportService")
+    @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API",
+            dependsOnMethods = "testExportService")
     public void testCreateAnAPIThroughPublisher() throws Exception {
 
         APIDTO apiCreationDTO = new APIDTO();
@@ -410,7 +404,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(apidto.getServiceInfo().getKey(), "Pizzashack-Endpoint-1.0.0");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Get Service Usage by UUID through the Service Catalog Rest API", dependsOnMethods = "testCreateAnAPIThroughPublisher")
+    @Test(groups = {"wso2.am"}, description = "Get Service Usage by UUID through the Service Catalog Rest API",
+            dependsOnMethods = "testCreateAnAPIThroughPublisher")
     public void testGetServiceUsage() throws Exception {
 
         // Get service usage
@@ -430,7 +425,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Delete Service through the Service Catalog Rest API", dependsOnMethods = "testGetServiceUsage")
+    @Test(groups = {"wso2.am"}, description = "Delete Service through the Service Catalog Rest API",
+            dependsOnMethods = "testGetServiceUsage")
     public void testDeleteService() throws Exception {
 
         // Try to delete a service used by an API
@@ -458,6 +454,53 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        restAPIServiceCatalog.deleteService(importedServiceId);
         super.cleanUp();
+    }
+
+    private String validateCreateServiceRes(ServiceDTO createServiceRes, String name, String version, String serviceKey) {
+        Assert.assertNotNull(createServiceRes);
+        Assert.assertEquals(createServiceRes.getName(), name);
+        Assert.assertEquals(createServiceRes.getVersion(), version);
+        Assert.assertEquals(createServiceRes.getServiceKey(), serviceKey);
+        Assert.assertNotNull(createServiceRes.getId());
+        return createServiceRes.getId();
+    }
+
+    private void validateSearchRes(ServiceListDTO searchServiceRes, String type, String value) {
+        Assert.assertNotNull(searchServiceRes);
+        Assert.assertNotNull(searchServiceRes.getList());
+        Assert.assertNotNull(searchServiceRes.getList().get(0));
+        switch (type) {
+            case "name":
+                Assert.assertEquals(searchServiceRes.getList().get(0).getName(), value);
+                break;
+            case "version":
+                Assert.assertEquals(searchServiceRes.getList().get(0).getVersion(), value);
+                break;
+            case "serviceKey":
+                Assert.assertEquals(searchServiceRes.getList().get(0).getServiceKey(), value);
+                break;
+            case "definitionType":
+                Assert.assertEquals(searchServiceRes.getList().get(0).getDefinitionType().getValue(), value);
+                break;
+        }
+    }
+
+    private void validateSortedListRes(ServiceListDTO searchServiceOrderRes, String firstName, String secondName) {
+        Assert.assertNotNull(searchServiceOrderRes);
+        Assert.assertNotNull(searchServiceOrderRes.getList());
+        Assert.assertNotNull(searchServiceOrderRes.getList().get(0));
+        Assert.assertEquals(searchServiceOrderRes.getList().get(0).getName(), firstName);
+        Assert.assertNotNull(searchServiceOrderRes.getList().get(1));
+        Assert.assertEquals(searchServiceOrderRes.getList().get(1).getName(), secondName);
+    }
+
+    private void validateLimitAndOffsetRes(ServiceListDTO searchServiceRes, int size, String name){
+        Assert.assertNotNull(searchServiceRes);
+        Assert.assertNotNull(searchServiceRes.getList());
+        Assert.assertEquals(searchServiceRes.getList().size(), size);
+        Assert.assertNotNull(searchServiceRes.getList().get(0));
+        Assert.assertEquals(searchServiceRes.getList().get(0).getName(), name);
     }
 }
