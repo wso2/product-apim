@@ -38,7 +38,7 @@
                     <div class="margin-bottom-double"></div>
                     <h2 id="privacy-policy"><strong>Privacy Policy</strong></h2>
                     <p>This section explains how API-M captures your personal information, purpose of capturing, and the retention of your personal information.</p>
-                    <p>Please note that this policy is for reference only, and is applicable for the software as a product. WSO2 Inc., or its developers have no access to the information held within API-M. Please refer &ldquo;Disclaimer&rdquo; for more information.</p>
+                    <p>Please note that this policy is for reference only, and is applicable for the software as a product. WSO2 LLC., or its developers have no access to the information held within API-M. Please refer &ldquo;Disclaimer&rdquo; for more information.</p>
                     <p>Entities, organisations or individuals controlling the use and administration of API-M should create their own privacy policies setting out the manner in which data is controlled or processed by the respective entity, organisation or individual.</p>
                     <div class="margin-bottom-double"></div>
                     <h2 id="what-are-the-personal-information">What are the personal information &quest;</h2>
