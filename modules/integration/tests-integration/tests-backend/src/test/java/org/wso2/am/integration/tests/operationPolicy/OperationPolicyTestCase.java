@@ -172,7 +172,6 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
 
         exportedOperationPolicyZip = exportCommonOperationPolicyArtifact(TEST_POLICY_NAME, TEST_POLICY_VERSION, true);
 
-        // Test whether exported API archive contains the endpoint security password in plain text
         String extractedCommonAPIPolicyDir = exportedOperationPolicyZip.getParent();
         try {
             ZipFile zipFile = new ZipFile(exportedOperationPolicyZip);
@@ -201,11 +200,8 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         }
 
         String policySpecContent = contentBuilderForPolicySpec.toString();
-//        String policySpecContent = FileUtils.readFileAsString(policySpecFile).replace("\n", "")
-//                .replace("\r", "");
 
         ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
-//        OperationPolicyImportExportDataDTO operationPolicySpec = yamlReader.readValue(policySpecFile, OperationPolicyImportExportDataDTO.class);
         Object operationPolicySpec = yamlReader.readValue(policySpecContent, Object.class);
 
         String expectedPolicySpecPath = getAMResourceLocation() + File.separator + "operationPolicy" +
@@ -254,64 +250,16 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
 
         assertEquals(synapseDefinition, expectedSynapseDefinition, "Exported & Expected Synapse Definitions are not matching");
 
-
-//        String expectedPolicySpec = FileUtils.readFileAsString(new File(expectedPolicySpecPath))
-//                .replace("\n", "").replace("\r", "");
-
-
-//        ObjectMapper jsonReader = new ObjectMapper();
-//        OperationPolicyDataDTO expectedOperationPolicySpecData = jsonReader.readValue(expectedPolicySpec, OperationPolicyDataDTO.class);
-//
-//        assertEquals(operationPolicySpec.getData(), expectedOperationPolicySpecData, "Policy Specification Data are not equal");
-
-
-
-//        String expectedSynapseDefContent = FileUtils.readFileAsString(new File(synapsePolicyDefPath))
-//                .replace("\n", "").replace("\r", "");
-//        String synapseDefContent = FileUtils.readFileAsString(synapseDefFile)
-//                .replace("\n", "").replace("\r", "");
-//
-//        assertEquals(synapseDefContent, expectedSynapseDefContent);
-
-        //        OperationPolicyImportExportDataDTO operationPolicySpecDTO = DtoFactory.createOperationPolicyImportExportDTO("v4.1.0", "operation_policy_specification", )
-
-        //        OperationPolicySpecAttributeDTO operationPolicyDTO = DtoFactory.createOperationPolicyDTO(TEST_POLICY_NAME, TEST_POLICY_VERSION, )
-        //
-        //        OperationPolicyDTO operationPolicyDTO = DtoFactory.createOperationPolicyDTO(TEST_POLICY_NAME, TEST_POLICY_VERSION, )
-        //
-        //        exportedFileApplicationPolicy = exportArtifact(APPLICATION_POLICY_NAME, APPLICATION_POLICY_TYPE);
-        //        StringBuilder contentBuilder = new StringBuilder();
-        //        try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(String.valueOf(exportedFileApplicationPolicy)),
-        //                StandardCharsets.UTF_8)) {
-        //            stream.forEach(s -> contentBuilder.append(s).append("\n"));
-        //        } catch (IOException e) {
-        //            throw new APIManagerIntegrationTestException(
-        //                    "Error in reading from extracted Throttle Policy file " + exportedFileApplicationPolicy, e);
-        //        }
-        //
-        //        String exportedThrottlePolicyContent = contentBuilder.toString();
-        //        JSONObject exportedThrottlePolicyJson = (JSONObject) new JSONParser().parse(exportedThrottlePolicyContent);
-        //        ApplicationPolicyDTO.setIsDeployed(false);
-        //        ApplicationPolicyDTO.setType("ApplicationThrottlePolicy");
-        //        ExportThrottlePolicyDTO applicationPolicyExportedDTO = DtoFactory.createExportThrottlePolicyDTO(
-        //                THROTTLE_POLICY_TYPE, APPLICATION_POLICY_SUBTYPE, APIM_VERSION, ApplicationPolicyDTO);
-        //
-        //        ExportThrottlePolicyDTO expectedExportedPolicy = new Gson().fromJson(exportedThrottlePolicyJson.toJSONString(),
-        //                ExportThrottlePolicyDTO.class);
-        //        ApplicationThrottlePolicyDTO appPolicy = new ObjectMapper().convertValue(expectedExportedPolicy.getData(),
-        //                ApplicationThrottlePolicyDTO.class);
-        //        expectedExportedPolicy.setData(appPolicy);
-        //        Assert.assertEquals(applicationPolicyExportedDTO, expectedExportedPolicy);
     }
 
     @Test(groups = {"wso2.am"}, description = "Exporting Non Existing Common API Policy", dependsOnMethods = "testCommonOperationPolicyExport")
-    public void testInvalidCommonOperationPolicyExport() throws Exception {
+    public void testNonExistingCommonOperationPolicyExport() throws Exception {
 
         exportCommonOperationPolicyArtifact(TEST_INVALID_POLICY_NAME, TEST_POLICY_VERSION, false);
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Delete common operation policy", dependsOnMethods = "testInvalidCommonOperationPolicyExport")
+    @Test(groups = {"wso2.am"}, description = "Delete common operation policy", dependsOnMethods = "testNonExistingCommonOperationPolicyExport")
     public void testDeleteCommonOperationPolicy() throws Exception {
 
         int responseCode = deleteOperationPolicy(policyMap.get("customCommonLogPolicy"), null);
@@ -355,7 +303,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
 
         File directory = Files.createTempDir();
         String zipDirectoryName = directory.getParentFile().getAbsolutePath() + File.separator + TEST_POLICY_NAME + "_" + TEST_POLICY_VERSION;
-        // directory.delete();
+        directory.delete();
         directory = new File(zipDirectoryName);
         directory.mkdir();
         String destYaml = directory.getAbsolutePath() + File.separator + TEST_POLICY_NAME + ".yaml";
@@ -401,39 +349,6 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         } catch (ApiException ex) {
             assertEquals(ex.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Response code mismatched");
         }
-
-    }
-
-    private void writeArchiveFile(File directoryToZip, List<File> fileList) throws IOException {
-        FileOutputStream fileOutputStream = new FileOutputStream(directoryToZip.getPath() + ".zip");
-        ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
-        for (File file : fileList) {
-            if (!file.isDirectory()) {
-                addToArchive(directoryToZip, file, zipOutputStream);
-            }
-        }
-
-        zipOutputStream.close();
-    }
-
-    private void addToArchive(File directoryToZip, File file, ZipOutputStream zipOutputStream)
-            throws IOException {
-
-        // FileInputStream fileInputStream = new FileInputStream(file);
-
-        byte[] bytes = Files.toByteArray(file);
-        String zipFilePath = file.getCanonicalPath().substring(directoryToZip.getCanonicalPath().length() + 1);
-        if (File.separatorChar != '/') {
-            zipFilePath = zipFilePath.replace(File.separatorChar,'/');
-        }
-        ZipEntry zipEntry = new ZipEntry(zipFilePath);
-        zipOutputStream.putNextEntry(zipEntry);
-
-        zipOutputStream.write(bytes, 0, bytes.length);
-
-        // IOUtils.copy(fileInputStream, zipOutputStream);
-
-        zipOutputStream.closeEntry();
 
     }
 
@@ -727,5 +642,41 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
                 "Invocation fails for GET request");
 
         return response;
+    }
+
+    /**
+     * Create an Archive File.
+     *
+     * @param directoryToZip Directory to be archived.
+     * @param fileList Files to be included in the archive.
+     * @throws IOException
+     */
+    private void writeArchiveFile(File directoryToZip, List<File> fileList) throws IOException {
+        FileOutputStream fileOutputStream = new FileOutputStream(directoryToZip.getPath() + ".zip");
+        ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
+        for (File file : fileList) {
+            if (!file.isDirectory()) {
+                addToArchive(directoryToZip, file, zipOutputStream);
+            }
+        }
+
+        zipOutputStream.close();
+    }
+
+    private void addToArchive(File directoryToZip, File file, ZipOutputStream zipOutputStream)
+            throws IOException {
+
+        byte[] bytes = Files.toByteArray(file);
+        String zipFilePath = file.getCanonicalPath().substring(directoryToZip.getCanonicalPath().length() + 1);
+        if (File.separatorChar != '/') {
+            zipFilePath = zipFilePath.replace(File.separatorChar,'/');
+        }
+        ZipEntry zipEntry = new ZipEntry(zipFilePath);
+        zipOutputStream.putNextEntry(zipEntry);
+
+        zipOutputStream.write(bytes, 0, bytes.length);
+
+        zipOutputStream.closeEntry();
+
     }
 }
