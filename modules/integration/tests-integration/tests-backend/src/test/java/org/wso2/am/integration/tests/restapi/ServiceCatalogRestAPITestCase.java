@@ -39,6 +39,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
 
     private final String emptyServiceId = null;
 
+    private String apiId = "";
+
     @Factory(dataProvider = "userModeDataProvider")
     public ServiceCatalogRestAPITestCase(TestUserMode userMode) {
         this.userMode = userMode;
@@ -48,10 +50,10 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-//                new Object[]{TestUserMode.TENANT_ADMIN},
-//                new Object[]{TestUserMode.SUPER_TENANT_USER_STORE_USER},
-//                new Object[]{TestUserMode.SUPER_TENANT_EMAIL_USER},
-//                new Object[]{TestUserMode.TENANT_EMAIL_USER},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.SUPER_TENANT_USER_STORE_USER},
+                new Object[]{TestUserMode.SUPER_TENANT_EMAIL_USER},
+                new Object[]{TestUserMode.TENANT_EMAIL_USER},
         };
     }
 
@@ -402,6 +404,7 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(apidto.getServiceInfo());
         Assert.assertEquals(apidto.getServiceInfo().getName(), "Pizzashack-Endpoint");
         Assert.assertEquals(apidto.getServiceInfo().getKey(), "Pizzashack-Endpoint-1.0.0");
+        apiId = apidto.getId();
     }
 
     @Test(groups = {"wso2.am"}, description = "Get Service Usage by UUID through the Service Catalog Rest API",
@@ -454,6 +457,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        restAPIPublisher.deleteAPI(apiId);
+        restAPIServiceCatalog.deleteService(serviceIdOne);
         restAPIServiceCatalog.deleteService(importedServiceId);
         super.cleanUp();
     }
