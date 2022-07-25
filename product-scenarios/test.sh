@@ -18,6 +18,7 @@ set -o xtrace
 
 HOME=`pwd`
 TEST_SCRIPT=test.sh
+MVNSTATE=1
 
 function usage()
 {
@@ -102,6 +103,7 @@ fi
 mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 -fae -B -f pom.xml
+MVNSTATE=$?
 
 #=============== Copy Surefire Reports ===========================================
 
