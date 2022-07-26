@@ -529,15 +529,17 @@ This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/c
     <flowControl>
         <!-- This is the global buffer limits which enable/disable the flow control globally -->
         <global>
-            <lowLimit>800</lowLimit>
-            <highLimit>8000</highLimit>
+           {% for configuration_key,configuration_value in broker.flowControl.global.items() %}
+               <{{configuration_key}}>{{configuration_value}}</{{configuration_key}}>
+           {% endfor %}
         </global>
 
         <!-- This is the channel specific buffer limits which enable/disable the flow control locally.
 		-->
         <bufferBased>
-            <lowLimit>100</lowLimit>
-            <highLimit>1000</highLimit>
+            {% for configuration_key,configuration_value in broker.flowControl.bufferBased.items() %}
+                <{{configuration_key}}>{{configuration_value}}</{{configuration_key}}>
+            {% endfor %}
         </bufferBased>
     </flowControl>
 
