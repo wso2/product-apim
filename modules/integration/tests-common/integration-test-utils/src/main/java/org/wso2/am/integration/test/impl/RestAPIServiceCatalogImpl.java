@@ -61,7 +61,8 @@ public class RestAPIServiceCatalogImpl {
         return servicesApi.getServiceById(serviceId);
     }
 
-    public ServiceDTO updateService(String serviceId, ServiceDTO serviceMetadata, File definitionFile, String inlineContent) throws ApiException {
+    public ServiceDTO updateService(String serviceId, ServiceDTO serviceMetadata, File definitionFile, String inlineContent)
+            throws ApiException {
         return servicesApi.updateService(serviceId, serviceMetadata, definitionFile, inlineContent);
     }
 
