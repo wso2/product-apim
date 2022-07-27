@@ -108,7 +108,7 @@ cd $HOME
 #-fae -B -f pom.xml
 sleep 5000
 mvn clean install -fae
-MVNSTATE=1
+MVNSTATE=$?
 
 #=============== Copy Surefire Reports ===========================================
 
