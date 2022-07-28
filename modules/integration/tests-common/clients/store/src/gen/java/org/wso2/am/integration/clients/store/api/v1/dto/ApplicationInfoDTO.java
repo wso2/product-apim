@@ -58,9 +58,6 @@ public class ApplicationInfoDTO {
   @SerializedName("owner")
   private String owner = null;
 
-  @SerializedName("tokenType")
-  private String tokenType = null;
-
   public ApplicationInfoDTO applicationId(String applicationId) {
     this.applicationId = applicationId;
     return this;
@@ -231,24 +228,6 @@ public class ApplicationInfoDTO {
     this.owner = owner;
   }
 
-  public ApplicationInfoDTO tokenType(String tokenType) {
-    this.tokenType = tokenType;
-    return this;
-  }
-
-   /**
-   * Get tokenType
-   * @return tokenType
-  **/
-  @ApiModelProperty(example = "JWT", value = "")
-  public String getTokenType() {
-    return tokenType;
-  }
-
-  public void setTokenType(String tokenType) {
-    this.tokenType = tokenType;
-  }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -267,13 +246,12 @@ public class ApplicationInfoDTO {
         Objects.equals(this.groups, applicationInfo.groups) &&
         Objects.equals(this.subscriptionCount, applicationInfo.subscriptionCount) &&
         Objects.equals(this.attributes, applicationInfo.attributes) &&
-        Objects.equals(this.owner, applicationInfo.owner) &&
-        Objects.equals(this.tokenType, applicationInfo.tokenType);
+        Objects.equals(this.owner, applicationInfo.owner);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(applicationId, name, throttlingPolicy, description, status, groups, subscriptionCount, attributes, owner, tokenType);
+    return Objects.hash(applicationId, name, throttlingPolicy, description, status, groups, subscriptionCount, attributes, owner);
   }
 
 
@@ -291,7 +269,6 @@ public class ApplicationInfoDTO {
     sb.append("    subscriptionCount: ").append(toIndentedString(subscriptionCount)).append("\n");
     sb.append("    attributes: ").append(toIndentedString(attributes)).append("\n");
     sb.append("    owner: ").append(toIndentedString(owner)).append("\n");
-    sb.append("    tokenType: ").append(toIndentedString(tokenType)).append("\n");
     sb.append("}");
     return sb.toString();
   }
