@@ -48,12 +48,14 @@ public class RestAPIServiceCatalogImpl {
         this.tenantDomain = tenantDomain;
     }
 
-    public ServiceListDTO retrieveServices(String name, String version, String definitionType, String key, Boolean shrink,
-                                           String sortBy, String sortOrder, Integer limit, Integer offset) throws ApiException {
+    public ServiceListDTO retrieveServices(String name, String version, String definitionType, String key,
+                                           Boolean shrink, String sortBy, String sortOrder, Integer limit,
+                                           Integer offset) throws ApiException {
         return servicesApi.searchServices(name, version, definitionType, key, shrink, sortBy, sortOrder, limit, offset);
     }
 
-    public ServiceDTO createService(ServiceDTO serviceMetadata, File definitionFile, String inlineContent) throws ApiException {
+    public ServiceDTO createService(ServiceDTO serviceMetadata, File definitionFile, String inlineContent)
+            throws ApiException {
         return servicesApi.addService(serviceMetadata, definitionFile, inlineContent);
     }
 
@@ -61,8 +63,8 @@ public class RestAPIServiceCatalogImpl {
         return servicesApi.getServiceById(serviceId);
     }
 
-    public ServiceDTO updateService(String serviceId, ServiceDTO serviceMetadata, File definitionFile, String inlineContent)
-            throws ApiException {
+    public ServiceDTO updateService(String serviceId, ServiceDTO serviceMetadata, File definitionFile,
+                                    String inlineContent) throws ApiException {
         return servicesApi.updateService(serviceId, serviceMetadata, definitionFile, inlineContent);
     }
 

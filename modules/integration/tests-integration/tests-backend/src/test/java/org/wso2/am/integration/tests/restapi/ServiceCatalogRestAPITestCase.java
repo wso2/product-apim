@@ -25,7 +25,9 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIServiceInfoDTO;
 import org.wso2.am.integration.clients.service.catalog.api.ApiException;
 import org.wso2.am.integration.clients.service.catalog.api.ApiResponse;
 import org.wso2.am.integration.clients.service.catalog.api.v1.dto.APIListDTO;
@@ -291,7 +293,8 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
 
         // Update service with invalid UUID
         try {
-            restAPIServiceCatalog.updateService(invalidServiceId, serviceMetadataSampleThree, definitionFileSampleOne, null);
+            restAPIServiceCatalog.updateService(invalidServiceId, serviceMetadataSampleThree, definitionFileSampleOne,
+                    null);
         } catch (ApiException e) {
             Assert.assertEquals(HttpStatus.SC_NOT_FOUND, e.getCode());
         }
