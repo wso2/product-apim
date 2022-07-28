@@ -23,7 +23,6 @@ package org.wso2.am.integration.tests.other;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.testng.annotations.AfterTest;
@@ -62,14 +61,6 @@ public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
                 + "configFiles" + File.separator + "notification" + File.separator + "tenant-conf.json"), "UTF-8");
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(tenantConfContent);
-
-        //Add Self Signup Config JSON object to tenant-conf.json for the carbon.super user
-        JSONObject selfSignUpJSONObject = new JSONObject();
-        JSONArray signUpRolesJSONArray = new JSONArray();
-        signUpRolesJSONArray.add("subscriber");
-        selfSignUpJSONObject.put("SignUpRoles",signUpRolesJSONArray);
-        jsonObject.put("SelfSignUp",selfSignUpJSONObject);
-
         restAPIAdmin.updateTenantConfig(jsonObject);
 
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
@@ -86,14 +77,6 @@ public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
                 + "configFiles" + File.separator + "common" + File.separator + "tenant-conf.json"), "UTF-8");
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(tenantConfContent);
-
-        //Add Self Signup Config JSON object to tenant-conf.json for the carbon.super user
-        JSONObject selfSignUpJSONObject = new JSONObject();
-        JSONArray signUpRolesJSONArray = new JSONArray();
-        signUpRolesJSONArray.add("subscriber");
-        selfSignUpJSONObject.put("SignUpRoles",signUpRolesJSONArray);
-        jsonObject.put("SelfSignUp",selfSignUpJSONObject);
-
         restAPIAdmin.updateTenantConfig(jsonObject);
         resourceAdminServiceClient =
                 new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
