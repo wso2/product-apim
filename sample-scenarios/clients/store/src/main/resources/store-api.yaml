@@ -2063,9 +2063,6 @@ definitions:
       groupId:
         type: string
         example: ""
-      tokenType:
-        type: string
-        example: JWT
 
 #-----------------------------------------------------
 # The Document List resource

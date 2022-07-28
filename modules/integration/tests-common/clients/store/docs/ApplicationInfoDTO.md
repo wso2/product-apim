@@ -13,7 +13,6 @@ Name | Type | Description | Notes
 **subscriptionCount** | **Integer** |  |  [optional]
 **attributes** | **Object** |  |  [optional]
 **owner** | **String** |  |  [optional]
-**tokenType** | **String** |  |  [optional]
 
 
 
