@@ -979,6 +979,11 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.integration.clients.service.catalog.api</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.clients.internal.api</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
