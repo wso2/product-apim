@@ -130,7 +130,7 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(publisherUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(publisherUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         try {
             restAPIPublisherNew.changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction());
@@ -198,7 +198,7 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(publisherUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(publisherUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
 
         try {
@@ -266,7 +266,7 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(testUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(testUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
         assertTrue(restAPIPublisherNew.getLifecycleStatus(apiID).getData().contains("Published"), "API has not been published by internal/publisher");
@@ -282,7 +282,7 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
 
         // Uncomment after fixing product-apim/issues/10219
         restAPIPublisherNew = new RestAPIPublisherImpl(testUser, "password123$",
-                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         try {
             restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
@@ -338,7 +338,7 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(testUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(testUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         restAPIPublisher.changeAPILifeCycleStatusToPublish(apiID, false);
         assertTrue(restAPIPublisher.getLifecycleStatus(apiID).getData().contains("Published"), "API has not been published by internal/publisher");
@@ -353,7 +353,7 @@ public class PublishAPIByValidRolePermissionCategoryNegativeTestCase extends Sce
         }
         // Uncomment after fixing product-apim/issues/10219
         restAPIPublisherNew = new RestAPIPublisherImpl(testUser, "password123$",
-                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         try {
             restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);

@@ -208,7 +208,7 @@ public class APIEndpointTypeUpdateTestCase extends APIManagerLifecycleBaseTest {
     public void destroy() throws Exception {
         SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationID);
         for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
-            restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
+            restAPIStore.removeSubscription(subscriptionDTO);
         }
         restAPIStore.deleteApplication(applicationID);
         restAPIPublisher.deleteAPI(apiId);

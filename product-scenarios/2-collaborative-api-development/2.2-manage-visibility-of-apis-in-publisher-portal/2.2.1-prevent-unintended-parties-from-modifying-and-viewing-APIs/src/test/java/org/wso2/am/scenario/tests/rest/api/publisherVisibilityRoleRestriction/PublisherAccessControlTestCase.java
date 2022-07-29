@@ -114,7 +114,7 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(secondUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(secondUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         HttpResponse apiResponseGetAPI = restAPIPublisherNew.getAPI(apiDto.getId());
         verifyResponse(apiResponseGetAPI);
@@ -160,7 +160,7 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(secondUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(secondUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         HttpResponse apiResponseGetAPI = restAPIPublisherNew.getAPI(apiDto.getId());
         verifyResponse(apiResponseGetAPI);
@@ -203,7 +203,7 @@ public class PublisherAccessControlTestCase extends ScenarioTestBase {
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(secondUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(secondUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         HttpResponse apiResponseGetAPI = restAPIPublisherNew.getAPI(apiDto.getId());
         verifyResponse(apiResponseGetAPI);

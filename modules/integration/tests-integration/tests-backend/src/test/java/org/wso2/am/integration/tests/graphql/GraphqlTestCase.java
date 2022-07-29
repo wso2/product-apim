@@ -45,6 +45,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.Constants;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
@@ -62,7 +63,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
@@ -375,7 +375,9 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(serviceResponse.getData(), RESPONSE_DATA, "Response data is not as expected");
     }
 
-    private String createGraphqlAppAndSubscribeToAPI(String appName, String tokenType) throws ApiException {
+    private String createGraphqlAppAndSubscribeToAPI(String appName, String tokenType) throws ApiException,
+            APIManagerIntegrationTestException {
+
         ApplicationDTO applicationDTO = restAPIStore.addApplicationWithTokenType(appName,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
                 "test app for countries API", tokenType);

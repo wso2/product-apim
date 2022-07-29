@@ -92,6 +92,7 @@ public class ScenarioTestBase {
     protected static String storeURL;
     protected static String keyManagerURL;
     protected static String gatewayHttpsURL;
+    protected static String gatewayInternalURL;
     protected static String serviceEndpoint;
     protected static String adminURL;
     protected static String baseUrl;
@@ -197,6 +198,7 @@ public class ScenarioTestBase {
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
             keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
             gatewayHTTPSURL = gatewayUrlsWrk.getWebAppURLNhttps();
+            gatewayInternalURL = gatewayUrlsWrk.getWebAppURLNhttps();
 
             storeURLHttp = storeUrls.getWebAppURLHttp();
             storeURLHttps = storeUrls.getWebAppURLHttps();
@@ -229,7 +231,7 @@ public class ScenarioTestBase {
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getTenantUserList().get(0).getPassword(),
-                    publisherContext.getContextTenant().getDomain(), baseUrl);
+                    publisherContext.getContextTenant().getDomain(), baseUrl, gatewayInternalURL);
             restAPIStore =
                     new RestAPIStoreImpl(
                             storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
@@ -308,7 +310,7 @@ public class ScenarioTestBase {
         }
         gatewayHttpsURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
         if (gatewayHttpsURL == null) {
-            gatewayHttpsURL = "https://localhost:8243";
+            gatewayHttpsURL = "https://localhost:9443";
         }
         serviceEndpoint = infraProperties.getProperty(SERVICE_ENDPOINT);
         if (serviceEndpoint == null) {
@@ -318,7 +320,10 @@ public class ScenarioTestBase {
         if (adminURL == null) {
             adminURL = "https://localhost:9443/admin";
         }
-
+        gatewayInternalURL = infraProperties.getProperty(GATEWAYHTTPS_URL);
+        if (gatewayInternalURL == null) {
+            gatewayInternalURL = "https://localhost:8243";
+        }
 
         if (StringUtils.isNotEmpty(System.getenv("DATA_BUCKET_LOCATION"))) {
             String[] urlProps = keyManagerURL.split("services/");
@@ -1126,7 +1131,7 @@ public class ScenarioTestBase {
         apiRevisionDeployRequest.setVhost("localhost");
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList, "API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
 
@@ -1217,7 +1222,7 @@ public class ScenarioTestBase {
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String createAPIProductRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
-            throws org.wso2.am.integration.clients.publisher.api.ApiException, JSONException {
+            throws org.wso2.am.integration.clients.publisher.api.ApiException, JSONException, APIManagerIntegrationTestException {
         int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
         int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
         String revisionUUID = null;
@@ -1253,7 +1258,7 @@ public class ScenarioTestBase {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList, "APIProduct");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Product Revisions:" +apiRevisionsDeployResponse.getData());
         //Waiting for API deployment

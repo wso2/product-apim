@@ -15,7 +15,6 @@ import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import static org.osgi.service.application.ApplicationDescriptor.APPLICATION_DESCRIPTION;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
@@ -35,6 +34,8 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
     private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
     private static final String API_SUBSCRIBER_USERNAME = "andrew";
     private static final String API_SUBSCRIBER_PW = "Andrew#123";
+
+    private static final String APPLICATION_DESCRIPTION = "ApplicationDescription";
 
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -92,7 +93,6 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
     }
 
     private String createApplication(String applicationName) throws Exception {
-        String APPLICATION_DESCRIPTION = "ApplicationDescription";
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, APPLICATION_DESCRIPTION,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
         return applicationResponse.getData();

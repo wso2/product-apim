@@ -160,13 +160,13 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
         }
 
         apiPublisherFirstUser = new RestAPIPublisherImpl(FIRST_USER, USER_PASSWORD,
-                keyManagerContext.getContextTenant().getDomain(), publisherURLHttps);
+                keyManagerContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL);
 
         apiPublisherSecondUser = new RestAPIPublisherImpl(SECOND_USER, USER_PASSWORD,
-                keyManagerContext.getContextTenant().getDomain(), publisherURLHttps);
+                keyManagerContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL);
 
         apiPublisherPubSubUser = new RestAPIPublisherImpl(PUB_SUB_USER, USER_PASSWORD,
-                keyManagerContext.getContextTenant().getDomain(), publisherURLHttps);
+                keyManagerContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL);
 
         apiStorePubSubUser = new RestAPIStoreImpl(PUB_SUB_USER, USER_PASSWORD,
                 keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
@@ -178,7 +178,7 @@ public class PublisherAccessControlTestCase extends APIManagerLifecycleBaseTest 
         restAPIPublisher = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getContextUser().getPassword(),
-                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL);
         restAPIStore =
                 new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                         storeContext.getContextTenant().getContextUser().getPassword(),
