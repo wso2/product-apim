@@ -23,17 +23,17 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.json.*;
 import org.junit.Assert;
 import org.testng.annotations.*;
+import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
+import org.wso2.am.integration.clients.admin.*;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowDTO;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowInfoDTO;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowListDTO;
 
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionListDTO;
@@ -49,8 +49,6 @@ import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.UserManagementUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 
@@ -67,6 +65,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertNotNull;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 
 public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
@@ -379,6 +378,124 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Application state should change after  approval. ");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Application workflow process check", dependsOnMethods =
+            "testAPIWorkflowProcess", enabled = true)
+    public void testApplicationDeletionWorkflowProcess() throws Exception {
+
+        final String deletingAppName = "AppDeletionWorkflowTestAPP";
+        //create Application
+        HttpResponse applicationResponse = restAPIStore.createApplication(deletingAppName,
+                "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        String deletingAppID = applicationResponse.getData();
+        assertEquals(applicationResponse.getResponseCode(), 200,
+                "Application Creation test failed in Approval Workflow Executor");
+        //Application State should be CREATED
+        ApplicationDTO appResponse = restAPIStore.getApplicationById(deletingAppID);
+        String status1 = appResponse.getStatus();
+        assertEquals(status1, "CREATED",
+                "Application state should remain without changing till approval. ");
+        //get workflow pending requests by unauthorized user
+        String workflowType = "AM_APPLICATION_CREATION";
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
+        assertEquals(response.getResponseCode(), 401,
+                "Workflow requests an only view by Admin");
+        //get workflow pending requests by Admin
+        response = restAPIAdmin.getWorkflows(workflowType);
+        assertEquals(response.getResponseCode(), 200,
+                "Get Workflow Pending requests failed for User Admin");
+
+        JSONObject workflowRespObj = new JSONObject(response.getData());
+        String externalWorkflowRef = null;
+        JSONArray arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            JSONObject properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && deletingAppName.equals(properties.get("applicationName"))) {
+                externalWorkflowRef = (String) listItem.get("referenceId");
+            }
+        }
+        assertNotNull("Workflow reference is not available ", externalWorkflowRef);
+
+        //get workflow pending requests by external workflow reference by Admin
+        response = restAPIAdmin.getWorkflowByExternalWorkflowReference(externalWorkflowRef);
+        assertEquals(response.getResponseCode(), 200,
+                "Get Workflow Pending request failed for User Admin");
+        //get workflow pending requests by external workflow reference by unauthorized user
+        response = restAPIAdminUser.getWorkflowByExternalWorkflowReference(externalWorkflowRef);
+        assertEquals(response.getResponseCode(), 401,
+                "Workflow request can only be viewed for the admin");
+        //update workflow pending request by unauthorized user
+        response = restAPIAdminUser.updateWorkflowStatus(externalWorkflowRef);
+        assertEquals(response.getResponseCode(), 401,
+                "Workflow request can only be updated by the admin");
+        //update workflow pending request by admin
+        response = restAPIAdmin.updateWorkflowStatus(externalWorkflowRef);
+        assertEquals(response.getResponseCode(), 200,
+                "Workflow state update failed for user admin");
+
+        String jsonUpdateResponse = response.getData();
+        Gson gsonUpdateResponse = new Gson();
+        WorkflowDTO workflowDTO = gsonUpdateResponse.fromJson(jsonUpdateResponse, WorkflowDTO.class);
+        String workflowStatus = workflowDTO.getStatus().toString();
+        //Workflow status should be changed as APPROVED
+        assertEquals(workflowStatus, WorkflowStatus.APPROVED.toString(),
+                "Workflow state should change by the authorized admin. ");
+        //Application status should be changed as APPROVED
+        ApplicationDTO appFinalResponse = restAPIStore.getApplicationById(deletingAppID);
+        String status = appFinalResponse.getStatus();
+        assertEquals(status, "APPROVED",
+                "Application state should change after  approval. ");
+
+        //Delete application
+        HttpResponse delResponse = restAPIStore.deleteApplicationWithHttpResponse(deletingAppID);
+        assertEquals(delResponse.getResponseCode(), 201, "Application deletion approval workflow failure");
+
+        //Application State should be DELETE_PENDING
+        ApplicationDTO deletePendingAppDTO = restAPIStore.getApplicationById(deletingAppID);
+        assertNotNull("Application deleted without approval process", deletePendingAppDTO);
+        String deletePendingAppStatus = deletePendingAppDTO.getStatus();
+        assertEquals(deletePendingAppStatus, "DELETE_PENDING",
+                "Application state should remain as DELETE_PENDING till approval. ");
+
+        //Delete a DELETE_PENDING application
+        HttpResponse delRetryResponse = restAPIStore.deleteApplicationWithHttpResponse(deletingAppID);
+        assertEquals(delRetryResponse.getResponseCode(), 400,
+                "Delete pending application should not be able to be deleted by deletion request");
+
+        removeDeletePendingApplication(deletingAppName);
+
+        HttpResponse appRetrieveAfterDelResponse = restAPIStore.getApplicationByIdWithHttpResponse(deletingAppID);
+        int responseCode = appRetrieveAfterDelResponse.getResponseCode();
+        assertEquals(responseCode, 404, "Application deletion failed for approval flow");
+    }
+
+    private void removeDeletePendingApplication(String applicationName) throws ApiException, JSONException {
+
+        final String appDeletionWorkflowType = "AM_APPLICATION_DELETION";
+        org.wso2.am.integration.test.HttpResponse delWorkflowsResponse = restAPIAdmin.getWorkflows(appDeletionWorkflowType);
+        assertEquals(delWorkflowsResponse.getResponseCode(), 200, "Get Workflow Pending requests failed for User Admin");
+
+        JSONObject delWorkflowsObject = new JSONObject(delWorkflowsResponse.getData());
+        String delExternalWorkflowRef = null;
+        JSONArray wfArray = (JSONArray) delWorkflowsObject.get("list");
+        for (int i = 0; i < wfArray.length(); i++) {
+            JSONObject listItem = (JSONObject) wfArray.get(i);
+            JSONObject properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && applicationName.equals(properties.get("applicationName"))) {
+                delExternalWorkflowRef = (String) listItem.get("referenceId");
+                break;
+            }
+        }
+        assertNotNull("Workflow reference is not available ", delExternalWorkflowRef);
+
+        delWorkflowsResponse = restAPIAdmin.getWorkflowByExternalWorkflowReference(delExternalWorkflowRef);
+        assertEquals(delWorkflowsResponse.getResponseCode(), 200,
+                "Get Workflow Pending request failed for User Admin");
+        org.wso2.am.integration.test.HttpResponse updateWorkflowResponse = restAPIAdmin.updateWorkflowStatus(delExternalWorkflowRef);
+        assertEquals(updateWorkflowResponse.getResponseCode(), 200, "Workflow state update failed for user admin");
+    }
+
     @Test(groups = {"wso2.am"}, description = "Subscription workflow process check", dependsOnMethods = 
         {"testApplicationWorkflowProcess", "testAPIWorkflowProcess" })
     public void testSubscriptionWorkflowProcess() throws Exception {
@@ -468,6 +585,161 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         //Subscription state should change as UNBLOCKED
         assertEquals(SubscriptionStatus, SubscriptionDTO.SubscriptionStatusEnum.UNBLOCKED,
                 "Subscription state should change after approval. ");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Subscription workflow process check", dependsOnMethods =
+            {"testApplicationWorkflowProcess", "testAPIWorkflowProcess", "testSubscriptionWorkflowProcess"})
+    public void testSubscriptionDeletionWorkflowProcess() throws Exception {
+
+        //create Application
+        final String subDelTestAppName = "SubDelTestApp";
+        HttpResponse applicationResponse = restAPIStore.createApplication(subDelTestAppName,
+                "Default version testing application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        String subDelTestAppID = applicationResponse.getData();
+
+        final String workflowTypeAppCreation = "AM_APPLICATION_CREATION";
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdmin.getWorkflows(workflowTypeAppCreation);
+        assertEquals(response.getResponseCode(), 200,
+                "Get Workflow Pending requests failed for User Admin");
+
+        JSONObject workflowRespObj = new JSONObject(response.getData());
+        String externalWorkflowRef = null;
+        JSONArray arr = (JSONArray) workflowRespObj.get("list");
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject listItem = (JSONObject) arr.get(i);
+            JSONObject properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && subDelTestAppName.equals(properties.get("applicationName"))) {
+                externalWorkflowRef = (String) listItem.get("referenceId");
+            }
+        }
+        assertNotNull("Workflow reference is not available ", externalWorkflowRef);
+
+        response = restAPIAdmin.updateWorkflowStatus(externalWorkflowRef);
+        assertEquals(response.getResponseCode(), 200,
+                "Updated workflow state is failed for user admin");
+
+        //create Subscription
+        HttpResponse subCreationResponse = restAPIStore.createSubscription(apiId, subDelTestAppID,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
+        String subscriptionId = subCreationResponse.getData();
+        assertEquals(subCreationResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Subscribe of API is not successful");
+
+        //get pending workflow requests by unauthorized user
+        final String workflowTypeSubCreation = "AM_SUBSCRIPTION_CREATION";
+        org.wso2.am.integration.test.HttpResponse subWorkflowResponse = restAPIAdmin.getWorkflows(workflowTypeSubCreation);
+        assertEquals(subWorkflowResponse.getResponseCode(), 200,
+                "Get Workflow Pending requests failed for User Admin");
+
+        JSONObject subCreationWorkflowRespObj = new JSONObject(subWorkflowResponse.getData());
+        String subCreationExternalWorkflowRef = null;
+        JSONArray subCreationWFArray = (JSONArray) subCreationWorkflowRespObj.get("list");
+        for (int i = 0; i < subCreationWFArray.length(); i++) {
+            JSONObject listItem = (JSONObject) subCreationWFArray.get(i);
+            JSONObject properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && subDelTestAppName.equals(properties.get("applicationName"))
+                    && properties.has("apiName") && apiName.equals(properties.get("apiName"))) {
+                subCreationExternalWorkflowRef = (String) listItem.get("referenceId");
+            }
+        }
+        assertNotNull("Workflow reference is not available ", subCreationExternalWorkflowRef);
+
+        //get pending workflow request by ExternalWorkflow Reference by Admin
+        subWorkflowResponse = restAPIAdmin.getWorkflowByExternalWorkflowReference(subCreationExternalWorkflowRef);
+        assertEquals(subWorkflowResponse.getResponseCode(), 200,
+                "Get Workflow Pending request failed for User Admin");
+
+        //update pending workflow requests by ExternalWorkflow Reference by Admin
+        subWorkflowResponse = restAPIAdmin.updateWorkflowStatus(subCreationExternalWorkflowRef);
+        assertEquals(subWorkflowResponse.getResponseCode(), 200,
+                "Updated workflow state is failed for user admin");
+
+        String jsonUpdateResponse = subWorkflowResponse.getData();
+        Gson gsonUpdateResponse = new Gson();
+        WorkflowDTO workflowDTO = gsonUpdateResponse.fromJson(jsonUpdateResponse, WorkflowDTO.class);
+        String workflowStatus = workflowDTO.getStatus().toString();
+        //Workflow status should change to APPROVED
+        assertEquals(workflowStatus, WorkflowStatus.APPROVED.toString(),
+                "Workflow state should change by the authorized admin. ");
+
+        SubscriptionListDTO subscriptionFinalListDTO = restAPIPublisher.getSubscriptionByAPIID(apiId);
+        List<SubscriptionDTO> subscriptionFinalList = subscriptionFinalListDTO.getList();
+        assertNotNull(subscriptionFinalList);
+        SubscriptionDTO.SubscriptionStatusEnum subscriptionStatus = SubscriptionDTO.SubscriptionStatusEnum.BLOCKED;
+        for (SubscriptionDTO subscriptionInfo : subscriptionFinalList) {
+            if (subDelTestAppID.equals(subscriptionInfo.getApplicationInfo().getApplicationId())) {
+                subscriptionStatus = subscriptionInfo.getSubscriptionStatus();
+                log.info("Found valid subscription for the application");
+                break;
+            }
+        }
+
+        //Subscription state should change as UNBLOCKED
+        assertEquals(subscriptionStatus, SubscriptionDTO.SubscriptionStatusEnum.UNBLOCKED,
+                "Subscription state should change after approval. ");
+
+        HttpResponse subDeletionResponse = restAPIStore.removeSubscriptionWithHttpInfo(subscriptionId);
+        assertEquals(subDeletionResponse.getResponseCode(), 201,
+                "Subscription deletion approval workflow failure");
+
+        SubscriptionListDTO subscriptionListDTO = restAPIPublisher.getSubscriptionByAPIID(apiId);
+        List<SubscriptionDTO> subscriptionList = subscriptionListDTO.getList();
+        assertNotNull(subscriptionList);
+        subscriptionStatus = SubscriptionDTO.SubscriptionStatusEnum.BLOCKED;
+        for (SubscriptionDTO subscriptionInfo : subscriptionList) {
+            if (subDelTestAppID.equals(subscriptionInfo.getApplicationInfo().getApplicationId())) {
+                subscriptionStatus = subscriptionInfo.getSubscriptionStatus();
+                log.info("Found valid subscription for the application");
+                break;
+            }
+        }
+
+        //Subscription Status should not change
+        assertEquals(subscriptionStatus, SubscriptionDTO.SubscriptionStatusEnum.DELETE_PENDING,
+                "Subscription state should be DELETE_PENDING in the subscription deletion approval process");
+
+        final String workflowTypeSubDeletion = "AM_SUBSCRIPTION_DELETION";
+        org.wso2.am.integration.test.HttpResponse subDelWorkflowResponse = restAPIAdmin.getWorkflows(workflowTypeSubDeletion);
+        assertEquals(subWorkflowResponse.getResponseCode(), 200,
+                "Get Workflow Pending requests failed for User Admin");
+
+        JSONObject subDelWorkflowRespObj = new JSONObject(subDelWorkflowResponse.getData());
+        String subDelExternalWorkflowRef = null;
+        JSONArray subDelWFArray = (JSONArray) subDelWorkflowRespObj.get("list");
+        for (int i = 0; i < subDelWFArray.length(); i++) {
+            JSONObject listItem = (JSONObject) subDelWFArray.get(i);
+            JSONObject properties = (JSONObject) listItem.get("properties");
+            if (properties.has("applicationName") && subDelTestAppName.equals(properties.get("applicationName"))
+                    && properties.has("apiName") && apiName.equals(properties.get("apiName"))) {
+                subDelExternalWorkflowRef = (String) listItem.get("referenceId");
+            }
+        }
+        assertNotNull("Workflow reference is not available ", subDelExternalWorkflowRef);
+
+        //update pending workflow requests by ExternalWorkflow Reference by Admin
+        subWorkflowResponse = restAPIAdmin.updateWorkflowStatus(subDelExternalWorkflowRef);
+        assertEquals(subWorkflowResponse.getResponseCode(), 200,
+                "Updated workflow state is failed for user admin");
+
+        SubscriptionListDTO subscriptionsAfterDelDTO = restAPIPublisher.getSubscriptionByAPIID(apiId);
+        List<SubscriptionDTO> subscriptionsAfterDel = subscriptionsAfterDelDTO.getList();
+        assertNotNull(subscriptionsAfterDel);
+        SubscriptionDTO deletedSubscription = subscriptionsAfterDel.stream()
+                .filter(subscriptionDTO -> subscriptionDTO.getApplicationInfo() != null &&
+                        subDelTestAppID.equals(subscriptionDTO.getApplicationInfo().getApplicationId()))
+                .findAny().orElse(null);
+        assertNull(deletedSubscription, "Subscription deletion failed for approval flow");
+
+        //Delete application
+        HttpResponse delResponse = restAPIStore.deleteApplicationWithHttpResponse(subDelTestAppID);
+        assertEquals(delResponse.getResponseCode(), 201, "Application deletion approval workflow failure");
+
+        removeDeletePendingApplication(subDelTestAppName);
+
+        HttpResponse appRetrieveAfterDelResponse = restAPIStore.getApplicationByIdWithHttpResponse(subDelTestAppID);
+        int responseCode = appRetrieveAfterDelResponse.getResponseCode();
+        assertEquals(responseCode, 404, "Application deletion failed for approval flow");
     }
 
     @Test(groups = {"wso2.am"}, description = "Registration workflow process check",
@@ -686,7 +958,9 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         undeployAndDeleteAPIRevisionsUsingRest(apiIdNew, restAPIPublisher);
         //clean up process for API and application
         restAPIPublisher.deleteAPI(apiIdNew);
-        restAPIStore.deleteApplication(applicationIDNew);
+        HttpResponse delResponse = restAPIStore.deleteApplicationWithHttpResponse(applicationIDNew);
+        assertEquals(delResponse.getResponseCode(), 201, "Application deletion approval workflow failure");
+        removeDeletePendingApplication(applicationName);
         //check workflow pending requests are cleaned (Application Creation, API State Change)
         response = restAPIAdmin.getWorkflowByExternalWorkflowReference(applicationCreationExternalWorkflowRef);
         assertEquals(response.getResponseCode(), 500,
@@ -810,6 +1084,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Get Workflow Pending request failed for User Admin");
         //clean up process for all pending requests
         restAPIStore.deleteApplication(applicationIDSecond);
+        removeDeletePendingApplication(applicationName);
         undeployAndDeleteAPIRevisionsUsingRest(apiIdSecond, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiIdSecond);
         //check the clean up process is successful (Application key generation, API subscription)
@@ -824,6 +1099,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationID);
+        removeDeletePendingApplication(applicationName);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         userManagementClient.deleteUser(USER_SMITH);
