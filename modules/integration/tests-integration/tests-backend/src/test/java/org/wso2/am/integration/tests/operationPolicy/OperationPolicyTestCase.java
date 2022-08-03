@@ -50,6 +50,8 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.apimgt.api.model.OperationPolicyData;
+import org.wso2.carbon.apimgt.api.model.OperationPolicyDefinition;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.apache.http.client.HttpClient;
 import wiremock.com.google.common.io.Files;
@@ -87,6 +89,12 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
     private final String API_END_POINT_POSTFIX_URL = "xmlapi";
 
     private final String TEST_POLICY_NAME = "customCommonLogPolicy";
+
+    private final String TEST_JSON_POLICY_NAME = "customCommonLogJSONPolicy";
+
+    private final String JSON_POLICY_TYPE = "JSON";
+
+    private final String YAML_POLICY_TYPE = "YAML";
     private final String TEST_INVALID_POLICY_NAME = "customCommonLogPolicyInvalid";
 
     private final String TEST_POLICY_VERSION = "v1";
@@ -156,7 +164,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Exporting Sample Common API Policy", dependsOnMethods = "testAddNewCommonOperationPolicy")
     public void testCommonOperationPolicyExport() throws Exception {
 
-        exportedOperationPolicyZip = exportCommonOperationPolicyArtifact(TEST_POLICY_NAME, TEST_POLICY_VERSION, true);
+        exportedOperationPolicyZip = exportCommonOperationPolicyArtifact(TEST_POLICY_NAME, TEST_POLICY_VERSION, YAML_POLICY_TYPE, true);
 
         String extractedCommonAPIPolicyDir = exportedOperationPolicyZip.getParent();
         try {
@@ -197,7 +205,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(expectedPolicySpecPath), StandardCharsets.UTF_8)) {
             stream.forEach(s -> contentBuilderForExpectedPolicySpec.append(s).append("\n"));
         } catch (IOException e) {
-            throw new APIManagerIntegrationTestException("Error in reading from extracted api file " + yamlPolicySpecPath, e);
+            throw new APIManagerIntegrationTestException("Error in reading from extracted api file " + expectedPolicySpecPath, e);
         }
 
         String expectedPolicySpecContent = contentBuilderForExpectedPolicySpec.toString();
@@ -211,7 +219,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(synapseDefinitionPath), StandardCharsets.UTF_8)) {
             stream.forEach(s -> contentBuilderForSynapseDef.append(s).append("\n"));
         } catch (IOException e) {
-            throw new APIManagerIntegrationTestException("Error in reading from extracted api file " + yamlPolicySpecPath, e);
+            throw new APIManagerIntegrationTestException("Error in reading from extracted api file " + synapseDefinitionPath, e);
         }
 
         String synapseDefContent = contentBuilderForSynapseDef.toString();
@@ -226,7 +234,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(expectedSynapsePolicyDefPath), StandardCharsets.UTF_8)) {
             stream.forEach(s -> contentBuilderForExpectedSynapseDef.append(s).append("\n"));
         } catch (IOException e) {
-            throw new APIManagerIntegrationTestException("Error in reading from extracted api file " + yamlPolicySpecPath, e);
+            throw new APIManagerIntegrationTestException("Error in reading from extracted api file " + expectedSynapsePolicyDefPath, e);
         }
 
         String expectedSynapseDefinitionContent = contentBuilderForExpectedSynapseDef.toString();
@@ -241,7 +249,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Exporting Non Existing Common API Policy", dependsOnMethods = "testCommonOperationPolicyExport")
     public void testNonExistingCommonOperationPolicyExport() throws Exception {
 
-        exportCommonOperationPolicyArtifact(TEST_INVALID_POLICY_NAME, TEST_POLICY_VERSION, false);
+        exportCommonOperationPolicyArtifact(TEST_INVALID_POLICY_NAME, TEST_POLICY_VERSION, YAML_POLICY_TYPE, false);
 
     }
 
@@ -335,6 +343,62 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         } catch (ApiException ex) {
             assertEquals(ex.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Response code mismatched");
         }
+
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Exporting Sample Common API Policy with JSON Policy Definition", dependsOnMethods = "testImportExistingCommonOperationPolicy")
+    public void testCommonOperationPolicyExportWithJSONContent() throws Exception {
+
+        exportedOperationPolicyZip = exportCommonOperationPolicyArtifact(TEST_POLICY_NAME, TEST_POLICY_VERSION, JSON_POLICY_TYPE, true);
+
+        String extractedCommonAPIPolicyDir = exportedOperationPolicyZip.getParent();
+        try {
+            ZipFile zipFile = new ZipFile(exportedOperationPolicyZip);
+            zipFile.extractAll(extractedCommonAPIPolicyDir);
+        } catch (ZipException e) {
+            throw new APIManagerIntegrationTestException("Error in extracting the exported API archive.", e);
+        }
+
+        String jsonPolicySpecPath = extractedCommonAPIPolicyDir + File.separator + TEST_POLICY_NAME + File.separator +
+                TEST_POLICY_NAME + ".json";
+        File policySpecFile = new File(jsonPolicySpecPath);
+
+        assertTrue(policySpecFile.exists(), "API Policy Specification file does not exist");
+
+        String synapseDefinitionPath = extractedCommonAPIPolicyDir + File.separator +  TEST_POLICY_NAME +
+                File.separator +  TEST_POLICY_NAME + ".j2";
+        File synapseDefFile = new File(synapseDefinitionPath);
+
+        assertTrue(synapseDefFile.exists(), "Synapse Definition file does not exist");
+
+        StringBuilder contentBuilderForPolicySpec = new StringBuilder();
+        try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(jsonPolicySpecPath), StandardCharsets.UTF_8)) {
+            stream.forEach(s -> contentBuilderForPolicySpec.append(s).append("\n"));
+        } catch (IOException e) {
+            throw new APIManagerIntegrationTestException("Error in reading from extracted API Policy file " + jsonPolicySpecPath, e);
+        }
+
+        String policySpecContent = contentBuilderForPolicySpec.toString();
+
+        ObjectMapper jsonReader = new ObjectMapper();
+        Object operationPolicySpec = jsonReader.readValue(policySpecContent, Object.class);
+
+        String expectedPolicySpecPath = getAMResourceLocation() + File.separator + "operationPolicy" +
+                File.separator + TEST_JSON_POLICY_NAME + ".json";
+
+        StringBuilder contentBuilderForExpectedPolicySpec = new StringBuilder();
+        try (Stream<String> stream = java.nio.file.Files.lines(Paths.get(expectedPolicySpecPath), StandardCharsets.UTF_8)) {
+            stream.forEach(s -> contentBuilderForExpectedPolicySpec.append(s).append("\n"));
+        } catch (IOException e) {
+            throw new APIManagerIntegrationTestException("Error in reading from expected Policy Specification file " + expectedPolicySpecPath, e);
+        }
+
+        String expectedPolicySpecContent = contentBuilderForExpectedPolicySpec.toString();
+
+        jsonReader = new ObjectMapper();
+        Object expectedOperationPolicySpec = jsonReader.readValue(expectedPolicySpecContent, Object.class);
+
+        assertEquals(operationPolicySpec, expectedOperationPolicySpec, "Exported & Expected Policy Specifications are not matching");
 
     }
 
@@ -550,10 +614,10 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
      * @return Exported Operation policy file
      * @throws IOException  throws if connection issues occurred
      */
-    private File exportCommonOperationPolicyArtifact(String policyName, String policyVersion, boolean isValid) throws Exception {
+    private File exportCommonOperationPolicyArtifact(String policyName, String policyVersion, String format, boolean isValid) throws Exception {
 
         URL exportRequest =
-                new URL(exportUrl + "?name=" + policyName + "&version=" + policyVersion);
+                new URL(exportUrl + "?name=" + policyName + "&version=" + policyVersion + "&format=" + format);
         File zipTempDir = com.google.common.io.Files.createTempDir();
         //set the export file name with tenant prefix
         String fileName = policyName + "_" + policyVersion;

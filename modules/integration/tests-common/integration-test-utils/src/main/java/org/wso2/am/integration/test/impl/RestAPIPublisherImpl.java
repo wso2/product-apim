@@ -2329,7 +2329,7 @@ public class RestAPIPublisherImpl {
 
         setActivityID();
         ApiResponse<OperationPolicyDataListDTO> apiResponse =
-                operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(50, 0, "", null, null);
+                operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(50, 0, null, null, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
                 "Unable to retrieve common policies " + apiResponse.getData());
         if (apiResponse != null && apiResponse.getData().getCount() >= 0) {
@@ -2342,7 +2342,7 @@ public class RestAPIPublisherImpl {
 
         setActivityID();
         ApiResponse<OperationPolicyDataListDTO> apiResponse =
-                operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(limit, 0, "", null, null);
+                operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(limit, 0, null, null, null);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
                 "Unable to retrieve common policies " + apiResponse.getData());
         if (apiResponse != null && apiResponse.getData().getCount() >= 0) {

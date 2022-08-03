@@ -397,6 +397,7 @@ public class ImportExportApi {
      * Build call for exportOperationPolicy
      * @param name Policy name (optional)
      * @param version Version of the policy (optional)
+     * @param format Format of the policy definition file (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -408,7 +409,7 @@ public class ImportExportApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call exportOperationPolicyCall(String name, String version, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call exportOperationPolicyCall(String name, String version, String format, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -422,6 +423,10 @@ public class ImportExportApi {
 
         if (version != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("version", version));
+        }
+
+        if (format != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("format", format));
         }
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
@@ -446,10 +451,10 @@ public class ImportExportApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call exportOperationPolicyValidateBeforeCall(String name, String version, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call exportOperationPolicyValidateBeforeCall(String name, String version, String format, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = exportOperationPolicyCall(name, version, _callback);
+        okhttp3.Call localVarCall = exportOperationPolicyCall(name, version, format, _callback);
         return localVarCall;
 
     }
@@ -459,6 +464,7 @@ public class ImportExportApi {
      * This operation provides you to export preferred common operation policies 
      * @param name Policy name (optional)
      * @param version Version of the policy (optional)
+     * @param format Format of the policy definition file (optional)
      * @return File
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -469,8 +475,8 @@ public class ImportExportApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public File exportOperationPolicy(String name, String version) throws ApiException {
-        ApiResponse<File> localVarResp = exportOperationPolicyWithHttpInfo(name, version);
+    public File exportOperationPolicy(String name, String version, String format) throws ApiException {
+        ApiResponse<File> localVarResp = exportOperationPolicyWithHttpInfo(name, version, format);
         return localVarResp.getData();
     }
 
@@ -479,6 +485,7 @@ public class ImportExportApi {
      * This operation provides you to export preferred common operation policies 
      * @param name Policy name (optional)
      * @param version Version of the policy (optional)
+     * @param format Format of the policy definition file (optional)
      * @return ApiResponse&lt;File&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -489,8 +496,8 @@ public class ImportExportApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<File> exportOperationPolicyWithHttpInfo(String name, String version) throws ApiException {
-        okhttp3.Call localVarCall = exportOperationPolicyValidateBeforeCall(name, version, null);
+    public ApiResponse<File> exportOperationPolicyWithHttpInfo(String name, String version, String format) throws ApiException {
+        okhttp3.Call localVarCall = exportOperationPolicyValidateBeforeCall(name, version, format, null);
         Type localVarReturnType = new TypeToken<File>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -500,6 +507,7 @@ public class ImportExportApi {
      * This operation provides you to export preferred common operation policies 
      * @param name Policy name (optional)
      * @param version Version of the policy (optional)
+     * @param format Format of the policy definition file (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -511,9 +519,9 @@ public class ImportExportApi {
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call exportOperationPolicyAsync(String name, String version, final ApiCallback<File> _callback) throws ApiException {
+    public okhttp3.Call exportOperationPolicyAsync(String name, String version, String format, final ApiCallback<File> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = exportOperationPolicyValidateBeforeCall(name, version, _callback);
+        okhttp3.Call localVarCall = exportOperationPolicyValidateBeforeCall(name, version, format, _callback);
         Type localVarReturnType = new TypeToken<File>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

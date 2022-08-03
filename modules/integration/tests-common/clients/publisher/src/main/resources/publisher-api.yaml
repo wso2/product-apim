@@ -7923,6 +7923,11 @@ paths:
           description: Version of the policy
           schema:
             type: string
+        - name: format
+          in: query
+          description: Format of the policy definition file
+          schema:
+            type: string
       responses:
         200:
           description: |
@@ -7944,8 +7949,6 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:common_operation_policy_view
-            - apim:common_operation_policy_manage
             - apim:policies_import_export
       x-code-samples:
         - lang: Curl
@@ -7986,7 +7989,6 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
             - apim:policies_import_export
       x-code-samples:
         - lang: Curl

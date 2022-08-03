@@ -178,7 +178,7 @@ Name | Type | Description  | Notes
 
 <a name="exportOperationPolicy"></a>
 # **exportOperationPolicy**
-> File exportOperationPolicy(name, version)
+> File exportOperationPolicy(name, version, format)
 
 Export common operation policies by their names and versions 
 
@@ -206,8 +206,9 @@ public class Example {
     ImportExportApi apiInstance = new ImportExportApi(defaultClient);
     String name = "name_example"; // String | Policy name
     String version = "version_example"; // String | Version of the policy
+    String format = "format_example"; // String | Format of the policy definition file
     try {
-      File result = apiInstance.exportOperationPolicy(name, version);
+      File result = apiInstance.exportOperationPolicy(name, version, format);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ImportExportApi#exportOperationPolicy");
@@ -226,6 +227,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **name** | **String**| Policy name | [optional]
  **version** | **String**| Version of the policy | [optional]
+ **format** | **String**| Format of the policy definition file | [optional]
 
 ### Return type
 

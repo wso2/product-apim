@@ -14144,6 +14144,14 @@ paths:
         schema:
           type: string
         style: form
+      - description: Format of the policy definition file
+        explode: true
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+        style: form
       responses:
         "200":
           content:
@@ -14188,8 +14196,6 @@ paths:
           description: Not Found. The specified resource does not exist.
       security:
       - OAuth2Security:
-        - apim:common_operation_policy_view
-        - apim:common_operation_policy_manage
         - apim:policies_import_export
       summary: |
         Export common operation policies by their names and versions
@@ -14275,7 +14281,6 @@ paths:
           description: Internal Server Error.
       security:
       - OAuth2Security:
-        - apim:admin
         - apim:policies_import_export
       summary: Import a Policy
       tags:
