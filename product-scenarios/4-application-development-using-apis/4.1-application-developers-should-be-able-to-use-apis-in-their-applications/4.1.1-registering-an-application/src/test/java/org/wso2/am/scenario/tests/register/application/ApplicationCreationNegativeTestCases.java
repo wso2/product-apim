@@ -166,7 +166,7 @@ public class ApplicationCreationNegativeTestCases extends ScenarioTestBase {
         RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
                 SUBSCRIBER_LOGIN_USERNAME_2,
                 SUBSCRIBER_LOGIN_PW_2,
-                storeContext.getContextTenant().getDomain(), storeURLHttps);
+                storeContext.getContextTenant().getDomain(), storeURLHttps, gatewayHttpsURL);
 
         try {
             ArrayList grantTypes = new ArrayList();

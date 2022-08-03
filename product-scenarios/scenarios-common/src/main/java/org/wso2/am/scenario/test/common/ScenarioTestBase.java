@@ -34,6 +34,7 @@ import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
+import org.wso2.am.integration.test.impl.RestAPIGatewayImpl;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -128,6 +129,7 @@ public class ScenarioTestBase {
     protected UserManagementClient userManagementClient;
     protected TenantManagementServiceClient tenantManagementServiceClient;
     protected User user;
+    private RestAPIGatewayImpl restAPIGateway;
 
 
     /**
@@ -236,12 +238,15 @@ public class ScenarioTestBase {
                     new RestAPIStoreImpl(
                             storeContext.getContextTenant().getTenantUserList().get(1).getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getTenantUserList().get(1).getPassword(),
-                            storeContext.getContextTenant().getDomain(), baseUrl);
+                            storeContext.getContextTenant().getDomain(), baseUrl, gatewayHttpsURL);
 
             restAPIAdmin = new RestAPIAdminImpl(
                     storeContext.getContextTenant().getTenantAdmin().getUserNameWithoutDomain(),
                     storeContext.getContextTenant().getTenantAdmin().getPassword(),
                     storeContext.getContextTenant().getDomain(), baseUrl);
+
+            restAPIGateway = new RestAPIGatewayImpl(RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
+                    publisherContext.getContextTenant().getTenantUserList().get(0).getUserNameWithoutDomain(), gatewayHttpsURL);
 
             storeURLHttps = baseUrl;
             publisherURLHttps = baseUrl;
