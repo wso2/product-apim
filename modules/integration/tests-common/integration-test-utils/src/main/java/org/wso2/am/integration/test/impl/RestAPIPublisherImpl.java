@@ -16,7 +16,6 @@
 
 package org.wso2.am.integration.test.impl;
 
-import com.google.common.io.Files;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -27,11 +26,35 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.testng.Assert;
+
 import org.wso2.am.integration.clients.gateway.api.v2.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
-import org.wso2.am.integration.clients.publisher.api.v1.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiOperationPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiProductLifecycleApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiProductRevisionsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
+import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -78,15 +101,10 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,8 +112,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO.SubscriptionAvailabilityEnum.ALL_TENANTS;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -2473,21 +2489,12 @@ public class RestAPIPublisherImpl {
     }
 
     /**
-     * Export Common API Policy
+     * Import Operation Policy.
      *
-     * @param policyName - policy name
-     * @param policyVersion - policy version
-     * @throws ApiException - throws if remove comment fails
+     * @param file Policy File.
+     * @return
+     * @throws ApiException
      */
-    public ApiResponse<File> exportOperationPolicy(String policyName, String policyVersion) throws Exception {
-
-//        okhttp3.Call call = importExportApi.exportOperationPolicyCall(policyName, policyVersion, null);
-//        return apiPublisherClient.execute(call);
-
-        return importExportApi.exportOperationPolicyWithHttpInfo(policyName, policyVersion);
-
-    }
-
     public ApiResponse<Void> importOperationPolicy(File file) throws ApiException {
         return importExportApi.importOperationPolicyWithHttpInfo(file);
     }
