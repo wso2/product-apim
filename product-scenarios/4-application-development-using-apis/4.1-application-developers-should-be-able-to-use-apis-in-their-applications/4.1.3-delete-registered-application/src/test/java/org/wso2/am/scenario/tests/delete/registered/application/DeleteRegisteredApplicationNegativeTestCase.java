@@ -15,7 +15,6 @@ import org.wso2.am.scenario.test.common.ScenarioTestConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import static org.osgi.service.application.ApplicationDescriptor.APPLICATION_DESCRIPTION;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
@@ -35,6 +34,8 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
     private static final String API_CREATOR_PUBLISHER_PW = "Micheal#123";
     private static final String API_SUBSCRIBER_USERNAME = "andrew";
     private static final String API_SUBSCRIBER_PW = "Andrew#123";
+
+    private static final String APPLICATION_DESCRIPTION = "ApplicationDescription";
 
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -71,7 +72,8 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
     public void testUnownedDeleteApplication() throws Exception {
         applicationId = createApplication(APPLICATION_NAME);
         RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
-                SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, storeContext.getContextTenant().getDomain(), storeURLHttps);
+                SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, storeContext.getContextTenant().getDomain(), storeURLHttps,
+                gatewayHttpsURL);
         HttpResponse response = restAPIStoreNew.deleteApplication(applicationId);
         assertNull(response, "Different owners application deleted.");
     }
@@ -79,7 +81,8 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
     @Test(description = "4.1.3.7", dependsOnMethods = {"testUnownedDeleteApplication"})
     public void testDeleteApplicationWithSameName() throws Exception {
         RestAPIStoreImpl restAPIStoreNew = new RestAPIStoreImpl(
-                SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, storeContext.getContextTenant().getDomain(), storeURLHttps);
+                SUBSCRIBER2_USERNAME, SUBSCRIBER2_PW, storeContext.getContextTenant().getDomain(), storeURLHttps,
+                gatewayHttpsURL);
         HttpResponse applicationResponse = restAPIStoreNew.createApplication(APPLICATION_NAME, APPLICATION_DESCRIPTION,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
         assertNotNull(applicationResponse.getData());
@@ -92,7 +95,6 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
     }
 
     private String createApplication(String applicationName) throws Exception {
-        String APPLICATION_DESCRIPTION = "ApplicationDescription";
         HttpResponse applicationResponse = restAPIStore.createApplication(applicationName, APPLICATION_DESCRIPTION,
                 APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
         return applicationResponse.getData();
@@ -101,15 +103,15 @@ public class DeleteRegisteredApplicationNegativeTestCase extends ScenarioTestBas
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         if (this.userMode.equals(TestUserMode.SUPER_TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
-            deleteUser(SUBSCRIBER2_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+//            deleteUser(API_CREATOR_PUBLISHER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+//            deleteUser(API_SUBSCRIBER_USERNAME, ADMIN_USERNAME, ADMIN_PW);
+//            deleteUser(SUBSCRIBER2_USERNAME, ADMIN_USERNAME, ADMIN_PW);
         }
         if (this.userMode.equals(TestUserMode.TENANT_USER)) {
-            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deleteUser(SUBSCRIBER2_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
-            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
+//            deleteUser(API_CREATOR_PUBLISHER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+//            deleteUser(API_SUBSCRIBER_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+//            deleteUser(SUBSCRIBER2_USERNAME, TENANT_ADMIN_USERNAME, TENANT_ADMIN_PW);
+//            deactivateAndDeleteTenant(ScenarioTestConstants.TENANT_WSO2);
         }
     }
 

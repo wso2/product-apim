@@ -142,7 +142,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
 
     protected SubscriptionDTO subscribeToAPI(String apiID, String applicationID, String tier,
             RestAPIStoreImpl storeRestClient)
-            throws org.wso2.am.integration.clients.store.api.ApiException {
+            throws org.wso2.am.integration.clients.store.api.ApiException, APIManagerIntegrationTestException {
         return storeRestClient.subscribeToAPI(apiID, applicationID, tier);
     }
 

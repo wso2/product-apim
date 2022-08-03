@@ -136,7 +136,7 @@ public class PublisherAccessControlNegativeTestCase extends ScenarioTestBase {
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(secondUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(secondUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         HttpResponse apiResponseGetAPI = restAPIPublisherNew.getAPI(apiDto.getId());
         assertFalse(apiResponseGetAPI.getData().contains(apiName), apiName + " is visible in publisher");

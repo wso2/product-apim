@@ -116,6 +116,7 @@ public class APIMIntegrationBaseTest {
     protected String adminURLHttps;
     protected String keyManagerHTTPSURL;
     protected String gatewayHTTPSURL;
+    protected String gatewayInternalURL;
     protected String storeURLHttp;
     protected String storeURLHttps;
     protected String keymanagerSessionCookie;
@@ -195,6 +196,7 @@ public class APIMIntegrationBaseTest {
             publisherURLHttps = publisherUrls.getWebAppURLHttps();
             keyManagerHTTPSURL = keyMangerUrl.getWebAppURLHttps();
             gatewayHTTPSURL = gatewayUrlsWrk.getWebAppURLNhttps();
+            gatewayInternalURL = gatewayUrlsWrk.getWebAppURLNhttps();
             adminURLHttps =  adminUrls.getWebAppURLHttps();
             adminURLHttp = adminUrls.getWebAppURLHttps();
 
@@ -206,11 +208,11 @@ public class APIMIntegrationBaseTest {
             restAPIPublisher = new RestAPIPublisherImpl(
                     publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
-                    publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+                    publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL);
             restAPIStore =
                     new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                             storeContext.getContextTenant().getContextUser().getPassword(),
-                            storeContext.getContextTenant().getDomain(), storeURLHttps);
+                            storeContext.getContextTenant().getDomain(), storeURLHttps, gatewayInternalURL);
             restAPIAdmin = new RestAPIAdminImpl(publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                     publisherContext.getContextTenant().getContextUser().getPassword(),
                     publisherContext.getContextTenant().getDomain(), publisherURLHttps);
@@ -505,7 +507,7 @@ public class APIMIntegrationBaseTest {
                     .getAllSubscriptionsOfApplication(applicationInfoDTO.getApplicationId());
             if (subsDTO != null) {
                 for (SubscriptionDTO subscriptionDTO : subsDTO.getList()) {
-                    restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
+                    restAPIStore.removeSubscription(subscriptionDTO);
                 }
             }
             if (!APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME.equals(applicationInfoDTO.getName())) {
@@ -709,17 +711,13 @@ public class APIMIntegrationBaseTest {
         return null;
     }
 
-    protected RestAPIPublisherImpl getRestAPIPublisherForUser(String user, String pass, String tenantDomain) {
-        return new RestAPIPublisherImpl(user, pass, tenantDomain, publisherURLHttps);
-    }
-
     protected RestAPIStoreImpl getRestAPIStoreForUser(String user, String pass, String tenantDomain) {
-        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps);
+        return new RestAPIStoreImpl(user, pass, tenantDomain, storeURLHttps, gatewayInternalURL);
     }
 
-    protected RestAPIStoreImpl getRestAPIStoreForAnonymousUser(String tenantDomain) {
-        return new RestAPIStoreImpl(tenantDomain, storeURLHttps);
-    }
+//    protected RestAPIStoreImpl getRestAPIStoreForAnonymousUser(String tenantDomain) {
+//        return new RestAPIStoreImpl(tenantDomain, storeURLHttps);
+//    }
 
     protected void waitForKeyManagerDeployment(String tenantDomain, String keyManagerName)
             throws XPathExpressionException, UnsupportedEncodingException {
@@ -769,7 +767,7 @@ public class APIMIntegrationBaseTest {
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String createAPIRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
-            throws ApiException, JSONException {
+            throws ApiException, JSONException, APIManagerIntegrationTestException {
         int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
         int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
         String revisionUUID = null;
@@ -805,7 +803,7 @@ public class APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList, "API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
         return  revisionUUID;
@@ -889,7 +887,7 @@ public class APIMIntegrationBaseTest {
      * @param restAPIPublisher -  Instance of APIPublisherRestClient
      */
     protected String createAPIProductRevisionAndDeployUsingRest(String apiId, RestAPIPublisherImpl restAPIPublisher)
-            throws ApiException, JSONException {
+            throws ApiException, JSONException, APIManagerIntegrationTestException {
         int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
         int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
         String revisionUUID = null;
@@ -925,7 +923,7 @@ public class APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"APIProduct");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Product Revisions:" +apiRevisionsDeployResponse.getData());
         //Waiting for API deployment

@@ -123,20 +123,9 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList);
+                apiRevisionDeployRequestList,"API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                 "Unable to deploy API Revisions:" +apiRevisionsDeployResponse.getData());
-//        List<JSONObject> deploymentList = new ArrayList<>();
-//        JSONArray jsonArray = new JSONArray(apiRevisionsDeployResponse.getData());
-//
-//        for (int i = 0, l = jsonArray.length(); i < l; i++) {
-//            deploymentList.add(jsonArray.getJSONObject(i));
-//        }
-//        String deploymentName = null;
-//        for (JSONObject deployment :deploymentList) {
-//            deploymentName = deployment.getString("name");
-//        }
-//        assertNotNull(deploymentName, "Unable to retrieve deployed deployment name");
     }
 
     @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Revision to gateway environments",

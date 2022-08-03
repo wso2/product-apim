@@ -142,7 +142,7 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
     public void destroy() throws Exception {
         SubscriptionListDTO subsDTO = restAPIStore.getAllSubscriptionsOfApplication(applicationId);
         for (SubscriptionDTO subscriptionDTO: subsDTO.getList()){
-            restAPIStore.removeSubscription(subscriptionDTO.getSubscriptionId());
+            restAPIStore.removeSubscription(subscriptionDTO);
         }
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);

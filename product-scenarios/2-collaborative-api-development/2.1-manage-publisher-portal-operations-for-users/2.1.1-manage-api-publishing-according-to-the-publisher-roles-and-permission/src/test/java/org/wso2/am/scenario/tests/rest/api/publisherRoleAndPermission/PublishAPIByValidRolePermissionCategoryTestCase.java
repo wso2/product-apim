@@ -119,7 +119,7 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
 
@@ -181,7 +181,7 @@ public class PublishAPIByValidRolePermissionCategoryTestCase extends ScenarioTes
         }
 
         RestAPIPublisherImpl restAPIPublisherNew;
-        restAPIPublisherNew = new RestAPIPublisherImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+        restAPIPublisherNew = new RestAPIPublisherImpl(devPortalUser, "password123$", publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL););
 
         restAPIPublisherNew.changeAPILifeCycleStatusToPublish(apiID, false);
 

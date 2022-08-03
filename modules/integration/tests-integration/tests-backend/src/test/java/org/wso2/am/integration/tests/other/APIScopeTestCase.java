@@ -124,7 +124,7 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher = new RestAPIPublisherImpl(
                 publisherContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                 publisherContext.getContextTenant().getContextUser().getPassword(),
-                publisherContext.getContextTenant().getDomain(), publisherURLHttps);
+                publisherContext.getContextTenant().getDomain(), publisherURLHttps, gatewayInternalURL);
         restAPIStore =
                 new RestAPIStoreImpl(storeContext.getContextTenant().getContextUser().getUserNameWithoutDomain(),
                         storeContext.getContextTenant().getContextUser().getPassword(),

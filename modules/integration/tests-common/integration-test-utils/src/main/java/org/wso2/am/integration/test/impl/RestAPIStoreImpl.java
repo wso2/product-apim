@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
+import org.wso2.am.integration.clients.gateway.api.v2.dto.ApplicationKeyMappingDTO;
 import org.wso2.am.integration.clients.store.api.ApiClient;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.ApiResponse;
@@ -120,13 +121,11 @@ public class RestAPIStoreImpl {
     public String tenantDomain;
 
     private String accessToken;
+    private RestAPIGatewayImpl restAPIGateway;
+    private String disableVerification = System.getProperty("disableVerification");
 
-    @Deprecated
-    public RestAPIStoreImpl() {
-        this(username, password, "", "https://localhost:9943");
-    }
-
-    public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL) {
+    public RestAPIStoreImpl(String username, String password, String tenantDomain, String storeURL,
+                            String gatewayUrl) {
         // token/DCR of Store node itself will be used
         String tokenURL = storeURL + "oauth2/token";
         String dcrURL = storeURL + "client-registration/v0.17/register";
@@ -158,24 +157,10 @@ public class RestAPIStoreImpl {
         graphQlPoliciesApi.setApiClient(apiStoreClient);
         usersApi.setApiClient(apiStoreClient);
         apiStoreClient.setDebugging(true);
+        apiStoreClient.setVerifyingSsl(false);
         this.storeURL = storeURL;
         this.tenantDomain = tenantDomain;
-    }
-
-
-    public RestAPIStoreImpl(String tenantDomain, String storeURL) {
-        apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
-        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
-        apiStoreClient.setDebugging(true);
-        apIsApi.setApiClient(apiStoreClient);
-        applicationsApi.setApiClient(apiStoreClient);
-        subscriptionIndividualApi.setApiClient(apiStoreClient);
-        applicationKeysApi.setApiClient(apiStoreClient);
-        tagsApi.setApiClient(apiStoreClient);
-        keyManagersCollectionApi.setApiClient(apiStoreClient);
-        usersApi.setApiClient(apiStoreClient);
-        this.storeURL = storeURL;
-        this.tenantDomain = tenantDomain;
+        this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain , gatewayUrl);
     }
 
     public String getAccessToken() {
@@ -187,7 +172,7 @@ public class RestAPIStoreImpl {
     }
 
     public HttpResponse createApplication(String appName, String description, String throttleTier,
-            ApplicationDTO.TokenTypeEnum tokenType) {
+                                          ApplicationDTO.TokenTypeEnum tokenType) throws APIManagerIntegrationTestException {
         try {
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
@@ -198,6 +183,7 @@ public class RestAPIStoreImpl {
             ApplicationDTO createdApp = applicationsApi.applicationsPost(application);
             HttpResponse response = null;
             if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                waitUntilApplicationAvailableInGateway(createdApp);
                 response = new HttpResponse(createdApp.getApplicationId(), 200);
             }
             return response;
@@ -210,7 +196,8 @@ public class RestAPIStoreImpl {
     }
 
     public HttpResponse createApplicationWithCustomAttribute(String appName, String description, String throttleTier,
-            ApplicationDTO.TokenTypeEnum tokenType, Map<String, String> attribute) {
+                                                             ApplicationDTO.TokenTypeEnum tokenType, Map<String,
+            String> attribute) throws APIManagerIntegrationTestException {
         try {
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
@@ -222,6 +209,7 @@ public class RestAPIStoreImpl {
             ApplicationDTO createdApp = applicationsApi.applicationsPost(application);
             HttpResponse response = null;
             if (StringUtils.isNotEmpty(createdApp.getApplicationId())) {
+                waitUntilApplicationAvailableInGateway(createdApp);
                 response = new HttpResponse(createdApp.getApplicationId(), 200);
             }
             return response;
@@ -280,7 +268,7 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-    public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) {
+    public HttpResponse createSubscription(String apiId, String applicationId, String subscriptionTier) throws APIManagerIntegrationTestException {
         try {
             SubscriptionDTO subscription = new SubscriptionDTO();
             subscription.setApplicationId(applicationId);
@@ -291,6 +279,7 @@ public class RestAPIStoreImpl {
 
             HttpResponse response = null;
             if (StringUtils.isNotEmpty(subscriptionResponse.getSubscriptionId())) {
+                waitUntilSubscriptionAvailableInGateway(subscriptionResponse);
                 response = new HttpResponse(subscriptionResponse.getSubscriptionId(), 200);
             }
             return response;
@@ -310,13 +299,16 @@ public class RestAPIStoreImpl {
         return suscriptionResponse.getData();
     }
 
-    public HttpResponse removeSubscription(String subscriptionId) throws ApiException {
+    public HttpResponse removeSubscription(SubscriptionDTO subscriptionDTO) throws ApiException, APIManagerIntegrationTestException {
 
-        ApiResponse<Void> deleteResponse = subscriptionIndividualApi.subscriptionsSubscriptionIdDeleteWithHttpInfo(subscriptionId, null);
+        ApiResponse<Void> deleteResponse = subscriptionIndividualApi.
+                subscriptionsSubscriptionIdDeleteWithHttpInfo(subscriptionDTO.getSubscriptionId(), null);
 
         HttpResponse response = null;
         if (deleteResponse.getStatusCode() == 200) {
-            response = new HttpResponse("Subscription deleted successfully : sub ID: " + subscriptionId, 200);
+            waitUntilSubscriptionRemoveFromGateway(subscriptionDTO);
+            response =
+                    new HttpResponse("Subscription deleted successfully : sub ID: " + subscriptionDTO.getSubscriptionId(), 200);
         }
         return response;
 
@@ -325,7 +317,7 @@ public class RestAPIStoreImpl {
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
             ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
             List<String> grantTypes)
-            throws ApiException {
+            throws ApiException, APIManagerIntegrationTestException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
         applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
@@ -336,13 +328,14 @@ public class RestAPIStoreImpl {
         ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
                 .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        waitUntilApplicationKeyMappingAvailableInGateway(applicationId,response.getData());
         return response.getData();
     }
 
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
             ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
             List<String> grantTypes, String appTokenExpiryTime)
-            throws ApiException {
+            throws ApiException, APIManagerIntegrationTestException {
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
         applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
@@ -362,6 +355,7 @@ public class RestAPIStoreImpl {
         ApiResponse<ApplicationKeyDTO> response = applicationKeysApi
                 .applicationsApplicationIdGenerateKeysPostWithHttpInfo(applicationId, applicationKeyGenerateRequest);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+        waitUntilApplicationKeyMappingAvailableInGateway(applicationId, response.getData());
         return response.getData();
     }
 
@@ -860,7 +854,7 @@ public class RestAPIStoreImpl {
      * @throws APIManagerIntegrationTestException - if fails to add application
      */
     public ApplicationDTO addApplication(String application, String tier, String callbackUrl, String description)
-            throws ApiException {
+            throws ApiException, APIManagerIntegrationTestException {
         ApplicationDTO dto = new ApplicationDTO();
         dto.setName(application);
         dto.setThrottlingPolicy(tier);
@@ -868,6 +862,7 @@ public class RestAPIStoreImpl {
 
         ApiResponse<ApplicationDTO> apiResponse = applicationsApi.applicationsPostWithHttpInfo(dto);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
+        waitUntilApplicationAvailableInGateway(apiResponse.getData());
         return apiResponse.getData();
     }
 
@@ -883,7 +878,7 @@ public class RestAPIStoreImpl {
      */
     public ApplicationDTO addApplicationWithTokenType(String application, String tier, String callbackUrl,
             String description, String tokenType)
-            throws ApiException {
+            throws ApiException, APIManagerIntegrationTestException {
 
         ApplicationDTO dto = new ApplicationDTO();
         dto.setName(application);
@@ -893,6 +888,7 @@ public class RestAPIStoreImpl {
 
         ApiResponse<ApplicationDTO> apiResponse = applicationsApi.applicationsPostWithHttpInfo(dto);
         Assert.assertEquals(HttpStatus.SC_CREATED, apiResponse.getStatusCode());
+        waitUntilApplicationAvailableInGateway(apiResponse.getData());
         return apiResponse.getData();
     }
 
@@ -1550,7 +1546,8 @@ public class RestAPIStoreImpl {
         return null;
     }
 
-    public SubscriptionDTO subscribeToAPI(String apiID, String appID, String tier) throws ApiException {
+    public SubscriptionDTO subscribeToAPI(String apiID, String appID, String tier) throws ApiException,
+            APIManagerIntegrationTestException {
         SubscriptionDTO subscription = new SubscriptionDTO();
         subscription.setApplicationId(appID);
         subscription.setApiId(apiID);
@@ -1558,7 +1555,145 @@ public class RestAPIStoreImpl {
         ApiResponse<SubscriptionDTO> subscriptionResponse =
                 subscriptionIndividualApi.subscriptionsPostWithHttpInfo(subscription, this.tenantDomain);
         Assert.assertEquals(HttpStatus.SC_CREATED, subscriptionResponse.getStatusCode());
+        waitUntilSubscriptionAvailableInGateway(subscriptionResponse.getData());
         return subscriptionResponse.getData();
+    }
+
+    private void waitUntilSubscriptionAvailableInGateway(SubscriptionDTO subscribedDto)
+            throws APIManagerIntegrationTestException {
+        if (Boolean.parseBoolean(disableVerification)){
+            return;
+        }
+        org.wso2.am.integration.clients.gateway.api.v2.dto.SubscriptionDTO subscriptionDTO =
+                restAPIGateway.retrieveSubscription(subscribedDto.getApiId(), subscribedDto.getApplicationId());
+        if (subscriptionDTO != null) {
+            log.info("Subscription Available in in memory == " + subscriptionDTO.toString());
+
+            if (subscribedDto.getStatus().getValue().equals(subscriptionDTO.getSubscriptionState())) {
+                return;
+            }
+        }
+        long retries = 0;
+        while (retries <= 20) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException ignored) {
+            }
+            subscriptionDTO = restAPIGateway.retrieveSubscription(subscribedDto.getApiId(),
+                    subscribedDto.getApplicationId());
+            if (subscriptionDTO != null) {
+                log.info("Subscription Available in in memory== " + subscriptionDTO.toString());
+                if (subscribedDto.getStatus().getValue().equals(subscriptionDTO.getSubscriptionState())) {
+                    break;
+                }
+            }
+            retries++;
+        }
+        Assert.assertNotNull(subscribedDto, "Subscription not available in the gateway");
+    }
+
+    private void waitUntilSubscriptionRemoveFromGateway(SubscriptionDTO subscribedDto)
+            throws APIManagerIntegrationTestException {
+        if (Boolean.parseBoolean(disableVerification)){
+            return;
+        }
+        org.wso2.am.integration.clients.gateway.api.v2.dto.SubscriptionDTO subscriptionDTO =
+                restAPIGateway.retrieveSubscription(subscribedDto.getApiId(), subscribedDto.getApplicationId());
+        if (subscriptionDTO == null) {
+            log.info("Subscription not Available in in-memory == " + subscribedDto.getSubscriptionId());
+        }
+        long retries = 0;
+        while (retries <= 20) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
+            subscriptionDTO = restAPIGateway.retrieveSubscription(subscribedDto.getApiId(),
+                    subscribedDto.getApplicationId());
+            if (subscriptionDTO == null) {
+                log.info("Subscription not Available in in-memory == " + subscribedDto.getSubscriptionId());
+                break;
+            }
+            retries += 1;
+        }
+        Assert.assertNull(subscriptionDTO, "in-memory subscription didn't removed when deleting subscription ");
+    }
+
+    private void waitUntilApplicationAvailableInGateway(ApplicationDTO applicationDTO)
+            throws APIManagerIntegrationTestException {
+        if (Boolean.parseBoolean(disableVerification)) {
+            return;
+        }
+        org.wso2.am.integration.clients.gateway.api.v2.dto.ApplicationInfoDTO applicationInfoDTO =
+                restAPIGateway.retrieveApplication(applicationDTO.getApplicationId());
+        if (applicationInfoDTO != null) {
+            log.info("Application Available in in memory == " + applicationInfoDTO.toString());
+            Assert.assertEquals(applicationDTO.getName(), applicationInfoDTO.getName());
+            Assert.assertEquals(applicationDTO.getThrottlingPolicy(), applicationInfoDTO.getPolicy());
+            Assert.assertEquals(applicationDTO.getTokenType().getValue(), applicationInfoDTO.getTokenType());
+            Assert.assertEquals(applicationDTO.getAttributes(), applicationInfoDTO.getAttributes());
+            return;
+        }
+        long retries = 0;
+        while (retries <= 20) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
+            applicationInfoDTO = restAPIGateway.retrieveApplication(applicationDTO.getApplicationId());
+            if (applicationInfoDTO != null) {
+                log.info("Application Available in in memory == " + applicationInfoDTO.toString());
+                Assert.assertEquals(applicationDTO.getName(), applicationInfoDTO.getName());
+                Assert.assertEquals(applicationDTO.getThrottlingPolicy(), applicationInfoDTO.getPolicy());
+                Assert.assertEquals(applicationDTO.getTokenType().getValue(), applicationInfoDTO.getTokenType());
+                Assert.assertEquals(applicationDTO.getAttributes(), applicationInfoDTO.getAttributes());
+                break;
+            }
+            retries++;
+        }
+    }
+
+    private void waitUntilApplicationKeyMappingAvailableInGateway(String applicationId,
+                                                                  ApplicationKeyDTO applicationKeyDTO)
+            throws APIManagerIntegrationTestException {
+        if (Boolean.parseBoolean(disableVerification)) {
+            return;
+        }
+        if ("APPROVED".equals(applicationKeyDTO.getKeyState())) {
+            org.wso2.am.integration.clients.gateway.api.v2.dto.ApplicationInfoDTO applicationInfoDTO =
+                    restAPIGateway.retrieveApplication(applicationId);
+            if (applicationInfoDTO != null) {
+                log.info("Application Available in in-memory == " + applicationInfoDTO.toString());
+                if (applicationInfoDTO.getKeys() != null && applicationInfoDTO.getKeys().size() > 0) {
+                    for (ApplicationKeyMappingDTO key : applicationInfoDTO.getKeys()) {
+                        if (key.getConsumerKey().equals(applicationKeyDTO.getConsumerKey())
+                                && key.getKeyType().equals(applicationKeyDTO.getKeyType().getValue())) {
+                            return;
+                        }
+                    }
+                }
+            }
+            long retries = 0;
+            while (retries <= 20) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {
+                }
+                applicationInfoDTO = restAPIGateway.retrieveApplication(applicationId);
+                if (applicationInfoDTO != null) {
+                    log.info("Application Available in in-memory == " + applicationInfoDTO.toString());
+                    if (applicationInfoDTO.getKeys() != null && applicationInfoDTO.getKeys().size() > 0) {
+                        for (ApplicationKeyMappingDTO key : applicationInfoDTO.getKeys()) {
+                            if (key.getConsumerKey().equals(applicationKeyDTO.getConsumerKey())
+                                    && key.getKeyType().equals(applicationKeyDTO.getKeyType().getValue())) {
+                                return;
+                            }
+                        }
+                    }
+                }
+                retries++;
+            }
+        }
     }
 
     //    /**

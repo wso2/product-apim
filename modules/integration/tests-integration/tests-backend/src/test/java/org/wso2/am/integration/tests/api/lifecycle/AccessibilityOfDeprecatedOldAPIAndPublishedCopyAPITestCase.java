@@ -142,7 +142,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
     @Test(groups = {"wso2.am"}, description = "Test subscribe of new API version before deprecate the old version",
             dependsOnMethods = "testSubscribeOldVersionBeforeDeprecate")
-    public void testSubscribeNewVersion() {
+    public void testSubscribeNewVersion() throws APIManagerIntegrationTestException {
         HttpResponse newVersionSubscribeResponse = restAPIStore.createSubscription(apiId2, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         subscriptionId2 = newVersionSubscribeResponse.getData();
@@ -205,7 +205,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
     @Test(groups = {"wso2.am"}, description = "Test the subscription of deprecated API version.",
             dependsOnMethods = "testVisibilityOfNewAPIInStore")
-    public void testSubscribeOldVersionAfterDeprecate() {
+    public void testSubscribeOldVersionAfterDeprecate() throws APIManagerIntegrationTestException {
         //subscribe deprecated old version
         HttpResponse oldVersionSubscribeResponse = restAPIStore.createSubscription(apiId, applicationID, APIMIntegrationConstants.API_TIER.UNLIMITED);
 
