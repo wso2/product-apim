@@ -66,7 +66,6 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     private String applicationId;
     private ServerConfigurationManager serverConfigurationManager;
 
-
     private Map<String, String> header = new HashMap<>();
     BufferedReader bufferedReader;
 
@@ -74,8 +73,10 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     private final String API_VERSION = "1.0.0";
     private final String APPLICATION_NAME = "CorrelationTestApp";
     private final String API_END_POINT_POSTFIX_URL = "xmlapi";
+    private final String CORRELATION_CONFIG_PATH = "api/am/devops/v0/config/correlation";
+    private final String CORRELATION_ID = "9e3ec6ed-2a37-4b20-8dd4-d5fbc754a7d9";
     private String accessToken;
-    private Boolean httpLog,jdbcLog,synapseLog,methodCallsLog;
+    private Boolean httpLog,jdbcLog,synapseLog,methodCallsLog,correlationIDLog;
 
     @Factory(dataProvider = "userModeDataProvider")
     public CorrelationLoggingTest(TestUserMode userMode) throws Exception {
@@ -102,27 +103,6 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
                 new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                         APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-    }
-
-    @Test(groups = {"wso2.am" }, description = "Testing the default correlation configs using the devops API ")
-    public void testRetrieveDefaultCorrelationLoggingConfigsTest() throws Exception {
-
-        //Retrieve default correlation logs configs from the GET method of the configs resource in devops API
-        HttpResponse loggingResponse =
-                HTTPSClientUtils.doGet(getStoreURLHttps() + "api/am/devops/v0/config/correlation", header);
-
-        String expectedResponse = "{\"components\":[{\"name\":\"http\",\"enabled\":\"false\",\"properties\":[]}," +
-            "{\"name\":\"jdbc\",\"enabled\":\"false\",\"properties\":[{\"name\":\"deniedThreads\",\"value\":" +
-            "[\"MessageDeliveryTaskThreadPool\",\"HumanTaskServer\",\"BPELServer\",\"CarbonDeploymentSchedulerThread\"]}]}," +
-            "{\"name\":\"ldap\",\"enabled\":\"false\",\"properties\":[]}," +
-            "{\"name\":\"synapse\",\"enabled\":\"false\",\"properties\":[]}," +
-            "{\"name\":\"method-calls\",\"enabled\":\"false\",\"properties\":[]}]}";
-        Assert.assertEquals(loggingResponse.getData(),expectedResponse);
-
-        String logLine;
-        while ((logLine = bufferedReader.readLine()) != null) {
-            log.info("Start log : " + logLine);
-        }
 
         // Create an application
         log.info("Creating an application");
@@ -157,6 +137,25 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         accessToken = applicationKeyDTO.getToken().getAccessToken();
     }
 
+    @Test(groups = {"wso2.am" }, description = "Testing the default correlation configs using the devops API ")
+    public void testRetrieveDefaultCorrelationLoggingConfigsTest() throws Exception {
+
+        //Retrieve default correlation logs configs from the GET method of the configs resource in devops API
+        HttpResponse loggingResponse =
+                HTTPSClientUtils.doGet(getStoreURLHttps() + CORRELATION_CONFIG_PATH, header);
+
+        String expectedResponse = "{\"components\":[{\"name\":\"http\",\"enabled\":\"false\",\"properties\":[]}," +
+            "{\"name\":\"jdbc\",\"enabled\":\"false\",\"properties\":[{\"name\":\"deniedThreads\",\"value\":" +
+            "[\"MessageDeliveryTaskThreadPool\",\"HumanTaskServer\",\"BPELServer\",\"CarbonDeploymentSchedulerThread\"]}]}," +
+            "{\"name\":\"ldap\",\"enabled\":\"false\",\"properties\":[]}," +
+            "{\"name\":\"synapse\",\"enabled\":\"false\",\"properties\":[]}," +
+            "{\"name\":\"method-calls\",\"enabled\":\"false\",\"properties\":[]}]}";
+        Assert.assertEquals(loggingResponse.getData(),expectedResponse);
+
+        String logLine;
+        while ((logLine = bufferedReader.readLine()) != null) {}
+    }
+
 
     @Test(groups = {"wso2.am" }, description = "Testing enabling all correlation configs using the devops API ",
     dependsOnMethods = { "testRetrieveDefaultCorrelationLoggingConfigsTest" })
@@ -168,21 +167,21 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         // Validate Correlation Logs
         String logLine = bufferedReader.readLine();
         log.info(logLine);
-        HTTPSClientUtils.doGet(getStoreURLHttps() + "api/am/devops/v0/config/correlation", header);
+        HTTPSClientUtils.doGet(getStoreURLHttps() + CORRELATION_CONFIG_PATH, header);
         Thread.sleep(5000);
         resetAllLogs();
         while ((logLine = bufferedReader.readLine()) != null) {
-            log.info("Enabled ALL Logs Components : " + logLine);
             assertTrue(isSynapseLogLine(logLine) || isHTTPLogLine(logLine) ||
                     isJDBCLogLine(logLine) || isMethodCallsLogLine(logLine) || logLine.contains("Started log handler"));
+            if (logLine.contains(CORRELATION_ID)) {
+                correlationIDLog = true;
+            }
         }
-        assertTrue(httpLog && jdbcLog && synapseLog && methodCallsLog);
+        assertTrue(httpLog && jdbcLog && synapseLog && methodCallsLog && correlationIDLog);
 
         configureCorrelationLoggingComponent(new String[] {"http", "jdbc", "synapse", "ldap", "method-calls"}, false);
         Thread.sleep(5000);
-        while ((logLine = bufferedReader.readLine()) != null) {
-            log.info("Disabled ALL Logs Components : " + logLine);
-        }
+        while ((logLine = bufferedReader.readLine()) != null) { }
     }
 
 
@@ -196,7 +195,6 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         String logLine;
         InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
-            log.info("HTTP Logs Check " + logLine);
             assertTrue(isHTTPLogLine(logLine));
         }
         log.info("Disabling HTTP component correlation logs");
@@ -253,7 +251,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     public void testPersistedCorrelationConfigs() throws Exception {
         log.info("Enabling http, method-calls correlation component logs before a restart");
         configureCorrelationLoggingComponent(new String[] { "http", "method-calls" }, true);
-        HTTPSClientUtils.doGet(getStoreURLHttps() + "api/am/devops/v0/config/correlation", header);
+        HTTPSClientUtils.doGet(getStoreURLHttps() + CORRELATION_CONFIG_PATH, header);
         InvokeTestAPI();
         String logLine;
         resetAllLogs();
@@ -286,6 +284,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
         request.setHeader("Authorization", "Bearer " + accessToken);
+        request.setHeader("activityid", "9e3ec6ed-2a37-4b20-8dd4-d5fbc754a7d9");
         org.apache.http.HttpResponse response = client.execute(request);
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "Invocation fails for GET request");
@@ -326,13 +325,12 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         }
 
         payload.put("components", componentArray);
-        HttpResponse httpResponse =  HTTPSClientUtils.doPut(getStoreURLHttps() + "api/am/devops/v0/config/correlation",
+        HttpResponse httpResponse =  HTTPSClientUtils.doPut(getStoreURLHttps() + CORRELATION_CONFIG_PATH,
                 header, payload.toString());
-
         assertEquals(httpResponse.getData(), payload.toString());
 
         httpResponse =
-                HTTPSClientUtils.doGet(getStoreURLHttps() + "api/am/devops/v0/config/correlation", header);
+                HTTPSClientUtils.doGet(getStoreURLHttps() + CORRELATION_CONFIG_PATH, header);
         assertEquals(httpResponse.getData(), payload.toString());
         Thread.sleep(1000);
     }
@@ -376,6 +374,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         synapseLog = false;
         jdbcLog = false;
         methodCallsLog = false;
+        correlationIDLog = false;
     }
 
     @AfterClass(alwaysRun = true)
