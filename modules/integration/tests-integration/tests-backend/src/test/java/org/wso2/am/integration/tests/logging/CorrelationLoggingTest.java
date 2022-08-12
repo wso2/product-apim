@@ -284,7 +284,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
         request.setHeader("Authorization", "Bearer " + accessToken);
-        request.setHeader("activityid", "9e3ec6ed-2a37-4b20-8dd4-d5fbc754a7d9");
+        request.setHeader("activityid", CORRELATION_ID);
         org.apache.http.HttpResponse response = client.execute(request);
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "Invocation fails for GET request");
