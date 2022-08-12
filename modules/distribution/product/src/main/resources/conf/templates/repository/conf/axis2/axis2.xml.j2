@@ -63,14 +63,14 @@
 
     <!-- During a fault, stacktrace can be sent with the fault message. The following flag -->
     <!-- will control that behaviour -->
-    <parameter name="sendStacktraceDetailsWithFaults" locked="false">false</parameter>
+    <parameter name="sendStacktraceDetailsWithFaults" locked="false">{{server.send_stacktrace_details_with_faults}}</parameter>
 
     <!-- If there aren't any information available to find out the fault reason, we set the -->
     <!-- message of the exception as the faultreason/Reason. But when a fault is thrown from -->
     <!-- a service or some where, it will be wrapped by different levels. Due to this the -->
     <!-- initial exception message can be lost. If this flag is set then, Axis2 tries to get -->
     <!-- the first exception and set its message as the faultreason/Reason. -->
-    <parameter name="DrillDownToRootCauseForFaultReason" locked="false">false</parameter>
+    <parameter name="DrillDownToRootCauseForFaultReason" locked="false">{{server.drill_down_to_root_cause_for_fault_reason}}</parameter>
 
     <!-- Set the flag to true if you want to enable transport level session management -->
     <parameter name="manageTransportSession" locked="false">true</parameter>

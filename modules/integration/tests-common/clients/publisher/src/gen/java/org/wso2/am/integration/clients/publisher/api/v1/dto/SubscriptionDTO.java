@@ -57,7 +57,9 @@ public enum SubscriptionStatusEnum {
         
         REJECTED("REJECTED"),
         
-        TIER_UPDATE_PENDING("TIER_UPDATE_PENDING");
+        TIER_UPDATE_PENDING("TIER_UPDATE_PENDING"),
+        
+        DELETE_PENDING("DELETE_PENDING");
 
 private String value;
 

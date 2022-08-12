@@ -99,5 +99,9 @@
   "apim.notification.port": "output_adapter.email.port",
   "apim.notification.enable_start_tls": "output_adapter.email.enable_start_tls",
   "apim.notification.enable_authentication": "output_adapter.email.enable_authentication",
-  "apim.analytics.config_endpoint": "apim.analytics.properties.'auth.api.url'"
+  "apim.analytics.config_endpoint": "apim.analytics.properties.'auth.api.url'",
+  "broker.flow_control.global.low_limit":"broker.flowControl.global.lowLimit",
+  "broker.flow_control.global.high_limit":"broker.flowControl.global.highLimit",
+  "broker.flow_control.buffer_based.low_limit":"broker.flowControl.bufferBased.lowLimit",
+  "broker.flow_control.buffer_based.high_limit":"broker.flowControl.bufferBased.highLimit"
 }

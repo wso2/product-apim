@@ -31,5 +31,6 @@
         <module>admin</module>
         <module>gateway</module>
         <module>internal-api</module>
+        <module>service-catalog</module>
     </modules>
 </project>

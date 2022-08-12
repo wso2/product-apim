@@ -60,6 +60,20 @@
 
             <Host name="localhost" unpackWARs="true" deployOnStartup="false" autoDeploy="false"
                   appBase="${carbon.home}/repository/deployment/server/webapps/">
+                {% if catalinaValves.remoteIpValve.enable is sameas true %}
+                <!-- This should be defined before the AuthenticationValve to get the real client IP addresses via request headers. -->
+                <Valve
+                    className="org.apache.catalina.valves.RemoteIpValve"
+                    internalProxies="{{catalinaValves.remoteIpValve.internalProxies}}"
+                    remoteIpHeader="{{catalinaValves.remoteIpValve.remoteIpHeader}}"
+                    protocolHeader="{{catalinaValves.remoteIpValve.protocolHeader}}"
+                    proxiesHeader="{{catalinaValves.remoteIpValve.proxiesHeader}}"
+                    trustedProxies="{{catalinaValves.remoteIpValve.trustedProxies}}"
+                    {% for property,value in catalinaValves.remoteIpValve.properties.items() %}
+                    {{property}}="{{value}}"
+                    {% endfor %}
+                />
+                {% endif %}
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.RequestCorrelationIdValve"
                        headerToCorrelationIdMapping="{'activityid':'Correlation-ID'}" queryToCorrelationIdMapping="{'RelayState':'Correlation-ID'}"/>
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.CarbonContextCreatorValve"/>
