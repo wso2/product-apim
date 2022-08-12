@@ -93,7 +93,8 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     private String jwtApplicationName = "JWTAppForJWTTest";
     private String apiKeyApplicationName = "ApiKeyAppForJWTTest";
     private String authCodeApplicationName = "AuthCodeAppForJWTTest";
-
+    private String api2Name = "ApiKeyOnlyAPI";
+    private String api2Context = "apiKeyTest";
     private String endpointURL;
     String users[] = {"subscriberUser2", "subscriberUser2@wso2.com", "subscriberUser2@abc.com"};
     String enduserPassword = "password@123";
@@ -102,6 +103,7 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     private String apiKeyApplicationId;
     private String authCodeApplicationId;
     private String apiId;
+    private String api2Id;
     URL tokenEndpointURL;
     private String tokenURL;
     private String identityLoginURL;
@@ -156,6 +158,20 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.subscribeToAPI(apiId, jwtApplicationId, TIER_GOLD);
         restAPIStore.subscribeToAPI(apiId, apiKeyApplicationId, TIER_GOLD);
         restAPIStore.subscribeToAPI(apiId, authCodeApplicationId, TIER_GOLD);
+
+        // Create, publish and subscribe API with "api_key" security only
+        APIRequest api2Request = new APIRequest(api2Name, api2Context, new URL(endpointURL));
+        api2Request.setVersion(apiVersion);
+        api2Request.setVisibility("public");
+        api2Request.setProvider(providerName);
+
+        List<String> api2SecuritySchemes = new ArrayList<>();
+        api2SecuritySchemes.add("api_key");
+        api2Request.setSecurityScheme(api2SecuritySchemes);
+
+        api2Id = createAndPublishAPIUsingRest(api2Request, restAPIPublisher, false);
+        restAPIStore.subscribeToAPI(api2Id, apiKeyApplicationId, TIER_GOLD);
+
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
@@ -172,6 +188,8 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         createUser();
         createClaimMapping();
         waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeploymentSync(user.getUserName(), api2Request.getName(), api2Request.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
 
@@ -273,6 +291,27 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             // verify wrong claims
             BackendJWTUtil.verifyWrongClaims(jsonObject);
         }
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test invoking API that is secured only with 'API key' when back end " +
+            "JWT generation is enabled")
+    public void testAPIKeyOnlySecuredAPIInvocation() throws Exception {
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(apiKeyApplicationId,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), 36000, null, null);
+
+        assertNotNull(apiKeyDTO, "API Key generation failed");
+        log.info("Access Token Generated in JWT ==" + apiKeyDTO.getApikey());
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(api2Context, apiVersion));
+        get.addHeader("apikey", apiKeyDTO.getApikey());
+        HttpResponse response = httpclient.execute(get);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation");
+
+        //check JWT headers
+        Header[] responseHeaders = response.getAllHeaders();
+        Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
+        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
     }
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for API Key Based App")
@@ -420,7 +459,9 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(apiKeyApplicationId);
         restAPIStore.deleteApplication(authCodeApplicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(api2Id, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteAPI(api2Id);
         super.cleanUp();
 
     }

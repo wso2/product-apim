@@ -375,5 +375,10 @@
       "CreateOnTenantLoad" : true,
       "RoleName" : "Internal/integration_dev"
     }
+  },
+  "SelfSignUp": {
+    "SignUpRoles": [
+      "Internal/subscriber"
+    ]
   }
 }

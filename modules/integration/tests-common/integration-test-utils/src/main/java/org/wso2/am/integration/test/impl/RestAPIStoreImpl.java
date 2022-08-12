@@ -279,6 +279,16 @@ public class RestAPIStoreImpl {
         }
     }
 
+    public HttpResponse deleteApplicationWithHttpResponse(String applicationId) {
+
+        try {
+            ApiResponse<Void> deleteResponse = applicationsApi.applicationsApplicationIdDeleteWithHttpInfo(applicationId, null);
+            return new HttpResponse(applicationId, deleteResponse.getStatusCode());
+        } catch (ApiException e) {
+            return new HttpResponse(applicationId, e.getCode());
+        }
+    }
+
     public ApplicationListDTO getAllApps() throws ApiException {
 
         ApiResponse<ApplicationListDTO> appResponse = applicationsApi.applicationsGetWithHttpInfo(null,
@@ -384,6 +394,17 @@ public class RestAPIStoreImpl {
         }
         return response;
 
+    }
+
+    public HttpResponse removeSubscriptionWithHttpInfo(String subscriptionId) {
+
+        try {
+            ApiResponse<Void> deleteResponse =
+                    subscriptionIndividualApi.subscriptionsSubscriptionIdDeleteWithHttpInfo(subscriptionId, null);
+            return new HttpResponse(subscriptionId, deleteResponse.getStatusCode());
+        } catch (ApiException e) {
+            return new HttpResponse(subscriptionId, e.getCode());
+        }
     }
 
     public ApplicationKeyDTO generateKeys(String applicationId, String validityTime, String callBackUrl,
@@ -677,6 +698,28 @@ public class RestAPIStoreImpl {
         Assert.assertEquals(applicationDTOApiResponse.getStatusCode(), HttpStatus.SC_OK);
         return applicationDTOApiResponse.getData();
 
+    }
+
+    /**
+     * Get application by ID with Http response details
+     *
+     * @return - http response of get of application
+     */
+    public HttpResponse getApplicationByIdWithHttpResponse(String applicationId) {
+
+        ApiResponse<ApplicationDTO> applicationDTOApiResponse;
+        try {
+            applicationDTOApiResponse = applicationsApi.
+                    applicationsApplicationIdGetWithHttpInfo(applicationId, null, this.tenantDomain);
+            Gson gson = new Gson();
+            return new HttpResponse(gson.toJson(applicationDTOApiResponse.getData()), applicationDTOApiResponse.getStatusCode());
+        } catch (ApiException e) {
+            HttpResponse response = null;
+            if (HttpStatus.SC_NOT_FOUND == e.getCode()) {
+                response = new HttpResponse(applicationId, e.getCode());
+            }
+            return response;
+        }
     }
 
     /**
