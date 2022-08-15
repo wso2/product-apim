@@ -8107,8 +8107,217 @@ paths:
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v3/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-state/pending-tasks"'
       operationId: deleteAPIProductLifecycleStatePendingTasks
+
+######################################################
+# The "API Collection" Endpoint APIs
+######################################################
+
+  /apis/{apiId}/endpoints:
+    get:
+      tags:
+        - API Endpoints
+      summary: Get All Available Endpoints of an API
+      description: |
+        This operation can be used to get all the available endpoints of an API.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+
+      responses:
+        200:
+          description: |
+            OK.
+            API Endpoints list is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIEndpointList'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      operationId: getApiEndpoints
+
+    post:
+      tags:
+        - API Endpoints
+      summary: Add an Endpoint
+      description: |
+        This operation can be used to add a endpoint for an API.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+      requestBody:
+        description: Endpoint Object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIEndpoint'
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created API Endpoint object in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIEndpoint'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        415:
+          $ref: '#/components/responses/UnsupportedMediaType'
+      security:
+        - OAuth2Security:
+            - apim:api_manage
+      operationId: addApiEndpoint
+
+  /apis/{apiId}/endpoints/{endpointId}:
+    get:
+      tags:
+        - API Endpoints
+      summary: Get an Endpoint
+      description: |
+        This operation can be used to get the available endpoint of an API by UUID.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/endpointId'
+      responses:
+        200:
+          description: |
+            OK.
+            API Endpoint object is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIEndpoint'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      operationId: getApiEndpoint
+
+    put:
+      tags:
+        - API Endpoints
+      summary: Update an Endpoint
+      description: |
+        This operation can be used to update a API endpoint.
+      operationId: updateApiEndpoint
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/endpointId'
+      requestBody:
+        description: API Endpoint object with updated details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIEndpoint'
+      responses:
+        200:
+          description: |
+            OK.
+            Updated API Endpoint is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIEndpoint'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        415:
+          $ref: '#/components/responses/UnsupportedMediaType'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_manage
+
+    delete:
+      tags:
+        - API Endpoints
+      summary: Delete an Endpoint
+      description: |
+        This operation can be used to delete a API endpoint.
+      operationId: deleteApiEndpoint
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/endpointId'
+      responses:
+        200:
+          description: |
+            OK.
+            Endpoint deleted successfully.
+          content: { }
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_manage
 components:
   schemas:
+    APIEndpoint:
+      title: Endpoint
+      required:
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        endpointType:
+          type: string
+        endpointConfig:
+          type: object
+          properties: { }
+          description: |
+            Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
+          example:
+            endpoint_type: REST
+            url: https://localhost:9443/am/sample/pizzashack/v1/api/
+
+    APIEndpointList:
+      title: Endpoints List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Resource Endpoints returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/APIEndpoint'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     Comment:
       title: Comment
       required:
@@ -8701,6 +8910,12 @@ components:
               url: https://localhost:9443/am/sample/pizzashack/v1/api/
             production_endpoints:
               url: https://localhost:9443/am/sample/pizzashack/v1/api/
+        primaryProductionEndpointId:
+          type: string
+          example: 232ewe-342d23
+        primarySandboxEndpointId:
+          type: string
+          example: 232ewe-342d23
         endpointImplementationType:
           type: string
           example: INLINE
@@ -10452,6 +10667,12 @@ components:
         amznResourceTimeout:
           type: integer
         payloadSchema:
+          type: string
+          example: ""
+        sandBoxEndpointId:
+          type: string
+          example: ""
+        productionEndpointId:
           type: string
           example: ""
         uriMapping:

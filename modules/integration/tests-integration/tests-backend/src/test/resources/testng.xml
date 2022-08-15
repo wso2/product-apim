@@ -110,6 +110,7 @@
             <class name="org.wso2.am.integration.tests.throttling.JWTBandwidthThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.BurstControlTestCase"/>
             <class name="org.wso2.am.integration.tests.operationPolicy.OperationPolicyTestCase"/>
+            <class name="org.wso2.am.integration.tests.endpoint.APIEndpointTestCase"/>
         </classes>
     </test>
 

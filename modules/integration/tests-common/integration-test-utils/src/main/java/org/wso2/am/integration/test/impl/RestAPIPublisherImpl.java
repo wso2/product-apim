@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiAuditApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiDocumentsApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiEndpointsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiLifecycleApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiOperationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ApiProductLifecycleApi;
@@ -56,6 +57,8 @@ import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIEndpointListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
@@ -162,7 +165,7 @@ public class RestAPIPublisherImpl {
     private String disableVerification = System.getProperty("disableVerification");
     private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
-
+    private ApiEndpointsApi apiEndpointsApi = new ApiEndpointsApi();
 
     @Deprecated
     public RestAPIPublisherImpl() {
@@ -2513,5 +2516,31 @@ public class RestAPIPublisherImpl {
             }
         }
 
+    }
+
+    public APIEndpointDTO addAPIEndpoint(String apiId, APIEndpointDTO apiEndpointDTO) throws ApiException {
+        APIEndpointDTO apiResponse = apiEndpointsApi.addApiEndpoint(apiId, apiEndpointDTO);
+        return apiResponse;
+    }
+
+    public APIEndpointListDTO getAllAPIEndpoints(String apiId) throws ApiException {
+        APIEndpointListDTO apiResponse = apiEndpointsApi.getApiEndpoints(apiId, Integer.MAX_VALUE, 0);
+        return apiResponse;
+    }
+
+    public APIEndpointDTO getAPIEndpointById(String apiId, String endpointId) throws ApiException {
+       APIEndpointDTO apiResponse = apiEndpointsApi.getApiEndpoint(apiId, endpointId);
+        return apiResponse;
+    }
+
+    public APIEndpointDTO updateAPIEndpoint(String apiId, String endpointId, APIEndpointDTO apiEndpointDTO)
+            throws ApiException {
+        APIEndpointDTO apiResponse = apiEndpointsApi.updateApiEndpoint(apiId, endpointId, apiEndpointDTO);
+        return apiResponse;
+    }
+
+    public HttpResponse deleteAPIEndpointById(String apiId, String endpointId) throws ApiException {
+        ApiResponse<Void> apiResponse = apiEndpointsApi.deleteApiEndpointWithHttpInfo(apiId, endpointId);
+        return new HttpResponse("API Endpoint delete response", apiResponse.getStatusCode());
     }
 }

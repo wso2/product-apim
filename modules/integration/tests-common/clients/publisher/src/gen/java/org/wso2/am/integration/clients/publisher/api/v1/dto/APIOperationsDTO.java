@@ -72,6 +72,14 @@ public class APIOperationsDTO {
         @SerializedName(SERIALIZED_NAME_PAYLOAD_SCHEMA)
             private String payloadSchema;
 
+        public static final String SERIALIZED_NAME_SAND_BOX_ENDPOINT_ID = "sandBoxEndpointId";
+        @SerializedName(SERIALIZED_NAME_SAND_BOX_ENDPOINT_ID)
+            private String sandBoxEndpointId;
+
+        public static final String SERIALIZED_NAME_PRODUCTION_ENDPOINT_ID = "productionEndpointId";
+        @SerializedName(SERIALIZED_NAME_PRODUCTION_ENDPOINT_ID)
+            private String productionEndpointId;
+
         public static final String SERIALIZED_NAME_URI_MAPPING = "uriMapping";
         @SerializedName(SERIALIZED_NAME_URI_MAPPING)
             private String uriMapping;
@@ -311,6 +319,52 @@ public class APIOperationsDTO {
     }
 
 
+        public APIOperationsDTO sandBoxEndpointId(String sandBoxEndpointId) {
+        
+        this.sandBoxEndpointId = sandBoxEndpointId;
+        return this;
+        }
+
+    /**
+        * Get sandBoxEndpointId
+    * @return sandBoxEndpointId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getSandBoxEndpointId() {
+        return sandBoxEndpointId;
+    }
+
+
+    public void setSandBoxEndpointId(String sandBoxEndpointId) {
+        this.sandBoxEndpointId = sandBoxEndpointId;
+    }
+
+
+        public APIOperationsDTO productionEndpointId(String productionEndpointId) {
+        
+        this.productionEndpointId = productionEndpointId;
+        return this;
+        }
+
+    /**
+        * Get productionEndpointId
+    * @return productionEndpointId
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getProductionEndpointId() {
+        return productionEndpointId;
+    }
+
+
+    public void setProductionEndpointId(String productionEndpointId) {
+        this.productionEndpointId = productionEndpointId;
+    }
+
+
         public APIOperationsDTO uriMapping(String uriMapping) {
         
         this.uriMapping = uriMapping;
@@ -376,13 +430,15 @@ public class APIOperationsDTO {
             Objects.equals(this.amznResourceName, apIOperations.amznResourceName) &&
             Objects.equals(this.amznResourceTimeout, apIOperations.amznResourceTimeout) &&
             Objects.equals(this.payloadSchema, apIOperations.payloadSchema) &&
+            Objects.equals(this.sandBoxEndpointId, apIOperations.sandBoxEndpointId) &&
+            Objects.equals(this.productionEndpointId, apIOperations.productionEndpointId) &&
             Objects.equals(this.uriMapping, apIOperations.uriMapping) &&
             Objects.equals(this.operationPolicies, apIOperations.operationPolicies);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes, usedProductIds, amznResourceName, amznResourceTimeout, payloadSchema, uriMapping, operationPolicies);
+        return Objects.hash(id, target, verb, authType, throttlingPolicy, scopes, usedProductIds, amznResourceName, amznResourceTimeout, payloadSchema, sandBoxEndpointId, productionEndpointId, uriMapping, operationPolicies);
     }
 
 
@@ -400,6 +456,8 @@ sb.append("class APIOperationsDTO {\n");
     sb.append("    amznResourceName: ").append(toIndentedString(amznResourceName)).append("\n");
     sb.append("    amznResourceTimeout: ").append(toIndentedString(amznResourceTimeout)).append("\n");
     sb.append("    payloadSchema: ").append(toIndentedString(payloadSchema)).append("\n");
+    sb.append("    sandBoxEndpointId: ").append(toIndentedString(sandBoxEndpointId)).append("\n");
+    sb.append("    productionEndpointId: ").append(toIndentedString(productionEndpointId)).append("\n");
     sb.append("    uriMapping: ").append(toIndentedString(uriMapping)).append("\n");
     sb.append("    operationPolicies: ").append(toIndentedString(operationPolicies)).append("\n");
 sb.append("}");
