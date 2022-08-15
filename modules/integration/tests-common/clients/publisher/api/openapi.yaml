@@ -17445,6 +17445,7 @@ components:
           - ON_HOLD
           - REJECTED
           - TIER_UPDATE_PENDING
+          - DELETE_PENDING
           example: BLOCKED
           type: string
       required:
