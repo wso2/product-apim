@@ -315,11 +315,9 @@ public class OperationPoliciesApi {
     }
     /**
      * Build call for getAllCommonOperationPolicies
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of policy array to return.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param query -Not supported yet- (optional)
-     * @param name Policy Name to fetch ID (optional)
-     * @param version Policy Version to fetch ID (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:addHeader\&quot; will match an API Policy if the provider of the API Policy contains \&quot;addHeader\&quot;. \&quot;version:\&quot;v1\&quot;\&quot; will match an API Policy if the provider of the API Policy contains \&quot;v1\&quot;.  Also you can use combined modifiers Eg. name:addHeader&amp;version:v1 will match an API Policy if the name of the API Policy is addHeader and version is v1.  Supported attribute modifiers are [**version, name**]  If query attributes are provided, this returns all API policies available under the given limit.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -331,7 +329,7 @@ public class OperationPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getAllCommonOperationPoliciesCall(Integer limit, Integer offset, String query, String name, String version, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call getAllCommonOperationPoliciesCall(Integer limit, Integer offset, String query, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -349,14 +347,6 @@ public class OperationPoliciesApi {
 
         if (query != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("query", query));
-        }
-
-        if (name != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("name", name));
-        }
-
-        if (version != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("version", version));
         }
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
@@ -381,10 +371,10 @@ public class OperationPoliciesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call getAllCommonOperationPoliciesValidateBeforeCall(Integer limit, Integer offset, String query, String name, String version, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call getAllCommonOperationPoliciesValidateBeforeCall(Integer limit, Integer offset, String query, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = getAllCommonOperationPoliciesCall(limit, offset, query, name, version, _callback);
+        okhttp3.Call localVarCall = getAllCommonOperationPoliciesCall(limit, offset, query, _callback);
         return localVarCall;
 
     }
@@ -392,11 +382,9 @@ public class OperationPoliciesApi {
     /**
      * Get all common operation policies to all the APIs 
      * This operation provides you a list of all common operation policies that can be used by any API 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of policy array to return.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param query -Not supported yet- (optional)
-     * @param name Policy Name to fetch ID (optional)
-     * @param version Policy Version to fetch ID (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:addHeader\&quot; will match an API Policy if the provider of the API Policy contains \&quot;addHeader\&quot;. \&quot;version:\&quot;v1\&quot;\&quot; will match an API Policy if the provider of the API Policy contains \&quot;v1\&quot;.  Also you can use combined modifiers Eg. name:addHeader&amp;version:v1 will match an API Policy if the name of the API Policy is addHeader and version is v1.  Supported attribute modifiers are [**version, name**]  If query attributes are provided, this returns all API policies available under the given limit.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @return OperationPolicyDataListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -407,19 +395,17 @@ public class OperationPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public OperationPolicyDataListDTO getAllCommonOperationPolicies(Integer limit, Integer offset, String query, String name, String version) throws ApiException {
-        ApiResponse<OperationPolicyDataListDTO> localVarResp = getAllCommonOperationPoliciesWithHttpInfo(limit, offset, query, name, version);
+    public OperationPolicyDataListDTO getAllCommonOperationPolicies(Integer limit, Integer offset, String query) throws ApiException {
+        ApiResponse<OperationPolicyDataListDTO> localVarResp = getAllCommonOperationPoliciesWithHttpInfo(limit, offset, query);
         return localVarResp.getData();
     }
 
     /**
      * Get all common operation policies to all the APIs 
      * This operation provides you a list of all common operation policies that can be used by any API 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of policy array to return.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param query -Not supported yet- (optional)
-     * @param name Policy Name to fetch ID (optional)
-     * @param version Policy Version to fetch ID (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:addHeader\&quot; will match an API Policy if the provider of the API Policy contains \&quot;addHeader\&quot;. \&quot;version:\&quot;v1\&quot;\&quot; will match an API Policy if the provider of the API Policy contains \&quot;v1\&quot;.  Also you can use combined modifiers Eg. name:addHeader&amp;version:v1 will match an API Policy if the name of the API Policy is addHeader and version is v1.  Supported attribute modifiers are [**version, name**]  If query attributes are provided, this returns all API policies available under the given limit.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @return ApiResponse&lt;OperationPolicyDataListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -430,8 +416,8 @@ public class OperationPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<OperationPolicyDataListDTO> getAllCommonOperationPoliciesWithHttpInfo(Integer limit, Integer offset, String query, String name, String version) throws ApiException {
-        okhttp3.Call localVarCall = getAllCommonOperationPoliciesValidateBeforeCall(limit, offset, query, name, version, null);
+    public ApiResponse<OperationPolicyDataListDTO> getAllCommonOperationPoliciesWithHttpInfo(Integer limit, Integer offset, String query) throws ApiException {
+        okhttp3.Call localVarCall = getAllCommonOperationPoliciesValidateBeforeCall(limit, offset, query, null);
         Type localVarReturnType = new TypeToken<OperationPolicyDataListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -439,11 +425,9 @@ public class OperationPoliciesApi {
     /**
      * Get all common operation policies to all the APIs  (asynchronously)
      * This operation provides you a list of all common operation policies that can be used by any API 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of policy array to return.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param query -Not supported yet- (optional)
-     * @param name Policy Name to fetch ID (optional)
-     * @param version Policy Version to fetch ID (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:addHeader\&quot; will match an API Policy if the provider of the API Policy contains \&quot;addHeader\&quot;. \&quot;version:\&quot;v1\&quot;\&quot; will match an API Policy if the provider of the API Policy contains \&quot;v1\&quot;.  Also you can use combined modifiers Eg. name:addHeader&amp;version:v1 will match an API Policy if the name of the API Policy is addHeader and version is v1.  Supported attribute modifiers are [**version, name**]  If query attributes are provided, this returns all API policies available under the given limit.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -455,9 +439,9 @@ public class OperationPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getAllCommonOperationPoliciesAsync(Integer limit, Integer offset, String query, String name, String version, final ApiCallback<OperationPolicyDataListDTO> _callback) throws ApiException {
+    public okhttp3.Call getAllCommonOperationPoliciesAsync(Integer limit, Integer offset, String query, final ApiCallback<OperationPolicyDataListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = getAllCommonOperationPoliciesValidateBeforeCall(limit, offset, query, name, version, _callback);
+        okhttp3.Call localVarCall = getAllCommonOperationPoliciesValidateBeforeCall(limit, offset, query, _callback);
         Type localVarReturnType = new TypeToken<OperationPolicyDataListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;

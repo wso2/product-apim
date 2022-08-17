@@ -405,6 +405,7 @@ public class ImportExportApi {
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
@@ -460,8 +461,8 @@ public class ImportExportApi {
     }
 
     /**
-     * Export common operation policies by their names and versions 
-     * This operation provides you to export preferred common operation policies 
+     * Export an API Policy by its name and version 
+     * This operation provides you to export a preferred common API policy 
      * @param name Policy name (optional)
      * @param version Version of the policy (optional)
      * @param format Format of the policy definition file (optional)
@@ -471,6 +472,7 @@ public class ImportExportApi {
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
@@ -481,8 +483,8 @@ public class ImportExportApi {
     }
 
     /**
-     * Export common operation policies by their names and versions 
-     * This operation provides you to export preferred common operation policies 
+     * Export an API Policy by its name and version 
+     * This operation provides you to export a preferred common API policy 
      * @param name Policy name (optional)
      * @param version Version of the policy (optional)
      * @param format Format of the policy definition file (optional)
@@ -492,6 +494,7 @@ public class ImportExportApi {
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
@@ -503,8 +506,8 @@ public class ImportExportApi {
     }
 
     /**
-     * Export common operation policies by their names and versions  (asynchronously)
-     * This operation provides you to export preferred common operation policies 
+     * Export an API Policy by its name and version  (asynchronously)
+     * This operation provides you to export a preferred common API policy 
      * @param name Policy name (optional)
      * @param version Version of the policy (optional)
      * @param format Format of the policy definition file (optional)
@@ -515,6 +518,7 @@ public class ImportExportApi {
      <table summary="Response Details" border="1">
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
      </table>
@@ -853,7 +857,6 @@ public class ImportExportApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> Created. Policy Imported Successfully.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
@@ -906,8 +909,8 @@ public class ImportExportApi {
     }
 
     /**
-     * Import a Policy
-     * This operation can be used to import an Policy. 
+     * Import an API Policy
+     * This operation can be used to import an API Policy. 
      * @param file Zip archive consisting on exported policy configuration (required)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -915,7 +918,6 @@ public class ImportExportApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> Created. Policy Imported Successfully.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
@@ -925,8 +927,8 @@ public class ImportExportApi {
     }
 
     /**
-     * Import a Policy
-     * This operation can be used to import an Policy. 
+     * Import an API Policy
+     * This operation can be used to import an API Policy. 
      * @param file Zip archive consisting on exported policy configuration (required)
      * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -935,7 +937,6 @@ public class ImportExportApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> Created. Policy Imported Successfully.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
@@ -946,8 +947,8 @@ public class ImportExportApi {
     }
 
     /**
-     * Import a Policy (asynchronously)
-     * This operation can be used to import an Policy. 
+     * Import an API Policy (asynchronously)
+     * This operation can be used to import an API Policy. 
      * @param file Zip archive consisting on exported policy configuration (required)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
@@ -957,7 +958,6 @@ public class ImportExportApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> Created. Policy Imported Successfully.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
-        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
         <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
