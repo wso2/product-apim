@@ -6,10 +6,10 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**exportAPI**](ImportExportApi.md#exportAPI) | **GET** /apis/export | Export an API
 [**exportAPIProduct**](ImportExportApi.md#exportAPIProduct) | **GET** /api-products/export | Export an API Product
-[**exportOperationPolicy**](ImportExportApi.md#exportOperationPolicy) | **GET** /operation-policies/export | Export common operation policies by their names and versions 
+[**exportOperationPolicy**](ImportExportApi.md#exportOperationPolicy) | **GET** /operation-policies/export | Export an API Policy by its name and version 
 [**importAPI**](ImportExportApi.md#importAPI) | **POST** /apis/import | Import an API
 [**importAPIProduct**](ImportExportApi.md#importAPIProduct) | **POST** /api-products/import | Import an API Product
-[**importOperationPolicy**](ImportExportApi.md#importOperationPolicy) | **POST** /operation-policies/import | Import a Policy
+[**importOperationPolicy**](ImportExportApi.md#importOperationPolicy) | **POST** /operation-policies/import | Import an API Policy
 
 
 <a name="exportAPI"></a>
@@ -180,9 +180,9 @@ Name | Type | Description  | Notes
 # **exportOperationPolicy**
 > File exportOperationPolicy(name, version, format)
 
-Export common operation policies by their names and versions 
+Export an API Policy by its name and version 
 
-This operation provides you to export preferred common operation policies 
+This operation provides you to export a preferred common API policy 
 
 ### Example
 ```java
@@ -246,6 +246,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK. Export Successful.  |  * Content-Type - The content type of the body. <br>  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
 **500** | Internal Server Error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 
@@ -409,9 +410,9 @@ null (empty response body)
 # **importOperationPolicy**
 > importOperationPolicy(file)
 
-Import a Policy
+Import an API Policy
 
-This operation can be used to import an Policy. 
+This operation can be used to import an API Policy. 
 
 ### Example
 ```java
@@ -471,7 +472,6 @@ null (empty response body)
 |-------------|-------------|------------------|
 **200** | Created. Policy Imported Successfully.  |  -  |
 **403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
-**404** | Not Found. The specified resource does not exist. |  -  |
 **409** | Conflict. Specified resource already exists. |  -  |
 **500** | Internal Server Error. |  -  |
 
