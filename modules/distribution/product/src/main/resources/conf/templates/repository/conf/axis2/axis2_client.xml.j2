@@ -114,6 +114,12 @@
                           class="org.apache.axis2.json.JSONBadgerfishMessageFormatter"/>
         <messageFormatter contentType="text/javascript"
                           class="org.apache.axis2.json.JSONMessageFormatter"/>
+
+    {% for message_formatter in custom_message_formatters %}
+        <messageFormatter contentType="{{message_formatter.content_type}}"
+                          class="{{message_formatter.class}}"/>
+    {% endfor %}
+
     </messageFormatters>
 
     <!-- ================================================= -->
@@ -137,6 +143,12 @@
         Please uncomment to Receive messages in multipart/form-data format-->
         <!--<messageBuilder contentType="multipart/form-data"-->
         <!--class="org.apache.axis2.builder.MultipartFormDataBuilder"/>-->
+
+    {% for message_builder in custom_message_builders %}
+        <messageBuilder contentType="{{message_builder.content_type}}"
+                          class="{{message_builder.class}}"/>
+    {% endfor %}
+
     </messageBuilders>
 
     <!-- ================================================= -->
