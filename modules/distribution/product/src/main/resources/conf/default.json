@@ -359,6 +359,12 @@
       "http_method" : "POST",
       "permissions" : "/permission/admin/manage/identity/applicationmgt/create",
       "scopes" : "internal_application_mgt_create"
+    },
+    {
+      "context" : "(.*)/keymanager-operations/revoke-one-time-token",
+      "secure" : true,
+      "http_method" : "POST",
+      "permissions" : "/permission/admin"
     }
   ],
   "qpid.nio": false,
