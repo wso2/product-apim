@@ -85,7 +85,14 @@ under the License.
                         <version>3.0.0-M5</version>
                         <inherited>false</inherited>
                         <configuration>
-                            <argLine>-Xmx2048m</argLine>
+                            <argLine>-Xmx2048m
+                                --add-opens=java.base/java.lang=ALL-UNNAMED
+                                --add-opens=java.base/java.util=ALL-UNNAMED
+                                --add-opens java.xml/jdk.xml.internal=ALL-UNNAMED
+                                --add-opens=java.base/java.io=ALL-UNNAMED
+                                --add-opens=java.base/sun.nio.fs=ALL-UNNAMED
+                                --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED
+                            </argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -303,7 +310,14 @@ under the License.
                         <inherited>false</inherited>
                         <version>2.22.1</version>
                         <configuration>
-                            <argLine>-Xmx2048m</argLine>
+                            <argLine>-Xmx2048m
+                                --add-opens=java.base/java.lang=ALL-UNNAMED
+                                --add-opens=java.base/java.util=ALL-UNNAMED
+                                --add-opens java.xml/jdk.xml.internal=ALL-UNNAMED
+                                --add-opens=java.base/java.io=ALL-UNNAMED
+                                --add-opens=java.base/sun.nio.fs=ALL-UNNAMED
+                                --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED
+                            </argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
