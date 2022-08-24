@@ -315,9 +315,9 @@ public class OperationPoliciesApi {
     }
     /**
      * Build call for getAllCommonOperationPolicies
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of policy array to return.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param query -Not supported yet- (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:addHeader\&quot; will match an API Policy if the provider of the API Policy contains \&quot;addHeader\&quot;. \&quot;version:\&quot;v1\&quot;\&quot; will match an API Policy if the provider of the API Policy contains \&quot;v1\&quot;.  Also you can use combined modifiers Eg. name:addHeader&amp;version:v1 will match an API Policy if the name of the API Policy is addHeader and version is v1.  Supported attribute modifiers are [**version, name**]  If query attributes are provided, this returns all API policies available under the given limit.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -382,9 +382,9 @@ public class OperationPoliciesApi {
     /**
      * Get all common operation policies to all the APIs 
      * This operation provides you a list of all common operation policies that can be used by any API 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of policy array to return.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param query -Not supported yet- (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:addHeader\&quot; will match an API Policy if the provider of the API Policy contains \&quot;addHeader\&quot;. \&quot;version:\&quot;v1\&quot;\&quot; will match an API Policy if the provider of the API Policy contains \&quot;v1\&quot;.  Also you can use combined modifiers Eg. name:addHeader&amp;version:v1 will match an API Policy if the name of the API Policy is addHeader and version is v1.  Supported attribute modifiers are [**version, name**]  If query attributes are provided, this returns all API policies available under the given limit.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @return OperationPolicyDataListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -403,9 +403,9 @@ public class OperationPoliciesApi {
     /**
      * Get all common operation policies to all the APIs 
      * This operation provides you a list of all common operation policies that can be used by any API 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of policy array to return.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param query -Not supported yet- (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:addHeader\&quot; will match an API Policy if the provider of the API Policy contains \&quot;addHeader\&quot;. \&quot;version:\&quot;v1\&quot;\&quot; will match an API Policy if the provider of the API Policy contains \&quot;v1\&quot;.  Also you can use combined modifiers Eg. name:addHeader&amp;version:v1 will match an API Policy if the name of the API Policy is addHeader and version is v1.  Supported attribute modifiers are [**version, name**]  If query attributes are provided, this returns all API policies available under the given limit.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @return ApiResponse&lt;OperationPolicyDataListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -425,9 +425,9 @@ public class OperationPoliciesApi {
     /**
      * Get all common operation policies to all the APIs  (asynchronously)
      * This operation provides you a list of all common operation policies that can be used by any API 
-     * @param limit Maximum size of resource array to return.  (optional, default to 25)
+     * @param limit Maximum size of policy array to return.  (optional)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
-     * @param query -Not supported yet- (optional)
+     * @param query **Search condition**.  You can search in attributes by using an **\&quot;&lt;attribute&gt;:\&quot;** modifier.  Eg. \&quot;name:addHeader\&quot; will match an API Policy if the provider of the API Policy contains \&quot;addHeader\&quot;. \&quot;version:\&quot;v1\&quot;\&quot; will match an API Policy if the provider of the API Policy contains \&quot;v1\&quot;.  Also you can use combined modifiers Eg. name:addHeader&amp;version:v1 will match an API Policy if the name of the API Policy is addHeader and version is v1.  Supported attribute modifiers are [**version, name**]  If query attributes are provided, this returns all API policies available under the given limit.  Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object

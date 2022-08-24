@@ -6,8 +6,10 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**exportAPI**](ImportExportApi.md#exportAPI) | **GET** /apis/export | Export an API
 [**exportAPIProduct**](ImportExportApi.md#exportAPIProduct) | **GET** /api-products/export | Export an API Product
+[**exportOperationPolicy**](ImportExportApi.md#exportOperationPolicy) | **GET** /operation-policies/export | Export an API Policy by its name and version 
 [**importAPI**](ImportExportApi.md#importAPI) | **POST** /apis/import | Import an API
 [**importAPIProduct**](ImportExportApi.md#importAPIProduct) | **POST** /api-products/import | Import an API Product
+[**importOperationPolicy**](ImportExportApi.md#importOperationPolicy) | **POST** /operation-policies/import | Import an API Policy
 
 
 <a name="exportAPI"></a>
@@ -174,6 +176,80 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
+<a name="exportOperationPolicy"></a>
+# **exportOperationPolicy**
+> File exportOperationPolicy(name, version, format)
+
+Export an API Policy by its name and version 
+
+This operation provides you to export a preferred common API policy 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ImportExportApi apiInstance = new ImportExportApi(defaultClient);
+    String name = "name_example"; // String | Policy name
+    String version = "version_example"; // String | Version of the policy
+    String format = "format_example"; // String | Format of the policy definition file
+    try {
+      File result = apiInstance.exportOperationPolicy(name, version, format);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ImportExportApi#exportOperationPolicy");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **name** | **String**| Policy name | [optional]
+ **version** | **String**| Version of the policy | [optional]
+ **format** | **String**| Format of the policy definition file | [optional]
+
+### Return type
+
+[**File**](File.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/zip, application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Export Successful.  |  * Content-Type - The content type of the body. <br>  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
+**500** | Internal Server Error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+
 <a name="importAPI"></a>
 # **importAPI**
 > importAPI(file, preserveProvider, rotateRevision, overwrite)
@@ -327,6 +403,75 @@ null (empty response body)
 **200** | Created. API Product Imported Successfully.  |  -  |
 **403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
+**409** | Conflict. Specified resource already exists. |  -  |
+**500** | Internal Server Error. |  -  |
+
+<a name="importOperationPolicy"></a>
+# **importOperationPolicy**
+> importOperationPolicy(file)
+
+Import an API Policy
+
+This operation can be used to import an API Policy. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ImportExportApi apiInstance = new ImportExportApi(defaultClient);
+    File file = new File("/path/to/file"); // File | Zip archive consisting on exported policy configuration
+    try {
+      apiInstance.importOperationPolicy(file);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ImportExportApi#importOperationPolicy");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **file** | **File**| Zip archive consisting on exported policy configuration |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Created. Policy Imported Successfully.  |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
 **409** | Conflict. Specified resource already exists. |  -  |
 **500** | Internal Server Error. |  -  |
 
