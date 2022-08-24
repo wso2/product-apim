@@ -44,6 +44,10 @@ public class OperationPolicyDataDTO {
         @SerializedName(SERIALIZED_NAME_NAME)
             private String name;
 
+        public static final String SERIALIZED_NAME_VERSION = "version";
+        @SerializedName(SERIALIZED_NAME_VERSION)
+            private String version;
+
         public static final String SERIALIZED_NAME_DISPLAY_NAME = "displayName";
         @SerializedName(SERIALIZED_NAME_DISPLAY_NAME)
             private String displayName;
@@ -143,6 +147,29 @@ public class OperationPolicyDataDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+        public OperationPolicyDataDTO version(String version) {
+        
+        this.version = version;
+        return this;
+        }
+
+    /**
+        * Get version
+    * @return version
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "v1", value = "")
+    
+    public String getVersion() {
+        return version;
+    }
+
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
 
@@ -342,6 +369,7 @@ public class OperationPolicyDataDTO {
             return Objects.equals(this.category, operationPolicyData.category) &&
             Objects.equals(this.id, operationPolicyData.id) &&
             Objects.equals(this.name, operationPolicyData.name) &&
+            Objects.equals(this.version, operationPolicyData.version) &&
             Objects.equals(this.displayName, operationPolicyData.displayName) &&
             Objects.equals(this.description, operationPolicyData.description) &&
             Objects.equals(this.applicableFlows, operationPolicyData.applicableFlows) &&
@@ -354,7 +382,7 @@ public class OperationPolicyDataDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(category, id, name, displayName, description, applicableFlows, supportedGateways, supportedApiTypes, isAPISpecific, md5, policyAttributes);
+        return Objects.hash(category, id, name, version, displayName, description, applicableFlows, supportedGateways, supportedApiTypes, isAPISpecific, md5, policyAttributes);
     }
 
 
@@ -365,6 +393,7 @@ sb.append("class OperationPolicyDataDTO {\n");
     sb.append("    category: ").append(toIndentedString(category)).append("\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    applicableFlows: ").append(toIndentedString(applicableFlows)).append("\n");

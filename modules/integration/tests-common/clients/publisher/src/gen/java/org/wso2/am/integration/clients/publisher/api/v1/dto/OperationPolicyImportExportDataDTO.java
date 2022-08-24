@@ -23,172 +23,92 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.ApplicationInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* SubscriptionDTO
+* OperationPolicyImportExportDataDTO
 */
 
-public class SubscriptionDTO {
-        public static final String SERIALIZED_NAME_SUBSCRIPTION_ID = "subscriptionId";
-        @SerializedName(SERIALIZED_NAME_SUBSCRIPTION_ID)
-            private String subscriptionId;
+public class OperationPolicyImportExportDataDTO {
+        public static final String SERIALIZED_NAME_TYPE = "type";
+        @SerializedName(SERIALIZED_NAME_TYPE)
+            private String type;
 
-        public static final String SERIALIZED_NAME_APPLICATION_INFO = "applicationInfo";
-        @SerializedName(SERIALIZED_NAME_APPLICATION_INFO)
-            private ApplicationInfoDTO applicationInfo;
+        public static final String SERIALIZED_NAME_VERSION = "version";
+        @SerializedName(SERIALIZED_NAME_VERSION)
+            private String version;
 
-        public static final String SERIALIZED_NAME_THROTTLING_POLICY = "throttlingPolicy";
-        @SerializedName(SERIALIZED_NAME_THROTTLING_POLICY)
-            private String throttlingPolicy;
+        public static final String SERIALIZED_NAME_DATA = "data";
+        @SerializedName(SERIALIZED_NAME_DATA)
+            private OperationPolicyDataDTO data;
 
-            /**
-* Gets or Sets subscriptionStatus
-*/
-    @JsonAdapter(SubscriptionStatusEnum.Adapter.class)
-public enum SubscriptionStatusEnum {
-        BLOCKED("BLOCKED"),
+
+        public OperationPolicyImportExportDataDTO type(String type) {
         
-        PROD_ONLY_BLOCKED("PROD_ONLY_BLOCKED"),
-        
-        UNBLOCKED("UNBLOCKED"),
-        
-        ON_HOLD("ON_HOLD"),
-        
-        REJECTED("REJECTED"),
-        
-        TIER_UPDATE_PENDING("TIER_UPDATE_PENDING"),
-        
-        DELETE_PENDING("DELETE_PENDING");
-
-private String value;
-
-SubscriptionStatusEnum(String value) {
-this.value = value;
-}
-
-public String getValue() {
-return value;
-}
-
-@Override
-public String toString() {
-return String.valueOf(value);
-}
-
-public static SubscriptionStatusEnum fromValue(String value) {
-    for (SubscriptionStatusEnum b : SubscriptionStatusEnum.values()) {
-    if (b.name().equals(value)) {
-        return b;
-    }
-}
-    throw new IllegalArgumentException("Unexpected value '" + value + "'");
-}
-
-    public static class Adapter extends TypeAdapter<SubscriptionStatusEnum> {
-    @Override
-    public void write(final JsonWriter jsonWriter, final SubscriptionStatusEnum enumeration) throws IOException {
-    jsonWriter.value(enumeration.getValue());
-    }
-
-    @Override
-    public SubscriptionStatusEnum read(final JsonReader jsonReader) throws IOException {
-    String value =  jsonReader.nextString();
-    return SubscriptionStatusEnum.fromValue(value);
-    }
-    }
-}
-
-        public static final String SERIALIZED_NAME_SUBSCRIPTION_STATUS = "subscriptionStatus";
-        @SerializedName(SERIALIZED_NAME_SUBSCRIPTION_STATUS)
-            private SubscriptionStatusEnum subscriptionStatus;
-
-
-        public SubscriptionDTO subscriptionId(String subscriptionId) {
-        
-        this.subscriptionId = subscriptionId;
+        this.type = type;
         return this;
         }
 
     /**
-        * Get subscriptionId
-    * @return subscriptionId
+        * Get type
+    * @return type
     **/
-      @ApiModelProperty(example = "01234567-0123-0123-0123-012345678901", required = true, value = "")
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "operation_policy_specification", value = "")
     
-    public String getSubscriptionId() {
-        return subscriptionId;
+    public String getType() {
+        return type;
     }
 
 
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
+    public void setType(String type) {
+        this.type = type;
     }
 
 
-        public SubscriptionDTO applicationInfo(ApplicationInfoDTO applicationInfo) {
+        public OperationPolicyImportExportDataDTO version(String version) {
         
-        this.applicationInfo = applicationInfo;
+        this.version = version;
         return this;
         }
 
     /**
-        * Get applicationInfo
-    * @return applicationInfo
+        * Get version
+    * @return version
     **/
-      @ApiModelProperty(required = true, value = "")
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "v4.1.0", value = "")
     
-    public ApplicationInfoDTO getApplicationInfo() {
-        return applicationInfo;
+    public String getVersion() {
+        return version;
     }
 
 
-    public void setApplicationInfo(ApplicationInfoDTO applicationInfo) {
-        this.applicationInfo = applicationInfo;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
 
-        public SubscriptionDTO throttlingPolicy(String throttlingPolicy) {
+        public OperationPolicyImportExportDataDTO data(OperationPolicyDataDTO data) {
         
-        this.throttlingPolicy = throttlingPolicy;
+        this.data = data;
         return this;
         }
 
     /**
-        * Get throttlingPolicy
-    * @return throttlingPolicy
+        * Get data
+    * @return data
     **/
-      @ApiModelProperty(example = "Unlimited", required = true, value = "")
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
     
-    public String getThrottlingPolicy() {
-        return throttlingPolicy;
+    public OperationPolicyDataDTO getData() {
+        return data;
     }
 
 
-    public void setThrottlingPolicy(String throttlingPolicy) {
-        this.throttlingPolicy = throttlingPolicy;
-    }
-
-
-        public SubscriptionDTO subscriptionStatus(SubscriptionStatusEnum subscriptionStatus) {
-        
-        this.subscriptionStatus = subscriptionStatus;
-        return this;
-        }
-
-    /**
-        * Get subscriptionStatus
-    * @return subscriptionStatus
-    **/
-      @ApiModelProperty(example = "BLOCKED", required = true, value = "")
-    
-    public SubscriptionStatusEnum getSubscriptionStatus() {
-        return subscriptionStatus;
-    }
-
-
-    public void setSubscriptionStatus(SubscriptionStatusEnum subscriptionStatus) {
-        this.subscriptionStatus = subscriptionStatus;
+    public void setData(OperationPolicyDataDTO data) {
+        this.data = data;
     }
 
 
@@ -200,27 +120,25 @@ public static SubscriptionStatusEnum fromValue(String value) {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            SubscriptionDTO subscription = (SubscriptionDTO) o;
-            return Objects.equals(this.subscriptionId, subscription.subscriptionId) &&
-            Objects.equals(this.applicationInfo, subscription.applicationInfo) &&
-            Objects.equals(this.throttlingPolicy, subscription.throttlingPolicy) &&
-            Objects.equals(this.subscriptionStatus, subscription.subscriptionStatus);
+            OperationPolicyImportExportDataDTO operationPolicyImportExportData = (OperationPolicyImportExportDataDTO) o;
+            return Objects.equals(this.type, operationPolicyImportExportData.type) &&
+            Objects.equals(this.version, operationPolicyImportExportData.version) &&
+            Objects.equals(this.data, operationPolicyImportExportData.data);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(subscriptionId, applicationInfo, throttlingPolicy, subscriptionStatus);
+        return Objects.hash(type, version, data);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class SubscriptionDTO {\n");
-    sb.append("    subscriptionId: ").append(toIndentedString(subscriptionId)).append("\n");
-    sb.append("    applicationInfo: ").append(toIndentedString(applicationInfo)).append("\n");
-    sb.append("    throttlingPolicy: ").append(toIndentedString(throttlingPolicy)).append("\n");
-    sb.append("    subscriptionStatus: ").append(toIndentedString(subscriptionStatus)).append("\n");
+sb.append("class OperationPolicyImportExportDataDTO {\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("    version: ").append(toIndentedString(version)).append("\n");
+    sb.append("    data: ").append(toIndentedString(data)).append("\n");
 sb.append("}");
 return sb.toString();
 }
