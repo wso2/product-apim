@@ -428,4 +428,10 @@
             <class name="org.wso2.am.integration.tests.logging.APILoggingTest"/>
         </classes>
     </test>
+    <test name="apim-revoke-one-time-token-flow-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group1"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.RevokeOneTimeTokenFlowTestCase"/>
+        </classes>
+    </test>
 </suite>
