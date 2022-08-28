@@ -336,6 +336,10 @@
       {
         "Name": "apim:common_operation_policy_manage",
         "Roles": "admin,Internal/creator"
+      },
+      {
+        "Name": "apim:policies_import_export",
+        "Roles": "admin,Internal/devops"
       }
     ]
   },

@@ -84,7 +84,7 @@ System Requirements
 5. To compile and run the sample clients in <APIM_HOME>/samples, an Ant version is required. Ant 1.7.0
    version is recommended
 6. To build WSO2 APIM from the Source distribution, it is necessary that you have
-   JDK 1.8 version and Maven 3.0.4 or later
+   JDK 11 version and Maven 3.0.4 or later
 
 For more details see
    https://apim.docs.wso2.com/en/next/install-and-setup/install/installation-prerequisites/

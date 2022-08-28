@@ -394,6 +394,143 @@ public class ImportExportApi {
         return localVarCall;
     }
     /**
+     * Build call for exportOperationPolicy
+     * @param name Policy name (optional)
+     * @param version Version of the policy (optional)
+     * @param format Format of the policy definition file (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call exportOperationPolicyCall(String name, String version, String format, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/operation-policies/export";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (name != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("name", name));
+        }
+
+        if (version != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("version", version));
+        }
+
+        if (format != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("format", format));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/zip", "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call exportOperationPolicyValidateBeforeCall(String name, String version, String format, final ApiCallback _callback) throws ApiException {
+        
+
+        okhttp3.Call localVarCall = exportOperationPolicyCall(name, version, format, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Export an API Policy by its name and version 
+     * This operation provides you to export a preferred common API policy 
+     * @param name Policy name (optional)
+     * @param version Version of the policy (optional)
+     * @param format Format of the policy definition file (optional)
+     * @return File
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public File exportOperationPolicy(String name, String version, String format) throws ApiException {
+        ApiResponse<File> localVarResp = exportOperationPolicyWithHttpInfo(name, version, format);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Export an API Policy by its name and version 
+     * This operation provides you to export a preferred common API policy 
+     * @param name Policy name (optional)
+     * @param version Version of the policy (optional)
+     * @param format Format of the policy definition file (optional)
+     * @return ApiResponse&lt;File&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<File> exportOperationPolicyWithHttpInfo(String name, String version, String format) throws ApiException {
+        okhttp3.Call localVarCall = exportOperationPolicyValidateBeforeCall(name, version, format, null);
+        Type localVarReturnType = new TypeToken<File>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Export an API Policy by its name and version  (asynchronously)
+     * This operation provides you to export a preferred common API policy 
+     * @param name Policy name (optional)
+     * @param version Version of the policy (optional)
+     * @param format Format of the policy definition file (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Export Successful.  </td><td>  * Content-Type - The content type of the body. <br>  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call exportOperationPolicyAsync(String name, String version, String format, final ApiCallback<File> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = exportOperationPolicyValidateBeforeCall(name, version, format, _callback);
+        Type localVarReturnType = new TypeToken<File>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for importAPI
      * @param file Zip archive consisting on exported api configuration (required)
      * @param preserveProvider Preserve Original Provider of the API. This is the user choice to keep or replace the API provider  (optional)
@@ -706,6 +843,128 @@ public class ImportExportApi {
     public okhttp3.Call importAPIProductAsync(File file, Boolean preserveProvider, Boolean rotateRevision, Boolean importAPIs, Boolean overwriteAPIProduct, Boolean overwriteAPIs, final ApiCallback<Void> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = importAPIProductValidateBeforeCall(file, preserveProvider, rotateRevision, importAPIs, overwriteAPIProduct, overwriteAPIs, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for importOperationPolicy
+     * @param file Zip archive consisting on exported policy configuration (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Policy Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importOperationPolicyCall(File file, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/operation-policies/import";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        if (file != null) {
+            localVarFormParams.put("file", file);
+        }
+
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "multipart/form-data"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call importOperationPolicyValidateBeforeCall(File file, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'file' is set
+        if (file == null) {
+            throw new ApiException("Missing the required parameter 'file' when calling importOperationPolicy(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = importOperationPolicyCall(file, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Import an API Policy
+     * This operation can be used to import an API Policy. 
+     * @param file Zip archive consisting on exported policy configuration (required)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Policy Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void importOperationPolicy(File file) throws ApiException {
+        importOperationPolicyWithHttpInfo(file);
+    }
+
+    /**
+     * Import an API Policy
+     * This operation can be used to import an API Policy. 
+     * @param file Zip archive consisting on exported policy configuration (required)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Policy Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> importOperationPolicyWithHttpInfo(File file) throws ApiException {
+        okhttp3.Call localVarCall = importOperationPolicyValidateBeforeCall(file, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Import an API Policy (asynchronously)
+     * This operation can be used to import an API Policy. 
+     * @param file Zip archive consisting on exported policy configuration (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> Created. Policy Imported Successfully.  </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call importOperationPolicyAsync(File file, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = importOperationPolicyValidateBeforeCall(file, _callback);
         localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }

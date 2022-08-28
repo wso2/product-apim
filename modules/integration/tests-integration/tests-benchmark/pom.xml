@@ -74,7 +74,7 @@ under the License.
                         <version>3.0.0-M5</version>
                         <inherited>false</inherited>
                         <configuration>
-                            <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
+                            <argLine>-Xmx1024m</argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -215,7 +215,7 @@ under the License.
                         <inherited>false</inherited>
                         <version>2.22.1</version>
                         <configuration>
-                            <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
+                            <argLine>-Xmx1024m</argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -313,7 +313,7 @@ under the License.
                         <inherited>false</inherited>
                         <version>2.22.1</version>
                         <configuration>
-                            <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
+                            <argLine>-Xmx1024m</argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>

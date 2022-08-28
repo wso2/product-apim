@@ -1272,7 +1272,7 @@
         <carbon.apimgt.ui.version>9.0.345</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.23.17</carbon.apimgt.version>
+        <carbon.apimgt.version>9.25.0</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1409,7 +1409,7 @@
 
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
-        <jacoco.agent.version>0.8.2</jacoco.agent.version>
+        <jacoco.agent.version>0.8.8</jacoco.agent.version>
         <google.guava.version>27.0-jre</google.guava.version>
 
         <carbon.metrics.version>1.3.12</carbon.metrics.version>
@@ -1465,7 +1465,7 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.4.2</wso2is.km.version>
+        <wso2is.km.version>1.5.0</wso2is.km.version>
         <okta.keymanager.feature.version>3.1.0</okta.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.0</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.4</auth0.keymanager.feature.version>
