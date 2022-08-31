@@ -83,6 +83,8 @@ public class APIMIntegrationConstants {
     public static final String REST_API_PUBLISHER_EXPORT_API_RESOURCE = "/apis/export";
     public static final String REST_API_PUBLISHER_IMPORT_API_RESOURCE = "/apis/import";
 
+    public static final String REST_API_PUBLISHER_EXPORT_COMMON_POLICIES_API_RESOURCE = "/operation-policies/export";
+
     public static final class APPLICATION_TIER {
         public static final String UNLIMITED = "Unlimited";
         public static final String LARGE = "Large";

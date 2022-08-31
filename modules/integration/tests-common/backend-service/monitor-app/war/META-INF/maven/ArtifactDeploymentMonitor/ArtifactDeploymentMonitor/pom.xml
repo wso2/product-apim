@@ -123,7 +123,7 @@ under the License.
 
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.2</version>
+                <version>3.3.2</version>
                 <configuration>
                     <packagingExcludes>WEB-INF/lib/*.jar,WEB-INF/modules/addressing-1.6.1-wso2v11.mar,WEB-INF/lib/</packagingExcludes>
                     <!--<webResources>-->
