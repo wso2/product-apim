@@ -60,6 +60,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfiguration
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMetadataListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductListDTO;
@@ -2533,6 +2534,21 @@ public class RestAPIPublisherImpl {
                 }
             }
         }
+
+    }
+
+    /**
+     * Get the Certificate usage
+     *
+     * @param alias  Alias of the certificate
+     * @param limit  Number of results needed
+     * @param offset Offset
+     * @return ApiResponse<APIMetadataListDTO> object
+     * @throws ApiException If error when fetching certificate usage
+     */
+    public ApiResponse<APIMetadataListDTO> getCertificateUsage(String alias, Integer limit, Integer offset) throws ApiException {
+
+        return endpointCertificatesApi.getCertificateUsageByAliasWithHttpInfo(alias, limit, offset);
 
     }
 }
