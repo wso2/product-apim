@@ -1,6 +1,6 @@
 #!/bin/bash
 # ----------------------------------------------------------------------------
-#  Copyright 2018 WSO2, Inc. http://www.wso2.org
+#  Copyright (c) 2017, WSO2 LLC http://www.wso2.org
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ pathToRegistryTemplate='../repository/resources/conf/templates/repository/conf/r
 pathToInboundEndpoints='../repository/deployment/server/synapse-configs/default/inbound-endpoints/'
 pathToInboundEndpointsTemplate='../repository/resources/conf/templates/repository/deployment/server/synapse-configs/default/inbound-endpoints/'
 pathToWebapps='../repository/deployment/server/webapps'
-pathToJaggeryapps='../repository/deployment/server/jaggeryapps'
 pathToSynapseConfigs='../repository/deployment/server/synapse-configs/default'
 pathToAxis2TMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_TM.xml.j2'
 pathToAxis2KMXmlTemplate='../repository/resources/conf/templates/repository/conf/axis2/axis2_KM.xml.j2'
@@ -228,13 +227,6 @@ case $1 in
 				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
 			fi
 		done
-		# removing jaggeryapps which are not required for this profile
-		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d | sed 1d); do
-			rm -r $i
-			folder=`basename "$i"`
-			timeStamp
-			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
-		done
 		;;
 	-Dprofile=api-publisher-deprecated)
 		timeStamp
@@ -245,7 +237,7 @@ case $1 in
     replaceAxis2TemplateFile $pathToAxis2PublisherXmlTemplate
 		replaceTenantAxis2TemplateFile $pathToTenantAxis2PublisherXmlTemplate
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' -o -name 'api#am#publisher.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war'  -o -name 'internal#data#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' -o -name 'api#am#publisher.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'internal#data#v*.war' -o -name 'admin' -o -name 'publisher' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -257,13 +249,6 @@ case $1 in
 				timeStamp
 				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
 			fi
-		done
-		# removing jaggeryapps which are not required for this profile
-		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d -not \( -name 'admin' -o -name 'publisher' \) | sed 1d); do
-			rm -r $i
-			folder=`basename "$i"`
-			timeStamp
-			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
 		done
 		;;
 	-Dprofile=api-devportal-deprecated)
@@ -275,7 +260,7 @@ case $1 in
     replaceAxis2TemplateFile $pathToAxis2DevportalXmlTemplate
 		replaceTenantAxis2TemplateFile $pathToTenantAxis2DevportalXmlTemplate
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#devportal#v*.war' -o -name 'api#am#devportal.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' -o -name 'internal#data#v*.war' \) ); do
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#devportal#v*.war' -o -name 'api#am#devportal.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' -o -name 'internal#data#v*.war' -o -name 'devportal' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
@@ -288,14 +273,7 @@ case $1 in
 				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
 			fi
 		done
-		# removing jaggeryapps which are not required for this profile
-		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d -not -name 'devportal'| sed 1d); do
-			rm -r $i
-			folder=`basename "$i"`
-			timeStamp
-			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
-		done
-        ;;
+    ;;
 	-Dprofile=control-plane)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Control Plane profile"
@@ -319,7 +297,7 @@ case $1 in
 				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
 			fi
 		done
-        ;;
+    ;;
 	-Dprofile=traffic-manager)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Traffic Manager profile"
@@ -344,13 +322,6 @@ case $1 in
 				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
 			fi
 		done
-		# removing jaggeryapps which are not required for this profile
-		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d | sed 1d); do
-			rm -r $i
-			folder=`basename "$i"`
-			timeStamp
-			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
-		done
 		;;
 	-Dprofile=gateway-worker)
 		timeStamp
@@ -370,13 +341,6 @@ case $1 in
 				timeStamp
 				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
 			fi
-		done
-		# removing jaggeryapps which are not required for this profile
-		for i in $(find ${pathToJaggeryapps} -maxdepth 1 -type d | sed 1d); do
-			rm -r $i
-			folder=`basename "$i"`
-			timeStamp
-			echo "[${timestamp}] INFO - Removed $folder directory from ${pathToJaggeryapps}"
 		done
 		;;
 	*)
