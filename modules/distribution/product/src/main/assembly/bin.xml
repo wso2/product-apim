@@ -754,15 +754,7 @@
             </excludes>
         </fileSet>
 
-        <!--Copying modules coming from jaggery feature-->
-        <fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/modules</directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/modules/</outputDirectory>
-            <!--excludes>
-                <exclude>**/carbon/**</exclude>
-                <exclude>**/process/**</exclude>
-            </excludes-->
-        </fileSet>
+
 
         <fileSet>
             <directory>

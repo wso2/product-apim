@@ -291,7 +291,6 @@
                                 </featureArtifactDef>
                
                                 <!--API Management related feature-->
-                                <featureArtifactDef>org.jaggeryjs:org.jaggeryjs.server.feature:${org.jaggery.version}</featureArtifactDef>
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${carbon.apimgt.version}
@@ -464,9 +463,6 @@
                                 </featureArtifactDef>
 
                                 <!--Asset Devportal Feature list -->
-                                <featureArtifactDef>
-                                    org.jaggeryjs:org.jaggeryjs.server.feature:${org.jaggery.version}
-                                </featureArtifactDef>
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.registry:org.wso2.carbon.registry.task.feature:${carbon.registry.version}
@@ -1135,10 +1131,6 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
                                 <!--API Management related feature-->
-                                <feature>
-                                    <id>org.jaggeryjs.server.feature.group</id>
-                                    <version>${org.jaggery.version}</version>
-                                </feature>
 
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.feature.group</id>
@@ -1770,10 +1762,6 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
                                 <!--API Management related feature-->
-                                <feature>
-                                    <id>org.jaggeryjs.server.feature.group</id>
-                                    <version>${org.jaggery.version}</version>
-                                </feature>
 
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.feature.group</id>
@@ -2125,10 +2113,6 @@
                             </destination>
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                             <features>
-                                <feature>
-                                    <id>org.jaggeryjs.server.feature.group</id>
-                                    <version>${org.jaggery.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.tenant.mgt.common.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -2853,10 +2837,6 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.jaggeryjs.server.feature.group</id>
-                                    <version>${org.jaggery.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.apimgt.core.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -3350,10 +3330,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.registry.ws.feature.group</id>
                                     <version>${carbon.registry.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.jaggeryjs.server.feature.group</id>
-                                    <version>${org.jaggery.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.tokenmgt.feature.group</id>
