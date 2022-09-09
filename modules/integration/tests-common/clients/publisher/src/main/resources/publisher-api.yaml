@@ -5154,6 +5154,54 @@ paths:
           "https://127.0.0.1:9443/api/am/publisher/v3/endpoint-certificates/wso2carbon/content"'
       operationId: getEndpointCertificateContentByAlias
 
+  /endpoint-certificates/{alias}/usage:
+    get:
+      tags:
+        - Endpoint Certificates
+      summary: Retrieve all the APIs that use a given certificate by the alias
+      description: |
+        This operation can be used to retrieve/identify apis that use a known certificate.
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - name: alias
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+            List of qualifying APIs is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIMetadataList'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+            - apim:api_manage
+            - apim:ep_certificates_view
+            - apim:ep_certificates_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+                "https://127.0.0.1:9443/api/am/publisher/v3/endpoint-certificates/wso2cert/usage"'
+      operationId: getCertificateUsageByAlias
+
   ######################################################
   # The "Content Search Results" resource APIs
   ######################################################
@@ -8349,7 +8397,21 @@ components:
             $ref: '#/components/schemas/APIInfo'
         pagination:
           $ref: '#/components/schemas/Pagination'
-
+    APIMetadataList:
+      title: API metadata List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of APIs returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/APIMetadata'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     APIInfo:
       title: API Info object with basic API details.
       type: object
@@ -8433,6 +8495,27 @@ components:
         advertiseOnly:
           type: boolean
           example: true
+    APIMetadata:
+      title: API Info object with basic minimal API details.
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01234567-0123-0123-0123-012345678901
+        name:
+          type: string
+          example: CalculatorAPI
+        context:
+          type: string
+          example: CalculatorAPI
+        version:
+          type: string
+          example: 1.0.0
+        provider:
+          type: string
+          description: |
+            If the provider value is not given, the user invoking the API will be used as the provider.
+          example: admin
     Topic:
       title: Topic object
       required:
@@ -11688,7 +11771,7 @@ components:
           type: string
           example: v4.1.0
         data:
-#          type: object
+          #          type: object
           $ref: '#/components/schemas/OperationPolicyData'
     OperationPolicyData:
       title: Operation Policy Data
