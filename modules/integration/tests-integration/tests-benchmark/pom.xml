@@ -251,6 +251,7 @@ under the License.
                                 <startupScript>api-manager</startupScript>
                                 <apim.server.version>${apimserver.version}</apim.server.version>
                             </systemProperties>
+                            <skipTests>${skipBenchMarkTest}</skipTests>
                             <workingDirectory>${basedir}/target</workingDirectory>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
@@ -263,7 +264,6 @@ under the License.
                 </plugins>
             </build>
         </profile>
-
         <profile>
             <!--The profile below will activate the profile when the system property "platform" is specified with any value-->
             <!--mvn clean install -DplatformTests -->
@@ -348,6 +348,7 @@ under the License.
                                 <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
                                 <startupScript>api-manager</startupScript>
                             </systemProperties>
+                            <skipTests>${skipBenchMarkTest}</skipTests>
                             <systemPropertyVariables>
                                 <okHttpLogs>true</okHttpLogs>
                             </systemPropertyVariables>
@@ -361,7 +362,6 @@ under the License.
                 </plugins>
             </build>
         </profile>
-
     </profiles>
 
     <build>
