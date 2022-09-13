@@ -1,6 +1,6 @@
 @echo off
 rem ----------------------------------------------------------------------------
-rem  Copyright 2018 WSO2, Inc. http://www.wso2.org
+rem  Copyright (c) 2017, WSO2 LLC http://www.wso2.org
 rem
 rem  Licensed under the Apache License, Version 2.0 (the "License");
 rem  you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ set pathToRegistryTemplate=..\repository\resources\conf\templates\repository\con
 set pathToInboundEndpoints=..\repository\deployment\server\synapse-configs\default\inbound-endpoints
 set pathToInboundEndpointsTemplate=..\repository\resources\conf\templates\repository\deployment\server\synapse-configs\default\inbound-endpoints
 set pathToWebapps=..\repository\deployment\server\webapps
-set pathToJaggeryapps=..\repository\deployment\server\jaggeryapps
 set pathToSynapseConfigs=..\repository\deployment\server\synapse-configs\default
 set pathToAxis2TMXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2_TM.xml.j2
 set pathToAxis2KMXmlTemplate=..\repository\resources\conf\templates\repository\conf\axis2\axis2_KM.xml.j2
@@ -93,12 +92,6 @@ for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "client-registration#v.*war
 	)
 	endlocal
 )
-rem ---removing jaggeryapps which are not required for this profile--------
-for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b') do (
-	rmdir /s /q %pathToJaggeryapps%\%%i
-	call :Timestamp value
-	echo %value% INFO - Removed the %%i directory from %pathToJaggeryapps%
-)
 goto finishOptimization
 
 :controlPlane
@@ -132,7 +125,7 @@ call :replaceAxis2TemplateFile %pathToAxis2PublisherXmlTemplate%
 call :replaceTenantAxis2TemplateFile %pathToTenantAxis2PublisherXmlTemplate%
 call :replaceDeploymentConfiguration
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war internal#data#v.*war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war internal#data#v.*war publisher admin"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
@@ -145,12 +138,6 @@ for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war ap
 		echo %value% INFO - Removed the !folderName! directory from %pathToWebapps%
 	)
 	endlocal
-)
-rem ---removing jaggeryapps which are not required for this profile--------
-for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b ^| findstr /v "publisher admin"') do (
-	rmdir /s /q %pathToJaggeryapps%\%%i
-	call :Timestamp value
-	echo %value% INFO - Removed the %%i directory from %pathToJaggeryapps%
 )
 goto finishOptimization
 
@@ -162,7 +149,7 @@ call :replaceDeploymentConfiguration
 call :replaceAxis2TemplateFile %pathToAxis2DevportalXmlTemplate%
 call :replaceTenantAxis2TemplateFile %pathToTenantAxis2DevportalXmlTemplate%
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#devportal#v.*war api#am#devportal.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war  api#identity#recovery#v.*war api#identity#user#v.*war api#identity#consent-mgt#v.*war internal#data#v.*war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#devportal#v.*war api#am#devportal.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war  api#identity#recovery#v.*war api#identity#user#v.*war api#identity#consent-mgt#v.*war internal#data#v.*war devportal"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
@@ -175,12 +162,6 @@ for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#devportal#v.*war ap
 		echo %value% INFO - Removed the !folderName! directory from %pathToWebapps%
 	)
 	endlocal
-)
-rem ---removing jaggeryapps which are not required for this profile--------
-for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b ^| findstr /v "devportal"') do (
-	rmdir /s /q %pathToJaggeryapps%\%%i
-	call :Timestamp value
-	echo %value% INFO - Removed the %%i directory from %pathToJaggeryapps%
 )
 goto finishOptimization
 
@@ -208,12 +189,6 @@ for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "internal#data#v.*war"') do
 	)
 	endlocal
 )
-rem ---removing jaggeryapps which are not required for this profile--------
-for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b') do (
-	rmdir /s /q %pathToJaggeryapps%\%%i
-	call :Timestamp value
-	echo %value% INFO - Removed the %%i directory from %pathToJaggeryapps%
-)
 goto finishOptimization
 
 :gatewayWorker
@@ -234,12 +209,6 @@ for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "am#sample#pizzashack#v.*wa
 		echo %value% INFO - Removed the !folderName! directory from %pathToWebapps%
 	)
 	endlocal
-)
-rem ---removing jaggeryapps which are not required for this profile--------
-for /f %%i in ('dir "%pathToJaggeryapps%" /A:D /b') do (
-	rmdir /s /q %pathToJaggeryapps%\%%i
-	call :Timestamp value
-	echo %value% INFO - Removed the %%i directory from %pathToJaggeryapps%
 )
 goto finishOptimization
 

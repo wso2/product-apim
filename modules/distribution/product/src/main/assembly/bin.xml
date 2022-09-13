@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- ~ Copyright (c) 2005-2010, WSO2 Inc. (http://wso2.com) All Rights Reserved.
+ ~ Copyright (c) 2017-2022, WSO2 LLC (http://wso2.com) All Rights Reserved.
  ~
- ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ WSO2 LLC licenses this file to you under the Apache License,
  ~ Version 2.0 (the "License"); you may not use this file except
  ~ in compliance with the License.
  ~ You may obtain a copy of the License at
@@ -152,7 +152,6 @@
                 <exclude>**/repository/deployment/server/webapps/api#identity#oauth2#dcr#v1.0.war</exclude>
                 <exclude>**/repository/deployment/server/webapps/outputwebsocket.war</exclude>
                 <exclude>**/repository/deployment/server/webapps/inputwebsocket.war</exclude>
-                <exclude>**/repository/deployment/server/jaggeryapps/portal/</exclude>
                 <exclude>**/repository/resources/conf/default.json</exclude>
                 <exclude>**/repository/resources/conf/infer.json</exclude>
                 <exclude>**/repository/resources/conf/validator.json</exclude>
@@ -310,39 +309,24 @@
                 <include>**/**.txt</include>
             </includes>
         </fileSet>
-        <fileSet>
-            <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/publisher/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher
-            </outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/devportal/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/devportal</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin</outputDirectory>
-        </fileSet>
         <!--  copying modules xml -->
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
+            <includes>
+                <include>devportal/</include>
+                <include>admin/</include>
+                <include>publisher/</include>
+            </includes>
+        </fileSet>
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/modules
             </directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/modules/</outputDirectory>
             <includes>
                 <include>*/**</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>../../jaggery</directory>
-            <outputDirectory>wso2am-${pom.version}/modules</outputDirectory>
-            <includes>
-                <include>**/**</include>
             </includes>
         </fileSet>
         <!-- Copying styles for tenants -->
@@ -770,15 +754,7 @@
             </excludes>
         </fileSet>
 
-        <!--Copying modules coming from jaggery feature-->
-        <fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/modules</directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/modules/</outputDirectory>
-            <!--excludes>
-                <exclude>**/carbon/**</exclude>
-                <exclude>**/process/**</exclude>
-            </excludes-->
-        </fileSet>
+
 
         <fileSet>
             <directory>
@@ -1586,12 +1562,12 @@
         <!-- Coping lerna related files -->
         <file>
             <source>src/main/conf/lerna/lerna.json</source>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/webapps</outputDirectory>
             <destName>lerna.json</destName>
         </file>
         <file>
             <source>src/main/conf/lerna/package.json</source>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/webapps</outputDirectory>
             <destName>package.json</destName>
         </file>
     </files>
