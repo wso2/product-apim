@@ -42,7 +42,19 @@
     </modules>
 
     <repositories>
-        <!-- WSO2 released artifact repository -->
+	<!-- WSO2 released artifact repository -->
+        <repository>
+            <id>local-repo</id>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+	    <url>file://${maven.multiModuleProjectDirectory}/local-repo</url>
+        </repository>
+
         <repository>
             <id>wso2.releases</id>
             <name>WSO2 Releases Repository</name>
