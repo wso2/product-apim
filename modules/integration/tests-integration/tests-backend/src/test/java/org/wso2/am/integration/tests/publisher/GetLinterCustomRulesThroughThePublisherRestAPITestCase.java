@@ -27,7 +27,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -70,7 +74,7 @@ public class GetLinterCustomRulesThroughThePublisherRestAPITestCase extends
 
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-//                new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 
@@ -85,8 +89,7 @@ public class GetLinterCustomRulesThroughThePublisherRestAPITestCase extends
 
     }
 
-    @Test(description = "Create an API using valid data and get all " +
-            "the API through Publisher Rest API")
+    @Test(description = "Test get linter rules through publisher REST API")
     public void testGetLinterCustomRulesThroughThePublisherRestAPI() throws Exception {
 
         String linterCustomRulesActual = restAPIPublisher.getLinterCustomRules();
