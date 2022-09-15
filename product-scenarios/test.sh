@@ -98,7 +98,7 @@ else
     PRODUCT_VERSION="-$PRODUCT_VERSION"
 fi
 
-cd $HOME/../modules/integration/tests-common
+cd $HOME/../modules/integration/tests-common/integration-test-utils
 mvn clean install -Dmaven.test.skip=true
 cd $HOME
 
