@@ -76,10 +76,8 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN }, };
     }
 
     @BeforeClass(alwaysRun = true)
@@ -121,7 +119,7 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
 
-        String  apiInvocationUrl = getAPIInvocationURLHttp(apiContext, API_VERSION);
+        String apiInvocationUrl = getAPIInvocationURLHttp(apiContext, API_VERSION);
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Authorization", "Bearer " + "abcdefgh");
@@ -140,8 +138,9 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
             xpath.addNamespace("ams", "http://wso2.org/apimanager/security");
             Object descriptionElement = xpath.selectSingleNode(element);
             Assert.assertNotNull("Error message doesn't contain a 'description'", descriptionElement);
-            String description = ((OMElement)descriptionElement).getText();
-            Assert.assertTrue("Unexpected error response string. Expected to have 'Make sure you have " +
+            String description = ((OMElement) descriptionElement).getText();
+            Assert.assertTrue(
+                    "Unexpected error response string. Expected to have 'Make sure you have " +
                             "provided the correct security credentials' but received '" + description + "'",
                     description.contains("Make sure you have provided the correct security credentials"));
         } catch (IOException e) {
