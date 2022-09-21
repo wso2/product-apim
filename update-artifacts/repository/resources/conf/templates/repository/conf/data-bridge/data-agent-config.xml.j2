@@ -16,13 +16,15 @@
 * specific language governing permissions and limitations
 * under the License..
 -->
+
 <DataAgentsConfiguration xmlns:svns="http://org.wso2.securevault/configuration">
     <Agent>
         <Name>Thrift</Name>
         <DataEndpointClass>org.wso2.carbon.databridge.agent.endpoint.thrift.ThriftDataEndpoint</DataEndpointClass>
         {% if transport.thrift.agent.trust_store is defined %}
         <TrustSore>{{transport.thrift.agent.trust_store}}</TrustSore>
-        {% endif %} {% if transport.thrift.agent.trust_store_password is defined %}
+        {% endif %}
+        {% if transport.thrift.agent.trust_store_password is defined %}
         <TrustSorePassword>{{transport.thrift.agent.trust_store_password}}</TrustSorePassword>
         {% endif %}
         <QueueSize>{{transport.thrift.agent.queue_size}}</QueueSize>
@@ -60,7 +62,8 @@
         <DataEndpointClass>org.wso2.carbon.databridge.agent.endpoint.binary.BinaryDataEndpoint</DataEndpointClass>
         {% if transport.binary.agent.trust_store is defined %}
         <TrustSore>{{transport.binary.agent.trust_store}}</TrustSore>
-        {% endif %} {% if transport.binary.agent.trust_store_password is defined %}
+        {% endif %}
+        {% if transport.binary.agent.trust_store_password is defined %}
         <TrustSorePassword>{{transport.binary.agent.trust_store_password}}</TrustSorePassword>
         {% endif %}
         <QueueSize>{{transport.binary.agent.queue_size}}</QueueSize>

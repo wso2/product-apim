@@ -831,7 +831,8 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             assertTrue(errorJson.containsKey("id"));
             assertEquals(errorJson.get("id"), "1");
             assertTrue(errorJson.containsKey("payload"));
-            org.json.simple.JSONObject payload = (org.json.simple.JSONObject) errorJson.get("payload");
+            org.json.simple.JSONObject payload =
+                    (org.json.simple.JSONObject) ((org.json.simple.JSONArray) errorJson.get("payload")).get(0);
             assertTrue(payload.containsKey("message"));
             assertTrue(payload.containsKey("code"));
             assertEquals(payload.get("message"), "User is NOT authorized to access the Resource: liftStatusChange. "
@@ -886,7 +887,8 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             assertTrue(errorJson.containsKey("id"));
             assertEquals(errorJson.get("id"), "1");
             assertTrue(errorJson.containsKey("payload"));
-            org.json.simple.JSONObject payload = (org.json.simple.JSONObject) errorJson.get("payload");
+            org.json.simple.JSONObject payload =
+                    (org.json.simple.JSONObject) ((org.json.simple.JSONArray) errorJson.get("payload")).get(0);
             assertTrue(payload.containsKey("message"));
             assertTrue(payload.containsKey("code"));
             assertTrue(((String) payload.get("message")).contains("QUERY TOO COMPLEX"),
@@ -942,7 +944,8 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             assertTrue(errorJson.containsKey("id"));
             assertEquals(errorJson.get("id"), "1");
             assertTrue(errorJson.containsKey("payload"));
-            org.json.simple.JSONObject payload = (org.json.simple.JSONObject) errorJson.get("payload");
+            org.json.simple.JSONObject payload =
+                    (org.json.simple.JSONObject) ((org.json.simple.JSONArray) errorJson.get("payload")).get(0);
             assertTrue(payload.containsKey("message"));
             assertTrue(payload.containsKey("code"));
             assertTrue(((String) payload.get("message")).contains("QUERY TOO DEEP"),
@@ -998,7 +1001,8 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             assertTrue(errorJson.containsKey("id"));
             assertEquals(errorJson.get("id"), "1");
             assertTrue(errorJson.containsKey("payload"));
-            org.json.simple.JSONObject payload = (org.json.simple.JSONObject) errorJson.get("payload");
+            org.json.simple.JSONObject payload =
+                    (org.json.simple.JSONObject) ((org.json.simple.JSONArray) errorJson.get("payload")).get(0);
             assertTrue(payload.containsKey("message"));
             assertTrue(payload.containsKey("code"));
             assertTrue(((String) payload.get("message")).contains("INVALID QUERY"),
@@ -1065,7 +1069,8 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                     assertTrue(errorJson.containsKey("id"));
                     assertEquals(errorJson.get("id"), "2");
                     assertTrue(errorJson.containsKey("payload"));
-                    org.json.simple.JSONObject payload = (org.json.simple.JSONObject) errorJson.get("payload");
+                    org.json.simple.JSONObject payload =
+                            (org.json.simple.JSONObject) ((org.json.simple.JSONArray) errorJson.get("payload")).get(0);
                     assertTrue(payload.containsKey("message"));
                     assertTrue(payload.containsKey("code"));
                     assertTrue(((String) payload.get("message")).contains("Websocket frame throttled out"),

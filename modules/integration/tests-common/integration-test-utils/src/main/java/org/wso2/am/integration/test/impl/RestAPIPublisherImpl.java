@@ -523,11 +523,15 @@ public class RestAPIPublisherImpl {
         body.setCategories(apiRequest.getApiCategories());
         APIDTO apidto;
         try {
+            // Add sleep to avoid intermittent API update failures
+            Thread.sleep(1000);
             apidto = apIsApi.apisApiIdPut(apiId, body, null);
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
             }
+            throw new ApiException(e);
+        } catch (InterruptedException e) {
             throw new ApiException(e);
         }
         HttpResponse response = null;
@@ -539,9 +543,15 @@ public class RestAPIPublisherImpl {
     }
 
     public APIDTO updateAPI(APIDTO apidto, String apiId) throws ApiException {
-        ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.apisApiIdPutWithHttpInfo(apiId, apidto, null);
-        Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
-        return apiDtoApiResponse.getData();
+        try {
+            // Add sleep to avoid intermittent API update failures
+            Thread.sleep(1000);
+            ApiResponse<APIDTO> apiDtoApiResponse = apIsApi.apisApiIdPutWithHttpInfo(apiId, apidto, null);
+            Assert.assertEquals(HttpStatus.SC_OK, apiDtoApiResponse.getStatusCode());
+            return apiDtoApiResponse.getData();
+        } catch (InterruptedException e) {
+            throw new ApiException(e);
+        }
     }
 
     /**
@@ -1221,9 +1231,15 @@ public class RestAPIPublisherImpl {
      * @throws ApiException
      */
     public APIDTO updateAPI(APIDTO apidto) throws ApiException {
-        ApiResponse<APIDTO> response = apIsApi.apisApiIdPutWithHttpInfo(apidto.getId(), apidto, null);
-        Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
-        return response.getData();
+        try {
+            // Add sleep to avoid intermittent API update failures
+            Thread.sleep(1000);
+            ApiResponse<APIDTO> response = apIsApi.apisApiIdPutWithHttpInfo(apidto.getId(), apidto, null);
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.SC_OK);
+            return response.getData();
+        } catch (InterruptedException e) {
+            throw new ApiException(e);
+        }
     }
 
     /**
