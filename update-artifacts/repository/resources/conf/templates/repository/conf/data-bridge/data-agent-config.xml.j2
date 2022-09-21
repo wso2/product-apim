@@ -45,12 +45,18 @@
         <FailedEventLogInterval>{{transport.thrift.agent.failed_event_log_interval}}</FailedEventLogInterval>
         {% if transport.thrift.agent.ssl_enabled_protocols is defined %}
         <sslEnabledProtocols>{{transport.thrift.agent.ssl_enabled_protocols}}</sslEnabledProtocols>
-        {% endif %}
-        {% if transport.thrift.agent.ciphers is defined %}
+        {% endif %} {% if transport.thrift.agent.ciphers is defined %}
         <ciphers>{{transport.thrift.agent.ciphers}}</ciphers>
+        {% endif %} {% if transport.thrift.agent.exp_factor is defined %}
+        <ExpFactor>{{transport.thrift.agent.exp_factor}}</ExpFactor>
+        {% else %}
+        <ExpFactor>1</ExpFactor>
+        {% endif %} {% if transport.thrift.agent.max_reconnection_interval is defined %}
+        <MaxReconnectionInterval>{{transport.thrift.agent.max_reconnection_interval}}</MaxReconnectionInterval>
+        {% else %}
+        <MaxReconnectionInterval>3600</MaxReconnectionInterval>
         {% endif %}
     </Agent>
-
     <Agent>
         <Name>Binary</Name>
         <DataEndpointClass>org.wso2.carbon.databridge.agent.endpoint.binary.BinaryDataEndpoint</DataEndpointClass>
@@ -78,9 +84,16 @@
         <FailedEventLogInterval>{{transport.binary.agent.failed_event_log_interval}}</FailedEventLogInterval>
         {% if transport.binary.agent.ssl_enabled_protocols is defined %}
         <sslEnabledProtocols>{{transport.binary.agent.ssl_enabled_protocols}}</sslEnabledProtocols>
-        {% endif %}
-        {% if transport.binary.agent.ciphers is defined %}
+        {% endif %} {% if transport.binary.agent.ciphers is defined %}
         <ciphers>{{transport.binary.agent.ciphers}}</ciphers>
+        {% endif %} {% if transport.binary.agent.exp_factor is defined %}
+        <ExpFactor>{{transport.binary.agent.exp_factor}}</ExpFactor>
+        {% else %}
+        <ExpFactor>1</ExpFactor>
+        {% endif %} {% if transport.binary.agent.max_reconnection_interval is defined %}
+        <MaxReconnectionInterval>{{transport.binary.agent.max_reconnection_interval}}</MaxReconnectionInterval>
+        {% else %}
+        <MaxReconnectionInterval>3600</MaxReconnectionInterval>
         {% endif %}
     </Agent>
 </DataAgentsConfiguration>
