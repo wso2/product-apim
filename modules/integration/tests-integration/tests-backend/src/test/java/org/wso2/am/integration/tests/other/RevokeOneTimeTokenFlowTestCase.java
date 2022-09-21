@@ -39,6 +39,7 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.io.IOException;
 import java.net.URL;
@@ -62,20 +63,22 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
     private String apiId;
     private String accessToken;
     private String accessTokenWithoutScope;
-    private Map<String, String> policyMap;
+    private String accessTokenForOutsider;
 
-    @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
+    @BeforeClass(alwaysRun = true) public void initialize() throws Exception {
 
         super.init();
+
+        //The default value of One Time Token Scope is used which can be changed if required
+        String oneTimeTokenScope = "OTT";
 
         //Create the API
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application RevokeOneTimeToken", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
-        applicationId = applicationResponse.getData();
-        policyMap = restAPIPublisher.getAllCommonOperationPolicies();
 
+        applicationId = applicationResponse.getData();
+        Map<String, String> policyMap = restAPIPublisher.getAllCommonOperationPolicies();
         String API_END_POINT_POSTFIX_URL = "xmlapi";
         String apiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION_1_0_0);
         String API_NAME = "RevokeOneTimeTokenAPITest";
@@ -84,19 +87,20 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTags(API_TAGS);
+
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //Create a JWT access token with the scope OTT
         List<String> grantTypes = new ArrayList<>();
-        grantTypes.add("client_credentials");
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
 
         ArrayList<String> scopes = new ArrayList<>();
-        scopes.add("OTT");
+        scopes.add(oneTimeTokenScope);
 
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore
-                .generateKeys(applicationId, "3600", null,
-                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, scopes, grantTypes);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600",
+                null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, scopes, grantTypes);
         if (applicationKeyDTO.getToken() == null) {
             throw new AssertionError();
         }
@@ -106,30 +110,41 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
         String consumerKey = applicationKeyDTO.getConsumerKey();
         String consumerSecret = applicationKeyDTO.getConsumerSecret();
         URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
-        HttpResponse response;
-        String requestBody;
-        JSONObject accessTokenGenerationResponse;
-        requestBody = "grant_type=client_credentials&username=" + user.getUserName() +
-                "&password=" + user.getPassword() + "&scope= ";
+        String requestBody = "grant_type=" + APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL + "&username="
+                + user.getUserName() + "&password=" + user.getPassword() + "&scope= ";
 
-        response = restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL);
-        accessTokenGenerationResponse = new JSONObject(response.getData());
+        JSONObject accessTokenGenerationResponse = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
+                        .getData());
         accessTokenWithoutScope = accessTokenGenerationResponse.getString("access_token");
-    }
 
-    @Test(groups = {"wso2.am"}, description = "Invoke the API with a JWT that is not an One Time Token")
-    public void testAPIInvocationWithoutAddingOneTimeTokenScopeToJWT() throws Exception {
+        //Create a user who does not have permission to access dev portal
+        UserManagementClient userManagementClient = new UserManagementClient(
+                keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
 
+        userManagementClient.addUser("outsideUser", "outsideUserPassword",
+                new String[] { "Internal/everyone" },"outsideUser");
+        requestBody = "grant_type=" + APIMIntegrationConstants.GRANT_TYPE.PASSWORD + "&username=" + "outsideUser"
+                + "&password=outsideUserPassword&scope=" + oneTimeTokenScope;
+        accessTokenGenerationResponse = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
+                        .getData());
+
+        //JWT for the outside user
+        accessTokenForOutsider = accessTokenGenerationResponse.getString("access_token");
+
+        ////Attach the policy to the API
         HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
         APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
 
-        //Attach the policy with scope attribute OTT which is the same as the JWT token
         String policyName = "revokeOneTimeToken";
-        Assert.assertNotNull(policyMap.get(policyName),
-                "Unable to find a common policy with name " + policyName);
+        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " +
+                policyName);
 
         Map<String, Object> attributeMap = new HashMap<>();
-        attributeMap.put("scope", "OTT");
+        attributeMap.put("scope", oneTimeTokenScope);
 
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
         apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, policyMap, attributeMap));
@@ -141,6 +156,10 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
         restAPIPublisher.updateAPI(apidto);
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke the API with a JWT that is not an One Time Token")
+    public void testAPIInvocationWithoutAddingOneTimeTokenScopeToJWT() throws Exception {
 
         //Invoking the API for the first time
         org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(accessTokenWithoutScope);
@@ -155,28 +174,6 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the revoke one time policy")
     public void testAPIInvocationOfAttachedRevokeOneTimePolicyUsingOneTimeToken() throws Exception {
 
-        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
-        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
-
-        //Attach the policy with scope attribute OTT which is the same as the JWT token
-        String policyName = "revokeOneTimeToken";
-        Assert.assertNotNull(policyMap.get(policyName),
-                "Unable to find a common policy with name " + policyName);
-
-        Map<String, Object> attributeMap = new HashMap<>();
-        attributeMap.put("scope", "OTT");
-
-        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, policyMap, attributeMap));
-
-        if (apidto.getOperations() == null) {
-            throw new AssertionError();
-        }
-        apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
-        restAPIPublisher.updateAPI(apidto);
-        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-        waitForAPIDeployment();
-
         //Invoking the API for the first time using the One Time Token
         org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(accessToken);
         assertEquals(invokeAPIResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK);
@@ -187,8 +184,21 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
         assertEquals(invokeAPIResponse2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED);
     }
 
-    @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws Exception {
+    @Test(groups = {"wso2.am"},
+            description = "Invoke the API with a user who does not have permission to access APIM portals")
+    public void testAPIInvocationWithOutsideUser() throws Exception {
+
+        //Invoking the API for the first time using the One Time Token
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(accessTokenForOutsider);
+        assertEquals(invokeAPIResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK);
+
+        //Wait for some time and invoke again with same token. Token should be revoked
+        Thread.sleep(15000);
+        org.apache.http.HttpResponse invokeAPIResponse2 = invokeAPI(accessTokenForOutsider);
+        assertEquals(invokeAPIResponse2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED);
+    }
+
+    @AfterClass(alwaysRun = true) public void cleanUpArtifacts() throws Exception {
 
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
@@ -196,7 +206,7 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
     }
 
     public List<OperationPolicyDTO> getPolicyList(String policyName, Map<String, String> policyMap,
-                                                  Map<String, Object> attributeMap) {
+            Map<String, Object> attributeMap) {
 
         List<OperationPolicyDTO> policyList = new ArrayList<>();
         OperationPolicyDTO policyDTO = new OperationPolicyDTO();
