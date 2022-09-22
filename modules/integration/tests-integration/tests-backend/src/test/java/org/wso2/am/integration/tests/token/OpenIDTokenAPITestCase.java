@@ -103,6 +103,17 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(userInfoResponse.getResponseCode(), 200, "Response code mismatched");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Token API Test sample",
+            dependsOnMethods = "testCallUserInfoApiWithOpenIdAccessToken")
+    public void testCallUserInfoApiWithOpenIdJWTAccessToken() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
+
+        HttpResponse userInfoResponse = HTTPSClientUtils.doGet(keyManagerHTTPSURL
+                + "oauth2/userinfo?schema=openid", requestHeaders);
+        Assert.assertEquals(userInfoResponse.getResponseCode(), 200, "Response code mismatched");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
