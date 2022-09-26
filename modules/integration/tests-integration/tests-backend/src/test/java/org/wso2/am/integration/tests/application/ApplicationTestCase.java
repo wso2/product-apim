@@ -33,6 +33,9 @@ import org.wso2.am.admin.clients.application.ApplicationManagementClient;
 import org.wso2.am.admin.clients.oauth.OAuthAdminServiceClient;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.UserManagementUtils;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -50,10 +53,12 @@ import org.wso2.carbon.identity.application.common.model.xsd.Property;
 import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
 import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertNotNull;
 import static org.testng.Assert.*;
 import static org.testng.Assert.assertTrue;
 
@@ -61,6 +66,11 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(ApplicationTestCase.class);
     private static final String webApp = "jaxrs_basic";
+    private static final String orgTestUser = "org_test_user_1";
+    private static final String testPassword = "test_password";
+    private static final String firstName = "first_name";
+    private static final String testOrganization = "test_organization";
+    private static final String testEmail = "test@wso2.com";
     private final String version = "1.0.0";
     private final String visibility = "public";
     private final String description = "API subscription";
@@ -149,6 +159,15 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
         oAuthAdminServiceClient =
                 new OAuthAdminServiceClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                         keymanagerSessionCookie);
+        if (userMode == TestUserMode.SUPER_TENANT_ADMIN) {
+            UserManagementUtils.signupUser(orgTestUser, testPassword, firstName, testOrganization, testEmail,
+                    keyManagerContext.getContextTenant().getDomain());
+        } else if (userMode == TestUserMode.TENANT_ADMIN) {
+            UserManagementUtils.signupUser(orgTestUser + "@wso2.com", testPassword, firstName, testOrganization,
+                    testEmail, keyManagerContext.getContextTenant().getDomain());
+            userManagementClient.updateRolesOfUser(orgTestUser + "@wso2.com",
+                    new String[] { APIMIntegrationConstants.APIM_INTERNAL_ROLE.SUBSCRIBER });
+        }
     }
 
     @Test(groups = {"webapp"}, description = "Get Application By Application Id")
@@ -292,6 +311,25 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
+    @Test(description = "Check getting applications with pagination for user having organization with ApplicationSharing"
+            + " disabled and LoginUsernameCaseInsensitive enabled")
+    public void verifyGetApplicationsWithPaginationForOrgUser() throws ApiException, XPathExpressionException {
+
+        RestAPIStoreImpl restAPIStoreClient = null;
+        if (userMode == TestUserMode.SUPER_TENANT_ADMIN) {
+            restAPIStoreClient = new RestAPIStoreImpl(orgTestUser, testPassword,
+                    keyManagerContext.getContextTenant().getDomain(), storeUrls.getWebAppURLHttps());
+        } else if (userMode == TestUserMode.TENANT_ADMIN) {
+            restAPIStoreClient = new RestAPIStoreImpl(orgTestUser + "@wso2.com", testPassword,
+                    keyManagerContext.getContextTenant().getDomain(), storeUrls.getWebAppURLHttps());
+        }
+        // enable_application_sharing = false
+        // login_username_case_insensitive = true
+        ApplicationListDTO appList = restAPIStoreClient.getApplications(null);
+        Assert.assertNotNull(appList);
+        Assert.assertEquals(appList.getCount().intValue(), 1);
+    }
+
     private OAuthConsumerAppDTO createOIDCApplication(String applicationName) throws Exception {
 
         OAuthConsumerAppDTO appDTO = new OAuthConsumerAppDTO();
@@ -340,5 +378,11 @@ public class ApplicationTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(applicationId2);
         applicationManagementClient.deleteApplication("OauthApp1");
         applicationManagementClient.deleteApplication("OauthApp2");
+
+        if (userMode == TestUserMode.SUPER_TENANT_ADMIN) {
+            userManagementClient.deleteUser(orgTestUser);
+        } else if (userMode == TestUserMode.TENANT_ADMIN) {
+            userManagementClient.deleteUser(orgTestUser + "@wso2.com");
+        }
     }
 }
