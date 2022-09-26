@@ -48,6 +48,11 @@
         <!-- Indicates whether the permissions checking of the user (on the Publisher and Developer Portal) should be done
            via a remote service. The check will be done on the local server when false. -->
         <CheckPermissionsRemotely>{{apim.auth_manager.check_permissions_remotely}}</CheckPermissionsRemotely>
+        <!-- Indicates whether the authentication endpoint has been reverse proxied through the Gateway when using
+             APIM with IS-KM. -->
+        {% if apim.auth_manager.iskm_reverseproxy_enabled is defined %}
+        <ISKMReverseProxyEnabled>{{apim.auth_manager.iskm_reverseproxy_enabled}}</ISKMReverseProxyEnabled>
+        {% endif %}
     </AuthManager>
 
     {% if apim.idp is defined %}
