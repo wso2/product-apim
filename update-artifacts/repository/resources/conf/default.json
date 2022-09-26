@@ -266,6 +266,7 @@
   "database.local.pool_options.validationInterval": "30000",
   "database.local.pool_options.defaultAutoCommit": "true",
   "apim.auth_manager.service_url": "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
+  "apim.auth_manager.iskm_reverseproxy_enabled": false,
   "config_data.overwrite": "true",
   "governance_data.overwrite": "true",
   "static_configuration.versioning_properties.enable": false,
