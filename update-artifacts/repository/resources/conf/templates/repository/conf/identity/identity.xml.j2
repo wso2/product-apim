@@ -1350,6 +1350,8 @@
         </CacheManager>
     </CacheConfig>
 
+    <EnableSessionNonceCookie>{{session.nonce.cookie.enabled}}</EnableSessionNonceCookie>
+
     {% if identity.cookies is defined %}
     <Cookies>
     {% for cookie in identity.cookies %}
