@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -38,6 +39,7 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.io.IOException;
 import java.net.URL;
@@ -60,20 +62,23 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
     private String applicationId;
     private String apiId;
     private String accessToken;
-    private Map<String, String> policyMap;
+    private String accessTokenWithoutScope;
+    private String accessTokenForOutsider;
 
-    @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
+    @BeforeClass(alwaysRun = true) public void initialize() throws Exception {
 
         super.init();
+
+        //The default value of One Time Token Scope is used which can be changed if required
+        String oneTimeTokenScope = "OTT";
 
         //Create the API
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application RevokeOneTimeToken", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
-        applicationId = applicationResponse.getData();
-        policyMap = restAPIPublisher.getAllCommonOperationPolicies();
 
+        applicationId = applicationResponse.getData();
+        Map<String, String> policyMap = restAPIPublisher.getAllCommonOperationPolicies();
         String API_END_POINT_POSTFIX_URL = "xmlapi";
         String apiEndPointUrl = getAPIInvocationURLHttp(API_END_POINT_POSTFIX_URL, API_VERSION_1_0_0);
         String API_NAME = "RevokeOneTimeTokenAPITest";
@@ -82,81 +87,118 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTags(API_TAGS);
+
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
 
-        //Create the JWT access token with the scope OTT
+        //Create a JWT access token with the scope OTT
         List<String> grantTypes = new ArrayList<>();
-        grantTypes.add("client_credentials");
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+
         ArrayList<String> scopes = new ArrayList<>();
-        scopes.add("OTT");
+        scopes.add(oneTimeTokenScope);
 
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore
-                .generateKeys(applicationId, "3600", null,
-                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, scopes, grantTypes);
-        assert applicationKeyDTO.getToken() != null;
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(applicationId, "3600",
+                null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, scopes, grantTypes);
+        if (applicationKeyDTO.getToken() == null) {
+            throw new AssertionError();
+        }
         accessToken = applicationKeyDTO.getToken().getAccessToken();
-    }
 
-    @Test(groups = {"wso2.am"}, description = "Invoke the API before adding the revoke one time token policy")
-    public void testAPIInvocationBeforeAddingRevokeOneTimePolicy() throws Exception {
+        //Create a JWT access token without the scope OTT
+        String consumerKey = applicationKeyDTO.getConsumerKey();
+        String consumerSecret = applicationKeyDTO.getConsumerSecret();
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + "oauth2/token");
+        String requestBody = "grant_type=" + APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL + "&username="
+                + user.getUserName() + "&password=" + user.getPassword() + "&scope= ";
 
-        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI();
-        assertEquals(invokeAPIResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK);
-    }
+        JSONObject accessTokenGenerationResponse = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
+                        .getData());
+        accessTokenWithoutScope = accessTokenGenerationResponse.getString("access_token");
 
-    @Test(groups = {"wso2.am"}, description = "Attach the policy without defining the policy attribute")
-    public void testRevokeOneTimePolicyAdditionWithMissingAttributes() throws Exception {
+        //Create a user who does not have permission to access dev portal
+        UserManagementClient userManagementClient = new UserManagementClient(
+                keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getUserName(),
+                keyManagerContext.getContextTenant().getTenantAdmin().getPassword());
 
+        userManagementClient.addUser("outsideUser", "outsideUserPassword",
+                new String[] { "Internal/everyone" },"outsideUser");
+        requestBody = "grant_type=" + APIMIntegrationConstants.GRANT_TYPE.PASSWORD + "&username=" + "outsideUser"
+                + "&password=outsideUserPassword&scope=" + oneTimeTokenScope;
+        accessTokenGenerationResponse = new JSONObject(
+                restAPIStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL)
+                        .getData());
+
+        //JWT for the outside user
+        accessTokenForOutsider = accessTokenGenerationResponse.getString("access_token");
+
+        ////Attach the policy to the API
         HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
         APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
 
-        //Attach the revoke one time token policy without defining the scope
         String policyName = "revokeOneTimeToken";
-        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
-        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, policyMap, null));
-        assert apidto.getOperations() != null;
-        apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
-
-        HttpResponse updateResponse = restAPIPublisher.updateAPIWithHttpInfo(apidto);
-        assertEquals(updateResponse.getResponseCode(), 500);
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the revoke one time policy")
-    public void testAPIInvocationRevokeOneTimePolicy() throws Exception {
-
-        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
-        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
-
-        //Attach the policy with scope attribute OTT which is the same as the JWT token
-        String policyName = "revokeOneTimeToken";
-        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
+        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " +
+                policyName);
 
         Map<String, Object> attributeMap = new HashMap<>();
-        attributeMap.put("scope", "OTT");
+        attributeMap.put("scope", oneTimeTokenScope);
 
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
         apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, policyMap, attributeMap));
 
-        assert apidto.getOperations() != null;
+        if (apidto.getOperations() == null) {
+            throw new AssertionError();
+        }
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
         restAPIPublisher.updateAPI(apidto);
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         waitForAPIDeployment();
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke the API with a JWT that is not an One Time Token")
+    public void testAPIInvocationWithoutAddingOneTimeTokenScopeToJWT() throws Exception {
 
         //Invoking the API for the first time
-        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI();
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(accessTokenWithoutScope);
+        assertEquals(invokeAPIResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK);
+
+        //Wait for some time and invoke again with same token. Token should not be revoked
+        Thread.sleep(15000);
+        org.apache.http.HttpResponse invokeAPIResponse2 = invokeAPI(accessTokenWithoutScope);
+        assertEquals(invokeAPIResponse2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the revoke one time policy")
+    public void testAPIInvocationOfAttachedRevokeOneTimePolicyUsingOneTimeToken() throws Exception {
+
+        //Invoking the API for the first time using the One Time Token
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(accessToken);
         assertEquals(invokeAPIResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK);
 
         //Wait for some time and invoke again with same token. Token should be revoked
         Thread.sleep(15000);
-        org.apache.http.HttpResponse invokeAPIResponse2 = invokeAPI();
+        org.apache.http.HttpResponse invokeAPIResponse2 = invokeAPI(accessToken);
         assertEquals(invokeAPIResponse2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED);
     }
 
-    @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws Exception {
+    @Test(groups = {"wso2.am"},
+            description = "Invoke the API with a user who does not have permission to access APIM portals")
+    public void testAPIInvocationWithOutsideUser() throws Exception {
+
+        //Invoking the API for the first time using the One Time Token
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(accessTokenForOutsider);
+        assertEquals(invokeAPIResponse.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK);
+
+        //Wait for some time and invoke again with same token. Token should be revoked
+        Thread.sleep(15000);
+        org.apache.http.HttpResponse invokeAPIResponse2 = invokeAPI(accessTokenForOutsider);
+        assertEquals(invokeAPIResponse2.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED);
+    }
+
+    @AfterClass(alwaysRun = true) public void cleanUpArtifacts() throws Exception {
 
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
@@ -164,7 +206,7 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
     }
 
     public List<OperationPolicyDTO> getPolicyList(String policyName, Map<String, String> policyMap,
-                                                  Map<String, Object> attributeMap) {
+            Map<String, Object> attributeMap) {
 
         List<OperationPolicyDTO> policyList = new ArrayList<>();
         OperationPolicyDTO policyDTO = new OperationPolicyDTO();
@@ -176,7 +218,7 @@ public class RevokeOneTimeTokenFlowTestCase extends APIManagerLifecycleBaseTest 
         return policyList;
     }
 
-    public org.apache.http.HttpResponse invokeAPI() throws XPathExpressionException, IOException {
+    public org.apache.http.HttpResponse invokeAPI(String accessToken) throws XPathExpressionException, IOException {
 
         HttpClient client = HttpClientBuilder.create().setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
