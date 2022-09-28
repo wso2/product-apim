@@ -1570,6 +1570,43 @@
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/webapps</outputDirectory>
             <destName>package.json</destName>
         </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/sms/sms-providers-api-body-templates.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/sms</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/attributes/userstore/unique-id-active-directory.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
+        </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/attributes/userstore/unique-id-jdbc.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
+        </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/attributes/userstore/unique-id-read-only-ldap.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
+        </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/attributes/userstore/unique-id-read-write-ldap.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
+        </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/scim2-schema-extension.config
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+        </file>
     </files>
 
 </assembly>
