@@ -397,21 +397,6 @@
         <jsp-file>/emailOtpError.jsp</jsp-file>
     </servlet>
 
-    <servlet>
-        <servlet-name>mobile.do</servlet-name>
-        <jsp-file>/mobile.jsp</jsp-file>
-    </servlet>
-
-    <servlet>
-        <servlet-name>sms_otp.do</servlet-name>
-        <jsp-file>/smsOtp.jsp</jsp-file>
-    </servlet>
-
-    <servlet>
-        <servlet-name>sms_otp_error.do</servlet-name>
-        <jsp-file>/smsOtpError.jsp</jsp-file>
-    </servlet>
-
     {% for custom_servlet in servlet %}
     <servlet>
         <servlet-name>{{custom_servlet.name}}</servlet-name>
@@ -481,21 +466,6 @@
     <servlet-mapping>
         <servlet-name>email_otp_error.do</servlet-name>
         <url-pattern>/email_otp_error.do</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>mobile.do</servlet-name>
-        <url-pattern>/mobile.do</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>sms_otp.do</servlet-name>
-        <url-pattern>/sms_otp.do</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>sms_otp_error.do</servlet-name>
-        <url-pattern>/sms_otp_error.do</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
