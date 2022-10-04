@@ -469,6 +469,7 @@
                 <exclude>authenticationendpoint/mobile.jsp</exclude>
                 <exclude>authenticationendpoint/smsOtp.jsp</exclude>
                 <exclude>authenticationendpoint/smsOtpError.jsp</exclude>
+                <exclude>authenticationendpoint/totp.jsp</exclude>
             </excludes>
         </fileSet>
 
