@@ -1,7 +1,7 @@
 {
   "category": "Mediation",
   "name": "ccChangeHTTPMethod",
-  "version": "v1",
+  "version": "v2",
   "displayName": "Change HTTP Method",
   "description": "This policy allows you to change the HTTP Method",
   "policyAttributes": [
