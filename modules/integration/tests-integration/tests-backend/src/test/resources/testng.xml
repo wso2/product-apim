@@ -378,10 +378,4 @@
             <class name="org.wso2.am.integration.tests.other.LightweightObservabilityTestCase"/>
         </classes>
     </test>
-    <test name="apim-get-applications-with-pagination-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <classes>
-            <class name="org.wso2.am.integration.tests.getApplicationsWithPagination.OrgUserWithApplicationSharingEnabledAndLoginUsernameCaseInsensitiveDisabledTest"/>
-            <class name="org.wso2.am.integration.tests.getApplicationsWithPagination.ApplicationSharingDisabledAndLoginUsernameCaseInsensitiveDisabledTest"/>
-        </classes>
-    </test>
 </suite>

@@ -30,7 +30,6 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
-import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.UserManagementUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -124,16 +123,6 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
                 APPLICATION_NAME, "This app has been edited by user1",
                 APIMIntegrationConstants.APPLICATION_TIER.TEN_PER_MIN, ApplicationDTO.TokenTypeEnum.JWT, groups);
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN);
-    }
-
-    @Test(groups = { "wso2.am" }, description = "This will test fetching applications in the developer portal for a user"
-            + " who has an organization with ApplicationSharing enabled and LoginUsernameCaseInsensitive enabled")
-    public void verifyGetApplicationsWithPaginationForOrgUser() throws ApiException {
-        // enable_application_sharing = true
-        // login_username_case_insensitive = true
-        ApplicationListDTO appList = restAPIStoreClientUser1.getApplications(null);
-        Assert.assertNotNull(appList);
-        Assert.assertEquals(appList.getCount().intValue(), 2);
     }
 
     @AfterClass(alwaysRun = true)
