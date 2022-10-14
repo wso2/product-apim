@@ -1605,12 +1605,7 @@
             </source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
         </file>
-        <file>
-            <source>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/scim2-schema-extension.config
-            </source>
-            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
-        </file>
+
     </files>
 
 </assembly>
