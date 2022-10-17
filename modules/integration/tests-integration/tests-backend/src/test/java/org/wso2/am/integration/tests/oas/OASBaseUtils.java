@@ -22,6 +22,8 @@ package org.wso2.am.integration.tests.oas;
 import org.junit.Assert;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +47,11 @@ public class OASBaseUtils {
         }
 
         String context = apidto.getContext() + "/" + apidto.getVersion();
+        String organization = MultitenantUtils.getTenantDomain(apidto.getProvider());
+        if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(organization) &&
+                !context.contains("/t/" + organization)) {
+            context = "/t/" + organization + "" + context;
+        }
         Assert.assertEquals(context, extensions.get("x-wso2-basePath"));
         Assert.assertTrue(extensions.containsKey("x-wso2-cors"));
         Assert.assertTrue(extensions.containsKey("x-wso2-production-endpoints"));
