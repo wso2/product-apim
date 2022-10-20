@@ -23,22 +23,29 @@
 <%@ page import="org.wso2.carbon.identity.core.util.IdentityCoreConstants" %>
 <%@ page import="org.wso2.carbon.identity.core.util.IdentityUtil" %>
 <%@ page import="org.wso2.carbon.base.ServerConfiguration" %>
+<%@ page import="org.wso2.carbon.identity.captcha.util.CaptchaUtil" %>
 <%@ page import="static org.wso2.carbon.identity.application.authentication.endpoint.util.Constants.STATUS" %>
 <%@ page import="static org.wso2.carbon.identity.application.authentication.endpoint.util.Constants.STATUS_MSG" %>
 <%@ page import="static org.wso2.carbon.identity.application.authentication.endpoint.util.Constants.CONFIGURATION_ERROR" %>
 <%@ page import="static org.wso2.carbon.identity.application.authentication.endpoint.util.Constants.AUTHENTICATION_MECHANISM_NOT_CONFIGURED" %>
 <%@ page import="static org.wso2.carbon.identity.application.authentication.endpoint.util.Constants.ENABLE_AUTHENTICATION_WITH_REST_API" %>
 <%@ page import="static org.wso2.carbon.identity.application.authentication.endpoint.util.Constants.ERROR_WHILE_BUILDING_THE_ACCOUNT_RECOVERY_ENDPOINT_URL" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.IdentityProviderDataRetrievalClient" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.IdentityProviderDataRetrievalClientException" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointConstants" %>
 <%@ page import="java.io.File" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Arrays" %>
 <%@ page import="java.util.Map" %>
+<%@ taglib prefix="layout" uri="org.wso2.identity.apps.taglibs.layout.controller" %>
 
 <%@ include file="includes/localize.jsp" %>
 <jsp:directive.include file="includes/init-url.jsp"/>
+<jsp:directive.include file="includes/layout-resolver.jsp"/>
 
 <%!
     private static final String FIDO_AUTHENTICATOR = "FIDOAuthenticator";
+    private static final String MAGIC_LINK_AUTHENTICATOR = "MagicLinkAuthenticator";
     private static final String IWA_AUTHENTICATOR = "IwaNTLMAuthenticator";
     private static final String IS_SAAS_APP = "isSaaSApp";
     private static final String BASIC_AUTHENTICATOR = "BasicAuthenticator";
@@ -46,6 +53,8 @@
     private static final String OPEN_ID_AUTHENTICATOR = "OpenIDAuthenticator";
     private static final String JWT_BASIC_AUTHENTICATOR = "JWTBasicAuthenticator";
     private static final String X509_CERTIFICATE_AUTHENTICATOR = "x509CertificateAuthenticator";
+    private String reCaptchaAPI = null;
+    private String reCaptchaKey = null;
 %>
 
 <%
@@ -66,8 +75,10 @@
     if (Boolean.parseBoolean(request.getParameter(Constants.AUTH_FAILURE))) {
         loginFailed = "true";
         String error = request.getParameter(Constants.AUTH_FAILURE_MSG);
-        if (error != null && !error.isEmpty()) {
-            errorMessage = error;
+        // Check the error is not null and whether there is a corresponding value in the resource bundle.
+        if (!(StringUtils.isBlank(error)) &&
+            !error.equalsIgnoreCase(AuthenticationEndpointUtil.i18n(resourceBundle, error))) {
+                errorMessage = error;
         }
     }
 %>
@@ -82,6 +93,22 @@
             localAuthenticatorNames = Arrays.asList(authList.split(","));
         }
     }
+
+    String multiOptionURIParam = "";
+    if (localAuthenticatorNames.size() > 1 || idpAuthenticatorMapping != null && idpAuthenticatorMapping.size() > 1) {
+        String baseURL;
+        try {
+            baseURL = ServiceURLBuilder.create().addPath(request.getRequestURI()).build().getRelativePublicURL();
+        } catch (URLBuilderException e) {
+            request.setAttribute(STATUS, AuthenticationEndpointUtil.i18n(resourceBundle, "internal.error.occurred"));
+            request.setAttribute(STATUS_MSG, AuthenticationEndpointUtil.i18n(resourceBundle, "error.when.processing.authentication.request"));
+            request.getRequestDispatcher("error.do").forward(request, response);
+            return;
+        }
+
+        String queryParamString = request.getQueryString() != null ? ("?" + request.getQueryString()) : "";
+        multiOptionURIParam = "&multiOptionURI=" + Encode.forUriComponent(baseURL + queryParamString);
+    }
 %>
 <%
     boolean reCaptchaEnabled = false;
@@ -93,10 +120,16 @@
     if (request.getParameter("reCaptchaResend") != null && Boolean.parseBoolean(request.getParameter("reCaptchaResend"))) {
         reCaptchaResendEnabled = true;
     }
+
+    if (reCaptchaEnabled || reCaptchaResendEnabled) {
+        reCaptchaKey = CaptchaUtil.reCaptchaSiteKey();
+        reCaptchaAPI = CaptchaUtil.reCaptchaAPIURL();
+    }
 %>
 <%
     String inputType = request.getParameter("inputType");
     String username = null;
+    String usernameIdentifier = null;
 
     if (isIdentifierFirstLogin(inputType)) {
         String authAPIURL = application.getInitParameter(Constants.AUTHENTICATION_REST_ENDPOINT_URL);
@@ -112,23 +145,50 @@
         Map<String, Object> parameters = gson.fromJson(contextProperties, Map.class);
         if (parameters != null) {
             username = (String) parameters.get("username");
+            usernameIdentifier = (String) parameters.get("username");
         } else {
             String redirectURL = "error.do";
             response.sendRedirect(redirectURL);
+            return;
         }
     }
 
     // Login context request url.
     String sessionDataKey = request.getParameter("sessionDataKey");
-    String relyingParty = request.getParameter("relyingParty");
-    String loginContextRequestUrl = logincontextURL + "?sessionDataKey=" + Encode.forUriComponent(sessionDataKey) + "&relyingParty="
-            + Encode.forUriComponent(relyingParty);
+    String appName = request.getParameter("sp");
+    String loginContextRequestUrl = logincontextURL + "?sessionDataKey=" + Encode.forUriComponent(sessionDataKey) + "&application="
+            + Encode.forUriComponent(appName);
     if (!IdentityTenantUtil.isTenantQualifiedUrlsEnabled()) {
         // We need to send the tenant domain as a query param only in non tenant qualified URL mode.
-        loginContextRequestUrl += "&tenantDomain=" + tenantDomain;
+        loginContextRequestUrl += "&tenantDomain=" + Encode.forUriComponent(tenantDomain);
+    }
+
+    String t = request.getParameter("t");
+    String ut = request.getParameter("ut");
+    if (StringUtils.isNotBlank(t)) {
+        loginContextRequestUrl += "&t=" + t;
+    }
+    if (StringUtils.isNotBlank(ut)) {
+        loginContextRequestUrl += "&ut=" + ut;
+    }
+
+    if (StringUtils.isNotBlank(usernameIdentifier)) {
+        if (usernameIdentifier.split("@").length == 2) {
+            usernameIdentifier = usernameIdentifier.split("@")[0];
+        }
+
+        if (usernameIdentifier.split("@").length > 2
+            && !StringUtils.equals(usernameIdentifier.split("@")[1], IdentityManagementEndpointConstants.SUPER_TENANT)) {
+
+            usernameIdentifier = usernameIdentifier.split("@")[0] + "@" + usernameIdentifier.split("@")[1];
+        }
     }
 %>
 
+<%-- Data for the layout from the page --%>
+<%
+    layoutData.put("containerSize", "medium");
+%>
 
 <!doctype html>
 <html>
@@ -146,15 +206,22 @@
     <%
         if (reCaptchaEnabled || reCaptchaResendEnabled) {
     %>
-        <script src='<%=(Encode.forJavaScriptSource(request.getParameter("reCaptchaAPI")))%>'></script>
+    <script src="<%=Encode.forHtmlContent(reCaptchaAPI)%>"></script>
     <%
         }
     %>
 </head>
 <body class="login-portal layout authentication-portal-layout" onload="checkSessionKey()">
-    <main class="center-segment">
-        <div class="ui container medium center aligned middle aligned">
 
+    <% request.setAttribute("pageName", "sign-in"); %>
+    <% if (new File(getServletContext().getRealPath("extensions/timeout.jsp")).exists()) { %>
+        <jsp:include page="extensions/timeout.jsp"/>
+    <% } else { %>
+        <jsp:include page="util/timeout.jsp"/>
+    <% } %>
+
+    <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
+        <layout:component componentName="ProductHeader" >
             <!-- product-title -->
             <%
                 File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
@@ -164,11 +231,13 @@
             <% } else { %>
                 <jsp:include page="includes/product-title.jsp"/>
             <% } %>
-
+        </layout:component>
+        <layout:component componentName="MainSection" >
             <div class="ui segment">
-                <h3 class="ui header">
+                <h3 class="ui header ellipsis">
                     <% if (isIdentifierFirstLogin(inputType)) { %>
-                        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "welcome") + " " + username%>
+                        <div class="display-inline"><%=AuthenticationEndpointUtil.i18n(resourceBundle, "welcome") + " "%></div>
+                        <div id="user-name-label" class="display-inline" data-position="top left" data-variation="inverted" data-content="<%=usernameIdentifier%>"><%=usernameIdentifier%></div>
                     <% } else { %>
                         <%=AuthenticationEndpointUtil.i18n(resourceBundle, "login")%>
                     <% } %>
@@ -198,6 +267,7 @@
                                     String redirectURL = "error.do?" + STATUS + "=" + CONFIGURATION_ERROR + "&" +
                                             STATUS_MSG + "=" + AUTHENTICATION_MECHANISM_NOT_CONFIGURED;
                                     response.sendRedirect(redirectURL);
+                                    return;
                                 }
                             } else if (localAuthenticatorNames.contains(BASIC_AUTHENTICATOR)) {
                                 isBackChannelBasicAuth = false;
@@ -233,7 +303,7 @@
                     </div>
                     <% } %>
                     <div class="field">
-                        <div class="ui vertical ui center aligned segment form" style="max-width: 300px; margin: 0 auto;">
+                        <div class="ui vertical ui center aligned segment form">
                             <%
                                 int iconId = 0;
                                 if (idpAuthenticatorMapping != null) {
@@ -245,6 +315,16 @@
                                         if (idpName.endsWith(".hub")) {
                                             isHubIdp = true;
                                             idpName = idpName.substring(0, idpName.length() - 4);
+                                        }
+
+                                        // Uses the `IdentityProviderDataRetrievalClient` to get the IDP image.
+                                        String imageURL = "libs/themes/default/assets/images/identity-providers/enterprise-idp-illustration.svg";
+
+                                        try {
+                                            IdentityProviderDataRetrievalClient identityProviderDataRetrievalClient = new IdentityProviderDataRetrievalClient();
+                                            imageURL = identityProviderDataRetrievalClient.getIdPImage(tenantDomain, idpName);
+                                        } catch (IdentityProviderDataRetrievalClientException e) {
+                                            // Exception is ignored and the default `imageURL` value will be used as a fallback.
                                         }
                             %>
                                 <% if (isHubIdp) { %>
@@ -268,17 +348,24 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <br>
                                 <% } else { %>
-                                    <div class="field">
-                                        <button class="ui icon button fluid"
-                                            onclick="handleNoDomain(this,
-                                                '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpName))%>',
-                                                '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpEntry.getValue()))%>')"
-                                            id="icon-<%=iconId%>"
-                                            title="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> <%=Encode.forHtmlAttribute(idpName)%>">
-                                            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> <strong><%=Encode.forHtmlContent(idpName)%></strong>
-                                        </button>
+                                    <div class="external-login blurring external-login-dimmer">
+                                        <div class="field">
+                                            <button
+                                                class="ui button fluid"
+                                                onclick="handleNoDomain(this,
+                                                    '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpName))%>',
+                                                    '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpEntry.getValue()))%>')"
+                                                id="icon-<%=iconId%>"
+                                                title="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> <%=Encode.forHtmlAttribute(idpName)%>"
+                                            >
+                                                <img class="ui image" src="<%=Encode.forHtmlAttribute(imageURL)%>">
+                                                <span><%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> <%=Encode.forHtmlContent(idpName)%></span>
+                                            </button>
+                                        </div>
                                     </div>
+                                    <br>
                                 <% } %>
                             <% } else if (localAuthenticatorNames.size() > 0) {
                                 if (localAuthenticatorNames.contains(IWA_AUTHENTICATOR)) {
@@ -313,18 +400,43 @@
                                 if (localAuthenticatorNames.contains(FIDO_AUTHENTICATOR)) {
                             %>
                             <div class="field">
-                                <button class="ui grey basic labeled icon button fluid"
+                                <button class="ui grey labeled icon button fluid"
                                     onclick="handleNoDomain(this,
                                         '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpEntry.getKey()))%>',
                                         'FIDOAuthenticator')"
                                     id="icon-<%=iconId%>"
-                                    title="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> FIDO">
+                                    title="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%>
+                                    <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with" )%>">
                                     <i class="usb icon"></i>
-                                    <img src="libs/themes/default/assets/images/icons/fido-logo.png" height="13px" /> Key
+                                    <img src="libs/themes/default/assets/images/icons/fingerprint.svg" alt="Fido Logo" />
+                                    <span>
+                                        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with" )%>
+                                        <%=AuthenticationEndpointUtil.i18n(resourceBundle, "fido.authenticator" )%>
+                                    </span>
                                 </button>
                             </div>
                             <%
-                                        }
+                                }
+                                if (localAuthenticatorNames.contains(MAGIC_LINK_AUTHENTICATOR)) {
+                            %>
+                            <div class="social-login blurring social-dimmer">
+                                <div class="field">
+                                    <button class="ui button" onclick="handleNoDomain(this,
+                                        '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpEntry.getKey()))%>',
+                                        '<%=MAGIC_LINK_AUTHENTICATOR%>')" id="icon-<%=iconId%>"
+                                        title="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%>
+                                            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "magic.link" )%>"
+                                        data-componentid="login-page-sign-in-with-magic-link">
+                                        <img class="ui image" src="libs/themes/default/assets/images/icons/magic-link-icon.svg" alt="Magic Link Logo" />
+                                        <span>
+                                            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with" )%>
+                                            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "magic.link" )%>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                            <%
+                                }
                                 if (localAuthenticatorNames.contains("totp")) {
                             %>
                             <div class="field">
@@ -338,28 +450,28 @@
                                 </button>
                             </div>
                             <%
-                                        }
-                                    }
-
-                                }
+                            }
+                            }
+                            }
                             } %>
                             </div>
                         </div>
                     <% } %>
                 </div>
             </div>
-        </div>
-    </main>
-
-    <!-- product-footer -->
-    <%
-        File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
-        if (productFooterFile.exists()) {
-    %>
-        <jsp:include page="extensions/product-footer.jsp"/>
-    <% } else { %>
-        <jsp:include page="includes/product-footer.jsp"/>
-    <% } %>
+        </layout:component>
+        <layout:component componentName="ProductFooter" >
+            <!-- product-footer -->
+            <%
+                File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
+                if (productFooterFile.exists()) {
+            %>
+                <jsp:include page="extensions/product-footer.jsp"/>
+            <% } else { %>
+                <jsp:include page="includes/product-footer.jsp"/>
+            <% } %>
+        </layout:component>
+    </layout:main>
 
     <!-- footer -->
     <%
@@ -370,7 +482,7 @@
     <% } else { %>
         <jsp:include page="includes/footer.jsp"/>
     <% } %>
-    
+
     <%
         String contextPath =
                 ServerConfiguration.getInstance().getFirstProperty(IdentityCoreConstants.PROXY_CONTEXT_PATH);
@@ -392,6 +504,7 @@
             $.ajax({
                 type: "GET",
                 url: proxyPath + "<%=loginContextRequestUrl%>",
+                xhrFields: { withCredentials: true },
                 success: function (data) {
                     if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {
                         window.location.href = data.redirectUrl;
@@ -414,6 +527,9 @@
         }
 
         $(document).ready(function () {
+            $('#user-name-label').popup({
+                lastResort: 'top left'
+            });
             $('.main-link').click(function () {
                 $('.main-link').next().hide();
                 $(this).next().toggle('fast');
@@ -426,25 +542,6 @@
                 $(this).hide();
                 $('.main-link').next().hide();
             });
-
-            <%
-                if(reCaptchaEnabled) {
-            %>
-                var error_msg = $("#error-msg");
-
-                $("#loginForm").submit(function (e) {
-                    var resp = $("[name='g-recaptcha-response']")[0].value;
-                    if (resp.trim() == '') {
-                        error_msg.text("<%=AuthenticationEndpointUtil.i18n(resourceBundle,"please.select.recaptcha")%>");
-                        error_msg.show();
-                        $("html, body").animate({scrollTop: error_msg.offset().top}, 'slow');
-                        return false;
-                    }
-                    return true;
-                });
-            <%
-                }
-            %>
         });
 
         function myFunction(key, value, name) {
@@ -468,13 +565,6 @@
                 console.warn("Preventing multi click.")
             } else {
                 $(elem).addClass(linkClicked);
-                <%
-                String multiOptionURIParam = "";
-                if (localAuthenticatorNames.size() > 1 || idpAuthenticatorMapping != null && idpAuthenticatorMapping.size() > 1) {
-                    multiOptionURIParam = "&multiOptionURI=" + Encode.forUriComponent(request.getRequestURI() +
-                        (request.getQueryString() != null ? "?" + request.getQueryString() : ""));
-                }
-                %>
                 document.location = "<%=commonauthURL%>?idp=" + key + "&authenticator=" + value +
                     "&sessionDataKey=<%=Encode.forUriComponent(request.getParameter("sessionDataKey"))%>" +
                     "<%=multiOptionURIParam%>";
