@@ -20,7 +20,7 @@
 <%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointConstants" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
-<%@ page import="java.net.URISyntaxException" %>
+<%@ page import="java.net.MalformedURLException" %>
 <%@ page import="java.io.File" %>
 <%@ page import="org.wso2.carbon.identity.recovery.util.Utils" %>
 <%@ page import="org.owasp.encoder.Encode" %>
@@ -40,7 +40,6 @@
     String fullyQualifiedUsername = username;
     boolean hasAutoLoginCookie = IdentityManagementEndpointUtil.getBooleanValue(request.getAttribute("isAutoLoginEnabled"));
 
-    String callback = (String) request.getAttribute("callback");
     if (StringUtils.isBlank(callback)) {
         callback = IdentityManagementEndpointUtil.getUserPortalUrl(
                 application.getInitParameter(IdentityManagementEndpointConstants.ConfigConstants.USER_PORTAL_URL));
@@ -161,7 +160,7 @@
                     location.href = "<%= IdentityManagementEndpointUtil.encodeURL(callback)%>";
                     <%
                             }
-                    } catch (URISyntaxException e) {
+                    } catch (MalformedURLException e) {
                         request.setAttribute("error", true);
                         request.setAttribute("errorMsg", "Invalid callback URL found in the request.");
                         request.getRequestDispatcher("error.jsp").forward(request, response);
