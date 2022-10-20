@@ -96,6 +96,9 @@
                         grecaptcha.execute();
                         return;
                     }
+                    <%
+                        }
+                    %>
                     var userName = document.getElementById("username");
                     userName.value = userName.value.trim();
 
@@ -169,18 +172,12 @@
     private static final String ACCOUNT_RECOVERY_ENDPOINT_REGISTER = "/register.do";
 %>
 <%
-    String emailUsernameEnable = application.getInitParameter("EnableEmailUserName");
-    Boolean isEmailUsernameEnabled = false;
+    
     String usernameLabel = "username";
     Boolean isSelfSignUpEnabledInTenant;
     Boolean isUsernameRecoveryEnabledInTenant;
     Boolean isPasswordRecoveryEnabledInTenant;
     Boolean isMultiAttributeLoginEnabledInTenant;
-    if (StringUtils.isNotBlank(emailUsernameEnable)) {
-        isEmailUsernameEnabled = Boolean.valueOf(emailUsernameEnable);
-    } else {
-        isEmailUsernameEnabled = isEmailUsernameEnabled();
-    }
     try {
         PreferenceRetrievalClient preferenceRetrievalClient = new PreferenceRetrievalClient();
         isSelfSignUpEnabledInTenant = preferenceRetrievalClient.checkSelfRegistration(tenantDomain);
@@ -299,11 +296,10 @@
                     value=""
                     name="username"
                     tabindex="1"
-                    placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "usernameLabel")%>"
+                    placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "username")%>"
                     data-testid="login-page-username-input"
                     required>
                 <i aria-hidden="true" class="user icon"></i>
-                <input id="username" name="username" type="hidden" value="<%=username%>">
             </div>
         </div>
     <% } else { %>
@@ -335,8 +331,7 @@
                 data-size="invisible"
                 data-callback="onCompleted"
                 data-action="login"
-                data-sitekey=
-                        "<%=Encode.forHtmlContent(reCaptchaKey)%>">
+                                data-sitekey="<%=Encode.forHtmlContent(request.getParameter("reCaptchaKey"))%>"
         </div>
     <%
         }

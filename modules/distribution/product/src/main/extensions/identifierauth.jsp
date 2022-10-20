@@ -131,7 +131,7 @@
     %>
     <div class="field">
         <div class="g-recaptcha"
-             data-sitekey="<%=Encode.forHtmlContent(reCaptchaKey)%>">
+             data-sitekey="<%=Encode.forHtmlContent(request.getParameter("reCaptchaKey"))%>">
         </div>
     </div>
     <%
