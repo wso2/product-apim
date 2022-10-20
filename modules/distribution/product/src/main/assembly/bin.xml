@@ -425,6 +425,11 @@
             <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
         </fileSet>
 
+        <fileSet>
+            <directory>../../local-authenticators/target/localauthenticatorCopied/jar</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
+        </fileSet>
+
         <!--copy web app for OAuth feature-->
         <fileSet>
             <directory>

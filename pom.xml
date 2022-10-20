@@ -49,6 +49,7 @@
         <module>modules/p2-profile</module>
         <module>modules/oauth2-grant-types</module>
         <module>modules/callhome</module>
+        <module>modules/local-authenticators</module>
         <module>modules/distribution</module>
         <module>modules/integration</module>
     </modules>
