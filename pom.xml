@@ -883,6 +883,11 @@
                 <type>zip</type>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.extension.identity.oauth.addons</groupId>
+                <artifactId>org.wso2.carbon.identity.oauth2.token.handler.clientauth.mutualtls</artifactId>
+                <version>${identity.oauth.addons.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.andes.wso2</groupId>
                 <artifactId>andes-client</artifactId>
                 <version>${andes.version}</version>
@@ -1293,7 +1298,7 @@
         <carbon.kernel.version>4.7.1</carbon.kernel.version>
         <apimserver.version>4.2.0-SNAPSHOT</apimserver.version>
 
-	    <cipher.tool.version>1.1.15</cipher.tool.version>
+        <cipher.tool.version>1.1.15</cipher.tool.version>
 
         <carbon.commons.version>4.9.0-SNAPSHOT</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
@@ -1318,6 +1323,7 @@
         <carbon.identity.carbon.auth.saml2.version>5.6.4</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.6.1</carbon.identity.auth.version>
         <identity.apps.version>1.4.28</identity.apps.version>
+        <identity.oauth.addons.version>2.4.8</identity.oauth.addons.version>
 
         <!--SAML Common Utils Version-->
         <saml.common.util.version>1.1.2</saml.common.util.version>
@@ -1345,8 +1351,8 @@
         <woden.version>1.0.0.M8-wso2v1</woden.version>
         <synapse.version>2.1.7-wso2v313</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v76</axis2.wso2.version>
-        <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v83</axis2.wso2.version>
+        <axiom.wso2.version>1.2.11-wso2v25</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1</commons.logging.version>
@@ -1463,7 +1469,7 @@
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.5.0</wso2is.km.version>
-        <okta.keymanager.feature.version>4.2.0-SNAPSHOT</okta.keymanager.feature.version>
+        <okta.keymanager.feature.version>3.2.0-SNAPSHOT</okta.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.0</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.4</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.6</pingfederate.keymanager.feature.version>
