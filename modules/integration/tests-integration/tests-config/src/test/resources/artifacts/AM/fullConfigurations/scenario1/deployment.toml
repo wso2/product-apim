@@ -1,5 +1,5 @@
 [server]
-#hostname = "localhost"
+hostname = "localhost"
 #offset=0
 base_path = "localhost:9443"
 server_role = "default"
