@@ -255,22 +255,15 @@ public class WebSocketAPICorsValidationTestCase extends APIMIntegrationBaseTest 
             client.stop();
         }
 
-        // Invoke API without 'Origin' header
+        // Invoke API without 'Origin' header. Invocation should be successful due to
+        // the fix for the issue https://github.com/wso2/api-manager/issues/612
         HttpHeaders headers2 = new DefaultHttpHeaders();
-        boolean apiInvocationFailed = false;
         try {
             invokeAPI(client, accessToken, AUTH_IN.HEADER, headers2);
-        } catch (APIManagerIntegrationTestException e) {
-            log.error("Exception in connecting to server", e);
-            apiInvocationFailed = true;
-            assertTrue(true, "Websocket handshake failed as expected");
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
         } finally {
-            if (!apiInvocationFailed) {
-                Assert.fail("CORS origin header validation has not been successful");
-            }
             client.stop();
         }
     }
