@@ -1,6 +1,9 @@
 [server]
+hostname = "localhost"
 base_path = "${carbon.protocol}://${carbon.host}:${carbon.management.port}"
 server_role = "default"
+enable_shutdown_from_api = true
+enable_restart_from_api = true
 
 [super_admin]
 username = "admin"
