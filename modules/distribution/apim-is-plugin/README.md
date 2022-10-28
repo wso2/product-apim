@@ -1,4 +1,4 @@
-# WSO2 APIM IS Plugin - 4.1.0-SNAPSHOT
+# WSO2 APIM IS Plugin - 4.2.0-SNAPSHOT
 
 ## Prerequisites:
 1. Download WSO2 IS product
