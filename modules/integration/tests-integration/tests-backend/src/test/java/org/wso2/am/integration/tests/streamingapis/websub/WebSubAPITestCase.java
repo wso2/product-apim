@@ -67,12 +67,10 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -240,8 +238,8 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
 
         callbackServerServlet.setCallbacksReceived(0);
         String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
-        handleCallbackSubscriptionWithQueryParameters(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
-                accessToken);
+        handleCallbackSubscriptionWithQueryParameters(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
+                                                      "50000000", accessToken);
         initializeWebhookSender(topicSecret);
         Thread.sleep(5000);
         int noOfEventsToSend = 10;
@@ -249,8 +247,8 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
             webhookSender.send();
             Thread.sleep(5000);
         }
-        handleCallbackSubscriptionWithQueryParameters(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
-                accessToken);
+        handleCallbackSubscriptionWithQueryParameters(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
+                                                      "50000000", accessToken);
         Thread.sleep(5000);
         int sent = webhookSender.getWebhooksSent();
         int received = callbackServerServlet.getCallbacksReceived();
