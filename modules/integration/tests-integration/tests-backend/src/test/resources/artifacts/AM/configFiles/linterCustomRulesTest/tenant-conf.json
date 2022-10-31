@@ -35,7 +35,7 @@
       },
       {
         "Name": "apim:api_view",
-        "Roles": "admin,Internal/publisher,Internal/creator,Internal/analytics,Internal/observer"
+        "Roles": "admin,Internal/publisher,Internal/creator,Internal/analytics"
       },
       {
         "Name": "apim:api_delete",
@@ -171,7 +171,7 @@
       },
       {
         "Name": "apim:publisher_settings",
-        "Roles": "admin,Internal/creator,Internal/publisher,Internal/observer"
+        "Roles": "admin,Internal/creator,Internal/publisher"
       },
       {
         "Name": "apim:store_settings",
@@ -347,11 +347,15 @@
       },
       {
         "Name": "apim:common_operation_policy_view",
-        "Roles": "admin,Internal/creator,Internal/publisher,Internal/observer"
+        "Roles": "admin,Internal/creator,Internal/publisher"
       },
       {
         "Name": "apim:common_operation_policy_manage",
         "Roles": "admin,Internal/creator"
+      },
+      {
+        "Name": "apim:policies_import_export",
+        "Roles": "admin,Internal/devops"
       }
     ]
   },
@@ -390,13 +394,14 @@
       "CreateOnTenantLoad": true,
       "RoleName": "Internal/devops"
     },
-    "ObserverRole": {
-      "CreateOnTenantLoad": true,
-      "RoleName": "Internal/observer"
-    },
     "IntegrationDeveloperRole": {
       "CreateOnTenantLoad": true,
       "RoleName": "Internal/integration_dev"
     }
+  },
+  "SelfSignUp": {
+    "SignUpRoles": [
+      "Internal/subscriber"
+    ]
   }
 }
