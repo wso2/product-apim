@@ -1316,7 +1316,7 @@
         <carbon.identity-user-ws.version>5.6.1</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.8.0</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>6.6.0</carbon.identity-local-auth-basicauth.version>
-        <carbon.identity-outbound-auth-samlsso.version>5.6.1</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.6.2</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.6.0</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.5.1</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.1.1</carbon.extension.identity.oauth2.grantType.jwt.version>
@@ -1484,7 +1484,7 @@
         <com.squareup.okhttp3.version>4.9.0</com.squareup.okhttp3.version>
         <io.gsonfire.version>1.8.3</io.gsonfire.version>
         <org.apache.oltu.oauth2.version>1.0.1</org.apache.oltu.oauth2.version>
-        <identity.org.mgt.version>1.2.0</identity.org.mgt.version>
+        <identity.org.mgt.version>1.2.1</identity.org.mgt.version>
         <identity.inbound.provisioning.scim2.version>3.1.1</identity.inbound.provisioning.scim2.version>
         <xmlsec.wso2.version>1.5.6-wso2v1</xmlsec.wso2.version>
         <xmlsec.version>1.5.6</xmlsec.version>
