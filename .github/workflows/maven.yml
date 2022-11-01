@@ -27,9 +27,9 @@ jobs:
     - name: Show hosts
       run: cat /etc/hosts
     - name: Checkout master
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Cache Maven packages
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2
@@ -58,7 +58,7 @@ jobs:
           TEST-TestSuite_${{ matrix.id }}.xml
         if-no-files-found: warn
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1.2.1
+      uses: codecov/codecov-action@v3
       with:
         flags: integration_tests
   run-benchmark-test:
@@ -71,9 +71,9 @@ jobs:
       - name: Show hosts
         run: cat /etc/hosts
       - name: Checkout master
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Cache Maven packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2
@@ -83,7 +83,7 @@ jobs:
         with:
           java-version: 11.0.16+8
           distribution: 'temurin'
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: '10.x'
       - name: Build product-apim with Test.
