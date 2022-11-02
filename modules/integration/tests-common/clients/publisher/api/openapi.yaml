@@ -15854,6 +15854,7 @@ components:
         responseCachingEnabled: true
         type: HTTP
         enableSchemaValidation: false
+        enableSubscriberVerification: false
         context: pizza
         createdTime: createdTime
         id: 01234567-0123-0123-0123-012345678901
@@ -16064,6 +16065,9 @@ components:
           example: 1
           type: integer
         enableSchemaValidation:
+          example: false
+          type: boolean
+        enableSubscriberVerification:
           example: false
           type: boolean
         type:

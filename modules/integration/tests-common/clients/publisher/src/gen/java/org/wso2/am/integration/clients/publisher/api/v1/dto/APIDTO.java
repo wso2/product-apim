@@ -115,6 +115,10 @@ public class APIDTO {
         @SerializedName(SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION)
             private Boolean enableSchemaValidation;
 
+        public static final String SERIALIZED_NAME_ENABLE_SUBSCRIBER_VERIFICATION = "enableSubscriberVerification";
+        @SerializedName(SERIALIZED_NAME_ENABLE_SUBSCRIBER_VERIFICATION)
+        private Boolean enableSubscriberVerification;
+
             /**
 * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC
 */
@@ -953,6 +957,28 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
         this.enableSchemaValidation = enableSchemaValidation;
     }
 
+    public APIDTO enableSubscriberVerification(Boolean enableSubscriberVerification) {
+
+        this.enableSubscriberVerification = enableSubscriberVerification;
+        return this;
+    }
+
+    /**
+     * Get enableSubscriberVerification
+     *
+     * @return enableSubscriberVerification
+     **/
+    @javax.annotation.Nullable
+    @ApiModelProperty(example = "false",
+            value = "")
+
+    public Boolean isEnableSubscriberVerification() {
+        return enableSubscriberVerification;
+    }
+
+    public void setEnableSubscriberVerification(Boolean enableSubscriberVerification) {
+        this.enableSubscriberVerification = enableSubscriberVerification;
+    }
 
         public APIDTO type(TypeEnum type) {
         
@@ -1831,6 +1857,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.revisionedApiId, API.revisionedApiId) &&
             Objects.equals(this.revisionId, API.revisionId) &&
             Objects.equals(this.enableSchemaValidation, API.enableSchemaValidation) &&
+            Objects.equals(this.enableSubscriberVerification, API.enableSubscriberVerification) &&
             Objects.equals(this.type, API.type) &&
             Objects.equals(this.audience, API.audience) &&
             Objects.equals(this.transport, API.transport) &&
@@ -1872,7 +1899,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
     }
 
 
@@ -1897,6 +1924,7 @@ sb.append("class APIDTO {\n");
     sb.append("    revisionedApiId: ").append(toIndentedString(revisionedApiId)).append("\n");
     sb.append("    revisionId: ").append(toIndentedString(revisionId)).append("\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
+    sb.append("    enableSubscriberVerification: ").append(toIndentedString(enableSubscriberVerification)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    audience: ").append(toIndentedString(audience)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");

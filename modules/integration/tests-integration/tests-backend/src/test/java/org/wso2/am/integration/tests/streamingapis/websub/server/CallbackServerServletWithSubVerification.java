@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,22 +18,23 @@
 
 package org.wso2.am.integration.tests.streamingapis.websub.server;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 @WebServlet(urlPatterns = "/receiver")
-public class CallbackServerServlet extends HttpServlet {
+public class CallbackServerServletWithSubVerification extends HttpServlet {
 
-    private final Log log = LogFactory.getLog(CallbackServerServlet.class);
+    private final Log log = LogFactory.getLog(CallbackServerServletWithSubVerification.class);
 
     private AtomicInteger callbacksReceived = new AtomicInteger(0);
 
@@ -41,6 +42,9 @@ public class CallbackServerServlet extends HttpServlet {
 
     private String signature;
     private String linkHeader;
+    private String hubMode;
+    private String hubTopic;
+    private String hubChallenge;
 
     public String getHubMode() {
         return hubMode;
@@ -66,12 +70,12 @@ public class CallbackServerServlet extends HttpServlet {
         this.hubChallenge = hubChallenge;
     }
 
-    private String hubMode;
-    private String hubTopic;
-    private String hubChallenge;
-
     public String getLinkHeader() {
         return linkHeader;
+    }
+
+    public void setLinkHeader(String linkHeader) {
+        this.linkHeader = linkHeader;
     }
 
     public int getCallbacksReceived() {
@@ -80,10 +84,6 @@ public class CallbackServerServlet extends HttpServlet {
 
     public void setCallbacksReceived(int callbacksReceived) {
         this.callbacksReceived.set(callbacksReceived);
-    }
-
-    public void setLinkHeader(String linkHeader) {
-        this.linkHeader = linkHeader;
     }
 
     @Override
@@ -101,6 +101,12 @@ public class CallbackServerServlet extends HttpServlet {
         setHubMode(req.getParameter("hub.mode"));
         setHubTopic(req.getParameter("hub.topic"));
         setHubChallenge(req.getParameter("hub.challenge"));
+        if (getHubMode().equals("subscribe")) {
+            resp.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN);
+            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.getWriter().write(getHubChallenge());
+            resp.getWriter().flush();
+        }
     }
 
     public String getLastReceivedMessage() {

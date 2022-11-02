@@ -8638,6 +8638,9 @@ components:
         enableSchemaValidation:
           type: boolean
           example: false
+        enableSubscriberVerification:
+          type: boolean
+          example: false
         type:
           type: string
           description: The api creation type to be used. Accepted values are HTTP,
