@@ -63,6 +63,8 @@ import org.wso2.carbon.identity.application.common.model.idp.xsd.Property;
 import org.wso2.carbon.identity.application.common.model.xsd.AuthenticationStep;
 import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants;
+import org.wso2.carbon.identity.claim.metadata.mgt.stub.ClaimMetadataManagementServiceClaimMetadataException;
+import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceIdentityOAuthAdminException;
 import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 import org.wso2.carbon.idp.mgt.stub.IdentityProviderMgtServiceIdentityProviderManagementExceptionException;
 import org.wso2.carbon.um.ws.api.stub.ClaimValue;
@@ -650,15 +652,19 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         applicationManagementClient.updateApplication(application);
     }
 
-    private void createClaimMapping() throws Exception {
+    private void createClaimMapping() throws ClaimMetadataManagementServiceClaimMetadataException, RemoteException,
+            OAuthAdminServiceIdentityOAuthAdminException {
 
-        remoteClaimMetaDataMgtAdminClient
-                .addExternalClaim("http://wso2.org/oidc/claim", "organization", "http://wso2.org/claims/organization");
-        oAuthAdminServiceClient.updateScope("openid", new String[]{"organization"}, new String[0]);
+        remoteClaimMetaDataMgtAdminClient.addExternalClaim("http://wso2.org/oidc/claim", "organization",
+                "http://wso2.org/claims/organization");
+        oAuthAdminServiceClient.updateScope("openid", new String[] { "given_name", "family_name", "organization" },
+                new String[0]);
     }
+
     private void deleteClaimMapping() throws Exception {
 
-        oAuthAdminServiceClient.updateScope("openid", new String[0], new String[]{"organization"});
+        oAuthAdminServiceClient.updateScope("openid", new String[0],
+                new String[] { "given_name", "family_name", "organization" });
         remoteClaimMetaDataMgtAdminClient.removeExternalClaim("http://wso2.org/oidc/claim", "organization");
     }
 
