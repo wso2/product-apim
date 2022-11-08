@@ -354,7 +354,6 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
         <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
         #end
         #end
-        #if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
     </then>
     <else>
         #if($endpointSecuritySand.clientId)
@@ -365,7 +364,6 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
     </else>
 </filter>
 <send/>
-#end
 </outSequence>
         </resource>
                 #set ($resourceNo = $resourceNo + 1 )
