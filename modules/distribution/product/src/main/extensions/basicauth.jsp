@@ -269,9 +269,7 @@
 
     <% if (Boolean.parseBoolean(loginFailed)) { %>
     <div class="ui visible negative message" id="error-msg" data-testid="login-page-error-message">
-         <form action="login.do?resend_username=<%=Encode.forHtml(URLEncoder.encode(request.getParameter("failedUsername"), UTF_8))%>&<%=AuthenticationEndpointUtil.cleanErrorMessages(Encode.forJava(request.getQueryString()))%>" method="post" id="resendForm">
-            <%= AuthenticationEndpointUtil.i18n(resourceBundle, errorMessage) %>
-        </form>
+        <%= AuthenticationEndpointUtil.i18n(resourceBundle, errorMessage) %>
     </div>
     <% } else if ((Boolean.TRUE.toString()).equals(request.getParameter("authz_failure"))){%>
     <div class="ui visible negative message" id="error-msg" data-testid="login-page-error-message">
@@ -523,7 +521,7 @@
         <div class="form-actions">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "no.confirmation.mail")%>
             <a id="registerLink"
-                href="login.do?resend_username=<%=Encode.forHtml(request.getParameter("failedUsername"))%>&<%=AuthenticationEndpointUtil.cleanErrorMessages(Encode.forJava(request.getQueryString()))%>"
+                href="login.do?resend_username=<%=Encode.forHtml(URLEncoder.encode(request.getParameter("failedUsername"), UTF_8))%>&<%=AuthenticationEndpointUtil.cleanErrorMessages(Encode.forJava(request.getQueryString()))%>"
                 data-testid="login-page-resend-confirmation-email-link"
             >
                 <%=StringEscapeUtils.escapeHtml4(AuthenticationEndpointUtil.i18n(resourceBundle, "resend.mail"))%>
