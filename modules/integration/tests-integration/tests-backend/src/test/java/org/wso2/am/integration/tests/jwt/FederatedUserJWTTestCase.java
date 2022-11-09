@@ -660,7 +660,8 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
             throws OAuthAdminServiceIdentityOAuthAdminException, RemoteException,
             IdentityApplicationManagementServiceIdentityApplicationManagementException {
         String[] requestedClaims = { "http://wso2.org/claims/givenname", "http://wso2.org/claims/lastname",
-                "http://wso2.org/claims/mobile", "http://wso2.org/claims/organization" };
+                "http://wso2.org/claims/mobile", "http://wso2.org/claims/organization",
+                "http://wso2.org/claims/telephone", "http://wso2.org/claims/emailaddress" };
         OAuthConsumerAppDTO oAuthApplicationData = oAuthAdminServiceClient.getOAuthApplicationData(consumerKey);
         String applicationName = oAuthApplicationData.getApplicationName();
         ServiceProvider application = applicationManagementClient.getApplication(applicationName);
@@ -672,7 +673,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
             claimMapping.setLocalClaim(claim);
             claimMapping.setRemoteClaim(claim);
             claimMapping.setRequested(true);
-            claimMapping.setMandatory(true);
+            claimMapping.setMandatory(false);
             claimConfig.addClaimMappings(claimMapping);
         }
         application.setClaimConfig(claimConfig);
@@ -687,13 +688,14 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         remoteClaimMetaDataMgtAdminClient.addExternalClaim("http://wso2.org/oidc/claim", "organization",
                 "http://wso2.org/claims/organization");
         oAuthAdminServiceClient.updateScope("openid",
-                new String[] { "given_name", "family_name", "mobile", "organization" }, new String[0]);
+                new String[] { "given_name", "family_name", "mobile", "organization", "phone_number", "email" },
+                new String[0]);
     }
 
     private void deleteClaimMapping() throws Exception {
 
         oAuthAdminServiceClient.updateScope("openid", new String[0],
-                new String[] { "given_name", "family_name", "mobile", "organization" });
+                new String[] { "given_name", "family_name", "mobile", "organization", "phone_number", "email" });
         remoteClaimMetaDataMgtAdminClient.removeExternalClaim("http://wso2.org/oidc/claim", "organization");
         remoteClaimMetaDataMgtAdminClient.removeExternalClaim("http://wso2.org/oidc/claim", "mobile");
     }
