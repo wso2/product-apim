@@ -250,6 +250,8 @@ allow_credentials = false
 
 [tenant_mgt]
 enable_email_domain = true
+disable_email_domain_validation = true
+
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
 passthru_https.sender.ssl_profile.interval = 6000
