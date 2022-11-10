@@ -49,6 +49,7 @@
 
 <jsp:directive.include file="includes/localize.jsp"/>
 <jsp:directive.include file="tenant-resolve.jsp"/>
+<jsp:directive.include file="includes/layout-resolver.jsp"/>
 
 <%
     boolean error = IdentityManagementEndpointUtil.getBooleanValue(request.getAttribute("error"));
@@ -107,7 +108,8 @@
     }
 
     if (StringUtils.isBlank(callback)) {
-        application.getInitParameter(IdentityManagementEndpointConstants.ConfigConstants.USER_PORTAL_URL), tenantDomain);
+        callback = IdentityManagementEndpointUtil.getUserPortalUrl(
+                application.getInitParameter(IdentityManagementEndpointConstants.ConfigConstants.USER_PORTAL_URL), tenantDomain);
     }
     ReCaptchaApi reCaptchaApi = new ReCaptchaApi();
     try {
@@ -1275,10 +1277,8 @@
                     '{{/grouped_each}}' +
                     '</div>' +
                     '{{/purposes}}';
-
                 var rows = Handlebars.compile(rowTemplate);
                 var rowsRendered = rows(data);
-
                 $("#row-container").html(rowsRendered);
                 $("#description").popup();
             }
