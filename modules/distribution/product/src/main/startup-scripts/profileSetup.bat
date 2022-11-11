@@ -47,6 +47,8 @@ set pathToTenantAxis2ControlPlaneXmlTemplate=..\repository\resources\conf\templa
 set pathToTomcatCarbonWEBINFWebXmlTemplate=..\repository\resources\conf\templates\repository\conf\tomcat\carbon\WEB-INF\web.xml.j2
 set pathToTomcatCarbonWEBINFWebXmlTemplateBackup=web.xml.j2.backup
 set pathToTomcatCarbonWEBINFWebXmlTMTemplate=..\repository\resources\conf\templates\repository\conf\tomcat\carbon\WEB-INF\web_TM_GW.xml.j2
+set pathToDeploymentAuthenticationEndpointWebXMLTemplate=..\repository\resources\conf\templates\repository\deployment\server\webapps\authenticationendpoint\WEB-INF\web.xml.j2
+set pathToDeploymentAccountRecoveryEndpointWebXMLTemplate=..\repository\resources\conf\templates\repository\deployment\server\webapps\accountrecoveryendpoint\WEB-INF\web.xml.j2
 cd /d %~dp0
 
 set profileConfigurationToml=%pathToDeploymentTemplates%\%2.toml
@@ -170,6 +172,7 @@ echo Starting to optimize API Manager for the Traffic Manager profile
 call :replaceAxis2TemplateFile %pathToAxis2TMXmlTemplate%
 call :replaceRegistryXMLTemplateFile
 call :replaceTomcatCarbonWEBINFWebXmlTemplateFile
+call :removeAuthenticationAndAccountRecoveryEndpointWEBINFWebXmlTemplateFiles
 call :removeWebSocketInboundEndpoint
 call :removeSecureWebSocketInboundEndpoint
 call :removeSynapseConfigs
@@ -195,6 +198,7 @@ goto finishOptimization
 echo Starting to optimize API Manager for the Gateway worker profile
 call :replaceDeploymentConfiguration
 call :replaceTomcatCarbonWEBINFWebXmlTemplateFile
+call :removeAuthenticationAndAccountRecoveryEndpointWEBINFWebXmlTemplateFiles
 rem ---removing webbapps which are not required for this profile--------
 for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "am#sample#pizzashack#v.*war api#am#gateway#v2.war"') do (
 	del /f %pathToWebapps%\%%i
@@ -340,6 +344,19 @@ if exist %pathToTenantAxis2XMLTemplate% (
 		call :Timestamp value
 		echo %value% INFO - Renamed the existing %pathToNewTenantAxis2TemplateXml% file as %tenantAxis2XMLTemplate%
 	)
+)
+EXIT /B 0
+
+:removeAuthenticationAndAccountRecoveryEndpointWEBINFWebXmlTemplateFiles
+if exist %pathToDeploymentAuthenticationEndpointWebXMLTemplate% (
+    del /f %pathToDeploymentAuthenticationEndpointWebXMLTemplate%
+    call :Timestamp value
+    echo %value% INFO - Removed the the file %pathToDeploymentAuthenticationEndpointWebXMLTemplate%
+)
+if exist %pathToDeploymentAccountRecoveryEndpointWebXMLTemplate% (
+    del /f %pathToDeploymentAccountRecoveryEndpointWebXMLTemplate%
+    call :Timestamp value
+    echo %value% INFO - Removed the the file %pathToDeploymentAccountRecoveryEndpointWebXMLTemplate%
 )
 EXIT /B 0
 
