@@ -1468,8 +1468,8 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.5.0</wso2is.km.version>
-        <okta.keymanager.feature.version>3.2.0-SNAPSHOT</okta.keymanager.feature.version>
+        <wso2is.km.version>1.6.0</wso2is.km.version>
+        <okta.keymanager.feature.version>3.2.0</okta.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.0</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.4</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.6</pingfederate.keymanager.feature.version>
