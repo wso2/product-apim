@@ -52,6 +52,7 @@ public class APIMIntegrationConstants {
     public static final String AM_MONITORING_WEB_APP_NAME = "APIStatusMonitor";
     public static final String GRAPHQL_API_WEB_APP_NAME = "am-graphQL-sample";
     public static final String AUDIT_API_WEB_APP_NAME = "am-auditApi-sample";
+    public static final String EP1_WEB_APP_NAME = "name-check1";
     public static final String PRODEP1_WEB_APP_NAME = "name-checkOne";
     public static final String PRODEP2_WEB_APP_NAME = "name-checkTwo";
     public static final String PRODEP3_WEB_APP_NAME = "name-checkThree";
@@ -61,6 +62,7 @@ public class APIMIntegrationConstants {
     public static final String BPMN_PROCESS_ENGINE_WEB_APP_NAME = "BPMNProcessServerApp-1.0.0";
     public static final String ETCD_WEB_APP_NAME = "etcdmock";
     public static final String WILDCARD_WEB_APP_NAME = "wildcard";
+    public static final String DUPLICATE_HEADER_BACKEND_WEB_APP_NAME = "duplicate-header-backend";
 
     public static final String RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER = "Application & Application User";
     public static final String RESOURCE_AUTH_TYPE_APPLICATION = "Application";
