@@ -29,4 +29,21 @@ under the License.
     <artifactId>org.wso2.am.integration.ui.pages</artifactId>
     <packaging>jar</packaging>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <source>1.8</source>
+                        <sourcepath>src/main/java</sourcepath>
+                        <attach>true</attach>
+                        <additionalJOption>-Xdoclint:none</additionalJOption>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
 </project>
