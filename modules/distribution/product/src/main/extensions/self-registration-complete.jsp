@@ -107,7 +107,7 @@
             } else {
                 if (isEmailNotificationEnabled) {
             %>
-            <p><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Confirmation.sent.to.mail")%>
+            <p><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "User.registration.completed.successfully")%>
             </p>
             <% } else {%>
             <p><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
