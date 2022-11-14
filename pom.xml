@@ -186,9 +186,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <configuration>
-                        <source>1.8</source>
-                    </configuration>
+                    <version>${maven.javadoc.plugin.version}</version>
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>
@@ -201,6 +199,11 @@
                             </configuration>
                         </execution>
                     </executions>
+                    <configuration>
+                        <source>1.8</source>
+                        <attach>true</attach>
+                        <additionalJOption>-Xdoclint:none</additionalJOption>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -1465,6 +1468,8 @@
 
         <!-- CallHome version -->
         <callhome.version>4.5.x_1.0.13</callhome.version>
+
+        <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
