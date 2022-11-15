@@ -96,6 +96,7 @@ under the License.
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                                <suiteXmlFile>src/test/resources/testng-server-restart.xml</suiteXmlFile>
                             </suiteXmlFiles>
                             <systemProperties>
                                 <property>
@@ -216,6 +217,7 @@ under the License.
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                                <suiteXmlFile>src/test/resources/testng-server-restart.xml</suiteXmlFile>
                             </suiteXmlFiles>
                             <systemProperties>
                                 <property>
@@ -321,6 +323,7 @@ under the License.
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                                <suiteXmlFile>src/test/resources/testng-server-restart.xml</suiteXmlFile>
                             </suiteXmlFiles>
                             <systemProperties>
                                 <property>
