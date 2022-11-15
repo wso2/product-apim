@@ -51,7 +51,7 @@
         <module>modules/callhome</module>
         <module>modules/local-authenticators</module>
         <module>modules/distribution</module>
-        <module>modules/integration</module>
+<!--        <module>modules/integration</module>-->
     </modules>
 
     <scm>
