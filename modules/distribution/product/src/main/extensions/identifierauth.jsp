@@ -26,29 +26,72 @@
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.bean.UserDTO" %>
 <%@ page import="java.net.URLEncoder" %>
 <%@ page import="javax.ws.rs.core.Response" %>
-<%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isSelfSignUpEPAvailable" %>
-<%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isRecoveryEPAvailable" %>
+<%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.isEmailUsernameEnabled" %>
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.getServerURL" %>
 <%@ page import="org.wso2.carbon.identity.core.URLBuilderException" %>
 <%@ page import="org.wso2.carbon.identity.core.ServiceURLBuilder" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.PreferenceRetrievalClient" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.PreferenceRetrievalClientException" %>
 
 <jsp:directive.include file="includes/init-loginform-action-url.jsp"/>
-<script>
-    function submitIdentifier () {
-        var userName = document.getElementById("username");
-        var usernameUserInput = document.getElementById("usernameUserInput");
 
-        if (usernameUserInput) {
-            userName.value = usernameUserInput.value.trim();
-        }
+<%
+    String emailUsernameEnable = application.getInitParameter("EnableEmailUserName");
+    Boolean isEmailUsernameEnabled;
+    String usernameLabel = "username";
+    Boolean isMultiAttributeLoginEnabledInTenant;
+
+    if (StringUtils.isNotBlank(emailUsernameEnable)) {
+        isEmailUsernameEnabled = Boolean.valueOf(emailUsernameEnable);
+    } else {
+        isEmailUsernameEnabled = isEmailUsernameEnabled();
+    }
+
+    try {
+        PreferenceRetrievalClient preferenceRetrievalClient = new PreferenceRetrievalClient();
+        isMultiAttributeLoginEnabledInTenant = preferenceRetrievalClient.checkMultiAttributeLogin(tenantDomain);
+    } catch (PreferenceRetrievalClientException e) {
+        request.setAttribute("error", true);
+        request.setAttribute("errorMsg", AuthenticationEndpointUtil
+                .i18n(resourceBundle, "something.went.wrong.contact.admin"));
+        IdentityManagementEndpointUtil.addErrorInformation(request, e);
+        request.getRequestDispatcher("error.jsp").forward(request, response);
+        return;
+    }
+
+    if (isEmailUsernameEnabled == true) {
+        usernameLabel = "email.username";
+    } else if (isMultiAttributeLoginEnabledInTenant) {
+        usernameLabel = "user.identifier";
+    }
+%>
+
+
+<script>
+    function submitIdentifier (e) {
+        e.preventDefault();
+        var userName = document.getElementById("username");
+        userName.value = userName.value.trim();
 
         if (username.value) {
-            document.getElementById("identifierForm").submit();
+            $.ajax({
+                type: "GET",
+                url: "<%=loginContextRequestUrl%>",
+                xhrFields: { withCredentials: true },
+                success: function (data) {
+                    if (data && data.status === "redirect" && data.redirectUrl && data.redirectUrl.length > 0) {
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        document.getElementById("identifierForm").submit();
+                    }
+                },
+                cache: false
+            });
         }
     }
 </script>
 
-<form class="ui large form" action="<%=loginFormActionURL%>" method="post" id="identifierForm">
+<form class="ui large form" action="<%=loginFormActionURL%>" method="post" id="identifierForm" onsubmit="event.preventDefault()">
     <%
         if (loginFormActionURL.equals(samlssoURL) || loginFormActionURL.equals(oauth2AuthorizeURL)) {
     %>
@@ -72,15 +115,15 @@
         <div class="ui fluid left icon input">
             <input
                 type="text"
-                id="usernameUserInput"
+                id="username"
                 value=""
-                name="usernameUserInput"
+                name="username"
+                maxlength="50"
                 tabindex="0"
-                placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "username")%>"
+                placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, usernameLabel)%>"
                 required />
             <i aria-hidden="true" class="user icon"></i>
         </div>
-        <input id="username" name="username" type="hidden" value="">
         <input id="authType" name="authType" type="hidden" value="idf">
     </div>
     <%
@@ -99,27 +142,27 @@
         (request.getParameter("sessionDataKey"))%>'/>
 
     <%
-        String recoveryEPAvailable = application.getInitParameter("EnableRecoveryEndpoint");
-        String enableSelfSignUpEndpoint = application.getInitParameter("EnableSelfSignUpEndpoint");
-        Boolean isRecoveryEPAvailable = false;
-        Boolean isSelfSignUpEPAvailable = false;
+        Boolean isUsernameRecoveryEnabledInTenant = false;
+        Boolean isSelfSignUpEnabledInTenant = false;
+
         String identityMgtEndpointContext = "";
+        String accountRegistrationEndpointURL = "";
         String urlEncodedURL = "";
         String urlParameters = "";
 
-        if (StringUtils.isNotBlank(recoveryEPAvailable)) {
-            isRecoveryEPAvailable = Boolean.valueOf(recoveryEPAvailable);
-        } else {
-            isRecoveryEPAvailable = isRecoveryEPAvailable();
+        try {
+            PreferenceRetrievalClient preferenceRetrievalClient = new PreferenceRetrievalClient();
+            isSelfSignUpEnabledInTenant = preferenceRetrievalClient.checkSelfRegistration(tenantDomain);
+            isUsernameRecoveryEnabledInTenant = preferenceRetrievalClient.checkUsernameRecovery(tenantDomain);
+        } catch (PreferenceRetrievalClientException e) {
+            request.setAttribute("error", true);
+            request.setAttribute("errorMsg", AuthenticationEndpointUtil.i18n(resourceBundle, "something.went.wrong.contact.admin"));
+            IdentityManagementEndpointUtil.addErrorInformation(request, e);
+            request.getRequestDispatcher("error.jsp").forward(request, response);
+            return;
         }
 
-        if (StringUtils.isNotBlank(enableSelfSignUpEndpoint)) {
-            isSelfSignUpEPAvailable = Boolean.valueOf(enableSelfSignUpEndpoint);
-        } else {
-            isSelfSignUpEPAvailable = isSelfSignUpEPAvailable();
-        }
-
-        if (isRecoveryEPAvailable || isSelfSignUpEPAvailable) {
+        if (isUsernameRecoveryEnabledInTenant || isSelfSignUpEnabledInTenant) {
             String scheme = request.getScheme();
             String serverName = request.getServerName();
             int serverPort = request.getServerPort();
@@ -143,10 +186,15 @@
                     return;
                 }
             }
+
+            accountRegistrationEndpointURL = application.getInitParameter("AccountRegisterEndpointURL");
+            if (StringUtils.isBlank(accountRegistrationEndpointURL)) {
+                accountRegistrationEndpointURL = identityMgtEndpointContext + ACCOUNT_RECOVERY_ENDPOINT_REGISTER;
+            }
         }
     %>
 
-    <% if (isSelfSignUpEPAvailable) { %>
+    <% if (isUsernameRecoveryEnabledInTenant) { %>
         <div class="field">
             <a id="usernameRecoverLink" href="<%=getRecoverAccountUrl(identityMgtEndpointContext, urlEncodedURL, true, urlParameters)%>">
                 <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username.password")%>
@@ -157,11 +205,11 @@
 
     <div class="ui two column stackable grid">
         <div class="column align-left buttons">
-            <% if (isRecoveryEPAvailable) { %>
+            <% if (isSelfSignUpEnabledInTenant) { %>
             <input
                 type="button"
-                onclick="window.location.href='<%=getRegistrationUrl(identityMgtEndpointContext, urlEncodedURL, urlParameters)%>';"
-                class="ui large button link-button"
+                onclick="window.location.href='<%=getRegistrationUrl(accountRegistrationEndpointURL, urlEncodedURL, urlParameters)%>';"
+                class="ui large button secondary"
                 id="registerLink"
                 role="button"
                 value="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "create.account")%>" />
@@ -170,9 +218,10 @@
         <div class="column align-right buttons">
             <input
                 type="submit"
-                onclick="submitIdentifier()"
+                onclick="submitIdentifier(event)"
                 class="ui primary large button"
                 role="button"
+                data-testid="identifier-auth-continue-button"
                 value="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "continue")%>" />
         </div>
     </div>

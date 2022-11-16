@@ -37,11 +37,8 @@ import org.json.simple.parser.JSONParser;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
@@ -50,18 +47,14 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilException;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
-import org.wso2.carbon.utils.ServerConstants;
 
 /**
  * The test class that tests the custom Subscription creation workflow which has a HTTP redirect.
@@ -85,7 +78,6 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
     private ServerConfigurationManager serverConfigurationManager;
     private String apiName = "APIStateWf";
     private String apiVersion = "1.0.0";
-    private WebAppAdminClient webAppAdminClient;
     private String wfreferenceId = null;
     private String clientId;
     private String clientSecrect;
@@ -107,19 +99,6 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
     public void setEnvironment() throws AutomationUtilException, XPathExpressionException, IOException,
             APIManagerIntegrationTestException, URISyntaxException, ResourceAdminServiceExceptionException {
         super.init();
-
-        String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
-                + File.separator + "AM" + File.separator + "configFiles" + File.separator + "workflowapistatechange"
-                + File.separator + APIMIntegrationConstants.BPMN_PROCESS_ENGINE_WEB_APP_NAME + ".war";
-
-        String gatewayMgtSessionId = createSession(gatewayContextMgt);
-
-        webAppAdminClient = new WebAppAdminClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                gatewayMgtSessionId);
-        webAppAdminClient.uploadWarFile(testArtifactPath);
-
-        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                gatewayMgtSessionId, APIMIntegrationConstants.BPMN_PROCESS_ENGINE_WEB_APP_NAME);
 
         String url = getGatewayURLHttp();
 
@@ -381,10 +360,6 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
         // restore the original workflow-extentions.xml content.
         resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION,
                 originalWFExtentionsXML);
-        List<String> webAppList = new ArrayList<String>();
-        webAppList.add(APIMIntegrationConstants.BPMN_PROCESS_ENGINE_WEB_APP_NAME);
-        webAppAdminClient.deleteWebAppList(webAppList,
-                gatewayContextMgt.getDefaultInstance().getHosts().get("default"));
     }
 
     private HttpResponse completeWorkflowTask(String clientId, String clientSecrect, String scope,

@@ -61,8 +61,13 @@ import org.wso2.carbon.identity.application.common.model.idp.xsd.FederatedAuthen
 import org.wso2.carbon.identity.application.common.model.idp.xsd.IdentityProvider;
 import org.wso2.carbon.identity.application.common.model.idp.xsd.Property;
 import org.wso2.carbon.identity.application.common.model.xsd.AuthenticationStep;
+import org.wso2.carbon.identity.application.common.model.xsd.ClaimConfig;
+import org.wso2.carbon.identity.application.common.model.xsd.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.xsd.ServiceProvider;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants;
+import org.wso2.carbon.identity.application.mgt.stub.IdentityApplicationManagementServiceIdentityApplicationManagementException;
+import org.wso2.carbon.identity.claim.metadata.mgt.stub.ClaimMetadataManagementServiceClaimMetadataException;
+import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceIdentityOAuthAdminException;
 import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 import org.wso2.carbon.idp.mgt.stub.IdentityProviderMgtServiceIdentityProviderManagementExceptionException;
 import org.wso2.carbon.um.ws.api.stub.ClaimValue;
@@ -242,6 +247,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
                 restAPIStore.getApplicationKeysByKeyType(jwtApplicationId,
                         ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
+        updateServiceProviderWithRequiredClaims(applicationKeyDTO.getConsumerKey());
         for (String endUser : users) {
             String accessToken = generateUserToken(applicationKeyDTO.getConsumerKey(),
                     applicationKeyDTO.getConsumerSecret(), endUser, enduserPassword, user, new String[]{"openid"});
@@ -282,9 +288,9 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
             assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name".concat(endUser)));
             claim = jsonObject.getString("http://wso2.org/claims/lastname");
             assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name".concat(endUser)));
-            claim = jsonObject.getString("http://wso2.org/claims/mobile");
+            claim = jsonObject.getString("mobile");
             assertTrue("JWT claim mobile  not received" + claim, claim.contains("94123456987"));
-            claim = jsonObject.getString("http://wso2.org/claims/organization");
+            claim = jsonObject.getString("organization");
             assertTrue("JWT claim mobile  not received" + claim, claim.contains("ABC".concat(endUser)));
 
             boolean bExceptionOccured = false;
@@ -650,16 +656,47 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         applicationManagementClient.updateApplication(application);
     }
 
-    private void createClaimMapping() throws Exception {
-
-        remoteClaimMetaDataMgtAdminClient
-                .addExternalClaim("http://wso2.org/oidc/claim", "organization", "http://wso2.org/claims/organization");
-        oAuthAdminServiceClient.updateScope("openid", new String[]{"organization"}, new String[0]);
+    private void updateServiceProviderWithRequiredClaims(String consumerKey)
+            throws OAuthAdminServiceIdentityOAuthAdminException, RemoteException,
+            IdentityApplicationManagementServiceIdentityApplicationManagementException {
+        String[] requestedClaims = { "http://wso2.org/claims/givenname", "http://wso2.org/claims/lastname",
+                "http://wso2.org/claims/mobile", "http://wso2.org/claims/organization",
+                "http://wso2.org/claims/telephone", "http://wso2.org/claims/emailaddress" };
+        OAuthConsumerAppDTO oAuthApplicationData = oAuthAdminServiceClient.getOAuthApplicationData(consumerKey);
+        String applicationName = oAuthApplicationData.getApplicationName();
+        ServiceProvider application = applicationManagementClient.getApplication(applicationName);
+        ClaimConfig claimConfig = new ClaimConfig();
+        for (String claimUri : requestedClaims) {
+            ClaimMapping claimMapping = new ClaimMapping();
+            org.wso2.carbon.identity.application.common.model.xsd.Claim claim = new org.wso2.carbon.identity.application.common.model.xsd.Claim();
+            claim.setClaimUri(claimUri);
+            claimMapping.setLocalClaim(claim);
+            claimMapping.setRemoteClaim(claim);
+            claimMapping.setRequested(true);
+            claimMapping.setMandatory(false);
+            claimConfig.addClaimMappings(claimMapping);
+        }
+        application.setClaimConfig(claimConfig);
+        applicationManagementClient.updateApplication(application);
     }
+
+    private void createClaimMapping() throws ClaimMetadataManagementServiceClaimMetadataException, RemoteException,
+            OAuthAdminServiceIdentityOAuthAdminException {
+
+        remoteClaimMetaDataMgtAdminClient.addExternalClaim("http://wso2.org/oidc/claim", "mobile",
+                "http://wso2.org/claims/mobile");
+        remoteClaimMetaDataMgtAdminClient.addExternalClaim("http://wso2.org/oidc/claim", "organization",
+                "http://wso2.org/claims/organization");
+        oAuthAdminServiceClient.updateScope("openid",
+                new String[] { "given_name", "family_name", "mobile", "organization", "phone_number", "email" },
+                new String[0]);
+    }
+
     private void deleteClaimMapping() throws Exception {
 
-        oAuthAdminServiceClient.updateScope("openid", new String[0], new String[]{"organization"});
+        oAuthAdminServiceClient.updateScope("openid", new String[0],
+                new String[] { "given_name", "family_name", "mobile", "organization", "phone_number", "email" });
         remoteClaimMetaDataMgtAdminClient.removeExternalClaim("http://wso2.org/oidc/claim", "organization");
+        remoteClaimMetaDataMgtAdminClient.removeExternalClaim("http://wso2.org/oidc/claim", "mobile");
     }
-
 }

@@ -521,11 +521,12 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     private void createClaimMapping() throws RemoteException, ClaimMetadataManagementServiceClaimMetadataException,
             OAuthAdminServiceIdentityOAuthAdminException {
 
-        remoteClaimMetaDataMgtAdminClient
-                .addExternalClaim("http://wso2.org/oidc/claim", "mobile", "http://wso2.org/claims/mobile");
-        remoteClaimMetaDataMgtAdminClient
-                .addExternalClaim("http://wso2.org/oidc/claim", "organization", "http://wso2.org/claims/organization");
-        oAuthAdminServiceClient.updateScope("openid", new String[]{"mobile", "organization"}, new String[0]);
+        remoteClaimMetaDataMgtAdminClient.addExternalClaim("http://wso2.org/oidc/claim", "mobile",
+                "http://wso2.org/claims/mobile");
+        remoteClaimMetaDataMgtAdminClient.addExternalClaim("http://wso2.org/oidc/claim", "organization",
+                "http://wso2.org/claims/organization");
+        oAuthAdminServiceClient.updateScope("openid",
+                new String[] { "given_name", "family_name", "mobile", "organization" }, new String[0]);
     }
 
     private void updateServiceProviderWithRequiredClaims(String consumerKey)
@@ -554,11 +555,12 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
     private void removeClaimMapping() throws RemoteException, ClaimMetadataManagementServiceClaimMetadataException,
             OAuthAdminServiceIdentityOAuthAdminException {
 
-        oAuthAdminServiceClient.updateScope("openid", new String[0], new String[]{"mobile", "organization"});
-        remoteClaimMetaDataMgtAdminClient
-                .removeExternalClaim("http://wso2.org/oidc/claim", "http://wso2.org/oidc/claim/mobile");
-        remoteClaimMetaDataMgtAdminClient
-                .removeExternalClaim("http://wso2.org/oidc/claim", "http://wso2.org/oidc/claim/organization");
+        oAuthAdminServiceClient.updateScope("openid", new String[0],
+                new String[] { "given_name", "family_name", "mobile", "organization" });
+        remoteClaimMetaDataMgtAdminClient.removeExternalClaim("http://wso2.org/oidc/claim",
+                "http://wso2.org/oidc/claim/mobile");
+        remoteClaimMetaDataMgtAdminClient.removeExternalClaim("http://wso2.org/oidc/claim",
+                "http://wso2.org/oidc/claim/organization");
     }
 
     private String generateUserToken(String consumerKey, String consumerSecret, String enduserName,

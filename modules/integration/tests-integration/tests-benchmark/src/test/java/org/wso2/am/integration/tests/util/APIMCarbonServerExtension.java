@@ -27,6 +27,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.test.utils.APIMTestConstants;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
 import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
@@ -103,12 +105,15 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
             public void configureServer() throws AutomationFrameworkException {
 
                 String resourcePath = getAMResourceLocation();
+                String relativeResourcePath = File.separator + "artifacts" + File.separator + "AM";
 
                 try {
                     String userStorePath = serverManager.getCarbonHome() + File.separator + "repository" + File.separator
                             + "deployment" + File.separator + "server" + File.separator + "userstores";
                     String databasePath = serverManager.getCarbonHome() + File.separator + "repository" + File.separator
                             + "database";
+                    String webappsPath = serverManager.getCarbonHome() + File.separator + "repository" + File.separator
+                            + "deployment" + File.separator + "server" + File.separator + "webapps" + File.separator;
 
                     FileManager.copyFile(new File(resourcePath + File.separator + "configFiles" + File.separator +
                                     "originalFile" + File.separator + "deployment.toml")
@@ -131,6 +136,19 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                                             + File.separator + "secondary.xml"),
                             userStorePath + File.separator + "secondary.xml");
 
+                    WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
+                                    + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war",
+                            webappsPath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
+                    WebAppDeploymentUtil.waitForWebappToDeploy(
+                            webappsPath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war", 120000L);
+
+                    WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
+                                    + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war",
+                            webappsPath + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
+                    WebAppDeploymentUtil.waitForWebappToDeploy(
+                            webappsPath + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war", 120000L);
+
+                    log.info("Web Apps Deployed");
                 } catch (IOException e) {
                     throw new AutomationFrameworkException(e.getMessage(), e);
                 }
