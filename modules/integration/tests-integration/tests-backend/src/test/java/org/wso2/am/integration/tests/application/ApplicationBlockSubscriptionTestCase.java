@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.tests.application;
 
+import org.junit.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -70,10 +71,14 @@ public class ApplicationBlockSubscriptionTestCase extends APIManagerLifecycleBas
         createUsersAndApplications();
     }
 
-    @Test(description = "Block and unblock subscription")
+    @Test(description = "To test block functionality works for the application name and owner name which contains hyphen")
     public void testBlockUnblockSubscription() throws Exception {
-        subscriptionsApi.blockSubscription(subscriptionId, PROD_ONLY_BLOCK_STATE, null);
-        subscriptionsApi.unBlockSubscription(subscriptionId, null);
+        int statusCodeBlock = subscriptionsApi.blockSubscriptionWithHttpInfo(subscriptionId,
+                PROD_ONLY_BLOCK_STATE, null).getStatusCode();
+        Assert.assertEquals(statusCodeBlock, HTTP_RESPONSE_CODE_OK);
+        int statusCodeUnblock = subscriptionsApi.unBlockSubscriptionWithHttpInfo(subscriptionId,
+                null).getStatusCode();
+        Assert.assertEquals(statusCodeUnblock, HTTP_RESPONSE_CODE_OK);
     }
 
     private void createUsersAndApplications() throws Exception{
@@ -97,7 +102,8 @@ public class ApplicationBlockSubscriptionTestCase extends APIManagerLifecycleBas
         //Create, Publish
         apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
         // Subscribe
-        subscriptionId = restAPIStoreClientUser.subscribeToAPI(apiId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED).getSubscriptionId();
+        subscriptionId = restAPIStoreClientUser.subscribeToAPI(apiId, applicationId,
+                APIMIntegrationConstants.API_TIER.UNLIMITED).getSubscriptionId();
     }
 
 }
