@@ -52,17 +52,6 @@
 <jsp:directive.include file="plugins/basicauth-extensions.jsp"/>
 
 <%
-    String emailUsernameEnable = application.getInitParameter("EnableEmailUserName");
-    Boolean isEmailUsernameEnabled = false;
-
-    if (StringUtils.isNotBlank(emailUsernameEnable)) {
-        isEmailUsernameEnabled = Boolean.valueOf(emailUsernameEnable);
-    } else {
-        isEmailUsernameEnabled = isEmailUsernameEnabled();
-    }
-%>
-
-<%
     String proxyContextPath = ServerConfiguration.getInstance().getFirstProperty(IdentityCoreConstants
             .PROXY_CONTEXT_PATH);
     if (proxyContextPath == null) {
@@ -102,33 +91,7 @@
                     var userName = document.getElementById("username");
                     userName.value = userName.value.trim();
 
-                    var isEmailUsernameEnabled = JSON.parse("<%= isEmailUsernameEnabled %>");
-                    var tenantName = getParameterByName("tenantDomain");
-
                     if (userName.value) {
-                        if (tenantName && tenantName !== "null") {
-
-                            if (isEmailUsernameEnabled) {
-
-                                if (username.split("@").length <= 1) {
-                                    var errorMessage = document.getElementById("error-msg");
-
-                                    errorMessage.innerHTML = "Invalid Username. Username has to be an email address.";
-                                    errorMessage.style.display = "block";
-
-                                    return;
-                                }
-
-                                if (username.split("@").length === 2) {
-                                    userName.value = username + "@" + tenantName;
-                                }
-                            } else {
-                                if (username.split("@").length <= 1) {
-                                    userName.value = usernameUserInputValue + "@" + tenantName;
-                                }
-                            } 
-                        }
-
                         let contextPath = "<%=proxyContextPath%>"
                         if (contextPath !== "") {
                             contextPath = contextPath.startsWith('/') ? contextPath : "/" + contextPath
@@ -137,8 +100,7 @@
                         }
                         $.ajax({
                             type: "GET",
-                            url: contextPath + "/logincontext?sessionDataKey=" + getParameterByName("sessionDataKey") +
-                                "&relyingParty=" + getParameterByName("relyingParty") + "&tenantDomain=" + tenantName,
+                            url: contextPath + "<%=loginContextRequestUrl%>",
                             xhrFields: { withCredentials: true },
                             success: function (data) {
                                 if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {
@@ -172,12 +134,18 @@
     private static final String ACCOUNT_RECOVERY_ENDPOINT_REGISTER = "/register.do";
 %>
 <%
-    
+    String emailUsernameEnable = application.getInitParameter("EnableEmailUserName");
+    Boolean isEmailUsernameEnabled = false;
     String usernameLabel = "username";
     Boolean isSelfSignUpEnabledInTenant;
     Boolean isUsernameRecoveryEnabledInTenant;
     Boolean isPasswordRecoveryEnabledInTenant;
     Boolean isMultiAttributeLoginEnabledInTenant;
+    if (StringUtils.isNotBlank(emailUsernameEnable)) {
+        isEmailUsernameEnabled = Boolean.valueOf(emailUsernameEnable);
+    } else {
+        isEmailUsernameEnabled = isEmailUsernameEnabled();
+    }
     try {
         PreferenceRetrievalClient preferenceRetrievalClient = new PreferenceRetrievalClient();
         isSelfSignUpEnabledInTenant = preferenceRetrievalClient.checkSelfRegistration(tenantDomain);
