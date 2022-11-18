@@ -38,6 +38,10 @@
     Object errorCodeObj = request.getAttribute("errorCode");
     Object errorMsgObj = request.getAttribute("errorMsg");
     String callback = Encode.forHtmlAttribute(request.getParameter("callback"));
+    boolean isCallBackUrlEmpty = false;
+    if (request.getParameter("callback") == null || request.getParameter("callback").length() == 0) {
+        isCallBackUrlEmpty = true;
+    }
     String errorCode = null;
     String errorMsg = null;
 
@@ -150,9 +154,11 @@
                         <div class="ui divider hidden"></div>
 
                         <div class="align-right buttons">
-                            <a id="goBack" onclick="window.history.back()"
-                               class="ui button link-secondary"
-                            >
+                             <% if (!isCallBackUrlEmpty) { %>
+                            <a id="goBack" href='<%=request.getParameter("callback")%>' class="ui button link-button">
+                            <% } else { %>
+                            <a id="goBack" onclick="window.history.back()" class="ui button link-button">
+                            <% } %>
                                 <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Cancel")%>
                             </a>
                             <button id="registrationSubmit"
