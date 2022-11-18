@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 
 WSO2 Inc. licenses this file to you under the Apache License,
 Version 2.0 (the "License"); you may not use this file except
@@ -20,13 +20,13 @@ under the License.
     <parent>
         <artifactId>org.wso2.carbon.am.integration.test</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>4.2.0-SNAPSHOT</version>
+        <version>4.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <name>WSO2 API Manager - Based on product backend Test Module</name>
-    <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>
+    <name>WSO2 API Manager - Based on product restart Test Module</name>
+    <artifactId>org.wso2.carbon.am.integration.restart.test</artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -95,7 +95,7 @@ under the License.
                             </argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
-                                <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                                <suiteXmlFile>src/test/resources/testng-server-restart.xml</suiteXmlFile>
                             </suiteXmlFiles>
                             <systemProperties>
                                 <property>
@@ -215,7 +215,7 @@ under the License.
                             <argLine>-Xmx2048m</argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
-                                <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                                <suiteXmlFile>src/test/resources/testng-server-restart.xml</suiteXmlFile>
                             </suiteXmlFiles>
                             <systemProperties>
                                 <property>
@@ -320,7 +320,7 @@ under the License.
                             </argLine>
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
-                                <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                                <suiteXmlFile>src/test/resources/testng-server-restart.xml</suiteXmlFile>
                             </suiteXmlFiles>
                             <systemProperties>
                                 <property>
@@ -547,7 +547,7 @@ under the License.
 
         <resources>
             <resource>
-                <directory>tests-backend/src/test/java</directory>
+                <directory>tests-restart/src/test/java</directory>
                 <includes>
                     <include>*.properties</include>
                 </includes>

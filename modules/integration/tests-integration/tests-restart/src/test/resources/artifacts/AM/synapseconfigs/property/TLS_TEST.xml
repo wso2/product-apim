@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><definitions xmlns="http://ws.apache.org/ns/synapse">
+    <api name="admin--ContentTypeAPI" context="/ContentTypeAPI">
+        <resource methods="POST GET OPTIONS DELETE PUT"
+                  url-mapping="/*"
+                  faultSequence="fault">
+            <inSequence>
+                <send>
+                    <endpoint name="admin--ContentTypeAPI_APIproductionEndpoint_0">
+                        <http uri-template="https://api.amctheatres.com"/>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+    </api>
+
+</definitions>

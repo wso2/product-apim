@@ -1,0 +1,48 @@
+{
+	"name" : "one",
+	"context" : "/one",
+	"version" : "1.0.0",
+	"provider" : "admin", 
+	"endpointConfig" : {
+				"endpoint_type" : "http",
+				"production_endpoints" : { "url" : "http://localhost" },
+				"sandbox_endpoints" : { "url" : "http://localhost" }
+			   },
+	"scopes": [
+		{
+			"scope": {
+				"name": "restricted_scope",
+				"description": "A restricted scope",
+				"bindings": [
+					"restricted_role"
+				]
+			}
+		}
+	],
+	"operations" : [{
+				"target" : "/customers",
+				"verb" :  "get",
+				"scopes" : ["restricted_scope"]	    
+			},
+			{
+				"target" : "/customers",
+				"verb" :  "post",
+				"scopes" : ["restricted_scope"]	    
+			},
+			{
+				"target" : "/customers/{customerId}",
+				"verb" :  "get",
+				"scopes" : ["restricted_scope"]	    
+			},
+			{
+				"target" : "/customers/{customerId}",
+				"verb" :  "put",
+				"scopes" : ["restricted_scope"]	    
+			},
+			{
+				"target" : "/customers/{customerId}",
+				"verb" :  "delete",
+				"scopes" : ["restricted_scope"]	    
+			}
+			]
+}
