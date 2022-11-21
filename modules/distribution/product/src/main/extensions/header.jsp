@@ -165,4 +165,4 @@
 <%	}
 %>
 
-<script src="libs/jquery_3.6.0/jquery-3.6.0.js"></script>
+<script src="libs/jquery_3.6.0/jquery-3.6.0.min.js"></script>
