@@ -102,6 +102,10 @@
     <!-- use this parameter to override autodetected url -->
     <!--<parameter name="httpFrontendHostUrl" locked="false">https://someotherhost/context</parameter>-->
 
+    {% if axis2_transport.parameter.ApplicationXMLBuilder.allowDTD %}
+    <parameter name="ApplicationXMLBuilder.allowDTD">true</parameter>
+    {% endif %}
+
     <!-- ================================================= -->
     <!--                  Listeners                        -->
     <!-- ================================================= -->
