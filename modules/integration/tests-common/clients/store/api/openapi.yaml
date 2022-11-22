@@ -90,9 +90,9 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: WSO2 API Manager - Developer Portal
-  version: v2
+  version: v3
 servers:
-- url: https://apis.wso2.com/api/am/devportal/v2
+- url: https://apis.wso2.com/api/am/devportal/v3
 paths:
   /apis:
     get:
@@ -201,7 +201,7 @@ paths:
       - APIs
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis"
       x-examples:
         $ref: docs/examples/apis/apis.yaml#/get
       x-accepts: application/json
@@ -306,7 +306,7 @@ paths:
       - APIs
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
       x-accepts: application/json
   /apis/{apiId}/swagger:
     get:
@@ -432,7 +432,7 @@ paths:
       - APIs
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/swagger"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/c43a325c-260b-4302-81cb-768eafaa3aed/swagger"
       x-accepts: application/json
   /apis/{apiId}/graphql-schema:
     get:
@@ -532,7 +532,7 @@ paths:
       - APIs
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/graphql-schema"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/c43a325c-260b-4302-81cb-768eafaa3aed/graphql-schema"
       x-accepts: application/json
   /apis/{apiId}/sdks/{language}:
     get:
@@ -624,7 +624,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
+          "https://localhost:9443/api/am/devportal/v3/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
           > Swagger Petstore_java_1.0.0.zip
       x-accepts: application/json
   /apis/{apiId}/wsdl:
@@ -729,7 +729,7 @@ paths:
       - APIs
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/wsdl"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/c43a325c-260b-4302-81cb-768eafaa3aed/wsdl"
       x-examples:
         $ref: docs/examples/apis/wsdl/apiId_wsdl_get.yaml
       x-accepts: application/json
@@ -846,7 +846,7 @@ paths:
       - API Documents
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
       x-accepts: application/json
   /apis/{apiId}/documents/{documentId}:
     get:
@@ -951,7 +951,7 @@ paths:
       - API Documents
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
       x-accepts: application/json
   /apis/{apiId}/documents/{documentId}/content:
     get:
@@ -1083,7 +1083,7 @@ paths:
       - API Documents
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
       x-accepts: application/json
   /apis/{apiId}/thumbnail:
     get:
@@ -1190,7 +1190,7 @@ paths:
       - APIs
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail"
       x-accepts: application/json
   /apis/{apiId}/ratings:
     get:
@@ -1266,7 +1266,7 @@ paths:
       - Ratings
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
       x-examples:
         $ref: docs/examples/apis/apis_id_ratings_get.yaml
       x-accepts: application/json
@@ -1320,7 +1320,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+          "https://localhost:9443/api/am/devportal/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/delete
       x-accepts: application/json
@@ -1423,7 +1423,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+          "https://localhost:9443/api/am/devportal/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/get
       x-accepts: application/json
@@ -1511,7 +1511,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"'
       x-examples:
         $ref: docs/examples/apis/apis_id_user-rating.yaml#/put
       x-contentType: application/json

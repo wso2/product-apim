@@ -113,7 +113,7 @@ public class RestAPIAdminImpl {
                         tokenURL);
 
         apiAdminClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiAdminClient.setBasePath(adminURl + "api/am/admin/v3");
+        apiAdminClient.setBasePath(adminURl + "api/am/admin/v4");
         apiAdminClient.setDebugging(true);
         apiAdminClient.setReadTimeout(600000);
         apiAdminClient.setConnectTimeout(600000);

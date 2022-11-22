@@ -56,7 +56,7 @@ import org.wso2.am.integration.clients.admin.auth.OAuthFlow;
 
 public class ApiClient {
 
-    private String basePath = "https://apis.wso2.com/api/am/admin/v3";
+    private String basePath = "https://apis.wso2.com/api/am/admin/v4";
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
     private Map<String, String> defaultCookieMap = new HashMap<String, String>();
@@ -180,7 +180,7 @@ public class ApiClient {
     /**
      * Set base path
      *
-     * @param basePath Base path of the URL (e.g https://apis.wso2.com/api/am/admin/v3
+     * @param basePath Base path of the URL (e.g https://apis.wso2.com/api/am/admin/v4
      * @return An instance of OkHttpClient
      */
     public ApiClient setBasePath(String basePath) {
