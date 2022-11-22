@@ -137,6 +137,15 @@
             {% endfor %}
         </property>
         {% endif %}
+        {% for nestedProperty in handler.nested_property %}
+        {% if nestedProperty.enable %}
+        <property name="{{nestedProperty.name}}" type="{{nestedProperty.type}}">
+            {% for prop in nestedProperty[nestedProperty.name] %}
+                <{{prop.tag}} {% if prop.key is defined %} key="{{prop.key}}" {% endif %}>{{prop.value}}</{{prop.tag}}>
+            {% endfor %}
+        </property>
+        {% endif %}
+        {% endfor %}
         <filter class="{{handler.filter_class}}">
             {% for filterPropKey,filterPropValue in handler.filter_properties.items() %}
             <property name="{{filterPropKey}}">{{filterPropValue}}</property>
