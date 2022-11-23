@@ -19,5 +19,8 @@
         {%if apim.ws.outflow.dispatch.idleTime is defined %}
         <parameter name="ws.outflow.dispatch.idleTime">{{apim.ws.outflow.dispatch.idleTime}}</parameter>
         {%endif%}
+        {%if apim.ws.pass_through_control_frames is defined %}
+        <parameter name="ws.pass.through.control.frames">{{apim.ws.pass_through_control_frames}}</parameter>
+        {%endif%}
     </parameters>
 </inboundEndpoint>
