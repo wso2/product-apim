@@ -27,5 +27,8 @@
         {% if apim.wss.ciphers is defined %}
         <parameter name="wss.ssl.cipher.suites">{{apim.wss.ciphers}}</parameter>
         {% endif %}
+        {%if apim.wss.pass_through_control_frames is defined %}
+        <parameter name="ws.pass.through.control.frames">{{apim.wss.pass_through_control_frames}}</parameter>
+        {%endif%}
     </parameters>
 </inboundEndpoint>
