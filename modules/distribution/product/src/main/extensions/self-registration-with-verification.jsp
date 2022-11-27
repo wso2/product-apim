@@ -710,7 +710,7 @@
         </div>
     </div>
 
-    <script type="text/javascript" src="libs/handlebars.min-v4.7.6.js"></script>
+    <script type="text/javascript" src="libs/handlebars.min-v4.7.7.js"></script>
     <script type="text/javascript" src="libs/jstree/dist/jstree.min.js"></script>
     <script type="text/javascript" src="libs/jstree/src/jstree-actions.js"></script>
     <script type="text/javascript" src="js/consent_template_1.js"></script>
