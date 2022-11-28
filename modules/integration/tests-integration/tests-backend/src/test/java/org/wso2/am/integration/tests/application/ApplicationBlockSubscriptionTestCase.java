@@ -164,7 +164,5 @@ public class ApplicationBlockSubscriptionTestCase extends APIManagerLifecycleBas
         ApplicationKeyDTO applicationKeyDTO = restAPIStoreClientUser.generateKeys(applicationId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         accessToken = applicationKeyDTO.getToken().getAccessToken();
-
     }
-
 }
