@@ -24,16 +24,23 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.UserManagementUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import static org.testng.Assert.assertEquals;
 import static org.wso2.am.integration.test.utils.base.APIMIntegrationConstants.SUPER_TENANT_DOMAIN;
 
 public class ApplicationBlockSubscriptionTestCase extends APIManagerLifecycleBaseTest {
@@ -48,8 +55,11 @@ public class ApplicationBlockSubscriptionTestCase extends APIManagerLifecycleBas
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private SubscriptionsApi subscriptionsApi;
     private String subscriptionId;
-
-    private static final String PROD_ONLY_BLOCK_STATE = "PROD_ONLY_BLOCKED";
+    private final String API_END_POINT_METHOD = "/customers/123";
+    private final String API_NAME = "BlockAPITest";
+    private final String API_CONTEXT = "BlockAPI";
+    private static final String PROD_ONLY_BLOCK_STATE = "BLOCKED";
+    private String accessToken;
 
     @Factory(dataProvider = "userModeDataProvider")
     public ApplicationBlockSubscriptionTestCase(TestUserMode userMode) {
@@ -73,12 +83,56 @@ public class ApplicationBlockSubscriptionTestCase extends APIManagerLifecycleBas
 
     @Test(description = "To test block functionality works for the application name and owner name which contains hyphen")
     public void testBlockUnblockSubscription() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.IS_API_EXISTS);
+        HttpResponse invokeResponse =
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,
+                        API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when invoke api before block");
+
         int statusCodeBlock = subscriptionsApi.subscriptionsBlockSubscriptionPostWithHttpInfo(subscriptionId,
                 PROD_ONLY_BLOCK_STATE, null).getStatusCode();
         Assert.assertEquals(statusCodeBlock, HTTP_RESPONSE_CODE_OK);
+
+        // Wait one second
+        Thread.sleep(1000);
+        invokeResponse =
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,
+                        API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        // Retry invocation
+        if (invokeResponse.getResponseCode() != HTTP_RESPONSE_CODE_UNAUTHORIZED) {
+            // Wait five seconds
+            Thread.sleep(5000);
+            invokeResponse =
+                    HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,
+                            API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        }
+        assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED,
+                "Response code mismatched when invoke api after block");
+
         int statusCodeUnblock = subscriptionsApi.subscriptionsUnblockSubscriptionPostWithHttpInfo(subscriptionId,
                 null).getStatusCode();
         Assert.assertEquals(statusCodeUnblock, HTTP_RESPONSE_CODE_OK);
+
+        // Wait one second
+        Thread.sleep(1000);
+        invokeResponse =
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,
+                        API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        if (invokeResponse.getResponseCode() != HTTP_RESPONSE_CODE_OK) {
+            // Wait five seconds
+            Thread.sleep(5000);
+            invokeResponse =
+                    HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,
+                            API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        }
+        assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when invoke api after unblock");
+
     }
 
     private void createUsersAndApplications() throws Exception{
@@ -104,6 +158,13 @@ public class ApplicationBlockSubscriptionTestCase extends APIManagerLifecycleBas
         // Subscribe
         subscriptionId = restAPIStoreClientUser.subscribeToAPI(apiId, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED).getSubscriptionId();
+
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add("client_credentials");
+        ApplicationKeyDTO applicationKeyDTO = restAPIStoreClientUser.generateKeys(applicationId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+
     }
 
 }
