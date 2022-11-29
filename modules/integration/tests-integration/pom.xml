@@ -33,6 +33,7 @@ under the License.
     <modules>
         <!--module>tests-benchmark</module-->
         <module>tests-backend</module>
+        <module>tests-restart</module>
         <!--module>tests-config</module-->
     </modules>
 </project>
