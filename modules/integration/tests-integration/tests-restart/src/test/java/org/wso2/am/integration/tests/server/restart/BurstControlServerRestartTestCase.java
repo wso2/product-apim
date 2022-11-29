@@ -128,10 +128,10 @@ public class BurstControlServerRestartTestCase extends APIManagerLifecycleBaseTe
                     Assert.fail("Throttling has happened at the count : " + count
                             + ". But expected to throttle after the request count " + limit);
                 }
-//                else {
-//                    Assert.assertEquals(apiCallResponse.getResponseCode(), org.apache.commons.httpclient.HttpStatus.SC_OK,
-//                            "API invocation Response code is not as expected");
-//                }
+                else {
+                    Assert.assertEquals(apiCallResponse.getResponseCode(), org.apache.commons.httpclient.HttpStatus.SC_OK,
+                            "API invocation Response code is not as expected");
+                }
             }
         }
     }
