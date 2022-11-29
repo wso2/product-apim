@@ -167,6 +167,7 @@
                 <exclude>**/repository/components/plugins/commons-io_2.4.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v2.jar</exclude>
+                <exclude>**/lib/xalan*.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -177,6 +178,7 @@
             </includes>
             <excludes>
                 <exclude>**/wso2server.sh</exclude>
+                <exclude>**/xalan*.jar</exclude>
             </excludes>
             <fileMode>755</fileMode>
         </fileSet>
