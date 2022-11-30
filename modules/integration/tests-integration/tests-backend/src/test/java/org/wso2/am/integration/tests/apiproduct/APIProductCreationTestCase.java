@@ -45,12 +45,14 @@ import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.InvocationStatusCodes;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -328,7 +330,6 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes);
     }
 
-
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
             "on an API with operation policies in request flow")
     public void testCreateAndInvokeApiProductWithOperationPoliciesInRequestApi() throws Exception {
@@ -573,6 +574,35 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         // Step 8 : Invoke API Product with User Access tokens
         apiTestHelper.verifyInvocation(apiDTO, productionToken, sandboxToken, invocationStatusCodes);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deployment of API Product with Mutual SSL enabled")
+    public void testCreateAndDeployApiProductWithMutualSSLEnabled() throws Exception {
+        // Step 1: Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+        apisToBeUsed.add(apiTestHelper.createApiOne(getBackendEndServiceEndPointHttp("wildcard/resources")));
+        apisToBeUsed.add(apiTestHelper.createApiTwo(getBackendEndServiceEndPointHttp("wildcard/resources")));
+
+        // Step 2: Create APIProduct
+        String provider = user.getUserName();
+        String name = UUID.randomUUID().toString();
+        String context = "/" + UUID.randomUUID().toString();
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+                apisToBeUsed, policies);
+
+        // Step 3: Enable Mutual SSL with client certificate
+        List<String> securityScheme = Arrays.asList("mutualssl", "mutualssl_mandatory");
+        apiProductDTO.setSecurityScheme(securityScheme);
+        restAPIPublisher.updateAPIProduct(apiProductDTO);
+        String certificate = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                + File.separator + "example.crt";
+        restAPIPublisher.uploadCertificate(new File(certificate), "example", apiProductDTO.getId(),
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        // Step 4: Verify deployment of APIProduct with Mutual SSL enabled
+        String revisionUUID = createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
+        Assert.assertNotNull(revisionUUID);
     }
 
     @AfterClass(alwaysRun = true)
