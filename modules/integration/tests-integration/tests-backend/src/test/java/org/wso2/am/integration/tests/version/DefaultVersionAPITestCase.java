@@ -61,6 +61,7 @@ import static org.testng.Assert.assertEquals;
 public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
     private String applicationID;
     private String apiId;
+    private String newApiId;
     String accessToken;
     String newAPIVersion;
 
@@ -287,11 +288,42 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNull(defaultVersionURLs.getHttps());
     }
 
+    @Test(groups = "wso2.am", dependsOnMethods = "testDefaultVersionAPI", description = "Check default" +
+            " API invocation when context is similar to the version")
+    public void testDefaultVersionAPIWithContextAndVersionSimilar() throws Exception {
+        String newApiName = "DefaultNewVersionAPI";
+        String newApiContext = "general/v1";
+        String newVersion = "v1";
+        String endpointUrl = getGatewayURLNhttp() + "response";
+        String provider = publisherContext.getContextTenant().getContextUser().getUserName();
+
+        APIRequest apiRequest = new APIRequest(newApiName, newApiContext, new URL(endpointUrl));
+        apiRequest.setProvider(provider);
+        apiRequest.setDefault_version("default_version");
+        apiRequest.setDefault_version_checked("true");
+        apiRequest.setVersion(newVersion);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        //Create api and subscribe the API to the DefaultApplication
+        newApiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationID,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
+        waitForAPIDeploymentSync(provider, newApiName, newVersion, APIMIntegrationConstants.IS_API_EXISTS);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + accessToken);
+
+        String newApiInvocationUrl = getAPIInvocationURLHttp(newApiContext);
+        HttpResponse httpResponse = invokeDefaultAPIWithWait(newApiInvocationUrl, headers, 200);
+        assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Cannot invoke default version of APIs with similar context and versions");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationID);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newAPIVersion);
+        restAPIPublisher.deleteAPI(newApiId);
         super.cleanUp();
     }
 

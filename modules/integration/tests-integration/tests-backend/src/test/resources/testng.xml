@@ -222,6 +222,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.DocAPIParameterTamperingTest"/>
             <class name="org.wso2.am.integration.tests.publisher.GetLinterCustomRulesThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.CheckEmptyCORSConfigurationsTestCase"/>
         </classes>
     </test>
 
