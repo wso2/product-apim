@@ -1,0 +1,11 @@
+{
+  "name" : "one",
+  "context" : "/one",
+  "version" : "1.0.0",
+  "provider" : "admin",
+  "endpointConfig" : {
+    "endpoint_type" : "http",
+    "production_endpoints" : { "url" : "http://localhost" },
+    "sandbox_endpoints" : { "url" : "http://localhost" }
+  }
+}

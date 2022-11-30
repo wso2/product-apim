@@ -1,0 +1,49 @@
+{
+  "paths": {
+    "/add": {
+      "get": {
+        "x-auth-type": "$authType",
+        "x-throttling-tier": "$tier",
+        "x-scope": "$scope",
+        "responses": {
+          "200": {
+            "description": "description"
+          }
+        },
+        "parameters": [
+          {
+            "name": "x",
+            "required": false,
+            "type": "string",
+            "description": "First value",
+            "in": "query"
+          },
+          {
+            "name": "y",
+            "required": false,
+            "type": "string",
+            "description": "Second Value",
+            "in": "query"
+          }
+        ]
+      }
+    }
+  },
+  "swagger": "2.0",
+  "x-wso2-security": {
+    "apim": {
+      "x-wso2-scopes": [
+        {
+          "description": "Sample Scope",
+          "name": "$scope",
+          "roles": "$roles",
+          "key": "$scope"
+        }
+      ]
+    }
+  },
+  "info": {
+    "title": "$apiName",
+    "version": "$apiVersion"
+  }
+}

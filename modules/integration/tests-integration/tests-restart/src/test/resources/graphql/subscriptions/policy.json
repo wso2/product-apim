@@ -1,0 +1,13 @@
+{
+  "policyName": "GraphQLSubThrottlingPolicy",
+  "policyDescription": "GraphQL Sub Throttling Policy",
+  "conditionalGroups": [],
+  "defaultLimit": {
+    "type": "REQUESTCOUNTLIMIT",
+    "requestCount": {
+      "requestCount": 4,
+      "timeUnit": "min",
+      "unitTime": 1
+    }
+  }
+}

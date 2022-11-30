@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eventPublisher name="WebSub_Throttle_Out_Logger" processing="enable"
+  statistics="disable" trace="disable" xmlns="http://wso2.org/carbon/eventpublisher">
+  <from streamName="org.wso2.throttle.globalThrottle.stream" version="1.0.0"/>
+  <mapping customMapping="disable" type="text"/>
+  <to eventAdapterType="logger">
+    <property name="uniqueId">Throtte =======================&gt;</property>
+  </to>
+</eventPublisher>
