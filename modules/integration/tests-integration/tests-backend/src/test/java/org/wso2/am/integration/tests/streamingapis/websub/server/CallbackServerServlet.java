@@ -40,6 +40,39 @@ public class CallbackServerServlet extends HttpServlet {
     private String message;
 
     private String signature;
+    private String linkHeader;
+
+    public String getHubMode() {
+        return hubMode;
+    }
+
+    public void setHubMode(String hubMode) {
+        this.hubMode = hubMode;
+    }
+
+    public String getHubTopic() {
+        return hubTopic;
+    }
+
+    public void setHubTopic(String hubTopic) {
+        this.hubTopic = hubTopic;
+    }
+
+    public String getHubChallenge() {
+        return hubChallenge;
+    }
+
+    public void setHubChallenge(String hubChallenge) {
+        this.hubChallenge = hubChallenge;
+    }
+
+    private String hubMode;
+    private String hubTopic;
+    private String hubChallenge;
+
+    public String getLinkHeader() {
+        return linkHeader;
+    }
 
     public int getCallbacksReceived() {
         return callbacksReceived.get();
@@ -49,12 +82,25 @@ public class CallbackServerServlet extends HttpServlet {
         this.callbacksReceived.set(callbacksReceived);
     }
 
+    public void setLinkHeader(String linkHeader) {
+        this.linkHeader = linkHeader;
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("Callback Received");
         message = IOUtils.toString(req.getReader());
         signature = req.getHeader("x-hub-signature");
+        setLinkHeader(req.getHeader("link"));
         callbacksReceived.incrementAndGet();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        log.info("Subscription callback Received");
+        setHubMode(req.getParameter("hub.mode"));
+        setHubTopic(req.getParameter("hub.topic"));
+        setHubChallenge(req.getParameter("hub.challenge"));
     }
 
     public String getLastReceivedMessage() {

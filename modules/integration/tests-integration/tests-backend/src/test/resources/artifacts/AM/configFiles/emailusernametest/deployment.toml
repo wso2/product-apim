@@ -1,8 +1,10 @@
 [server]
-#hostname = "localhost"
+hostname = "localhost"
 #offset=0
 base_path = "${carbon.protocol}://${carbon.host}:${carbon.management.port}"
 server_role = "default"
+enable_shutdown_from_api = true
+enable_restart_from_api = true
 
 [super_admin]
 username = "admin"
@@ -248,6 +250,8 @@ allow_credentials = false
 
 [tenant_mgt]
 enable_email_domain = true
+disable_email_domain_validation = true
+
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
 passthru_https.sender.ssl_profile.interval = 6000

@@ -221,6 +221,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.DocAPIParameterTamperingTest"/>
+            <class name="org.wso2.am.integration.tests.publisher.GetLinterCustomRulesThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.CheckEmptyCORSConfigurationsTestCase"/>
         </classes>
     </test>
@@ -248,6 +249,7 @@
             <class name="org.wso2.am.integration.tests.application.ApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationAttributesTestCase"/>
             <class name="org.wso2.am.integration.tests.application.PkceEnabledApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.ApplicationBlockSubscriptionTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5417PrototypedAPIsInMonetizedTestCase"/>-->
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->

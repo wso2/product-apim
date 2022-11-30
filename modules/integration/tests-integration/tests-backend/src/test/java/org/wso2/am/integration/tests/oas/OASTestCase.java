@@ -45,7 +45,7 @@ public class OASTestCase extends APIMIntegrationBaseTest {
     private String oasVersion;
     private final static String OAS_V2 = "v2";
     private final static String OAS_V3 = "v3";
-
+    private final static String SERVER_BLOCK = "https://test-unsupported.com";
     @Factory(dataProvider = "userModeDataProvider")
     public OASTestCase(TestUserMode userMode, String oasVersion) {
         this.userMode = userMode;
@@ -173,6 +173,33 @@ public class OASTestCase extends APIMIntegrationBaseTest {
             OAS3Utils.validateUpdatedDefinition(originalPublisherDefinition, publisherDefinition);
             OAS3Utils.validateUpdatedDefinition(originalDefinition, storeDefinition);
             OAS3Utils.validateUpdatedDefinition(originalDefinition, apidto);
+        }
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Validate API definition with unsupported server blocks import",
+            dependsOnMethods = "testAPIDefinitionImport")
+    public void testAPIDefinitionWithUnsupportedServerBlocksImport() throws Exception {
+        if (oasVersion.equals(OAS_V3)) {
+            testDeleteApi(apiImportId);
+            String definition = IOUtils.toString(
+                    getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_with_unsupported_servers_block.json"),
+                    "UTF-8");
+            String additionalProperties = IOUtils.toString(
+                    getClass().getClassLoader().getResourceAsStream(resourcePath + "additionalProperties.json"),
+                    "UTF-8");
+            JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
+            additionalPropertiesObj.put("provider", user.getUserName());
+
+            File file = geTempFileWithContent(definition);
+            APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
+            apiImportId = apidto.getId();
+
+            restAPIPublisher.changeAPILifeCycleStatus(apiImportId, Constants.PUBLISHED);
+
+            String storeDefinition = restAPIStore.getSwaggerByID(apiImportId, user.getUserDomain());
+            String publisherDefinition = restAPIPublisher.getSwaggerByID(apiImportId);
+            Assert.assertFalse(storeDefinition.contains(SERVER_BLOCK));
+            Assert.assertFalse(publisherDefinition.contains(SERVER_BLOCK));
         }
     }
 

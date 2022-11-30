@@ -76,7 +76,7 @@
                 {% endif %}
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.RequestCorrelationIdValve"
                        headerToCorrelationIdMapping="{'activityid':'Correlation-ID'}" queryToCorrelationIdMapping="{'RelayState':'Correlation-ID'}"/>
-                <Valve className="org.wso2.carbon.tomcat.ext.valves.CarbonContextCreatorValve"/>
+                <Valve className="org.wso2.carbon.identity.organization.management.tomcat.ext.tenant.resolver.CarbonContextCreatorValve"/>
                 {% if http_access_log.useLogger is sameas true %}
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.ConfigurableLoggerAccessLogValve"
                         pattern="{{http_access_log.pattern}}"/>
@@ -91,6 +91,8 @@
 		<!-- Authentication and Authorization valve for the rest apis and we can configure context for this in identity.xml  -->
                 <Valve className="org.wso2.carbon.identity.auth.valve.AuthenticationValve"/>
                 <Valve className="org.wso2.carbon.identity.authz.valve.AuthorizationValve"/>
+                <Valve className="org.wso2.carbon.tomcat.ext.valves.SameSiteCookieValve"/>
+                <Valve className="org.wso2.carbon.identity.context.rewrite.valve.OrganizationContextRewriteValve"/>
                 <Valve className="org.wso2.carbon.identity.context.rewrite.valve.TenantContextRewriteValve"/>
                 <!--Error pages -->
                 <Valve className="org.apache.catalina.valves.ErrorReportValve" showServerInfo="false" showReport="false"/>

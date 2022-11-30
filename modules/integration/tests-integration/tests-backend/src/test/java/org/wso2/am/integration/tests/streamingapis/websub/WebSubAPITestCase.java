@@ -18,6 +18,12 @@
 
 package org.wso2.am.integration.tests.streamingapis.websub;
 
+import java.util.HashMap;
+import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
@@ -45,6 +51,7 @@ import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.tests.streamingapis.StreamingApiTestUtils;
 import org.wso2.am.integration.tests.streamingapis.websub.client.WebhookSender;
 import org.wso2.am.integration.tests.streamingapis.websub.server.CallbackServerServlet;
+import org.wso2.am.integration.tests.streamingapis.websub.server.CallbackServerServletWithSubVerification;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -60,12 +67,10 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -108,6 +113,10 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
     private WebhookSender webhookSender;
     private CallbackServerServlet callbackServerServlet;
     private Server callbackServer;
+    private String accessToken;
+    private CallbackServerServletWithSubVerification callbackServerServletWithSubVerification;
+    private int callbackReceiverWithSubVerificationPort;
+    private Server callbackServerWithSubVerification;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSubAPITestCase(TestUserMode userMode) {
@@ -142,6 +151,15 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         }
         log.info("Selected port " + callbackReceiverPort + " to start callback receiver");
         initializeCallbackReceiver(callbackReceiverPort);
+        Thread.sleep(5000);
+        callbackReceiverWithSubVerificationPort = StreamingApiTestUtils.getAvailablePort(lowerPortLimit, upperPortLimit,
+                                                                                         serverHost);
+        if (callbackReceiverWithSubVerificationPort == -1) {
+            throw new APIManagerIntegrationTestException(
+                    "No available port in the range " + lowerPortLimit + "-" + upperPortLimit + " was found");
+        }
+        log.info("Selected port " + callbackReceiverWithSubVerificationPort + " to start callback receiver");
+        initializeCallbackReceiverWithSubVerification(callbackReceiverWithSubVerificationPort);
         Thread.sleep(5000);
     }
 
@@ -208,29 +226,157 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
         ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+                                                                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                                                                        null, grantTypes);
+        accessToken = applicationKeyDTO.getToken().getAccessToken();
+        Assert.assertNotNull(accessToken, "Error occurred while generating the access token");
+    }
 
+    @Test(description = "Test invoke WebSub API when parameters are passed as query parameters",
+            dependsOnMethods = "testInvokeWebSubApi")
+    public void testInvokeWebSubApiWithQueryParameters() throws Exception {
+
+        callbackServerServlet.setCallbacksReceived(0);
         String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
-        handleCallbackSubscription(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
-                accessToken);
+        handleCallbackSubscriptionWithQueryParameters(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
+                                                      "50000000", accessToken);
         initializeWebhookSender(topicSecret);
         Thread.sleep(5000);
         int noOfEventsToSend = 10;
         for (int i = 0; i < noOfEventsToSend; i++) {
             webhookSender.send();
-            Thread.sleep(3000);
+            Thread.sleep(5000);
         }
-        handleCallbackSubscription(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret, "50000000",
-                accessToken);
-
+        handleCallbackSubscriptionWithQueryParameters(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
+                                                      "50000000", accessToken);
+        Thread.sleep(5000);
         int sent = webhookSender.getWebhooksSent();
         int received = callbackServerServlet.getCallbacksReceived();
         Assert.assertEquals(sent, noOfEventsToSend);
         Assert.assertEquals(sent + 1, received); // no. of events received = no. of events sent + 1 subscribe event
+    }
+
+    @Test(description = "Test invoke WebSub API when parameters are passed as form url encoded data",
+            dependsOnMethods = "testInvokeWebSubApi")
+    public void testInvokeWebSubAPIWithFormUrlEncodedData() throws Exception {
 
         callbackServerServlet.setCallbacksReceived(0);
-        webhookSender.setWebhooksSent(0);
+        String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
+        HttpResponse subResponse = handleCallbackSubscriptionWithFormUrlEncoded(SUBSCRIBE, apiEndpoint, callbackUrl,
+                                                                                DEFAULT_TOPIC, topicSecret, "50000000",
+                                                                                accessToken);
+        Assert.assertEquals(HttpServletResponse.SC_ACCEPTED, subResponse.getResponseCode(),
+                            "Subscribe request failed with a " + subResponse.getResponseCode() + " response");
+        initializeWebhookSender(topicSecret);
+        Thread.sleep(5000);
+        int noOfEventsToSend = 5;
+        for (int i = 0; i < noOfEventsToSend; i++) {
+            webhookSender.send();
+            Thread.sleep(5000);
+        }
+        HttpResponse unSubResponse = handleCallbackSubscriptionWithFormUrlEncoded(UNSUBSCRIBE, apiEndpoint, callbackUrl,
+                                                                                  DEFAULT_TOPIC, topicSecret,
+                                                                                  "50000000", accessToken);
+        Thread.sleep(5000);
+        Assert.assertEquals(HttpServletResponse.SC_ACCEPTED, unSubResponse.getResponseCode(),
+                            "Unsubscribe request failed with a " + unSubResponse.getResponseCode() + " response");
+        int sent = webhookSender.getWebhooksSent();
+        int received = callbackServerServlet.getCallbacksReceived();
+        Assert.assertEquals(sent, noOfEventsToSend, "Webhook sender failed to send all the requests");
+        Assert.assertEquals(sent, received, "Callback server did not receive all the content distribution requests");
+    }
+
+    @Test(description = "Check availability of mandatory parameters",
+            dependsOnMethods = "testInvokeWebSubApi")
+    public void testMandatoryParameters() throws Exception {
+
+        callbackServerServlet.setCallbacksReceived(0);
+        String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
+        handleCallbackSubscriptionWithFormUrlEncoded(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
+                                                     "50000000", accessToken);
+        initializeWebhookSender(topicSecret);
+        Thread.sleep(5000);
+        Assert.assertEquals(SUBSCRIBE, callbackServerServlet.getHubMode(),
+                            "Callback server did not receive the expected hub.mode parameter");
+        Assert.assertEquals(DEFAULT_TOPIC, callbackServerServlet.getHubTopic(),
+                            "Callback server did not receive the expected hub.topic parameter");
+        Assert.assertTrue(StringUtils.isNotEmpty(callbackServerServlet.getHubChallenge()),
+                          "Callback server did not receive the hub.challenge parameter");
+
+        String hubUrl = "http://localhost:" + TOPIC_PORT;
+        webhookSender.send();
+        Thread.sleep(5000);
+        Assert.assertTrue(callbackServerServlet.getLinkHeader().contains(hubUrl),
+                          "Missing link header in content distribution request");
+        handleCallbackSubscriptionWithFormUrlEncoded(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
+                                                     "50000000", accessToken);
+        Thread.sleep(5000);
+    }
+
+    @Test(description = "Check subscription when mandatory parameters are missing",
+            dependsOnMethods = "testInvokeWebSubApi")
+    public void testMissingMandatoryParameters() throws Exception {
+
+        String callbackUrl = "http://" + serverHost + ":" + callbackReceiverPort + "/receiver";
+        try {
+            handleCallbackSubscriptionWithFormUrlEncoded("", apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
+                                                         "50000000", accessToken);
+            Thread.sleep(5000);
+            Assert.fail("WebSub subscription invoked without mandatory parameters.");
+        } catch (AutomationFrameworkException e) {
+            assertTrue(e.getMessage().contains("Server returned HTTP response code: 500"));
+        }
+    }
+
+    @Test(description = "Check subscriber verification",
+            dependsOnMethods = "testInvokeWebSubApi")
+    public void testSubscriberVerification() throws Exception {
+
+        APIDTO apiDto = restAPIPublisher.getAPIByID(apiId);
+        apiDto.setEnableSubscriberVerification(true);
+        restAPIPublisher.updateAPI(apiDto, apiId);
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
+
+        callbackServerServlet.setCallbacksReceived(0);
+        String callbackUrl = "http://" + serverHost + ":" + callbackReceiverWithSubVerificationPort + "/receiver";
+        handleCallbackSubscriptionWithFormUrlEncoded(SUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
+                                                     "50000000", accessToken);
+        initializeWebhookSender(topicSecret);
+        Thread.sleep(5000);
+        int noOfEventsToSend = 5;
+        for (int i = 0; i < noOfEventsToSend; i++) {
+            webhookSender.send();
+            Thread.sleep(5000);
+        }
+        handleCallbackSubscriptionWithFormUrlEncoded(UNSUBSCRIBE, apiEndpoint, callbackUrl, DEFAULT_TOPIC, topicSecret,
+                                                     "50000000", accessToken);
+        Thread.sleep(5000);
+        int sent = webhookSender.getWebhooksSent();
+        int received = callbackServerServletWithSubVerification.getCallbacksReceived();
+        Assert.assertEquals(sent, noOfEventsToSend, "Webhook sender failed to send all the requests");
+        Assert.assertEquals(sent, received, "Callback server did not receive all the content distribution requests");
+    }
+
+    private void initializeCallbackReceiverWithSubVerification(int port) {
+        Server server = new Server(port);
+        ServletHandler servletHandler = new ServletHandler();
+        server.setHandler(servletHandler);
+
+        callbackServerServletWithSubVerification = new CallbackServerServletWithSubVerification();
+        callbackServerWithSubVerification = server;
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ServletHolder servletHolder = new ServletHolder(callbackServerServletWithSubVerification);
+                    servletHandler.addServletWithMapping(servletHolder, "/receiver");
+                    callbackServerWithSubVerification.start();
+                } catch (Exception e) {
+                    log.error("Failed to start the callback server");
+                }
+            }
+        });
     }
 
     private void initializeCallbackReceiver(int port) {
@@ -258,22 +404,42 @@ public class WebSubAPITestCase extends APIMIntegrationBaseTest {
         String payloadUrl = apiEndpoint.replaceAll(":([0-9]+)/", ":" + TOPIC_PORT + "/") +
                 "/webhooks_events_receiver_resource?topic=" + DEFAULT_TOPIC;
         webhookSender = new WebhookSender(payloadUrl, secret);
+        webhookSender.setWebhooksSent(0);
     }
 
-    private static void handleCallbackSubscription(String hubMode, String webSubApiUrl, String callbackUrl,
-                                                   String hubTopic, String hubSecret, String hubLeaseSeconds,
-                                                   String bearerToken)
+    private static void handleCallbackSubscriptionWithQueryParameters(String hubMode, String webSubApiUrl,
+                                                                      String callbackUrl, String hubTopic,
+                                                                      String hubSecret, String hubLeaseSeconds,
+                                                                      String bearerToken)
             throws UnsupportedEncodingException, MalformedURLException, AutomationFrameworkException {
         String encodedUrl = URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8.toString());
-        String url = webSubApiUrl + "?hub.callback=" + encodedUrl + "&hub.mode=" + hubMode + "&hub.secret=" +
-                hubSecret + "&hub.lease_seconds=" + hubLeaseSeconds + "&hub.topic=" + hubTopic;
-        HttpRequestUtil.doPost(new URL(url), "", Collections.singletonMap("Authorization", "Bearer " + bearerToken));
+        String url = webSubApiUrl + "?hub.callback=" + encodedUrl + "&hub.mode=" + hubMode + "&hub.secret=" + hubSecret
+                + "&hub.lease_seconds=" + hubLeaseSeconds + "&hub.topic=" + hubTopic;
+        Map<String, String> headers = new HashMap<>();
+        headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
+        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        HttpRequestUtil.doPost(new URL(url), "", headers);
+    }
+
+    private static HttpResponse handleCallbackSubscriptionWithFormUrlEncoded(String hubMode, String url,
+                                                                             String callbackUrl, String hubTopic,
+                                                                             String hubSecret, String hubLeaseSeconds,
+                                                                             String bearerToken)
+            throws UnsupportedEncodingException, MalformedURLException, AutomationFrameworkException {
+        String encodedUrl = URLEncoder.encode(callbackUrl, StandardCharsets.UTF_8.toString());
+        String body = "hub.callback=" + encodedUrl + "&hub.mode=" + hubMode + "&hub.secret=" + hubSecret
+                + "&hub.lease_seconds=" + hubLeaseSeconds + "&hub.topic=" + hubTopic;
+        Map<String, String> headers = new HashMap<>();
+        headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
+        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        return HttpRequestUtil.doPost(new URL(url), body, headers);
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         serverConfigurationManager.restoreToLastConfiguration(false);
         callbackServer.stop();
+        callbackServerWithSubVerification.stop();
         executorService.shutdownNow();
         super.cleanUp();
     }

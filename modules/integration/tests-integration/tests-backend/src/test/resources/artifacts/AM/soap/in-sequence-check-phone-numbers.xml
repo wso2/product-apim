@@ -22,8 +22,8 @@
   <soapenv:Header/>
   <soapenv:Body>
   	<web:CheckPhoneNumbers xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
-  <web:LicenseKey>$1</web:LicenseKey>
-  <web:PhoneNumbers>$2</web:PhoneNumbers>
+   <web:LicenseKey>$1</web:LicenseKey>
+   <web:PhoneNumbers>$2</web:PhoneNumbers>
 </web:CheckPhoneNumbers>
 
   </soapenv:Body>

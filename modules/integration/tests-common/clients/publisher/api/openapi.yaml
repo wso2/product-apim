@@ -12147,6 +12147,78 @@ paths:
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v3/settings"'
       x-accepts: application/json
+  /linter-custom-rules:
+    get:
+      description: |
+        This operation can be used to get linter custom rules from tenant-config.
+      operationId: getLinterCustomRules
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: |
+            OK.
+            Linter Custom Rules Retrieved Successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+      summary: Get linter custom rules.
+      tags:
+      - Linter Custom Rules
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v3/linter-custom-rules"'
+      x-accepts: application/json
   /tenants:
     get:
       description: |
@@ -15782,6 +15854,7 @@ components:
         responseCachingEnabled: true
         type: HTTP
         enableSchemaValidation: false
+        enableSubscriberVerification: false
         context: pizza
         createdTime: createdTime
         id: 01234567-0123-0123-0123-012345678901
@@ -15992,6 +16065,9 @@ components:
           example: 1
           type: integer
         enableSchemaValidation:
+          example: false
+          type: boolean
+        enableSubscriberVerification:
           example: false
           type: boolean
         type:

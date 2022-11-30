@@ -55,6 +55,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
+import org.wso2.am.integration.clients.publisher.api.v1.LinterCustomRulesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -159,6 +160,7 @@ public class RestAPIPublisherImpl {
 
     private ImportExportApi importExportApi = new ImportExportApi();
 
+    private LinterCustomRulesApi linterCustomRulesApi = new LinterCustomRulesApi();
 
     @Deprecated
     public RestAPIPublisherImpl() {
@@ -214,6 +216,7 @@ public class RestAPIPublisherImpl {
         endpointCertificatesApi.setApiClient(apiPublisherClient);
         productLifecycleApi.setApiClient(apiPublisherClient);
         importExportApi.setApiClient(apiPublisherClient);
+        linterCustomRulesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
@@ -2550,5 +2553,16 @@ public class RestAPIPublisherImpl {
 
         return endpointCertificatesApi.getCertificateUsageByAliasWithHttpInfo(alias, limit, offset);
 
+    }
+    
+    /**
+     * Retrieve linter custom rules
+     *
+     * @return - linter custom rules JSONObject
+     * @throws ApiException - throws if get linter custom rules fails
+     */
+    public String getLinterCustomRules() throws ApiException {
+
+        return linterCustomRulesApi.getLinterCustomRules();
     }
 }

@@ -66,7 +66,6 @@ under the License.
         <dependency>
             <groupId>org.apache.axis2.wso2</groupId>
             <artifactId>axis2</artifactId>
-            <version>1.6.1.wso2v12</version>
             <scope>provided</scope>
         </dependency>
 

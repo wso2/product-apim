@@ -6843,6 +6843,46 @@ paths:
       operationId: getSettings
 
   ######################################################
+  # The linter custom rules resource APIs
+  ######################################################
+  /linter-custom-rules:
+    get:
+      tags:
+        - Linter Custom Rules
+      summary: Get linter custom rules.
+      description: |
+        This operation can be used to get linter custom rules from tenant-config.
+      operationId: getLinterCustomRules
+      responses:
+        200:
+          description: |
+            OK.
+            Linter Custom Rules Retrieved Successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v3/linter-custom-rules"'
+
+  ######################################################
   # The tenant resource APIs
   ######################################################
   /tenants:
@@ -8596,6 +8636,9 @@ components:
           type: integer
           example: 1
         enableSchemaValidation:
+          type: boolean
+          example: false
+        enableSubscriberVerification:
           type: boolean
           example: false
         type:

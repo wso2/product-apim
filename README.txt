@@ -181,7 +181,7 @@ Installation & Running
 Documentation
 ==============
 
-On-line product documentation is available at:
+Online product documentation is available at:
         https://apim.docs.wso2.com/en/latest/
 
 Support
