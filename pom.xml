@@ -1268,12 +1268,12 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.2.48</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.3.1</carbon.analytics.common.version>
         <!-- APIM Portals Component Version -->
         <carbon.apimgt.ui.version>9.0.390</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.28.7</carbon.apimgt.version>
+        <carbon.apimgt.version>9.28.8</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1286,12 +1286,12 @@
         <carbon.governance.version>4.8.29</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.8.0-m1</carbon.kernel.version>
+        <carbon.kernel.version>4.8.0-m2</carbon.kernel.version>
         <apimserver.version>4.2.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.20</cipher.tool.version>
 
-        <carbon.commons.version>4.9.0</carbon.commons.version>
+        <carbon.commons.version>4.9.2</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
@@ -1409,7 +1409,7 @@
         <carbon.metrics.version>1.3.12</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.3.26</carbon.messaging.version>
-        <carbon.event-processing.version>2.3.4</carbon.event-processing.version>
+        <carbon.event-processing.version>2.3.5</carbon.event-processing.version>
         <andes.version>3.3.24</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
