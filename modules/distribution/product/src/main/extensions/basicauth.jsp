@@ -467,7 +467,7 @@
         <div class="column buttons">
             <%
             String sp = request.getParameter("sp");
-            if ( (sp != null && !sp.endsWith("apim_publisher")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType) && isSelfSignUpEnabledInTenant) { %>
+            if ( (sp != null && !sp.endsWith("apim_publisher") && !sp.endsWith("apim_admin_portal")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType) && isSelfSignUpEnabledInTenant) { %>
             <button
                 type="button"
                 onclick="window.location.href='<%=StringEscapeUtils.escapeHtml4(getRegistrationUrl(accountRegistrationEndpointURL, urlEncodedURL, urlParameters))%>';"
