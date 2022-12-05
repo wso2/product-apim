@@ -402,6 +402,43 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
 
     }
 
+    @Test(groups = {"wso2.am"}, description = "Incorrect JWT API Invocation")
+    public void testInvocationWithIncorrectJWT() throws Exception {
+        APIRequest apiRequest = new APIRequest(apiName + "1", apiContext+ "1", new URL(endpointURL));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setVisibility("public");
+        apiRequest.setProvider(providerName);
+
+        List<String> securitySchemes = new ArrayList<>();
+        securitySchemes.add("oauth2");
+        securitySchemes.add("api_key");
+        apiRequest.setSecurityScheme(securitySchemes);
+
+        apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+        restAPIStore.subscribeToAPI(apiId, oauthApplicationId, TIER_GOLD);
+
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.AUTHORIZATION_CODE);
+        //generate keys
+        ApplicationKeyDTO applicationKeyDTO=  restAPIStore.generateKeys(oauthApplicationId, "36000", CALLBACK_URL,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes,  null);
+
+        String accessToken = applicationKeyDTO.getToken();
+
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
+        get.addHeader("Authorization", "Bearer " + accessToken);
+        HttpResponse response = httpclient.execute(get);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), 900901,
+                "Response code mismatched when api invocation");
+        
+        createClaimMapping();
+        waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+    }
+
     @Test(groups = { "wso2.am" }, description = "Backend JWT Token Generation with Auth Code Grant Type")
     public void testBackendJWTWithAuthCodeGrant() throws Exception {
 
