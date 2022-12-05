@@ -45,7 +45,7 @@
 <%-- Data for the layout from the page --%>
 <%
     layoutData.put("containerSize", "large");
-
+%>
 <!doctype html>
 <html>
 <head>
