@@ -31,6 +31,8 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.ResourcePolicyListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -75,7 +77,12 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     private String WSDL_ZIP_API_CONTEXT = "wsdlimportwithzipfile";
     private String WSDL_URL_API_NAME = "WSDLImportAPIWithURL";
     private String WSDL_URL_API_CONTEXT = "wsdlimportwithurl";
+    private String API_NAME = "wsdlspecialapi";
+    private String API_CONTEXT = "wsdlspecialapi";
     private String API_VERSION = "1.0.0";
+    private String wsdlFileApiId2;
+    private List<ResourcePolicyInfoDTO> resourcePoliciesIn;
+    private List<ResourcePolicyInfoDTO> resourcePoliciesOut;
     private String backendEndUrl;
     private String wsdlFileApiId;
     private String zipFileApiId;
@@ -501,6 +508,75 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "API invocation failed");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Creating SOAP API from URL",
+            dependsOnMethods = "testCreateSOAPAPIFromURL")
+    public void testWSDLFileImportWithUnderscoreOperationNameWSDLs() throws Exception {
+
+        log.info("testWsdlDefinitionImport initiated");
+
+        // Set environment
+        ArrayList<String> environment = new ArrayList<>();
+        environment.add(Constants.GATEWAY_ENVIRONMENT);
+
+        // Set policies
+        ArrayList<String> policies = new ArrayList<>();
+        policies.add(APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        // Set endpointConfig
+        JSONObject url = new JSONObject();
+        url.put("url", apiEndPointURL);
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("sandbox_endpoints", url);
+        endpointConfig.put("production_endpoints", url);
+
+        // Create additional properties object
+        JSONObject additionalPropertiesObj = new JSONObject();
+        additionalPropertiesObj.put("provider", user.getUserName());
+        additionalPropertiesObj.put("name", API_NAME);
+        additionalPropertiesObj.put("context", API_CONTEXT);
+        additionalPropertiesObj.put("version", API_VERSION);
+        additionalPropertiesObj.put("policies", policies);
+        additionalPropertiesObj.put("endpointConfig", endpointConfig);
+
+        // Create API by importing the WSDL definition as .wsdl file
+        String wsdlDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl"
+                + File.separator + "Sample1.wsdl";
+        File file = new File(wsdlDefinitionPath);
+        APIDTO wsdlFileApidto = restAPIPublisher
+                .importWSDLSchemaDefinition(file, null, additionalPropertiesObj.toString(), "SOAPTOREST");
+
+        // Make sure API is created properly
+        assertEquals(wsdlFileApidto.getName(), API_NAME);
+        assertEquals(wsdlFileApidto.getContext(), "/" + API_CONTEXT);
+        wsdlFileApiId2 = wsdlFileApidto.getId();
+
+        // Validate in-sequence
+        String inSequence = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
+                "artifacts" + File.separator + "AM" + File.separator + "soap" +
+                        File.separator + "InSequenceSample.xml"), "UTF-8");
+        ResourcePolicyListDTO resourcePolicyInListDTO = restAPIPublisher
+                .getApiResourcePolicies(wsdlFileApiId2, "in", null, null);
+        resourcePoliciesIn = resourcePolicyInListDTO.getList();
+        resourcePoliciesIn.forEach((item) -> {
+            assertEquals(item.getContent().replaceAll("\r*\n*\\s*", ""),
+                    inSequence.replaceAll("\r*\n*\\s*", ""), "Invalid In-Sequence");
+        });
+
+        // Validate out-sequence
+        String outSequence = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
+                "artifacts" + File.separator + "AM" + File.separator + "soap" +
+                        File.separator + "OutSequenceSample.xml"), "UTF-8");
+        ResourcePolicyListDTO resourcePolicyOutListDTO = restAPIPublisher
+                .getApiResourcePolicies(wsdlFileApiId2, "out", null, null);
+        resourcePoliciesOut = resourcePolicyOutListDTO.getList();
+        resourcePoliciesOut.forEach((item) -> {
+            assertEquals(item.getContent().replaceAll("\r*\n*\\s*", ""),
+                    outSequence.replaceAll("\r*\n*\\s*", ""), "Invalid Out-Sequence");
+        });
+    }
+
+
 
     /**
      * Find a free port to start backend WebSocket server in given port range
@@ -554,6 +630,7 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         undeployAndDeleteAPIRevisionsUsingRest(apiId2, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(apiId3, restAPIPublisher);
         restAPIPublisher.deleteAPI(wsdlFileApiId);
+        restAPIPublisher.deleteAPI(wsdlFileApiId2);
         restAPIPublisher.deleteAPI(zipFileApiId);
         restAPIPublisher.deleteAPI(wsdlUrlApiId);
         restAPIPublisher.deleteAPI(apiId1);

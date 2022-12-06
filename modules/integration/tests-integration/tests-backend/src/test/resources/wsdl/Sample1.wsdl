@@ -1,0 +1,145 @@
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:infa="http://www.samplewsdl.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:n="http://www.samplewsdl.com/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="http://www.samplewsdl.com/">
+    <types>
+        <xsd:schema xmlns="http://www.samplewsdl.com/" targetNamespace="http://www.samplewsdl.com/">
+            <xsd:complexType name="SecurityHeader">
+                <xsd:sequence>
+                    <xsd:element name="UsernameToken">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="Username" type="xsd:string"/>
+                                <xsd:element name="Password" type="xsd:string"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="Security" type="infa:SecurityHeader"/>
+        </xsd:schema>
+        <xsd:schema xmlns="http://www.samplewsdl.com/wsdl/" xmlns:infatype="http://www.samplewsdl.com/types/" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.samplewsdl.com/wsdl/">
+            <xsd:import namespace="http://schemas.xmlsoap.org/wsdl/http/"/>
+            <xsd:element name="SAMPLE_RESPONSE_SAMPLERequest" type="SAMPLE_RESPONSE_SAMPLERequestType"/>
+            <xsd:element name="CFSCV_RESPONSE_WEBSERVICEResponse" type="CFSCV_RESPONSE_WEBSERVICEResponseType"/>
+            <xsd:complexType name="CFSCV_RESPONSE_WEBSERVICEResponseType">
+                <xsd:sequence>
+                    <xsd:element name="CFSCV_RESPONSE_WEBSERVICEResponseElement">
+                        <xsd:complexType>
+                            <xsd:sequence> </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="SAMPLE_RESPONSE_SAMPLERequestType">
+                <xsd:sequence>
+                    <xsd:element name="SAMPLE_RESPONSE_SAMPLERequestElement">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element maxOccurs="1" minOccurs="0" name="status">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:string">
+                                            <xsd:maxLength value="10"/>
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                                <xsd:element maxOccurs="1" minOccurs="0" name="message_code">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:string">
+                                            <xsd:maxLength value="500"/>
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                                <xsd:element maxOccurs="1" minOccurs="0" name="message">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:string">
+                                            <xsd:maxLength value="500"/>
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                                <xsd:element maxOccurs="1" minOccurs="0" name="error_data">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:string">
+                                            <xsd:maxLength value="500"/>
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                                <xsd:element maxOccurs="1" minOccurs="0" name="x9_file_name">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:string">
+                                            <xsd:maxLength value="100"/>
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                                <xsd:element maxOccurs="1" minOccurs="0" name="cheque_id">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:string">
+                                            <xsd:maxLength value="36"/>
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                                <xsd:element maxOccurs="1" minOccurs="0" name="table_Name">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:string">
+                                            <xsd:maxLength value="100"/>
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                                <xsd:element maxOccurs="1" minOccurs="0" name="trace_id">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:string">
+                                            <xsd:maxLength value="100"/>
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                                <xsd:element maxOccurs="1" minOccurs="0" name="v_vision_results">
+                                    <xsd:simpleType>
+                                        <xsd:restriction base="xsd:string">
+                                            <xsd:maxLength value="7000"/>
+                                        </xsd:restriction>
+                                    </xsd:simpleType>
+                                </xsd:element>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </types>
+    <message name="SecurityHeader">
+        <part name="Security" element="infa:Security">
+        </part>
+    </message>
+    <message name="tgt_csfcv_response_webserviceOut">
+        <part name="parameters" element="n:tgt_csfcv_response_webserviceResponse">
+        </part>
+    </message>
+    <message name="CFSCV_RESPONSE_WEBSERVICEIn">
+        <part name="parameters" element="n:SAMPLE_RESPONSE_SAMPLERequest">
+        </part>
+    </message>
+    <portType name="repository_service_sample">
+        <operation name="repository_service_sample">
+            <input message="infa:CFSCV_RESPONSE_WEBSERVICEIn">
+            </input>
+            <output message="infa:tgt_csfcv_response_webserviceOut">
+            </output>
+        </operation>
+    </portType>
+    <binding name="repository_service_sample" type="infa:repository_service_CORIQ_sample">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="repository_service_sample">
+            <soap:operation soapAction="" style="document"/>
+            <input>
+                <soap:body use="literal"/>
+                <soap:header message="infa:SecurityHeader" part="Security" use="literal">
+                </soap:header>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="repository_service_sample">
+        <port name="repository_service_sample" binding="infa:repository_service_sample">
+            <soap:address location="https://cat.sample.sample.com/t/sample.com/sample/v1.0"/>
+        </port>
+    </service>
+</definitions>

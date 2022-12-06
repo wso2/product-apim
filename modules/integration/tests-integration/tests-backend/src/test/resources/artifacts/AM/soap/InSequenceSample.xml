@@ -1,0 +1,21 @@
+<header description="SOAPAction" name="SOAPAction" scope="transport" value=""/>
+<property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
+<property expression="json-eval($.)" name="req.var."/>
+
+
+<payloadFactory description="transform" media-type="xml">
+<format>
+    <soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" xmlns:web="http://www.samplewsdl.com/">
+        <soapenv:Header/>
+        <soapenv:Body>
+
+
+        </soapenv:Body>
+    </soapenv:Envelope>
+</format>
+<args>
+    <arg evaluator="xml" expression="get-property('req.var.')"/>
+
+</args>
+</payloadFactory>
+<property description="messageProperty" name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
