@@ -59,6 +59,7 @@ import org.wso2.carbon.utils.ServerConstants;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 
 public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(CorrelationLoggingTest.class);
@@ -269,6 +270,8 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         }
 
         resetAllLogs();
+        InvokeTestAPI();
+        
         while ((logLine = bufferedReader.readLine()) != null) {
             assertTrue(isHTTPLogLine(logLine) || isMethodCallsLogLine(logLine));
         }
@@ -277,6 +280,13 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         configureCorrelationLoggingComponent(new String[] { "http", "method-calls" }, false);
         while ((logLine = bufferedReader.readLine()) != null) {
             assertTrue(isHTTPLogLine(logLine) || isMethodCallsLogLine(logLine));
+        }
+
+        // To check whehther no logs are printing after disabling
+        resetAllLogs();
+        InvokeTestAPI();
+        while ((logLine = bufferedReader.readLine()) != null) {
+            assertFalse(isHTTPLogLine(logLine) || isMethodCallsLogLine(logLine));
         }
     }
 
