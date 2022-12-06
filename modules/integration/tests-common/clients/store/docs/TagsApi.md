@@ -1,6 +1,6 @@
 # TagsApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/devportal/v2*
+All URIs are relative to *https://apis.wso2.com/api/am/devportal/v3*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

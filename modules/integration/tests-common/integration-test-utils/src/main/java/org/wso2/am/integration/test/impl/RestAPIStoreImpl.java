@@ -136,7 +136,7 @@ public class RestAPIStoreImpl {
 
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
+        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v3");
         apiStoreClient.setReadTimeout(600000);
         apiStoreClient.setConnectTimeout(600000);
         apiStoreClient.setWriteTimeout(600000);
@@ -164,7 +164,7 @@ public class RestAPIStoreImpl {
     public RestAPIStoreImpl(String tenantDomain, String storeURL) {
 
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
-        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
+        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v3");
         apiStoreClient.setDebugging(true);
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
@@ -1794,7 +1794,7 @@ public class RestAPIStoreImpl {
 
         ApIsApi apIsApi = new ApIsApi();
         ApiClient apiStoreClient = new ApiClient();
-        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
+        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/devportal/v3");
         apIsApi.setApiClient(apiStoreClient);
 
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);

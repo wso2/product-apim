@@ -81,7 +81,7 @@ public class APIMIntegrationConstants {
     public static final String STORE_APPLICATION_REST_URL = "store/site/pages/applications.jag";
 
     public static final String SECONDARY_USER_STORE = "secondary";
-    public static final String REST_API_PUBLISHER_CONTEXT_FULL = "api/am/publisher/v3";
+    public static final String REST_API_PUBLISHER_CONTEXT_FULL = "api/am/publisher/v4";
     public static final String REST_API_PUBLISHER_EXPORT_API_RESOURCE = "/apis/export";
     public static final String REST_API_PUBLISHER_IMPORT_API_RESOURCE = "/apis/import";
 
