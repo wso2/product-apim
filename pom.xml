@@ -1286,7 +1286,7 @@
         <carbon.governance.version>4.8.29</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.8.0-m2</carbon.kernel.version>
+        <carbon.kernel.version>4.8.0-alpha</carbon.kernel.version>
         <apimserver.version>4.2.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.20</cipher.tool.version>
