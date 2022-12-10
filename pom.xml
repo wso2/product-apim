@@ -1273,7 +1273,7 @@
         <carbon.apimgt.ui.version>9.0.394</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.28.16</carbon.apimgt.version>
+        <carbon.apimgt.version>9.28.18</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1286,7 +1286,7 @@
         <carbon.governance.version>4.8.29</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.8.0-m2</carbon.kernel.version>
+        <carbon.kernel.version>4.8.0-alpha</carbon.kernel.version>
         <apimserver.version>4.2.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.20</cipher.tool.version>
@@ -1295,7 +1295,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.148</carbon.mediation.version>
+        <carbon.mediation.version>4.7.152</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.24.4</carbon.identity.version>
