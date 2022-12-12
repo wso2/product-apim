@@ -24,6 +24,7 @@ import com.google.gson.Gson;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
+import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
@@ -43,6 +44,7 @@ import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -277,7 +279,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             client.stop();
         }
     }
-    @Test(description = "Test Throttling for WebSocket API", dependsOnMethods = "testWebSocketAPIInvocation")
+//    @Test(description = "Test Throttling for WebSocket API", dependsOnMethods = "testWebSocketAPIInvocation")
     public void testWebSocketAPIThrottling() throws Exception {
         // Deploy Throttling policy with throttle limit set as 8 frames. One message is two frames, therefore 4
         // messages can be sent.
@@ -358,7 +360,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         throttleMarkTime =  System.currentTimeMillis();
     }
 
-    @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebSocketAPIThrottling")
+    @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebSocketAPIInvocationWithJWTToken")
     public void testWebSocketAPIInvalidTokenInvocation() throws Exception {
         while ( System.currentTimeMillis() < throttleMarkTime + 60000) {
             Thread.sleep(5000L);
@@ -433,20 +435,76 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
         // Invoke API without 'Origin' header
         HttpHeaders headers2 = new DefaultHttpHeaders();
-        boolean apiInvocationFailed = false;
         try {
             invokeAPI(client, accessToken, AUTH_IN.HEADER, headers2);
-        } catch (APIManagerIntegrationTestException e) {
-            log.error("Exception in connecting to server", e);
-            apiInvocationFailed = true;
-            assertTrue(true, "Websocket handshake failed as expected");
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
         } finally {
-            if (!apiInvocationFailed) {
-                Assert.fail("CORS origin header validation has not been successful");
-            }
+            client.stop();
+        }
+    }
+
+    @Test(description = "Test per API CORS origin header validation for Websocket API invocations",
+            dependsOnMethods = "testWebsocketAPICORSValidation")
+    public void testWebsocketPerAPICORSValidation() throws Exception {
+        // Set the configurations
+        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                                             APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                                                             TestUserMode.SUPER_TENANT_ADMIN);
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "webSocketTest"
+                        + File.separator + "perAPICorsValidationEnabledTests" + File.separator + "deployment.toml"));
+        serverConfigurationManager.restartGracefully();
+
+        HttpResponse response = restAPIPublisher.getAPI(websocketAPIID);
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
+        APICorsConfigurationDTO corsConfig = new APICorsConfigurationDTO();
+        List<String> allowedOrigins = new ArrayList<>();
+        allowedOrigins.add(originHeaderName);
+        corsConfig.corsConfigurationEnabled(true);
+        corsConfig.accessControlAllowOrigins(allowedOrigins);
+        apidto.setCorsConfiguration(corsConfig);
+        restAPIPublisher.updateAPI(apidto);
+
+        // Generate access token
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appJWTId, "3600", null,
+                                                                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                                                                        null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+
+        WebSocketClient client = new WebSocketClient();
+
+        HttpHeaders headers1 = new DefaultHttpHeaders();
+        headers1.add(HttpHeaderNames.ORIGIN, originHeaderName);
+        while (System.currentTimeMillis() < throttleMarkTime + 60000) {
+            Thread.sleep(5000L);
+        }
+
+        // Invoke API with 'Origin' header
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.HEADER, headers1);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+
+        // Invoke API without 'Origin' header
+        HttpHeaders headers2 = new DefaultHttpHeaders();
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.HEADER, headers2);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
             client.stop();
         }
     }
