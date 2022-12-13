@@ -445,8 +445,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Test per API CORS origin header validation for Websocket API invocations",
-            dependsOnMethods = "testWebsocketAPICORSValidation")
+    // @Test(description = "Test per API CORS origin header validation for Websocket API invocations",
+    //         dependsOnMethods = "testWebsocketAPICORSValidation")
     public void testWebsocketPerAPICORSValidation() throws Exception {
         // Set the configurations
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
