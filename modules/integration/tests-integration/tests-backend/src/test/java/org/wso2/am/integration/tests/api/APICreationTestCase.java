@@ -66,7 +66,7 @@ public class APICreationTestCase extends APIManagerLifecycleBaseTest {
     public void testCreateAndDeployApiWithMutualSSLEnabled() throws Exception {
         // Create API and enable Mutual SSL with client certificate
         APIRequest apiRequest;
-        apiRequest = new APIRequest(API_NAME, "testapi", new URL(apiEndpointUrl));
+        apiRequest = new APIRequest("MutuallSSLEnabledAPI", "mutualsslapi", new URL(apiEndpointUrl));
         apiRequest.setVersion(API_VERSION_1_0_0);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setProvider(user.getUserName());
@@ -87,6 +87,6 @@ public class APICreationTestCase extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
-        super.cleanUp();
+        restAPIPublisher.deleteAPI(apiId);
     }
 }
