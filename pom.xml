@@ -1295,7 +1295,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.156</carbon.mediation.version>
+        <carbon.mediation.version>4.7.157</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.24.4</carbon.identity.version>
@@ -1471,8 +1471,8 @@
         <apim.analytics.publisher.version>1.1.0</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
-        <rampart.wso2.version>1.7.0-wso2v1</rampart.wso2.version>
-        <wss4j.version>1.6.0-wso2v2</wss4j.version>
+        <rampart.wso2.version>1.7.0-wso2v3</rampart.wso2.version>
+        <wss4j.version>1.6.0-wso2v5-SNAPSHOT</wss4j.version>
 
         <!-- Service Catalog Client Dependencies -->
         <com.squareup.okhttp3.version>4.9.0</com.squareup.okhttp3.version>
@@ -1481,7 +1481,7 @@
         <identity.org.mgt.version>1.2.1</identity.org.mgt.version>
         <identity.inbound.provisioning.scim2.version>3.1.1</identity.inbound.provisioning.scim2.version>
         <xmlsec.wso2.version>1.5.6-wso2v1</xmlsec.wso2.version>
-        <xmlsec.version>1.5.6</xmlsec.version>
+        <xmlsec.version>2.3.0</xmlsec.version>
         <identity.user.workflow.version>5.6.0</identity.user.workflow.version>
     </properties>
 
