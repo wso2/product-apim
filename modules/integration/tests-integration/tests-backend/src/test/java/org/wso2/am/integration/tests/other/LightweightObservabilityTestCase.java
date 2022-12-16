@@ -127,7 +127,7 @@ public class LightweightObservabilityTestCase extends APIMIntegrationBaseTest {
     public void testMessageTrackingLogs() throws Exception {
         // Create and publish sample API
         startWiremockServer();
-        apiEndPointURL = endpointHost + ":" + endpointPort + "/";
+        apiEndPointURL = "http://" + endpointHost + ":" + endpointPort + "/";
 
         //Create API request
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(apiEndPointURL));
