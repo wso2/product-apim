@@ -70,7 +70,7 @@ public class LightweightObservabilityTestCase extends APIMIntegrationBaseTest {
     private WireMockServer wireMockServer;
     private final String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
     private final String correlationId = "32ac33f7-dcb2-455c-8615-62725690eb50";
-    private final String endpointHost = "http://localhost";
+    private final String endpointHost = "localhost";
     private int endpointPort;
     private int lowerPortLimit = 9950;
     private final int upperPortLimit = 9999;
