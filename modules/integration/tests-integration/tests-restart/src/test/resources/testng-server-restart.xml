@@ -13,7 +13,7 @@
             <class name="org.wso2.am.integration.tests.server.restart.APIRevisionServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.AccessibilityOfBlockAPIServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.JWTBandwidthThrottlingServerRestartTestCase"/>
-            <class name="org.wso2.am.integration.tests.server.restart.BurstControlServerRestartTestCase"/>
+<!--            <class name="org.wso2.am.integration.tests.server.restart.BurstControlServerRestartTestCase"/>-->
             <class name="org.wso2.am.integration.tests.server.restart.CustomThrottlingPolicyServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.APILoggingServerRestartTest"/>
         </classes>
