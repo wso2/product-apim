@@ -2541,7 +2541,7 @@ public class RestAPIPublisherImpl {
     }
 
     /**
-     * Get the Certificate usage
+     * Get the Certificate usage.
      *
      * @param alias  Alias of the certificate
      * @param limit  Number of results needed

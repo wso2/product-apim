@@ -11774,7 +11774,6 @@ components:
           type: string
           example: v4.1.0
         data:
-          #          type: object
           $ref: '#/components/schemas/OperationPolicyData'
     OperationPolicyData:
       title: Operation Policy Data
