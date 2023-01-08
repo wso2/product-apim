@@ -85,12 +85,12 @@ public class APIEndpointCertificateUsageTestCase extends APIManagerLifecycleBase
         Random random = new Random();
         int limit = random.ints(20, 30).findFirst().getAsInt();
 
-        for(int i = 0; i < limit; i++) {
+        for (int i = 0; i < limit; i++) {
             String apiName = API_NAME_BASE + "_" + i;
             String apiContext = API_CONTEXT_BASE + "_" + i;
             String apiEndPointUrl = API_ENDPOINT_URL_BASE_1 + i;
 
-            if(i % 2 == 0) {
+            if (i % 2 == 0) {
                 apiEndPointUrl = API_ENDPOINT_URL_BASE_2 + i;
                 selectedEndpointUrl = apiEndPointUrl;
             }
@@ -107,7 +107,7 @@ public class APIEndpointCertificateUsageTestCase extends APIManagerLifecycleBase
             String apiId = apiResponse.getData();
 
             allAPIs.add(apiId);
-            if(i % 2 == 0) {
+            if (i % 2 == 0) {
                 evenAPIs.add(apiId);
             }
 

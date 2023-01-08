@@ -1268,12 +1268,12 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.3.1</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.3.2</carbon.analytics.common.version>
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.0.394</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.0.403</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.28.13</carbon.apimgt.version>
+        <carbon.apimgt.version>9.28.25</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1286,7 +1286,7 @@
         <carbon.governance.version>4.8.29</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.8.0-m2</carbon.kernel.version>
+        <carbon.kernel.version>4.8.0-alpha</carbon.kernel.version>
         <apimserver.version>4.2.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.20</cipher.tool.version>
@@ -1295,7 +1295,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.143</carbon.mediation.version>
+        <carbon.mediation.version>4.7.157</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.24.4</carbon.identity.version>
@@ -1340,7 +1340,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v314</synapse.version>
+        <synapse.version>4.0.0-wso2v5</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v85</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v25</axiom.wso2.version>
@@ -1471,8 +1471,8 @@
         <apim.analytics.publisher.version>1.1.0</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
-        <rampart.wso2.version>1.7.0-wso2v1</rampart.wso2.version>
-        <wss4j.version>1.6.0-wso2v2</wss4j.version>
+        <rampart.wso2.version>1.7.0-wso2v3</rampart.wso2.version>
+        <wss4j.version>1.6.0-wso2v5</wss4j.version>
 
         <!-- Service Catalog Client Dependencies -->
         <com.squareup.okhttp3.version>4.9.0</com.squareup.okhttp3.version>
@@ -1481,7 +1481,7 @@
         <identity.org.mgt.version>1.2.1</identity.org.mgt.version>
         <identity.inbound.provisioning.scim2.version>3.1.1</identity.inbound.provisioning.scim2.version>
         <xmlsec.wso2.version>1.5.6-wso2v1</xmlsec.wso2.version>
-        <xmlsec.version>1.5.6</xmlsec.version>
+        <xmlsec.version>2.3.0</xmlsec.version>
         <identity.user.workflow.version>5.6.0</identity.user.workflow.version>
     </properties>
 

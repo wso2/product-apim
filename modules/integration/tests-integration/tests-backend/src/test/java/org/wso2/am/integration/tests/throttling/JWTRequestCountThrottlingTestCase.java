@@ -278,6 +278,48 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
                 "Request not throttled by request count condition in subscription tier");
     }
 
+    @Test(groups = { "wso2.am" }, description = "", dependsOnMethods = { "testSubscriptionLevelThrottling" })
+    public void testNonaunthenticatedResourceThrottlingWithJWTClaimCondition() throws Exception {
+        HttpResponse api = restAPIPublisher.getAPI(apiId);
+        Gson gson = new Gson();
+        APIDTO apidto = gson.fromJson(api.getData(), APIDTO.class);
+        List<APIOperationsDTO> operations = apidto.getOperations();
+        //Setting Off Security for api resource
+        operations.get(0).setAuthType("None");
+        operations.get(0).setThrottlingPolicy(apiPolicyName2);
+        apidto.setOperations(operations);
+        restAPIPublisher.updateAPI(apidto, apiId);
+
+        // Create Revision and Deploy to Gateway
+        String apiRevisionId1 = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
+        waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("content-type", "application/json");
+        Assert.assertTrue(isThrottled(requestHeaders, null, 25),
+                "Request not throttled by default request count in app tier");
+
+        //Setting On Security for api resource
+        apidto = gson.fromJson(api.getData(), APIDTO.class);
+        operations = apidto.getOperations();
+        operations.get(0).setAuthType("Application & Application User");
+        apidto.setOperations(operations);
+        restAPIPublisher.updateAPI(apidto, apiId);
+
+        // Create Revision and Deploy to Gateway
+        String apiRevisionId2 = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
+        waitForAPIDeploymentSync(user.getUserName(), apidto.getName(), apidto.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        //Delete created API Revisions
+        restAPIPublisher.deleteAPIRevision(apiId, apiRevisionId1);
+        restAPIPublisher.deleteAPIRevision(apiId, apiRevisionId2);
+    }
+
     @Test(groups = {"wso2.am"}, description = "", dependsOnMethods = {"testSubscriptionLevelThrottling",
             "testApplicationLevelThrottling"})
     public void testAPILevelThrottling() throws Exception {
