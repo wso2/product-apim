@@ -1350,6 +1350,8 @@
         </CacheManager>
     </CacheConfig>
 
+    <EnableSessionNonceCookie>{{session.nonce.cookie.enabled}}</EnableSessionNonceCookie>
+
     {% if identity.cookies is defined %}
     <Cookies>
     {% for cookie in identity.cookies %}
@@ -2111,5 +2113,16 @@
     <UserFiltering>
         <ShowDisplayName>{{user_filtering.show_display_name_of_user}}</ShowDisplayName>
     </UserFiltering>
+
+    {% if reverse_proxy_config is defined %}
+    <ReverseProxyConfig>
+        {% for config in reverse_proxy_config %}
+        <ReverseProxy>
+            <DefaultContext>{{config.default_context}}</DefaultContext>
+            <ProxyContext>{{config.proxy_context}}</ProxyContext>
+        </ReverseProxy>
+        {% endfor %}
+    </ReverseProxyConfig>
+    {% endif %}
 
 </Server>
