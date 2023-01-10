@@ -182,14 +182,10 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
         id2 = response2.getData();
         //publishing API
         restAPIPublisher.changeAPILifeCycleStatus(id2, APILifeCycleAction.PUBLISH.getAction(), null);
-
         waitForAPIDeploymentSync(apiRequest2.getProvider(), apiRequest2.getName(), apiRequest2.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
-
         String apiInvocationUrl = getAPIInvocationURLHttp(apiContext2, API_VERSION);
-
         try {
-
             //Case 01 -  Authorization header = Bearer header.
             Map<String, String> headerCase1 = new HashMap<String, String>();
             headerCase1.put("Authorization", "Bearer " + "adbsejdb.");
@@ -211,7 +207,6 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
                             "have provided the correct security credentials' but received '" + descriptionCase1 + "'",
                     descriptionCase1.contains(
                             "Invalid JWT token. Make sure you have provided the correct security credentials"));
-
             //Case 02 -  Authorization header = Bearer header.payload
             Map<String, String> headerCase2 = new HashMap<String, String>();
             headerCase2.put("Authorization", "Bearer " + "adbsejdb.pqrs");
@@ -233,7 +228,6 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
                             "have provided the correct security credentials' but received '" + descriptionCase2 + "'",
                     descriptionCase2.contains(
                             "Invalid JWT token. Make sure you have provided the correct security credentials"));
-
             //Case 03 -  Authorization header = Bearer header.payload.
             Map<String, String> headerCase3 = new HashMap<String, String>();
             headerCase3.put("Authorization", "Bearer " + "adbsejdb.pqrst.");
@@ -255,7 +249,6 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
                             "have provided the correct security credentials' but received '" + descriptionCase3 + "'",
                     descriptionCase3.contains(
                             "Invalid JWT token. Make sure you have provided the correct security credentials"));
-
         } catch (IOException e) {
             log.error("Error sending request to endpoint " + apiInvocationUrl, e);
             Assert.assertTrue("Could not send request to endpoint " + apiInvocationUrl + ": " + e.getMessage(), false);
