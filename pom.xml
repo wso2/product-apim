@@ -1455,7 +1455,7 @@
         <nimbus.jwt.version>7.3.0.wso2v1</nimbus.jwt.version>
 
         <!-- CallHome version -->
-        <callhome.version>4.5.x_1.0.13</callhome.version>
+        <callhome.version>4.5.x_1.0.15</callhome.version>
 
         <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
 
