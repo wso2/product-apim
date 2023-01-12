@@ -151,6 +151,10 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
             "{\"name\":\"ldap\",\"enabled\":\"false\",\"properties\":[]}," +
             "{\"name\":\"synapse\",\"enabled\":\"false\",\"properties\":[]}," +
             "{\"name\":\"method-calls\",\"enabled\":\"false\",\"properties\":[]}]}";
+
+        log.info("testRetrieveDefaultCorrelationLoggingConfigsTest->actualResponse: " + loggingResponse.getData());
+        log.info("testRetrieveDefaultCorrelationLoggingConfigsTest->expectedResponse: " + expectedResponse);
+        
         Assert.assertEquals(loggingResponse.getData(),expectedResponse);
 
         String logLine;
