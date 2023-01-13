@@ -245,52 +245,6 @@ case $1 in
 			fi
 		done
 		;;
-	-Dprofile=api-publisher-deprecated)
-		timeStamp
-		echo "[${timestamp}] INFO - Starting to optimize API Manager for the API Publisher profile"
-		replaceDeploymentConfiguration api-publisher-deprecated $passedSkipConfigOptimizationOption
-		removeWebSocketInboundEndpoint
-		removeSecureWebSocketInboundEndpoint
-    replaceAxis2TemplateFile $pathToAxis2PublisherXmlTemplate
-		replaceTenantAxis2TemplateFile $pathToTenantAxis2PublisherXmlTemplate
-		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#publisher#v*.war' -o -name 'api#am#publisher.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'internal#data#v*.war' -o -name 'admin' -o -name 'publisher' \) ); do
-			rm -r $i
-			file=`basename "$i"`
-			timeStamp
-			echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
-			folder=`basename $file .war`
-			if [ -d ${pathToWebapps}/$folder ]
-			then
-				rm -r ${pathToWebapps}/$folder
-				timeStamp
-				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
-			fi
-		done
-		;;
-	-Dprofile=api-devportal-deprecated)
-		timeStamp
-		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Developer Portal profile"
-		replaceDeploymentConfiguration api-devportal-deprecated $passedSkipConfigOptimizationOption
-		removeWebSocketInboundEndpoint
-		removeSecureWebSocketInboundEndpoint
-    replaceAxis2TemplateFile $pathToAxis2DevportalXmlTemplate
-		replaceTenantAxis2TemplateFile $pathToTenantAxis2DevportalXmlTemplate
-		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name 'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' -o -name 'api#am#devportal#v*.war' -o -name 'api#am#devportal.war' -o -name 'api#am#admin#v*.war' -o -name 'api#am#admin.war' -o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name 'api#identity#user#v*.war' -o -name 'internal#data#v*.war' -o -name 'devportal' \) ); do
-			rm -r $i
-			file=`basename "$i"`
-			timeStamp
-			echo "[${timestamp}] INFO - Removed the $file file from ${pathToWebapps}"
-			folder=`basename $file .war`
-			if [ -d ${pathToWebapps}/$folder ]
-			then
-				rm -r ${pathToWebapps}/$folder
-				timeStamp
-				echo "[${timestamp}] INFO - Removed $folder directory from ${pathToWebapps}"
-			fi
-		done
-    ;;
 	-Dprofile=control-plane)
 		timeStamp
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Control Plane profile"
