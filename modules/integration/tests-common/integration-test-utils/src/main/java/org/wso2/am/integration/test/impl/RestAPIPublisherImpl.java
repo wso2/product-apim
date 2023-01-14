@@ -241,7 +241,7 @@ public class RestAPIPublisherImpl {
      */
     public HttpResponse addAPI(APIRequest apiRequest) throws ApiException {
 
-        String osVersion = "v3";
+        String osVersion = "v4";
         setActivityID();
         APIDTO apidto = this.addAPI(apiRequest, osVersion);
 
@@ -1325,7 +1325,7 @@ public class RestAPIPublisherImpl {
             }
         }
         body.setPolicies(tierList);
-        ApiResponse<APIDTO> httpInfo = apIsApi.createAPIWithHttpInfo(body, "v3");
+        ApiResponse<APIDTO> httpInfo = apIsApi.createAPIWithHttpInfo(body, "v4");
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
     }
