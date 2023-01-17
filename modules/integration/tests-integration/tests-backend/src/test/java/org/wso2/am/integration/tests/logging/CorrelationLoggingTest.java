@@ -312,6 +312,8 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     }
 
     private void configureCorrelationLoggingComponent(String[] componentNames, Boolean enable) throws Exception {
+
+        log.info("*** configureCorrelationLoggingComponent-componentNames: " + componentNames + ", enable:" + enable);
         String[] DEFAULT_DENIED_THREADS = {"MessageDeliveryTaskThreadPool", "HumanTaskServer",
                 "BPELServer", "CarbonDeploymentSchedulerThread"};
         String[] DEFAULT_COMPONENTS  = {"http", "jdbc", "ldap", "synapse", "method-calls"};
