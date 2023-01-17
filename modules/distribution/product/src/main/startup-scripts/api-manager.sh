@@ -310,7 +310,7 @@ echo "Using Java memory options: $JVM_MEM_OPTS"
 JAVA_VER_BASED_OPTS="--add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED"
 
 if [ $java_version_formatted -ge 1700 ]; then
-    JAVA_VER_BASED_OPTS=$JAVA_VER_BASED_OPTS "--add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED"
+    JAVA_VER_BASED_OPTS="$JAVA_VER_BASED_OPTS --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED"
 fi
 
 while [ "$status" = "$START_EXIT_STATUS" ]

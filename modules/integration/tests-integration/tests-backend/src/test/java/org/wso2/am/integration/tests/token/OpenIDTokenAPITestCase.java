@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.token;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -37,6 +38,7 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.base.MultitenantConstants;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -100,6 +102,22 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
 
         HttpResponse userInfoResponse = HTTPSClientUtils.doGet(keyManagerHTTPSURL
                 + "oauth2/userinfo?schema=openid", requestHeaders);
+        Assert.assertEquals(userInfoResponse.getResponseCode(), 200, "Response code mismatched");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Token API Test sample",
+            dependsOnMethods = "testCallUserInfoApiWithOpenIdAccessToken")
+    public void testCallUserInfoApiWithOpenIdJWTAccessToken() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Authorization", "Bearer " + userAccessToken);
+
+        String keyManagerURLSuffix = "oauth2/userinfo?schema=openid";
+        String tenantDomain = user.getUserDomain();
+        if (!StringUtils.equals(tenantDomain, MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)) {
+            keyManagerURLSuffix = "t/" + tenantDomain + "/" + keyManagerURLSuffix;
+        }
+        HttpResponse userInfoResponse = HTTPSClientUtils.doGet(keyManagerHTTPSURL + keyManagerURLSuffix,
+                requestHeaders);
         Assert.assertEquals(userInfoResponse.getResponseCode(), 200, "Response code mismatched");
     }
 

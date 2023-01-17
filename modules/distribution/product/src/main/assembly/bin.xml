@@ -128,6 +128,8 @@
                 <exclude>**/repository/components/plugins/org.antlr.antlr4-runtime-osgi_4.5.0.jar</exclude>
                 <exclude>**/repository/components/plugins/org.objectweb.asm_5.2.0.jar</exclude>
                 <exclude>**/repository/components/plugins/httpcore_4.4.14.wso2v1.jar</exclude>
+                <!--This jar is not used in apim-->
+                <exclude>**/repository/components/plugins/swagger-parser_2.0.20.wso2v1.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/org.wso2.carbon.tenant.redirector.servlet*.jar</exclude>-->
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
@@ -167,6 +169,7 @@
                 <exclude>**/repository/components/plugins/commons-io_2.4.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v2.jar</exclude>
+                <exclude>**/lib/xalan*.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -177,6 +180,7 @@
             </includes>
             <excludes>
                 <exclude>**/wso2server.sh</exclude>
+                <exclude>**/xalan*.jar</exclude>
             </excludes>
             <fileMode>755</fileMode>
         </fileSet>
@@ -219,7 +223,7 @@
                 <exclude>**/conf/axis2/*.j2</exclude>
                 <exclude>**/catalina-server.xml.j2</exclude>
                 <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml.j2</exclude>
-
+                <exclude>**/webapps/authenticationendpoint/WEB-INF/web.xml.j2</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -425,6 +429,11 @@
             <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
         </fileSet>
 
+        <fileSet>
+            <directory>../../local-authenticators/target/localauthenticatorCopied/jar</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
+        </fileSet>
+
         <!--copy web app for OAuth feature-->
         <fileSet>
             <directory>
@@ -466,6 +475,10 @@
                 <exclude>authenticationendpoint/includes/product-title.jsp</exclude>
                 <exclude>authenticationendpoint/includes/privacy-policy-content.jsp</exclude>
                 <exclude>authenticationendpoint/login.jsp</exclude>
+                <exclude>authenticationendpoint/mobile.jsp</exclude>
+                <exclude>authenticationendpoint/smsOtp.jsp</exclude>
+                <exclude>authenticationendpoint/smsOtpError.jsp</exclude>
+                <exclude>authenticationendpoint/totp.jsp</exclude>
             </excludes>
         </fileSet>
 
@@ -1570,6 +1583,38 @@
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/webapps</outputDirectory>
             <destName>package.json</destName>
         </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/sms/sms-providers-api-body-templates.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/sms</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/attributes/userstore/unique-id-active-directory.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
+        </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/attributes/userstore/unique-id-jdbc.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
+        </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/attributes/userstore/unique-id-read-only-ldap.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
+        </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/attributes/userstore/unique-id-read-write-ldap.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
+        </file>
+
     </files>
 
 </assembly>

@@ -28,6 +28,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
@@ -39,7 +40,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.*;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDataDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -50,10 +54,7 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
-import org.wso2.carbon.apimgt.api.model.OperationPolicyData;
-import org.wso2.carbon.apimgt.api.model.OperationPolicyDefinition;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.apache.http.client.HttpClient;
 import wiremock.com.google.common.io.Files;
 
 import java.io.File;
@@ -72,7 +73,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
 import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
@@ -571,6 +571,40 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
                 restAPIStore);
 
         org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(newVersion);
+        assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "TestValue");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the add header operation policy",
+            dependsOnMethods = "testCreateNewVersionAfterAddingOperationPolicy")
+    public void testAPIInvocationAfterAddingNewMultipleOperationPolicies() throws Exception {
+
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        List<OperationPolicyDTO> requestPolicyList = new ArrayList<>();
+        List<OperationPolicyDTO> responsePolicyList = new ArrayList<>();
+        String policyList[] = {"disableChunking", "jsonToXML", "xmlToJson"};
+        String policyName = "addHeader";
+        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
+        Map<String, Object> attributeMap = new HashMap<>();
+        attributeMap.put("headerName", "TestHeader");
+        attributeMap.put("headerValue", "TestValue");
+
+        for (int i = 0; i < 3; i++) {
+            Assert.assertNotNull(policyMap.get(policyList[i]), "Unable to find a common policy with name " + policyList[i]);
+            requestPolicyList.add(getPolicyList(policyList[i], policyMap, null).get(0));
+            responsePolicyList.add(getPolicyList(policyList[i], policyMap, null).get(0));
+        }
+
+        requestPolicyList.add(getPolicyList(policyName, policyMap, attributeMap).get(0));
+        responsePolicyList.add(getPolicyList(policyName, policyMap, attributeMap).get(0));
+        apiOperationPoliciesDTO.setRequest(requestPolicyList);
+        apiOperationPoliciesDTO.setResponse(responsePolicyList);
+        apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
+
+        restAPIPublisher.updateAPI(apidto);
+        org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(API_VERSION_1_0_0);
         assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "TestValue");
     }
 

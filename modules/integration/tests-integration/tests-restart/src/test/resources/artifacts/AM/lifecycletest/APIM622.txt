@@ -1,0 +1,2 @@
+apiDocumentation -
+APIM2-622:Add documentation to an API [ sample & SDK | File ] through the publisher REST api

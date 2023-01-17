@@ -43,6 +43,8 @@ pathToDeploymentTemplates='../repository/resources/conf/deployment-templates'
 pathToTomcatCarbonWEBINFWebXmlTemplate='../repository/resources/conf/templates/repository/conf/tomcat/carbon/WEB-INF/web.xml.j2'
 pathToTomcatCarbonWEBINFWebXmlTemplateBackup='../repository/resources/conf/templates/repository/conf/tomcat/carbon/WEB-INF/web.xml.j2.backup'
 pathToTomcatCarbonWEBINFWebXmlTMTemplate='../repository/resources/conf/templates/repository/conf/tomcat/carbon/WEB-INF/web_TM_GW.xml.j2'
+pathToDeploymentAuthenticationEndpointWebXMLTemplate='../repository/resources/conf/templates/repository/deployment/server/webapps/authenticationendpoint/WEB-INF/web.xml.j2'
+pathToDeploymentAccountRecoveryEndpointWebXMLTemplate='../repository/resources/conf/templates/repository/deployment/server/webapps/accountrecoveryendpoint/WEB-INF/web.xml.j2'
 timestamp=""
 cd `dirname "$0"`
 
@@ -80,6 +82,21 @@ removeSecureWebSocketInboundEndpoint(){
 		timeStamp
 		echo "[${timestamp}] INFO - Removed the SecureWebSocketInboundEndpoint.xml.j2 file from $pathToInboundEndpointsTemplate"
 	fi
+}
+
+removeAuthenticationAndAccountRecoveryEndpointWEBINFWebXmlTemplateFiles(){
+    if [ -e ${pathToDeploymentAuthenticationEndpointWebXMLTemplate} ]
+        then
+            rm -r ${pathToDeploymentAuthenticationEndpointWebXMLTemplate}
+            timeStamp
+            echo "[${timestamp}] INFO - Removed the file $pathToDeploymentAuthenticationEndpointWebXMLTemplate"
+        fi
+    if [ -e ${pathToDeploymentAccountRecoveryEndpointWebXMLTemplate} ]
+        then
+            rm -r ${pathToDeploymentAccountRecoveryEndpointWebXMLTemplate}
+            timeStamp
+            echo "[${timestamp}] INFO - Removed the file $pathToDeploymentAccountRecoveryEndpointWebXMLTemplate"
+        fi
 }
 
 removeSynapseConfigs(){
@@ -304,6 +321,7 @@ case $1 in
 		replaceAxis2TemplateFile $pathToAxis2TMXmlTemplate
 		replaceRegistryXMLTemplateFile
 		replaceTomcatCarbonWEBINFWebXmlTemplateFile
+		removeAuthenticationAndAccountRecoveryEndpointWEBINFWebXmlTemplateFiles
 		replaceDeploymentConfiguration traffic-manager $passedSkipConfigOptimizationOption
 		removeWebSocketInboundEndpoint
 		removeSecureWebSocketInboundEndpoint
@@ -328,6 +346,7 @@ case $1 in
 		echo "[${timestamp}] INFO - Starting to optimize API Manager for the Gateway worker profile"
      	replaceDeploymentConfiguration gateway-worker $2
 		  replaceTomcatCarbonWEBINFWebXmlTemplateFile
+		  removeAuthenticationAndAccountRecoveryEndpointWEBINFWebXmlTemplateFiles
 		# removing webbapps which are not required for this profile
 		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'am#sample#pizzashack#v*.war' -o -name 'api#am#gateway#v2.war' \)); do
 			rm -r $i

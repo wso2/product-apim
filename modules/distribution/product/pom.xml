@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-distribution-parent</artifactId>
-        <version>4.1.0-SNAPSHOT</version>
+        <version>4.2.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -306,7 +306,7 @@
                                         <include name="accountrecoveryendpoint.war" />
                                     </fileset>
                                 </unzip>
-                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/accountrecoveryendpoint/WEB-INF/web.xml" token="&lt;param-value&gt;true&lt;/param-value&gt;" value="&lt;param-value&gt;false&lt;/param-value&gt;" />
+                                <replace file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/conf/templates/repository/deployment/server/webapps/accountrecoveryendpoint/WEB-INF/web.xml.j2" token="&lt;param-value&gt;true&lt;/param-value&gt;" value="&lt;param-value&gt;false&lt;/param-value&gt;" />
                                 <delete file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps/accountrecoveryendpoint.war" />
                             </tasks>
                         </configuration>

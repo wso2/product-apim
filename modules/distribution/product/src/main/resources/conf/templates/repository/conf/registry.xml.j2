@@ -130,13 +130,15 @@
         {% for propKey,propValue in handler.properties.items() %}
         <property name="{{propKey}}">{{propValue}}</property>
         {% endfor %}
-        {% if handler.nested_property.enable %}
-        <property name="{{handler.nested_property.name}}" type="{{handler.nested_property.type}}">
-            {% for prop in nested_properties[handler.nested_property.name] %}
+        {% for nestedProperty in handler.nested_property %}
+        {% if nestedProperty.enable %}
+        <property name="{{nestedProperty.name}}" type="{{nestedProperty.type}}">
+            {% for prop in nestedProperty[nestedProperty.name] %}
                 <{{prop.tag}} {% if prop.key is defined %} key="{{prop.key}}" {% endif %}>{{prop.value}}</{{prop.tag}}>
             {% endfor %}
         </property>
         {% endif %}
+        {% endfor %}
         <filter class="{{handler.filter_class}}">
             {% for filterPropKey,filterPropValue in handler.filter_properties.items() %}
             <property name="{{filterPropKey}}">{{filterPropValue}}</property>
@@ -299,6 +301,9 @@
 
     <!-- This defines index configuration which is used in meta data search feature of the registry -->
     <indexingConfiguration>
+        {% if indexing.skip_roles_regex is defined %}
+        <skipRolesByRegex>{{indexing.skip_roles_regex}}</skipRolesByRegex>
+        {% endif %}
         <startIndexing>{{indexing.enable}}</startIndexing>
         <skipCache>true</skipCache>
         <startingDelayInSeconds>{{indexing.starting_delay}}</startingDelayInSeconds>

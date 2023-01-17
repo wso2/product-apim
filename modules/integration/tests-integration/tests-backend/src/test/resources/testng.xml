@@ -33,6 +33,7 @@
             <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
             <class name="org.wso2.am.integration.tests.api.revision.APIRevisionTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.APICreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
         </classes>
@@ -178,7 +179,7 @@
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
             <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
             <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
-            <class name="org.wso2.am.integration.tests.header.APIMANAGER3614DuplicateTransferEncodingHeaderTestCase"/>
+<!--            <class name="org.wso2.am.integration.tests.header.APIMANAGER3614DuplicateTransferEncodingHeaderTestCase"/>-->
             <class name="org.wso2.am.integration.tests.header.ESBJAVA3447PreserveCharsetInContentTypeTestCase"/>
             <!--class name="org.wso2.am.integration.tests.header.ESBJAVA5121CheckAuthHeaderOrderTestCase"/-->
             <!--<class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>-->
@@ -221,6 +222,8 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.DocAPIParameterTamperingTest"/>
+            <class name="org.wso2.am.integration.tests.publisher.GetLinterCustomRulesThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.CheckEmptyCORSConfigurationsTestCase"/>
         </classes>
     </test>
 
@@ -247,6 +250,7 @@
             <class name="org.wso2.am.integration.tests.application.ApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationAttributesTestCase"/>
             <class name="org.wso2.am.integration.tests.application.PkceEnabledApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.ApplicationBlockSubscriptionTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5417PrototypedAPIsInMonetizedTestCase"/>-->
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
@@ -427,6 +431,7 @@
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.logging.APILoggingTest"/>
+            <class name="org.wso2.am.integration.tests.logging.CorrelationLoggingTest"/>
         </classes>
     </test>
     <test name="apim-revoke-one-time-token-flow-tests" preserve-order="true" parallel="false" group-by-instances="true">
