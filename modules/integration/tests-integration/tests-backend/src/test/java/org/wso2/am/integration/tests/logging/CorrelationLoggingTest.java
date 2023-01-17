@@ -141,6 +141,8 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am" }, description = "Testing the default correlation configs using the devops API ")
     public void testRetrieveDefaultCorrelationLoggingConfigsTest() throws Exception {
 
+        log.info("*** UserMode:" + this.userMode);
+
         //Retrieve default correlation logs configs from the GET method of the configs resource in devops API
         HttpResponse loggingResponse =
                 HTTPSClientUtils.doGet(getStoreURLHttps() + CORRELATION_CONFIG_PATH, header);
@@ -151,6 +153,10 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
             "{\"name\":\"ldap\",\"enabled\":\"false\",\"properties\":[]}," +
             "{\"name\":\"synapse\",\"enabled\":\"false\",\"properties\":[]}," +
             "{\"name\":\"method-calls\",\"enabled\":\"false\",\"properties\":[]}]}";
+
+        log.info("testRetrieveDefaultCorrelationLoggingConfigsTest->actualResponse: " + loggingResponse.getData());
+        log.info("testRetrieveDefaultCorrelationLoggingConfigsTest->expectedResponse: " + expectedResponse);
+        
         Assert.assertEquals(loggingResponse.getData(),expectedResponse);
 
         String logLine;
@@ -163,6 +169,8 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     public void testEnableAllCorrelationLoggingConfigsTest() throws Exception {
 
         configureCorrelationLoggingComponent(new String[] {"http", "jdbc", "synapse", "ldap", "method-calls"}, true);
+        log.info("*** UserMode:" + this.userMode);
+
 
         InvokeTestAPI();
         // Validate Correlation Logs
@@ -178,6 +186,8 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
                 correlationIDLog = true;
             }
         }
+        log.info(String.format("*** httpLog:%b, jdbcLog:%b, synapseLog:%b, methodCallsLog:%b, correlationIDLog:%b",
+                httpLog, jdbcLog, synapseLog, methodCallsLog, correlationIDLog));
         assertTrue(httpLog && jdbcLog && synapseLog && methodCallsLog && correlationIDLog);
 
         configureCorrelationLoggingComponent(new String[] {"http", "jdbc", "synapse", "ldap", "method-calls"}, false);
@@ -302,6 +312,8 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     }
 
     private void configureCorrelationLoggingComponent(String[] componentNames, Boolean enable) throws Exception {
+
+        log.info("*** configureCorrelationLoggingComponent-componentNames: " + componentNames + ", enable:" + enable);
         String[] DEFAULT_DENIED_THREADS = {"MessageDeliveryTaskThreadPool", "HumanTaskServer",
                 "BPELServer", "CarbonDeploymentSchedulerThread"};
         String[] DEFAULT_COMPONENTS  = {"http", "jdbc", "ldap", "synapse", "method-calls"};

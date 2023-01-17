@@ -1,5 +1,5 @@
 <!--
- ~ Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~ Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  ~
  ~ WSO2 Inc. licenses this file to you under the Apache License,
  ~ Version 2.0 (the "License"); you may not use this file except
@@ -1407,7 +1407,7 @@
                 <tr>
                     <td style="text-align: left; padding: 30px 50px 50px 50px;" valign="top">
                         <p style="font-size: 18px; margin: 0; line-height: 24px; font-family: 'Nunito Sans', Arial, Verdana, Helvetica, sans-serif; color: #505050; text-align: left;">
-                            Thanks,<br/>WSO2 Identity Server Team
+                            Thanks,<br/>WSO2 API Manager Team
                         </p>
                     </td>
                 </tr>

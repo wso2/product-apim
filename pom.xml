@@ -1414,12 +1414,12 @@
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
-        <version.snake.yaml>1.26</version.snake.yaml>
+        <version.snake.yaml>1.33</version.snake.yaml>
 
         <!--Sample scenarios dependencies -->
         <swagger-annotations-version>1.5.23</swagger-annotations-version>
         <jersey-version>1.19.4</jersey-version>
-        <jackson-version>2.13.1</jackson-version>
+        <jackson-version>2.14.1</jackson-version>
         <jodatime-version>2.10.6</jodatime-version>
         <maven-plugin-version>1.0.0</maven-plugin-version>
         <log4j.version>1.2.13</log4j.version>
@@ -1445,7 +1445,7 @@
         <javax.jms.version>2.0.1</javax.jms.version>
 
         <!-- API Import/Export Dependencies -->
-        <com.fasterxml.jackson.dataformat.version>2.10.3</com.fasterxml.jackson.dataformat.version>
+        <com.fasterxml.jackson.dataformat.version>2.14.1</com.fasterxml.jackson.dataformat.version>
         <versions.pax.logging>2.1.0</versions.pax.logging>
         <config.mapper.version>1.0.2</config.mapper.version>
 
@@ -1455,7 +1455,7 @@
         <nimbus.jwt.version>7.3.0.wso2v1</nimbus.jwt.version>
 
         <!-- CallHome version -->
-        <callhome.version>4.5.x_1.0.13</callhome.version>
+        <callhome.version>4.5.x_1.0.15</callhome.version>
 
         <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
 
