@@ -24,6 +24,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.testng.annotations.*;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.test.Constants;
@@ -41,6 +42,7 @@ public class OASTestCase extends APIMIntegrationBaseTest {
 
     private String apiId;
     private String apiImportId;
+    private String invalidApiImportId;
     private String resourcePath;
     private String oasVersion;
     private final static String OAS_V2 = "v2";
@@ -203,6 +205,65 @@ public class OASTestCase extends APIMIntegrationBaseTest {
         }
     }
 
+    @Test(groups = { "wso2.am" }, description = "Validate API definitions with empty resource paths",
+            dependsOnMethods = "testNewAPI")
+    public void testValidateAPIDefinitionWithEmptyResourcePath() throws Exception {
+        String invalidDefinition = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_invalid_import.json"),
+                "UTF-8");
+
+        File file = geTempFileWithContent(invalidDefinition);
+        OpenAPIDefinitionValidationResponseDTO responseDTO = restAPIPublisher.validateOASDefinition(file);
+        Assert.assertFalse(responseDTO.isIsValid());
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Import API definition with empty resource paths",
+            dependsOnMethods = "testValidateAPIDefinitionWithEmptyResourcePath")
+    public void testAPIDefinitionImportWithEmptyResourcePath() throws Exception {
+        String invalidDefinition = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_invalid_import.json"),
+                "UTF-8");
+        String additionalProperties = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "additionalProperties.json"),
+                "UTF-8");
+        JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
+        additionalPropertiesObj.put("provider", user.getUserName());
+
+        File file = geTempFileWithContent(invalidDefinition);
+        try {
+            APIDTO apidto = restAPIPublisher.importOASDefinition(file, additionalPropertiesObj.toString());
+            invalidApiImportId = apidto.getId();
+            Assert.fail("API definition import should fail with empty resource path");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), 400);
+        }
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Update API definition with empty resource paths",
+            dependsOnMethods = { "testValidateAPIDefinitionWithEmptyResourcePath", "testAPIDefinitionUpdate" })
+    public void testAPIDefinitionUpdateWithEmptyResourcePath() throws Exception {
+        String invalidDefinition = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_invalid_update.json"),
+                "UTF-8");
+        String originalPublisherDefinition = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_publisher.json"),
+                "UTF-8");
+
+        try {
+            restAPIPublisher.updateSwagger(apiId, invalidDefinition);
+            Assert.fail("API definition import should fail with empty resource path");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), 400);
+        }
+
+        String publisherDefinition = restAPIPublisher.getSwaggerByID(apiId);
+        if (OAS_V2.equalsIgnoreCase(oasVersion)) {
+            OAS2Utils.validateUpdatedDefinition(originalPublisherDefinition, publisherDefinition);
+        } else {
+            OAS3Utils.validateUpdatedDefinition(originalPublisherDefinition, publisherDefinition);
+        }
+    }
+
     private void testUpdatedAPIDefinitionInPublisher(APIDTO apidto, String oasVersion) throws Exception {
         String oasDefinition = restAPIPublisher.getSwaggerByID(apiId);
         validateDefinition(oasDefinition);
@@ -260,6 +321,9 @@ public class OASTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         testDeleteApi(apiId);
         testDeleteApi(apiImportId);
+        if (invalidApiImportId != null) {
+            testDeleteApi(invalidApiImportId);
+        }
     }
 
     @DataProvider
