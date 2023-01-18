@@ -46,7 +46,7 @@ service_url = "https://localhost:${mgt.transport.https.port}/services/"
 username = "admin"
 password = "admin"
 http_endpoint = "ws://wsserverhost:9797"
-https_endpoint = "https://serverhost:9898"
+https_endpoint = "https://localhost:9898"
 
 [[apim.gateway.environment]]
 name = "devportalEnv"
