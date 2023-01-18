@@ -68,6 +68,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String INVALID_API_UUID = "2C0q51h4-621g-3163-7eip-as246v8x681m";
     private final String INVALID_REVISION_UUID = "4bm28320-l75v-3895-70ks-025294jd85a5";
+    private final String INVALID_VHOST = "ws.wso2.com";
     private String apiEndPointUrl;
     private String apiId;
     private String revisionUUID;
@@ -237,8 +238,25 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments " +
+            "with invalid vhost", dependsOnMethods = "testDeployAPIRevisionWithInvalidDeploymentInfo")
+    public void testDeployAPIRevisionWithInvalidVhost() throws Exception {
+
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost(INVALID_VHOST);
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList, "API");
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
+                "Invalid response code for deploying API Revision with invalid Vhost:"
+                        + apiRevisionsDeployResponse.getData());
+    }
+
     @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Revision to gateway environments",
-            dependsOnMethods = "testDeployAPIRevisionWithInvalidDeploymentInfo")
+            dependsOnMethods = "testDeployAPIRevisionWithInvalidVhost")
     public void testUnDeployAPIRevision() throws Exception {
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
