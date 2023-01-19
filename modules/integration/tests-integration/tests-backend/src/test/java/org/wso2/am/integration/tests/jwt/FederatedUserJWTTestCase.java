@@ -288,6 +288,9 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
             assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name".concat(endUser)));
             claim = jsonObject.getString("http://wso2.org/claims/lastname");
             assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name".concat(endUser)));
+            claim = jsonObject.getString("http://wso2.org/claims/region");
+            assertTrue("JWT claim region not received" + claim,
+                    claim.contains("[{\"areaId\":\"71224\",\"areaName\":\"20-NYU\"}]"));
             claim = jsonObject.getString("mobile");
             assertTrue("JWT claim mobile  not received" + claim, claim.contains("94123456987"));
             claim = jsonObject.getString("organization");
@@ -532,6 +535,8 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
             remoteUserStoreManagerServiceClient.setUserClaimValue(user,
                     "http://wso2.org/claims/lastname", "last name".concat(user), DEFAULT_PROFILE);
             remoteUserStoreManagerServiceClient.setUserClaimValue(user,
+                    "http://wso2.org/claims/region", "[{'areaId':'71224','areaName':'20-NYU'}]", DEFAULT_PROFILE);
+            remoteUserStoreManagerServiceClient.setUserClaimValue(user,
                     "http://wso2.org/claims/organization", "ABC".concat(user), DEFAULT_PROFILE);
             remoteUserStoreManagerServiceClient.setUserClaimValue(user,
                     "http://wso2.org/claims/mobile", "94123456987", DEFAULT_PROFILE);
@@ -660,7 +665,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
             throws OAuthAdminServiceIdentityOAuthAdminException, RemoteException,
             IdentityApplicationManagementServiceIdentityApplicationManagementException {
         String[] requestedClaims = { "http://wso2.org/claims/givenname", "http://wso2.org/claims/lastname",
-                "http://wso2.org/claims/mobile", "http://wso2.org/claims/organization",
+                "http://wso2.org/claims/region", "http://wso2.org/claims/mobile", "http://wso2.org/claims/organization",
                 "http://wso2.org/claims/telephone", "http://wso2.org/claims/emailaddress" };
         OAuthConsumerAppDTO oAuthApplicationData = oAuthAdminServiceClient.getOAuthApplicationData(consumerKey);
         String applicationName = oAuthApplicationData.getApplicationName();
