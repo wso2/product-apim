@@ -60,8 +60,6 @@ rem ----- Process the input commands (two args only)----------------------------
 if ""%1""==""-Dprofile"" (
 	if ""%2""==""control-plane"" 	goto controlPlane
 	if ""%2""==""api-key-manager-deprecated"" 	goto keyManager
-	if ""%2""==""api-publisher-deprecated"" 	goto publisher
-	if ""%2""==""api-devportal-deprecated"" 	goto devportal
 	if ""%2""==""traffic-manager"" 	goto trafficManager
 	if ""%2""==""gateway-worker"" 	goto gatewayWorker
 )
