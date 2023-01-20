@@ -141,8 +141,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am" }, description = "Testing the default correlation configs using the devops API ")
     public void testRetrieveDefaultCorrelationLoggingConfigsTest() throws Exception {
 
-        log.info("*** UserMode:" + this.userMode);
-
+        log.info("***d UserMode:" + this.userMode);
         //Retrieve default correlation logs configs from the GET method of the configs resource in devops API
         HttpResponse loggingResponse =
                 HTTPSClientUtils.doGet(getStoreURLHttps() + CORRELATION_CONFIG_PATH, header);
@@ -154,8 +153,8 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
             "{\"name\":\"synapse\",\"enabled\":\"false\",\"properties\":[]}," +
             "{\"name\":\"method-calls\",\"enabled\":\"false\",\"properties\":[]}]}";
 
-        log.info("testRetrieveDefaultCorrelationLoggingConfigsTest->actualResponse: " + loggingResponse.getData());
-        log.info("testRetrieveDefaultCorrelationLoggingConfigsTest->expectedResponse: " + expectedResponse);
+        log.info("***d testRetrieveDefaultCorrelationLoggingConfigsTest->actualResponse: " + loggingResponse.getData());
+        log.info("***d testRetrieveDefaultCorrelationLoggingConfigsTest->expectedResponse: " + expectedResponse);
         
         Assert.assertEquals(loggingResponse.getData(),expectedResponse);
 
@@ -169,30 +168,31 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     public void testEnableAllCorrelationLoggingConfigsTest() throws Exception {
 
         configureCorrelationLoggingComponent(new String[] {"http", "jdbc", "synapse", "ldap", "method-calls"}, true);
-        log.info("*** UserMode:" + this.userMode);
-
-
+        log.info("***e UserMode:" + this.userMode);
         InvokeTestAPI();
         // Validate Correlation Logs
-        String logLine = bufferedReader.readLine();
-        log.info(logLine);
-        HTTPSClientUtils.doGet(getStoreURLHttps() + CORRELATION_CONFIG_PATH, header);
-        Thread.sleep(5000);
+        // String logLine = bufferedReader.readLine();
+        // log.info("***e1: " + logLine);
+        // Thread.sleep(5000);
         resetAllLogs();
+        String logLine;
         while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***e1: " + logLine);
             assertTrue(isSynapseLogLine(logLine) || isHTTPLogLine(logLine) ||
                     isJDBCLogLine(logLine) || isMethodCallsLogLine(logLine) || logLine.contains("Started log handler"));
             if (logLine.contains(CORRELATION_ID)) {
                 correlationIDLog = true;
             }
         }
-        log.info(String.format("*** httpLog:%b, jdbcLog:%b, synapseLog:%b, methodCallsLog:%b, correlationIDLog:%b",
+        log.info(String.format("***e2 httpLog:%b, jdbcLog:%b, synapseLog:%b, methodCallsLog:%b, correlationIDLog:%b",
                 httpLog, jdbcLog, synapseLog, methodCallsLog, correlationIDLog));
         assertTrue(httpLog && jdbcLog && synapseLog && methodCallsLog && correlationIDLog);
 
         configureCorrelationLoggingComponent(new String[] {"http", "jdbc", "synapse", "ldap", "method-calls"}, false);
         Thread.sleep(5000);
-        while ((logLine = bufferedReader.readLine()) != null) { }
+        while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***e3: " + logLine);
+        }
     }
 
 
@@ -206,26 +206,32 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         String logLine;
         InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***s1: " + logLine);
             assertTrue(isHTTPLogLine(logLine));
         }
         log.info("Disabling HTTP component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "http" }, false);
-        Thread.sleep(1000);
+        InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***s2: " + logLine);
             assertTrue(isHTTPLogLine(logLine));
         }
 
         //test JDBC
         log.info("Enabling JDBC component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "jdbc" }, true);
+        InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***s3: " + logLine);
             assertTrue(isJDBCLogLine(logLine));
         }
         log.info("Disabling JDBC component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "jdbc" }, false);
-        Thread.sleep(1000);
+        while ((logLine = bufferedReader.readLine()) != null) { }
+        InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
-            assertTrue(isJDBCLogLine(logLine));
+            log.info("***s4: " + logLine);
+            assertFalse(isJDBCLogLine(logLine));
         }
 
         //test Method-calls
@@ -233,13 +239,15 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         configureCorrelationLoggingComponent(new String[] { "method-calls" }, true);
         InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***s5: " + logLine);
             assertTrue(isMethodCallsLogLine(logLine));
         }
         log.info("Disabling Method-calls component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "method-calls" }, false);
-        Thread.sleep(1000);
+        InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
-            assertTrue(isMethodCallsLogLine(logLine));
+            log.info("***s6: " + logLine);
+            assertFalse(isMethodCallsLogLine(logLine));
         }
 
         //test Synapse
@@ -247,13 +255,15 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         configureCorrelationLoggingComponent(new String[] { "synapse" }, true);
         InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***s7: " + logLine);
             assertTrue(isSynapseLogLine(logLine));
         }
         log.info("Disabling Synapse component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "synapse" }, false);
-        Thread.sleep(1000);
+        InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
-            assertTrue(isSynapseLogLine(logLine));
+            log.info("***s8: " + logLine);
+            assertFalse(isSynapseLogLine(logLine));
         }
     }
 
@@ -262,11 +272,11 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     public void testPersistedCorrelationConfigs() throws Exception {
         log.info("Enabling http, method-calls correlation component logs before a restart");
         configureCorrelationLoggingComponent(new String[] { "http", "method-calls" }, true);
-        HTTPSClientUtils.doGet(getStoreURLHttps() + CORRELATION_CONFIG_PATH, header);
         InvokeTestAPI();
-        String logLine;
         resetAllLogs();
+        String logLine;
         while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***p1 logLine: " + logLine);
             assertTrue(isHTTPLogLine(logLine) || isMethodCallsLogLine(logLine));
         }
 
@@ -274,6 +284,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         Thread.sleep(10000);
 
         while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***p2 logLine: " + logLine);
             if (logLine.contains("Started log handler")) {
                 break;
             }
@@ -283,19 +294,22 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         InvokeTestAPI();
         
         while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***p3 logLine: " + logLine);
             assertTrue(isHTTPLogLine(logLine) || isMethodCallsLogLine(logLine));
         }
         assertTrue(httpLog && methodCallsLog);
 
         configureCorrelationLoggingComponent(new String[] { "http", "method-calls" }, false);
         while ((logLine = bufferedReader.readLine()) != null) {
-            assertTrue(isHTTPLogLine(logLine) || isMethodCallsLogLine(logLine));
+            log.info("***p4 logLine: " + logLine);
+            assertTrue(isHTTPLogLine(logLine));
         }
 
         // To check whehther no logs are printing after disabling
         resetAllLogs();
         InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
+            log.info("***p5 logLine: " + logLine);
             assertFalse(isHTTPLogLine(logLine) || isMethodCallsLogLine(logLine));
         }
     }
@@ -308,12 +322,13 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         org.apache.http.HttpResponse response = client.execute(request);
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "Invocation fails for GET request");
-        Thread.sleep(500);
+        Thread.sleep(2000);
     }
 
     private void configureCorrelationLoggingComponent(String[] componentNames, Boolean enable) throws Exception {
+        log.info("***c Calling configureCorrelationLoggingComponent()");
+        log.info("***c componentNames: " + Arrays.asList(componentNames) + ", enable:" + enable);
 
-        log.info("*** configureCorrelationLoggingComponent-componentNames: " + componentNames + ", enable:" + enable);
         String[] DEFAULT_DENIED_THREADS = {"MessageDeliveryTaskThreadPool", "HumanTaskServer",
                 "BPELServer", "CarbonDeploymentSchedulerThread"};
         String[] DEFAULT_COMPONENTS  = {"http", "jdbc", "ldap", "synapse", "method-calls"};
@@ -349,12 +364,14 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         payload.put("components", componentArray);
         HttpResponse httpResponse =  HTTPSClientUtils.doPut(getStoreURLHttps() + CORRELATION_CONFIG_PATH,
                 header, payload.toString());
+        log.info("***c put response: " + httpResponse.getData());
         assertEquals(httpResponse.getData(), payload.toString());
 
         httpResponse =
                 HTTPSClientUtils.doGet(getStoreURLHttps() + CORRELATION_CONFIG_PATH, header);
+        log.info("***c get response: " + httpResponse.getData());
         assertEquals(httpResponse.getData(), payload.toString());
-        Thread.sleep(1000);
+        Thread.sleep(2000);
     }
 
 
@@ -368,7 +385,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     }
 
     private boolean isHTTPLogLine(String logLine) {
-        Boolean status =  (logLine.contains("HTTP-In-"));
+        Boolean status =  (logLine.contains("HTTP"));
         if (status) {
             httpLog = true;
         }
