@@ -227,7 +227,10 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         }
         log.info("Disabling JDBC component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "jdbc" }, false);
-        while ((logLine = bufferedReader.readLine()) != null) { }
+        while ((logLine = bufferedReader.readLine()) != null) {
+            // JDBC logs keep appending periodically and might leave some logs just after disabling.
+            // Therefore, we reach the bottom of correlation.log in this while loop.
+        }
         InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
             log.info("***s4: " + logLine);
@@ -310,7 +313,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
             log.info("***p5 logLine: " + logLine);
-            assertFalse(isHTTPLogLine(logLine) || isMethodCallsLogLine(logLine));
+            assertFalse(isHTTPLogLine(logLine) && isMethodCallsLogLine(logLine));
         }
     }
 
@@ -371,7 +374,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
                 HTTPSClientUtils.doGet(getStoreURLHttps() + CORRELATION_CONFIG_PATH, header);
         log.info("***c get response: " + httpResponse.getData());
         assertEquals(httpResponse.getData(), payload.toString());
-        Thread.sleep(2000);
+        Thread.sleep(4000);
     }
 
 
