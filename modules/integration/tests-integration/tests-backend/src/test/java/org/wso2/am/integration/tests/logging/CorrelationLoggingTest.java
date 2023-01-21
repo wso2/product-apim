@@ -313,7 +313,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         InvokeTestAPI();
         while ((logLine = bufferedReader.readLine()) != null) {
             log.info("***p5 logLine: " + logLine);
-            assertFalse(isHTTPLogLine(logLine) && isMethodCallsLogLine(logLine));
+            assertFalse(isHTTPLogLine(logLine) || isMethodCallsLogLine(logLine));
         }
     }
 
@@ -325,7 +325,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         org.apache.http.HttpResponse response = client.execute(request);
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK,
                 "Invocation fails for GET request");
-        Thread.sleep(2000);
+        Thread.sleep(4000);
     }
 
     private void configureCorrelationLoggingComponent(String[] componentNames, Boolean enable) throws Exception {
