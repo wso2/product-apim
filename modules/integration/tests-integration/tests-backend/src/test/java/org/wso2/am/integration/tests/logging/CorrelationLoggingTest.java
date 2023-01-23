@@ -225,6 +225,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
             String logLine;
             while ((logLine = bufferedReader.readLine()) != null) {
                 log.info("***s2: " + logLine);
+                // This checks the "HTTP-In" type log message logged by the correlation configuration API
                 assertTrue(isHTTPLogLine(logLine));
             }
         });
