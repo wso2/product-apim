@@ -257,3 +257,10 @@ password = "${admin.password}"
 enable = true
 allow_refresh_tokens = true
 iat_validity_period = "1h"
+
+#[apim.open_tracer]
+#remote_tracer.enable = true
+#remote_tracer.name = "jaeger"
+#remote_tracer.properties.hostname = ""
+#remote_tracer.properties.port = ""
+#remote_tracer.properties.sampler_type = ""
