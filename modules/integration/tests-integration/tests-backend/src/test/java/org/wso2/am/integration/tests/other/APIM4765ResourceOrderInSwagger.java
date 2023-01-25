@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.other;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.*;
@@ -27,6 +28,7 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
+import java.io.File;
 import java.net.URL;
 
 import static org.testng.Assert.assertTrue;
@@ -39,6 +41,7 @@ public class APIM4765ResourceOrderInSwagger extends APIManagerLifecycleBaseTest 
 
     private static final Log log = LogFactory.getLog(APIM4765ResourceOrderInSwagger.class);
     private String apiId;
+    private final String SWAGGER_FOLDER = "swagger";
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM4765ResourceOrderInSwagger(TestUserMode userMode) {
@@ -64,7 +67,6 @@ public class APIM4765ResourceOrderInSwagger extends APIManagerLifecycleBaseTest 
         String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
         String description = "This is test API create by API manager integration test";
         String APIVersion = "1.0.0";
-        String lineSeparator = System.getProperty("line.separator");
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url), new URL(url));
         apiRequest.setTags(tags);
@@ -74,46 +76,21 @@ public class APIM4765ResourceOrderInSwagger extends APIManagerLifecycleBaseTest 
         apiRequest.setProvider(user.getUserName());
 
         apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
-
-        String swagger = "{\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"10KPerMin\","
-                + "\"responses\":{\"200\":{}}}},\"/post\":{\"get\":{\"x-auth-type\":\"Application \","
-                + "\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}},\"/list\":{\"get\":{\"x-auth-type\":"
-                + "\"Application \",\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}}},\"swagger\":\"2.0\","
-                + "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":"
-                + "\"TokenTestAPI\",\"description\":\"This is test API create by API manager integration test\","
-                + "\"contact\":{\"email\":null,\"name\":null},\"version\":\"1.0.0\"}}";
-
-        /*String resourceOrder = "{\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\""
-                + ":\"10KPerMin\",\"responses\":{\"200\":{}}}},\"/post\":{\"get\":{\"x-auth-type\":\"Application \","
-                + "\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}},\"/list\":{\"get\":"
-                + "{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"10KPerMin\",\"responses\":{\"200\":{}}}}}";*/
-
-        String resourceOrder = "\"paths\": {"+ lineSeparator + "    \"/*\": {"+ lineSeparator + "      \"get\": {" + lineSeparator
-                + "        \"parameters\": [],"+ lineSeparator + "        \"responses\": {"+ lineSeparator + "          \"200\": {}" + lineSeparator
-                + "        },"+ lineSeparator + "        \"security\": [" + lineSeparator + "          {"+ lineSeparator
-                + "            \"default\": []" + lineSeparator + "          }" + lineSeparator +"        ]," + lineSeparator
-                + "        \"x-auth-type\": \"Application \"," + lineSeparator + "        \"x-throttling-tier\": \"10KPerMin\"" + lineSeparator
-                + "      }"+ lineSeparator + "    },"+ lineSeparator + "    \"/post\": {"+ lineSeparator + "      \"get\": {"+ lineSeparator
-                + "        \"parameters\": [],"+ lineSeparator + "        \"responses\": {"+ lineSeparator + "          \"200\": {}"+ lineSeparator
-                + "        },"+ lineSeparator + "        \"security\": [" + lineSeparator + "          {"+ lineSeparator
-                + "            \"default\": []" + lineSeparator + "          }" + lineSeparator +"        ],"+ lineSeparator
-                + "        \"x-auth-type\": \"Application \","+ lineSeparator + "        \"x-throttling-tier\": \"10KPerMin\""+ lineSeparator
-                + "      }"+ lineSeparator + "    },"+ lineSeparator + "    \"/list\": {"+ lineSeparator + "      \"get\": {"+ lineSeparator
-                + "        \"parameters\": [],"+ lineSeparator + "        \"responses\": {"+ lineSeparator + "          \"200\": {}"+ lineSeparator
-                + "        },"+ lineSeparator + "        \"security\": [" + lineSeparator + "          {"+ lineSeparator
-                + "            \"default\": []" + lineSeparator + "          }" + lineSeparator +"        ],"+ lineSeparator
-                + "        \"x-auth-type\": \"Application \","+ lineSeparator + "        \"x-throttling-tier\": \"10KPerMin\""+ lineSeparator
-                + "      }"+ lineSeparator + "    }"+ lineSeparator + "  }";
+        String resourcePath = "artifacts" + File.separator + "AM" + File.separator + "swagger" + File.separator + "ordered_resources_api_oas.json";
+        String swagger = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath), "UTF-8");
+        String orderedResourcesFilePath = "artifacts" + File.separator + "AM" + File.separator + "swagger" + File.separator +
+                "ordered_resources_paths.json";
+        String orderedResources = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(orderedResourcesFilePath), "UTF-8");
 
         restAPIPublisher.updateSwagger(apiId, swagger);
         //get swagger doc.
         String storeDefinition = restAPIStore.getSwaggerByID(apiId, user.getUserDomain());
 
-        //resourceOrder should  be equal to the given resource order.
-        boolean isResourceOrderEqual = storeDefinition.contains(resourceOrder);
-
+        //orderedResources should  be equal to the given resource order.
+        boolean isResourceOrderEqual = storeDefinition.contains(orderedResources);
         assertTrue(isResourceOrderEqual, "Resource order is not equal to the given order.");
-
     }
 
     @AfterClass(alwaysRun = true) public void destroy() throws Exception {
