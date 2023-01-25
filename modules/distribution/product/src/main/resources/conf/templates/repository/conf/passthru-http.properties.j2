@@ -22,3 +22,7 @@
 {% for key,value in passthru_http.items() %}
 {{key}}={{value}}
 {% endfor %}
+
+{% if transport.http.block_service_list is defined %}
+http.headers.preserve={% for property in transport.http.preserve_http_headers %}{{property}}{% if loop.index < transport.http.preserve_http_headers|length %},{% endif %}{% endfor %}
+{% endif %}
