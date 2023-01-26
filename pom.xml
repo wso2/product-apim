@@ -1321,7 +1321,7 @@
         <saml.common.util.version.range>[1.0.0,2.0.0)</saml.common.util.version.range>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.11.6</carbon.deployment.version>
+        <carbon.deployment.version>4.11.7</carbon.deployment.version>
 
 
 
