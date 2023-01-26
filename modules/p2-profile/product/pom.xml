@@ -1469,6 +1469,51 @@
                                     <id>org.wso2.carbon.identity.user.store.configuration.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
+                                <!--Portal Features-->
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.ui.publisher.feature.group</id>
+                                    <version>${carbon.apimgt.ui.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.jms.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.core.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.tokenmgt.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.core.ui.feature.group</id>
+                                    <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.core.runtime.feature.group</id>
+                                    <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.core.server.feature.group</id>
+                                    <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.core.common.feature.group</id>
+                                    <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.output.adapter.wso2event.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.ui.devportal.feature.group</id>
+                                    <version>${carbon.apimgt.ui.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.ui.admin.feature.group</id>
+                                    <version>${carbon.apimgt.ui.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2091,51 +2136,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.store.configuration.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
-                                </feature>
-                                <!--Portal Features-->
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.ui.publisher.feature.group</id>
-                                    <version>${carbon.apimgt.ui.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.output.adapter.jms.server.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.core.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>  
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.tokenmgt.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.core.ui.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.core.runtime.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
-                                </feature>
-                                 <feature>
-                                    <id>org.wso2.carbon.core.server.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
-                                </feature>
-                                 <feature>
-                                    <id>org.wso2.carbon.core.common.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
-                                </feature>
-                                 <feature>
-                                    <id>org.wso2.carbon.event.output.adapter.wso2event.server.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>	
-                                    <id>org.wso2.carbon.apimgt.ui.devportal.feature.group</id>	
-                                    <version>${carbon.apimgt.ui.version}</version>	
-                                </feature>
-                                <feature>	
-                                    <id>org.wso2.carbon.apimgt.ui.admin.feature.group</id>	
-                                    <version>${carbon.apimgt.ui.version}</version>	
                                 </feature>
                             </features>
                         </configuration>
