@@ -60,8 +60,6 @@ rem ----- Process the input commands (two args only)----------------------------
 if ""%1""==""-Dprofile"" (
 	if ""%2""==""control-plane"" 	goto controlPlane
 	if ""%2""==""api-key-manager-deprecated"" 	goto keyManager
-	if ""%2""==""api-publisher-deprecated"" 	goto publisher
-	if ""%2""==""api-devportal-deprecated"" 	goto devportal
 	if ""%2""==""traffic-manager"" 	goto trafficManager
 	if ""%2""==""gateway-worker"" 	goto gatewayWorker
 )
@@ -117,54 +115,6 @@ for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war ap
 		echo %value% INFO - Removed the !folderName! directory from %pathToWebapps%
 	)
 	endlocal
-goto finishOptimization
-
-:publisher
-echo Starting to optimize API Manager for the API Publisher profile
-call :removeWebSocketInboundEndpoint
-call :removeSecureWebSocketInboundEndpoint
-call :replaceAxis2TemplateFile %pathToAxis2PublisherXmlTemplate%
-call :replaceTenantAxis2TemplateFile %pathToTenantAxis2PublisherXmlTemplate%
-call :replaceDeploymentConfiguration
-rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war internal#data#v.*war publisher admin"') do (
-	del /f %pathToWebapps%\%%i
-	call :Timestamp value
-	echo %value% INFO - Removed the %%i file from %pathToWebapps%
-	setlocal enableDelayedExpansion
-	set folderName=%%i
-	set folderName=!folderName:.war=!
-	if exist %pathToWebapps%\!folderName!\ (
-		rmdir /s /q %pathToWebapps%\!folderName!
-		call :Timestamp value
-		echo %value% INFO - Removed the !folderName! directory from %pathToWebapps%
-	)
-	endlocal
-)
-goto finishOptimization
-
-:devportal
-echo Starting to optimize API Manager for the Developer Portal profile
-call :removeWebSocketInboundEndpoint
-call :removeSecureWebSocketInboundEndpoint
-call :replaceDeploymentConfiguration
-call :replaceAxis2TemplateFile %pathToAxis2DevportalXmlTemplate%
-call :replaceTenantAxis2TemplateFile %pathToTenantAxis2DevportalXmlTemplate%
-rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#devportal#v.*war api#am#devportal.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war  api#identity#recovery#v.*war api#identity#user#v.*war api#identity#consent-mgt#v.*war internal#data#v.*war devportal"') do (
-	del /f %pathToWebapps%\%%i
-	call :Timestamp value
-	echo %value% INFO - Removed the %%i file from %pathToWebapps%
-	setlocal enableDelayedExpansion
-	set folderName=%%i
-	set folderName=!folderName:.war=!
-	if exist %pathToWebapps%\!folderName!\ (
-		rmdir /s /q %pathToWebapps%\!folderName!
-		call :Timestamp value
-		echo %value% INFO - Removed the !folderName! directory from %pathToWebapps%
-	)
-	endlocal
-)
 goto finishOptimization
 
 :trafficManager
