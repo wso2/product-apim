@@ -488,13 +488,9 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(restAPIStoreUserNegative.getAccessToken());
         try {
             ApplicationListDTO responseData = restAPIStoreUserNegative.getAllApps();
-            if (responseData.getCount().intValue() == 0) {
-                Assert.assertTrue(true);
-            } else {
-                Assert.assertTrue(false);
-            }
+            Assert.fail();
         } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
-            Assert.assertTrue(false);
+            Assert.assertTrue(true);
         }
 
         //Generate a token with creator/publisher user for Devportal Access
@@ -505,13 +501,9 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(restAPIStoreUserNegative2.getAccessToken());
         try {
             ApplicationListDTO responseData = restAPIStoreUserNegative2.getAllApps();
-            if (responseData.getCount().intValue() == 0) {
-                Assert.assertTrue(true);
-            } else {
-                Assert.assertTrue(false);
-            }
+            Assert.fail();
         } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
-            Assert.assertTrue(false);
+            Assert.assertTrue(true);
         }
 
 
