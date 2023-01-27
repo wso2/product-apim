@@ -21,8 +21,6 @@ package org.wso2.am.integration.tests.websocket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,12 +57,12 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.token.TokenUtils;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest;
 import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
 import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
@@ -74,15 +72,12 @@ import org.wso2.carbon.utils.xml.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -90,6 +85,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
@@ -104,6 +100,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private final String apiName = "WebSocketAPI";
     private final String applicationName = "WebSocketApplication";
     private final String applicationJWTName = "WebSocketJWTTypeApplication";
+    private static final String OAUTH_TYPE_APPLICATION_NAME = "WebSocketOAuthTypeApplication";
     private final String testMessage = "Web Socket Test Message";
     private String apiEndPoint;
     private APIPublisherRestClient apiPublisher;
@@ -127,7 +124,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private final String originHeaderName = "http://global.config1.com";
     String appId;
     String appJWTId;
+    String oAuthAppId;
     ApplicationKeyDTO applicationKeyDTO;
+    ApplicationKeyDTO oAuthAppKeyDto;
     long throttleMarkTime = 0;
     String apiVersion2 = "2.0.0";
     String endPointApplication = "EndPointApplication";
@@ -284,8 +283,133 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
+    @Test(description = "Invoke API using revoked JWT token", dependsOnMethods = "testWebSocketAPIInvocationWithJWTToken")
+    public void testWebSocketAPIInvocationWithRevokedJWTToken() throws Exception {
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        consumerKey = applicationKeyDTO.getConsumerKey();
+        consumerSecret = applicationKeyDTO.getConsumerSecret();
+        HttpResponse httpResponse = TokenUtils.revokeToken(consumerKey, consumerSecret, accessToken, keyMangerUrl);
+        int revocationResponseCode = httpResponse.getResponseCode();
+        if (revocationResponseCode != 200) {
+            Assert.fail(String.format("Could not revoke token. Response code for the revocation is : %s",
+                    revocationResponseCode) );
+        }
+        Thread.sleep(5000);
+        WebSocketClient client = new WebSocketClient();
+        try {
+            WebSocketClientImpl socket = getActiveSocket(client, accessToken, AUTH_IN.HEADER, null, apiEndPoint);
+            String response = getSocketConnectionResponse(socket);
+            assertNotEquals(response, testMessage.toUpperCase(),
+                    "Received the resource with revoked token.");
+        } catch (Exception e) {
+            log.info("Expected exception occured while creating a websocket connection with revoked token.");
+        } finally {
+            client.stop();
+        }
+    }
+
+    @Test(description = "Revoke JWT token after aquiring the connection and try to send the message",
+            dependsOnMethods = "testWebSocketAPIInvocationWithRevokedJWTToken")
+    public void testWebSocketAPIFrameMessageWithRevokedJWTToken() throws Exception {
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        applicationKeyDTO = restAPIStore.generateKeys(appJWTId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        WebSocketClient client = new WebSocketClient();
+        try {
+            WebSocketClientImpl socket = getActiveSocket(client, accessToken, AUTH_IN.HEADER, null, apiEndPoint);
+            getSocketConnectionResponse(socket);
+            HttpResponse httpResponse = TokenUtils.revokeToken(applicationKeyDTO.getConsumerKey(),
+                    applicationKeyDTO.getConsumerSecret(), accessToken, keyMangerUrl);
+            int revocationResponseCode = httpResponse.getResponseCode();
+            if (revocationResponseCode != 200) {
+                Assert.fail(String.format("Could not revoke token. Response code for the revocation is : %s",
+                        revocationResponseCode));
+            }
+            Thread.sleep(5000);
+            try {
+                String response = getSocketConnectionResponse(socket);
+                assertNotEquals(response, testMessage.toUpperCase(),
+                        "Received the resource with revoked token.");
+            } catch (Exception e) {
+
+            }
+        } catch (Exception e) {
+            log.error("Unexpected error while creating web socket connection.", e);
+        } finally {
+            client.stop();
+        }
+    }
+
+    @Test(description = "Create Oauth Type Application and subscribe",
+            dependsOnMethods = "testWebSocketAPIFrameMessageWithRevokedJWTToken")
+    public void testWebSocketAPIOAuthApplicationSubscription() throws Exception {
+        HttpResponse applicationResponse = restAPIStore.createApplication(OAUTH_TYPE_APPLICATION_NAME,
+                "", APIMIntegrationConstants.API_TIER.UNLIMITED, ApplicationDTO.TokenTypeEnum.OAUTH);
+        oAuthAppId = applicationResponse.getData();
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(websocketAPIID, oAuthAppId,
+                APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
+        //Validate Subscription of the API
+        Assert.assertEquals(subscriptionDTO.getStatus(), SubscriptionDTO.StatusEnum.UNBLOCKED);
+    }
+
+    @Test(description = "Invoke API using token", dependsOnMethods = "testWebSocketAPIOAuthApplicationSubscription")
+    public void testWebSocketAPIInvocationWithOAuthToken() throws Exception {
+        ArrayList grantTypes = new ArrayList();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.REFRESH_CODE);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        oAuthAppKeyDto = restAPIStore.generateKeys(oAuthAppId, "3600", null,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        String accessToken = oAuthAppKeyDto.getToken().getAccessToken();
+        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
+        WebSocketClient client = new WebSocketClient();
+        try {
+            invokeAPI(client, tokenJti, AUTH_IN.HEADER, null, apiEndPoint);
+            invokeAPI(client, tokenJti, AUTH_IN.QUERY, null, apiEndPoint);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using a revoked token", dependsOnMethods = "testWebSocketAPIInvocationWithOAuthToken")
+    public void testWebSocketAPIInvocationWithRevokedOAuthToken() throws Exception {
+        String accessToken = oAuthAppKeyDto.getToken().getAccessToken();
+        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
+        HttpResponse httpResponse = TokenUtils.revokeToken(oAuthAppKeyDto.getConsumerKey(),
+                oAuthAppKeyDto.getConsumerSecret(), accessToken, keyMangerUrl);
+        int revocationResponseCode = httpResponse.getResponseCode();
+        if (revocationResponseCode != 200) {
+            Assert.fail(String.format("Could not revoke token. Response code for the revocation is : %s",
+                    revocationResponseCode) );
+        }
+        Thread.sleep(5000);
+        WebSocketClient client = new WebSocketClient();
+        try {
+            WebSocketClientImpl socket = getActiveSocket(client, tokenJti, AUTH_IN.HEADER, null,
+                    apiEndPoint);
+            String response = getSocketConnectionResponse(socket);
+            assertNotEquals(response, testMessage.toUpperCase(),
+                    "Received response in not matching");
+        } catch (Exception e) {
+            log.info("Expected exception thrown when connecting to web socket api with revoked token");
+        } finally {
+            client.stop();
+        }
+    }
+
     @Test(description = "Invoke API with only sandbox endpoint configured",
-            dependsOnMethods = "testWebSocketAPIInvocationWithJWTToken")
+            dependsOnMethods = "testWebSocketAPIInvocationWithRevokedOAuthToken")
     public void testWebSocketAPIRemoveEndpoint() throws Exception {
 
         HttpResponse response = restAPIPublisher.copyAPI(apiVersion2, websocketAPIID, false);
@@ -369,7 +493,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                                  APIMIntegrationConstants.IS_API_NOT_EXISTS);
     }
 
-    @Test(description = "Test Throttling for WebSocket API", dependsOnMethods = "testWebSocketAPIInvocation")
+    @Test(description = "Test Throttling for WebSocket API",
+            dependsOnMethods = "testWebSocketAPIInvocationWithRevokedOAuthToken")
     public void testWebSocketAPIThrottling() throws Exception {
             // Deploy Throttling policy with throttle limit set as 8 frames. One message is two frames, therefore 4
         // messages can be sent.
@@ -589,6 +714,16 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private void invokeAPI(WebSocketClient client, String accessToken, AUTH_IN in, HttpHeaders optionalRequestHeaders,
                            String apiEndPoint) throws Exception {
 
+        WebSocketClientImpl socket = getActiveSocket(client, accessToken, in, optionalRequestHeaders, apiEndPoint);
+        String response = getSocketConnectionResponse(socket);
+        assertEquals(StringUtils.isEmpty(response), false,
+                "Client did not receive response from server");
+        assertEquals(response, testMessage.toUpperCase(),
+                "Received response in not matching");
+    }
+
+    private WebSocketClientImpl getActiveSocket(WebSocketClient client, String accessToken, AUTH_IN in, HttpHeaders optionalRequestHeaders,
+                                                String apiEndPoint) throws Exception {
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
         ClientUpgradeRequest request = new ClientUpgradeRequest();
@@ -608,17 +743,19 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
 
         client.connect(socket, echoUri, request);
+        return socket;
+    }
+
+    private String getSocketConnectionResponse(WebSocketClientImpl socket) throws Exception {
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             socket.sendMessage(testMessage);
             waitForReply(socket);
             if (StringUtils.isEmpty(socket.getResponseMessage())) {
                 throw new APIManagerIntegrationTestException("Unable to create client connection");
             }
-            assertEquals(StringUtils.isEmpty(socket.getResponseMessage()), false,
-                    "Client did not receive response from server");
-            assertEquals(socket.getResponseMessage(), testMessage.toUpperCase(),
-                    "Received response in not matching");
+            String response = socket.getResponseMessage();
             socket.setResponseMessage(null);
+            return response;
         } else {
             throw new APIManagerIntegrationTestException("Unable to create client connection");
         }
