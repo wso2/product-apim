@@ -177,7 +177,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         // Validate Correlation Logs
         /* await() is from Awaitility library which is used to read correlation.log file within a timeout period as
         there is varying delay in file writing */
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             resetAllLogs();
             InvokeTestAPI();
             String logLine;
@@ -196,7 +196,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
 
         // Disabling all correlation log components for next tests
         configureCorrelationLoggingComponent(new String[] {"http", "jdbc", "synapse", "ldap", "method-calls"}, false);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             resetAllLogs();
             InvokeTestAPI();
             String logLine;
@@ -225,7 +225,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         // Test HTTP
         log.info("Enabling HTTP component correlation logs");
         configureCorrelationLoggingComponent(new String[]{ "http" }, true);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             httpLog = false;
             InvokeTestAPI();
             String logLine;
@@ -237,7 +237,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         });
         log.info("Disabling HTTP component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "http" }, false);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             httpLog = false;
             InvokeTestAPI();
             String logLine;
@@ -254,7 +254,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         // Test JDBC
         log.info("Enabling JDBC component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "jdbc" }, true);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             jdbcLog = false;
             InvokeTestAPI();
             String logLine;
@@ -266,7 +266,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         });
         log.info("Disabling JDBC component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "jdbc" }, false);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             jdbcLog = false;
             InvokeTestAPI();
             String logLine;
@@ -281,7 +281,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         // Test Method-calls
         log.info("Enabling Method-calls component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "method-calls" }, true);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             methodCallsLog = false;
             InvokeTestAPI();
             String logLine;
@@ -293,7 +293,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         });
         log.info("Disabling Method-calls component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "method-calls" }, false);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             methodCallsLog = false;
             InvokeTestAPI();
             String logLine;
@@ -307,7 +307,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         // Test Synapse
         log.info("Enabling Synapse component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "synapse" }, true);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             synapseLog = false;
             InvokeTestAPI();
             String logLine;
@@ -319,7 +319,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         });
         log.info("Disabling Synapse component correlation logs");
         configureCorrelationLoggingComponent(new String[] { "synapse" }, false);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             synapseLog = false;
             InvokeTestAPI();
             String logLine;
@@ -336,7 +336,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     public void testPersistedCorrelationConfigs() throws Exception {
         log.info("Enabling http, method-calls correlation component logs before a restart");
         configureCorrelationLoggingComponent(new String[] { "http", "method-calls" }, true);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             httpLog = false;
             methodCallsLog = false;
             InvokeTestAPI();
@@ -360,7 +360,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
             assertTrue(logHandlerStarted);
         });
 
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             httpLog = false;
             methodCallsLog = false;
             InvokeTestAPI();
@@ -374,7 +374,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
         });
 
         configureCorrelationLoggingComponent(new String[] { "http", "method-calls" }, false);
-        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(30, TimeUnit.SECONDS).untilAsserted(()-> {
+        with().pollInterval(5, TimeUnit.SECONDS).await().atMost(60, TimeUnit.SECONDS).untilAsserted(()-> {
             httpLog = false;
             methodCallsLog = false;
             InvokeTestAPI();
