@@ -231,7 +231,7 @@ case $1 in
 		'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' \
 		-o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name \
 		'api#identity#user#v*.war' -o -name 'api#identity#oauth2#dcr#v*.war' -o -name 'api#identity#oauth2#v*.war' \
-		-o -name 'keymanager-operations.war' \) ); do
+		-o -name 'keymanager-operations.war' -o -name 'internal#data#v*.war' \) ); do
 			rm -r $i
 			file=`basename "$i"`
 			timeStamp
