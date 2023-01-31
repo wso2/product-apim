@@ -227,7 +227,7 @@ case $1 in
 		removeSynapseConfigs
 		replaceDeploymentConfiguration api-key-manager-deprecated $passedSkipConfigOptimizationOption
 		# removing webbapps which are not required for this profile
-		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name 'client-registration#v*.war' -o -name \
+		for i in $(find $pathToWebapps -maxdepth 1 -mindepth 1 -not \( -name \
 		'authenticationendpoint' -o -name 'accountrecoveryendpoint' -o -name 'oauth2.war' \
 		-o -name 'api#identity#consent-mgt#v*.war' -o -name 'api#identity#recovery#v*.war' -o -name \
 		'api#identity#user#v*.war' -o -name 'api#identity#oauth2#dcr#v*.war' -o -name 'api#identity#oauth2#v*.war' \
