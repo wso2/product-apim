@@ -506,6 +506,8 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     void destroy() throws Exception {
+        // Disabling all correlation log components for next tests
+        configureCorrelationLoggingComponent(new String[] {"http", "jdbc", "synapse", "ldap", "method-calls"}, false);
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiId);
     }
