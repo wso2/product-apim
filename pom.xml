@@ -1268,7 +1268,9 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.3.3</carbon.analytics.common.version>
+
+        <carbon.analytics.common.version>5.3.4</carbon.analytics.common.version>
+
         <!-- APIM Portals Component Version -->
         <carbon.apimgt.ui.version>9.0.415</carbon.apimgt.ui.version>
 
@@ -1439,7 +1441,7 @@
         <carbon.consent.mgt.version>2.4.1</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.1.5</carbon.database.utils.version>
 
-        <com.jayway.jsonpath.version>2.4.0.wso2v2</com.jayway.jsonpath.version>
+        <com.jayway.jsonpath.version>2.6.0.wso2v1</com.jayway.jsonpath.version>
         <!-- xml testing library -->
         <xml.unit.verions>2.6.2</xml.unit.verions>
         <version.cava-toml>0.5.0</version.cava-toml>
