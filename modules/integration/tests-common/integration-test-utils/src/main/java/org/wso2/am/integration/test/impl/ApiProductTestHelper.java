@@ -306,7 +306,7 @@ public class ApiProductTestHelper {
         Assert.assertEquals(apiProductInfoDTO.isHasThumbnail(), apiProductDTO.isHasThumbnail());
         Assert.assertEquals(new HashSet<>(apiProductInfoDTO.getSecurityScheme()),
                 new HashSet<>(apiProductDTO.getSecurityScheme()), "Security Scheme does not match");
-        Assert.assertEquals(apiProductInfoDTO.getState().getValue(), apiProductDTO.getState().getValue());
+        Assert.assertEquals(apiProductInfoDTO.getState(), apiProductDTO.getState());
     }
 
     private void verifyApiDtoWithApiProduct(org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO, APIProductDTO apiProductDTO) {
@@ -316,7 +316,7 @@ public class ApiProductTestHelper {
         verifyBusinessInformation(apiDTO.getBusinessInformation(), apiProductDTO.getBusinessInformation());
         Assert.assertEquals(apiDTO.getContext(), apiProductDTO.getContext());
         Assert.assertEquals(apiDTO.getDescription(), apiProductDTO.getDescription());
-        Assert.assertEquals(apiDTO.getLifeCycleStatus(), apiProductDTO.getState().getValue());
+        Assert.assertEquals(apiDTO.getLifeCycleStatus(), apiProductDTO.getState());
         Assert.assertEquals(apiDTO.getName(), apiProductDTO.getName());
         verifyResources(apiDTO.getOperations(), apiProductDTO.getApis());
         Assert.assertEquals(apiDTO.getProvider(), apiProductDTO.getProvider());
@@ -332,7 +332,7 @@ public class ApiProductTestHelper {
         Assert.assertEquals(apiInfo.getContext(), apiProductDTO.getContext());
         Assert.assertEquals(apiInfo.getDescription(), apiProductDTO.getDescription());
         Assert.assertEquals(apiInfo.getId(), apiProductDTO.getId());
-        Assert.assertEquals(apiInfo.getLifeCycleStatus(), apiProductDTO.getState().getValue());
+        Assert.assertEquals(apiInfo.getLifeCycleStatus(), apiProductDTO.getState());
         Assert.assertEquals(apiInfo.getName(), apiProductDTO.getName());
         Assert.assertEquals(apiInfo.getProvider(), apiProductDTO.getProvider());
         Assert.assertEquals(new HashSet<>(apiInfo.getThrottlingPolicies()), new HashSet<>(apiProductDTO.getPolicies()));

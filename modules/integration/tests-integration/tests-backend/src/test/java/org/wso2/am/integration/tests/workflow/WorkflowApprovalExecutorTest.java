@@ -246,7 +246,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Publish", null);
         assertEquals("CREATED", workflowResponseDTO.getWorkflowStatus().getValue());
         APIProductDTO returnedAPIProductDTO = restAPIPublisher.getApiProduct(apiProductId);
-        assertEquals("CREATED", returnedAPIProductDTO.getState().getValue());
+        assertEquals("CREATED", returnedAPIProductDTO.getState());
         assertEquals(returnedAPIProductDTO.getWorkflowStatus(), APILifeCycleState.CREATED.toString(), "Lifecycle "
                 + "state should remain without changing till approval. ");
 
@@ -281,7 +281,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(status, WorkflowStatus.APPROVED.toString());
 
         returnedAPIProductDTO = restAPIPublisher.getApiProduct(apiProductId);
-        assertEquals(returnedAPIProductDTO.getState().getValue().toUpperCase(),
+        assertEquals(returnedAPIProductDTO.getState().toUpperCase(),
                 APILifeCycleState.PUBLISHED.toString().toUpperCase(), "Lifecycle state should change after approval");
     }
 
@@ -302,7 +302,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 policies);
         apiProductId = apiProductDTO.getId();
         assert apiProductDTO.getState() != null;
-        Assert.assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(apiProductDTO.getState().getValue()));
+        Assert.assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(apiProductDTO.getState()));
 
         waitForAPIDeployment();
 
