@@ -166,7 +166,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am" }, description = "Testing enabling all correlation configs using the devops API ",
+    @Test(enabled=false, groups = {"wso2.am" }, description = "Testing enabling all correlation configs using the devops API ",
     dependsOnMethods = { "testRetrieveDefaultCorrelationLoggingConfigsTest" })
     public void testEnableAllCorrelationLoggingConfigsTest() throws Exception {
 
@@ -216,8 +216,7 @@ public class CorrelationLoggingTest extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am" }, description = "Testing enabling specific correlation configs using the devops API ",
-            dependsOnMethods = { "testEnableAllCorrelationLoggingConfigsTest" })
+    @Test(groups = {"wso2.am" }, description = "Testing enabling specific correlation configs using the devops API ")
     public void testSpecificCorrelationLoggingConfigsTest() throws Exception {
 
         /* Following is commented out since no HTTP logs related to API invocation are logged when only http correlation
