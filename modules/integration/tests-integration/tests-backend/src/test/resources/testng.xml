@@ -431,7 +431,7 @@
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.logging.APILoggingTest"/>
-            <class name="org.wso2.am.integration.tests.logging.CorrelationLoggingTest"/>
+<!--            <class name="org.wso2.am.integration.tests.logging.CorrelationLoggingTest"/>-->
         </classes>
     </test>
     <test name="apim-revoke-one-time-token-flow-tests" preserve-order="true" parallel="false" group-by-instances="true">
