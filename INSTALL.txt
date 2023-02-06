@@ -76,7 +76,7 @@ System Requirements
 =======================
 1. Minimum memory - 4 GB RAM (2 GB for JVM and 2 GB for the operating system)
 2. Processor      - 3 GHz Dual-core Xeon/Opteron (or latest)
-3. Java 1.8 or higher
+3. Java 11.0 or higher
 4. The Management Console requires you to enable Javascript of the Web browser,
    with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
