@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.test.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -49,6 +51,7 @@ import java.util.stream.Collectors;
  * A collection of helper methods to aid in setting up and testing APIProducts
  */
 public class ApiProductTestHelper {
+    private static final Log log = LogFactory.getLog(ApiProductTestHelper.class);
     private RestAPIPublisherImpl restAPIPublisher;
     private RestAPIStoreImpl restAPIStore;
 
@@ -233,6 +236,12 @@ public class ApiProductTestHelper {
 
         // Validate mandatory fields returned in response data
         verifyApiDtoWithApiProduct(responseData, apiProductDTO);
+        try {
+            log.info("****************************** waiting for products to list *******************");
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            // Ignore
+        }
 
         APIListDTO apiList = restAPIStore.getAllAPIs();
 
