@@ -63,13 +63,15 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String API_VERSION_2_0_0 = "2.0.0";
+    private final String API_VERSION_3_0_0 = "3.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
     private String apiEndPointUrl;
     private String providerName;
 
     APIIdentifier apiIdentifierAPI1Version1;
     APIIdentifier apiIdentifierAPI1Version2;
-    private String apiId, apiId2;
+    APIIdentifier apiIdentifierAPI1Version3;
+    private String apiId, apiId2, apiId3;
     private String applicationID;
     private String subscriptionId1, subscriptionId2;
     private APIDTO apiDto;
@@ -81,6 +83,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
         providerName = user.getUserName();
         apiIdentifierAPI1Version1 = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifierAPI1Version2 = new APIIdentifier(providerName, API_NAME, API_VERSION_2_0_0);
+        apiIdentifierAPI1Version3 = new APIIdentifier(providerName, API_NAME, API_VERSION_3_0_0);
         HttpResponse applicationResponse = restAPIStore.createApplication(APPLICATION_NAME,
                 "Test Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
@@ -245,6 +248,39 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
 
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test the previous API versions deprecation while publishing the  " +
+            "new version", dependsOnMethods = "testAccessibilityOfDeprecateOldAPIAndPublishedCopyAPI")
+    public void testOlderAPIDeprecationWithNewVersionPublish() throws Exception {
+
+        //Create new API version 3.0.0  from 2.0.0
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_2_0_0,
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        HttpResponse newVersionResponse = restAPIPublisher.copyAPI(API_VERSION_3_0_0, apiId, null);
+        assertEquals(newVersionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Copy API request code is invalid.");
+
+        apiId3 = newVersionResponse.getData();
+        // Create Revision and Deploy to Gateway
+        createAPIRevisionAndDeployUsingRest(apiId3, restAPIPublisher);
+
+        String lifeCycleChecklist = "Deprecate old versions after publishing the API:true";
+
+        // Publish the newly created API and deprecate the old APIs at once
+        HttpResponse publishAPIResponse = restAPIPublisher
+                .changeAPILifeCycleStatus(apiId3, APILifeCycleAction.PUBLISH.getAction(), lifeCycleChecklist);
+        assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API publish Response code is invalid ");
+
+        HttpResponse lcStateResponseOfAPI2 = restAPIPublisher.getLifecycleStatus(apiId2);
+        HttpResponse lcStateResponseOfAPI3 = restAPIPublisher.getLifecycleStatus(apiId3);
+
+        assertEquals(lcStateResponseOfAPI2.getData(), APILifeCycleState.DEPRECATED.getState(),
+                "API deprecate status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version2) +
+                        "Response Data:" + lcStateResponseOfAPI2.getData());
+        assertEquals(lcStateResponseOfAPI3.getData(), APILifeCycleState.PUBLISHED.getState(),
+                "API publish status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version3) +
+                        "Response Data:" + lcStateResponseOfAPI2.getData());
+    }
+
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
@@ -252,8 +288,10 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
         Thread.sleep(2000);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(apiId2, restAPIPublisher);
+        undeployAndDeleteAPIRevisionsUsingRest(apiId3, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(apiId2);
+        restAPIPublisher.deleteAPI(apiId3);
     }
 
 
