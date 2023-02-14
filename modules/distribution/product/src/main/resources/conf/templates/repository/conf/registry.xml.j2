@@ -301,6 +301,9 @@
 
     <!-- This defines index configuration which is used in meta data search feature of the registry -->
     <indexingConfiguration>
+        {% if indexing.skip_roles_regex is defined %}
+        <skipRolesByRegex>{{indexing.skip_roles_regex}}</skipRolesByRegex>
+        {% endif %}
         <startIndexing>{{indexing.enable}}</startIndexing>
         <skipCache>true</skipCache>
         <startingDelayInSeconds>{{indexing.starting_delay}}</startingDelayInSeconds>

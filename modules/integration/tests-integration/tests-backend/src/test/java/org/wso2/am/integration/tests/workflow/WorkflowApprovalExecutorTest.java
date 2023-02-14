@@ -23,12 +23,14 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.testng.annotations.*;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
-import org.wso2.am.integration.clients.admin.*;
+import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowDTO;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowInfoDTO;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowListDTO;
@@ -244,7 +246,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Publish", null);
         assertEquals("CREATED", workflowResponseDTO.getWorkflowStatus().getValue());
         APIProductDTO returnedAPIProductDTO = restAPIPublisher.getApiProduct(apiProductId);
-        assertEquals("CREATED", returnedAPIProductDTO.getState().getValue());
+        assertEquals("CREATED", returnedAPIProductDTO.getState());
         assertEquals(returnedAPIProductDTO.getWorkflowStatus(), APILifeCycleState.CREATED.toString(), "Lifecycle "
                 + "state should remain without changing till approval. ");
 
@@ -279,7 +281,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(status, WorkflowStatus.APPROVED.toString());
 
         returnedAPIProductDTO = restAPIPublisher.getApiProduct(apiProductId);
-        assertEquals(returnedAPIProductDTO.getState().getValue().toUpperCase(),
+        assertEquals(returnedAPIProductDTO.getState().toUpperCase(),
                 APILifeCycleState.PUBLISHED.toString().toUpperCase(), "Lifecycle state should change after approval");
     }
 
@@ -300,7 +302,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 policies);
         apiProductId = apiProductDTO.getId();
         assert apiProductDTO.getState() != null;
-        Assert.assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(apiProductDTO.getState().getValue()));
+        Assert.assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(apiProductDTO.getState()));
 
         waitForAPIDeployment();
 
@@ -393,8 +395,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         //Application State should be CREATED
         ApplicationDTO appResponse = restAPIStore.getApplicationById(deletingAppID);
         String status1 = appResponse.getStatus();
-        assertEquals(status1, "CREATED",
-                "Application state should remain without changing till approval. ");
+        assertEquals(status1, "CREATED", "Application state should remain without changing till approval.");
         //get workflow pending requests by unauthorized user
         String workflowType = "AM_APPLICATION_CREATION";
         org.wso2.am.integration.test.HttpResponse response = restAPIAdminUser.getWorkflows(workflowType);
@@ -402,8 +403,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
                 "Workflow requests an only view by Admin");
         //get workflow pending requests by Admin
         response = restAPIAdmin.getWorkflows(workflowType);
-        assertEquals(response.getResponseCode(), 200,
-                "Get Workflow Pending requests failed for User Admin");
+        assertEquals(response.getResponseCode(), 200, "Get Workflow Pending requests failed for User Admin");
 
         JSONObject workflowRespObj = new JSONObject(response.getData());
         String externalWorkflowRef = null;
