@@ -1272,10 +1272,10 @@
         <carbon.analytics.common.version>5.3.4</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.0.418</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.0.424</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.28.75</carbon.apimgt.version>
+        <carbon.apimgt.version>9.28.87</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
