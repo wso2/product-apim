@@ -3982,7 +3982,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: string
         403:
           $ref: '#/components/responses/Forbidden'
         404:

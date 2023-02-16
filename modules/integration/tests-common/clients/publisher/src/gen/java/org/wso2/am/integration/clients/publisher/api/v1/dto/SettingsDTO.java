@@ -65,6 +65,14 @@ public class SettingsDTO {
         @SerializedName(SERIALIZED_NAME_CROSS_TENANT_SUBSCRIPTION_ENABLED)
             private Boolean crossTenantSubscriptionEnabled = false;
 
+        public static final String SERIALIZED_NAME_DEFAULT_ADVANCE_POLICY = "defaultAdvancePolicy";
+        @SerializedName(SERIALIZED_NAME_DEFAULT_ADVANCE_POLICY)
+            private String defaultAdvancePolicy;
+
+        public static final String SERIALIZED_NAME_DEFAULT_SUBSCRIPTION_POLICY = "defaultSubscriptionPolicy";
+        @SerializedName(SERIALIZED_NAME_DEFAULT_SUBSCRIPTION_POLICY)
+            private String defaultSubscriptionPolicy;
+
         public static final String SERIALIZED_NAME_AUTHORIZATION_HEADER = "authorizationHeader";
         @SerializedName(SERIALIZED_NAME_AUTHORIZATION_HEADER)
             private String authorizationHeader;
@@ -254,6 +262,52 @@ public class SettingsDTO {
     }
 
 
+        public SettingsDTO defaultAdvancePolicy(String defaultAdvancePolicy) {
+        
+        this.defaultAdvancePolicy = defaultAdvancePolicy;
+        return this;
+        }
+
+    /**
+        * Default Advance Policy.
+    * @return defaultAdvancePolicy
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "Default Advance Policy.")
+    
+    public String getDefaultAdvancePolicy() {
+        return defaultAdvancePolicy;
+    }
+
+
+    public void setDefaultAdvancePolicy(String defaultAdvancePolicy) {
+        this.defaultAdvancePolicy = defaultAdvancePolicy;
+    }
+
+
+        public SettingsDTO defaultSubscriptionPolicy(String defaultSubscriptionPolicy) {
+        
+        this.defaultSubscriptionPolicy = defaultSubscriptionPolicy;
+        return this;
+        }
+
+    /**
+        * Default Subscription Policy.
+    * @return defaultSubscriptionPolicy
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "Default Subscription Policy.")
+    
+    public String getDefaultSubscriptionPolicy() {
+        return defaultSubscriptionPolicy;
+    }
+
+
+    public void setDefaultSubscriptionPolicy(String defaultSubscriptionPolicy) {
+        this.defaultSubscriptionPolicy = defaultSubscriptionPolicy;
+    }
+
+
         public SettingsDTO authorizationHeader(String authorizationHeader) {
         
         this.authorizationHeader = authorizationHeader;
@@ -294,12 +348,14 @@ public class SettingsDTO {
             Objects.equals(this.externalStoresEnabled, settings.externalStoresEnabled) &&
             Objects.equals(this.docVisibilityEnabled, settings.docVisibilityEnabled) &&
             Objects.equals(this.crossTenantSubscriptionEnabled, settings.crossTenantSubscriptionEnabled) &&
+            Objects.equals(this.defaultAdvancePolicy, settings.defaultAdvancePolicy) &&
+            Objects.equals(this.defaultSubscriptionPolicy, settings.defaultSubscriptionPolicy) &&
             Objects.equals(this.authorizationHeader, settings.authorizationHeader);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(devportalUrl, environment, scopes, monetizationAttributes, securityAuditProperties, externalStoresEnabled, docVisibilityEnabled, crossTenantSubscriptionEnabled, authorizationHeader);
+        return Objects.hash(devportalUrl, environment, scopes, monetizationAttributes, securityAuditProperties, externalStoresEnabled, docVisibilityEnabled, crossTenantSubscriptionEnabled, defaultAdvancePolicy, defaultSubscriptionPolicy, authorizationHeader);
     }
 
 
@@ -315,6 +371,8 @@ sb.append("class SettingsDTO {\n");
     sb.append("    externalStoresEnabled: ").append(toIndentedString(externalStoresEnabled)).append("\n");
     sb.append("    docVisibilityEnabled: ").append(toIndentedString(docVisibilityEnabled)).append("\n");
     sb.append("    crossTenantSubscriptionEnabled: ").append(toIndentedString(crossTenantSubscriptionEnabled)).append("\n");
+    sb.append("    defaultAdvancePolicy: ").append(toIndentedString(defaultAdvancePolicy)).append("\n");
+    sb.append("    defaultSubscriptionPolicy: ").append(toIndentedString(defaultSubscriptionPolicy)).append("\n");
     sb.append("    authorizationHeader: ").append(toIndentedString(authorizationHeader)).append("\n");
 sb.append("}");
 return sb.toString();
