@@ -86,13 +86,9 @@
         reCaptchaEnabled = true;
     }
 
-    Boolean isQuestionBasedPasswordRecoveryEnabledByTenant;
-    Boolean isNotificationBasedPasswordRecoveryEnabledByTenant;
     Boolean isMultiAttributeLoginEnabledInTenant;
     try {
         PreferenceRetrievalClient preferenceRetrievalClient = new PreferenceRetrievalClient();
-        isQuestionBasedPasswordRecoveryEnabledByTenant = preferenceRetrievalClient.checkQuestionBasedPasswordRecovery(tenantDomain);
-        isNotificationBasedPasswordRecoveryEnabledByTenant = preferenceRetrievalClient.checkNotificationBasedPasswordRecovery(tenantDomain);
         isMultiAttributeLoginEnabledInTenant = preferenceRetrievalClient.checkMultiAttributeLogin(tenantDomain);
     } catch (PreferenceRetrievalClientException e) {
         request.setAttribute("error", true);
@@ -205,13 +201,6 @@
                                 <div class="ui radio checkbox">
                                     <input type="radio" name="recoveryOption" value="EMAIL" checked/>
                                     <label><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.with.mail")%>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="field">
-                                <div class="ui radio checkbox">
-                                    <input type="radio" name="recoveryOption" value="SECURITY_QUESTIONS"/>
-                                    <label><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.with.question")%>
                                     </label>
                                 </div>
                             </div>
