@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *   Copyright (c) 2023, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -158,7 +158,6 @@ public class SchemaValidationTestCase extends APIManagerLifecycleBaseTest {
                 queryObject.toString());
         //Schema validation fails as the request body does not match the defined schema
         Assert.assertEquals(serviceResponse.getResponseCode(), 200);
-        //Clean the custom request body
     }
 
     @Test(groups = {"wso2.am"}, description = "Test SchemaValidation with valid response body")
@@ -178,7 +177,6 @@ public class SchemaValidationTestCase extends APIManagerLifecycleBaseTest {
         //Schema validation fails for unsecured API resources
         Assert.assertEquals(serviceResponse.getResponseCode(), 400);
         Assert.assertEquals(serviceResponse.getData().contains("Schema validation failed in the Request"), true);
-
     }
 
     @AfterClass(alwaysRun = true)
