@@ -455,5 +455,4 @@
             <class name="org.wso2.am.integration.tests.throttling.unlimitedDisable.ConfigurableDefaultPolicyTestCase"/>
         </classes>
     </test>
-    -->
 </suite>
