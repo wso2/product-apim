@@ -1,0 +1,11 @@
+{% if includeQueryParams %}
+<property name="URL_POSTFIX" expression="get-property('axis2','REST_URL_POSTFIX')" />
+<rewrite inProperty="URL_POSTFIX" outProperty="URL_POSTFIX">
+    <rewriterule>
+        <action value="{{newResourcePath}}" type="set" fragment="path" />
+    </rewriterule>
+</rewrite>
+<property name="REST_URL_POSTFIX" expression="get-property('URL_POSTFIX')" scope="axis2" />
+{% else %}
+    <property name="REST_URL_POSTFIX" value="{{newResourcePath}}" scope="axis2"/>
+{% endif %}
