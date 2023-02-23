@@ -21,7 +21,7 @@
   <soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
   <soapenv:Header/>
   <soapenv:Body>
-    <web:CheckPhoneNumbers xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
+  	<web:CheckPhoneNumbers xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
   <web:PhoneNumbers>$1</web:PhoneNumbers>
   <web:LicenseKey>$2</web:LicenseKey>
 </web:CheckPhoneNumbers>
@@ -30,7 +30,7 @@
   </soapenv:Envelope>
   </format>
   <args>
-  <arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.PhoneNumbers.string')"/>
+ 	<arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.PhoneNumbers.string')"/>
 <arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.LicenseKey')"/>
 
   </args>
