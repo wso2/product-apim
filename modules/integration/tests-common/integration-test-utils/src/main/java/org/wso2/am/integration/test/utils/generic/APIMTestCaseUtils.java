@@ -60,6 +60,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
@@ -1579,5 +1581,15 @@ public class APIMTestCaseUtils {
         String cred = builder.toString();
         byte[] encodedBytes = Base64.encodeBase64(cred.getBytes());
         return new String(encodedBytes);
+    }
+
+    public static File getTempSwaggerFileWithContent(String swagger) throws Exception {
+
+        File temp = File.createTempFile("swagger", ".json");
+        temp.deleteOnExit();
+        BufferedWriter out = new BufferedWriter(new FileWriter(temp));
+        out.write(swagger);
+        out.close();
+        return temp;
     }
 }
