@@ -213,6 +213,17 @@ public class RestAPIStoreImpl {
         return null;
     }
 
+    public ApiResponse<ApplicationDTO> createApplicationWithHttpInfo(String appName, String description, String throttleTier,
+                                                                     ApplicationDTO.TokenTypeEnum tokenType) throws ApiException {
+
+        ApplicationDTO application = new ApplicationDTO();
+        application.setName(appName);
+        application.setDescription(description);
+        application.setThrottlingPolicy(throttleTier);
+        application.setTokenType(tokenType);
+        return applicationsApi.applicationsPostWithHttpInfo(application);
+    }
+
     public HttpResponse createApplicationWithOrganization(String appName, String description, String throttleTier,
                                                           ApplicationDTO.TokenTypeEnum tokenType, List<String> groups) {
         try {
@@ -2191,5 +2202,9 @@ public class RestAPIStoreImpl {
 
     public ApplicationKeyListDTO getApplicationOauthKeys(String applicationUUID, String tenantDomain) throws ApiException {
         return applicationKeysApi.applicationsApplicationIdOauthKeysGet(applicationUUID,tenantDomain);
+    }
+
+    public ApplicationListDTO getApplications(String applicationName) throws ApiException {
+        return applicationsApi.applicationsGet(null, applicationName, "name", "asc", 10, 0, null);
     }
 }
