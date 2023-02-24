@@ -23,16 +23,16 @@
   <soapenv:Header/>
   <soapenv:Body>
   	<web:CheckPhoneNumbers xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
-  <web:LicenseKey>$1</web:LicenseKey>
-  <web:PhoneNumbers>$2</web:PhoneNumbers>
+  <web:PhoneNumbers>$1</web:PhoneNumbers>
+  <web:LicenseKey>$2</web:LicenseKey>
 </web:CheckPhoneNumbers>
 
   </soapenv:Body>
   </soapenv:Envelope>
   </format>
   <args>
- 	<arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.LicenseKey')"/>
-<arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.PhoneNumbers.string')"/>
+ 	<arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.PhoneNumbers.string')"/>
+<arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.LicenseKey')"/>
 
   </args>
 </payloadFactory>
