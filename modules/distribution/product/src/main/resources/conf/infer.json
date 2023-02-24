@@ -23,28 +23,6 @@
       "apim.key_manager.enable_registration": false,
       "apim.key_manager.enable_retriever": false
     },
-    "api-publisher-deprecated": {
-      "apim.throttling.enable_policy_deploy": true,
-      "apim.throttling.enable_data_publishing": true,
-      "apim.throttling.enable_decision_connection": false,
-      "apim.throttling.enable_blacklist_condition": false,
-      "transport.ws.sender.enable": false,
-      "transport.wss.sender.enable": false,
-      "system.parameter.profile": "api-publisher-deprecated",
-      "apim.key_manager.enable_registration": false,
-      "apim.key_manager.enable_retriever": true
-    },
-    "api-devportal-deprecated": {
-      "apim.throttling.enable_policy_deploy": false,
-      "apim.throttling.enable_data_publishing": false,
-      "apim.throttling.enable_decision_connection": false,
-      "apim.throttling.enable_blacklist_condition": false,
-      "transport.ws.sender.enable": false,
-      "transport.wss.sender.enable": false,
-      "system.parameter.profile": "api-devportal-deprecated",
-      "apim.key_manager.enable_registration": false,
-      "apim.key_manager.enable_retriever": true
-    },
     "traffic-manager": {
       "system.parameter.profile": "traffic-manager",
       "apim.key_manager.enable_registration": true,
