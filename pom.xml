@@ -1261,11 +1261,6 @@
                 <artifactId>xmlsec</artifactId>
                 <version>${xmlsec.version}</version>
             </dependency>
-            <dependency>
-                <groupId>libthrift.wso2</groupId>
-                <artifactId>libthrift</artifactId>
-                <version>0.16.0.wso2v1</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1280,7 +1275,7 @@
         <carbon.apimgt.ui.version>9.0.424</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.28.91-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.version>9.28.88</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1302,7 +1297,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.169-SNAPSHOT</carbon.mediation.version>
+        <carbon.mediation.version>4.7.170</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.24.8</carbon.identity.version>
