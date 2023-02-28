@@ -275,4 +275,4 @@ password = "${admin.password}"
 
 [apim.sync_runtime_artifacts.gateway.skip_list]
 apis = ["admin--git2231head_v1.0.0.xml","admin--PizzaShackAPI_v1.0.0.xml","admin--ScriptMediatorAPI_v1.0.xml",
-"APIThrottleBackendAPI.xml","BackEndSecurity.xml","DigestAuth_API.xml","git2231.xml","HttpPATCHSupport_API.xml","JWKS-Backend.xml","JWTBackendAPI.xml","multiVSR_v1.0.0.xml","Response_API_1.xml","Response_API_2.xml","Response_Custom_API.xml","Response_Error_API.xml","Response_Loc_API.xml","SpecialCRN_v1.0.0.xml","status_code_204_API.xml","stockquote.xml","XML_API.xml","Version1.xml","Version2.xml"]
+"APIThrottleBackendAPI.xml","BackEndSecurity.xml","DigestAuth_API.xml","git2231.xml","HttpPATCHSupport_API.xml","JWKS-Backend.xml","JWTBackendAPI.xml","multiVSR_v1.0.0.xml","Response_API_1.xml","Response_API_2.xml","Response_Custom_API.xml","Response_Error_API.xml","Response_Loc_API.xml","SpecialCRN_v1.0.0.xml","status_code_204_API.xml","stockquote.xml","XML_API.xml","Version1.xml","Version2.xml","schemaValidationAPI.xml"]
