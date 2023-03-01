@@ -98,7 +98,7 @@ call :replaceDeploymentConfiguration
 call :replaceAxis2TemplateFile %pathToAxis2ControlPlaneXmlTemplate%
 call :replaceTenantAxis2TemplateFile %pathToTenantAxis2ControlPlaneXmlTemplate%
 rem ---removing webbapps which are not required for this profile--------
-for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war api#am#devportal#v.*war api#am#devportal.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war internal#data#v.*war"') do (
+for /f %%i in ('dir %pathToWebapps% /b ^| findstr /v "api#am#publisher#v.*war api#am#publisher.war api#am#devportal#v.*war api#am#devportal.war client-registration#v.*war authenticationendpoint accountrecoveryendpoint oauth2.war api#am#admin#v.*war api#am#admin.war internal#data#v.*war admin devportal publisher"') do (
 	del /f %pathToWebapps%\%%i
 	call :Timestamp value
 	echo %value% INFO - Removed the %%i file from %pathToWebapps%
