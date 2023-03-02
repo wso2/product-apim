@@ -172,7 +172,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<ExportThrottlePolicyDTO> exportThrottlePolicy(String policyName, String policyType)
             throws ApiException {
 
-        return exportImportThrottlingPolicyApi.exportThrottlingPolicyWithHttpInfo(null, policyName, policyType, null);
+        return exportImportThrottlingPolicyApi.exportThrottlingPolicyWithHttpInfo(null, policyName, policyType);
     }
 
     /**
