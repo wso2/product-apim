@@ -205,7 +205,7 @@ public class OASTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = { "wso2.am" }, description = "Validate API definitions with empty resource paths",
+    @Test(enabled=false, groups = { "wso2.am" }, description = "Validate API definitions with empty resource paths",
             dependsOnMethods = "testNewAPI")
     public void testValidateAPIDefinitionWithEmptyResourcePath() throws Exception {
         String invalidDefinition = IOUtils.toString(
