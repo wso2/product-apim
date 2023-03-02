@@ -1712,15 +1712,6 @@ paths:
               - app
               - api
               - global
-        - name: format
-          in: query
-          description: |
-            Format of output documents. Can be YAML or JSON.
-          schema:
-            type: string
-            enum:
-              - JSON
-              - YAML
       responses:
         200:
           description: |
