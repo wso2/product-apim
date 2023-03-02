@@ -14,6 +14,8 @@ Name | Type | Description | Notes
 **externalStoresEnabled** | **Boolean** | Is External Stores configuration enabled  |  [optional]
 **docVisibilityEnabled** | **Boolean** | Is Document Visibility configuration enabled  |  [optional]
 **crossTenantSubscriptionEnabled** | **Boolean** | Is Cross Tenant Subscriptions Enabled  |  [optional]
+**defaultAdvancePolicy** | **String** | Default Advance Policy. |  [optional]
+**defaultSubscriptionPolicy** | **String** | Default Subscription Policy. |  [optional]
 **authorizationHeader** | **String** | Authorization Header |  [optional]
 
 

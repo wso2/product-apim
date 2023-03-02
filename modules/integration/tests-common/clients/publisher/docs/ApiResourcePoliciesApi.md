@@ -1,6 +1,6 @@
 # ApiResourcePoliciesApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/publisher/v3*
+All URIs are relative to *https://apis.wso2.com/api/am/publisher/v4*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -30,7 +30,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -108,7 +108,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -183,7 +183,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiResourcePoliciesApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");

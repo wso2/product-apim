@@ -16797,7 +16797,7 @@ components:
           description: This is a simple API for Pizza Shack online pizza delivery
             store
           id: 01234567-0123-0123-0123-012345678901
-          state: CREATED
+          state: state
         - hasThumbnail: true
           provider: admin
           gatewayVendor: wso2
@@ -16808,7 +16808,7 @@ components:
           description: This is a simple API for Pizza Shack online pizza delivery
             store
           id: 01234567-0123-0123-0123-012345678901
-          state: CREATED
+          state: state
       properties:
         count:
           description: |
@@ -16834,7 +16834,7 @@ components:
         context: pizzaproduct
         description: This is a simple API for Pizza Shack online pizza delivery store
         id: 01234567-0123-0123-0123-012345678901
-        state: CREATED
+        state: state
       properties:
         id:
           description: |
@@ -16864,13 +16864,6 @@ components:
         state:
           description: |
             State of the API product. Only published api products are visible on the Developer Portal
-          enum:
-          - CREATED
-          - PUBLISHED
-          - DEPRECATED
-          - RETIRED
-          - BLOCKED
-          - PROTOTYPED
           type: string
         securityScheme:
           description: |
@@ -17008,13 +17001,6 @@ components:
           default: CREATED
           description: |
             State of the API product. Only published api products are visible on the Developer Portal
-          enum:
-          - CREATED
-          - PUBLISHED
-          - DEPRECATED
-          - RETIRED
-          - BLOCKED
-          - PROTOTYPED
           type: string
         enableSchemaValidation:
           example: false
@@ -19577,6 +19563,7 @@ components:
     Settings:
       example:
         devportalUrl: https://localhost:9443/devportal
+        defaultAdvancePolicy: defaultAdvancePolicy
         externalStoresEnabled: true
         environment:
         - endpointURIs:
@@ -19648,6 +19635,7 @@ components:
             websubHttpsPort: 8021
             httpsPort: 443
         crossTenantSubscriptionEnabled: false
+        defaultSubscriptionPolicy: defaultSubscriptionPolicy
         securityAuditProperties: '{}'
         scopes:
         - apim:api_create
@@ -19697,6 +19685,12 @@ components:
             Is Cross Tenant Subscriptions Enabled
           example: false
           type: boolean
+        defaultAdvancePolicy:
+          description: Default Advance Policy.
+          type: string
+        defaultSubscriptionPolicy:
+          description: Default Subscription Policy.
+          type: string
         authorizationHeader:
           description: Authorization Header
           example: authorization

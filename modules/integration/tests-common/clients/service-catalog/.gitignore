@@ -19,6 +19,3 @@ hs_err_pid*
 target
 .gradle
 build
-
-# exclude hash file
-.openapi-generator/service-catalog-api.yaml.sha256
