@@ -23,7 +23,7 @@ Name | Type | Description | Notes
 **revisionedApiId** | **String** | UUID of the api registry artifact  |  [optional] [readonly]
 **revisionId** | **Integer** |  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
-**enableSubscriberVerification** | **Boolean** | To enable WebSub subscriber intent verification | [optional]
+**enableSubscriberVerification** | **Boolean** |  |  [optional]
 **type** | [**TypeEnum**](#TypeEnum) | The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC |  [optional]
 **audience** | [**AudienceEnum**](#AudienceEnum) | The audience of the API. Accepted values are PUBLIC, SINGLE |  [optional]
 **transport** | **List&lt;String&gt;** | Supported transports for the API (http and/or https).  |  [optional]
