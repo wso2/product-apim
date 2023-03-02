@@ -3006,18 +3006,6 @@ paths:
           - global
           type: string
         style: form
-      - description: |
-          Format of output documents. Can be YAML or JSON.
-        explode: true
-        in: query
-        name: format
-        required: false
-        schema:
-          enum:
-          - JSON
-          - YAML
-          type: string
-        style: form
       responses:
         "200":
           content:
@@ -6639,7 +6627,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: string
           description: |
             OK.
             Tenant config Exported Successfully.
