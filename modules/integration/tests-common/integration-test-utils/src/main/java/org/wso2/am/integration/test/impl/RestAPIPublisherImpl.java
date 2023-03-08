@@ -2095,14 +2095,13 @@ public class RestAPIPublisherImpl {
     /**
      * Add comment to given API
      *
-     * @param apiId    - api Id
-     * @param comment  - comment to  add
-     * @param category - category of the comment
-     * @param replyTo  - comment id of the root comment to add replies
-     * @return - http response of add comment
-     * @throws ApiException - throws if add comment fails
+     * @param apiId    api Id
+     * @param comment  comment to  add
+     * @param category category of the comment
+     * @param replyTo  comment id of the root comment to add replies
+     * @return http response of add comment
+     * @throws ApiException throws if add comment fails
      */
-
     public HttpResponse addComment(String apiId, String comment, String category, String replyTo) throws ApiException {
 
         PostRequestBodyDTO postRequestBodyDTO = new PostRequestBodyDTO();
@@ -2120,13 +2119,13 @@ public class RestAPIPublisherImpl {
     /**
      * Get Comment from given API
      *
-     * @param commentId    - comment Id
-     * @param apiId        - api Id
-     * @param tenantDomain - tenant domain
-     * @param limit        - for pagination
-     * @param offset       - for pagination
-     * @return - http response get comment
-     * @throws ApiException - throws if get comment fails
+     * @param commentId    comment Id
+     * @param apiId        api Id
+     * @param tenantDomain tenant domain
+     * @param limit        for pagination
+     * @param offset       for pagination
+     * @return http response get comment
+     * @throws ApiException throws if get comment fails
      */
     public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo,
                                    Integer limit, Integer offset) throws ApiException {
@@ -2149,12 +2148,12 @@ public class RestAPIPublisherImpl {
     /**
      * Get all the comments from given API
      *
-     * @param apiId        - api Id
-     * @param tenantDomain - tenant domain
-     * @param limit        - for pagination
-     * @param offset       - for pagination
-     * @return - http response get comment
-     * @throws ApiException - throws if get comment fails
+     * @param apiId        api Id
+     * @param tenantDomain tenant domain
+     * @param limit        for pagination
+     * @param offset       for pagination
+     * @return http response get comment
+     * @throws ApiException throws if get comment fails
      */
     public HttpResponse getComments(String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit,
                                     Integer offset) throws ApiException {
@@ -2176,13 +2175,13 @@ public class RestAPIPublisherImpl {
     /**
      * Get replies of a comment from given API
      *
-     * @param commentId    - comment Id
-     * @param apiId        - api Id
-     * @param tenantDomain - tenant domain
-     * @param limit        - for pagination
-     * @param offset       - for pagination
-     * @return - http response get comment
-     * @throws ApiException - throws if get comment fails
+     * @param commentId    comment Id
+     * @param apiId        api Id
+     * @param tenantDomain tenant domain
+     * @param limit        for pagination
+     * @param offset       for pagination
+     * @return http response get comment
+     * @throws ApiException throws if get comment fails
      */
     public HttpResponse getReplies(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit, Integer offset)
             throws ApiException {
@@ -2207,12 +2206,12 @@ public class RestAPIPublisherImpl {
     /**
      * Get Comment from given API
      *
-     * @param commentId - comment Id
-     * @param apiId     - api Id
-     * @param comment   - comment to  add
-     * @param category  - category of the comment
-     * @return - http response get comment
-     * @throws ApiException - throws if get comment fails
+     * @param commentId comment Id
+     * @param apiId     api Id
+     * @param comment   comment to  add
+     * @param category  category of the comment
+     * @return http response get comment
+     * @throws ApiException throws if get comment fails
      */
     public HttpResponse editComment(String commentId, String apiId, String comment, String category) throws
             ApiException {
@@ -2239,9 +2238,9 @@ public class RestAPIPublisherImpl {
     /**
      * Remove comment in given API
      *
-     * @param commentId - comment Id
-     * @param apiId     - api Id
-     * @throws ApiException - throws if remove comment fails
+     * @param commentId comment Id
+     * @param apiId     api Id
+     * @throws ApiException throws if remove comment fails
      */
     public HttpResponse removeComment(String commentId, String apiId) throws ApiException {
 
