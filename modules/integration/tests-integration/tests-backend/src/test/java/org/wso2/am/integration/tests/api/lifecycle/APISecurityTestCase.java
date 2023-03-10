@@ -104,7 +104,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String OauthEnabledAPIContext = "OauthEnabledAPI";
     private final String apiKeySecuredAPIContext = "apiKeySecuredAPI";
     private final String basicAuthSecuredAPI = "BasicAuthSecuredAPI";
+    private final String basicAuthAndOauth2SecuredAPI = "BasicAuthAndOauth2SecuredAPI";
     private final String basicAuthSecuredAPIContext = "BasicAuthSecuredAPI";
+    private final String basicAuthSecuredAPIContext = "BasicAuthAndOauth2SecuredAPI";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
@@ -119,6 +121,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private String apiId5;
     private String apiId6;
     private String apiId7;
+    private String apiId8;
     private SubscriptionDTO subscriptionDTO;
     private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     String users[] = {"apisecUser", "apisecUser2@wso2.com", "apisecUser2@abc.com"};
@@ -353,6 +356,33 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
 
         HttpResponse response7 = restAPIPublisher.addAPI(apiRequest7);
         apiId7 = response7.getData();
+
+        APIRequest apiRequest8 = new APIRequest(basicAuthAndOauth2SecuredAPI, basicAuthSecuredAPIContext,
+                new URL(apiEndPointUrl));
+        apiRequest8.setVersion(API_VERSION_1_0_0);
+        apiRequest8.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest8.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest8.setTags(API_TAGS);
+        apiRequest8.setVisibility(APIDTO.VisibilityEnum.PUBLIC.getValue());
+        apiRequest8.setOperationsDTOS(operationsDTOS);
+        apiRequest8.setProvider(user.getUserName());
+
+        List<String> securitySchemes8 = new ArrayList<>();
+        securitySchemes8.add("basic_auth");
+        securitySchemes8.add("oauth_basic_auth_api_key_mandatory");
+        securitySchemes8.add("oauth2");
+        apiRequest8.setSecurityScheme(securitySchemes5);
+        apiRequest8.setDefault_version("true");
+        apiRequest8.setHttps_checked("https");
+        apiRequest8.setHttp_checked(null);
+        HttpResponse response8 = restAPIPublisher.addAPI(apiRequest8);
+        apiId8 = response8.getData();
+        createAPIRevisionAndDeployUsingRest(apiId8, restAPIPublisher);
+        restAPIPublisher.changeAPILifeCycleStatusToPublish(apiId8, false);
+        waitForAPIDeploymentSync(apiRequest5.getProvider(), apiRequest5.getName(), apiRequest5.getVersion(),
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+
     }
 
     @Test(description = "This test case tests the behaviour of internal Key token on Created API with authentication " +
@@ -999,7 +1029,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         String user1 = users[0];
         Map<String, String> requestHeaders1 = new HashMap<>();
         requestHeaders1.put("Authorization",
-                "Basic " + Base64.encodeBase64String(user1.concat("@").concat(this.user.getUserDomain()).concat(":")
+       e         "Basic " + Base64.encodeBase64String(user1.concat("@").concat(this.user.getUserDomain()).concat(":")
                         .concat("randomPassword1").getBytes()));
         HttpResponse response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders1);
@@ -1199,6 +1229,16 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 ", but got " + invocationResponseAfterSubscriptionRemoved.getResponseCode());
     }
 
+    @Test(description = "Testing the invocation with Basic Auth for APIKey Only API", dependsOnMethods = {
+            "testInvokeBasicAuthAfterCredentialsInvalid"})
+    public void testInvocationWithBasicAuthandOauth2ForAPIKey() throws Exception {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("Authorization", "Basic abcce");
+        HttpResponse response = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK);
+    }
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationId);
