@@ -23,7 +23,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v4.2.0 - 3rd March 2023</title>
+    <title>WSO2 API Manager v4.2.0 - 11th March 2023</title>
 </head>
 <body>
 <div id="main-content">
@@ -79,7 +79,7 @@
 
     <h2>Bug Fixes And Improvements in 4.2.0</h2>
     <ul>
-        <li>GitHub (<a href="https://github.com/wso2/api-manager/issues?q=is%3Aissue+is%3Aclosed+label%3AComponent%2FAPIM+closed%3A2022-04-05..2023-03-03+">api-manager</a>)
+        <li>GitHub (<a href="https://github.com/wso2/api-manager/issues?q=is%3Aissue+is%3Aclosed+label%3AComponent%2FAPIM+closed%3A2022-04-05..2023-03-11">api-manager</a>)
         </li>
     </ul>
 
