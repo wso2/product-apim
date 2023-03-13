@@ -106,7 +106,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String basicAuthSecuredAPI = "BasicAuthSecuredAPI";
     private final String basicAuthAndOauth2SecuredAPI = "BasicAuthAndOauth2SecuredAPI";
     private final String basicAuthSecuredAPIContext = "BasicAuthSecuredAPI";
-    private final String basicAuthSecuredAPIContext = "BasicAuthAndOauth2SecuredAPI";
+    private final String basicAuthAndOauth2SecuredAPI = "BasicAuthAndOauth2SecuredAPI";
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
@@ -357,7 +357,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response7 = restAPIPublisher.addAPI(apiRequest7);
         apiId7 = response7.getData();
 
-        APIRequest apiRequest8 = new APIRequest(basicAuthAndOauth2SecuredAPI, basicAuthSecuredAPIContext,
+        APIRequest apiRequest8 = new APIRequest(basicAuthAndOauth2SecuredAPI, basicAuthAndOauth2SecuredAPI,
                 new URL(apiEndPointUrl));
         apiRequest8.setVersion(API_VERSION_1_0_0);
         apiRequest8.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
@@ -1029,7 +1029,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         String user1 = users[0];
         Map<String, String> requestHeaders1 = new HashMap<>();
         requestHeaders1.put("Authorization",
-       e         "Basic " + Base64.encodeBase64String(user1.concat("@").concat(this.user.getUserDomain()).concat(":")
+                "Basic " + Base64.encodeBase64String(user1.concat("@").concat(this.user.getUserDomain()).concat(":")
                         .concat("randomPassword1").getBytes()));
         HttpResponse response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
                 API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders1);
@@ -1249,6 +1249,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId5);
         restAPIPublisher.deleteAPI(apiId6);
         restAPIPublisher.deleteAPI(apiId7);
+        restAPIPublisher.deleteAPI(apiId8);
         removeUsers();
     }
 
