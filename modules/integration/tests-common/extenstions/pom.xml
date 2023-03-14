@@ -9,6 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <artifactId>extenstions</artifactId>
+    <name>WSO2 API Manager - Extensions</name>
     <modules>
         <module>org.wso2.am.thirdparty.km</module>
     </modules>
