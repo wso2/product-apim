@@ -538,7 +538,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(),
                         createSession(publisherContext));
         ResourceData[] apiResourcesTraces = resourceAdminServiceClient.getResourceData(API_TRACES_LOCATION);
-        assertTrue(apiResourcesTraces[0].getName().equals(apiId));
+        assertTrue(apiId.equals(apiResourcesTraces[0].getName()));
         restAPIPublisher.deleteAPI(apiId);
         try {
             resourceAdminServiceClient.getResourceData(API_TRACES_LOCATION);
