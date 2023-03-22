@@ -3,6 +3,8 @@
 <property expression="json-eval($.CheckPhoneNumbers.LicenseKey)" name="req.var.CheckPhoneNumbers.LicenseKey"/>
 
 
+<filter source="get-property('axis2','ContentType')" regex="application/json">
+<then>
 <property name="JSONPayload" expression="json-eval($.)"/>
 <script language="js">
     var payload =  mc.getProperty("JSONPayload");
@@ -36,3 +38,16 @@
   </args>
 </payloadFactory>
 <property description="messageProperty" name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+</then>
+<else>
+    <payloadFactory media-type="json" description="transform">
+        <format>
+            {"error": "Invalid Content-Type detected"}
+        </format>
+        <args>
+        </args>
+    </payloadFactory>
+    <property name="HTTP_SC" value="400" scope="axis2"/>
+    <respond></respond>
+</else>
+</filter>
