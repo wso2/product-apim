@@ -100,7 +100,8 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API")
+    @Test(groups = {
+            "wso2.am" }, description = "Create an API Through the Publisher Rest API")
     public void testCreateAnAPIThroughThePublisherRest() throws Exception {
 
         String apiContextTest = "apim18PublisherTestAPI";
@@ -147,6 +148,54 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
         assertTrue(response.getData().contains(apiVersion), "Invalid API Version");
         assertTrue(response.getData().contains(apiContextTest), "Invalid API Context");
 
+    }
+
+    @Test(groups = {
+            "wso2.am" }, description = "Create an API Through the Publisher Rest API with malformed context")
+    public void testCreateAnAPIWithMalformedContextThroughThePublisherRest()
+            throws Exception {
+
+        // Now APIs with malformed context should not be allowed to create
+        String apiContextTest = "apim18PublisherTestAPIMalformed`";
+        String apiDescription = "This is Test API Created by API Manager Integration Test";
+        String apiTag = "tag18-4, tag18-5, tag18-6";
+        String apiName = "APIM18PublisherTestMalformed";
+
+        APIRequest apiCreationRequestBean;
+        apiCreationRequestBean = new APIRequest(apiName, apiContextTest, new URL(apiProductionEndPointUrl));
+
+        apiCreationRequestBean.setVersion(apiVersion);
+        apiCreationRequestBean.setDescription(apiDescription);
+        apiCreationRequestBean.setTags(apiTag);
+        apiCreationRequestBean.setTiersCollection("Gold,Bronze");
+        apiCreationRequestBean.setTier("Gold");
+
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget("/customers/{id}");
+
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO);
+        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
+        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
+        apiCreationRequestBean.setDefault_version_checked("true");
+        ;
+
+        apiCreationRequestBean.setBusinessOwner("api18b");
+        apiCreationRequestBean.setBusinessOwnerEmail("api18b@ee.com");
+        apiCreationRequestBean.setTechnicalOwner("api18t");
+        apiCreationRequestBean.setTechnicalOwnerEmail("api18t@ww.com");
+
+        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
+        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
+
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.BAD_REQUEST.getStatusCode(),
+                "Response Code miss matched when creating the API");
+
+        //Check the availability of an API in Publisher
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        assertEquals(response.getResponseCode(), Response.Status.NOT_FOUND.getStatusCode(),
+                "Response Code miss matched when creating the API");
     }
 
     @Test(groups = {"wso2.am"}, description = "Remove an API Through the Publisher Rest API",
