@@ -457,5 +457,6 @@
   "apim.analytics.properties.keystore_location": "${carbon.home}/repository/resources/security/$ref{keystore.primary.file_name}",
   "apim.analytics.properties.keystore_password": "$ref{keystore.primary.password}",
   "apim.analytics.properties.truststore_location": "${carbon.home}/repository/resources/security/$ref{truststore.file_name}",
-  "apim.analytics.properties.truststore_password": "$ref{truststore.password}"
+  "apim.analytics.properties.truststore_password": "$ref{truststore.password}",
+  "tenant_mgt.disable_email_domain_validation": true
 }
