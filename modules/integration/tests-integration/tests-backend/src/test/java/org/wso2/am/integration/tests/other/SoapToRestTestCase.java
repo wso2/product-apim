@@ -99,6 +99,7 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
     private String testAppId3;
     private String testAppId4;
     private String testAppId5;
+    private String testAppId6;
     private String payload = "{\n" + "   \"CheckPhoneNumber\":{\n" + "      \"PhoneNumber\":\"18006785432\",\n"
             + "      \"LicenseKey\":\"0\"\n" + "   }\n" + "}";
     private String resourceName = "/checkPhoneNumber";
@@ -432,6 +433,32 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
                 "Response code is not as expected");
     }
 
+    // Test if the response is 400 when the content-type of the request is not application/json
+    @Test(groups = {"wso2.am"}, description = "Invocation of a revisioned and deployed API",
+            dependsOnMethods = {"testDefaultAPIInvocation"})
+    public void testDefaultAPIInvocationWithInvalidContentType() throws Exception {
+
+        String soapToRestAppName = "PhoneVerificationAppInvalidContentType";
+        testAppId6 = createSoapToRestAppAndSubscribeToAPI(soapToRestAppName, "OAUTH", soapToRestAPIId);
+
+        // Generate token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(testAppId6, "36000", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
+                        grantTypes);
+
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT) + resourceName;
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type", "text/plain");
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, payload);
+
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_BAD_REQUEST, "Response code is not as expected");
+    }
+
     @Test(groups = {"wso2.am"}, description = "Oauth Scopes", dependsOnMethods = {
             "testOperationalLevelOAuthScopesForSoapToRest"})
     public void testOperationalLevelSecurityForSoapToRest() throws Exception {
@@ -601,6 +628,7 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(testAppId3);
         restAPIStore.deleteApplication(testAppId4);
         restAPIStore.deleteApplication(testAppId5);
+        restAPIStore.deleteApplication(testAppId6);
         undeployAndDeleteAPIRevisionsUsingRest(soapToRestAPIId, restAPIPublisher);
         restAPIPublisher.deleteAPI(soapToRestAPIId);
         wireMockServer.stop();
