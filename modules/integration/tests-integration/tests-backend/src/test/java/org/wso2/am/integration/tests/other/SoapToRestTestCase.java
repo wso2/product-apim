@@ -448,7 +448,7 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
                         grantTypes);
 
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT) + resourceName;
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + resourceName;
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
