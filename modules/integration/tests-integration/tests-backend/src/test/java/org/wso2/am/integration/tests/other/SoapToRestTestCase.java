@@ -434,8 +434,7 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
     }
 
     // Test if the response is 400 when the content-type of the request is not application/json
-    @Test(groups = {"wso2.am"}, description = "Invocation of a revisioned and deployed API",
-            dependsOnMethods = {"testDefaultAPIInvocation"})
+    @Test(groups = {"wso2.am"}, description = "Invocation of a API with invalid content-type")
     public void testDefaultAPIInvocationWithInvalidContentType() throws Exception {
 
         String soapToRestAppName = "PhoneVerificationAppInvalidContentType";
