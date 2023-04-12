@@ -433,31 +433,6 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
                 "Response code is not as expected");
     }
 
-    // Test if the response is 400 when the content-type of the request is not application/json
-    @Test(groups = {"wso2.am"}, description = "Invocation of a API with invalid content-type")
-    public void testDefaultAPIInvocationWithInvalidContentType() throws Exception {
-
-        String soapToRestAppName = "PhoneVerificationAppInvalidContentType";
-        testAppId6 = createSoapToRestAppAndSubscribeToAPI(soapToRestAppName, "OAUTH", soapToRestAPIId);
-
-        // Generate token
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore
-                .generateKeys(testAppId6, "36000", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
-                        grantTypes);
-
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + resourceName;
-
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-        requestHeaders.put("Content-Type", "text/plain");
-        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, payload);
-
-        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_BAD_REQUEST, "Response code is not as expected");
-    }
-
     @Test(groups = {"wso2.am"}, description = "Oauth Scopes", dependsOnMethods = {
             "testOperationalLevelOAuthScopesForSoapToRest"})
     public void testOperationalLevelSecurityForSoapToRest() throws Exception {
@@ -537,6 +512,32 @@ public class SoapToRestTestCase extends APIManagerLifecycleBaseTest {
             }
             assertEquals(updatedResourcePoliciesOut.getContent(), updatedOutSequence, "Out-Sequence not updated");
         });
+    }
+
+    // Test if the response is 400 when the content-type of the request is not application/json
+    @Test(groups = {"wso2.am"}, description = "Invocation of a API with invalid content-type", dependsOnMethods = {
+            "testUpdateInOutSequence" })
+    public void testDefaultAPIInvocationWithInvalidContentType() throws Exception {
+
+        String soapToRestAppName = "PhoneVerificationAppInvalidContentType";
+        testAppId6 = createSoapToRestAppAndSubscribeToAPI(soapToRestAppName, "OAUTH", soapToRestAPIId);
+
+        // Generate token
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(testAppId6, "36000", "", ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
+                        grantTypes);
+
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + resourceName;
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        requestHeaders.put("Content-Type", "text/plain");
+        HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, payload);
+
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_BAD_REQUEST, "Response code is not as expected");
     }
 
     private void startWiremockServer() {
