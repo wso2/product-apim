@@ -1264,7 +1264,7 @@
 
     <properties>
 
-        <project.scm.id>scm-server</project.scm.id>
+        <project.scm.id>wso2-scm-server</project.scm.id>
 
         <carbon.analytics.common.version>5.3.5</carbon.analytics.common.version>
 
