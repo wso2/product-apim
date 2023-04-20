@@ -205,7 +205,7 @@ public class OASTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(enabled=false, groups = { "wso2.am" }, description = "Validate API definitions with empty resource paths",
+    @Test(groups = { "wso2.am" }, description = "Validate API definitions with empty resource paths",
             dependsOnMethods = "testNewAPI")
     public void testValidateAPIDefinitionWithEmptyResourcePath() throws Exception {
         String invalidDefinition = IOUtils.toString(
@@ -217,7 +217,7 @@ public class OASTestCase extends APIMIntegrationBaseTest {
         Assert.assertFalse(responseDTO.isIsValid());
     }
 
-    @Test(enabled=false, groups = { "wso2.am" }, description = "Import API definition with empty resource paths",
+    @Test(groups = { "wso2.am" }, description = "Import API definition with empty resource paths",
             dependsOnMethods = "testValidateAPIDefinitionWithEmptyResourcePath")
     public void testAPIDefinitionImportWithEmptyResourcePath() throws Exception {
         String invalidDefinition = IOUtils.toString(
@@ -239,7 +239,7 @@ public class OASTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(enabled=false, groups = { "wso2.am" }, description = "Update API definition with empty resource paths",
+    @Test(groups = { "wso2.am" }, description = "Update API definition with empty resource paths",
             dependsOnMethods = { "testValidateAPIDefinitionWithEmptyResourcePath", "testAPIDefinitionUpdate" })
     public void testAPIDefinitionUpdateWithEmptyResourcePath() throws Exception {
         String invalidDefinition = IOUtils.toString(
