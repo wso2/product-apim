@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!--
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?><!--
   ~
   ~  WSO2 Inc. licenses this file to you under the Apache License,
   ~  Version 2.0 (the "License"); you may not use this file except
@@ -14,9 +13,7 @@
   ~  KIND, either express or implied.  See the License for the
   ~  specific language governing permissions and limitations
   ~  under the License.
-  -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 
     <modelVersion>4.0.0</modelVersion>
@@ -55,10 +52,10 @@
     </modules>
 
     <scm>
-        <url>https://github.com/wso2/product-apim.git</url>
-        <developerConnection>scm:git:https://github.com/wso2/product-apim.git</developerConnection>
-        <connection>scm:git:https://github.com/wso2/product-apim.git</connection>
-        <tag>v4.2.0-rc2</tag>
+        <url>https://github.com/wso2-support/product-apim.git</url>
+        <developerConnection>scm:git:https://github.com/wso2-support/product-apim.git</developerConnection>
+        <connection>scm:git:https://github.com/wso2-support/product-apim.git</connection>
+        
     </scm>
 
     <repositories>
