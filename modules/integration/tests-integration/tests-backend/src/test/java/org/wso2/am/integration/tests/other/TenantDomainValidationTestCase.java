@@ -93,6 +93,8 @@ public class TenantDomainValidationTestCase extends APIMIntegrationBaseTest {
         restAPIStore = new RestAPIStoreImpl(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PASSWORD,
                 TENANT_DOMAIN, storeURLHttps);
 
+        Thread.sleep(15000);
+
         APIRequest apiCreationRequestBean;
         apiCreationRequestBean = new APIRequest(API_NAME, API_CONTEXT, new URL(apiProductionEndPointUrl));
         apiCreationRequestBean.setVersion(API_VERSION);
