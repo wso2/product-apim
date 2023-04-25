@@ -20,6 +20,7 @@ import static org.testng.Assert.assertEquals;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.logging.Log;
@@ -127,8 +128,9 @@ public class RESTApiCreationTestCase extends ScenarioTestBase {
         apiOperationsDTO.setTarget(apiResource);
 
         apiOperationsDTOs.add(apiOperationsDTO);
+        String context = "/" + UUID.randomUUID();
 
-        apiRequest = new APIRequest(apiName, "/" + apiName, new URL(backendEndPoint));
+        apiRequest = new APIRequest(apiName, context, new URL(backendEndPoint));
         apiRequest.setVersion(apiVersion);
         apiRequest.setVisibility(apiVisibility);
         apiRequest.setOperationsDTOS(apiOperationsDTOs);
