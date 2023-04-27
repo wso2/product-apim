@@ -52,6 +52,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.Constants;
+import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -123,6 +124,13 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private RestAPIStoreImpl allowedStoreUser;
     private String allowedUser = "allowedUser";
     private String publisherUser = "importExportPublisher";
+
+    private String ALLOWED_USER_DEVOPS = "DevopsUserProd";
+    private String ALLOWED_USER_PASS_DEVOPS = "Devops@123";
+    private String ROLE_DEVOPS = "APIAccessControlRestrictedRole";
+    private String API_NAME_WITH_ACCESS_CONTROL = "AccessControlRestrictAPIName";
+    private String API_VERSION2 = "2.0.0";
+    private String API_PROVIDER_NAME = "Devops";
     private String publisherURLHttps;
     private File zipTempDir, apiZip, newApiZip, preservePublisherApiZip, notPreservePublisherApiZip;
     private String importUrl;
@@ -148,6 +156,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private String PASSWORD = "test123";
     private static final String RESTRICTED_ACCESS_CONTROL = "restricted";
     private final String INTERNAL_CREATOR = "Internal/creator";
+    private final String INTERNAL_DEVOPS = "Internal/devops";
+    private RestAPIPublisherImpl publisherWithAccessControlRestriction;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIImportExportTestCase(TestUserMode userMode) {
@@ -176,6 +186,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         userManagementClient.addRole(ALLOWED_ROLE, null, PERMISSIONS);
         userManagementClient.addRole(NOT_ALLOWED_ROLE, null, PERMISSIONS);
         userManagementClient.addRole(VISIBILITY_ROLE, null, PERMISSIONS);
+        userManagementClient.addRole(ROLE_DEVOPS, new String[] {}, new String[] {});
 
         userManagementClient.addUser(allowedUser, String.valueOf(ALLOWED_USER_PASS),
                 new String[] { INTERNAL_ROLE_SUBSCRIBER, VISIBILITY_ROLE }, null);
@@ -189,17 +200,24 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
                 .addUser(USER_WITHOUT_ACCESS_ROLE, PASSWORD,
                         new String[]{NOT_ALLOWED_ROLE}, USER_WITHOUT_ACCESS_ROLE);
 
+        userManagementClient.addUser(ALLOWED_USER_DEVOPS, ALLOWED_USER_PASS_DEVOPS,
+                new String[] { ROLE_DEVOPS, INTERNAL_DEVOPS, INTERNAL_CREATOR }, ALLOWED_USER_DEVOPS);
+
         allowedStoreUser = new RestAPIStoreImpl(allowedUser, String.valueOf(ALLOWED_USER_PASS),
                 keyManagerContext.getContextTenant().getDomain(), storeURLHttps);
+
+        publisherWithAccessControlRestriction = new RestAPIPublisherImpl(ALLOWED_USER_DEVOPS, ALLOWED_USER_PASS_DEVOPS,
+                keyManagerContext.getContextTenant().getDomain(), publisherURLHttps);
 
         if (!keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
             allowedUser = allowedUser + "@" + keyManagerContext.getContextTenant().getDomain();
             publisherUser = publisherUser + "@" + keyManagerContext.getContextTenant().getDomain();
             USER_WITH_ACCESS_ROLE = USER_WITH_ACCESS_ROLE + "@" + keyManagerContext.getContextTenant().getDomain();
             USER_WITHOUT_ACCESS_ROLE = USER_WITHOUT_ACCESS_ROLE + "@" + keyManagerContext.getContextTenant().getDomain();
+            ALLOWED_USER_DEVOPS = ALLOWED_USER_DEVOPS + "@" + keyManagerContext.getContextTenant().getDomain();
         }
 
-        createAndPublishAPI();
+        // createAndPublishAPI();
 
     }
 
@@ -808,6 +826,38 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_UNAUTHORIZED);
     }
 
+    @Test(groups = {"wso2.am"}, description = "Import restricted API with two versions from user with restricted role")
+    public void testRestrictedAPIImportFromLoggedInUserWithAccessRole() throws Exception {
+
+        String fileName = API_NAME_WITH_ACCESS_CONTROL + "_" + API_VERSION;
+        File zipFile = new File(
+                getAMResourceLocation() + File.separator + "apiAccessControl" + File.separator + fileName + ".zip");
+        HttpResponse response = publisherWithAccessControlRestriction.importAPI(zipFile, true, false, false);
+        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API import failed");
+
+        APIDTO apiObj = getAPI(API_NAME_WITH_ACCESS_CONTROL, API_VERSION, API_PROVIDER_NAME);
+        String preservePublisherApiId1 = apiObj.getId();
+        String provider = apiObj.getProvider();
+        assertEquals(provider, API_PROVIDER_NAME, "Provider is not as expected when 'preserveProvider'=true");
+
+        fileName = API_NAME_WITH_ACCESS_CONTROL + "_" + API_VERSION2;
+        zipFile = new File(
+                getAMResourceLocation() + File.separator + "apiAccessControl" + File.separator + fileName + ".zip");
+        response = publisherWithAccessControlRestriction.importAPI(zipFile, true, true, false);
+        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API import failed");
+
+        apiObj = getAPI(API_NAME_WITH_ACCESS_CONTROL, API_VERSION2, API_PROVIDER_NAME);
+        String preservePublisherApiId2 = apiObj.getId();
+        provider = apiObj.getProvider();
+        assertEquals(provider, API_PROVIDER_NAME, "Provider is not as expected when 'preserveProvider'=true");
+
+        HttpResponse serviceResponse = restAPIPublisher.deleteAPI(preservePublisherApiId1);
+        assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
+
+        serviceResponse = restAPIPublisher.deleteAPI(preservePublisherApiId2);
+        assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
+    }
+
     @Test(groups = {"wso2.am"}, description = "Export restricted API from admin user",
             dependsOnMethods = "testRestrictedAPIExportFromUserWithoutAccessRole")
     public void testRestrictedAPIExportFromAdminUser() throws Exception {
@@ -924,6 +974,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         multipartEntity.addPart("file", fileBody);
 
         connection.setRequestProperty("Content-Type", multipartEntity.getContentType().getValue());
+
         connection.setRequestProperty(APIMIntegrationConstants.AUTHORIZATION_HEADER,
                 "Basic " + encodeCredentials(user, pass));
         OutputStream out = connection.getOutputStream();

@@ -22,11 +22,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
+import org.apache.tools.ant.taskdefs.condition.Http;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.testng.Assert;
 
+import org.wso2.am.integration.clients.admin.api.dto.PublishStatusDTO;
 import org.wso2.am.integration.clients.gateway.api.v2.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiClient;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
@@ -186,7 +188,7 @@ public class RestAPIPublisherImpl {
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
                                 "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
                                 "apim:comment_write apim:common_operation_policy_view apim:common_operation_policy_manage " +
-                                "apim:policies_import_export",
+                                "apim:policies_import_export apim:api_import_export",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -2510,6 +2512,31 @@ public class RestAPIPublisherImpl {
      */
     public ApiResponse<Void> importOperationPolicy(File file) throws ApiException {
         return importExportApi.importOperationPolicyWithHttpInfo(file);
+    }
+
+    /**
+     * This method is used to import an API.
+     *
+     * @param file             Archive to be uploaded as the API
+     * @param preserveProvider Is the provider of the API to be preserved
+     * @param overWrite        Is the API to be overwritten
+     * @param rotateRevision   Is the API to be rotated
+     * @return HttpResponse
+     * @throws ApiException Thrown when error on API import
+     */
+    public HttpResponse importAPI(File file, boolean preserveProvider, boolean overWrite, boolean rotateRevision)
+            throws ApiException {
+
+        HttpResponse response;
+        try {
+            ApiResponse<Void> apiResponse = importExportApi.importAPIWithHttpInfo(file, preserveProvider,
+                    rotateRevision, overWrite);
+            response = new HttpResponse("API import response", apiResponse.getStatusCode());
+        } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
+            response = new HttpResponse("Failed to import the API", e.getCode());
+            return response;
+        }
+        return response;
     }
 
     public Map<String, String> mapPolicyNameToId(OperationPolicyDataListDTO policyList) {
