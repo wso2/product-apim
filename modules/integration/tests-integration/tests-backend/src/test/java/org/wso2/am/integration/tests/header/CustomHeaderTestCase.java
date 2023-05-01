@@ -55,15 +55,11 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
     private final String API1_NAME = "CustomAuthHeaderTestAPI1";
     private final String API1_CONTEXT = "customAuthHeaderTest1";
     private final String API1_VERSION = "1.0.0";
-    private final String APPLICATION1_NAME = "CustomHeaderTest-Application";
     private final String API_END_POINT_METHOD = "customers/123";
-
-    private final String API2_NAME = "CustomAuthHeaderTestAPI2";
-    private final String API2_CONTEXT = "customAuthHeaderTest2";
-    private final String API2_VERSION = "1.0.0";
     private String accessToken;
     private String applicationId;
     private String apiId;
+    String invocationUrl;
 
     @Factory(dataProvider = "userModeDataProvider")
     public CustomHeaderTestCase(TestUserMode userMode) {
@@ -94,22 +90,21 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
                         APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                         ApplicationDTO.TokenTypeEnum.JWT);
         applicationId = applicationResponse.getData();
-    }
 
-    @Test(groups = {"wso2.am"}, description = "Set a customer Auth header for all APIs in the system. (Test ID: 3.1.1.5, 3.1.1.14)")
-    public void testSystemWideCustomAuthHeader() throws Exception {
-
-        APIIdentifier apiIdentifier1 = new APIIdentifier(user.getUserName(), API1_NAME, API1_VERSION);
-
+        // Create API
         String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
         APIRequest apiRequest = new APIRequest(API1_NAME, API1_CONTEXT, new URL(url), new URL(url));
         apiRequest.setVersion(API1_VERSION);
         apiRequest.setProvider(user.getUserName());
         apiRequest.setTiersCollection(TIER_UNLIMITED);
-        String invocationUrl = getAPIInvocationURLHttps(API1_CONTEXT, API1_VERSION) + "/" + API_END_POINT_METHOD;
+        invocationUrl = getAPIInvocationURLHttps(API1_CONTEXT, API1_VERSION) + "/" + API_END_POINT_METHOD;
         apiId = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, applicationId,
                 APIMIntegrationConstants.API_TIER.UNLIMITED);
         waitForAPIDeploymentSync(user.getUserName(), API1_NAME, API1_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Set a customer Auth header for all APIs in the system. (Test ID: 3.1.1.5, 3.1.1.14)")
+    public void testSystemWideCustomAuthHeader() throws Exception {
 
         //get access token
         ArrayList<String> grantTypes = new ArrayList<>();
