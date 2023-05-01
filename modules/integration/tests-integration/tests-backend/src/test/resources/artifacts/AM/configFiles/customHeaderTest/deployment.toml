@@ -71,6 +71,7 @@ DevAccountName = "devPortTestEnv"
 
 [apim.oauth_config]
 auth_header = "Test-Custom-Header"
+api_key_header = "Custom-APIKey-Header"
 
 [apim.cors]
 allow_origins = "*"
