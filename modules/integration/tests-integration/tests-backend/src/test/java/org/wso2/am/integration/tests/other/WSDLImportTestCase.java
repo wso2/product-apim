@@ -107,6 +107,7 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     private String apiId1;
     private String apiId2;
     private String apiId3;
+    private String apiId4;
     private ApplicationKeyDTO applicationKeyDTO;
 
     @BeforeClass(alwaysRun = true)
@@ -383,7 +384,7 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "API invocation failed");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Importing WSDL archive and create API",
+    @Test(groups = {"wso2.am"}, description = "Importing WSDL archive with wsdl file and create API",
             dependsOnMethods = "testCreateSOAPAPIFromFile")
     public void testCreateSOAPAPIFromArchive() throws Exception {
         JSONObject endpoints = new JSONObject();
@@ -441,6 +442,47 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         String requestBody = "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"> <soap:Body> <CheckPhoneNumber xmlns=\"http://ws.cdyne.com/PhoneVerify/query\"> <PhoneNumber>077383968</PhoneNumber> <LicenseKey>123</LicenseKey> </CheckPhoneNumber> </soap:Body></soap:Envelope>";
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, requestBody);
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "API invocation failed");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Importing WSDL archive with multiple files and create API",
+            dependsOnMethods = "testCreateSOAPAPIFromArchive")
+    public void testCreateSOAPAPIFromArchiveWithMultipleFiles() throws Exception {
+        // Create API using greetings archive
+        JSONObject endpoints = new JSONObject();
+        endpoints.put("url", "http://example.com");
+
+        ArrayList<String> environment = new ArrayList<String>();
+        environment.add("Production and Sandbox");
+
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        JSONObject apiProperties = new JSONObject();
+        apiProperties.put("name", "GreetingsArchive");
+        apiProperties.put("context", "greetingsarchive");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", user.getUserName());
+        apiProperties.put("endpointConfig", endpointConfig);
+        apiProperties.put("policies", tierList);
+
+        String wsdlDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl" + File.separator
+                + "greetings.zip";
+
+        File file = new File(wsdlDefinitionPath);
+        APIDTO apidto = restAPIPublisher
+                .importWSDLSchemaDefinition(file, backendEndUrl, apiProperties.toString(), "SOAP");
+
+        // Make sure API is created properly
+        assertEquals(apidto.getName(), "GreetingsArchive");
+        apiId4 = apidto.getId();
+        HttpResponse createdApiResponse = restAPIPublisher.getAPI(apiId4);
+        assertEquals(Response.Status.OK.getStatusCode(), createdApiResponse.getResponseCode());
     }
 
     @Test(groups = {"wso2.am"}, description = "Creating SOAP API from URL",
@@ -501,7 +543,6 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "API invocation failed");
     }
 
-
     /**
      * Find a free port to start backend WebSocket server in given port range
      *
@@ -559,6 +600,7 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId1);
         restAPIPublisher.deleteAPI(apiId2);
         restAPIPublisher.deleteAPI(apiId3);
+        restAPIPublisher.deleteAPI(apiId4);
         wireMockServer.stop();
     }
 }
