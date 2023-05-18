@@ -20,6 +20,8 @@
 
 package org.wso2.am.integration.tests.publisher;
 
+import java.util.List;
+
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
@@ -28,8 +30,6 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyDT
 import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-
-import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -127,7 +127,6 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
                 "Invalid display name of the tier AsyncWHUnlimited");
         assertEquals(tierAsyncWHUnlimited.getDescription(), "Allows unlimited events and unlimited active " +
                 "subscriptions", "Invalid description of the tier AsyncWHUnlimited");
-
     }
 
     public SubscriptionPolicyDTO getSubscriptionPolicy(String policyName, List<SubscriptionPolicyDTO> subscriptionPolicyDTOList) {
