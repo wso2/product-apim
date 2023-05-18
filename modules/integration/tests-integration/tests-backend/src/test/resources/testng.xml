@@ -119,6 +119,7 @@
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.ThumbnailSearchTestCase"/>
             <class name="org.wso2.am.integration.tests.other.PublisherAccessControlTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.other.DevPortalVisibilityTestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>
