@@ -726,7 +726,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         while (StringUtils.isEmpty(clientSocket.getResponseMessage()) && waitTime > System.currentTimeMillis()) {
             try {
                 log.info("Waiting for reply from server:");
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException ignored) {
             }
         }
