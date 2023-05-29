@@ -1,11 +1,12 @@
 # EndpointCertificatesApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/publisher/v3*
+All URIs are relative to *https://apis.wso2.com/api/am/publisher/v4*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addEndpointCertificate**](EndpointCertificatesApi.md#addEndpointCertificate) | **POST** /endpoint-certificates | Upload a new Certificate.
 [**deleteEndpointCertificateByAlias**](EndpointCertificatesApi.md#deleteEndpointCertificateByAlias) | **DELETE** /endpoint-certificates/{alias} | Delete a certificate.
+[**getCertificateUsageByAlias**](EndpointCertificatesApi.md#getCertificateUsageByAlias) | **GET** /endpoint-certificates/{alias}/usage | Retrieve all the APIs that use a given certificate by the alias
 [**getEndpointCertificateByAlias**](EndpointCertificatesApi.md#getEndpointCertificateByAlias) | **GET** /endpoint-certificates/{alias} | Get the Certificate Information
 [**getEndpointCertificateContentByAlias**](EndpointCertificatesApi.md#getEndpointCertificateContentByAlias) | **GET** /endpoint-certificates/{alias}/content | Download a Certificate
 [**getEndpointCertificates**](EndpointCertificatesApi.md#getEndpointCertificates) | **GET** /endpoint-certificates | Retrieve/Search Uploaded Certificates
@@ -33,7 +34,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -106,7 +107,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -154,6 +155,80 @@ null (empty response body)
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
 
+<a name="getCertificateUsageByAlias"></a>
+# **getCertificateUsageByAlias**
+> APIMetadataListDTO getCertificateUsageByAlias(alias, limit, offset)
+
+Retrieve all the APIs that use a given certificate by the alias
+
+This operation can be used to retrieve/identify apis that use a known certificate. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    EndpointCertificatesApi apiInstance = new EndpointCertificatesApi(defaultClient);
+    String alias = "alias_example"; // String | 
+    Integer limit = 25; // Integer | Maximum size of resource array to return. 
+    Integer offset = 0; // Integer | Starting point within the complete list of items qualified. 
+    try {
+      APIMetadataListDTO result = apiInstance.getCertificateUsageByAlias(alias, limit, offset);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling EndpointCertificatesApi#getCertificateUsageByAlias");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **alias** | **String**|  |
+ **limit** | **Integer**| Maximum size of resource array to return.  | [optional] [default to 25]
+ **offset** | **Integer**| Starting point within the complete list of items qualified.  | [optional] [default to 0]
+
+### Return type
+
+[**APIMetadataListDTO**](APIMetadataListDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. List of qualifying APIs is returned.  |  * Content-Type - The content type of the body.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
+
 <a name="getEndpointCertificateByAlias"></a>
 # **getEndpointCertificateByAlias**
 > CertificateInfoDTO getEndpointCertificateByAlias(alias)
@@ -175,7 +250,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -245,7 +320,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -314,7 +389,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -390,7 +465,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");

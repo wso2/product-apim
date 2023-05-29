@@ -131,7 +131,7 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
                 apisToBeUsed, policies);
         apiProductId = apiProductDTO.getId();
         assert apiProductDTO.getState() != null;
-        Assert.assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(apiProductDTO.getState().getValue()));
+        Assert.assertTrue(APILifeCycleState.CREATED.getState().equalsIgnoreCase(apiProductDTO.getState()));
         waitForAPIDeployment();
 
         createAPIProductRevisionAndDeployUsingRest(apiProductId, restAPIPublisher);

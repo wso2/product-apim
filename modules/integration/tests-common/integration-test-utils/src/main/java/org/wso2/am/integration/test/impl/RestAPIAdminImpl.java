@@ -113,7 +113,7 @@ public class RestAPIAdminImpl {
                         tokenURL);
 
         apiAdminClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiAdminClient.setBasePath(adminURl + "api/am/admin/v3");
+        apiAdminClient.setBasePath(adminURl + "api/am/admin/v4");
         apiAdminClient.setDebugging(true);
         apiAdminClient.setReadTimeout(600000);
         apiAdminClient.setConnectTimeout(600000);
@@ -172,7 +172,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<ExportThrottlePolicyDTO> exportThrottlePolicy(String policyName, String policyType)
             throws ApiException {
 
-        return exportImportThrottlingPolicyApi.exportThrottlingPolicyWithHttpInfo(null, policyName, policyType, null);
+        return exportImportThrottlingPolicyApi.exportThrottlingPolicyWithHttpInfo(null, policyName, policyType);
     }
 
     /**
@@ -747,7 +747,7 @@ public class RestAPIAdminImpl {
      * @return API response returned by API call.
      * @throws ApiException if an error occurs while retrieving tenant Config.
      */
-    public Object getTenantConfig() throws ApiException {
+    public String getTenantConfig() throws ApiException {
         return tenantConfigApi.exportTenantConfig();
     }
 

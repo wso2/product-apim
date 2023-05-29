@@ -138,8 +138,6 @@
     Boolean isEmailUsernameEnabled = false;
     String usernameLabel = "username";
     Boolean isSelfSignUpEnabledInTenant;
-    Boolean isUsernameRecoveryEnabledInTenant;
-    Boolean isPasswordRecoveryEnabledInTenant;
     Boolean isMultiAttributeLoginEnabledInTenant;
     if (StringUtils.isNotBlank(emailUsernameEnable)) {
         isEmailUsernameEnabled = Boolean.valueOf(emailUsernameEnable);
@@ -149,8 +147,6 @@
     try {
         PreferenceRetrievalClient preferenceRetrievalClient = new PreferenceRetrievalClient();
         isSelfSignUpEnabledInTenant = preferenceRetrievalClient.checkSelfRegistration(tenantDomain);
-        isUsernameRecoveryEnabledInTenant = preferenceRetrievalClient.checkUsernameRecovery(tenantDomain);
-        isPasswordRecoveryEnabledInTenant = preferenceRetrievalClient.checkPasswordRecovery(tenantDomain);
         isMultiAttributeLoginEnabledInTenant = preferenceRetrievalClient.checkMultiAttributeLogin(tenantDomain);
     } catch (PreferenceRetrievalClientException e) {
         request.setAttribute("error", true);
@@ -370,7 +366,7 @@
     %>
 
     <div class="buttons">
-        <% if (isRecoveryEPAvailable && (isUsernameRecoveryEnabledInTenant || isPasswordRecoveryEnabledInTenant)) { %>
+        <% if (isRecoveryEPAvailable) { %>
         <div class="field">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username.password")%>
             <a
@@ -467,7 +463,7 @@
         <div class="column buttons">
             <%
             String sp = request.getParameter("sp");
-            if ( (sp != null && !sp.endsWith("apim_publisher")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType) && isSelfSignUpEnabledInTenant) { %>
+            if ( (sp != null && !sp.endsWith("apim_publisher") && !sp.endsWith("apim_admin_portal")) && isSelfSignUpEPAvailable && !isIdentifierFirstLogin(inputType) && isSelfSignUpEnabledInTenant) { %>
             <button
                 type="button"
                 onclick="window.location.href='<%=StringEscapeUtils.escapeHtml4(getRegistrationUrl(accountRegistrationEndpointURL, urlEncodedURL, urlParameters))%>';"

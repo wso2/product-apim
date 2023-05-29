@@ -191,7 +191,7 @@ System Requirements
 
 1. Minimum memory - 2GB
 2. Processor      - Pentium 800MHz or equivalent at minimum
-3. Java 1.8 or higher
+3. Java 11 or higher
 4. The Management Console requires you to enable Javascript of the Web browser,
    with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
@@ -199,12 +199,12 @@ System Requirements
 5. Apache Ant is required to compile and run the sample clients. Apache Ant 1.7.0
    version is recommended.
 6. To build WSO2 API Manager from the source distribution, it is necessary that you have
-   JDK 1.8 and Maven 3.0.4 or later.
+   JDK 11 and Maven 3.0.4 or later.
 
 Installation & Running
 ==================================
 
-1. Extract the wso2am-4.1.0.zip and go to the 'bin' directory
+1. Extract the wso2am-4.2.0.zip and go to the 'bin' directory
 2. Run the api-manager.sh or api-manager.bat script based on you operating system.
 3. Access the respective WSO2 API-M interfaces
     * API Publisher web application is running at - https://localhost:9443/publisher \
@@ -234,7 +234,7 @@ Known Issues of WSO2 API Manager
 
 All known issues of WSO2 API Manager are filed at:
    
-* https://github.com/wso2/product-apim/issues
+* https://github.com/wso2/api-manager/issues
 
 Issue Tracker
 ==================================
@@ -242,7 +242,7 @@ Issue Tracker
 Help us make our software better. Please submit any bug reports or feature
 requests through GitHub:
 
-   https://github.com/wso2/product-apim/issues
+   https://github.com/wso2/api-manager/issues
 
 
 Crypto Notice

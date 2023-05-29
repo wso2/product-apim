@@ -25,4 +25,11 @@
             <class name="org.wso2.am.integration.tests.benchmarktest.BenchmarkTestCase"/>
         </classes>
     </test>
+
+    <test name="apim-integration-correlation-logging" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.logging.CorrelationLoggingSystemEnabledTest"/>
+        </classes>
+    </test>
+
 </suite>

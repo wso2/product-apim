@@ -3,36 +3,51 @@
 <property expression="json-eval($.CheckPhoneNumbers.LicenseKey)" name="req.var.CheckPhoneNumbers.LicenseKey"/>
 
 
-<property name="JSONPayload" expression="json-eval($.)"/>
-<script language="js">
-    var payload =  mc.getProperty("JSONPayload");
-    var payloadObj = JSON.parse(payload);
-    var results = payloadObj.CheckPhoneNumbers.PhoneNumbers; 
-   var response = "";
-   for (i = 0; i &lt; results.length; i++) {
-       var elem = results[i];
-       response += "&lt;web:string xmlns:web='http://ws.cdyne.com/PhoneVerify/query'&gt;" + elem + "&lt;/web:string&gt;";
-   } 
-   var propertyName = "req.var.CheckPhoneNumbers.PhoneNumbers.string";
-   mc.setProperty(propertyName, response.toString());
- </script>
-<payloadFactory description="transform" media-type="xml">
-  <format>
-  <soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
-  <soapenv:Header/>
-  <soapenv:Body>
-  	<web:CheckPhoneNumbers xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
-   <web:LicenseKey>$1</web:LicenseKey>
-   <web:PhoneNumbers>$2</web:PhoneNumbers>
+<filter source="get-property('axis2','ContentType')" regex="^application/json.*">
+  <then>
+        <property name="JSONPayload" expression="json-eval($.)"/>
+    <script language="js">
+      var payload =  mc.getProperty("JSONPayload");
+      var payloadObj = JSON.parse(payload);
+            var results = payloadObj.CheckPhoneNumbers.PhoneNumbers;
+      var response = "";
+      for (i = 0; i &lt; results.length; i++) {
+        var elem = results[i];
+        response += "&lt;web:string xmlns:web='http://ws.cdyne.com/PhoneVerify/query'&gt;" + elem + "&lt;/web:string&gt;";
+      }
+      var propertyName = "req.var.CheckPhoneNumbers.PhoneNumbers.string";
+      mc.setProperty(propertyName, response.toString());
+          </script>
+    <payloadFactory description="transform" media-type="xml">
+      <format>
+        <soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
+          <soapenv:Header/>
+          <soapenv:Body>
+            <web:CheckPhoneNumbers xmlns:web="http://ws.cdyne.com/PhoneVerify/query">
+   <web:PhoneNumbers>$1</web:PhoneNumbers>
+   <web:LicenseKey>$2</web:LicenseKey>
 </web:CheckPhoneNumbers>
 
-  </soapenv:Body>
-  </soapenv:Envelope>
-  </format>
-  <args>
- 	<arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.LicenseKey')"/>
-<arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.PhoneNumbers.string')"/>
+          </soapenv:Body>
+        </soapenv:Envelope>
+      </format>
+      <args>
+        <arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.PhoneNumbers.string')"/>
+<arg evaluator="xml" expression="get-property('req.var.CheckPhoneNumbers.LicenseKey')"/>
 
-  </args>
-</payloadFactory>
-<property description="messageProperty" name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+      </args>
+    </payloadFactory>
+    <property description="messageProperty" name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+  </then>
+  <else>
+    <payloadFactory media-type="json" description="transform">
+      <format>
+        {"error": "Invalid Content-Type detected"}
+      </format>
+      <args>
+      </args>
+    </payloadFactory>
+    <property name="HTTP_SC" value="400" scope="axis2"/>
+    <respond></respond>
+  </else>
+</filter>

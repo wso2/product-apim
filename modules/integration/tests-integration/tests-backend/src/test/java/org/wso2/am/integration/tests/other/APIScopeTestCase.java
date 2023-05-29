@@ -173,11 +173,11 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         // admin_scope(used for POST) :- admin
         // user_scope (used for GET) :- admin,subscriber
         String modifiedResource =
-                "{\"paths\":{ \"/*\":{\"put\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\","
-                        + "\"x-throttling-tier\":\"Unlimited\" },\"post\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\","
-                        + "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"admin_scope\"},\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\","
-                        + "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"},\"delete\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\","
-                        + "\"x-throttling-tier\":\"Unlimited\"},\"options\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"None\","
+                "{\"paths\":{ \"/*\":{\"put\":{ \"responses\":{\"200\":{ \"description\": \"Successful\" }},\"x-auth-type\":\"Application User\","
+                        + "\"x-throttling-tier\":\"Unlimited\" },\"post\":{ \"responses\":{\"200\":{ \"description\": \"Successful\" }},\"x-auth-type\":\"Application User\","
+                        + "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"admin_scope\"},\"get\":{ \"responses\":{\"200\":{ \"description\": \"Successful\" }},\"x-auth-type\":\"Application User\","
+                        + "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"},\"delete\":{ \"responses\":{\"200\":{ \"description\": \"Successful\" }},\"x-auth-type\":\"Application User\","
+                        + "\"x-throttling-tier\":\"Unlimited\"},\"options\":{ \"responses\":{\"200\":{ \"description\": \"Successful\" }},\"x-auth-type\":\"None\","
                         + "\"x-throttling-tier\":\"Unlimited\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"APIScopeTestAPI\",\"version\":\"1.0.0\"},"
                         + "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\""
                         + ADMIN_ROLE + "\"},"
@@ -391,15 +391,16 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         String swagger = "{" + "\"paths\": {" + "\"/add\": {" + "\"get\": {" + "\"x-auth-type\": \"" + URLEncoder
                 .encode(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER, "UTF-8") + "\","
                 + "\"x-throttling-tier\": \"" + APIMIntegrationConstants.API_TIER.UNLIMITED + "\"," + "\"x-scope\": \""
-                + SCOPE_NAME + "\"," + "\"responses\": {" + "\"200\": {}" + "}," + "\"parameters\": [{"
-                + "\"name\": \"x\"," + "\"paramType\": \"query\"," + "\"required\": false," + "\"type\": \"string\","
-                + "\"description\": \"First value\"," + "\"in\": \"query\"" + "}, {" + "\"name\": \"y\","
-                + "\"paramType\": \"query\"," + "\"required\": false," + "\"type\": \"string\","
+                + SCOPE_NAME + "\"," + "\"responses\": {" + "\"200\": { \"description\": \"Successful\" }" + "},"
+                + "\"parameters\": [{" + "\"name\": \"x\"," + "\"required\": false,"
+                + "\"type\": \"string\"," + "\"description\": \"First value\"," + "\"in\": \"query\"" + "}, {"
+                + "\"name\": \"y\"," + "\"required\": false," + "\"type\": \"string\","
                 + "\"description\": \"Second Value\"," + "\"in\": \"query\"" + "}]" + "}" + "}" + "},"
                 + "\"swagger\": \"2.0\"," + "\"x-wso2-security\": {" + "\"apim\": {" + "\"x-wso2-scopes\": [{"
                 + "\"description\": \"Sample Scope\"," + "\"name\": \"" + SCOPE_NAME + "\"," + "\"roles\": \""
                 + ALLOWED_ROLE + "\"," + "\"key\": \"" + SCOPE_NAME + "\"" + "}]" + "}" + "}," + "\"info\": {"
-                + "\"title\": \"" + API_NAME_WITH_SCOPE + "\"," + "\"" + API_VERSION + "\": \"1.0.0\"" + "}" + "}";
+                + "\"title\": \"" + API_NAME_WITH_SCOPE + "\"," + "\"version\": " + "\"" + API_VERSION + "\""
+                + "}" + "}";
         apiCreationRequestBean.setSwagger(swagger);
 
         //add test api and publish
@@ -487,13 +488,9 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(restAPIStoreUserNegative.getAccessToken());
         try {
             ApplicationListDTO responseData = restAPIStoreUserNegative.getAllApps();
-            if (responseData.getCount().intValue() == 0) {
-                Assert.assertTrue(true);
-            } else {
-                Assert.assertTrue(false);
-            }
+            Assert.fail();
         } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
-            Assert.assertTrue(false);
+            Assert.assertTrue(true);
         }
 
         //Generate a token with creator/publisher user for Devportal Access
@@ -504,13 +501,9 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(restAPIStoreUserNegative2.getAccessToken());
         try {
             ApplicationListDTO responseData = restAPIStoreUserNegative2.getAllApps();
-            if (responseData.getCount().intValue() == 0) {
-                Assert.assertTrue(true);
-            } else {
-                Assert.assertTrue(false);
-            }
+            Assert.fail();
         } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
-            Assert.assertTrue(false);
+            Assert.assertTrue(true);
         }
 
 

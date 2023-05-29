@@ -136,7 +136,7 @@ public class RestAPIStoreImpl {
 
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
         apiStoreClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
+        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v3");
         apiStoreClient.setReadTimeout(600000);
         apiStoreClient.setConnectTimeout(600000);
         apiStoreClient.setWriteTimeout(600000);
@@ -164,7 +164,7 @@ public class RestAPIStoreImpl {
     public RestAPIStoreImpl(String tenantDomain, String storeURL) {
 
         apiStoreClient.setDebugging(Boolean.valueOf(System.getProperty("okHttpLogs")));
-        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
+        apiStoreClient.setBasePath(storeURL + "api/am/devportal/v3");
         apiStoreClient.setDebugging(true);
         apIsApi.setApiClient(apiStoreClient);
         applicationsApi.setApiClient(apiStoreClient);
@@ -191,6 +191,7 @@ public class RestAPIStoreImpl {
     public HttpResponse createApplication(String appName, String description, String throttleTier,
                                           ApplicationDTO.TokenTypeEnum tokenType) throws APIManagerIntegrationTestException {
         try {
+            setActivityID();
             ApplicationDTO application = new ApplicationDTO();
             application.setName(appName);
             application.setDescription(description);
@@ -210,6 +211,17 @@ public class RestAPIStoreImpl {
             }
         }
         return null;
+    }
+
+    public ApiResponse<ApplicationDTO> createApplicationWithHttpInfo(String appName, String description, String throttleTier,
+                                                                     ApplicationDTO.TokenTypeEnum tokenType) throws ApiException {
+
+        ApplicationDTO application = new ApplicationDTO();
+        application.setName(appName);
+        application.setDescription(description);
+        application.setThrottlingPolicy(throttleTier);
+        application.setTokenType(tokenType);
+        return applicationsApi.applicationsPostWithHttpInfo(application);
     }
 
     public HttpResponse createApplicationWithOrganization(String appName, String description, String throttleTier,
@@ -411,6 +423,7 @@ public class RestAPIStoreImpl {
                                           ApplicationKeyGenerateRequestDTO.KeyTypeEnum keyTypeEnum, ArrayList<String> scopes,
                                           List<String> grantTypes)
             throws ApiException, APIManagerIntegrationTestException {
+        setActivityID();
         ApplicationKeyGenerateRequestDTO applicationKeyGenerateRequest = new ApplicationKeyGenerateRequestDTO();
         applicationKeyGenerateRequest.setValidityTime(validityTime);
         applicationKeyGenerateRequest.setCallbackUrl(callBackUrl);
@@ -1792,7 +1805,7 @@ public class RestAPIStoreImpl {
 
         ApIsApi apIsApi = new ApIsApi();
         ApiClient apiStoreClient = new ApiClient();
-        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/devportal/v2");
+        apiStoreClient = apiStoreClient.setBasePath(storeURL + "api/am/devportal/v3");
         apIsApi.setApiClient(apiStoreClient);
 
         ApiResponse<APIListDTO> apiResponse = apIsApi.apisGetWithHttpInfo(null, null, tenantDomain, null, null);
@@ -2189,5 +2202,9 @@ public class RestAPIStoreImpl {
 
     public ApplicationKeyListDTO getApplicationOauthKeys(String applicationUUID, String tenantDomain) throws ApiException {
         return applicationKeysApi.applicationsApplicationIdOauthKeysGet(applicationUUID,tenantDomain);
+    }
+
+    public ApplicationListDTO getApplications(String applicationName) throws ApiException {
+        return applicationsApi.applicationsGet(null, applicationName, "name", "asc", 10, 0, null);
     }
 }

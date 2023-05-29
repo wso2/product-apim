@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **description** | **String** | A brief description about the API |  [optional]
 **provider** | **String** | If the provider value is not given, the user invoking the API will be used as the provider.  |  [optional]
 **hasThumbnail** | **Boolean** |  |  [optional]
-**state** | [**StateEnum**](#StateEnum) | State of the API product. Only published api products are visible on the Developer Portal  |  [optional]
+**state** | **String** | State of the API product. Only published api products are visible on the Developer Portal  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
 **isRevision** | **Boolean** |  |  [optional]
 **revisionedApiProductId** | **String** | UUID of the api product registry artifact  |  [optional] [readonly]
@@ -45,19 +45,6 @@ Name | Type | Description | Notes
 **scopes** | [**List&lt;APIScopeDTO&gt;**](APIScopeDTO.md) |  |  [optional]
 **categories** | **List&lt;String&gt;** | API categories  |  [optional]
 **workflowStatus** | **String** |  |  [optional]
-
-
-
-## Enum: StateEnum
-
-Name | Value
----- | -----
-CREATED | &quot;CREATED&quot;
-PUBLISHED | &quot;PUBLISHED&quot;
-DEPRECATED | &quot;DEPRECATED&quot;
-RETIRED | &quot;RETIRED&quot;
-BLOCKED | &quot;BLOCKED&quot;
-PROTOTYPED | &quot;PROTOTYPED&quot;
 
 
 

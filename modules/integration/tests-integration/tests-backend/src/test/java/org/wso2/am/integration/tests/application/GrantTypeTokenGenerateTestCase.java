@@ -18,6 +18,7 @@
 */
 package org.wso2.am.integration.tests.application;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -48,6 +49,7 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -181,6 +183,30 @@ public class GrantTypeTokenGenerateTestCase extends APIManagerLifecycleBaseTest 
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         Assert.assertNotNull(consumerKey, "Consumer Key not found");
         Assert.assertNotNull(consumerSecret, "Consumer Secret not found ");
+    }
+
+    @Test(groups = {"wso2.am" }, description = "Test token generations with corrupted client credentials",
+            dependsOnMethods = "testApplicationCreation")
+    public void testTokenGenerationWithCorruptedClientCredentials() throws Exception {
+        // Create corrupted client credentials
+        byte[] encodedBytes = Base64.encodeBase64((consumerKey + ":" + consumerSecret).getBytes());
+        String credentials = new String(encodedBytes, StandardCharsets.UTF_8);
+        credentials = credentials.substring(0, credentials.length() - 2);
+
+        // Get token response with corrupted client credentials
+        headers.clear();
+        headers.put("Authorization", "Basic " + credentials);
+        urlParameters.clear();
+        urlParameters.add(new BasicNameValuePair("grant_type",
+                APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL));
+        HttpResponse tokenResponse = HTTPSClientUtils.doPost(tokenURL, headers, urlParameters);
+
+        // Validate token response
+        Assert.assertEquals(tokenResponse.getResponseCode(), HttpStatus.SC_UNAUTHORIZED,
+                "Response code is not as expected");
+        JSONObject responseData = new JSONObject(tokenResponse.getData());
+        Assert.assertEquals(responseData.getString("error"), "invalid_client", "Error message is not as expected");
+        Assert.assertNotNull(tokenResponse.getHeaders().get("WWW-Authenticate"), "WWW-Authenticate header is not found");
     }
 
     @Test(groups = { "wso2.am" }, description = "Test authorization_code token generation",

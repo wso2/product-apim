@@ -20,7 +20,7 @@
           "default" : [ "SwaggerPetstore_v2" ]
         } ],
         "x-auth-type" : "Application & Application User",
-        "x-throttling-tier" : "10KPerMin"
+        "x-throttling-tier" : "Unlimited"
       }
     },
     "/pets/{petId}" : {
@@ -40,7 +40,7 @@
           "default" : [ ]
         } ],
         "x-auth-type" : "Application & Application User",
-        "x-throttling-tier" : "10KPerMin"
+        "x-throttling-tier" : "Unlimited"
       }
     },
     "/oldpets" : {
@@ -55,7 +55,7 @@
           "default" : [ "SwaggerPetstore_v2" ]
         } ],
         "x-auth-type" : "Application & Application User",
-        "x-throttling-tier" : "10KPerMin"
+        "x-throttling-tier" : "Unlimited"
       }
     }
   },
