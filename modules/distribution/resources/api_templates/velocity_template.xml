@@ -283,7 +283,9 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                     #if( $resourceTimeout != '' )
     <property name="resourceTimeout" value="$resourceTimeout"/>
                     #end
+                    #if( $isContentEncodingEnabled != '' )
     <property name="isContentEncodingEnabled" value="$isContentEncodingEnabled"/>
+                    #end
 </class>
 <loopback />
                 ## AWS Lambda: end
