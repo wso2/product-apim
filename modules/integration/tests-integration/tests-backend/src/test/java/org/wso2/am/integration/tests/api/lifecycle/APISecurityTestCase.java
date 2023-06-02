@@ -123,6 +123,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     String users[] = {"apisecUser", "apisecUser2@wso2.com", "apisecUser2@abc.com"};
     String endUserPassword = "password@123";
+    String testUser = "test_user";
+    String specialCharPassword = "a:a!@#$%^&:()_-+={}]|;'<,>.?/";
+    private static final String HTTPS_TRP_LISTENER_RELOADED_WITH_CERT_LOG = "HTTPS Reloaded";
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
@@ -1022,8 +1025,22 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), 401);
     }
 
+    @Test(description = "Testing the invocation with BasicAuth with special characters included password",
+            dependsOnMethods = {"testInvokeBasicAuth"})
+    public void testInvokeBasicAuthWithSpecialCharacterIncludedPassword() throws Exception {
+        remoteUserStoreManagerServiceClient.addUser(testUser, specialCharPassword,
+                new String[]{}, new ClaimValue[]{}, "default", false);
+        Map<String, String> requestHeaders1 = new HashMap<>();
+        requestHeaders1.put("Authorization",
+                "Basic " + Base64.encodeBase64String(testUser.concat("@")
+                        .concat(this.user.getUserDomain()).concat(":").concat(specialCharPassword).getBytes()));
+        HttpResponse response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(basicAuthSecuredAPIContext,
+                API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders1);
+        Assert.assertEquals(response.getResponseCode(), 200);
+    }
+
     @Test(description = "Testing the invocation with BasicAuth Invalid user ", dependsOnMethods =
-            {"testInvokeBasicAuth"})
+            {"testInvokeBasicAuthWithSpecialCharacterIncludedPassword"})
     public void testInvokeBasicAuthInvalidCredentials2() throws Exception {
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization",
