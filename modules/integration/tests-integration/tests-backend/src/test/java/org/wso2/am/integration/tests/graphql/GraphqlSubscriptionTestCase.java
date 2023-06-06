@@ -1035,6 +1035,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                         log.info("Repeating the test as throttling testing time duration is dispersed into two " +
                                 "separate units of time");
                         testThrottling(accessToken);
+                        return;
                     }
                     assertNotNull(responseMessage);
                     JSONParser jsonParser = new JSONParser();
