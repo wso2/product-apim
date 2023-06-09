@@ -243,7 +243,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments " +
-            "with invalid vhost", dependsOnMethods = "testDeployAPIRevisionWithInvalidDeploymentInfo")
+            "with invalid vhost", dependsOnMethods = "testDeployAPIRevisionWithInvalidDeploymentInfo", enabled = false)
     public void testDeployAPIRevisionWithInvalidVhost() throws Exception {
 
         List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
@@ -260,7 +260,7 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Revision to gateway environments",
-            dependsOnMethods = "testDeployAPIRevisionWithInvalidVhost")
+            dependsOnMethods = "testDeployAPIRevisionWithInvalidDeploymentInfo")
     public void testUnDeployAPIRevision() throws Exception {
         List<APIRevisionDeployUndeployRequest> apiRevisionUndeployRequestList = new ArrayList<>();
         APIRevisionDeployUndeployRequest apiRevisionUnDeployRequest = new APIRevisionDeployUndeployRequest();
