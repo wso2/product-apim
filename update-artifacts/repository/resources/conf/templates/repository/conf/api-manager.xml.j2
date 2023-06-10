@@ -1,0 +1,1512 @@
+<APIManager xmlns:svns="http://org.wso2.securevault/configuration">
+    <!-- JNDI name of the data source to be used by the API publisher, API Developer Portal and API
+         key manager. This data source should be defined in the master-datasources.xml file
+         in conf/datasources directory. -->
+    <DataSourceName>{{apim.datasource.name}}</DataSourceName>
+
+    <!-- This parameter is used when adding api management capability to other products like GReg, AS, DSS etc.-->
+    <GatewayType>{{apim.gateway_type}}</GatewayType>
+
+    <!-- This parameter is used to enable the securevault support when try to publish endpoint secured APIs. Values should be "true" or "false".
+    By default secure vault is disabled.-->
+    <EnableSecureVault>{{apim.enable_secure_vault}}</EnableSecureVault>
+
+    <!-- This parameter is used to enable mutual tls based authentication support for APIs, when this is disabled,
+    APIs will be protected with OAuth2 security-->
+    <EnableMTLSForAPIs>true</EnableMTLSForAPIs>
+
+    <!-- These parameters will be used to set the pool size of HTTP client-->
+    <HttpClient>
+         <MaxTotal>{{apim.http_client.max_total}}</MaxTotal>
+         <DefaultMaxPerRoute>{{apim.http_client.default_max_per_route}}</DefaultMaxPerRoute>
+     </HttpClient>
+
+
+    {% if apim.idp is defined %}
+    <IdentityProvider>
+        <ServerURL>{{apim.idp.server_url}}</ServerURL>
+        <!-- Server URL of the Identity Provider used for login/logout operations in API Publisher and API Developer Portal -->
+        <AuthorizeEndpoint>{{apim.idp.authorize_endpoint}}</AuthorizeEndpoint>
+        <OIDCLogoutEndpoint>{{apim.idp.oidc_logout_endpoint}}</OIDCLogoutEndpoint>
+        <CheckSessionEndpoint>{{apim.idp.oidc_check_session_endpoint}}</CheckSessionEndpoint>
+    </IdentityProvider>
+    {% endif %}
+
+    <JWTConfiguration>
+        <!-- Enable/Disable JWT generation. Default is false. -->
+        <EnableJWTGeneration>{{apim.jwt.enable}}</EnableJWTGeneration>
+
+        <!-- Name of the security context header to be added to the validated requests. -->
+        <JWTHeader>{{apim.jwt.header}}</JWTHeader>
+
+        <!-- Fully qualified name of the class that will retrieve additional user claims
+             to be appended to the JWT. If not specified no claims will be appended.If user wants to add all user claims in the
+             jwt token, he needs to enable this parameter.
+             The DefaultClaimsRetriever class adds user claims from the default carbon user store. -->
+        <EnableUserClaims>{{apim.jwt.enable_user_claims}}</EnableUserClaims>
+        {% if apim.jwt.binding_federated_user_claims %}
+        <EnableBindingFederatedUserClaims>{{apim.jwt.binding_federated_user_claims}}</EnableBindingFederatedUserClaims>
+        {% endif %}
+        {% if apim.jwt.enable_user_claims %}
+        <ClaimsRetrieverImplClass>{{apim.jwt.claims_extractor_impl}}</ClaimsRetrieverImplClass>
+        {% else %}
+        <!--ClaimsRetrieverImplClass>org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever</ClaimsRetrieverImplClass-->
+        {% endif %}
+
+        <!-- The dialectURI under which the claimURIs that need to be appended to the
+             JWT are defined. Not used with custom ClaimsRetriever implementations. The
+             same value is used in the keys for appending the default properties to the
+             JWT. -->
+        <ConsumerDialectURI>{{apim.jwt.claim_dialect}}</ConsumerDialectURI>
+
+        <!-- Whether to convert claims retrieved from AuthorizationGrantCache to the dialect defined in ConsumerDialectURI -->
+        <ConvertClaimsToConsumerDialect>{{apim.jwt.convert_dialect}}</ConvertClaimsToConsumerDialect>
+
+        <!-- Signature algorithm. Accepts "SHA256withRSA" or "NONE". To disable signing explicitly specify "NONE". -->
+        <SignatureAlgorithm>{{apim.jwt.signing_algorithm}}</SignatureAlgorithm>
+
+        <!-- This parameter specifies which implementation should be used for generating the Token. JWTGenerator is the
+	     default implementation provided. -->
+        {% if apim.jwt.generator_impl is defined %}
+        <JWTGeneratorImpl>{{apim.jwt.generator_impl}}</JWTGeneratorImpl>
+        {% else %}
+        <JWTGeneratorImpl>org.wso2.carbon.apimgt.keymgt.token.JWTGenerator</JWTGeneratorImpl>
+        {% endif %}
+        <!-- This parameter specifies which implementation should be used for generating the Token. For URL safe JWT
+             Token generation the implementation is provided in URLSafeJWTGenerator -->
+        <!--<JWTGeneratorImpl>org.wso2.carbon.apimgt.keymgt.token.URLSafeJWTGenerator</JWTGeneratorImpl>-->
+       {% if apim.jwt.enable_tenant_based_signing is defined %}
+        <EnableTenantBasedSigning>{{apim.jwt.enable_tenant_based_signing}}</EnableTenantBasedSigning>
+        {% endif %}
+        <GatewayJWTGeneration>
+            <ImplClass>{{apim.jwt.gateway_generator.impl}}</ImplClass>
+            <Configuration>
+            <ExcludedClaims>
+                {%- for claim in apim.jwt.gateway_generator.excluded_claims -%}
+                <Claim>{{claim}}</Claim>
+                {% endfor %}
+            </ExcludedClaims>
+            <EnableUserClaimRetrievalFromKeyManager>{{apim.jwt.gateway_generator.enable_claim_retrieval}}</EnableUserClaimRetrievalFromKeyManager>
+            </Configuration>
+        </GatewayJWTGeneration>
+    </JWTConfiguration>
+
+    <!-- Primary/secondary login configuration for API Developer Portal. If user likes to keep two login attributes in a distributed setup, to login the API Developer Portal,
+		he should configure this section. Primary login doesn't have a claimUri associated with it. But secondary login, which is a claim attribute,
+		is associated with a claimuri.-->
+    <!--LoginConfig>
+        <UserIdLogin  primary="true">
+            <ClaimUri></ClaimUri>
+        </UserIdLogin>
+        <EmailLogin  primary="false">
+            <ClaimUri>http://wso2.org/claims/emailaddress</ClaimUri>
+        </EmailLogin>
+    </LoginConfig-->
+
+    <!-- Credentials for the API gateway admin server. This configuration
+         is mainly used by the API publisher and API Developer Portal to connect to the API gateway and
+         create/update published API configurations. -->
+    <APIGateway>
+        <!-- The environments to which an API will be published -->
+        <Environments>
+            <!-- Environments can be of different types. Allowed values are 'hybrid', 'production' and 'sandbox'.
+                 An API deployed on a 'production' type gateway will only support production keys
+                 An API deployed on a 'sandbox' type gateway will only support sandbox keys
+                 An API deployed on a 'hybrid' type gateway will support both production and sandbox keys. -->
+            <!-- api-console element specifies whether the environment should be listed in API Console or not -->
+            {% for environment_name in apim.gateway.environment%}
+            <Environment type="{{environment_name.type}}" api-console="{{environment_name.display_in_api_console}}" isDefault="{{environment_name.show_as_token_endpoint_url}}">
+                <Name>{{environment_name.name}}</Name>
+                <DisplayName>{{environment_name.display_name}}</DisplayName>
+                <Description>{{environment_name.description}}</Description>
+                <!-- Server URL of the API gateway -->
+                <ServerURL>{{environment_name.service_url}}</ServerURL>
+                <!-- Admin username for the API gateway. -->
+                <Username>{{environment_name.username}}</Username>
+                <!-- Admin password for the API gateway.-->
+                <Password>{{environment_name.password}}</Password>
+                <!-- Provider Vendor of the API gateway.-->
+                <Provider>{{environment_name.provider}}</Provider>
+                <!-- Endpoint URLs for the APIs hosted in this API gateway.-->
+                {% if environment_name.http_endpoint is defined and environment_name.https_endpoint is defined %}
+                <GatewayEndpoint>{{environment_name.https_endpoint}},{{environment_name.http_endpoint}}</GatewayEndpoint>
+                {% elif environment_name.http_endpoint is not defined and environment_name.https_endpoint is defined %}
+                <GatewayEndpoint>{{environment_name.https_endpoint}}</GatewayEndpoint>
+                {% elif environment_name.http_endpoint is defined and environment_name.https_endpoint is not defined %}
+                <GatewayEndpoint>{{environment_name.http_endpoint}}</GatewayEndpoint>
+                {% else %}
+                <GatewayEndpoint></GatewayEndpoint>
+                {% endif %}
+                <!-- Additional properties for External Gateways -->
+                {% if environment_name.properties %}
+                <Properties>
+                    {% for key,value in environment_name.properties.items() %}
+                    <Property name="{{key}}">{{value}}</Property>
+                    {% endfor %}
+                </Properties>
+                {% endif %}
+                <!-- Endpoint URLs of the WebSocket APIs hosted in this API Gateway -->
+                {% if environment_name.ws_endpoint is defined and environment_name.wss_endpoint is defined %}
+                <GatewayWSEndpoint>{{environment_name.ws_endpoint}},{{environment_name.wss_endpoint}}</GatewayWSEndpoint>
+                {% elif environment_name.ws_endpoint is not defined and environment_name.wss_endpoint is defined %}
+                <GatewayWSEndpoint>{{environment_name.wss_endpoint}}</GatewayWSEndpoint>
+                {% elif environment_name.ws_endpoint is defined and environment_name.wss_endpoint is not defined %}
+                <GatewayWSEndpoint>{{environment_name.ws_endpoint}}</GatewayWSEndpoint>
+                {% else %}
+                <GatewayWSEndpoint></GatewayWSEndpoint>
+                {% endif %}
+                <!-- Endpoint URLs of the WebSub APIs hosted in this API Gateway -->
+                {% if environment_name.websub_event_receiver_http_endpoint is defined and environment_name.websub_event_receiver_https_endpoint is defined %}
+                <GatewayWebSubEndpoint>{{environment_name.websub_event_receiver_http_endpoint}},{{environment_name.websub_event_receiver_https_endpoint}}</GatewayWebSubEndpoint>
+                {% elif environment_name.websub_event_receiver_http_endpoint is not defined and environment_name.websub_event_receiver_https_endpoint is defined %}
+                <GatewayWebSubEndpoint>{{environment_name.websub_event_receiver_https_endpoint}}</GatewayWebSubEndpoint>
+                {% elif environment_name.websub_event_receiver_http_endpoint is defined and environment_name.websub_event_receiver_https_endpoint is not defined %}
+                <GatewayWebSubEndpoint>{{environment_name.websub_event_receiver_http_endpoint}}</GatewayWebSubEndpoint>
+                {% else %}
+                <GatewayWebSubEndpoint></GatewayWebSubEndpoint>
+                {% endif %}
+                <VirtualHosts>
+                    {% for vhost in environment_name.virtual_host %}
+                    <VirtualHost>
+                        <HttpEndpoint>{{vhost.http_endpoint}}</HttpEndpoint>
+                        <HttpsEndpoint>{{vhost.https_endpoint}}</HttpsEndpoint>
+                        <WsEndpoint>{{vhost.ws_endpoint}}</WsEndpoint>
+                        <WssEndpoint>{{vhost.wss_endpoint}}</WssEndpoint>
+                        <WebSubHttpEndpoint>{{vhost.websub_event_receiver_http_endpoint}}</WebSubHttpEndpoint>
+                        <WebSubHttpsEndpoint>{{vhost.websub_event_receiver_https_endpoint}}</WebSubHttpsEndpoint>
+                    </VirtualHost>
+                    {% endfor %}
+                </VirtualHosts>
+            </Environment>
+            {% endfor %}
+        </Environments>
+    </APIGateway>
+
+    <TokenIssuers>
+    {%- for issuer_1 in apim.jwt.issuer -%}
+    <TokenIssuer issuer ="{{issuer_1.name}}">
+    {% if issuer_1.jwks is defined %}
+      <JWKSConfiguration>
+        <URL>{{issuer_1.jwks.url}}</URL>
+      </JWKSConfiguration>
+    {% endif %}
+    {% if issuer_1.consumer_key_claim is defined %}
+    <ConsumerKeyClaim>{{issuer_1.consumer_key_claim}}</ConsumerKeyClaim>
+    {% endif %}
+    {% if issuer_1.scopes_claim is defined %}
+    <ScopesClaim>{{issuer_1.scopes_claim}}</ScopesClaim>
+    {% endif %}
+    {% if issuer_1.disable_default_claim_mapping is defined %}
+      <ClaimMappings disable-default-claim-mapping ="{{issuer_1.disable_default_claim_mapping}}">
+    {% else%}
+      <ClaimMappings disable-default-claim-mapping = "false">
+    {% endif %}
+      {%- for claim in issuer_1.claim_mapping -%}
+         <ClaimMapping>
+           <RemoteClaim>{{claim.remote_claim}}</RemoteClaim>
+           <LocalClaim>{{claim.local_claim}}</LocalClaim>
+         </ClaimMapping>
+      {% endfor %}
+      </ClaimMappings>
+      </TokenIssuer>
+    {% endfor %}
+    </TokenIssuers>
+
+    <CacheConfigurations>
+	    <!-- Enable/Disable token caching at the Gateway-->
+        <EnableGatewayTokenCache>{{apim.cache.gateway_token.enable}}</EnableGatewayTokenCache>
+	    <!-- Enable/Disable API resource caching at the Gateway-->
+        <EnableGatewayResourceCache>{{apim.cache.resource.enable}}</EnableGatewayResourceCache>
+        <!-- Enable/Disable API key validation information caching at key-management server -->
+        <EnableKeyManagerTokenCache>{{apim.cache.km_token.enable}}</EnableKeyManagerTokenCache>
+        <!-- This parameter specifies whether Recently Added APIs will be loaded from the cache or not.
+             If there are multiple API modification during a short time period, better to disable cache. -->
+        <EnableRecentlyAddedAPICache>{{apim.cache.recent_apis.enable}}</EnableRecentlyAddedAPICache>
+        <!-- This parameter specifies whether scopes are taken from cache or not. If you are modifying application
+        subscriptions frequently, modifying the user roles frequently or updating the subscribed APIs frequently, it
+        is better to turn-off this cache-->
+        <EnableScopeCache>{{apim.cache.scopes.enable}}</EnableScopeCache>
+        <!-- This indicates whether the role cache need to enabled in the publisher. If this is disabled, there will
+        be a call to key manager to all the calls to API publisher APIs. It is highly recommended to enable this
+        cache. However, if the system is in a state, where the role addition and deletion happens seamlessly, the
+        cache will be in in-valid state.-->
+        <EnablePublisherRoleCache>{{apim.cache.publisher_roles.enable}}</EnablePublisherRoleCache>
+        <!-- Enable/Disable token caching at the Product REST APIs-->
+        <EnableRESTAPITokenCache>{{apim.cache.restapi_token.enable}}</EnableRESTAPITokenCache>
+	    <!-- JWT claims Cache expiry in seconds -->
+        {% if apim.cache.jwt_claim.expiry_time is defined %}
+        <JWTClaimCacheExpiry>{{apim.cache.jwt_claim.expiry_time}}</JWTClaimCacheExpiry>
+        {% endif %}
+        <!-- Expiry time for the apim key mgt validation info cache -->
+        {% if apim.cache.token_expiry_time is defined %}
+        <TokenCacheExpiry>{{apim.cache.token_expiry_time}}</TokenCacheExpiry>
+        {% endif %}
+        <!-- Expiry time for the resource cache  -->
+        {% if apim.cache.resource.expiry_time is defined %}
+        <GatewayResourceCacheExpiry>{{apim.cache.resource.expiry_time}}</GatewayResourceCacheExpiry>
+        {% endif %}
+        <!-- Expiry time for the apim REST API token cache -->
+        {% if apim.cache.restapi_token.expiry_time is defined %}
+        <RESTAPITokenCacheExpiry>{{apim.cache.restapi_token.expiry_time}}</RESTAPITokenCacheExpiry>
+        {% endif %}
+        <!-- Enable/Disable cache control headers of the Product REST APIs-->
+        <EnableRESTAPICacheControlHeaders>{{apim.cache.restapi_cache_control_headers.enable}}</EnableRESTAPICacheControlHeaders>
+        <!-- MaxAge for the cache control headers of the Product REST APIs -->
+        <RESTAPICacheControlHeadersMaxAge>{{apim.cache.restapi_cache_control_headers.max_age}}</RESTAPICacheControlHeadersMaxAge>
+        <!-- This parameter specifies the expiration time of the TagCache. TagCache will
+             only be created when this element is uncommented. When the specified
+             time duration gets elapsed ,tag cache will get re-generated. -->
+        <!--change to expiray-->
+        {% if apim.cache.tags.expiry_time is defined %}
+        <TagCacheDuration>{{apim.cache.tags.expiry_time}}</TagCacheDuration>
+        {% endif %}
+        <!-- JWT Claim cache can be disabled only if below config <EnableJWTClaimCache> is set as 'false'. The default
+          value is 'true'.
+          Other than this config, also <EnableGatewayTokenCache> and <EnableKeyManagerTokenCache> should have been set
+          as 'false' to completely disable JWTClaimCache.
+         -->
+        <EnableJWTClaimCache>{{apim.cache.jwt_claim.enable}}</EnableJWTClaimCache>
+    </CacheConfigurations>
+
+    <!--
+        API usage tracker configuration used by the StreamProcessor data publisher and
+        Google Analytics publisher in API gateway.
+    -->
+    <Analytics>
+        <!-- Enable Analytics for API Manager -->
+        <Enabled>{{apim.analytics.enable}}</Enabled>
+
+        <Type>{{apim.analytics.type}}</Type>
+
+        <AuthToken>{{apim.analytics.auth_token}}</AuthToken>
+
+        {% if apim.analytics.response_schema_name is defined %}
+        <ResponseSchemaName>{{apim.analytics.response_schema_name}}</ResponseSchemaName>
+        {% endif %}
+        {% if apim.analytics.fault_schema_name is defined %}
+        <FaultSchemaName>{{apim.analytics.fault_schema_name}}</FaultSchemaName>
+        {% endif %}
+
+        <!-- Event publisher implementation -->
+        {% if apim.analytics.reporter_impl is defined %}
+        <ReporterClass>{{apim.analytics.reporter_impl}}</ReporterClass>
+        {% endif %}
+
+        <!-- Properties for Event publisher implementation -->
+        <Properties>
+            {% for key,value in apim.analytics.properties.items() %}
+            <Property name="{{key}}">{{value}}</Property>
+            {% endfor %}
+        </Properties>
+
+    </Analytics>
+
+    <!--
+        Configurations relevant to enable rate limit feature.
+        This enables to use resources considering subscription levels.
+    -->
+    <ResourceQuotaLimit>
+        <EnableAPIQuotaLimit>{{apim.api_quota_limit.enable}}</EnableAPIQuotaLimit>
+    </ResourceQuotaLimit>
+
+    <!--
+        API key validator configuration used by API key manager (IS), API Developer Portal and API gateway.
+        API gateway uses it to validate and authenticate users against the provided API keys.
+    -->
+    <APIKeyValidator>
+        <!-- Server URL of the API key manager -->
+        <ServerURL>{{apim.key_manager.service_url}}</ServerURL>
+
+        <!-- Admin username for API key manager. -->
+        <Username>{{apim.key_manager.username}}</Username>
+        <!-- Admin password for API key manager. -->
+        <Password>{{apim.key_manager.password}}</Password>
+
+        <KeyValidationHandlerClassName>{{apim.key_manager.key_validation_handler_impl}}</KeyValidationHandlerClassName>
+        <DefaultKeyManagerType>{{apim.key_manager.type}}</DefaultKeyManagerType>
+       {% if apim.jwt.expiry_time is defined %}
+        <JWTExpiryTime>{{apim.jwt.expiry_time}}</JWTExpiryTime>
+       {% endif %}
+     <EnableKeyManagerConfigurationRetriever>{{apim.key_manager.enable_retriever}}</EnableKeyManagerConfigurationRetriever>
+      {% if apim.key_manager.enable_provisioned_app_validation is defined %}
+      <EnableProvisionedAppValidation>{{apim.key_manager.enable_provisioned_app_validation}}</EnableProvisionedAppValidation>
+      {% endif %}
+      {% if apim.key_manager.enable_apikey_subscription_validation is defined %}
+      <EnableAPIKeySubscriptionValidation>{{apim.key_manager.enable_apikey_subscription_validation}}</EnableAPIKeySubscriptionValidation>
+      {% endif %}
+    </APIKeyValidator>
+
+
+    <OAuthConfigurations>
+        <!-- Remove OAuth headers from outgoing message. -->
+        <RemoveOAuthHeadersFromOutMessage>{{not apim.oauth_config.enable_outbound_auth_header}}</RemoveOAuthHeadersFromOutMessage>
+        {% if apim.oauth_config.scope_issuer is defined %}
+        <ScopeIssuer>{{apim.oauth_config.scope_issuer}}</ScopeIssuer>
+        {% endif %}
+        {% if apim.oauth_config.set_jwt_as_opaque_token is defined %}
+        <!-- Consider incoming jwt token as an opaque token. -->
+        <JWTAsOpaqueToken>{{apim.oauth_config.set_jwt_as_opaque_token}}</JWTAsOpaqueToken>
+        {% endif %}
+        {% if apim.oauth_config.auth_header is defined %}
+        <!--Authorization header-->
+        <AuthorizationHeader>{{apim.oauth_config.auth_header}}</AuthorizationHeader>
+        {% endif %}
+        <!-- Scope used for marking Application Tokens. If a token is generated with this scope, they will be treated as Application Access Tokens -->
+        <ApplicationTokenScope>{{apim.oauth_config.default_app_scope}}</ApplicationTokenScope>
+        <!-- All  scopes under the AllowedScopes element are not validating against roles that has assigned to it.
+             By default ^device_.* and openid scopes have been allowed internally. -->
+        <AllowedScopes>
+        {%for scope in apim.oauth_config.allowed_scopes%}
+            <Scope>{{scope}}</Scope>
+        {% endfor %}
+        </AllowedScopes>
+
+        <!-- Name of the token API -->
+        <TokenEndPointName>{{apim.oauth_config.token_endpoint_context}}</TokenEndPointName>
+        <RevokeEndpointName>{{apim.oauth_config.revoke_endpoint_context}}</RevokeEndpointName>
+        <!-- This the API URL for revoke API. When we revoke tokens revoke requests should go through this
+             API deployed in API gateway. Then it will do cache invalidations related to revoked tokens.
+             In distributed deployment we should configure this property in key manager node by pointing
+             gateway https( /http, we recommend users to use 'https' endpoints for security purpose) url.
+             Also please note that we should point gateway revoke service to key manager -->
+        <RevokeAPIURL>{{apim.oauth_config.revoke_endpoint}}</RevokeAPIURL>
+        <!-- Whether to encrypt tokens when storing in the Database
+        Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
+        org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor in the identity.xml -->
+        <EncryptPersistedTokens>{{apim.oauth_config.enable_token_encryption}}</EncryptPersistedTokens>
+        <!-- Whether to hash the tokens when storing in the Database
+        Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
+        org.wso2.carbon.identity.oauth.tokenprocessor.HashingPersistenceProcessor and change the value of
+        <EnableClientSecretHash> to true in the identity.xml -->
+        <EnableTokenHashMode>{{apim.oauth_config.enable_token_hashing}}</EnableTokenHashMode>
+        <!-- Whether to validate certificate bound access tokens-->
+        <EnableCertificateBoundAccessToken>{{apim.oauth_config.enable_certificate_bound_access_token}}</EnableCertificateBoundAccessToken>
+
+    </OAuthConfigurations>
+
+    <AccessTokenBinding>
+        {% if apim.access_token_binding.enable is defined %}
+        <Enabled>{{apim.access_token_binding.enable}}</Enabled>
+        {% endif %}
+    </AccessTokenBinding>
+
+    <TokenRevocationNotifiers class="{{apim.token.revocation.notifier_impl}}">
+        {% if apim.token.revocation.enable_realtime_notifier %}
+        <RealtimeNotifier>
+            {% for key,value in apim.token.revocation.realtime_notifier.items() %}
+            <Property name="{{key}}">{{value}}</Property>
+            {% endfor %}
+        </RealtimeNotifier>
+        {% endif %}
+        {% if apim.token.revocation.enable_persistent_notifier %}
+        <PersistentNotifier>
+            {% for key,value in apim.token.revocation.persistent_notifier.items() %}
+            <Property name="{{key}}">{{value}}</Property>
+            {% endfor %}
+        </PersistentNotifier>
+        {% endif %}
+    </TokenRevocationNotifiers>
+
+    <!-- Settings related to managing API access tiers. -->
+    <TierManagement>
+        <!-- Enable the providers to expose their APIs over the special 'Unlimited' tier which
+             basically disables tier based throttling for the specified APIs. -->
+        <EnableUnlimitedTier>true</EnableUnlimitedTier>
+    </TierManagement>
+
+    <!-- API Developer Portal Related Configurations -->
+    <APIStore>
+        {% if apim.devportal.enable_application_sharing%}
+            {% if apim.devportal.application_sharing_impl is defined %}
+        <GroupingExtractor>{{apim.devportal.application_sharing_impl}}</GroupingExtractor>
+        <RESTApiGroupingExtractor>{{apim.devportal.application_sharing_impl}}</RESTApiGroupingExtractor>
+            {% else %}
+        <GroupingExtractor>org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl</GroupingExtractor>
+        <RESTApiGroupingExtractor>org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl</RESTApiGroupingExtractor>
+            {% endif %}
+        {% endif %}
+        <DefaultGroupExtractorClaimUri>{{apim.devportal.application_sharing_claim}}</DefaultGroupExtractorClaimUri>
+        <!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
+        <CompareCaseInsensitively>{{apim.devportal.login_username_case_insensitive}}</CompareCaseInsensitively>
+        <DisplayURL>{{apim.devportal.display_url}}</DisplayURL>
+        <URL>{{apim.devportal.url}}</URL>
+
+        <!-- Server URL of the API Developer Portal. -->
+        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}services/</ServerURL>
+        <!-- Admin username for API Developer Portal. -->
+        <Username>${admin.username}</Username>
+
+        <!-- Admin password for API Developer Portal. -->
+        <Password>${admin.password}</Password>
+        <!-- This parameter specifies whether to display multiple versions of same
+             API or only showing the latest version of an API. -->
+        <DisplayMultipleVersions>{{apim.devportal.display_multiple_versions}}</DisplayMultipleVersions>
+        <!-- This parameter specifies whether to display all the APIs
+             [which are having DEPRECATED/PUBLISHED status] or only display the APIs
+             with having their status is as 'PUBLISHED' -->
+        <DisplayAllAPIs>{{apim.devportal.display_deprecated_apis}}</DisplayAllAPIs>
+        <!-- Uncomment this to limit the number of APIs in api the API Developer Portal -->
+        <!--APIsPerPage>5</APIsPerPage-->
+
+        <!-- This parameter specifies whether to display the comment editing facility or not.
+             Default is "true". If user wants to disable, he must set this param as "false" -->
+        <DisplayComments>{{apim.devportal.enable_comments}}</DisplayComments>
+
+        <!-- This parameter specifies whether to display the ratings  or not.
+             Default is "true". If user wants to disable, he must set this param as "false" -->
+        <DisplayRatings>{{apim.devportal.enable_ratings}}</DisplayRatings>
+
+        <!--set isStoreForumEnabled to false for disable forum in API Developer Portal-->
+        <isStoreForumEnabled>{{apim.devportal.enable_forum}}</isStoreForumEnabled>
+
+        <!--This parameter specifies whether Provisioning Out-of-Band OAuth Clients is enabled-->
+        <MapExistingAuthApps>{{apim.devportal.enable_key_provisioning}}</MapExistingAuthApps>
+
+        <!--This parameter specifies the alias value of the Api Key which will be used for Api Key Authentication-->
+        <APIKeyKeystore>{{apim.devportal.api_key_keystore}}</APIKeyKeystore>
+        <ApiKeyAlias>{{apim.devportal.api_key_alias}}</ApiKeyAlias>
+        <ApiKeyGeneratorImpl>{{apim.devportal.api_key_generator_impl}}</ApiKeyGeneratorImpl>
+
+        <!--This parameter specifies whether Anonymous Mode is enabled. By default it is true.-->
+        <EnableAnonymousMode>{{apim.devportal.enable_anonymous_mode}}</EnableAnonymousMode>
+        <EnableCrossTenantSubscription>{{apim.devportal.enable_cross_tenant_subscriptions}}</EnableCrossTenantSubscription>
+        <DefaultReservedUsername>{{apim.devportal.default_reserved_username}}</DefaultReservedUsername>
+        {% if apim.devportal.create_default_application is defined %}
+        <CreateDefaultApplication>{{apim.devportal.create_default_application}}</CreateDefaultApplication>
+        {% endif %}
+    </APIStore>
+
+    <APIPublisher>
+        <DisplayURL>{{apim.publisher.display_url}}</DisplayURL>
+        <URL>https://localhost:${mgt.transport.https.port}/publisher</URL>
+        <!-- This parameter specifies enabling the capability of setting API documentation level granular visibility levels.
+             By default any document associate with an API will have the same permissions set as the API.With enabling below
+             property,it will show two additional permission levels as visible only to all registered users in a particular
+             domain or only visible to API doc creator -->
+        <EnableAPIDocVisibilityLevels>{{apim.publisher.enable_api_doc_visibility}}</EnableAPIDocVisibilityLevels>
+        <!-- Uncomment this to limit the number of APIs in api the API Publisher -->
+        <!--APIsPerPage>30</APIsPerPage-->
+        <!-- This property need to be enabled to enable the publisher access control support -->
+        <EnableAccessControl>true</EnableAccessControl>
+        <!-- This property is to add the claims that needs to be displayed in Publisher -->
+        <SubscriberClaims>{{apim.publisher.subscriber_claims}}</SubscriberClaims>
+         <!--This parameter specifies the alias value of the internal Api Key which will be used for Api Key Authentication-->
+        <InternalKeyAlias>{{apim.publisher.key_alias}}</InternalKeyAlias>
+        {% if apim.publisher.supported_document_types is defined %}
+        <SupportedDocumentTypes>{{apim.publisher.supported_document_types}}</SupportedDocumentTypes>
+        {% endif %}
+    </APIPublisher>
+
+    <!-- Status observers can be registered against the API Publisher to listen for
+         API status update events. Each observer must implement the APIStatusObserver
+         interface. Multiple observers can be engaged if necessary and in such situations
+         they will be notified in the order they are defined here.
+         This configuration is unused from API Manager version 1.10.0 -->
+    <!--StatusObservers>
+        <Observer>org.wso2.carbon.apimgt.impl.observers.SimpleLoggingObserver</Observer>
+    </StatusObservers-->
+
+    <!-- Configuration to configure the email recipient field (To/cc/bcc) and delimeter(, or ;)-->
+    <SubscriberContactConfiguration>
+    <EmailRecipientField>{{subscriber.contact.email_recipient_field}}</EmailRecipientField>
+        <EmailAddressDelimiter>{{subscriber.contact.email_address_delimeter}}</EmailAddressDelimiter>
+    </SubscriberContactConfiguration>
+
+    <!-- Configuration to enable/disable sending CORS headers in the Gateway response
+         and define the Access-Control-Allow-Origin header value.-->
+    <CORSConfiguration>
+        <!-- Configuration to enable/disable sending CORS headers from the Gateway-->
+        <Enabled>{{apim.cors.enable}}</Enabled>
+
+        <!-- The value of the Access-Control-Allow-Origin header. Default values are
+             API Developer Portal addresses, which is needed for swagger to function. -->
+        <Access-Control-Allow-Origin>{% for origin in apim.cors.allow_origins %}{{origin}}{{ "," if not loop.last }}{% endfor %}</Access-Control-Allow-Origin>
+
+        <!-- Configure Access-Control-Allow-Methods -->
+        <Access-Control-Allow-Methods>{% for method in apim.cors.allow_methods %}{{method}}{{ "," if not loop.last }}{% endfor %}</Access-Control-Allow-Methods>
+
+        <!-- Configure Access-Control-Allow-Headers -->
+        <Access-Control-Allow-Headers>{% for header in apim.cors.allow_headers %}{{header}}{{ "," if not loop.last }}{% endfor %}</Access-Control-Allow-Headers>
+
+        <!-- Configure Access-Control-Expose-Headers -->
+        {% if apim.cors.expose_headers is defined %}
+            <Access-Control-Expose-Headers>{% for header in apim.cors.expose_headers %}{{header}}{{ "," if not loop.last }}{% endfor %}</Access-Control-Expose-Headers>
+        {% endif %}
+
+        <!-- Configure Access-Control-Allow-Credentials -->
+        <!-- Specifying this header to true means that the server allows cookies (or other user credentials) to be included on cross-origin requests.
+             It is false by default and if you set it to true then make sure that the Access-Control-Allow-Origin header does not contain the wildcard (*) -->
+        <Access-Control-Allow-Credentials>{{apim.cors.allow_credentials}}</Access-Control-Allow-Credentials>
+        <!-- Configuration to enable/disable CORS validation for WebSocket APIs. If enabled (true), the 'Origin' header
+             will be validated for CORS in the handshake of Webscoket API invocations. Else (false), no CORS validation will
+             take place with 'Origin' header -->
+        <EnableValidationForWS>{{apim.cors.enable_validation_for_ws}}</EnableValidationForWS>
+    </CORSConfiguration>
+
+    <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.
+         You can enable this and set preferable Logger name. -->
+    {% if apim.velocity_log.enabled %}
+        <VelocityLogger>{{apim.velocity_log.name}}</VelocityLogger>
+    {% endif %}
+
+    <RESTAPI>
+        <!--Configure allowed URIs of REST API. Accessing allowed URIs does not require credentials (does not require Authorization header). -->
+        <AllowedURIs>
+         {% if apim.rest_api.allowed_uri is defined %}
+            {% for uri in apim.rest_api.allowed_uri %}
+                <AllowedURI>
+                <URI>{{uri.uri_path}}</URI>
+                <HTTPMethods>{{uri.http_method}}</HTTPMethods>
+                </AllowedURI>
+            {% endfor %}
+         {% endif %}
+             <AllowedURI>
+                <URI>/api/am/devportal/{version}/tenants</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+             </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/publisher/{version}/swagger.json</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/swagger.json</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/admin/{version}/swagger.json</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/publisher/{version}/swagger.yaml</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/swagger.yaml</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/admin/{version}/swagger.yaml</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/swagger</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/async-api-specification</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/wsdl</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/comments</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/comments/{commentId}</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                 <URI>/api/am/devportal/{version}/apis/{apiId}/subscription-policies</URI>
+                 <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/throttling-policies/{policyLevel}</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/throttling-policies/{policyLevel}/{policyId}</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                 <URI>/api/am/devportal/{version}/apis/{apiId}/graphql-schema</URI>
+                 <HTTPMethods>GET</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/documents</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/documents/{documentId}</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/documents/{documentId}/content</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/thumbnail</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/ratings</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/api-products</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/api-products/{apiId}</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/api-products/{apiId}/swagger</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/api-products/{apiId}/documents</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/api-products/{apiId}/documents/{documentId}</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/api-products/{apiId}/documents/{documentId}/content</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/api-products/{apiId}/thumbnail</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/tags</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/tiers/{tierLevel}</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/tiers/{tierLevel}/{tierName}</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/search</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/settings</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/publisher/{version}/settings</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/admin/{version}/settings</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/service-catalog/{serviceCatalogVersion}/settings</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/api-categories</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/graphql-policies/complexity</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/graphql-policies/complexity/types</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/topics</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/service-catalog/{serviceCatalogVersion}/oas.yaml</URI>
+                <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+        </AllowedURIs>
+        <ETagSkipList>
+            <ETagSkipURI>
+                <URI>/api/am/devportal/{version}/apis</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/devportal/{version}/apis/generate-sdk</URI>
+                <HTTPMethods>POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/devportal/{version}/apis/{apiId}/documents</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/devportal/{version}/applications</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/devportal/{version}/applications/generate-keys</URI>
+                <HTTPMethods>POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/devportal/{version}/subscriptions</URI>
+                <HTTPMethods>GET,POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/devportal/{version}/tags</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/devportal/{version}/tiers/{tierLevel}</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/devportal/{version}/tiers/{tierLevel}/{tierName}</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/apis</URI>
+                <HTTPMethods>GET,POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/apis/{apiId}</URI>
+                <HTTPMethods>GET,DELETE,PUT</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/apis/{apiId}/swagger</URI>
+                <HTTPMethods>GET,PUT</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/apis/{apiId}/thumbnail</URI>
+                <HTTPMethods>GET,POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/apis/{apiId}/change-lifecycle</URI>
+                <HTTPMethods>POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/apis/{apiId}/copy-api</URI>
+                <HTTPMethods>POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/applications/{applicationId}</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/apis/{apiId}/documents</URI>
+                <HTTPMethods>GET,POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/apis/{apiId}/documents/{documentId}/content</URI>
+                <HTTPMethods>GET,POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/apis/{apiId}/documents/{documentId}</URI>
+                <HTTPMethods>GET,PUT,DELETE</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/environments</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/subscriptions</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/subscriptions/block-subscription</URI>
+                <HTTPMethods>POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/subscriptions/{subscriptionId}</URI>
+                <HTTPMethods>GET</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/subscriptions/unblock-subscription</URI>
+                <HTTPMethods>POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/tiers/{tierLevel}</URI>
+                <HTTPMethods>GET,POST</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/tiers/{tierLevel}/{tierName}</URI>
+                <HTTPMethods>GET,PUT,DELETE</HTTPMethods>
+            </ETagSkipURI>
+            <ETagSkipURI>
+                <URI>/api/am/publisher/{version}/tiers/update-permission</URI>
+                <HTTPMethods>POST</HTTPMethods>
+            </ETagSkipURI>
+        </ETagSkipList>
+        {% if apim.rest_api.jwt.audience is defined %}
+        <JWTAudiences>
+        {%- for aud in apim.rest_api.jwt.audience -%}
+            <JWTAudience>
+                <Audience>{{aud.audience}}</Audience>
+                <Basepath>{{aud.basepath}}</Basepath>
+            </JWTAudience>
+         {%- endfor -%}
+        </JWTAudiences>
+        {% endif %}
+    </RESTAPI>
+    <ThrottlingConfigurations>
+        <TrafficManager>
+            <Type>{{apim.throttling.event_type}}</Type>
+
+
+            {% if apim.throttling.receiver_url is defined %}
+            <ReceiverUrlGroup>{{apim.throttling.receiver_url}}</ReceiverUrlGroup>
+            {% elif apim.throttling.url_group is defined%}
+            <ReceiverUrlGroup>
+            {%- for group in apim.throttling.url_group -%}
+                {%- if group.type == "loadbalance" -%}
+            { {{- group.traffic_manager_urls.toList()|join(',') -}} }
+                {%- else -%}{ {{- group.traffic_manager_urls.toList()|join('|') -}} }
+                {%- endif -%}
+                {{- "," if not loop.last -}}
+            {%- endfor -%}
+            </ReceiverUrlGroup>
+            {%- else -%}
+            <ReceiverUrlGroup>tcp://${carbon.local.ip}:${receiver.url.port}</ReceiverUrlGroup>
+            {% endif %}
+
+
+            {% if apim.throttling.receiver_auth_url is defined %}
+            <AuthUrlGroup>{{apim.throttling.receiver_auth_url}}</AuthUrlGroup>
+            {% elif apim.throttling.url_group is defined%}
+            <AuthUrlGroup>
+                {%- for group in apim.throttling.url_group -%}
+                {%- if group.type == "loadbalance" -%}
+                { {{- group.traffic_manager_auth_urls.toList()|join(',') -}} }
+                {%- else -%}{ {{- group.traffic_manager_auth_urls.toList()|join('|') -}} }
+                {%- endif -%}
+                {{- "," if not loop.last -}}
+                {%- endfor -%}
+            </AuthUrlGroup>
+            {% else %}
+            <AuthUrlGroup>ssl://${carbon.local.ip}:${auth.url.port}</AuthUrlGroup>
+            {% endif %}
+            <Username>{{apim.throttling.receiver_username}}</Username>
+            <Password>{{apim.throttling.receiver_password}}</Password>
+        </TrafficManager>
+        <DataPublisher>
+            <Enabled>{{apim.throttling.enable_data_publishing}}</Enabled>
+            <DataPublisherPool>
+                <MaxIdle>{{apim.throttling.publisher.max_idle}}</MaxIdle>
+                <InitIdleCapacity>{{apim.throttling.publisher.init_idle_size}}</InitIdleCapacity>
+            </DataPublisherPool>
+            <DataPublisherThreadPool>
+                <CorePoolSize>{{apim.throttling.publisher.pool_size}}</CorePoolSize>
+                <MaxmimumPoolSize>{{apim.throttling.publisher.max_pool_size}}</MaxmimumPoolSize>
+                <KeepAliveTime>{{apim.throttling.publisher.keep_alive_time}}</KeepAliveTime>
+            </DataPublisherThreadPool>
+        </DataPublisher>
+        <PolicyDeployer>
+            <Enabled>{{apim.throttling.enable_policy_deploy}}</Enabled>
+            <ServiceURL>{{apim.throttling.service_url}}</ServiceURL>
+            <Username>{{apim.throttling.policy_deploy.username}}</Username>
+            <Password>{{apim.throttling.policy_deploy.password}}</Password>
+        </PolicyDeployer>
+        <BlockCondition>
+            <Enabled>{{apim.throttling.enable_blacklist_condition}}</Enabled>
+            {% if apim.throttling.blacklist_condition.start_delay is defined %}
+            <InitDelay>{{apim.throttling.blacklist_condition.start_delay}}</InitDelay>
+            {% endif %}
+            {% if apim.throttling.blacklist_condition.period is defined %}
+            <Period>{{apim.throttling.blacklist_condition.period}}</Period>
+            {% endif %}
+        </BlockCondition>
+        <JMSConnectionDetails>
+            <Enabled>{{apim.throttling.enable_decision_connection}}</Enabled>
+            {% if apim.throttling.jms.start_delay is defined %}
+            <InitDelay>{{apim.throttling.jms.start_delay}}</InitDelay>
+            {% endif %}
+            <JMSConnectionParameters>
+                <transport.jms.ConnectionFactoryJNDIName>{{apim.throttling.jms.conn_jndi_name}}</transport.jms.ConnectionFactoryJNDIName>
+                <transport.jms.DestinationType>{{apim.throttling.jms.destination_type}}</transport.jms.DestinationType>
+                <java.naming.factory.initial>{{apim.throttling.jms.java_naming_factory_initial}}</java.naming.factory.initial>
+                {% if apim.throttling.jms.topic_connection_factory is defined %}
+                <connectionfactory.TopicConnectionFactory>{{apim.throttling.jms.topic_connection_factory}}</connectionfactory.TopicConnectionFactory>
+                {% elif apim.throttling.throttle_decision_endpoints is defined %}
+                <connectionfactory.TopicConnectionFactory>amqp://<![CDATA[{{apim.throttling.jms.username}}]]>:<![CDATA[{{apim.throttling.jms.password}}]]>@clientid/carbon?brokerlist='{% for url in apim.throttling.throttle_decision_endpoints %}{{url}}?{% if apim.throttling.jms.ssl is defined %}ssl='{{apim.throttling.jms.ssl}}'{% endif %}%26retries='5'%26connectdelay='50';{% endfor %}'</connectionfactory.TopicConnectionFactory>
+                {% elif apim.throttling.jms.username is defined %}
+                {% if apim.throttling.jms.password is defined %}
+                <connectionfactory.TopicConnectionFactory>amqp://<![CDATA[{{apim.throttling.jms.username}}]]>:<![CDATA[{{apim.throttling.jms.password}}]]>@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'</connectionfactory.TopicConnectionFactory>
+                {% endif %}
+                {% else %}
+                <connectionfactory.TopicConnectionFactory>amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'</connectionfactory.TopicConnectionFactory>
+                {% endif %}
+            </JMSConnectionParameters>
+        </JMSConnectionDetails>
+
+        <!--DefaultLimits>
+            <SubscriptionTierLimits>
+                <Gold>5000</Gold>
+                <Silver>2000</Silver>
+                <Bronze>1000</Bronze>
+                <Unauthenticated>60</Unauthenticated>
+            </SubscriptionTierLimits>
+            <ApplicationTierLimits>
+                <50PerMin>50</50PerMin>
+                <20PerMin>20</20PerMin>
+                <10PerMin>10</10PerMin>
+            </ApplicationTierLimits>
+            <ResourceLevelTierLimits>
+                <50KPerMin>50000</50KPerMin>
+                <20KPerMin>20000</20KPerMin>
+                <10KPerMin>10000</10KPerMin>
+            </ResourceLevelTierLimits>
+        </DefaultLimits-->
+        <EnableUnlimitedTier>{{apim.throttling.enable_unlimited_tier}}</EnableUnlimitedTier>
+        <EnableHeaderConditions>{{apim.throttling.enable_header_based_throttling}}</EnableHeaderConditions>
+        <EnableJWTClaimConditions>{{apim.throttling.enable_jwt_claim_based_throttling}}</EnableJWTClaimConditions>
+        <EnableQueryParamConditions>{{apim.throttling.enable_query_param_based_throttling}}</EnableQueryParamConditions>
+        <SkipRedeployingPolicies>RequestPreProcessorExecutionPlan{% for policy in apim.throttling.skip_redeploying_policies %}{{ "," if loop.first }}{{policy}}{{ "," if not loop.last }}{% endfor %}</SkipRedeployingPolicies>
+        <EnablePolicyDeployment>{{apim.throttling.enable_policy_deployment}}</EnablePolicyDeployment>
+    </ThrottlingConfigurations>
+
+    <WorkflowConfigurations>
+        <Enabled>{{apim.workflow.enable}}</Enabled>
+        {% if apim.workflow.list_pending_tasks is defined %}
+        <ListPendingTasks>{{apim.workflow.list_pending_tasks}}</ListPendingTasks>
+        {% endif %}
+    	<ServerUrl>{{apim.workflow.service_url}}</ServerUrl>
+    	<ServerUser>{{apim.workflow.wf_engine_user}}</ServerUser>
+    	<ServerPassword>{{apim.workflow.wf_engine_pass}}</ServerPassword>
+    	<WorkflowCallbackAPI>{{apim.workflow.callback_endpoint}}</WorkflowCallbackAPI>
+        <TokenEndPoint>{{apim.workflow.token_endpoint}}</TokenEndPoint>
+        <DCREndPoint>{{apim.workflow.client_registration_endpoint}}</DCREndPoint>
+        <DCREndPointUser>{{apim.workflow.client_registration_username}}</DCREndPointUser>
+        <DCREndPointPassword>{{apim.workflow.client_registration_password}}</DCREndPointPassword>
+        {% if apim.workflow.properties %}
+        <Properties>
+            {% for key,value in apim.workflow.properties.items() %}
+            <Property name="{{key}}">{{value}}</Property>
+            {% endfor %}
+        </Properties>
+        {% endif %}
+    </WorkflowConfigurations>
+
+    <SwaggerCodegen>
+        <ClientGeneration>
+            <GroupId>{{apim.sdk.group_id}}</GroupId>
+            <ArtifactId>{{apim.sdk.artifact_id}}</ArtifactId>
+            <ModelPackage>{{apim.sdk.model_package}}</ModelPackage>
+            <ApiPackage>{{apim.sdk.api_package}}</ApiPackage>
+            <!-- Configure supported languages/Frameworks as comma separated values,
+             Supported Languages/Frameworks : android, java, scala, csharp, dart, flash, groovy, javascript, jmeter,
+             nodejs, perl, php, python, ruby, swift, clojure, asyncScala, csharpDotNet2-->
+            <SupportedLanguages>{{apim.sdk.supported_languages.toList()|join(',')}}</SupportedLanguages>
+        </ClientGeneration>
+    </SwaggerCodegen>
+
+    <!--Specify the implementation class of the monetization interface-->
+    <Monetization>
+        <MonetizationImpl>{{apim.monetization.monetization_impl}}</MonetizationImpl>
+        <UsagePublisher>
+            <!--Inorder to reduce configuration migration, previous config name for query API is used for choreo insight API endpoint-->
+             {% if apim.monetization.analytics_query_api_endpoint is defined %}
+                    <ChoreoInsightAPIEndpoint>{{apim.monetization.analytics_query_api_endpoint}}</ChoreoInsightAPIEndpoint>
+             {% endif %}
+             {% if apim.monetization.analytics_access_token is defined %}
+                    <AnalyticsAccessToken>{{apim.monetization.analytics_access_token}}</AnalyticsAccessToken>
+             {% endif %}
+             {% if apim.monetization.choreo_insight_app_consumer_key is defined %}
+                    <ChoreoInsightAppConsumerKey>{{apim.monetization.choreo_insight_app_consumer_key}}</ChoreoInsightAppConsumerKey>
+             {% endif %}
+             {% if apim.monetization.choreo_insight_app_consumer_secret is defined %}
+                    <ChoreoInsightAppConsumerSecret>{{apim.monetization.choreo_insight_app_consumer_secret}}</ChoreoInsightAppConsumerSecret>
+             {% endif %}
+             {% if apim.monetization.choreo_token_endpoint is defined %}
+                    <ChoreoTokenEndpoint>{{apim.monetization.choreo_token_endpoint}}</ChoreoTokenEndpoint>
+             {% endif %}
+        </UsagePublisher>
+        {% if apim.monetization.additional_attributes is defined %}
+            <AdditionalAttributes>
+               {% for attribute in apim.monetization.additional_attributes %}
+               <Attribute required="{{attribute.required}}">
+                   <Name>{{attribute.name}}</Name>
+                   <DisplayName>{{attribute.display_name}}</DisplayName>
+                   <Description>{{attribute.description}}</Description>
+                   <Default>{{attribute.default}}</Default>
+               </Attribute>
+               {% endfor %}
+            </AdditionalAttributes>
+        {% endif %}
+    </Monetization>
+
+    {% if apim.devportal.recommendations is defined %}
+    <APIRecommendations>
+        <recommendationAPI>{{apim.devportal.recommendations.recommendations_api}}</recommendationAPI>
+        {% if apim.devportal.recommendations.oauth_endpoint is defined %}
+        <authenticationEndpoint>{{apim.devportal.recommendations.oauth_endpoint}}</authenticationEndpoint>
+        {% endif %}
+        {% if apim.devportal.recommendations.consumer_key is defined %}
+        <consumerKey>{{apim.devportal.recommendations.consumer_key}}</consumerKey>
+        <consumerSecret>{{apim.devportal.recommendations.consumer_secret}}</consumerSecret>
+        {% endif %}
+        {% if apim.devportal.recommendations.max_recommendations is defined %}
+        <maxRecommendations>{{apim.devportal.recommendations.max_recommendations}}</maxRecommendations>
+        {% endif %}
+        {% if apim.devportal.recommendations.apply_for_all_tenants is defined %}
+        <applyForAllTenants>{{apim.devportal.recommendations.apply_for_all_tenants}}</applyForAllTenants>
+        {% endif %}
+        {% if apim.devportal.recommendations.wait_duration is defined %}
+        <waitDuration>{{apim.devportal.recommendations.wait_duration}}</waitDuration>
+        {% endif %}
+        {% if apim.devportal.recommendations.username is defined %}
+        <userName>{{apim.devportal.recommendations.username}}</userName>
+        <password>{{apim.devportal.recommendations.password}}</password>
+        {% endif %}
+    </APIRecommendations>
+    {% endif %}
+
+    <OpenTelemetry>
+        <RemoteTracer>
+            <Enabled>{{apim.open_telemetry.remote_tracer.enable}}</Enabled>
+            <Name>{{apim.open_telemetry.remote_tracer.name}}</Name>
+            <Url>{{apim.open_telemetry.remote_tracer.url}}</Url>
+            <HostName>{{apim.open_telemetry.remote_tracer.hostname}}</HostName>
+            <Port>{{apim.open_telemetry.remote_tracer.port}}</Port>
+            <Properties>
+                {% for property in apim.open_telemetry.remote_tracer.properties %}
+                <{{property.name}}>{{property.value}}</{{property.name}}>
+                {% endfor %}
+            </Properties>
+        </RemoteTracer>
+        <LogTracer>
+            <Enabled>{{apim.open_telemetry.log_tracer.enable}}</Enabled>
+        </LogTracer>
+    </OpenTelemetry>
+
+    <OpenTracer>
+        <RemoteTracer>
+            <Enabled>{{apim.open_tracer.remote_tracer.enable}}</Enabled>
+            <Name>{{apim.open_tracer.remote_tracer.name}}</Name>
+            <Properties>
+                <HostName>{{apim.open_tracer.remote_tracer.properties.hostname}}</HostName>
+                <Port>{{apim.open_tracer.remote_tracer.properties.port}}</Port>
+                {% if apim.open_tracer.remote_tracer.properties.sampler_type is defined %}
+                <SamplerType>{{apim.open_tracer.remote_tracer.properties.sampler_type}}</SamplerType>
+                {% endif %}
+                {% if apim.open_tracer.remote_tracer.properties.sampler_param is defined %}
+                <SamplerParam>{{apim.open_tracer.remote_tracer.properties.sampler_param}}</SamplerParam>
+                {% endif %}
+            </Properties>
+        </RemoteTracer>
+        <LogTracer>
+            <Enabled>{{apim.open_tracer.log_tracer.enable}}</Enabled>
+        </LogTracer>
+    </OpenTracer>
+
+    {% if security_audit is defined %}
+        <APISecurityAudit>
+            <APIToken>{{security_audit.api_token}}</APIToken>
+            <CollectionID>{{security_audit.collection_id}}</CollectionID>
+            <BaseUrl>{{security_audit.base_url}}</BaseUrl>
+            <Global>{{security_audit.global}}</Global>
+        </APISecurityAudit>
+    {% endif %}
+
+    {% if apim.redis_config is defined %}
+        <RedisConfig>
+            {% if apim.redis_config.host is defined %}
+            <RedisHost>{{apim.redis_config.host}}</RedisHost>
+            {% endif %}
+            {% if apim.redis_config.port is defined %}
+            <RedisPort>{{apim.redis_config.port}}</RedisPort>
+            {% endif %}
+            {% if apim.redis_config.user is defined %}
+            <RedisUser>{{apim.redis_config.user}}</RedisUser>
+            {% endif %}
+            {% if apim.redis_config.password is defined %}
+            <RedisPassword>{{apim.redis_config.password}}</RedisPassword>
+            {% endif %}
+            {% if apim.redis_config.database_id is defined %}
+            <RedisDatabaseId>{{apim.redis_config.database_id}}</RedisDatabaseId>
+            {% endif %}
+            {% if apim.redis_config.connection_timeout is defined %}
+            <RedisConnectionTimeout>{{apim.redis_config.connection_timeout}}</RedisConnectionTimeout>
+            {% endif %}
+            {% if apim.redis_config.ssl is defined %}
+            <RedisIsSslEnabled>{{apim.redis_config.ssl}}</RedisIsSslEnabled>
+            {% endif %}
+            <Properties>
+                {% if apim.redis_config.pool_options is defined %}
+                {% for property_name,property_value in apim.redis_config.pool_options.items() %}
+                 <{{property_name}}>{{property_value}}</{{property_name}}>
+                {% endfor %}
+                {% endif %}
+            </Properties>
+        </RedisConfig>
+    {% endif %}
+
+    {% if apim.devportal.application_attributes is defined %}
+    <ApplicationConfiguration>
+        <ApplicationAttributes>
+            {% for attribute in apim.devportal.application_attributes %}
+            <Attribute Required="{{attribute.required}}" Hidden="{{attribute.hidden}}">
+                <Name>{{attribute.name}}</Name>
+                <Description>{{attribute.description}}</Description>
+                <Default>{{attribute.default}}</Default>
+                <Type>{{attribute.type}}</Type>
+                <Tooltip>{{attribute.tooltip}}</Tooltip>
+            </Attribute>
+            {% endfor %}
+        </ApplicationAttributes>
+    </ApplicationConfiguration>
+    {% endif %}
+
+    {% if apim.ai_security is defined %}
+    <AISecurityHandler>
+        {% if apim.ai_security.operation_mode is defined %}
+        <OperationMode>{{apim.ai_security.operation_mode}}</OperationMode>
+        {% endif %}
+        {% if apim.ai_security.apply_for_all is defined %}
+        <ApplyForAllAPIs>{{apim.ai_security.apply_for_all}}</ApplyForAllAPIs>
+        {% endif %}
+        {% if apim.ai_security.cash_expiry_time is defined %}
+        <CacheExpiryTime>{{apim.ai_security.cash_expiry_time}}</CacheExpiryTime>
+        {% endif %}
+        {% if apim.ai_security.skip_cert_validation is defined %}
+        <SkipCertValidation>{{apim.ai_security.skip_cert_validation}}</SkipCertValidation>
+        {% endif %}
+        <APISecurityEnforcer>
+            <EndPoint>{{apim.ai_security.sideband_request_endpoint}}</EndPoint>
+            <ASEToken>{{apim.ai_security.ase_token}}</ASEToken>
+            {% if apim.ai_security.model_creation_endpoint is defined %}
+            <ModelCreationEndpoint>
+                <EndPoint>{{apim.ai_security.model_creation_endpoint}}</EndPoint>
+                <BackupEndPoint>{{apim.ai_security.backup_sideband_request_endpoint}}</BackupEndPoint>
+                <AccessKey>{{apim.ai_security.access_key}}</AccessKey>
+                <SecretKey>{{apim.ai_security.secret_key}}</SecretKey>
+            </ModelCreationEndpoint>
+            {% endif %}
+        </APISecurityEnforcer>
+        {% if apim.ai_security.data_publisher is defined %}
+        <DataPublisher>
+            {% if apim.ai_security.data_publisher.max_per_route is defined %}
+            <MaxPerRoute>{{apim.ai_security.data_publisher.max_per_route}}</MaxPerRoute>
+            {% endif %}
+            {% if apim.ai_security.data_publisher.max_open_connections is defined %}
+            <MaxOpenConnections>{{apim.ai_security.data_publisher.max_open_connections}}</MaxOpenConnections>
+            {% endif %}
+            {% if apim.ai_security.data_publisher.connection_timeout is defined %}
+            <ConnectionTimeout>{{apim.ai_security.data_publisher.connection_timeout}}</ConnectionTimeout>
+            {% endif %}
+        </DataPublisher>
+        {% endif %}
+        {% if apim.ai_security.threadpool_executor is defined %}
+        <ThreadPoolExecutor>
+            {% if apim.ai_security.threadpool_executor.core_pool_size is defined %}
+            <CorePoolSize>{{apim.ai_security.threadpool_executor.core_pool_size}}</CorePoolSize>
+            {% endif %}
+            {% if apim.ai_security.threadpool_executor.max_pool_size is defined %}
+            <MaximumPoolSize>{{apim.ai_security.threadpool_executor.max_pool_size}}</MaximumPoolSize>
+            {% endif %}
+            {% if apim.ai_security.threadpool_executor.keep_alive_time is defined %}
+            <KeepAliveTime>{{apim.ai_security.threadpool_executor.keep_alive_time}}</KeepAliveTime>
+            {% endif %}
+        </ThreadPoolExecutor>
+        {% endif %}
+        {% if apim.ai_security.stack_object_pool is defined %}
+        <StackObjectPool>
+            {% if apim.ai_security.stack_object_pool.max_idle is defined %}
+            <MaxIdle>{{apim.ai_security.stack_object_pool.max_idle}}</MaxIdle>
+            {% endif %}
+            {% if apim.ai_security.stack_object_pool.init_idle_capacity is defined %}
+            <InitIdleCapacity>{{apim.ai_security.stack_object_pool.init_idle_capacity}}</InitIdleCapacity>
+            {% endif %}
+        </StackObjectPool>
+        {% endif %}
+        {% if apim.ai_security.limit_transport_headers is defined %}
+        <LimitTransportHeaders>
+            {% for attribute in apim.ai_security.limit_transport_headers %}
+            <Header>{{attribute}}</Header>
+            {% endfor %}
+        </LimitTransportHeaders>
+        {% endif %}
+    </AISecurityHandler>
+    {% endif %}
+
+    {% if apim.skip_roles_by_regex is defined %}
+    <skipRolesByRegex>{{apim.skip_roles_by_regex.regex}}</skipRolesByRegex>
+    {% endif %}
+
+    <CertificateReLoaderConfiguration>
+        <Period>{{apim.certificate_reloader.period}}</Period>
+    </CertificateReLoaderConfiguration>
+
+     <MutualSSL>
+        <ClientCertificateHeader>{{apimgt.mutual_ssl.certificate_header}}</ClientCertificateHeader>
+        <EnableClientCertificateValidation>{{apimgt.mutual_ssl.enable_client_validation}}</EnableClientCertificateValidation>
+        {% if apimgt.mutual_ssl.client_certificate_encode is defined %}
+        <ClientCertificateEncode>{{apimgt.mutual_ssl.client_certificate_encode}}</ClientCertificateEncode>
+        {% endif %}
+     </MutualSSL>
+
+     <GlobalCacheInvalidation>
+        <Enabled>{{apim.cache_invalidation.enabled}}</Enabled>
+        <Domain>{{apim.cache_invalidation.domain}}</Domain>
+        <Stream>{{apim.cache.invalidation.stream}}</Stream>
+        <Topic>{{apim.cache_invalidation.topic_name}}</Topic>
+        <ExcludedCaches>
+          {%- for cache in apim.cache_invalidation.excluded_caches -%}
+          <Cache>{{cache}}</Cache>
+          {% endfor %}
+         </ExcludedCaches>
+     </GlobalCacheInvalidation>
+
+     <EventHubConfigurations>
+        <Enable>{{apim.event_hub.enable}}</Enable>
+        {% if apim.event_hub.username is defined %}
+         <Username>{{apim.event_hub.username}}</Username>
+        {% else %}
+         <Username>{{apim.throttling.username}}</Username>
+        {% endif %}
+        {% if apim.event_hub.password is defined %}
+         <Password>{{apim.event_hub.password}}</Password>
+        {% else %}
+         <Password>{{apim.throttling.password}}</Password>
+        {% endif %}
+        {% if apim.event_hub.service_url is defined %}
+        <ServiceURL>{{apim.event_hub.service_url}}</ServiceURL>
+        {% else %}
+         <ServiceURL>{{apim.throttling.service_url}}</ServiceURL>
+        {% endif %}
+        {% if apim.event_hub.event_waiting_time is defined %}
+        <EventWaitingTime>{{apim.event_hub.event_waiting_time}}</EventWaitingTime>
+        {% endif %}
+         {% if apim.event_hub.init_delay is defined %}
+        <InitDelay>{{apim.event_hub.init_delay}}</InitDelay>
+          {% endif %}
+        <EventPublisherConfiguration>
+            <Type>{{apim.event_hub.event_type}}</Type>
+            {% if apim.event_hub.publish.url_group is defined %}
+                <ReceiverUrlGroup>
+                {%- for group in apim.event_hub.publish.url_group -%}
+                    {%- if group.type == "loadbalance" -%}
+                { {{- group.urls.toList()|join(',') -}} }
+                    {%- else -%}{ {{- group.urls.toList()|join('|') -}} }
+                    {%- endif -%}
+                    {{- "," if not loop.last -}}
+                {%- endfor -%}
+                </ReceiverUrlGroup>
+                <AuthUrlGroup>
+                    {%- for group in apim.event_hub.publish.url_group -%}
+                    {%- if group.type == "loadbalance" -%}
+                    { {{- group.auth_urls.toList()|join(',') -}} }
+                    {%- else -%}{ {{- group.auth_urls.toList()|join('|') -}} }
+                    {%- endif -%}
+                    {{- "," if not loop.last -}}
+                    {%- endfor -%}
+                </AuthUrlGroup>
+            {%else%}
+                {% if apim.throttling.url_group is defined %}
+                    <ReceiverUrlGroup>
+                    {%- for group in apim.throttling.url_group -%}
+                        {%- if group.type == "loadbalance" -%}
+                    { {{- group.traffic_manager_urls.toList()|join(',') -}} }
+                        {%- else -%}{ {{- group.traffic_manager_urls.toList()|join('|') -}} }
+                        {%- endif -%}
+                        {{- "," if not loop.last -}}
+                    {%- endfor -%}
+                    </ReceiverUrlGroup>
+                    <AuthUrlGroup>
+                        {%- for group in apim.throttling.url_group -%}
+                        {%- if group.type == "loadbalance" -%}
+                        { {{- group.traffic_manager_auth_urls.toList()|join(',') -}} }
+                        {%- else -%}{ {{- group.traffic_manager_auth_urls.toList()|join('|') -}} }
+                        {%- endif -%}
+                        {{- "," if not loop.last -}}
+                        {%- endfor -%}
+                    </AuthUrlGroup>
+                {%- else -%}
+                    <ReceiverUrlGroup>tcp://${carbon.local.ip}:${receiver.url.port}</ReceiverUrlGroup>
+                    <AuthUrlGroup>ssl://${carbon.local.ip}:${auth.url.port}</AuthUrlGroup>
+                {% endif %}
+            {% endif %}
+        <Properties>
+            {% for key,value in apim.event_hub.publish.properties.items() %}
+            <Property name="{{key}}">{{value}}</Property>
+            {% endfor %}
+        </Properties>
+        </EventPublisherConfiguration>
+         <EventReceiverConfiguration>
+             <transport.jms.ConnectionFactoryJNDIName>TopicConnectionFactory</transport.jms.ConnectionFactoryJNDIName>
+             <transport.jms.DestinationType>topic</transport.jms.DestinationType>
+             <java.naming.factory.initial>{{apim.event_hub.java_naming_factory_initial}}</java.naming.factory.initial>
+             {% if apim.event_hub.event_listening_endpoints is defined %}
+             {% if (apim.event_hub.jms.username is defined) and (apim.event_hub.jms.password is defined) %}
+             <connectionfactory.TopicConnectionFactory>amqp://<![CDATA[{{apim.event_hub.jms.username}}]]>:<![CDATA[{{apim.event_hub.jms.password}}]]>@clientid/carbon?brokerlist='{% for url in apim.event_hub.event_listening_endpoints %}{{url}}?{% if apim.event_hub.jms.ssl is defined %}ssl='{{apim.event_hub.jms.ssl}}'{% endif %}%26retries='5'%26connectdelay='50';{% endfor %}'</connectionfactory.TopicConnectionFactory>
+              {% else %}
+             <connectionfactory.TopicConnectionFactory>amqp://<![CDATA[{{apim.event_hub.username}}]]>:<![CDATA[{{apim.event_hub.password}}]]>@clientid/carbon?brokerlist='{% for url in apim.event_hub.event_listening_endpoints %}{{url}}?{% if apim.event_hub.jms.ssl is defined %}ssl='{{apim.event_hub.jms.ssl}}'{% endif %}%26retries='5'%26connectdelay='50';{% endfor %}'</connectionfactory.TopicConnectionFactory>
+             {% endif %}
+             {% elif apim.throttling.throttle_decision_endpoints is defined %}
+             <connectionfactory.TopicConnectionFactory>amqp://<![CDATA[{{apim.throttling.jms.username}}]]>:<![CDATA[{{apim.throttling.jms.password}}]]>@clientid/carbon?brokerlist='{% for url in apim.throttling.throttle_decision_endpoints %}{{url}}?{% if apim.throttling.jms.ssl is defined %}ssl='{{apim.throttling.jms.ssl}}'{% endif %}%26retries='5'%26connectdelay='50';{% endfor %}'</connectionfactory.TopicConnectionFactory>
+             {% elif apim.throttling.jms.username is defined %}
+             {% if apim.throttling.jms.password is defined %}
+             <connectionfactory.TopicConnectionFactory>amqp://<![CDATA[{{apim.throttling.jms.username}}]]>:<![CDATA[{{apim.throttling.jms.password}}]]>@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}?{% if apim.throttling.jms.ssl is defined %}ssl='{{apim.throttling.jms.ssl}}'{% endif %}'</connectionfactory.TopicConnectionFactory>
+             {% endif %}
+             {% else %}
+             <connectionfactory.TopicConnectionFactory>amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}?{% if apim.throttling.jms.ssl is defined %}ssl='{{apim.throttling.jms.ssl}}'{% endif %}'</connectionfactory.TopicConnectionFactory>
+             {% endif %}
+         </EventReceiverConfiguration>
+     </EventHubConfigurations>
+
+    {% if apim.sync_runtime_artifacts.publisher is defined %}
+    <SyncRuntimeArtifactsPublisher>
+        <Enable>true</Enable>
+        {% if apim.sync_runtime_artifacts.publisher.artifact_saver is defined %}
+        <ArtifactSaver>{{apim.sync_runtime_artifacts.publisher.artifact_saver}}</ArtifactSaver>
+        {% endif %}
+        {% if apim.sync_runtime_artifacts.publisher.publish_directly_to_gateway is defined %}
+        <PublishDirectlyToGW>{{apim.sync_runtime_artifacts.publisher.publish_directly_to_gateway}}</PublishDirectlyToGW>
+        {% endif %}
+        {% if database.sync_runtime_artifacts_db is defined %}
+        <DataSourceName>{{apim.datasource_sync_runtime_artifacts.name}}</DataSourceName>
+        {% endif %}
+    </SyncRuntimeArtifactsPublisher>
+    {% endif %}
+
+    {% if apim.sync_runtime_artifacts.gateway is defined %}
+    <SyncRuntimeArtifactsGateway>
+        <Enable>{{apim.sync_runtime_artifacts.gateway.enable}}</Enable>
+        {% if apim.sync_runtime_artifacts.gateway.gateway_labels is defined %}
+        <GatewayLabels>
+            {% for attribute in apim.sync_runtime_artifacts.gateway.gateway_labels %}
+            <Label>{{attribute}}</Label>
+            {% endfor %}
+        </GatewayLabels>
+        {% endif %}
+        {% if apim.sync_runtime_artifacts.gateway.artifact_retriever is defined %}
+        <ArtifactRetriever>{{apim.sync_runtime_artifacts.gateway.artifact_retriever}}</ArtifactRetriever>
+        {% endif %}
+        {% if apim.sync_runtime_artifacts.gateway.deployment_retry_duration is defined %}
+        <RetryDuration>{{apim.sync_runtime_artifacts.gateway.deployment_retry_duration}}</RetryDuration>
+        {% endif %}
+        {% if apim.sync_runtime_artifacts.gateway.max_retry_count is defined %}
+        <MaxRetryCount>{{apim.sync_runtime_artifacts.gateway.max_retry_count}}</MaxRetryCount>
+        {% endif %}
+        {% if apim.sync_runtime_artifacts.gateway.retry_progression_factor is defined %}
+        <RetryProgressionFactor>{{apim.sync_runtime_artifacts.gateway.retry_progression_factor}}</RetryProgressionFactor>
+        {% endif %}
+        {% if apim.sync_runtime_artifacts.gateway.data_retrieval_mode is defined %}
+        <DataRetrievalMode>{{apim.sync_runtime_artifacts.gateway.data_retrieval_mode}}</DataRetrievalMode>
+        {% endif %}
+        {% if  apim.event_hub.event_waiting_time is not defined and apim.sync_runtime_artifacts.gateway.event_waiting_time is defined %}
+        <EventWaitingTime>{{apim.sync_runtime_artifacts.gateway.event_waiting_time}}</EventWaitingTime>
+        {% endif %}
+        <SkipList>
+        <APIS>
+            <API>_OpenService_.xml</API>
+        {% if apim.sync_runtime_artifacts.gateway.skip_list.apis is defined %}
+            {%- for api in apim.sync_runtime_artifacts.gateway.skip_list.apis -%}
+            <API>{{api}}</API>
+            {% endfor %}
+        {% endif %}
+        </APIS>
+        <Endpoints>
+        {% if apim.sync_runtime_artifacts.gateway.skip_list.endpoints is defined %}
+            {%- for endpoint in apim.sync_runtime_artifacts.gateway.skip_list.endpoints -%}
+            <Endpoint>{{endpoint}}</Endpoint>
+            {% endfor %}
+         {% endif %}
+        </Endpoints>
+        <Sequences>
+            <Sequence>_auth_failure_handler_.xml</Sequence>
+            <Sequence>_build_.xml</Sequence>
+            <Sequence>_cors_request_handler_.xml</Sequence>
+            <Sequence>dispatchSeq.xml</Sequence>
+            <Sequence>fault.xml</Sequence>
+            <Sequence>_graphql_failure_handler_.xml</Sequence>
+            <Sequence>main.xml</Sequence>
+            <Sequence>outDispatchSeq.xml</Sequence>
+            <Sequence>_production_key_error_.xml</Sequence>
+            <Sequence>_resource_mismatch_handler_.xml</Sequence>
+            <Sequence>_sandbox_key_error_.xml</Sequence>
+            <Sequence>_threat_fault_.xml</Sequence>
+            <Sequence>_throttle_out_handler_.xml</Sequence>
+            <Sequence>_token_fault_.xml</Sequence>
+            <Sequence>webhooksFaultSequence.xml</Sequence>
+            <Sequence>_block_api_handler_.xml</Sequence>
+            <Sequence>_backend_failure_handler_.xml</Sequence>
+            <Sequence>_opa_policy_failure_handler_.xml</Sequence>
+        {% if apim.sync_runtime_artifacts.gateway.skip_list.sequences is defined %}
+            {%- for sequence in apim.sync_runtime_artifacts.gateway.skip_list.sequences -%}
+            <Sequence>{{sequence}}</Sequence>
+            {% endfor %}
+         {% endif %}
+        </Sequences>
+        <LocalEntries>
+        {% if apim.sync_runtime_artifacts.gateway.skip_list.local_entries is defined %}
+            {%- for local_entry in apim.sync_runtime_artifacts.gateway.skip_list.local_entries -%}
+            <LocalEntry>{{local_entry}}</LocalEntry>
+            {% endfor %}
+         {% endif %}
+        </LocalEntries>
+        </SkipList>
+        <EnableOnDemandLoadingAPIS>{{apim.sync_runtime_artifacts.gateway.enable_on_demand_loading}}</EnableOnDemandLoadingAPIS>
+    </SyncRuntimeArtifactsGateway>
+    {% endif %}
+
+    <ProxyConfig>
+        <Enable>{{apim.proxy_config.enable}}</Enable>
+        <Host>{{apim.proxy_config.host}}</Host>
+        <Port>{{apim.proxy_config.port}}</Port>
+        <Username>{{apim.proxy_config.username}}</Username>
+        <Password>{{apim.proxy_config.password}}</Password>
+        <NonProxyHosts>{{apim.proxy_config.nonProxyHosts}}</NonProxyHosts>
+        <Protocol>{{apim.proxy_config.protocol}}</Protocol>
+    </ProxyConfig>
+     <!--This parameter is used to Enable the password changing feature in devportal. When this is enabled, a user can
+      change his/her password via devportal. By default this feature is enabled.-->
+     <EnableChangePassword>{{apim.enable_change_password}}</EnableChangePassword>
+
+    {% if apim.extension.listener is defined %}
+    <ExtensionListeners>
+        {%- for listener in apim.extension.listener -%}
+        <ExtensionListener>
+            <Type>{{listener.type}}</Type>
+            <ClassName>{{listener.class}}</ClassName>
+        </ExtensionListener>
+        {% endfor %}
+    </ExtensionListeners>
+    {% endif %}
+
+     {% if apim.persistence.properties is defined %}
+     <PersistenceConfigs>
+        <Properties>
+            {% for key,value in apim.persistence.properties.items() %}
+            <Property name="{{key}}">{{value}}</Property>
+            {% endfor %}
+        </Properties>
+     </PersistenceConfigs>
+     {% endif %}
+
+     {% if apim.mediator_config.oauth is defined %}
+      <MediatorConfigs>
+        <OAuth>
+        <!-- If the access token expires, the server should reply with the duration of time the access token is granted for. -->
+                 <ExpiresIn>{{apim.mediator_config.oauth.expires_in}}</ExpiresIn>
+             </OAuth>
+          </MediatorConfigs>
+      {% endif %}
+
+      <!-- Default Correlation Log Components -->
+      <CorrelationLogComponents>
+      {%for component in apim.correlation_logs.components%}
+          <CorrelationLogComponent>{{component}}</CorrelationLogComponent>
+      {% endfor %}
+      </CorrelationLogComponents>
+
+      <!-- Specifies whether API level policy support feature should be enabled or not. -->
+      {% if apim.policy is defined %}
+          <EnableAPIPolicies>{{apim.policy.enable_api_level_policies}}</EnableAPIPolicies>
+      {% endif %}
+</APIManager>
