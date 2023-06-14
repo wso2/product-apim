@@ -114,7 +114,7 @@ public class SharedScopeTestWIthRestart extends APIManagerLifecycleBaseTest {
                 "Shared scope description does not match with the expected description");
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test get and update shared scope",
+    @Test(groups = { "wso2.am" }, description = "Test delete shared scope",
             dependsOnMethods = "testGetAndUpdateSharedScope")
     public void testDeleteSharedScope() throws Exception {
         restAPIPublisher.deleteSharedScope(sharedScopeId);
