@@ -87,13 +87,13 @@ public class WebSocketAPIInvocationWithTracingTestCase extends APIMIntegrationBa
     private int webSocketServerPort;
     private String webSocketServerHost;
     private ServerConfigurationManager serverConfigurationManager;
-    private String wsEventPublisherSource = TestConfigurationProvider.getResourceLocation() + File.separator +
+    private String wsEventPublisherSource = TestConfigurationProvider.getResourceLocation() +
             "artifacts"
             + File.separator + "AM" + File.separator + "configFiles" + File.separator + "webSocketTest"
             + File.separator;
 
     private String wsTracingSource =
-            TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM"
+            TestConfigurationProvider.getResourceLocation() + "artifacts" + File.separator + "AM"
                     + File.separator + "configFiles" + File.separator + "webSocketWithTracing" + File.separator;
     private String wsEventPublisherTarget = FrameworkPathUtil.getCarbonHome() + File.separator + "repository"
             + File.separator + "deployment" + File.separator + "server" + File.separator + "eventpublishers"
