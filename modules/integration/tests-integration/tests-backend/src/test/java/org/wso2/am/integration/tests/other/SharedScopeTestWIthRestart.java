@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://wso2.com) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class SharedScopeTestWIthRestart extends APIManagerLifecycleBaseTest {
                 TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.applyConfiguration(new File(
-                getAMResourceLocation() + File.separator + "operationPolicy"
+                getAMResourceLocation() + File.separator + "scopes"
                         + File.separator + "deployment.toml"));
         serverConfigurationManager.restartGracefully();
     }
