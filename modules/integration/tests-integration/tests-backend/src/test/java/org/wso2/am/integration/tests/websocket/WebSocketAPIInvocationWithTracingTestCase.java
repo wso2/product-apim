@@ -87,14 +87,11 @@ public class WebSocketAPIInvocationWithTracingTestCase extends APIMIntegrationBa
     private int webSocketServerPort;
     private String webSocketServerHost;
     private ServerConfigurationManager serverConfigurationManager;
-    private String wsEventPublisherSource = TestConfigurationProvider.getResourceLocation() +
-            "artifacts"
-            + File.separator + "AM" + File.separator + "configFiles" + File.separator + "webSocketTest"
+    private String wsEventPublisherSource = getAMResourceLocation() + File.separator + "configFiles" + File.separator + "webSocketTest"
             + File.separator;
 
     private String wsTracingSource =
-            TestConfigurationProvider.getResourceLocation() + "artifacts" + File.separator + "AM"
-                    + File.separator + "configFiles" + File.separator + "webSocketWithTracing" + File.separator;
+            getAMResourceLocation() + File.separator + "configFiles" + File.separator + "webSocketWithTracing" + File.separator;
     private String wsEventPublisherTarget = FrameworkPathUtil.getCarbonHome() + File.separator + "repository"
             + File.separator + "deployment" + File.separator + "server" + File.separator + "eventpublishers"
             + File.separator;
@@ -333,8 +330,7 @@ public class WebSocketAPIInvocationWithTracingTestCase extends APIMIntegrationBa
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        serverConfigurationManager.restoreToLastConfiguration(true);
         executorService.shutdownNow();
-        super.cleanUp();
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 }
