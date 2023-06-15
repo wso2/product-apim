@@ -1219,6 +1219,21 @@ public class RestAPIPublisherImpl {
         Assert.assertEquals(HttpStatus.SC_OK, schemaDefinitionDTO.getStatusCode());
     }
 
+    public HttpResponse importGraphqlSchemaDefinitionWithInvalidContext(File file, String properties) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = null;
+        HttpResponse response = null;
+        try {
+            apiDtoApiResponse = apIsApi.importGraphQLSchemaWithHttpInfo(null, "GRAPHQL",
+                    file, properties);
+            Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR)) {
+                response = new HttpResponse(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR, e.getCode());
+            }
+        }
+        return response;
+    }
+
     public WSDLValidationResponseDTO validateWsdlDefinition(String url, File wsdlDefinition) throws ApiException {
         ApiResponse<WSDLValidationResponseDTO> response = validationApi
                 .validateWSDLDefinitionWithHttpInfo(url, wsdlDefinition);
