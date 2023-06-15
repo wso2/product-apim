@@ -37,6 +37,7 @@ Name | Type | Description | Notes
 **visibleRoles** | **List&lt;String&gt;** | The user roles that are able to access the API in Developer Portal |  [optional]
 **visibleTenants** | **List&lt;String&gt;** |  |  [optional]
 **mediationPolicies** | [**List&lt;MediationPolicyDTO&gt;**](MediationPolicyDTO.md) |  |  [optional]
+**apiPolicies** | [**APIOperationPoliciesDTO**](APIOperationPoliciesDTO.md) |  |  [optional]
 **subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS. |  [optional]
 **subscriptionAvailableTenants** | **List&lt;String&gt;** |  |  [optional]
 **additionalProperties** | [**List&lt;APIInfoAdditionalPropertiesDTO&gt;**](APIInfoAdditionalPropertiesDTO.md) | Map of custom properties of API |  [optional]

@@ -77,6 +77,10 @@ public class SettingsDTO {
         @SerializedName(SERIALIZED_NAME_AUTHORIZATION_HEADER)
             private String authorizationHeader;
 
+        public static final String SERIALIZED_NAME_IS_A_P_I_POLICIES_ENABLED = "isAPIPoliciesEnabled";
+        @SerializedName(SERIALIZED_NAME_IS_A_P_I_POLICIES_ENABLED)
+            private Boolean isAPIPoliciesEnabled;
+
 
         public SettingsDTO devportalUrl(String devportalUrl) {
         
@@ -331,6 +335,29 @@ public class SettingsDTO {
     }
 
 
+        public SettingsDTO isAPIPoliciesEnabled(Boolean isAPIPoliciesEnabled) {
+        
+        this.isAPIPoliciesEnabled = isAPIPoliciesEnabled;
+        return this;
+        }
+
+    /**
+        * Is API level policy support feature enabled
+    * @return isAPIPoliciesEnabled
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "Is API level policy support feature enabled")
+    
+    public Boolean isIsAPIPoliciesEnabled() {
+        return isAPIPoliciesEnabled;
+    }
+
+
+    public void setIsAPIPoliciesEnabled(Boolean isAPIPoliciesEnabled) {
+        this.isAPIPoliciesEnabled = isAPIPoliciesEnabled;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -350,12 +377,13 @@ public class SettingsDTO {
             Objects.equals(this.crossTenantSubscriptionEnabled, settings.crossTenantSubscriptionEnabled) &&
             Objects.equals(this.defaultAdvancePolicy, settings.defaultAdvancePolicy) &&
             Objects.equals(this.defaultSubscriptionPolicy, settings.defaultSubscriptionPolicy) &&
-            Objects.equals(this.authorizationHeader, settings.authorizationHeader);
+            Objects.equals(this.authorizationHeader, settings.authorizationHeader) &&
+            Objects.equals(this.isAPIPoliciesEnabled, settings.isAPIPoliciesEnabled);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(devportalUrl, environment, scopes, monetizationAttributes, securityAuditProperties, externalStoresEnabled, docVisibilityEnabled, crossTenantSubscriptionEnabled, defaultAdvancePolicy, defaultSubscriptionPolicy, authorizationHeader);
+        return Objects.hash(devportalUrl, environment, scopes, monetizationAttributes, securityAuditProperties, externalStoresEnabled, docVisibilityEnabled, crossTenantSubscriptionEnabled, defaultAdvancePolicy, defaultSubscriptionPolicy, authorizationHeader, isAPIPoliciesEnabled);
     }
 
 
@@ -374,6 +402,7 @@ sb.append("class SettingsDTO {\n");
     sb.append("    defaultAdvancePolicy: ").append(toIndentedString(defaultAdvancePolicy)).append("\n");
     sb.append("    defaultSubscriptionPolicy: ").append(toIndentedString(defaultSubscriptionPolicy)).append("\n");
     sb.append("    authorizationHeader: ").append(toIndentedString(authorizationHeader)).append("\n");
+    sb.append("    isAPIPoliciesEnabled: ").append(toIndentedString(isAPIPoliciesEnabled)).append("\n");
 sb.append("}");
 return sb.toString();
 }

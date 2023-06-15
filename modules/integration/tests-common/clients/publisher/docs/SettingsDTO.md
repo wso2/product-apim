@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **defaultAdvancePolicy** | **String** | Default Advance Policy. |  [optional]
 **defaultSubscriptionPolicy** | **String** | Default Subscription Policy. |  [optional]
 **authorizationHeader** | **String** | Authorization Header |  [optional]
+**isAPIPoliciesEnabled** | **Boolean** | Is API level policy support feature enabled |  [optional]
 
 
 

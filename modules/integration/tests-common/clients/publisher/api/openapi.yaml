@@ -16059,6 +16059,40 @@ components:
           value: value
         lifeCycleStatus: CREATED
         accessControl: NONE
+        apiPolicies:
+          request:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          response:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          fault:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
         monetization:
           enabled: true
           properties:
@@ -16348,6 +16382,8 @@ components:
           items:
             $ref: '#/components/schemas/MediationPolicy'
           type: array
+        apiPolicies:
+          $ref: '#/components/schemas/APIOperationPolicies'
         subscriptionAvailability:
           default: CURRENT_TENANT
           description: The subscription availability. Accepts one of the following.
@@ -19564,6 +19600,7 @@ components:
       example:
         devportalUrl: https://localhost:9443/devportal
         defaultAdvancePolicy: defaultAdvancePolicy
+        isAPIPoliciesEnabled: false
         externalStoresEnabled: true
         environment:
         - endpointURIs:
@@ -19695,6 +19732,10 @@ components:
           description: Authorization Header
           example: authorization
           type: string
+        isAPIPoliciesEnabled:
+          description: Is API level policy support feature enabled
+          example: false
+          type: boolean
       title: SettingsDTO
       type: object
     SecurityAuditAttribute:
