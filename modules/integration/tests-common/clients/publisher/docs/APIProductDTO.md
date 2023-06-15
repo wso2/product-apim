@@ -39,6 +39,7 @@ Name | Type | Description | Notes
 **businessInformation** | [**APIProductBusinessInformationDTO**](APIProductBusinessInformationDTO.md) |  |  [optional]
 **corsConfiguration** | [**APICorsConfigurationDTO**](APICorsConfigurationDTO.md) |  |  [optional]
 **createdTime** | **String** |  |  [optional]
+**lastUpdatedTimestamp** | **String** |  |  [optional]
 **lastUpdatedTime** | **String** |  |  [optional]
 **gatewayVendor** | **String** |  |  [optional]
 **apis** | [**List&lt;ProductAPIDTO&gt;**](ProductAPIDTO.md) | APIs and resources in the API Product.  |  [optional]

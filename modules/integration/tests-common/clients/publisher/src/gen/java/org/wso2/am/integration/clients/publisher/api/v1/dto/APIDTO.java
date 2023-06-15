@@ -472,6 +472,10 @@ public static AccessControlEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_CREATED_TIME)
             private String createdTime;
 
+        public static final String SERIALIZED_NAME_LAST_UPDATED_TIMESTAMP = "lastUpdatedTimestamp";
+        @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIMESTAMP)
+            private String lastUpdatedTimestamp;
+
         public static final String SERIALIZED_NAME_LAST_UPDATED_TIME = "lastUpdatedTime";
         @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
             private String lastUpdatedTime;
@@ -1556,6 +1560,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO lastUpdatedTimestamp(String lastUpdatedTimestamp) {
+        
+        this.lastUpdatedTimestamp = lastUpdatedTimestamp;
+        return this;
+        }
+
+    /**
+        * Get lastUpdatedTimestamp
+    * @return lastUpdatedTimestamp
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getLastUpdatedTimestamp() {
+        return lastUpdatedTimestamp;
+    }
+
+
+    public void setLastUpdatedTimestamp(String lastUpdatedTimestamp) {
+        this.lastUpdatedTimestamp = lastUpdatedTimestamp;
+    }
+
+
         public APIDTO lastUpdatedTime(String lastUpdatedTime) {
         
         this.lastUpdatedTime = lastUpdatedTime;
@@ -1884,6 +1911,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.websubSubscriptionConfiguration, API.websubSubscriptionConfiguration) &&
             Objects.equals(this.workflowStatus, API.workflowStatus) &&
             Objects.equals(this.createdTime, API.createdTime) &&
+            Objects.equals(this.lastUpdatedTimestamp, API.lastUpdatedTimestamp) &&
             Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime) &&
             Objects.equals(this.endpointConfig, API.endpointConfig) &&
             Objects.equals(this.endpointImplementationType, API.endpointImplementationType) &&
@@ -1900,7 +1928,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
     }
 
 
@@ -1951,6 +1979,7 @@ sb.append("class APIDTO {\n");
     sb.append("    websubSubscriptionConfiguration: ").append(toIndentedString(websubSubscriptionConfiguration)).append("\n");
     sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
+    sb.append("    lastUpdatedTimestamp: ").append(toIndentedString(lastUpdatedTimestamp)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
     sb.append("    endpointConfig: ").append(toIndentedString(endpointConfig)).append("\n");
     sb.append("    endpointImplementationType: ").append(toIndentedString(endpointImplementationType)).append("\n");
