@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SharedScopeTestWIthRestart extends APIManagerLifecycleBaseTest {
-    private final Log log = LogFactory.getLog(SharedScopeTestCase.class);
 
     private String sharedScopeName = "TestSharedScopeWithRestart";
     private String sharedScopeDisplayName = "Test Shared Scope with Restart";
@@ -122,7 +121,6 @@ public class SharedScopeTestWIthRestart extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
         serverConfigurationManager.restoreToLastConfiguration();
     }
 }
