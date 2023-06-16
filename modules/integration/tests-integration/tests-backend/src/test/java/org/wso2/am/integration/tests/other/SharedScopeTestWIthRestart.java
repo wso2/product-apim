@@ -67,7 +67,6 @@ public class SharedScopeTestWIthRestart extends APIManagerLifecycleBaseTest {
         serverConfigurationManager.applyConfiguration(new File(
                 getAMResourceLocation() + File.separator + "scopes"
                         + File.separator + "deployment.toml"));
-        serverConfigurationManager.restartGracefully();
     }
 
     @Test(groups = { "wso2.am" }, description = "Test add shared scope")
