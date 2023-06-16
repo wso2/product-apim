@@ -16,8 +16,6 @@
 
 package org.wso2.am.integration.tests.other;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -35,7 +33,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SharedScopeTestWIthRestart extends APIManagerLifecycleBaseTest {
+public class SharedScopeTestWithRestart extends APIManagerLifecycleBaseTest {
 
     private String sharedScopeName = "TestSharedScopeWithRestart";
     private String sharedScopeDisplayName = "Test Shared Scope with Restart";
@@ -48,7 +46,7 @@ public class SharedScopeTestWIthRestart extends APIManagerLifecycleBaseTest {
     private ServerConfigurationManager serverConfigurationManager;
 
     @Factory(dataProvider = "userModeDataProvider")
-    public SharedScopeTestWIthRestart(TestUserMode userMode) {
+    public SharedScopeTestWithRestart(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
