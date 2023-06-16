@@ -481,7 +481,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     public void testCreateWebSocketAPIWithMalformedContext() throws Exception {
 
         provider = user.getUserName();
-        String apiContext = "test{version}";
+        String apiContext = "echo{version}";
         String apiVersion = "1.0.0";
 
         URI endpointUri = new URI("ws://" + webSocketServerHost + ":" + webSocketServerPort);
