@@ -18,11 +18,7 @@ rem under the License.
 
 set BC_FIPS_VERSION=1.0.2.3
 set BCPKIX_FIPS_VERSION=1.0.7
-set BCPROV_JDK15ON_VERSION=1.70.0.wso2v1
-set BCPKIX_JDK15ON_VERSION=1.70.0.wso2v1
 
-set EXPECTED_BCPROV_CHECKSUM=261f41c52b6a664a5e9011ba829e78eb314c0ed8
-set EXPECTED_BCPKIX_CHECKSUM=17db4aba24861e306427bdeff03b1c2fac57760f
 set EXPECTED_BC_FIPS_CHECKSUM=da62b32cb72591f5b4d322e6ab0ce7de3247b534
 set EXPECTED_BCPKIX_FIPS_CHECKSUM=fe07959721cfa2156be9722ba20fdfee2b5441b0
 
@@ -48,8 +44,6 @@ set control_plane_bundles_info=%CARBON_HOME%\repository\components\control-plane
 set traffic_manager_bundles_info=%CARBON_HOME%\repository\components\traffic-manager\configuration\org.eclipse.equinox.simpleconfigurator\bundles.info
 set gateway_worker_bundles_info=%CARBON_HOME%\repository\components\gateway-worker\configuration\org.eclipse.equinox.simpleconfigurator\bundles.info
 
-set bcprov_text=bcprov-jdk15on,%BCPROV_JDK15ON_VERSION%,../plugins/bcprov-jdk15on_%BCPROV_JDK15ON_VERSION%.jar,4,true
-set bcpkix_text=bcpkix-jdk15on,%BCPKIX_JDK15ON_VERSION%,../plugins/bcpkix-jdk15on_%BCPKIX_JDK15ON_VERSION%.jar,4,true
 set "homeDir=%userprofile%"
 set server_restart_required=false
 
@@ -64,60 +58,64 @@ goto enableFipsMode
 :disableFipsMode
 if exist "%CARBON_HOME%\repository\components\lib\bc-fips*.jar" (
     set server_restart_required=true
-    echo Remove existing bc-fips jar from lib folder.
+    echo Removing existing bc-fips jar from lib folder.
     DEL /F "%CARBON_HOME%\repository\components\lib\bc-fips*.jar"
-    echo Successfully removed bc-fips__%BC_FIPS_VERSION%.jar from components\lib.
+    echo Successfully removed bc-fips_%BC_FIPS_VERSION%.jar from components\lib.
 )
 if exist "%CARBON_HOME%\repository\components\lib\bcpkix-fips*.jar" (
     set server_restart_required=true
-    echo Remove existing bcpkix-fips jar from lib folder.
+    echo Removing existing bcpkix-fips jar from lib folder.
     DEL /F "%CARBON_HOME%\repository\components\lib\bcpkix-fips*.jar"
-    echo Successfully removed bcpkix-fips_%BC_FIPS_VERSION%.jar from components\lib.
+    echo Successfully removed bcpkix-fips_%BCPKIX_FIPS_VERSION%.jar from components\lib.
 )
 if exist "%CARBON_HOME%\repository\components\dropins\bc_fips*.jar" (
     set server_restart_required=true
-    echo Remove existing bc-fips jar from dropins folder.
+    echo Removing existing bc-fips jar from dropins folder.
     DEL /F "%CARBON_HOME%\repository\components\dropins\bc_fips*.jar"
     echo Successfully removed bc_fips_%BC_FIPS_VERSION%.jar from components\dropins.
 )
 if exist "%CARBON_HOME%\repository\components\dropins\bcpkix_fips*.jar" (
     set server_restart_required=true
-    echo Remove existing bcpkix_fips jar from dropins folder.
+    echo Removing existing bcpkix_fips jar from dropins folder.
     DEL /F "%CARBON_HOME%\repository\components\dropins\bcpkix_fips*.jar"
     echo Successfully removed bcpkix-fips_%BCPKIX_FIPS_VERSION%.jar from components\dropins.
 )
 if not exist "%CARBON_HOME%\repository\components\plugins\bcprov-jdk15on*.jar" (
     set server_restart_required=true
-    if exist "%homeDir%\.wso2-bc\backup\bcprov-jdk15on_%BCPROV_JDK15ON_VERSION%.jar" (
-        move "%homeDir%\.wso2-bc\backup\bcprov-jdk15on_%BCPROV_JDK15ON_VERSION%.jar" "%CARBON_HOME%\repository\components\plugins"
-        echo Moved bcprov-jdk15on_%BCPROV_JDK15ON_VERSION%.jar from %homeDir%\.wso2-bc\backup to components/plugins.
-    ) else (
-        echo Downloading required bcprov-jdk15on jar : bcprov-jdk15on-%BCPROV_JDK15ON_VERSION%
-	    curl https://maven.wso2.org/nexus/content/repositories/releases/org/wso2/orbit/org/bouncycastle/bcprov-jdk15on/%BCPROV_JDK15ON_VERSION%/bcprov-jdk15on-%BCPROV_JDK15ON_VERSION%.jar -o %CARBON_HOME%/repository/components/plugins/bcprov-jdk15on_%BCPROV_JDK15ON_VERSION%.jar
-        FOR /F "tokens=*" %%G IN ('certutil -hashfile "%CARBON_HOME%/repository/components/plugins/bcprov-jdk15on_%BCPROV_JDK15ON_VERSION%.jar" SHA1 ^| FIND /V ":"') DO SET "ACTUAL_CHECKSUM_BCPROVE=%%G"
-        if "%ACTUAL_CHECKSUM_BCPROVE%"=="%EXPECTED_BCPROV_CHECKSUM%" (
-            echo Checksum verified: The downloaded bcprov-jdk15on-%BCPROV_JDK15ON_VERSION%.jar is valid.
-        ) else (
-            echo Checksum verification failed: The downloaded bcprov-jdk15on-%BCPROV_JDK15ON_VERSION%.jar may be corrupted.
-        )
+    if exist "%homeDir%\.wso2-bc\backup\bcprov-jdk15on*.jar" (
+        for /r %homeDir%\.wso2-bc\backup\ %%G in (bcprov-jdk15on*.jar) do (
+        set bcprov_location=%%G
+        set file_name=%%~nG
+      goto checkbcprovVersion
     )
+    :checkbcprovVersion
+    for /f "tokens=2 delims=_" %%v in ("%bcprov_file_name%") do set "bcprov_version=%%v"
+    goto bbb
+
+    :bbb
+    move "%bcprov_location%" "%CARBON_HOME%\repository\components\plugins"
+    echo Moved %bcprov_file_name% from %homeDir%\.wso2-bc\backup to components/plugins.
+    ) else ( echo "Required bcprov-jdk15on jar is not available in %homeDir%/.wso2-bc/backup. Download the jar from maven central repository." )
 )
 if not exist "%CARBON_HOME%\repository\components\plugins\bcpkix-jdk15on*.jar" (
     set server_restart_required=true
-    if exist "%homeDir%\.wso2-bc\backup\bcpkix-jdk15on_%BCPKIX_JDK15ON_VERSION%.jar" (
-        move "%homeDir%\.wso2-bc\backup\bcpkix-jdk15on_%BCPKIX_JDK15ON_VERSION%.jar" "%CARBON_HOME%\repository\components\plugins"
-        echo Moved bcpkix-jdk15on_%BCPKIX_JDK15ON_VERSION%.jar from %homeDir%\.wso2-bc\backup to components/plugins.
-    ) else (
-	    echo Downloading required bcpkix-jdk15on jar : bcpkix-jdk15on-%BCPKIX_JDK15ON_VERSION%
-	    curl https://maven.wso2.org/nexus/content/repositories/releases/org/wso2/orbit/org/bouncycastle/bcpkix-jdk15on/%BCPKIX_JDK15ON_VERSION%/bcpkix-jdk15on-%BCPKIX_JDK15ON_VERSION%.jar -o %CARBON_HOME%/repository/components/plugins/bcpkix-jdk15on_%BCPKIX_JDK15ON_VERSION%.jar
-        FOR /F "tokens=*" %%G IN ('certutil -hashfile "%CARBON_HOME%/repository/components/plugins/bcpkix-jdk15on_%BCPKIX_JDK15ON_VERSION%.jar" SHA1 ^| FIND /V ":"') DO SET "ACTUAL_CHECKSUM_BCPKIX=%%G"
-        if "%ACTUAL_CHECKSUM_BCPKIX%"=="%EXPECTED_BCPKIX_CHECKSUM%" (
-            echo Checksum verified: The downloaded bcpkix-jdk15on-%BCPKIX_JDK15ON_VERSION%.jar is valid.
-        ) else (
-            echo Checksum verification failed: The downloaded bcpkix-jdk15on-%BCPKIX_JDK15ON_VERSION%.jar may be corrupted.
+    if exist "%homeDir%\.wso2-bc\backup\bcpkix-jdk15on*.jar" (
+        for /r %homeDir%\.wso2-bc\backup\ %%G in (bcpkix-jdk15on*.jar) do (
+        set bcpkix_location=%%G
+        set bcpkix_file_name=%%~nG
+        set verify=false
+      goto foundBcPkix1
         )
-    )
+    :foundBcPkix1
+    for /f "tokens=2 delims=_" %%v in ("%bcpkix_file_name%") do set "bcpkix_version=%%v"
+    goto bbb
+
+    :bbb
+    move "%bcpkix_location%" "%CARBON_HOME%\repository\components\plugins"
+    echo Moved %bcpkix_file_name% from %homeDir%\.wso2-bc\backup to components/plugins.
+    ) else ( echo "Required bcpkix-jdk15on jar is not available in %homeDir%/.wso2-bc/backup. Download the jar from maven central repository." )
 )
+
 findstr /c:%bcprov_text% %api_publisher_bundles_info% > nul
 if %errorlevel%==1 (
     set server_restart_required=true
@@ -191,7 +189,7 @@ if %errorlevel%==1 (
 
 goto printRestartMsg
 
-: enableFipsMode
+:enableFipsMode
 set arg1=
 set arg2=
 :parse_args
@@ -208,29 +206,47 @@ if not exist "%homeDir%\.wso2-bc" (
 if not exist "%homeDir%\.wso2-bc\backup" (
     mkdir "%homeDir%\.wso2-bc\backup"
 )
-if exist "%CARBON_HOME%\repository\components\plugins\bcprov-jdk15on*" (
-    set server_restart_required=true
-    echo Remove existing bcprov-jdk15on jar from plugins folder.
-    for /f "delims=" %%a in ('dir /b /s "%CARBON_HOME%\repository\components\plugins\bcprov-jdk15on_*.jar"') do (
-        set bcprov_location=%%a
-        goto check_bcprov_location
-    )
-   :check_bcprov_location
-    move "%bcprov_location%" "%homeDir%\.wso2-bc\backup"
-    echo Successfully removed bcprov-jdk15on_%BCPROV_JDK15ON_VERSION%.jar from components\plugins.
-)
-if exist "%CARBON_HOME%\repository\components\plugins\bcpkix-jdk15on*" (
-    set server_restart_required=true
-    echo Remove existing bcpkix-jdk15on jar from plugins folder.
-    for /f "delims=" %%a in ('dir /b /s "%CARBON_HOME%\repository\components\plugins\bcpkix-jdk15on_*.jar"') do (
-        set bcpkix_location=%%a
-        goto check_bcpkix_location
 
-    )
-   :check_bcpkix_location
-    move "%bcpkix_location%" "%homeDir%\.wso2-bc\backup"
-    echo Successfully removed bcpkix-jdk15on_%BCPKIX_JDK15ON_VERSION%.jar Removed from components\plugins.
+if exist %CARBON_HOME%\repository\components\plugins\bcprov-jdk15on*.jar (
+  set server_restart_required=true
+  for /r %CARBON_HOME%\repository\components\plugins\ %%G in (bcprov-jdk15on*.jar) do (
+    set bcprov_location=%%G
+    set bcprov_file_name=%%~nG
+    goto checkBcVersion
+  )
+  :checkBcVersion
+  for /f "tokens=2 delims=_" %%v in ("%bcprov_file_name%") do set "bcprov_version=%%v"
+  goto removeBcProv
+
+  :removeBcProv
+  echo Removing existing bcprov-jdk15on jar from plugins folder.
+  if exist "%homeDir%\.wso2-bc\backup\bcprov-jdk15on*.jar" (
+      DEL /F "%homeDir%\.wso2-bc\backup\bcprov-jdk15on*.jar"
+  )
+  move "%bcprov_location%" "%homeDir%\.wso2-bc\backup"
+  echo Successfully removed %bcprov_file_name% from components\plugins.
 )
+
+if exist %CARBON_HOME%\repository\components\plugins\bcpkix-jdk15on*.jar (
+  set server_restart_required=true
+  for /r %CARBON_HOME%\repository\components\plugins\ %%G in (bcpkix-jdk15on*.jar) do (
+      set bcpkix_location=%%G
+      set bcpkix_file_name=%%~nG
+	    goto checkBcpkixVersion
+  )
+  :checkBcpkixVersion
+  for /f "tokens=2 delims=_" %%v in ("%bcpkix_file_name%") do set "bcpkix_version=%%v"
+  goto removeBcPkix
+
+  :removeBcPkix
+  echo Removing existing bcpkix-jdk15on jar from plugins folder.
+  if exist "%homeDir%\.wso2-bc\backup\bcpkix-jdk15on*.jar" (
+      DEL /F "%homeDir%\.wso2-bc\backup\bcpkix-jdk15on*.jar"
+  )
+  move "%bcpkix_location%" "%homeDir%\.wso2-bc\backup"
+  echo Successfully removed %bcpkix_file_name% from components\plugins.
+)
+
 if exist "%CARBON_HOME%\repository\components\lib\bc-fips*.jar" (
     for /f "delims=" %%a in ('dir /b /s "%CARBON_HOME%\repository\components\lib\bc-fips*.jar"') do (
         set bcfips_location=%%a
@@ -245,7 +261,7 @@ if exist "%CARBON_HOME%\repository\components\lib\bc-fips*.jar" (
         echo Successfully removed bc-fips_%BC_FIPS_VERSION%.jar from components/lib.
         if exist "%CARBON_HOME%\repository\components\dropins\bc_fips*.jar" (
             set sever_restart_required=true
-            echo Remove existing bc-fips jar from dropins folder.
+            echo Removing existing bc-fips jar from dropins folder.
             del /q "%CARBON_HOME%\repository\components\dropins\bc_fips*.jar" 2> nul
             echo Successfully removed bc-fips_%BC_FIPS_VERSION%.jar from components/dropins.
         )
@@ -266,7 +282,7 @@ if exist "%CARBON_HOME%\repository\components\lib\bcpkix-fips*.jar" (
         echo Successfully removed bcpkix-fips_%BCPKIX_FIPS_VERSION%.jar from components/lib.
         if exist "%CARBON_HOME%\repository\components\dropins\bcpkix_fips*.jar" (
             set sever_restart_required=true
-            echo Remove existing bcpkix-fips jar from dropins folder.
+            echo Removing existing bcpkix-fips jar from dropins folder.
             del /q "%CARBON_HOME%\repository\components\dropins\bcpkix_fips*.jar" 2> nul
             echo Successfully removed bcpkix-fips_%BCPKIX_FIPS_VERSION%.jar from components/dropins.
         )
@@ -345,6 +361,9 @@ if not exist "%CARBON_HOME%\repository\components\lib\bcpkix-fips*.jar" (
     )
 )
 
+set bcprov_text=bcprov-jdk15on,%bcprov_version%,../plugins/bcprov-jdk15on_%bcprov_version%.jar,4,true
+set bcpkix_text=bcpkix-jdk15on,%bcpkix_version%,../plugins/bcpkix-jdk15on_%bcpkix_version%.jar,4,true
+
 set api_publisher_temp_file=%CARBON_HOME%\repository\components\api-publisher-deprecated\configuration\org.eclipse.equinox.simpleconfigurator\api_publisher_temp.info
 findstr /v /c:%bcprov_text% /c:%bcpkix_text% %api_publisher_bundles_info% > !api_publisher_temp_file!
 move /y !api_publisher_temp_file! %api_publisher_bundles_info% > nul
@@ -377,30 +396,28 @@ goto printRestartMsg
 
 :verifyFipsMode
 set verify=true
-if exist "%CARBON_HOME%\repository\components\plugins\bcprov-jdk15on*.jar" (
-	set location=
-	for /f "delims=" %%i in ('dir /b /s "%CARBON_HOME%\repository\components\plugins\bcprov-jdk15on*.jar" ^| findstr /i /c:".jar"') do (
-		set "location=%%i"
-		goto :verifyBcFipsLocation
-	)
-	:verifyBcFipsLocation
-	if not "%location%"=="" (
-		set verify=false
-		echo Found bcprov-jdk15on_%BCPROV_JDK15ON_VERSION%.jar in plugins folder. This jar should be removed.
-	)
+if exist %CARBON_HOME%\repository\components\plugins\bcprov-jdk15on*.jar (
+  for /r %CARBON_HOME%\repository\components\plugins\ %%G in (bcprov-jdk15on*.jar) do (
+    set bc_location=%%G
+    set file_name=%%~nG
+    set verify=false
+    goto foundBcProv
+  )
+  :foundBcProv
+  echo Found %file_name% in plugins folder. This jar should be removed.
 )
-if exist "%CARBON_HOME%\repository\components\plugins\bcpkix-jdk15on*.jar" (
-	set location=
-	for /f "delims=" %%i in ('dir /b /s "%CARBON_HOME%\repository\components\plugins\bcpkix-jdk15on*.jar" ^| findstr /i /c:".jar"') do (
-		set "location=%%i"
-		goto :verifyBcPkixFipsLocation
-	)
-	:verifyBcPkixFipsLocation
-	if not "%location%"=="" (
-		set verify=false
-		echo Found bcpkix-jdk15on_%BCPKIX_JDK15ON_VERSION%.jar in plugins folder. This jar should be removed.
-	)
+
+if exist %CARBON_HOME%\repository\components\plugins\bcpkix-jdk15on*.jar (
+  for /r %CARBON_HOME%\repository\components\plugins\ %%G in (bcpkix-jdk15on*.jar) do (
+    set bcpkix_location=%%G
+    set file_name=%%~nG
+    set verify=false
+    goto foundBcPkix
+  )
+  :foundBcPkix
+  echo Found %file_name% in plugins folder. This jar should be removed.
 )
+
 if exist "%CARBON_HOME%\repository\components\lib\bc-fips*.jar" (
 	if not exist "%CARBON_HOME%\repository\components\lib\bc-fips-%BC_FIPS_VERSION%.jar" (
 		set verify=false
@@ -421,76 +438,76 @@ if exist "%CARBON_HOME%\repository\components\lib\bcpkix-fips*.jar" (
     echo can not be found bc-fips_%BC_FIPS_VERSION%.jar in components/lib folder. This jar should be added.
 )
 
-findstr /i /c:"%bcprov_text%" "%api_publisher_bundles_info%" > nul
+findstr /i /c:"bcprov-jdk15on" "%api_publisher_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcprov_text%" in api-publisher bundles.info. This should be removed.
+    echo Found bcprov-jdk15on entry in api-publisher bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcpkix_text%" "%api_publisher_bundles_info%" > nul
+findstr /i /c:"bcpkix-jdk15on" "%api_publisher_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcpkix_text%" in api-publisher bundles.info. This should be removed.
+    echo Found bcpkix-jdk15on entry in api-publisher bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcprov_text%" "%api_devportal_bundles_info%" > nul
+findstr /i /c:"bcprov-jdk15on" "%api_devportal_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcprov_text%" in api-devportal bundles.info. This should be removed.
+    echo Found bcprov-jdk15on entry in api-devportal bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcpkix_text%" "%api_devportal_bundles_info%" > nul
+findstr /i /c:"bcpkix-jdk15on" "%api_devportal_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcpkix_text%" in api-devportal bundles.info. This should be removed.
+    echo Found bcpkix-jdk15on entry in api-devportal bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcprov_text%" "%api_key_manager_bundles_info%" > nul
+findstr /i /c:"bcprov-jdk15on" "%api_key_manager_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcprov_text%" in api-key-manager bundles.info. This should be removed.
+    echo Found bcprov-jdk15on entry in api-key-manager bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcpkix_text%" "%api_key_manager_bundles_info%" > nul
+findstr /i /c:"bcpkix-jdk15on" "%api_key_manager_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcpkix_text%" in api-key-manager bundles.info. This should be removed.
+    echo Found bcpkix-jdk15on entry in api-key-manager bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcprov_text%" "%default_bundles_info%" > nul
+findstr /i /c:"bcprov-jdk15on" "%default_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcprov_text%" in default bundles.info. This should be removed.
+    echo Found bcprov-jdk15on entry in default bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcpkix_text%" "%default_bundles_info%" > nul
+findstr /i /c:"bcpkix-jdk15on" "%default_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcpkix_text%" in default bundles.info. This should be removed.
+    echo Found bcpkix-jdk15on entry in default bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcprov_text%" "%traffic_manager_bundles_info%" > nul
+findstr /i /c:"bcprov-jdk15on" "%traffic_manager_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcprov_text%" in traffic-manager bundles.info. This should be removed.
+    echo Found bcprov-jdk15on entry in traffic-manager bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcpkix_text%" "%traffic_manager_bundles_info%" > nul
+findstr /i /c:"bcpkix-jdk15on" "%traffic_manager_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcpkix_text%" in traffic-manager bundles.info. This should be removed.
+    echo Found bcpkix-jdk15on entry in traffic-manager bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcprov_text%" "%gateway_worker_bundles_info%" > nul
+findstr /i /c:"bcprov-jdk15on" "%gateway_worker_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcprov_text%" in gateway-worker bundles.info. This should be removed.
+    echo Found bcprov-jdk15on entry in gateway-worker bundles.info. This should be removed.
 )
 
-findstr /i /c:"%bcpkix_text%" "%gateway_worker_bundles_info%" > nul
+findstr /i /c:"bcpkix-jdk15on" "%gateway_worker_bundles_info%" > nul
 if %errorlevel%==0 (
     set verify=false
-    echo Found text "%bcpkix_text%" in gateway-worker bundles.info. This should be removed.
+    echo Found bcpkix-jdk15on entry in gateway-worker bundles.info. This should be removed.
 )
 
 if "%verify%"=="true" (
