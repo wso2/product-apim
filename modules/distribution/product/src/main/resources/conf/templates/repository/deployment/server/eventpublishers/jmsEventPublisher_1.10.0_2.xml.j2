@@ -6,7 +6,7 @@
 {% endif %}
   trace="disable" xmlns="http://wso2.org/carbon/eventpublisher">
   <from streamName="org.wso2.throttle.globalThrottle.stream" version="1.1.0"/>
-  <mapping customMapping="disable" type="map"/>
+  <mapping customMapping="disable" type="json"/>
   <to eventAdapterType="jms">
     <property name="java.naming.factory.initial">org.wso2.andes.jndi.PropertiesFileInitialContextFactory</property>
     <property name="java.naming.provider.url">repository/conf/jndi2.properties</property>
