@@ -16118,6 +16118,7 @@ components:
             display: false
             name: name
             value: value
+        lastUpdatedTimestamp: lastUpdatedTimestamp
         wsdlInfo:
           type: WSDL
         hasThumbnail: false
@@ -16415,6 +16416,8 @@ components:
           example: APPROVED
           type: string
         createdTime:
+          type: string
+        lastUpdatedTimestamp:
           type: string
         lastUpdatedTime:
           type: string
@@ -16922,6 +16925,7 @@ components:
             value: value
         revisionedApiProductId: 01234567-0123-0123-0123-012345678901
         accessControlRoles: []
+        lastUpdatedTimestamp: lastUpdatedTimestamp
         hasThumbnail: false
         visibility: PUBLIC
         transport:
@@ -17145,6 +17149,8 @@ components:
         corsConfiguration:
           $ref: '#/components/schemas/APICorsConfiguration'
         createdTime:
+          type: string
+        lastUpdatedTimestamp:
           type: string
         lastUpdatedTime:
           type: string
