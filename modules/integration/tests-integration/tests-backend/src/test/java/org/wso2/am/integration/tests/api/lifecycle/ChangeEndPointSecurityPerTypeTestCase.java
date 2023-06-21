@@ -145,12 +145,8 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         sandboxApplication = restAPIStore
                 .generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX,
                         null, grantTypes);
-<<<<<<< HEAD
-        DCRParamRequest oauthAppProduction = new DCRParamRequest("dummyapp--production", null, null,
-=======
 
         DCRParamRequest oauthAppProduction = new DCRParamRequest(UUID.randomUUID().toString(), null, null,
->>>>>>> 917d0ac70 (Corrected the test case to block creating the DCR application from the same app name.)
                 user.getUserName(), "password client_credentials", dcrURL, user.getUserName(),
                 user.getPassword(), null);
         DCRParamRequest oauthAppSandbox = new DCRParamRequest(UUID.randomUUID().toString(), null, null, user.getUserName(),
