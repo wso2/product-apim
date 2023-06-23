@@ -71,6 +71,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 
 public class ScenarioTestBase {
 
@@ -196,20 +197,20 @@ public class ScenarioTestBase {
             String dcrURL = baseUrl + "client-registration/v0.17/register";
 
             //DCR call for publisher app
-            DCRParamRequest publisherParamRequest = new DCRParamRequest(RestAPIPublisherImpl.appName, RestAPIPublisherImpl.callBackURL,
+            DCRParamRequest publisherParamRequest = new DCRParamRequest(UUID.randomUUID().toString(), RestAPIPublisherImpl.callBackURL,
                     RestAPIPublisherImpl.tokenScope, RestAPIPublisherImpl.appOwner, RestAPIPublisherImpl.grantType, dcrURL,
                     RestAPIPublisherImpl.username, RestAPIPublisherImpl.password,
                     APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
             ClientAuthenticator.makeDCRRequest(publisherParamRequest);
             //DCR call for dev portal app
-            DCRParamRequest devPortalParamRequest = new DCRParamRequest(RestAPIStoreImpl.appName, RestAPIStoreImpl.callBackURL,
+            DCRParamRequest devPortalParamRequest = new DCRParamRequest(UUID.randomUUID().toString(), RestAPIStoreImpl.callBackURL,
                     RestAPIStoreImpl.tokenScope, RestAPIStoreImpl.appOwner, RestAPIStoreImpl.grantType, dcrURL,
                     RestAPIStoreImpl.username, RestAPIStoreImpl.password,
                     APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
             ClientAuthenticator.makeDCRRequest(devPortalParamRequest);
 
             //DCR call for dev portal app
-            DCRParamRequest adminPortalParamRequest = new DCRParamRequest(RestAPIAdminImpl.appName, RestAPIAdminImpl.callBackURL,
+            DCRParamRequest adminPortalParamRequest = new DCRParamRequest(UUID.randomUUID().toString(), RestAPIAdminImpl.callBackURL,
                     RestAPIAdminImpl.tokenScope, RestAPIAdminImpl.appOwner, RestAPIAdminImpl.grantType, dcrURL,
                     RestAPIAdminImpl.username, RestAPIAdminImpl.password,
                     APIMIntegrationConstants.SUPER_TENANT_DOMAIN);
