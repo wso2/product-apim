@@ -8756,6 +8756,8 @@ components:
               type: fault
           items:
             $ref: '#/components/schemas/MediationPolicy'
+        apiPolicies:
+          $ref: '#/components/schemas/APIOperationPolicies'
         subscriptionAvailability:
           type: string
           description: The subscription availability. Accepts one of the following.
