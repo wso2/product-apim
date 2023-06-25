@@ -27,8 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
 
 import static org.wso2.am.integration.test.Constants.CHAR_AT;
 
@@ -39,7 +38,6 @@ public class ClientAuthenticator {
     private static TrustManager trustAll;
     private static String consumerKey = null;
     private static String consumerSecret = null;
-    private static Map<String, ApplicationKeyBean> applicationKeyMap = new HashMap<>();
     private static final String TLS_PROTOCOL = "TLS";
     private static int count = 0;
     static {
@@ -63,6 +61,11 @@ public class ClientAuthenticator {
 
     public static String getAccessToken(String scopeList, String appName, String callBackURL, String tokenScope, String appOwner,
                                         String grantType, String dcrEndpoint, String username, String password, String tenantDomain, String tokenEndpoint) {
+
+        DCRParamRequest dcrParamRequest = new DCRParamRequest(UUID.randomUUID().toString(), callBackURL,
+                tokenScope, appOwner, grantType, dcrEndpoint,username, password,tenantDomain);
+
+        makeDCRRequest(dcrParamRequest);
         URL url;
         HttpsURLConnection urlConn = null;
         //calling token endpoint
@@ -73,10 +76,8 @@ public class ClientAuthenticator {
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
-            ApplicationKeyBean applicationKeyBean = applicationKeyMap.get(appName);
             String clientEncoded = DatatypeConverter.printBase64Binary(
-                    (applicationKeyBean.getConsumerKey()
-                            + ':' + applicationKeyBean.getConsumerSecret()).getBytes(StandardCharsets.UTF_8));
+                    (consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
             urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
             if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(tenantDomain) || username.contains(CHAR_AT)) {
                 username = username + CHAR_AT + tenantDomain;
@@ -167,9 +168,8 @@ public class ClientAuthenticator {
                 JsonParser parser = new JsonParser();
                 log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DCR Response= " + responseStr);
                 JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
-                applicationKeyBean.setConsumerKey(jObj.getAsJsonPrimitive("clientId").getAsString());
-                applicationKeyBean.setConsumerSecret(jObj.getAsJsonPrimitive("clientSecret").getAsString());
-                applicationKeyMap.put(dcrParamRequest.getAppName(), applicationKeyBean);
+                consumerKey = jObj.getAsJsonPrimitive("clientId").getAsString();
+                consumerSecret = jObj.getAsJsonPrimitive("clientSecret").getAsString();
             } else { //If DCR call fails
                 throw new RuntimeException("DCR call failed. Status code: " + responseCode);
             }
