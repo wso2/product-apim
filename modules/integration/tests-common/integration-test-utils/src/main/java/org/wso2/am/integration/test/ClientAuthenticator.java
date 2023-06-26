@@ -127,7 +127,7 @@ public class ClientAuthenticator {
 
 
 
-    public static ApplicationKeyBean makeDCRRequest(DCRParamRequest dcrParamRequest) {
+    public static void makeDCRRequest(DCRParamRequest dcrParamRequest) {
 
         String applicationName = dcrParamRequest.getAppName();
         try {
@@ -166,12 +166,10 @@ public class ClientAuthenticator {
                 if (statusCode == 200) {  //If the DCR call is success
                     try (InputStream content = httpResponse.getEntity().getContent()) {
                         String responseStr = IOUtils.toString(content);
-                        ApplicationKeyBean applicationKeyBean = new ApplicationKeyBean();
                         JsonParser parser = new JsonParser();
                         JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
                         consumerKey = jObj.getAsJsonPrimitive("clientId").getAsString();
                         consumerSecret = jObj.getAsJsonPrimitive("clientSecret").getAsString();
-                        return applicationKeyBean;
                     }
                 } else { //If DCR call fails
                     throw new RuntimeException("DCR call failed. Status code: " + statusCode);
