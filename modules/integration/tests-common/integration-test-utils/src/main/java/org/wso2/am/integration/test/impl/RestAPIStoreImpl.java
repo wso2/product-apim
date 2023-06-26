@@ -83,6 +83,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.xml.xpath.XPathExpressionException;
 import org.wso2.am.integration.clients.store.api.v1.UsersApi;
@@ -110,7 +111,7 @@ public class RestAPIStoreImpl {
     public UsersApi usersApi = new UsersApi();
     public TopicsApi topicsApi = new TopicsApi();
     public WebhooksApi webhooksApi = new WebhooksApi();
-    public static final String appName = "Integration_Test_App_Store";
+    public static final String appName = UUID.randomUUID().toString();
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
     public static final String appOwner = "admin";

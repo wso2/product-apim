@@ -99,6 +99,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -126,7 +127,7 @@ public class RestAPIPublisherImpl {
     public GlobalMediationPoliciesApi globalMediationPoliciesApi  = new GlobalMediationPoliciesApi();
     public ScopesApi sharedScopesApi = new ScopesApi();
     public ApiClient apiPublisherClient = new ApiClient();
-    public static final String appName = "Integration_Test_App_Publisher";
+    public static final String appName = UUID.randomUUID().toString();
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
     public static final String appOwner = "admin";
