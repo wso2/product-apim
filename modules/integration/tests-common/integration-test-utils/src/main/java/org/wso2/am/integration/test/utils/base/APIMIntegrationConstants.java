@@ -42,6 +42,9 @@ public class APIMIntegrationConstants {
     public static final String API_RESPONSE_ELEMENT_NAME_APIS = "apis";
     public static final String API_RESPONSE_ELEMENT_NAME_ID = "id";
 
+    public static final String API_CONTEXT_MALFORMED_ERROR = "The API context is malformed";
+    public static final String API_PRODUCT_CONTEXT_MALFORMED_ERROR = "The API Product context is malformed";
+
     public static final String OAUTH_DEFAULT_APPLICATION_NAME = "DefaultApplication";
 
     public static final String IS_API_EXISTS = "\"isApiExists\":true";
