@@ -233,6 +233,7 @@
                 <artifactId>org.wso2.carbon.ui</artifactId>
                 <version>${carbon.kernel.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.eclipse.osgi</groupId>
                 <artifactId>org.eclipse.osgi</artifactId>
@@ -856,7 +857,11 @@
                 <artifactId>waffle-jna</artifactId>
                 <version>${waffle-jna.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.wso2.carbon.identity.auth.rest</groupId>
+                <artifactId>org.wso2.carbon.identity.cors.server.feature</artifactId>
+                <version>${identity.carbon.auth.rest.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>
                 <artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>
@@ -1486,6 +1491,7 @@
         <xmlsec.wso2.version>1.5.6-wso2v1</xmlsec.wso2.version>
         <xmlsec.version>2.3.0</xmlsec.version>
         <identity.user.workflow.version>5.6.0</identity.user.workflow.version>
+        <identity.carbon.auth.rest.version>1.4.9</identity.carbon.auth.rest.version>
     </properties>
 
 </project>
