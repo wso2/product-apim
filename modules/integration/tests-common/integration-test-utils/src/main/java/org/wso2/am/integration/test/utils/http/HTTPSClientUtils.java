@@ -26,6 +26,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -92,6 +93,22 @@ public class HTTPSClientUtils {
             Map<String, String> headers, List<NameValuePair> urlParameters) throws IOException {
         CloseableHttpClient httpClient = getHttpsClient();
         HttpResponse response = sendPOSTMessage(httpClient, url, headers, urlParameters);
+        return constructResponse(response);
+    }
+
+    /**
+     * do HTTP OPTIONS operation for the given URL
+     *
+     * @param url     request URL
+     * @param headers headers to be send
+     * @return org.wso2.carbon.automation.test.utils.http.client.HttpResponse
+     * @throws IOException if connection issue occurred
+     */
+    public static org.wso2.carbon.automation.test.utils.http.client.HttpResponse doOptions(String url,
+                                                                                       Map<String, String> headers) throws IOException {
+
+        CloseableHttpClient httpClient = getHttpsClient();
+        HttpResponse response = sendOptionsMessage(httpClient, url, headers);
         return constructResponse(response);
     }
 
@@ -315,6 +332,27 @@ public class HTTPSClientUtils {
         }
         put.setEntity(new StringEntity(body));
         return httpClient.execute(put);
+    }
+
+    /**
+     * OPTIONS function implementation
+     *
+     * @param httpClient    http client to use
+     * @param url           request URL
+     * @param headers       headers to be send
+     * @param body          payload to be send
+     * @return org.apache.http.HttpResponse
+     * @throws IOException if connection issue occurred
+     */
+    private static HttpResponse sendOptionsMessage(CloseableHttpClient httpClient, String url,
+                                                   Map<String, String> headers) throws IOException {
+        HttpOptions options = new HttpOptions(url);
+        if (headers != null) {
+            for (Map.Entry<String, String> head : headers.entrySet()) {
+                options.addHeader(head.getKey(), head.getValue());
+            }
+        }
+        return httpClient.execute(options);
     }
 
     /**

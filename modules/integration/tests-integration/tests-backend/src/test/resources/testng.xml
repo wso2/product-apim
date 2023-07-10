@@ -386,6 +386,8 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityPerTypeTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEndPointSecurityPerTypeTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.TokenEndpointCorsConfig"/>
+            <class name="org.wso2.am.integration.tests.other.TokenEndpointCorsTestCase"/>
         </classes>
     </test>
 
