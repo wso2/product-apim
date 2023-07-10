@@ -299,59 +299,59 @@ else
 
   if grep -q "bcprov-jdk15on" "$api_publisher_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcprov-jdk15on/d' $api_publisher_bundles_info
+    sed -i'' -e '/bcprov-jdk15on/d' $api_publisher_bundles_info
   fi
   if grep -q "bcpkix-jdk15on" "$api_publisher_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcpkix-jdk15on/d' $api_publisher_bundles_info
+    sed -i'' -e  '/bcpkix-jdk15on/d' $api_publisher_bundles_info
   fi
   if grep -q "bcprov-jdk15on" "$api_devportal_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcprov-jdk15on/d' $api_devportal_bundles_info
+    sed -i'' -e  '/bcprov-jdk15on/d' $api_devportal_bundles_info
   fi
   if grep -q "bcpkix-jdk15on" "$api_devportal_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcpkix-jdk15on/d' $api_devportal_bundles_info
+    sed -i'' -e  '/bcpkix-jdk15on/d' $api_devportal_bundles_info
   fi
   if grep -q "bcprov-jdk15on" "$api_key_manager_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcprov-jdk15on/d' $api_key_manager_bundles_info
+    sed -i'' -e  '/bcprov-jdk15on/d' $api_key_manager_bundles_info
   fi
   if grep -q "bcpkix-jdk15on" "$api_key_manager_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcpkix-jdk15on/d' $api_key_manager_bundles_info
+    sed -i'' -e  '/bcpkix-jdk15on/d' $api_key_manager_bundles_info
   fi
   if grep -q "bcprov-jdk15on" "$default_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcprov-jdk15on/d' $default_bundles_info
+    sed -i'' -e  '/bcprov-jdk15on/d' $default_bundles_info
   fi
   if grep -q "bcpkix-jdk15on" "$default_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcpkix-jdk15on/d' $default_bundles_info
+    sed -i'' -e  '/bcpkix-jdk15on/d' $default_bundles_info
   fi
   if grep -q "bcprov-jdk15on" "$control_plane_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcprov-jdk15on/d' $control_plane_bundles_info
+    sed -i'' -e  '/bcprov-jdk15on/d' $control_plane_bundles_info
   fi
   if grep -q "bcpkix-jdk15on" "$control_plane_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcpkix-jdk15on/d' $control_plane_bundles_info
+    sed -i'' -e  '/bcpkix-jdk15on/d' $control_plane_bundles_info
   fi
   if grep -q "bcprov-jdk15on" "$traffic_manager_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcprov-jdk15on/d' $traffic_manager_bundles_info
+    sed -i'' -e  '/bcprov-jdk15on/d' $traffic_manager_bundles_info
   fi
   if grep -q "bcpkix-jdk15on" "$traffic_manager_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcpkix-jdk15on/d' $traffic_manager_bundles_info
+    sed -i'' -e  '/bcpkix-jdk15on/d' $traffic_manager_bundles_info
   fi
   if grep -q "bcprov-jdk15on" "$gateway_worker_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcprov-jdk15on/d' $gateway_worker_bundles_info
+    sed -i'' -e  '/bcprov-jdk15on/d' $gateway_worker_bundles_info
   fi
   if grep -q "bcpkix-jdk15on" "$gateway_worker_bundles_info" ; then
     sever_restart_required=true
-    sed -i '/bcpkix-jdk15on/d' $gateway_worker_bundles_info
+    sed -i'' -e  '/bcpkix-jdk15on/d' $gateway_worker_bundles_info
   fi
 
 	if [ -e $CARBON_HOME/repository/components/lib/bc-fips*.jar ]; then
@@ -375,7 +375,7 @@ else
 		if [ -z "$arg1" ] && [ -z "$arg2" ]; then
       echo "Downloading required bc-fips jar : bc-fips-$BC_FIPS_VERSION"
       curl https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/$BC_FIPS_VERSION/bc-fips-$BC_FIPS_VERSION.jar -o $CARBON_HOME/repository/components/lib/bc-fips-$BC_FIPS_VERSION.jar
-      ACTUAL_CHECKSUM=$(sha1sum $CARBON_HOME/repository/components/lib/bc-fips*.jar | cut -d' ' -f1)
+      ACTUAL_CHECKSUM=$(shasum $CARBON_HOME/repository/components/lib/bc-fips*.jar | cut -d' ' -f1)
       if [ "$EXPECTED_BC_FIPS_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
         echo "Checksum verified: The downloaded bc-fips-$BC_FIPS_VERSION.jar is valid."
       else
@@ -395,7 +395,7 @@ else
 		else
       echo "Downloading required bc-fips jar : bc-fips-$BC_FIPS_VERSION"
       curl $arg2/org/bouncycastle/bc-fips/$BC_FIPS_VERSION/bc-fips-$BC_FIPS_VERSION.jar -o $CARBON_HOME/repository/components/lib/bc-fips-$BC_FIPS_VERSION.jar
-      ACTUAL_CHECKSUM=$(sha1sum $CARBON_HOME/repository/components/lib/bc-fips*.jar | cut -d' ' -f1)
+      ACTUAL_CHECKSUM=$(shasum $CARBON_HOME/repository/components/lib/bc-fips*.jar | cut -d' ' -f1)
       if [ "$EXPECTED_BC_FIPS_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
         echo "Checksum verified: The downloaded bc-fips-$BC_FIPS_VERSION.jar is valid."
       else
@@ -424,7 +424,7 @@ else
     if [ -z "$arg1" ] && [ -z "$arg2" ]; then
       echo "Downloading required bcpkix-fips jar : bcpkix-fips-$BCPKIX_FIPS_VERSION"
       curl https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/$BCPKIX_FIPS_VERSION/bcpkix-fips-$BCPKIX_FIPS_VERSION.jar -o $CARBON_HOME/repository/components/lib/bcpkix-fips-$BCPKIX_FIPS_VERSION.jar
-      ACTUAL_CHECKSUM=$(sha1sum $CARBON_HOME/repository/components/lib/bcpkix-fips*.jar | cut -d' ' -f1)
+      ACTUAL_CHECKSUM=$(shasum $CARBON_HOME/repository/components/lib/bcpkix-fips*.jar | cut -d' ' -f1)
         if [ "$EXPECTED_BCPKIX_FIPS_CHECKSUM" = "$ACTUAL_CHECKSUM" ]; then
           echo "Checksum verified: The downloaded bcpkix-fips-$BCPKIX_FIPS_VERSION.jar is valid."
       else
