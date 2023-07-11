@@ -470,6 +470,7 @@
             <excludes>
                 <!--Need to remove after GA-->
                 <exclude>authenticationendpoint/basicauth.jsp</exclude>
+                <exclude>authenticationendpoint/EndpointConfig.properties</exclude>
                 <exclude>authenticationendpoint/identifierauth.jsp</exclude>
                 <exclude>authenticationendpoint/includes/cookie-policy-content.jsp</exclude>
                 <exclude>authenticationendpoint/includes/header.jsp</exclude>
@@ -526,6 +527,7 @@
             </includes>
             <!--Need to remove after GA-->
             <excludes>
+                <exclude>accountrecoveryendpoint/RecoveryEndpointConfig.properties</exclude>
                 <exclude>accountrecoveryendpoint/self-registration-complete.jsp</exclude>
                 <exclude>accountrecoveryendpoint/password-recovery.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/header.jsp</exclude>
