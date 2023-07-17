@@ -203,10 +203,17 @@ public class DeleteRegisteredApplicationTestCase extends ScenarioTestBase {
         ArrayList grantTypes = new ArrayList();
         grantTypes.add("client_credentials");
         grantTypes.add("password");
-        ApplicationKeyDTO generatedKeys = restAPIStore.generateKeys(applicationID, "3600", null,
-                keyType, null, grantTypes);
-        String consumerKey = generatedKeys.getConsumerKey();
-        String consumerSecret = generatedKeys.getConsumerSecret();
+        String consumerKey = null;
+        String consumerSecret = null;
+        try {
+            ApplicationKeyDTO generatedKeys = restAPIStore.generateKeys(applicationID, "3600", null,
+                    keyType, null, grantTypes);
+            consumerKey = generatedKeys.getConsumerKey();
+            consumerSecret = generatedKeys.getConsumerSecret();
+        } catch (Exception e) {
+            log.error("Error occurred while generating the keys for application: " + applicationID + ", key type: " +
+                    keyType + ". ", e);
+        }
         Assert.assertNotNull(consumerKey, "Error in generating keys for application, consumer key not found");
         Assert.assertNotNull(consumerSecret, "Error in generating keys for application, consumerSecret key not found");
     }
