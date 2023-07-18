@@ -32,7 +32,9 @@ import org.wso2.am.integration.tests.api.lifecycle.AddEndPointSecurityPerTypeTes
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Map;
 
 public class TokenEndpointCorsTestCase extends APIManagerLifecycleBaseTest {
 
