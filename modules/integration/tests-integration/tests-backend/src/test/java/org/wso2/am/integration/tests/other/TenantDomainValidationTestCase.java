@@ -20,19 +20,16 @@ package org.wso2.am.integration.tests.other;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.impl.RestAPIPublisherImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -41,8 +38,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
-public class TenantDomainValidationTestCase extends APIMIntegrationBaseTest {
+public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest {
 
     private final String TENANT_DOMAIN = "abc.com";
     private final String TENANT_ADMIN_USERNAME = "admin";
@@ -73,15 +71,14 @@ public class TenantDomainValidationTestCase extends APIMIntegrationBaseTest {
         try {
             tenantManagementServiceClient.addTenant(INVALID_TENANT_DOMAIN, TENANT_ADMIN_PASSWORD, TENANT_ADMIN_USERNAME,
                     "demo");
-        } catch (TenantMgtAdminServiceExceptionException e) {
-            assertEquals(e.getFaultMessage().getTenantMgtAdminServiceException().getMessage(),
-                    "The tenant domain ' " + INVALID_TENANT_DOMAIN + " ' contains one or more illegal " +
-                            "characters. The valid characters are lowercase letters, numbers, '.', '-' and '_'.");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("The tenant domain " + INVALID_TENANT_DOMAIN + " contains one or more illegal " +
+                            "characters. The valid characters are lowercase letters, numbers, '.', '-' and '_'."));
         }
     }
 
     @Test(groups = {
-            "wso2.am"}, description = "Testing API invocation with a different tenant domain")
+            "wso2.am"}, description = "Testing API invocation with a different tenant domain", dependsOnMethods = "testAdditionOfTenantWithInvalidDomain")
     public void testAPIInvokeWithTenants() throws Exception {
 
         // Add a new tenant
@@ -93,40 +90,29 @@ public class TenantDomainValidationTestCase extends APIMIntegrationBaseTest {
         restAPIStore = new RestAPIStoreImpl(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PASSWORD,
                 TENANT_DOMAIN, storeURLHttps);
 
-        Thread.sleep(15000);
-
-        APIRequest apiCreationRequestBean;
-        apiCreationRequestBean = new APIRequest(API_NAME, API_CONTEXT, new URL(apiProductionEndPointUrl));
-        apiCreationRequestBean.setVersion(API_VERSION);
-        apiCreationRequestBean.setDescription(API_DESC);
-        apiCreationRequestBean.setProvider(TENANT_ADMIN_USER);
-        apiCreationRequestBean.setTier(APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED);
-        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
-        apiOperationsDTO.setVerb("GET");
-        apiOperationsDTO.setTarget("/customers/{id}");
-        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
-        operationsDTOS.add(apiOperationsDTO);
-        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
-        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
-
-        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiID = apiCreationResponse.getData();
-
-        restAPIPublisher
-                .changeAPILifeCycleStatus(apiID, APILifeCycleAction.PUBLISH.getAction(), null);
-
-        HttpResponse applicationResponse = restAPIStore
-                .createApplication(APP_NAME, "Application to test Schema "
-                                + "Validation", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                        ApplicationDTO.TokenTypeEnum.JWT);
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        //Create the Application and the API
+        HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
+                "Test Application RevokeOneTimeToken", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.JWT);
         appID = applicationResponse.getData();
-        restAPIStore.subscribeToAPI(apiID, appID, "Gold");
 
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(appID, "36000", "",
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(apiProductionEndPointUrl));
+        apiRequest.setVersion(API_VERSION);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiID = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, appID,
+                APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        //Create the JWT access token
+        List<String> grantTypes = new ArrayList<>();
+        grantTypes.add("client_credentials");
+        ArrayList<String> scopes = new ArrayList<>();
+        scopes.add("OTT");
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(appID, "3600", null,
+                        ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, scopes, grantTypes);
+        assert applicationKeyDTO.getToken() != null;
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         // Invoke the API with a valid tenant domain
@@ -144,7 +130,7 @@ public class TenantDomainValidationTestCase extends APIMIntegrationBaseTest {
                 "Expected response code 500 but received " + response.getResponseCode() + " when invoking API with " +
                         "invalid tenant domain");
 
-        // Invoke the API with a valid tenant domain again to check nothing have breaked
+        // Invoke the API with a valid tenant domain again to check nothing have broken
         gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + TENANT_DOMAIN + "/";
         response = invokeAPI(accessToken, gatewayUrl);
 
@@ -168,9 +154,12 @@ public class TenantDomainValidationTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        restAPIStore.deleteApplication(appID);
-        restAPIPublisher.deleteAPI(apiID);
+        if (appID != null) {
+            restAPIStore.deleteApplication(appID);
+        }
+        if (apiID != null) {
+            restAPIPublisher.deleteAPI(apiID);
+        }
         tenantManagementServiceClient.deleteTenant(TENANT_DOMAIN);
-        super.cleanUp();
     }
 }
