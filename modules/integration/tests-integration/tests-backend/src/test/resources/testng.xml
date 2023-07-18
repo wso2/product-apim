@@ -415,6 +415,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
             <class name="org.wso2.am.integration.tests.login.PasswordChangeTestCase"/>
+            <class name="org.wso2.am.integration.tests.login.TenantUserLoginTestCase"/>
         </classes>
     </test>
 
