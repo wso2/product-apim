@@ -53,6 +53,11 @@
         <!--ClaimsRetrieverImplClass>org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever</ClaimsRetrieverImplClass-->
         {% endif %}
 
+        <!-- Specifies whether the backend JWT header should include the kid claim. -->
+        {% if apim.jwt.use_kid_property is defined %}
+            <UseKidProperty>{{apim.jwt.use_kid_property}}</UseKidProperty>
+        {% endif %}
+
         <!-- The dialectURI under which the claimURIs that need to be appended to the
              JWT are defined. Not used with custom ClaimsRetriever implementations. The
              same value is used in the keys for appending the default properties to the
@@ -731,6 +736,10 @@
             <AllowedURI>
                 <URI>/api/am/service-catalog/{serviceCatalogVersion}/oas.yaml</URI>
                 <HTTPMethods>GET,HEAD</HTTPMethods>
+            </AllowedURI>
+            <AllowedURI>
+                <URI>/api/am/gateway/v2/server-startup-healthcheck</URI>
+                <HTTPMethods>GET</HTTPMethods>
             </AllowedURI>
         </AllowedURIs>
         <ETagSkipList>
