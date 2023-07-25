@@ -98,16 +98,16 @@ else
     PRODUCT_VERSION="-$PRODUCT_VERSION"
 fi
 
-cd $HOME/../modules/integration/tests-common/integration-test-utils
-mvn clean install -Dmaven.test.skip=true
-cd $HOME
+#cd $HOME/../modules/integration/tests-common/integration-test-utils
+#mvn clean install -Dmaven.test.skip=true
+#cd $HOME
 
 #=============== Execute Scenarios ===============================================
 #mvn clean install -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 #-DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 #-fae -B -f pom.xml
 #sleep 5000
-mvn clean install -fae
+mvn clean install -fae -Dmaven.repo.local=~../.m2/repository
 MVNSTATE=$?
 
 #=============== Copy Surefire Reports ===========================================
