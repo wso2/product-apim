@@ -107,7 +107,7 @@ cd $HOME
 #-DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 #-fae -B -f pom.xml
 #sleep 5000
-mvn clean install -fae -Dmaven.repo.local=../.m2/repository
+mvn clean install -fae
 MVNSTATE=$?
 
 #=============== Copy Surefire Reports ===========================================
