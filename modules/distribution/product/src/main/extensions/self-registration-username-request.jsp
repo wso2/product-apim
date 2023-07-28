@@ -36,6 +36,7 @@
 <%@ taglib prefix="layout" uri="org.wso2.identity.apps.taglibs.layout.controller" %>
 
 <jsp:directive.include file="includes/localize.jsp"/>
+<jsp:directive.include file="tenant-resolve.jsp"/>
 <jsp:directive.include file="includes/layout-resolver.jsp"/>
 
 <%
