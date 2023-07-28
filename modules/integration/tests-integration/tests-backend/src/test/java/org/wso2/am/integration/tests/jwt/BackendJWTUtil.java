@@ -55,7 +55,7 @@ public class BackendJWTUtil {
         JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
         Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
         Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
-        Assert.assertFalse(jsonHeaderObject.has("kid"));
+        Assert.assertTrue(jsonHeaderObject.has("kid"));
     }
 
     /**
