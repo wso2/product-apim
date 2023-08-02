@@ -114,7 +114,7 @@ shift
 set DEBUG_PORT=%1
 if "%DEBUG_PORT%"=="" goto noDebugPort
 if not "%JAVA_OPTS%"=="" echo Warning !!!. User specified JAVA_OPTS will be ignored, once you give the --debug option.
-set JAVA_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%DEBUG_PORT%
+set JAVA_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Djdk.util.zip.disableZip64ExtraFieldValidation=true -Djdk.nio.zipfs.allowDotZipEntry=true -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%DEBUG_PORT%
 echo Please start the remote debugging client to continue...
 goto findJdk
 
