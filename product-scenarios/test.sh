@@ -99,7 +99,7 @@ else
 fi
 
 cd $HOME/../modules/integration/tests-common/integration-test-utils
-mvn clean install -Dmaven.test.skip=true
+mvn clean install -Dmaven.test.skip=true -Dmaven.repo.local="${INPUT_DIR}/m2"
 cd $HOME
 
 #=============== Execute Scenarios ===============================================
@@ -107,7 +107,7 @@ cd $HOME
 #-DsuiteXmlFile=src/test/resources/testng${PRODUCT_VERSION}.xml \
 #-fae -B -f pom.xml
 #sleep 5000
-mvn clean install -fae
+mvn clean install -fae -Dmaven.repo.local="${INPUT_DIR}/m2"
 MVNSTATE=$?
 
 #=============== Copy Surefire Reports ===========================================
