@@ -23,6 +23,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
@@ -55,6 +56,7 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
     private final String CUSTOM_AUTHORIZATION_HEADER = "Test-Custom-Header";
+    private final String DEFAULT_API_KEY_HEADER = "ApiKey";
     private final String CUSTOM_API_KEY_HEADER = "Custom-ApiKey-Header";
     private final String API1_NAME = "CustomAuthHeaderTestAPI1";
     private final String API1_CONTEXT = "customAuthHeaderTest1";
@@ -141,8 +143,9 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
                 "Response code mismatched");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Set a custom Api key header for all APIs in the system.")
-    public void testSystemWideCustomApiKeyHeader() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Invoke an API with default API Key header",
+            dependsOnMethods = "testSystemWideCustomAuthHeader")
+    public void testInvokeAPIWIthDefaultApiKeyHeader() throws Exception {
 
         // Genarate API Keys for the application
         APIKeyDTO apiKeyDTO = restAPIStore
@@ -151,7 +154,42 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         assertNotNull(apiKeyDTO, "API Key generation failed");
         String apiKey = apiKeyDTO.getApikey();
 
-        // Test whether a request can be made with the correct custom API Key header
+        // Test whether a request can be made with the default API Key header
+        Map<String, String> requestHeaders1 = new HashMap<>();
+        requestHeaders1.put("accept", APPLICATION_JSON_CONTENT);
+        requestHeaders1.put(DEFAULT_API_KEY_HEADER, apiKey);
+        HttpResponse apiResponse1 = HttpRequestUtil.doGet(invocationUrl, requestHeaders1);
+        assertEquals(apiResponse1.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched");
+
+        // Test whether the 401 Unauthorized Response is returned with incorrect API Key header
+        Map<String, String> requestHeaders2 = new HashMap<>();
+        requestHeaders2.put("accept", APPLICATION_JSON_CONTENT);
+        requestHeaders2.put(CUSTOM_API_KEY_HEADER, apiKey);
+        HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
+        assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
+                "Response code mismatched");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Invoke an API with custom API Key header",
+            dependsOnMethods = "testInvokeAPIWIthDefaultApiKeyHeader")
+    public void testInvokeAPIWIthCustomApiKeyHeader() throws Exception {
+
+        // Genarate API Keys for the application
+        APIKeyDTO apiKeyDTO = restAPIStore
+                .generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
+                        -1, null, null);
+        assertNotNull(apiKeyDTO, "API Key generation failed");
+        String apiKey = apiKeyDTO.getApikey();
+
+        // Update the API with custom API Key header
+        APIDTO apidto = restAPIPublisher.getAPIByID(apiId);
+        apidto.setApiKeyHeader(CUSTOM_API_KEY_HEADER);
+        restAPIPublisher.updateAPI(apidto);
+        createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        Thread.sleep(10000);
+
+        // Test whether a request can be made with the custom API Key header
         Map<String, String> requestHeaders1 = new HashMap<>();
         requestHeaders1.put("accept", APPLICATION_JSON_CONTENT);
         requestHeaders1.put(CUSTOM_API_KEY_HEADER, apiKey);
@@ -162,7 +200,7 @@ public class CustomHeaderTestCase extends APIManagerLifecycleBaseTest {
         // Test whether the 401 Unauthorized Response is returned with default API Key header
         Map<String, String> requestHeaders2 = new HashMap<>();
         requestHeaders2.put("accept", APPLICATION_JSON_CONTENT);
-        requestHeaders2.put("apiKey", apiKey);
+        requestHeaders2.put(DEFAULT_API_KEY_HEADER, apiKey);
         HttpResponse apiResponse2 = HttpRequestUtil.doGet(invocationUrl, requestHeaders2);
         assertEquals(apiResponse2.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched");
