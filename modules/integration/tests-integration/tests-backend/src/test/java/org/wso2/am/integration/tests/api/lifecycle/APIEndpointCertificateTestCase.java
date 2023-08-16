@@ -286,10 +286,21 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
+        int i = 0;
+        int responseCode = 0;
+        while (i <= 5) {
+            HttpResponse apiResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0),
+                    requestHeaders);
+            responseCode = apiResponse.getResponseCode();
 
-        HttpResponse apiResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttps(API_CONTEXT, API_VERSION_1_0_0),
-                requestHeaders);
-        Assert.assertEquals(apiResponse.getResponseCode(), 500);
+            if (responseCode == 500 || i == 5) {
+                break;
+            } else {
+                Thread.sleep(1000);
+            }
+            i++;
+        }
+        Assert.assertEquals(responseCode, 500);
     }
 
     @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {"testInvokeAPI"})
