@@ -364,6 +364,10 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_CREATED_TIME)
             private String createdTime;
 
+        public static final String SERIALIZED_NAME_LAST_UPDATED_TIMESTAMP = "lastUpdatedTimestamp";
+        @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIMESTAMP)
+            private String lastUpdatedTimestamp;
+
         public static final String SERIALIZED_NAME_LAST_UPDATED_TIME = "lastUpdatedTime";
         @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
             private String lastUpdatedTime;
@@ -1147,6 +1151,29 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
+        public APIProductDTO lastUpdatedTimestamp(String lastUpdatedTimestamp) {
+        
+        this.lastUpdatedTimestamp = lastUpdatedTimestamp;
+        return this;
+        }
+
+    /**
+        * Get lastUpdatedTimestamp
+    * @return lastUpdatedTimestamp
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getLastUpdatedTimestamp() {
+        return lastUpdatedTimestamp;
+    }
+
+
+    public void setLastUpdatedTimestamp(String lastUpdatedTimestamp) {
+        this.lastUpdatedTimestamp = lastUpdatedTimestamp;
+    }
+
+
         public APIProductDTO lastUpdatedTime(String lastUpdatedTime) {
         
         this.lastUpdatedTime = lastUpdatedTime;
@@ -1327,6 +1354,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             Objects.equals(this.businessInformation, apIProduct.businessInformation) &&
             Objects.equals(this.corsConfiguration, apIProduct.corsConfiguration) &&
             Objects.equals(this.createdTime, apIProduct.createdTime) &&
+            Objects.equals(this.lastUpdatedTimestamp, apIProduct.lastUpdatedTimestamp) &&
             Objects.equals(this.lastUpdatedTime, apIProduct.lastUpdatedTime) &&
             Objects.equals(this.gatewayVendor, apIProduct.gatewayVendor) &&
             Objects.equals(this.apis, apIProduct.apis) &&
@@ -1337,7 +1365,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, gatewayVendor, apis, scopes, categories, workflowStatus);
+        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTimestamp, lastUpdatedTime, gatewayVendor, apis, scopes, categories, workflowStatus);
     }
 
 
@@ -1378,6 +1406,7 @@ sb.append("class APIProductDTO {\n");
     sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
     sb.append("    corsConfiguration: ").append(toIndentedString(corsConfiguration)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
+    sb.append("    lastUpdatedTimestamp: ").append(toIndentedString(lastUpdatedTimestamp)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
     sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
     sb.append("    apis: ").append(toIndentedString(apis)).append("\n");

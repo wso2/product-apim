@@ -195,6 +195,14 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3226APINameWithDifferentCaseTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APICategoriesTestCase"/>
             <class name="org.wso2.am.integration.tests.other.SharedScopeTestCase"/>
+            <class name="org.wso2.am.integration.tests.analytics.APIMAnalyticsTest"/>
+        </classes>
+    </test>
+
+    <test name="apim-integration-tests-shared-scope-with-restart" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group1"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.SharedScopeTestWithRestart"/>
         </classes>
     </test>
 
@@ -452,6 +460,19 @@
     <test name="apim-tenant-validation" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.other.TenantDomainValidationTestCase"/>
+        </classes>
+    </test>
+    <test name="apim-websocket-invocation-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group1"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPIInvocationWithTracingTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-integration-tests-mandatory-properties-with-restart" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group1"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.MandatoryPropertiesTestWithRestart"/>
         </classes>
     </test>
     <!--

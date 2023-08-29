@@ -45,8 +45,9 @@ show_as_token_endpoint_url = true
 service_url = "https://localhost:${mgt.transport.https.port}/services/"
 username = "admin"
 password = "admin"
-http_endpoint = "ws://wsserverhost:9797"
-https_endpoint = "https://localhost:9898"
+ws_endpoint = "ws://localhost:9099"
+http_endpoint = "http://localhost:${http.nio.port}"
+https_endpoint = "https://localhost:${https.nio.port}"
 
 [[apim.gateway.environment]]
 name = "devportalEnv"
@@ -75,8 +76,19 @@ allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
 allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
 allow_credentials = false
 
+[[event_handler]]
+name="userPostSelfRegistration"
+subscriptions=["POST_ADD_USER"]
+
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
+passthru_https.sender.ssl_profile.interval = 6000
+
+[security_audit]
+api_token="b57973cf-b74c-4ade-921d-ece83251eceb"
+collection_id="f73b8171-4f71-499b-891a-d34aa71f2d45"
+base_url="https://localhost:9943/am-auditApi-sample/api/auditapi"
+global=true
 
 [apim.certificate_reloader]
 period = "1m"
@@ -97,8 +109,8 @@ password = "${admin.password}"
 
 [apim.sync_runtime_artifacts.gateway.skip_list]
 apis = ["admin--git2231head_v1.0.0.xml","admin--PizzaShackAPI_v1.0.0.xml","admin--ScriptMediatorAPI_v1.0.xml",
-"APIThrottleBackendAPI.xml","BackEndSecurity.xml","DigestAuth_API.xml","git2231.xml","HttpPATCHSupport_API.xml",
-    "JWKS-Backend.xml","JWTBackendAPI.xml","multiVSR_v1.0.0.xml","Response_API_1.xml","Response_API_2.xml","Response_Custom_API.xml","Response_Error_API.xml","Response_Loc_API.xml","SpecialCRN_v1.0.0.xml","status_code_204_API.xml","stockquote.xml","XML_API.xml","Version1.xml","Version2.xml","schemaValidationAPI.xml"]
+    "APIThrottleBackendAPI.xml","BackEndSecurity.xml","DigestAuth_API.xml","git2231.xml","HttpPATCHSupport_API.xml","JWKS-Backend.xml","JWTBackendAPI.xml","multiVSR_v1.0.0.xml","Response_API_1.xml","Response_API_2.xml","Response_Custom_API.xml","Response_Error_API.xml","Response_Loc_API.xml","SpecialCRN_v1.0.0.xml","status_code_204_API.xml","stockquote.xml","XML_API.xml","Version1.xml","Version2.xml","schemaValidationAPI.xml"]
 
-[oauth]
-show_display_name_in_consent_page = true
+[apim.http_client]
+max_total= "200"
+default_max_per_route= "2"

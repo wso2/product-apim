@@ -16059,6 +16059,40 @@ components:
           value: value
         lifeCycleStatus: CREATED
         accessControl: NONE
+        apiPolicies:
+          request:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          response:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          fault:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
         monetization:
           enabled: true
           properties:
@@ -16118,6 +16152,7 @@ components:
             display: false
             name: name
             value: value
+        lastUpdatedTimestamp: lastUpdatedTimestamp
         wsdlInfo:
           type: WSDL
         hasThumbnail: false
@@ -16348,6 +16383,8 @@ components:
           items:
             $ref: '#/components/schemas/MediationPolicy'
           type: array
+        apiPolicies:
+          $ref: '#/components/schemas/APIOperationPolicies'
         subscriptionAvailability:
           default: CURRENT_TENANT
           description: The subscription availability. Accepts one of the following.
@@ -16415,6 +16452,8 @@ components:
           example: APPROVED
           type: string
         createdTime:
+          type: string
+        lastUpdatedTimestamp:
           type: string
         lastUpdatedTime:
           type: string
@@ -16922,6 +16961,7 @@ components:
             value: value
         revisionedApiProductId: 01234567-0123-0123-0123-012345678901
         accessControlRoles: []
+        lastUpdatedTimestamp: lastUpdatedTimestamp
         hasThumbnail: false
         visibility: PUBLIC
         transport:
@@ -17145,6 +17185,8 @@ components:
         corsConfiguration:
           $ref: '#/components/schemas/APICorsConfiguration'
         createdTime:
+          type: string
+        lastUpdatedTimestamp:
           type: string
         lastUpdatedTime:
           type: string
