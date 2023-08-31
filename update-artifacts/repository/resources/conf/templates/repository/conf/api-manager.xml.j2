@@ -1123,36 +1123,47 @@
     {% endif %}
 
     {% if apim.redis_config is defined %}
-        <RedisConfig>
-            {% if apim.redis_config.host is defined %}
-            <RedisHost>{{apim.redis_config.host}}</RedisHost>
+    <RedisConfig>
+        {% if apim.redis_config.host is defined %}
+        <RedisHost>{{apim.redis_config.host}}</RedisHost>
+        {% endif %}
+        {% if apim.redis_config.port is defined %}
+        <RedisPort>{{apim.redis_config.port}}</RedisPort>
+        {% endif %}
+        {% if apim.redis_config.user is defined %}
+        <RedisUser>{{apim.redis_config.user}}</RedisUser>
+        {% endif %}
+        {% if apim.redis_config.password is defined %}
+        <RedisPassword>{{apim.redis_config.password}}</RedisPassword>
+        {% endif %}
+        {% if apim.redis_config.database_id is defined %}
+        <RedisDatabaseId>{{apim.redis_config.database_id}}</RedisDatabaseId>
+        {% endif %}
+        {% if apim.redis_config.connection_timeout is defined %}
+        <RedisConnectionTimeout>{{apim.redis_config.connection_timeout}}</RedisConnectionTimeout>
+        {% endif %}
+        {% if apim.redis_config.ssl is defined %}
+        <RedisIsSslEnabled>{{apim.redis_config.ssl}}</RedisIsSslEnabled>
+        {% endif %}
+        {% if apim.redis_config.gateway_id is defined %}
+        <GatewayId>{{apim.redis_config.gateway_id}}</GatewayId>
+        {% endif %}
+        {% if apim.redis_config.min_gateway_count is defined %}
+        <MinGatewayCount>{{apim.redis_config.min_gateway_count}}</MinGatewayCount>
+        {% endif %}
+        {% if apim.redis_config.key_lock_retrieval_timeout is defined %}
+        <KeyLockRetrievalTimeout>{{apim.redis_config.key_lock_retrieval_timeout}}</KeyLockRetrievalTimeout>
+        {% else %}
+        <KeyLockRetrievalTimeout>50</KeyLockRetrievalTimeout>
+        {% endif %}
+        <Properties>
+            {% if apim.redis_config.pool_options is defined %}
+            {% for property_name,property_value in apim.redis_config.pool_options.items() %}
+             <{{property_name}}>{{property_value}}</{{property_name}}>
+            {% endfor %}
             {% endif %}
-            {% if apim.redis_config.port is defined %}
-            <RedisPort>{{apim.redis_config.port}}</RedisPort>
-            {% endif %}
-            {% if apim.redis_config.user is defined %}
-            <RedisUser>{{apim.redis_config.user}}</RedisUser>
-            {% endif %}
-            {% if apim.redis_config.password is defined %}
-            <RedisPassword>{{apim.redis_config.password}}</RedisPassword>
-            {% endif %}
-            {% if apim.redis_config.database_id is defined %}
-            <RedisDatabaseId>{{apim.redis_config.database_id}}</RedisDatabaseId>
-            {% endif %}
-            {% if apim.redis_config.connection_timeout is defined %}
-            <RedisConnectionTimeout>{{apim.redis_config.connection_timeout}}</RedisConnectionTimeout>
-            {% endif %}
-            {% if apim.redis_config.ssl is defined %}
-            <RedisIsSslEnabled>{{apim.redis_config.ssl}}</RedisIsSslEnabled>
-            {% endif %}
-            <Properties>
-                {% if apim.redis_config.pool_options is defined %}
-                {% for property_name,property_value in apim.redis_config.pool_options.items() %}
-                 <{{property_name}}>{{property_value}}</{{property_name}}>
-                {% endfor %}
-                {% endif %}
-            </Properties>
-        </RedisConfig>
+        </Properties>
+    </RedisConfig>
     {% endif %}
 
     {% if apim.devportal.application_attributes is defined %}
