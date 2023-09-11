@@ -312,6 +312,17 @@
         </classes>
     </test>
 
+    <test name="apim-admin-rest-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group4"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.restapi.admin.EnvironmentTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.KeyManagersTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.APISystemScopesTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.ThrottlePolicyExportImportTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.GetThrottlingPoliciesTestCase"/>
+        </classes>
+    </test>
+
     <test name="apim-integration-tests-endpoint-security" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group2"/>
         <classes>
