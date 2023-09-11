@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright (c) 2023, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ WSO2 Inc. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="apim-pattern9-test-suite">
+    <parameter name="useDefaultListeners" value="false"/>
+
+    <test name="apim-integration-tests-graphql" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.graphql.GraphqlTestCase"/>
+            <class name="org.wso2.am.integration.tests.graphqlqueryanalysis.GraphQLQueryAnalysisTest"/>
+            <class name="org.wso2.am.integration.tests.graphql.GraphqlSubscriptionTestCase"/>
+        </classes>
+    </test>
+
+    <test name="admin-rest-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.APIDenyPolicyTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.ApplicationThrottlingPolicyTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.SubscriptionThrottlingPolicyTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.CustomThrottlingPolicyTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.AdvancedThrottlingPolicyTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
+            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-streaming-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.websub.ThrottlingTestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.websub.SecretValidationTestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.async.AsyncAPITestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.streamingapis.websub.FailedWebSubSubscriptionTestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.websub.MultipleWebSubSubcriptionTestCase"/>
+            <class name="org.wso2.am.integration.tests.streamingapis.websub.LeaseTimeSubscriptionTestCase"/>-->
+        </classes>
+    </test>
+
+    <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
+            <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
+            <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
+            <!--THis test will be enabled once the stats event streams are finalized  -->
+            <!-- <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>-->
+            <!-- Temporarily disabling intermittently failing test-->
+            <!-- <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/> -->
+            <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER5843WSDLHostnameTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIM4312NPEAfterRequestTimeoutTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.GIT2231HeadRequestNPEErrorTestCase"/>
+            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPICorsValidationTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-integration-tests-workflow" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
+            <class name="org.wso2.am.integration.tests.workflow.WorkflowApprovalExecutorTest"/>
+        </classes>
+    </test>
+
+</suite>
