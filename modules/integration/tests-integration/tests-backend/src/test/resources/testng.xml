@@ -266,31 +266,6 @@
         </classes>
     </test>
 
-    <test name="apim-integration-tests-graphql" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group4"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.graphql.GraphqlTestCase"/>
-            <class name="org.wso2.am.integration.tests.graphqlqueryanalysis.GraphQLQueryAnalysisTest"/>
-            <class name="org.wso2.am.integration.tests.graphql.GraphqlSubscriptionTestCase"/>
-        </classes>
-    </test>
-
-    <test name="admin-rest-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group4"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.other.APIDenyPolicyTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.ApplicationThrottlingPolicyTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.SubscriptionThrottlingPolicyTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.CustomThrottlingPolicyTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.AdvancedThrottlingPolicyTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.admin.EnvironmentTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.admin.KeyManagersTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.admin.APISystemScopesTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.ThrottlePolicyExportImportTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.GetThrottlingPoliciesTestCase"/>
-        </classes>
-    </test>
-
     <!--Can Remove these as well-->
     <test name="rest-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
@@ -311,47 +286,6 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationWithCustomAttributesTestCase"/>-->
         </classes>
     </test>
-    <test name="apim-websocket-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group4"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
-            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
-        </classes>
-    </test>
-
-    <test name="apim-streaming-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group4"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.streamingapis.serversentevents.ServerSentEventsAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.websub.WebSubAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.websub.ThrottlingTestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.websub.SecretValidationTestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.async.AsyncAPITestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.streamingapis.websub.FailedWebSubSubscriptionTestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.websub.MultipleWebSubSubcriptionTestCase"/>
-            <class name="org.wso2.am.integration.tests.streamingapis.websub.LeaseTimeSubscriptionTestCase"/>-->
-        </classes>
-    </test>
-
-    <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group4"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
-            <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
-            <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
-            <!--THis test will be enabled once the stats event streams are finalized  -->
-            <!-- <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>-->
-            <!-- Temporarily disabling intermittently failing test-->
-            <!-- <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/> -->
-            <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIMANAGER5843WSDLHostnameTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIM4312NPEAfterRequestTimeoutTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.GIT2231HeadRequestNPEErrorTestCase"/>
-            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPICorsValidationTestCase"/>
-        </classes>
-    </test>
-
-
 
     <test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group2"/>
@@ -402,14 +336,6 @@
         <classes>
             <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
             <class name="org.wso2.am.integration.tests.login.PasswordChangeTestCase"/>
-        </classes>
-    </test>
-
-    <test name="apim-integration-tests-workflow" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group4"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
-            <class name="org.wso2.am.integration.tests.workflow.WorkflowApprovalExecutorTest"/>
         </classes>
     </test>
 

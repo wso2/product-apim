@@ -96,6 +96,7 @@ under the License.
                             <suiteXmlFiles>
                                 <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                                 <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                                <suiteXmlFile>src/test/resources/testng-non-db-tests.xml</suiteXmlFile>
                             </suiteXmlFiles>
                             <systemProperties>
                                 <property>
