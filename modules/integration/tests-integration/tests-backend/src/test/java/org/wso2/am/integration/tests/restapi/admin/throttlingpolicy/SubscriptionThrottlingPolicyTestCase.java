@@ -17,6 +17,8 @@
 
 package org.wso2.am.integration.tests.restapi.admin.throttlingpolicy;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -58,7 +60,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
-
+    private static final Log log = LogFactory.getLog(SubscriptionThrottlingPolicyTestCase.class);
     private String displayName = "Test Policy";
     private String description = "This is a test subscription throttle policy";
     private String timeUnit = "min";
@@ -281,7 +283,10 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
             }
             response1 = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + API_END_POINT_METHOD,
                     requestHeaders1);
+            log.info("+++ number of requests for tier 1 == " + i);
+            log.info("+++ response code == " + response1.getResponseCode());
             if (response1.getResponseCode() == 429) {
+                log.info("+++ assert condition " + (i >= 10));
                 Assert.assertTrue(i >= 10);
                 isThrottled1 = true;
                 break;
@@ -306,7 +311,10 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         for (int i = 0; i < 25; i++) {
             response2 = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + API_END_POINT_METHOD,
                     requestHeaders2);
+            log.info("+++ number of requests for tier 2 == " + i);
+            log.info("+++ response code == " + response2.getResponseCode());
             if (response2.getResponseCode() == 429) {
+                log.info("+++ assert condition " + (i >= 20));
                 Assert.assertTrue(i >= 20);
                 isThrottled2 = true;
                 break;
