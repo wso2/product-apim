@@ -559,7 +559,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      */
     private void testThrottling(String accessToken) throws Exception {
 
-        waitUntilClockHour();
+        waitUntilClockMinute();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
         int limit = 2;
         WebSocketClient client = new WebSocketClient();
@@ -588,6 +588,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                         log.info("Repeating the test as throttling testing time duration is dispersed into two " +
                                 "separate units of time");
                         testThrottling(accessToken);
+                        return;
                     }
                     assertEquals(socket.getResponseMessage(), "Error code: 4003 reason: Websocket frame throttled out",
                             "Received response is not matching");
