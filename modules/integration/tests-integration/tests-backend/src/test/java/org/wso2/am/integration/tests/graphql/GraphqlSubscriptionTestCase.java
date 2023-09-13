@@ -68,6 +68,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.tests.graphql.websocket.client.SubscriptionWSClientImpl;
 import org.wso2.am.integration.tests.graphql.websocket.server.SubscriptionServerCreator;
+import org.wso2.am.integration.tests.throttling.ThrottlingUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -992,7 +993,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
     private void testThrottling(String accessToken) throws Exception {
 
-        waitUntilClockHour();
+        waitUntilClockMinute();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
         int limit = 4;
         WebSocketClient client = new WebSocketClient();
@@ -1017,6 +1018,9 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
                     "Received response in not a Connection Ack response");
             socket.setResponseMessage(null);
             for (int count = 1; count <= limit; count++) {
+                if (count == limit) {
+                    Thread.sleep(ThrottlingUtils.WAIT_FOR_JMS_THROTTLE_EVENT_IN_MILLISECONDS);
+                }
                 if (count == 1) {
                     //Send initial graphQL subscription request message
                     textMessage = "{\"id\":\"2\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
