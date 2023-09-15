@@ -33,7 +33,7 @@ public class OOMLogsCheckTest extends APIManagerLifecycleBaseTest {
                 + File.separator + "logs" + File.separator + "heap-dump.hprof";
 
         File file = new File(heapdumpFile);
-        assertFalse("Heapdump file exists", file.exists());
+        assertFalse("A Heapdump file is present in " + heapdumpFile + ". This possibly indicates an issue during startup / OSGi resolution.", file.exists());
 
     }
 
