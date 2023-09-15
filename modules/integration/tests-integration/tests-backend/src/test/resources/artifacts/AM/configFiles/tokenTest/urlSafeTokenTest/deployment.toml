@@ -74,6 +74,7 @@ DevAccountName = "devPortTestEnv"
 enable = true
 encoding = "base64url" # base64,base64url
 enable_user_claims = true
+use_kid_property = true
 
 [apim.cors]
 allow_origins = "*"
