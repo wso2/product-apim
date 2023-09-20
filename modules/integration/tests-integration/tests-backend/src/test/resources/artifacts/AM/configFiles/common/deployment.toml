@@ -99,6 +99,9 @@ allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","S
 allow_credentials = false
 enable_validation_for_ws = true
 
+[cors]
+allow_any_origin = true
+
 [apim.workflow]
 enable = false
 service_url = "http://localhost:10263/BPMNProcessServerApp-1.0.0"
