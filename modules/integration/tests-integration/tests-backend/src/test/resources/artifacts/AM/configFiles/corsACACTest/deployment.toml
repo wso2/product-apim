@@ -77,10 +77,7 @@ allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","S
 allow_credentials = true
 
 [cors]
-allow_any_origin = false
-allowed_origins = [
-    "http://localhost", "http://localhost:8080"
-]
+allow_any_origin = true
 
 [apim.sdk]
 supported_languages = ["android", "java", "csharp", "dart", "flash", "groovy", "javascript", "jmeter", "perl", "php", "python", "ruby", "swift5", "clojure"]
