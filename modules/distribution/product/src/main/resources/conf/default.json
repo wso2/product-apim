@@ -459,5 +459,6 @@
   "apim.analytics.properties.truststore_location": "${carbon.home}/repository/resources/security/$ref{truststore.file_name}",
   "apim.analytics.properties.truststore_password": "$ref{truststore.password}",
   "tenant_mgt.disable_email_domain_validation": true,
-  "apim.jwt.use_kid_property": true
+  "apim.jwt.use_kid_property": true,
+  "cors.allow_any_origin": true
 }
