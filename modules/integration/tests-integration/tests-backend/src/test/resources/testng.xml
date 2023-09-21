@@ -64,7 +64,7 @@
     </test>-->
 
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group4"/>
+        <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
@@ -98,7 +98,7 @@
     </test>
 
     <test name="apim-integration-tests-api-lifecycle-2" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.rest.MalformedRequestTest"/>
             <class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>
@@ -116,7 +116,7 @@
     </test>
 
     <test name="apim-email-secondary-userstore-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group3"/>
+        <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.restapi.ContentSearchTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.restapi.ThumbnailSearchTestCase"/>-->
@@ -145,7 +145,7 @@
     </test>
 
     <test name="apim-CORS-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group3"/>
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderSetup"/>
             <class name="org.wso2.am.integration.tests.jwt.FederatedUserJWTTestCase"/>
@@ -154,7 +154,7 @@
     </test>
 
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group3"/>
+        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.rest.UriTemplateReservedCharacterEncodingTest"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
@@ -197,7 +197,7 @@
     </test>
 
     <test name="apim-publisher-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group4"/>
+        <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.prototype.PrototypedAPITestcase"/>
             <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
@@ -288,7 +288,7 @@
     </test>
 
     <test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group2"/>
+        <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingConfig"/>
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingTestCase"/>
