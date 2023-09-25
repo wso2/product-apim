@@ -78,9 +78,6 @@ allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
 allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
 allow_credentials = false
 
-[cors]
-allow_any_origin = true
-
 [transport]
 passthru_https.listener.ssl_profile_interval = 6000
 passthru_https.sender.ssl_profile.interval = 6000

@@ -171,10 +171,6 @@ allow_origins = ["origin1","origin2"]
 allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
 allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","X-custom"]
 allow_credentials = true
-
-[cors]
-allow_any_origin = true
-
 #
 [apim.throttling]
 enable_advanced_throttling = "true"
