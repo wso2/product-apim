@@ -1347,7 +1347,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.0.0-wso2v44-SNAPSHOT</synapse.version> <!-- Change this accordingly -->
+        <synapse.version>4.0.0-wso2v52</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v85</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v25</axiom.wso2.version>
