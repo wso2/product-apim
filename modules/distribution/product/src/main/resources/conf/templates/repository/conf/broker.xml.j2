@@ -101,6 +101,10 @@ This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/c
             <allowSharedTopicSubscriptions>{{broker.transport.amqp.allow_shared_topic_subscriptions}}</allowSharedTopicSubscriptions>
             <allowStrictNameValidation>{{broker.transport.amqp.allow_strict_name_validation}}</allowStrictNameValidation>
 
+            <security>
+                <authorization>{{broker.transport.amqp.authorization}}</authorization>
+            </security>
+
             <!-- Refer repository/conf/advanced/qpid-config.xml for further AMQP-specific configurations.-->
         </amqp>
         <mqtt enabled="false">
