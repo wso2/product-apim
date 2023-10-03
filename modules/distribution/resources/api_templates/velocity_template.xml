@@ -31,6 +31,8 @@
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
         #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
         #set( $ep_key = "${endpointKey}_API${type}Endpoint")
+        #set( $endpointSecurityProd = $endpoint_security.get("production"))
+        #set( $endpointSecuritySand = $endpoint_security.get("sandbox"))
         #set( $endpointsecurity = $endpoint_security.get("${type}"))
         ## IF endpoint secured
         #if($endpointsecurity.enabled)
@@ -346,9 +348,26 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
                 #if( $responseCacheEnabled )
 <cache scope="per-host" collector="true"/>
                 #end
-                #if( $endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH" )
-<class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
-                #end
+                #if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
+                <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
+                    <then>
+                        #end
+                        #if($endpointSecurityProd.clientId)
+                        #set( $endpointSecurityProd = $endpoint_security.get("${type}"))
+                        #if($endpointSecurityProd.type == "oauth" || $endpointSecurityProd.type == "OAUTH")
+                        <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
+                        #end
+                        #end
+                    </then>
+                    <else>
+                        #if($endpointSecuritySand.clientId)
+                        #set( $endpointSecuritySand = $endpoint_security.get("${type}"))
+                        #if($endpointSecuritySand.type == "oauth" || $endpointSecuritySand.type == "OAUTH")
+                        <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
+                        #end
+                        #end
+                    </else>
+                </filter>
 <send/>
 </outSequence>
         </resource>
