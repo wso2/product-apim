@@ -370,6 +370,15 @@
                 <include>**/**.j2</include>
             </includes>
         </fileSet>
+        <!-- Gateway policy templates -->
+        <fileSet>
+            <directory>../resources/templates</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/templates</outputDirectory>
+            <includes>
+                <include>**/**.xml</include>
+                <include>**/**.j2</include>
+            </includes>
+        </fileSet>
         <!-- Operation policy specifications -->
         <fileSet>
             <directory>../resources/operation_policies/specifications</directory>
