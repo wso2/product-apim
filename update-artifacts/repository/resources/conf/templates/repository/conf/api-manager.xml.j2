@@ -935,6 +935,37 @@
             {% if apim.throttling.jms.start_delay is defined %}
             <InitDelay>{{apim.throttling.jms.start_delay}}</InitDelay>
             {% endif %}
+            {% if (apim.event_hub.listener.min_thread_pool_size is defined)
+            or (apim.event_hub.listener.max_thread_pool_size is defined)
+            or (apim.event_hub.listener.keep_alive_time_in_millis is defined)
+            or (apim.event_hub.listener.job_queue_size is defined)
+            or (apim.throttling.jms.min_thread_pool_size is defined)
+            or (apim.throttling.jms.max_thread_pool_size is defined)
+            or (apim.throttling.jms.keep_alive_time_in_millis is defined)
+            or (apim.throttling.jms.job_queue_size is defined) %}
+            <JMSTaskManager>
+                {% if apim.event_hub.listener.min_thread_pool_size is defined %}
+                <MinThreadPoolSize>{{apim.event_hub.listener.min_thread_pool_size}}</MinThreadPoolSize>
+                {% elif apim.throttling.jms.min_thread_pool_size is defined %}
+                <MinThreadPoolSize>{{apim.throttling.jms.min_thread_pool_size}}</MinThreadPoolSize>
+                {% endif %}
+                {% if apim.event_hub.listener.max_thread_pool_size is defined %}
+                <MaxThreadPoolSize>{{apim.event_hub.listener.max_thread_pool_size}}</MaxThreadPoolSize>
+                {% elif apim.throttling.jms.max_thread_pool_size is defined %}
+                <MaxThreadPoolSize>{{apim.throttling.jms.max_thread_pool_size}}</MaxThreadPoolSize>
+                {% endif %}
+                {% if apim.event_hub.listener.keep_alive_time_in_millis is defined %}
+                <KeepAliveTimeInMillis>{{apim.event_hub.listener.keep_alive_time_in_millis}}</KeepAliveTimeInMillis>
+                {% elif apim.throttling.jms.keep_alive_time_in_millis is defined %}
+                <KeepAliveTimeInMillis>{{apim.throttling.jms.keep_alive_time_in_millis}}</KeepAliveTimeInMillis>
+                {% endif %}
+                {% if apim.event_hub.listener.job_queue_size is defined %}
+                <JobQueueSize>{{apim.event_hub.listener.job_queue_size}}</JobQueueSize>
+                {% elif apim.throttling.jms.job_queue_size is defined %}
+                <JobQueueSize>{{apim.throttling.jms.job_queue_size}}</JobQueueSize>
+                {% endif %}
+            </JMSTaskManager>
+            {% endif %}
             <JMSConnectionParameters>
                 <transport.jms.ConnectionFactoryJNDIName>{{apim.throttling.jms.conn_jndi_name}}</transport.jms.ConnectionFactoryJNDIName>
                 <transport.jms.DestinationType>{{apim.throttling.jms.destination_type}}</transport.jms.DestinationType>
