@@ -996,6 +996,9 @@
             name="org.wso2.carbon.identity.governance.listener.IdentityStoreEventListener"
             orderId="97" type="org.wso2.carbon.user.core.listener.UserOperationEventListener">
             <Property name="Data.Store">org.wso2.carbon.identity.governance.store.JDBCIdentityDataStore</Property>
+            <!-- By setting this to true, it will use the userstore attribute values for identity claims if the
+            identity data store value is empty for corresponding claim. -->
+            <Property name="EnableHybridDataStore">false</Property>
         </EventListener>
         <EventListener enable="true"
             name="org.wso2.carbon.identity.data.publisher.application.authentication.AuthnDataPublisherProxy"
