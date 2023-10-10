@@ -1122,6 +1122,11 @@
         <LogTracer>
             <Enabled>{{apim.open_telemetry.log_tracer.enable}}</Enabled>
         </LogTracer>
+        <ResourceAttributes>
+            {% for attribute in apim.open_telemetry.resource_attributes %}
+            <{{attribute.name}}>{{attribute.value}}</{{attribute.name}}>
+            {% endfor %}
+        </ResourceAttributes>
     </OpenTelemetry>
 
     <OpenTracer>
