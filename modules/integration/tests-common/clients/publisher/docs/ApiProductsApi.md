@@ -231,7 +231,7 @@ Name | Type | Description  | Notes
 
 <a name="getAPIProductSwagger"></a>
 # **getAPIProductSwagger**
-> getAPIProductSwagger(apiProductId, accept, ifNoneMatch)
+> String getAPIProductSwagger(apiProductId, accept, ifNoneMatch)
 
 Get Swagger Definition
 
@@ -261,7 +261,8 @@ public class Example {
     String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      apiInstance.getAPIProductSwagger(apiProductId, accept, ifNoneMatch);
+      String result = apiInstance.getAPIProductSwagger(apiProductId, accept, ifNoneMatch);
+      System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApiProductsApi#getAPIProductSwagger");
       System.err.println("Status code: " + e.getCode());
@@ -283,7 +284,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+**String**
 
 ### Authorization
 

@@ -35,6 +35,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.LifecycleStateDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.OpenAPIDefinitionValidationResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.OperationPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
@@ -49,11 +50,14 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import javax.ws.rs.core.Response;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -66,6 +70,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
@@ -79,6 +84,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     private ApiProductTestHelper apiProductTestHelper;
     private String apiID1;
     private String apiID2;
+    private String resourcePath;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIProductCreationTestCase(TestUserMode userMode) {
@@ -99,6 +105,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     public void initialize() throws Exception {
 
         super.init(userMode);
+        resourcePath = TestConfigurationProvider.getResourceLocation() + File.separator + "oas" + File.separator + "v3"
+                + File.separator + "api-product" + File.separator;
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 createSession(keyManagerContext));
         apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation(),
@@ -637,6 +645,73 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertNotNull(revisionUUID);
     }
 
+    @Test(groups = { "wso2.am" }, description = "API product swagger definition reference verification")
+    public void testAPIProductSwaggerDefinition() throws Exception {
+
+        // Create a REST API using swagger definition
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+        String swaggerPath = resourcePath + "test-api-1-oas.yaml";
+        File definition = new File(swaggerPath);
+        org.json.JSONObject endpoints = new org.json.JSONObject();
+        endpoints.put("url", "https://test.com");
+
+        org.json.JSONObject endpointConfig = new org.json.JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("production_endpoints", endpoints);
+        endpointConfig.put("sandbox_endpoints", endpoints);
+
+        List<String> tierList = new ArrayList<>();
+        tierList.add(APIMIntegrationConstants.API_TIER.SILVER);
+        tierList.add(APIMIntegrationConstants.API_TIER.GOLD);
+
+        org.json.JSONObject apiProperties = new org.json.JSONObject();
+        apiProperties.put("name", "testAPI1");
+        apiProperties.put("context", "/testapi1");
+        apiProperties.put("version", "1.0.0");
+        apiProperties.put("provider", user.getUserName());
+        apiProperties.put("endpointConfig", endpointConfig);
+        apiProperties.put("policies", tierList);
+
+        APIDTO apiOne = restAPIPublisher.importOASDefinition(definition, apiProperties.toString());
+        APIDTO apiTwo = apiTestHelper.createApiTwo(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        apisToBeUsed.add(apiOne);
+        apisToBeUsed.add(apiTwo);
+
+        // Create API Product and verify in publisher
+        final String provider = user.getUserName();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID().toString();
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(
+                provider, name, context, apisToBeUsed, policies);
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
+        waitForAPIDeployment();
+        apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+        apiProductDTO = publishAPIProduct(apiProductDTO.getId());
+        String apiProductID = apiProductDTO.getId();
+
+        // Get api product definition and validate
+        String apiProductDefinition = restAPIPublisher.getAPIProductSwaggerByID(apiProductID);
+        validateDefinition(apiProductDefinition);
+    }
+
+    private void validateDefinition(String oasDefinition) throws Exception {
+        File file = geTempFileWithContent(oasDefinition);
+        OpenAPIDefinitionValidationResponseDTO responseDTO = restAPIPublisher.validateOASDefinition(file);
+        assertTrue(responseDTO.isIsValid());
+    }
+
+    private File geTempFileWithContent(String swagger) throws Exception {
+        File temp = File.createTempFile("swagger", ".json");
+        temp.deleteOnExit();
+        BufferedWriter out = new BufferedWriter(new FileWriter(temp));
+        out.write(swagger);
+        out.close();
+        return temp;
+    }
+    
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
