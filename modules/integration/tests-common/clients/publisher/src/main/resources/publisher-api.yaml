@@ -5693,7 +5693,11 @@ paths:
                 The content type of the body.
               schema:
                 type: string
-          content: {}
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
         304:
           description: |
             Not Modified.
