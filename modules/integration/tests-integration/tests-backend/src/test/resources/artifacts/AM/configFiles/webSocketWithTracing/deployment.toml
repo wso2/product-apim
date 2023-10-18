@@ -45,7 +45,9 @@ show_as_token_endpoint_url = true
 service_url = "https://localhost:${mgt.transport.https.port}/services/"
 username = "admin"
 password = "admin"
-http_endpoint = "ws://wsserverhost:9797"
+ws_endpoint = "ws://localhost:9960/"
+wss_endpoint = "wss://localhost:9960/"
+http_endpoint = "http://wsserverhost:9797"
 https_endpoint = "https://serverhost:9898"
 
 [[apim.gateway.environment]]
