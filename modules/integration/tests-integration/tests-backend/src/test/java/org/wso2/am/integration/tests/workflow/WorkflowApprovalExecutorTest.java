@@ -44,10 +44,12 @@ import org.wso2.am.integration.clients.store.api.ApiResponse;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.UserManagementUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
@@ -1095,6 +1097,215 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         assertEquals(response.getResponseCode(), 500,
                 "Clean up pending task process is failed for Application Key generation");
     }
+
+    /**
+     * Test API revision deployment workflow
+     * Following flows will be tested,
+     *      Deploy revision request will be sent and check whether it is not deployed
+     *      Reject request and check whether it is not deployed
+     *      Deploy request will be sent, admin will approve it and check whether it is deployed
+     *      Undeploy the revision and check whether it is undeployed
+     *      Deploy a revision and send another request and check whether the second request is not deployed
+     *      Reject the second request and check whether it is not deployed
+     *      Deploy the second request and check whether it is deployed and the first deployment is undeployed
+     *
+     * @throws Exception if an error occurs when revision deployment workflow test is running
+     **/
+    @Test(groups = { "wso2.am" }, description = "Testing the API Revision Deployment Workflow Process")
+    public void testAPIRevisionDeploymentWorkflowProcess() throws Exception {
+        //Add API
+        String apiName = "WorkflowRevisionDeployment";
+        String apiVersion = "1.0.0";
+        String apiContext = "workflowrevision";
+        String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
+        APIRequest apiRequest;
+        apiRequest = new APIRequest(apiName, apiContext, new URL(url));
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setProvider(USER_SMITH);
+        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId = apiResponse.getData();
+        assertEquals(apiResponse.getResponseCode(), 201,
+                "API creation failed in Revision Deployment Workflow Executor");
+
+        // Create revision and send deploy request
+        String firstRevisionUUID = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+
+        // Get workflow pending requests by admin
+        String workflowType = "AM_REVISION_DEPLOYMENT";
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdmin.getWorkflows(workflowType);
+        assertEquals(response.getResponseCode(), 200, "Get Workflow Pending requests failed for User Admin");
+
+        // Get the externalReference of the workflow
+        JSONObject workflowRespObj = new JSONObject(response.getData());
+        String firstExternalWorkflowRef = null;
+        JSONArray revisionArray = (JSONArray) workflowRespObj.get("list");
+        for (int item = 0; item < revisionArray.length(); item++) {
+            JSONObject revision = (JSONObject) revisionArray.get(item);
+            JSONObject properties = (JSONObject) revision.get("properties");
+            if (properties.has("apiName") && apiName.equals(properties.get("apiName"))) {
+                firstExternalWorkflowRef = (String) revision.get("referenceId");
+            }
+        }
+        assertNotNull("First Workflow reference is not available ", firstExternalWorkflowRef);
+
+        // Get workflow pending request by external workflow reference by admin
+        response = restAPIAdmin.getWorkflowByExternalWorkflowReference(firstExternalWorkflowRef);
+        assertEquals(response.getResponseCode(), 200,
+                "Get First Workflow Pending request by external workflow reference failed for User Admin");
+
+        // Reject workflow and check whether the revision is not deployed
+        response = restAPIAdmin.rejectWorkflowStatus(firstExternalWorkflowRef);
+        assertEquals(response.getResponseCode(), 200, "First Workflow request reject failed for user admin");
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
+        JSONObject apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
+        assertEquals(apiRevisionsGetResponseObj.getJSONArray("list").length(), 0, "First Revision is deployed");
+
+        deployAPIRevisionWithWorkflow(apiId, firstRevisionUUID, firstExternalWorkflowRef);
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
+        apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
+        JSONArray listArray = apiRevisionsGetResponseObj.getJSONArray("list");
+        // Iterate through the "list" array
+        for (int i = 0; i < listArray.length(); i++) {
+            JSONObject item = listArray.getJSONObject(i);
+            String status = item.getJSONArray("deploymentInfo").getJSONObject(0).getString("status");
+            if ("APPROVED".equals(status)) {
+                assertEquals(firstRevisionUUID, item.getString("id"), "First Revision is not deployed");
+            }
+        }
+
+        // Undeploy revision and check whether it is undeployed
+        undeployAPIRevisionWithWorkflow(apiId, firstRevisionUUID, firstExternalWorkflowRef);
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
+        apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
+        assertEquals(apiRevisionsGetResponseObj.getJSONArray("list").length(), 0, "First Revision is deployed");
+
+        // Deploy a revision then send another request and check whether the second request is not deployed
+        deployAPIRevisionWithWorkflow(apiId, firstRevisionUUID, firstExternalWorkflowRef);
+        // Create Second Revision and send deploy request
+        String secondRevisionUUID = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
+        apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
+        listArray = apiRevisionsGetResponseObj.getJSONArray("list");
+        // Iterate through the "list" array
+        for (int i = 0; i < listArray.length(); i++) {
+            JSONObject item = listArray.getJSONObject(i);
+            String status = item.getJSONArray("deploymentInfo").getJSONObject(0).getString("status");
+            if ("APPROVED".equals(status)) {
+                assertEquals(firstRevisionUUID, item.getString("id"), "Second Revision is deployed");
+            }
+        }
+
+        //Get workflow pending requests by admin
+        response = restAPIAdmin.getWorkflows(workflowType);
+        assertEquals(response.getResponseCode(), 200, "Get Workflow Pending requests failed for User Admin");
+        workflowRespObj = new JSONObject(response.getData());
+        String secondExternalWorkflowRef = null;
+        revisionArray = (JSONArray) workflowRespObj.get("list");
+        for (int item = 0; item < revisionArray.length(); item++) {
+            JSONObject revision = (JSONObject) revisionArray.get(item);
+            JSONObject properties = (JSONObject) revision.get("properties");
+            if (properties.has("apiName") && apiName.equals(properties.get("apiName"))) {
+                secondExternalWorkflowRef = (String) revision.get("referenceId");
+            }
+        }
+        assertNotNull("Second Workflow reference is not available ", secondExternalWorkflowRef);
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
+
+        // Reject the second workflow request and check whether the second revision is not deployed
+        response = restAPIAdmin.rejectWorkflowStatus(secondExternalWorkflowRef);
+        assertEquals(response.getResponseCode(), 200, "Workflow request update failed for user admin");
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
+        apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
+        listArray = apiRevisionsGetResponseObj.getJSONArray("list");
+        // Iterate through the "list" array
+        for (int i = 0; i < listArray.length(); i++) {
+            JSONObject item = listArray.getJSONObject(i);
+            String status = item.getJSONArray("deploymentInfo").getJSONObject(0).getString("status");
+            if ("APPROVED".equals(status)) {
+                Assert.assertNotEquals(secondRevisionUUID, item.getString("id"), "Second Revision is deployed");
+            }
+        }
+
+        // Deploy the second revision and check whether the first revision is undeployed
+        deployAPIRevisionWithWorkflow(apiId, secondRevisionUUID, secondExternalWorkflowRef);
+        apiRevisionsGetResponse = restAPIPublisher.getAPIRevisions(apiId, "deployed:true");
+        assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Unable to retrieve deployed revisions" + apiRevisionsGetResponse.getData());
+        apiRevisionsGetResponseObj = new JSONObject(apiRevisionsGetResponse.getData());
+        listArray = apiRevisionsGetResponseObj.getJSONArray("list");
+        // Iterate through the "list" array
+        for (int i = 0; i < listArray.length(); i++) {
+            JSONObject item = listArray.getJSONObject(i);
+            String status = item.getJSONArray("deploymentInfo").getJSONObject(0).getString("status");
+            if ("APPROVED".equals(status)) {
+                Assert.assertNotEquals(firstRevisionUUID, item.getString("id"), "First Revision is deployed");
+                assertEquals(secondRevisionUUID, item.getString("id"), "Second Revision is not deployed");
+            }
+        }
+    }
+
+    /**
+     * Deploy a revision when revision deployment workflow is active
+     *
+     * @param apiId        API Id
+     * @param revisionUUID Revision UUID
+     * @param externalRef  External reference
+     * @throws Exception if an error occurs when deploying a revision
+     **/
+    private void deployAPIRevisionWithWorkflow(String apiId, String revisionUUID, String externalRef) throws Exception {
+        // Send deploy request, approve and check whether it is deployed
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost("localhost");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList, "API");
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdmin.updateWorkflowStatus(externalRef);
+        assertEquals(response.getResponseCode(), 200, "First Workflow request update failed for user admin");
+    }
+
+    /**
+     * Undeploy a revision when revision deployment workflow is active
+     *
+     * @param apiId        API Id
+     * @param revisionUUID Revision UUID
+     * @param externalRef  External reference
+     * @throws Exception if an error occurs when undeploying a revision
+     **/
+    private void undeployAPIRevisionWithWorkflow(String apiId, String revisionUUID, String externalRef)
+            throws Exception {
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost("localhost");
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.undeployAPIRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList);
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
+                "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
+        org.wso2.am.integration.test.HttpResponse response = restAPIAdmin.updateWorkflowStatus(externalRef);
+        assertEquals(response.getResponseCode(), 200, "First Workflow request update failed for user admin");
+    }
+
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
