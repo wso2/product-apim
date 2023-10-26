@@ -11899,6 +11899,95 @@ paths:
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
       x-accepts: application/json
+  /api-products/copy-api-products:
+    post:
+      description: |
+        This operation can be used to create a new version of an existing API Products. The new version is specified as `newVersion` query parameter. New API Product will be in `CREATED` state.
+      operationId: createNewAPIProductVersion
+      parameters:
+      - description: Version of the new API Product.
+        explode: true
+        in: query
+        name: newVersion
+        required: true
+        schema:
+          maxLength: 30
+          type: string
+        style: form
+      - description: Specifies whether new API Product should be added as default
+          version.
+        explode: true
+        in: query
+        name: defaultVersion
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product.
+          The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID.
+          Should be formatted as **provider-name-version**.
+        explode: true
+        in: query
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIProduct'
+          description: |
+            Created.
+            Successful response with the newly created API Product as entity in the body. Location header contains URL of newly created API Product.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created API Product.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+        - apim:api_manage
+      summary: Create a New API Product Version
+      tags:
+      - API Products
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/api-products/copy-api-products?newVersion=2.0&defaultVersion=false&apiproductId=2fd14eb8-b828-4013-b448-0739d2e76bf7"'
+      x-accepts: application/json
   /api-products/export:
     get:
       description: |
@@ -17082,12 +17171,14 @@ components:
         transport:
         - http
         - https
+        version: 1.0.0
         tags:
         - pizza
         - food
         revisionId: 1
         visibleTenants: []
         cacheTimeout: 300
+        isDefaultVersion: false
         apis:
         - name: PizzaShackAPI
           apiId: 01234567-0123-0123-0123-012345678901
@@ -17139,6 +17230,12 @@ components:
           maxLength: 60
           minLength: 1
           type: string
+        version:
+          example: 1.0.0
+          maxLength: 30
+          minLength: 1
+          pattern: ^[^~!@#;:%^*()+={}|\\<>"',&/$\[\]\s+\/]+$
+          type: string
         description:
           description: A brief description about the API
           example: This is a simple API for Pizza Shack online pizza delivery store
@@ -17158,6 +17255,9 @@ components:
             State of the API product. Only published api products are visible on the Developer Portal
           type: string
         enableSchemaValidation:
+          example: false
+          type: boolean
+        isDefaultVersion:
           example: false
           type: boolean
         isRevision:

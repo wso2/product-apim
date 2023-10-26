@@ -16,6 +16,7 @@
 
 package org.wso2.am.integration.tests.apiproduct;
 
+import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
@@ -47,7 +48,9 @@ import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.InvocationStatusCodes;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
@@ -59,6 +62,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +70,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -81,6 +87,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     private static final String SCOPE = "restricted_scope";
     private ApiTestHelper apiTestHelper;
     private ApiProductTestHelper apiProductTestHelper;
+    private String apiProductId2;
     private String resourcePath;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -140,10 +147,11 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         final String provider = user.getUserName();
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
         createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
@@ -208,6 +216,88 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(httpResponse.getHeaders().get("Version"), "v2");
     }
 
+    @Test(groups = {"wso2.am"}, description = "Create new version and publish")
+    public void testAPIProductNewVersionCreation() throws Exception {
+
+        String APIVersionNew  = "2.0.0";
+        // Pre-Conditions : Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+        APIDTO apiOne = apiTestHelper.createApiOne(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        APIDTO apiTwo = apiTestHelper.createApiTwo(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        apisToBeUsed.add(apiOne);
+        apisToBeUsed.add(apiTwo);
+
+        // Step 1 : Create APIProduct
+        final String provider = user.getUserName();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
+                apisToBeUsed, policies);
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
+        waitForAPIDeployment();
+
+        // Step 2 : Verify created APIProduct in publisher
+        apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+
+        apiProductDTO = publishAPIProduct(apiProductDTO.getId());
+        HttpResponse apiProductCopyResponse = restAPIPublisher.copyAPIProduct(APIVersionNew,
+                apiProductDTO.getId(), false);
+
+        Assert.assertEquals(apiProductCopyResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code Mismatch");
+        apiProductId2 = apiProductCopyResponse.getData();
+
+        //test the copied api Product
+        APIProductDTO newApiProductDTO = restAPIPublisher.getApiProduct(apiProductId2);
+        Assert.assertEquals(newApiProductDTO.getVersion(), APIVersionNew);
+    }
+
+
+    @Test(groups = {"wso2.am"}, description = "Create new version by setting isDefaultVersion and publish")
+    public void testAPIProductNewVersionCreationWithDefaultVersion() throws Exception {
+        // Pre-Conditions : Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+        APIDTO apiOne = apiTestHelper.createApiOne(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        APIDTO apiTwo = apiTestHelper.createApiTwo(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        apisToBeUsed.add(apiOne);
+        apisToBeUsed.add(apiTwo);
+
+        // Step 1 : Create APIProduct
+        final String provider = user.getUserName();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
+                apisToBeUsed, policies);
+        createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
+        waitForAPIDeployment();
+
+        // Step 2 : Verify created APIProduct in publisher
+        apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
+
+        String APIVersionNew  = "2.0.0";
+        apiProductDTO = publishAPIProduct(apiProductDTO.getId());
+        HttpResponse apiProductCopyResponse = restAPIPublisher.copyAPIProduct(APIVersionNew, apiProductDTO.getId(), true);
+        Assert.assertEquals(apiProductCopyResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code Mismatch");
+
+        apiProductId2 = apiProductCopyResponse.getData();
+
+        //test the copied api Product
+        APIProductDTO newApiProductDTO = restAPIPublisher.getApiProduct(apiProductId2);
+        Assert.assertEquals(newApiProductDTO.getVersion(), APIVersionNew);
+
+        boolean isDefaultVersion = Boolean.TRUE.equals(newApiProductDTO.isIsDefaultVersion());
+        Assert.assertEquals(isDefaultVersion, true, "Copied API Product is not the default version");
+    }
+
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
             "on a visibility restricted API")
     public void testCreateAndInvokeApiProductWithVisibilityRestrictedApi() throws Exception {
@@ -224,10 +314,11 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         final String provider = user.getUserName();
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
         createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
@@ -287,10 +378,11 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         final String provider = user.getUserName();
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
         createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
@@ -357,10 +449,11 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         final String provider = user.getUserName();
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
         createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
@@ -449,10 +542,11 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         final String provider = user.getUserName();
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
         createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
@@ -536,11 +630,12 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         final String provider = user.getUserName();
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
         // Step 1 : Create APIProduct
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
         createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
@@ -596,7 +691,9 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         String name = UUID.randomUUID().toString();
         String context = "/" + UUID.randomUUID().toString();
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        final String version = "1.0.0";
+
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
 
         // Step 3: Enable Mutual SSL with client certificate
@@ -649,11 +746,12 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         final String provider = user.getUserName();
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
         APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(
-                provider, name, context, apisToBeUsed, policies);
+                provider, name, context, version, apisToBeUsed, policies);
         createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);
         waitForAPIDeployment();
         apiProductTestHelper.verfiyApiProductInPublisher(apiProductDTO);
@@ -679,7 +777,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         out.close();
         return temp;
     }
-    
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
