@@ -16059,6 +16059,40 @@ components:
           value: value
         lifeCycleStatus: CREATED
         accessControl: NONE
+        apiPolicies:
+          request:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          response:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          fault:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
         monetization:
           enabled: true
           properties:
@@ -16349,6 +16383,8 @@ components:
           items:
             $ref: '#/components/schemas/MediationPolicy'
           type: array
+        apiPolicies:
+          $ref: '#/components/schemas/APIOperationPolicies'
         subscriptionAvailability:
           default: CURRENT_TENANT
           description: The subscription availability. Accepts one of the following.

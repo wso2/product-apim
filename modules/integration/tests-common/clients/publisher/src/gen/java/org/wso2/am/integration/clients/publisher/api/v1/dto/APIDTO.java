@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPro
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPropertiesMapDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMaxTpsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIServiceInfoDTO;
@@ -327,6 +328,10 @@ public static VisibilityEnum fromValue(String value) {
         public static final String SERIALIZED_NAME_MEDIATION_POLICIES = "mediationPolicies";
         @SerializedName(SERIALIZED_NAME_MEDIATION_POLICIES)
             private List<MediationPolicyDTO> mediationPolicies = null;
+
+        public static final String SERIALIZED_NAME_API_POLICIES = "apiPolicies";
+        @SerializedName(SERIALIZED_NAME_API_POLICIES)
+            private APIOperationPoliciesDTO apiPolicies;
 
             /**
 * The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
@@ -1284,6 +1289,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO apiPolicies(APIOperationPoliciesDTO apiPolicies) {
+        
+        this.apiPolicies = apiPolicies;
+        return this;
+        }
+
+    /**
+        * Get apiPolicies
+    * @return apiPolicies
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIOperationPoliciesDTO getApiPolicies() {
+        return apiPolicies;
+    }
+
+
+    public void setApiPolicies(APIOperationPoliciesDTO apiPolicies) {
+        this.apiPolicies = apiPolicies;
+    }
+
+
         public APIDTO subscriptionAvailability(SubscriptionAvailabilityEnum subscriptionAvailability) {
         
         this.subscriptionAvailability = subscriptionAvailability;
@@ -1899,6 +1927,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.visibleRoles, API.visibleRoles) &&
             Objects.equals(this.visibleTenants, API.visibleTenants) &&
             Objects.equals(this.mediationPolicies, API.mediationPolicies) &&
+            Objects.equals(this.apiPolicies, API.apiPolicies) &&
             Objects.equals(this.subscriptionAvailability, API.subscriptionAvailability) &&
             Objects.equals(this.subscriptionAvailableTenants, API.subscriptionAvailableTenants) &&
             Objects.equals(this.additionalProperties, API.additionalProperties) &&
@@ -1928,7 +1957,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, apiPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
     }
 
 
@@ -1967,6 +1996,7 @@ sb.append("class APIDTO {\n");
     sb.append("    visibleRoles: ").append(toIndentedString(visibleRoles)).append("\n");
     sb.append("    visibleTenants: ").append(toIndentedString(visibleTenants)).append("\n");
     sb.append("    mediationPolicies: ").append(toIndentedString(mediationPolicies)).append("\n");
+    sb.append("    apiPolicies: ").append(toIndentedString(apiPolicies)).append("\n");
     sb.append("    subscriptionAvailability: ").append(toIndentedString(subscriptionAvailability)).append("\n");
     sb.append("    subscriptionAvailableTenants: ").append(toIndentedString(subscriptionAvailableTenants)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
