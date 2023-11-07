@@ -16,16 +16,16 @@
  */
 package org.wso2.am.integration.tests.other;
 
+import static org.junit.Assert.assertNotNull;
 import static org.testng.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -34,11 +34,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
+import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
@@ -53,7 +55,6 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilException;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
 
 /**
@@ -66,21 +67,19 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
     private String publisherURLHttp;
     private String storeURLHttp;
     private String userName;
-    private String originalWFExtentionsXML;
-    private String newWFExtentionsXML;
-    private ResourceAdminServiceClient resourceAdminServiceClient;
     private APIIdentifier apiIdentifier;
-    private final String APIM_CONFIG_XML = "api-manager.xml";
-    private final String DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION =
-            "/_system/governance/apimgt/applicationdata/workflow-extensions.xml";
     private String appName = "sample-application-workflow2";
     private static JSONParser parser = new JSONParser();
-    private ServerConfigurationManager serverConfigurationManager;
     private String apiName = "APIStateWf";
     private String apiVersion = "1.0.0";
     private String wfreferenceId = null;
     private String clientId;
-    private String clientSecrect;
+    private String clientSecret;
+    private org.json.simple.JSONObject originalTenantConf;
+    private static final String UTF_8 = "UTF-8";
+    private static final String TENANT_CONFIG_PATH = "artifacts/AM/configFiles/tenantConf/tenant-conf.json";
+    private static final String WORKFLOW_CONFIG_PATH
+            = "artifacts/AM/configFiles/workflowapistatechange/tenant-workflow-conf.json";
 
     /*
     @DataProvider
@@ -97,7 +96,7 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
     
     @BeforeClass(groups = {"noRestart"}, alwaysRun = true)
     public void setEnvironment() throws AutomationUtilException, XPathExpressionException, IOException,
-            APIManagerIntegrationTestException, URISyntaxException, ResourceAdminServiceExceptionException {
+            APIManagerIntegrationTestException, URISyntaxException, ResourceAdminServiceExceptionException, ApiException, ParseException {
         super.init();
 
         String url = getGatewayURLHttp();
@@ -105,16 +104,21 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
         publisherURLHttp = getPublisherURLHttp();
         storeURLHttp = getStoreURLHttp();
         userName = user.getUserName();
-        resourceAdminServiceClient = new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                createSession(gatewayContextMgt));
-        // Gets the original workflow-extentions.xml file's content from the registry.
-        originalWFExtentionsXML = resourceAdminServiceClient
-                .getTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION);
-        // Gets the new configuration of the workflow-extentions.xml
-        newWFExtentionsXML = readFile(getAMResourceLocation() + File.separator + "configFiles" + File.separator
-                + "workflowapistatechange" + File.separator + "workflow-extentions.xml");
-        // Updates the content of the workflow-extentions.xml of the registry file, to have the new configurations.
-        resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION, newWFExtentionsXML);
+
+        originalTenantConf =  (org.json.simple.JSONObject) new JSONParser().parse(restAPIAdmin.getTenantConfig());
+        InputStream tenantConfigStream = getClass().getClassLoader().getResourceAsStream(TENANT_CONFIG_PATH);
+        assertNotNull("Tenant config stream can not be null", tenantConfigStream);
+
+        org.json.simple.JSONObject tenantJsonObject = (org.json.simple.JSONObject) new JSONParser().parse(
+                new InputStreamReader(tenantConfigStream, UTF_8));
+
+        InputStream wfStream = getClass().getClassLoader().getResourceAsStream(WORKFLOW_CONFIG_PATH);
+        assertNotNull("Workflow stream can not be null", wfStream);
+        org.json.simple.JSONObject wfJsonObj = (org.json.simple.JSONObject) new JSONParser().parse(
+                new InputStreamReader(wfStream, UTF_8));
+
+        tenantJsonObject.put("Workflows",wfJsonObj);
+        restAPIAdmin.updateTenantConfig(tenantJsonObject);
 
         APIStoreRestClient apiStore;
 
@@ -182,7 +186,7 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
             if ("clientId".equals(name)) {
                 clientId = variable.getString("value");
             } else if ("clientSecret".equals(name)) {
-                clientSecrect = variable.getString("value");
+                clientSecret = variable.getString("value");
             } else if ("scope".equals(name)) {
                 scope = variable.getString("value");
             } else if ("apiCurrentState".equals(name)) {
@@ -201,10 +205,10 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
 
         }
         Assert.assertNotNull(clientId, "clientId should not be null");
-        Assert.assertNotNull(clientSecrect, "clientSecrect should not be null");
+        Assert.assertNotNull(clientSecret, "clientSecrect should not be null");
         Assert.assertNotNull(scope, "scope should not be null");
 
-        HttpResponse resp = completeWorkflowTask(clientId, clientSecrect, scope, apiCurrentState, apiLCAction,
+        HttpResponse resp = completeWorkflowTask(clientId, clientSecret, scope, apiCurrentState, apiLCAction,
                 apiNameReq, apiVersionReq, apiProvider, invoker, "APPROVED");
         Assert.assertEquals(resp.getResponseCode(), 200, "Invalid status code:" + resp.getResponseCode());
 
@@ -266,7 +270,7 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
             if ("clientId".equals(name)) {
                 clientId = variable.getString("value");
             } else if ("clientSecret".equals(name)) {
-                clientSecrect = variable.getString("value");
+                clientSecret = variable.getString("value");
             } else if ("scope".equals(name)) {
                 scope = variable.getString("value");
             } else if ("apiCurrentState".equals(name)) {
@@ -285,10 +289,10 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
 
         }
         Assert.assertNotNull(clientId, "clientId should not be null");
-        Assert.assertNotNull(clientSecrect, "clientSecrect should not be null");
+        Assert.assertNotNull(clientSecret, "clientSecrect should not be null");
         Assert.assertNotNull(scope, "scope should not be null");
 
-        HttpResponse resp = completeWorkflowTask(clientId, clientSecrect, scope, apiCurrentState, apiLCAction,
+        HttpResponse resp = completeWorkflowTask(clientId, clientSecret, scope, apiCurrentState, apiLCAction,
                 apiNameReq, apiVersionReq, apiProvider, invoker, "REJECTED");
         Assert.assertEquals(resp.getResponseCode(), 200, "Invalid status code:" + resp.getResponseCode());
 
@@ -312,7 +316,7 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
         String workflowCallbackUrl;
 
         // check for token with different scope other than apim:api_workfow
-        String accessToken = generateAccessToken("default", clientId, clientSecrect);
+        String accessToken = generateAccessToken("default", clientId, clientSecret);
         Map<String, String> authenticationRequestHeaders = new HashMap<String, String>();
         authenticationRequestHeaders.put("Authorization", "Bearer " + accessToken);
         authenticationRequestHeaders.put("Content-Type", "application/json");
@@ -325,7 +329,7 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
                 "Status code mismatch when request is done without valid token");
 
         // get the correct scope
-        accessToken = generateAccessToken("apim:api_workflow", clientId, clientSecrect);
+        accessToken = generateAccessToken("apim:api_workflow", clientId, clientSecret);
         authenticationRequestHeaders = new HashMap<String, String>();
         authenticationRequestHeaders.put("Authorization", "Bearer " + accessToken);
         authenticationRequestHeaders.put("Content-Type", "application/json");
@@ -356,10 +360,8 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+        restAPIAdmin.updateTenantConfig(originalTenantConf);
         super.cleanUp();
-        // restore the original workflow-extentions.xml content.
-        resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION,
-                originalWFExtentionsXML);
     }
 
     private HttpResponse completeWorkflowTask(String clientId, String clientSecrect, String scope,

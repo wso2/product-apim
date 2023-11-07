@@ -1,0 +1,6 @@
+{
+  "SubscriptionCreation": {
+    "Enabled": true,
+    "Class": "org.wso2.sample.workflow.SubscriptionCreationSampleWorkflowExecutor"
+  }
+}

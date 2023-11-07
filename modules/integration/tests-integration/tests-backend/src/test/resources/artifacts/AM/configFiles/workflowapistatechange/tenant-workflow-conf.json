@@ -1,0 +1,10 @@
+{
+  "APIStateChange": {
+    "Enabled": true,
+    "Class": "org.wso2.carbon.apimgt.impl.workflow.APIStateChangeWSWorkflowExecutor",
+    "Properties": {
+      "ProcessDefinitionKey": "APIStateChangeApprovalProcess",
+      "StateList": "Created:Publish,Published:Block"
+    }
+  }
+}

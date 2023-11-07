@@ -18,7 +18,6 @@
  */
 package org.wso2.am.integration.tests.workflow;
 
-import java.io.File;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import org.apache.commons.logging.Log;
@@ -26,10 +25,10 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.junit.Assert;
 import org.testng.annotations.*;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowDTO;
 import org.wso2.am.integration.clients.admin.api.dto.WorkflowInfoDTO;
@@ -47,7 +46,6 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRe
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
-import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.UserManagementUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
@@ -55,10 +53,12 @@ import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 
 import org.wso2.carbon.apimgt.api.WorkflowStatus;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,38 +72,30 @@ import static org.testng.Assert.assertNull;
 public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
     private UserManagementClient userManagementClient = null;
-    private String originalWFExtentionsXML;
-    private String newWFExtentionsXML;
     private String USER_SMITH = "smith";
     private String ADMIN_ROLE = "admin";
     private String USER_ADMIN = "jackson";
     private String userName;
     private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
-    private ResourceAdminServiceClient resourceAdminServiceClient;
     private final String ALLOWED_ROLE = "admin";
-    private static final String SUBSCRIBER_ROLE = "subscriber";
-    private final String[] ADMIN_PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage",
-            "/permission/admin/configure", "/permission/admin/monitor" };
-    private final String[] NEW_ROLE_LIST = { "Internal/publisher", "Internal/creator",
-            "Internal/subscriber", "Internal/everyone", "admin" };
-    private final String APIM_CONFIG_XML = "api-manager.xml";
-    private final String DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION =
-            "/_system/governance/apimgt/applicationdata/workflow-extensions.xml";
     private RestAPIAdminImpl restAPIAdminUser;
     private static final Log log = LogFactory.getLog(WorkflowApprovalExecutorTest.class);
-    private APIIdentifier apiIdentifier;
     private  AdminDashboardRestClient adminDashboardRestClient;
     private String apiId;
     private String applicationID;
     private String subscriptionId;
     private ApiProductTestHelper apiProductTestHelper;
     private ApiTestHelper apiTestHelper;
-    private RestAPIStoreImpl APIStoreClient;
     private String apiName = "WorkflowTestAPI";
     private String applicationName = "AppCreationWorkflowTestAPP";
     private ArrayList<APIDTO> apisToBeUsed;
     private APIProductDTO apiProductDTO;
     private String apiProductId;
+    private org.json.simple.JSONObject originalTenantConf;
+    private static final String UTF_8 = "UTF-8";
+    private static final String TENANT_CONFIG_PATH = "artifacts/AM/configFiles/tenantConf/tenant-conf.json";
+    private static final String WORKFLOW_CONFIG_PATH
+            = "artifacts/AM/configFiles/approveWorkflow/tenant-workflow-conf.json";
 
     @Factory(dataProvider = "userModeDataProvider")
     public WorkflowApprovalExecutorTest(TestUserMode userMode) {
@@ -128,16 +120,20 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         userManagementClient.addUser(USER_SMITH, "john123", new String[]{INTERNAL_ROLE_SUBSCRIBER}, USER_SMITH);
         userManagementClient.addUser(USER_ADMIN, "admin", new String[]{ALLOWED_ROLE}, ADMIN_ROLE);
 
-        resourceAdminServiceClient = new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                createSession(gatewayContextMgt));
-        // Gets the original workflow-extentions.xml file's content from the registry.
-        originalWFExtentionsXML = resourceAdminServiceClient
-                .getTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION);
-        // Gets the new configuration of the workflow-extentions.xml
-        newWFExtentionsXML = readFile(getAMResourceLocation() + File.separator + "configFiles" + File.separator
-                + "approveWorkflow" + File.separator + "workflow-extensions.xml");
-        // Updates the content of the workflow-extentions.xml of the registry file, to have the new configurations.
-        resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION, newWFExtentionsXML);
+        originalTenantConf =  (org.json.simple.JSONObject) new JSONParser().parse(restAPIAdmin.getTenantConfig());
+        InputStream tenantConfigStream = getClass().getClassLoader().getResourceAsStream(TENANT_CONFIG_PATH);
+        assertNotNull("Tenant config stream can not be null", tenantConfigStream);
+
+        org.json.simple.JSONObject tenantJsonObject = (org.json.simple.JSONObject) new JSONParser().parse(
+                new InputStreamReader(tenantConfigStream, UTF_8));
+
+        InputStream wfStream = getClass().getClassLoader().getResourceAsStream(WORKFLOW_CONFIG_PATH);
+        assertNotNull("Workflow stream can not be null", wfStream);
+        org.json.simple.JSONObject wfJsonObj = (org.json.simple.JSONObject) new JSONParser().parse(
+                new InputStreamReader(wfStream, UTF_8));
+
+        tenantJsonObject.put("Workflows",wfJsonObj);
+        restAPIAdmin.updateTenantConfig(tenantJsonObject);
 
         apiProductTestHelper = new ApiProductTestHelper(restAPIPublisher, restAPIStore);
         apiTestHelper = new ApiTestHelper(restAPIPublisher, restAPIStore, getAMResourceLocation(),
@@ -1105,7 +1101,7 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         userManagementClient.deleteUser(USER_SMITH);
         userManagementClient.deleteUser(USER_ADMIN);
         userManagementClient.deleteUser("JaneDoe");
-        resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION, originalWFExtentionsXML);
+        restAPIAdmin.updateTenantConfig(originalTenantConf);
         super.cleanUp();
     }
 }
