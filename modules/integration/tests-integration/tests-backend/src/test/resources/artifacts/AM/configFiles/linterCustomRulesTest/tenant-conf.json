@@ -364,6 +364,14 @@
       {
         "Name": "apim:api_category",
         "Roles": "admin"
+      },
+      {
+        "Name": "apim:admin_tier_manage",
+      "Roles": "admin"
+      },
+      {
+        "Name": "apim:admin_tier_view",
+        "Roles": "admin"
       }
     ]
   },
