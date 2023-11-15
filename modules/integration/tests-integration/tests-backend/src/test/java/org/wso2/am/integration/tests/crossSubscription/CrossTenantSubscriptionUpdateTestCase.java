@@ -110,7 +110,7 @@ public class CrossTenantSubscriptionUpdateTestCase extends APIManagerLifecycleBa
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        restAPIAdmin.getKeyManagers();  // Due to the issue: https://github.com/wso2/product-apim/issues/12634
+        //restAPIAdmin.getKeyManagers();  // Due to the issue: https://github.com/wso2/product-apim/issues/12634
         tenant3AppTenant3Store = restAPIStore.generateKeys(tenant3Application.getApplicationId(),
                 APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME,
                 StringUtils.EMPTY,
