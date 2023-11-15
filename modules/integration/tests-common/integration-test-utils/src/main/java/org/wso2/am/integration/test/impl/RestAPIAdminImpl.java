@@ -104,11 +104,11 @@ public class RestAPIAdminImpl {
                 "apim:api_workflow_view " +
                 "apim:api_workflow_approve " +
                 "apim:admin_operation " +
-                "apim:policies_import_export" +
-                "apim:keymanagers_manage" +
-                "apim:api_category" +
-                "apim:admin_tier_view" +
-                "apim:admin_tier_manage" +
+                "apim:policies_import_export " +
+                "apim:keymanagers_manage " +
+                "apim:api_category " +
+                "apim:admin_tier_view " +
+                "apim:admin_tier_manage " +
                 "apim:scope_manage";
 
         String accessToken = ClientAuthenticator
