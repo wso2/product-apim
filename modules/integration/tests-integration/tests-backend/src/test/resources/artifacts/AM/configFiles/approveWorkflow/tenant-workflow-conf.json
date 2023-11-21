@@ -1,33 +1,17 @@
 {
-    "ApplicationCreation": {
-      "Enabled": true
-    },
-    "ProductionApplicationRegistration": {
-      "Enabled": true
-    },
-    "SandboxApplicationRegistration": {
-      "Enabled": true
-    },
-    "SubscriptionCreation": {
-      "Enabled": true
-    },
-    "UserSignUp": {
-      "Enabled": true
-    },
-    "SubscriptionDeletion": {
-      "Enabled": true
-    },
-    "ApplicationDeletion": {
-      "Enabled": true
-    },
+    "ApplicationCreation": {},
+    "ProductionApplicationRegistration": {},
+    "SandboxApplicationRegistration": {},
+    "SubscriptionCreation": {},
+    "UserSignUp": {},
+    "SubscriptionDeletion": {},
+    "ApplicationDeletion": {},
     "APIStateChange": {
-      "Enabled": true,
       "Properties": {
         "StateList": "Created:Publish,Published:Block"
       }
     },
     "APIProductStateChange": {
-      "Enabled": true,
       "Properties": {
         "StateList": "Created:Publish,Published:Block"
       }
