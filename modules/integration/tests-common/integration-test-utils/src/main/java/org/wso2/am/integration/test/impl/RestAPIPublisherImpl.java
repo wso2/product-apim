@@ -1124,6 +1124,13 @@ public class RestAPIPublisherImpl {
         return response.getData();
     }
 
+    public String getAPIProductSwaggerByID(String apiProductId) throws ApiException {
+
+        ApiResponse<String> response = apiProductsApi.getAPIProductSwaggerWithHttpInfo(apiProductId, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
     public String updateSwagger(String apiId, String definition) throws ApiException {
 
         ApiResponse<String> apiResponse = apIsApi.updateAPISwaggerWithHttpInfo(apiId, null, definition, null, null);
