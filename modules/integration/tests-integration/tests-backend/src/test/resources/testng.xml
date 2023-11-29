@@ -386,6 +386,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.jwt.urlsafe.UrlSafeJWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.urlsafe.URLSafeJWTTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.jwtdecoding.JWTDecodingTestCase"/>
         </classes>
     </test>
 
