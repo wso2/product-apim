@@ -9,11 +9,13 @@ Name | Type | Description | Notes
 **id** | **String** | UUID of the api product  |  [optional] [readonly]
 **name** | **String** | Name of the API Product | 
 **context** | **String** |  |  [optional]
+**version** | **String** |  |  [optional]
 **description** | **String** | A brief description about the API |  [optional]
 **provider** | **String** | If the provider value is not given, the user invoking the API will be used as the provider.  |  [optional]
 **hasThumbnail** | **Boolean** |  |  [optional]
 **state** | **String** | State of the API product. Only published api products are visible on the Developer Portal  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
+**isDefaultVersion** | **Boolean** |  |  [optional]
 **isRevision** | **Boolean** |  |  [optional]
 **revisionedApiProductId** | **String** | UUID of the api product registry artifact  |  [optional] [readonly]
 **revisionId** | **Integer** |  |  [optional]

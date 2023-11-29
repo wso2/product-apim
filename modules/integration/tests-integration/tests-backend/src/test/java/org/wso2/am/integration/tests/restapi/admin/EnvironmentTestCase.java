@@ -482,9 +482,10 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
             provider = provider + "@" + tenantDomain;
         }
 
+        final String version = "1.0.0";
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
 
         waitForAPIDeployment();
