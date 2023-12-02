@@ -229,6 +229,16 @@ For additional support information please refer to http://wso2.com/support
 
 For more information on WSO2 API Manager please visit https://wso2.com/api-management/
 
+Survey On Open Source Community Communication
+==================================
+
+WSO2 wants to learn more about our open source software (OSS) community and your communication preferences to serve you better.
+
+In addition, we may reach out to a small number of respondents to ask additional questions and offer a small gift.
+
+Link to survey: https://forms.gle/h5q4M3K7vyXba3bK6
+
+
 Known Issues of WSO2 API Manager
 ==================================
 
