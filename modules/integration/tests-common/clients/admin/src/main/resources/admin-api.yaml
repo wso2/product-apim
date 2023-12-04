@@ -4267,6 +4267,43 @@ paths:
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -F "type=WSO2-IS" "https://127.0.0.1:9443/api/am/admin/v4/key-managers/discover"'
 
+  ######################################################
+  # API Provider Resource
+  ######################################################
+  /apis/{apiId}/provider/{providerName}:
+    put:
+      tags:
+        - Api Provider Change
+      summary: Update the api provider
+      description: |
+        Update the api provider
+      parameters:
+        - $ref: '#/components/parameters/providerName'
+        - $ref: '#/components/parameters/apiId'
+      operationId: providerProviderNameApisApiIdPut
+      responses:
+        200:
+          description: |
+            OK.
+            Api Provider updated.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:api_provider_change
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" "https://127.0.0.1:9443/api/am/admin/v4/provider/admin/apis/33662a62-8db1-4d75-af08-afd63c6bd0b4"'
 components:
   schemas:
     Error:
@@ -5937,6 +5974,145 @@ components:
             - Internal/subscriber
           items:
             type: string
+    APIList:
+      title: API List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of APIs returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/APIInfomation'
+        pagination:
+          $ref: '#/components/schemas/PaginationApis'
+    APIInfomation:
+      title: API Info object with basic API details.
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01234567-0123-0123-0123-012345678901
+        name:
+          type: string
+          example: CalculatorAPI
+        description:
+          type: string
+          example: A calculator API that supports basic operations
+        context:
+          type: string
+          example: CalculatorAPI
+        additionalProperties:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              display:
+                type: boolean
+          description: Map of custom properties of API
+        additionalPropertiesMap:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              display:
+                type: boolean
+                default: false
+        version:
+          type: string
+          example: 1.0.0
+        provider:
+          type: string
+          description: |
+            If the provider value is not given, the user invoking the API will be used as the provider.
+          example: admin
+        type:
+          type: string
+          example: HTTP
+        audience:
+          type: string
+          description: The audience of the API. Accepted values are PUBLIC, SINGLE
+          example: PUBLIC
+          enum:
+            - PUBLIC
+            - SINGLE
+        lifeCycleStatus:
+          type: string
+          example: CREATED
+        workflowStatus:
+          type: string
+          example: APPROVED
+        hasThumbnail:
+          type: boolean
+          example: true
+        securityScheme:
+          type: array
+          items:
+            type: string
+        createdTime:
+          type: string
+          example: 2021-02-11 09:57:25
+        updatedTime:
+          type: string
+          example: 2021-02-11 09:57:25
+        updatedBy:
+          type: string
+          example: wso2.system.user
+        gatewayVendor:
+          type: string
+          example: wso2
+        advertiseOnly:
+          type: boolean
+          example: true
+        monetizedInfo:
+          type: boolean
+          example: true
+        businessOwner:
+          type: string
+          example: Business Owner
+        businessOwnerEmail:
+          type: string
+          example: businessowner@abc.com
+        TechnicalOwner:
+          type: string
+          example: Technical Owner
+        TechnicalOwnerEmail:
+          type: string
+          example: technicalowner@abc.com
+    PaginationApis:
+      title: Pagination
+      type: object
+      properties:
+        offset:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 1
+        total:
+          type: integer
+          example: 10
+        next:
+          type: string
+          description: |
+            Link to the next subset of resources qualified.
+            Empty if no more resources are to be returned.
+        previous:
+          type: string
+          description: |
+            Link to the previous subset of resources qualified.
+            Empty if current subset is the first subset returned.
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
@@ -6232,6 +6408,22 @@ components:
       required: true
       schema:
         type: string
+    providerName:
+      name: providerName
+      in: path
+      description: |
+        Provider Name
+      required: true
+      schema:
+        type: string
+    apiId:
+      name: apiId
+      in: path
+      description: |
+        API Id
+      required: true
+      schema:
+        type: string
   securitySchemes:
     OAuth2Security:
       type: oauth2
@@ -6269,3 +6461,4 @@ components:
             apim:admin_alert_manage: Manage admin alerts
             apim:api_workflow_view: Retrive workflow requests
             apim:scope_manage: Manage system scopes
+            apim:api_provider_change: Retrieve and manage applications
