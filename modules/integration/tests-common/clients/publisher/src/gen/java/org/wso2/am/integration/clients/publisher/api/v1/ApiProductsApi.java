@@ -518,6 +518,7 @@ public class ApiProductsApi {
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return String
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -528,8 +529,9 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public void getAPIProductSwagger(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
-        getAPIProductSwaggerWithHttpInfo(apiProductId, accept, ifNoneMatch);
+    public String getAPIProductSwagger(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        ApiResponse<String> localVarResp = getAPIProductSwaggerWithHttpInfo(apiProductId, accept, ifNoneMatch);
+        return localVarResp.getData();
     }
 
     /**
@@ -538,7 +540,7 @@ public class ApiProductsApi {
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;Void&gt;
+     * @return ApiResponse&lt;String&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -549,9 +551,10 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> getAPIProductSwaggerWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+    public ApiResponse<String> getAPIProductSwaggerWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
         okhttp3.Call localVarCall = getAPIProductSwaggerValidateBeforeCall(apiProductId, accept, ifNoneMatch, null);
-        return localVarApiClient.execute(localVarCall);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
@@ -572,10 +575,11 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getAPIProductSwaggerAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call getAPIProductSwaggerAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<String> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = getAPIProductSwaggerValidateBeforeCall(apiProductId, accept, ifNoneMatch, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**

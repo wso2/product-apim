@@ -10187,7 +10187,10 @@ paths:
         style: simple
       responses:
         "200":
-          content: {}
+          content:
+            application/json:
+              schema:
+                type: string
           description: |
             OK.
             Requested swagger document of the API is returned
