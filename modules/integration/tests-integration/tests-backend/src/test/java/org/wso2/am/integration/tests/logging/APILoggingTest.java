@@ -150,6 +150,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
         String logLine;
         while ((logLine = bufferedReader.readLine()) != null) {
             assertTrue(logLine.contains("INFO {API_LOG} " + API_NAME));
+            assertTrue(logLine.contains("correlationId"));
         }
     }
 
