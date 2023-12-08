@@ -93,14 +93,16 @@
 
                     if (userName.value) {
                         let contextPath = "<%=proxyContextPath%>"
+                        let loginRequestPath = "<%=loginContextRequestUrl%>"
                         if (contextPath !== "") {
                             contextPath = contextPath.startsWith('/') ? contextPath : "/" + contextPath
                             contextPath = contextPath.endsWith('/') ?
                                 contextPath.substring(0, contextPath.length - 1) : contextPath
+                            loginRequestPath = loginRequestPath.startsWith('../') ? loginRequestPath.substring(2, loginRequestPath.length) : loginRequestPath
                         }
                         $.ajax({
                             type: "GET",
-                            url: contextPath + "<%=loginContextRequestUrl%>",
+                            url: contextPath + loginRequestPath,
                             xhrFields: { withCredentials: true },
                             success: function (data) {
                                 if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {
