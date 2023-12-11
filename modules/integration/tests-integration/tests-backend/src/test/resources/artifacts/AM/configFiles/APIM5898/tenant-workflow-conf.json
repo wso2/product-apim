@@ -1,0 +1,5 @@
+{
+  "SubscriptionCreation": {
+    "Class": "org.wso2.sample.apimgt.workflow.SampleSubscriptionWorkflow"
+  }
+}

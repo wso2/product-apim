@@ -1,0 +1,19 @@
+{
+    "ApplicationCreation": {},
+    "ProductionApplicationRegistration": {},
+    "SandboxApplicationRegistration": {},
+    "SubscriptionCreation": {},
+    "UserSignUp": {},
+    "SubscriptionDeletion": {},
+    "ApplicationDeletion": {},
+    "APIStateChange": {
+      "Properties": {
+        "StateList": "Created:Publish,Published:Block"
+      }
+    },
+    "APIProductStateChange": {
+      "Properties": {
+        "StateList": "Created:Publish,Published:Block"
+      }
+    }
+ }

@@ -20,8 +20,8 @@ package org.wso2.am.integration.tests.restapi.testcases;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.parser.JSONParser;
 import org.testng.annotations.*;
-import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
@@ -29,13 +29,10 @@ import org.wso2.am.integration.tests.restapi.utils.RESTAPITestUtil;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
+import static org.junit.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -46,12 +43,12 @@ import static org.testng.Assert.assertTrue;
 public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(OnHoldSubscriptionWorkflowIdTestCase.class);
+    private org.json.simple.JSONObject originalTenantConf;
+    private static final String UTF_8 = "UTF-8";
+    private static final String TENANT_CONFIG_PATH = "artifacts/AM/configFiles/tenantConf/tenant-conf.json";
+    private static final String WORKFLOW_CONFIG_PATH
+            = "artifacts/AM/configFiles/APIM5898/tenant-workflow-conf.json";
 
-    private final String DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION =
-            "/_system/governance/apimgt/applicationdata/workflow-extensions.xml";
-    private ResourceAdminServiceClient resourceAdminServiceClient;
-    private String originalWFExtentionsXML;
-    private String newWFExtentionsXML;
 
     @Factory(dataProvider = "userModeDataProvider")
     public OnHoldSubscriptionWorkflowIdTestCase(TestUserMode userMode) {
@@ -69,17 +66,20 @@ public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTes
     public void setEnvironment() throws Exception {
         super.init(userMode);
 
-        resourceAdminServiceClient = new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().
-                getBackEndUrl(), createSession(gatewayContextMgt));
+        originalTenantConf =  (org.json.simple.JSONObject) new JSONParser().parse(restAPIAdmin.getTenantConfig());
+        InputStream tenantConfigStream = getClass().getClassLoader().getResourceAsStream(TENANT_CONFIG_PATH);
+        assertNotNull("Tenant config stream can not be null", tenantConfigStream);
 
-        // Gets the original workflow-extentions.xml file's content from the registry.
-        originalWFExtentionsXML = resourceAdminServiceClient
-                .getTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION);
-        // Gets the new configuration of the workflow-extentions.xml
-        newWFExtentionsXML = readFile(getAMResourceLocation() + File.separator + "configFiles" + File.separator
-                + "APIM5898" + File.separator + "workflow-extensions.xml");
-        // Updates the content of the workflow-extentions.xml of the registry file, to have the new configurations.
-        resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION, newWFExtentionsXML);
+        org.json.simple.JSONObject tenantJsonObject = (org.json.simple.JSONObject) new JSONParser().parse(
+                new InputStreamReader(tenantConfigStream, UTF_8));
+
+        InputStream wfStream = getClass().getClassLoader().getResourceAsStream(WORKFLOW_CONFIG_PATH);
+        assertNotNull("Workflow stream can not be null", wfStream);
+        org.json.simple.JSONObject wfJsonObj = (org.json.simple.JSONObject) new JSONParser().parse(
+                new InputStreamReader(wfStream, UTF_8));
+
+        tenantJsonObject.put("Workflows",wfJsonObj);
+        restAPIAdmin.updateTenantConfig(tenantJsonObject);
     }
 
     @Test(groups = {"wso2.am"}, description = "Returning workflow external ref. id from subscriptions rest api in "
@@ -98,10 +98,8 @@ public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTes
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+        restAPIAdmin.updateTenantConfig(originalTenantConf);
         super.cleanUp();
-        // restore the original workflow-extentions.xml content.
-        resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION,
-                originalWFExtentionsXML);
     }
 
 
