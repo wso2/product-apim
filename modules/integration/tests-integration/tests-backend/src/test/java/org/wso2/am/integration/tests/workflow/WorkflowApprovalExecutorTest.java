@@ -295,10 +295,11 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
 
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(USER_SMITH, name, context, apisToBeUsed,
+        apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(USER_SMITH, name, context, version, apisToBeUsed,
                 policies);
         apiProductId = apiProductDTO.getId();
         assert apiProductDTO.getState() != null;

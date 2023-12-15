@@ -545,6 +545,27 @@ public class RestAPIPublisherImpl {
         return response;
     }
 
+
+    /**
+     * copy API from existing API Product
+     *
+     * @param newVersion - new version of the API Product
+     * @param apiProductId      - existing API Product Id
+     * @param isDefault  - make the default version
+     * @return - http response object
+     * @throws APIManagerIntegrationTestException - Throws if error occurred at API Product copy operation
+     */
+    public HttpResponse copyAPIProduct(String newVersion, String apiProductId, Boolean isDefault) throws ApiException {
+
+        APIProductDTO apiProductDto = apiProductsApi.createNewAPIProductVersion(newVersion, apiProductId, isDefault);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(apiProductDto.getId())) {
+            response = new HttpResponse(apiProductDto.getId(), 200);
+        }
+        return response;
+    }
+
+
     /**
      * @param newVersion
      * @param apiId
@@ -1740,7 +1761,7 @@ public class RestAPIPublisherImpl {
         if ("APIProduct".equals(apiType)) {
             APIProductDTO apiProduct = getApiProduct(revisionUUID);
             context = apiProduct.getContext();
-            version = "1.0.0";
+            version = apiProduct.getVersion();
             provider = apiProduct.getProvider();
             name = apiProduct.getName();
             apiPolicy = apiProduct.getApiThrottlingPolicy();
@@ -1754,15 +1775,11 @@ public class RestAPIPublisherImpl {
         }
         APIInfoDTO apiInfo = restAPIGateway.getAPIInfo(apiUUID);
         if (apiInfo != null) {
-            if (!"APIProduct".equals(apiType)) {
-                if (context.startsWith("/{version}")) {
-                    Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
-                } else {
-                    Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
-                }
+            if (context.startsWith("/{version}")) {
+                Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
             } else {
-                Assert.assertEquals(apiInfo.getContext(), context);
-
+                log.info("context: " + context + " version: " + version);
+                Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
             }
             Assert.assertEquals(apiInfo.getName(), name);
             Assert.assertEquals(apiInfo.getProvider(), provider);
@@ -1791,15 +1808,10 @@ public class RestAPIPublisherImpl {
             }
             apiInfo = restAPIGateway.getAPIInfo(apiUUID);
             if (apiInfo != null) {
-                if (!"APIProduct".equals(apiType)) {
-                    if (context.startsWith("/{version}")) {
-                        Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
-                    } else {
-                        Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
-                    }
+                if (context.startsWith("/{version}")) {
+                    Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
                 } else {
-                    Assert.assertEquals(apiInfo.getContext(), context);
-
+                    Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
                 }
                 Assert.assertEquals(apiInfo.getName(), name);
                 Assert.assertEquals(apiInfo.getProvider(), provider);

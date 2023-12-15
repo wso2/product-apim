@@ -52,6 +52,10 @@ public class APIProductDTO {
         @SerializedName(SERIALIZED_NAME_CONTEXT)
             private String context;
 
+        public static final String SERIALIZED_NAME_VERSION = "version";
+        @SerializedName(SERIALIZED_NAME_VERSION)
+            private String version;
+
         public static final String SERIALIZED_NAME_DESCRIPTION = "description";
         @SerializedName(SERIALIZED_NAME_DESCRIPTION)
             private String description;
@@ -71,6 +75,10 @@ public class APIProductDTO {
         public static final String SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION = "enableSchemaValidation";
         @SerializedName(SERIALIZED_NAME_ENABLE_SCHEMA_VALIDATION)
             private Boolean enableSchemaValidation;
+
+        public static final String SERIALIZED_NAME_IS_DEFAULT_VERSION = "isDefaultVersion";
+        @SerializedName(SERIALIZED_NAME_IS_DEFAULT_VERSION)
+            private Boolean isDefaultVersion;
 
         public static final String SERIALIZED_NAME_IS_REVISION = "isRevision";
         @SerializedName(SERIALIZED_NAME_IS_REVISION)
@@ -457,6 +465,29 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
+        public APIProductDTO version(String version) {
+        
+        this.version = version;
+        return this;
+        }
+
+    /**
+        * Get version
+    * @return version
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "1.0.0", value = "")
+    
+    public String getVersion() {
+        return version;
+    }
+
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+
         public APIProductDTO description(String description) {
         
         this.description = description;
@@ -569,6 +600,29 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     public void setEnableSchemaValidation(Boolean enableSchemaValidation) {
         this.enableSchemaValidation = enableSchemaValidation;
+    }
+
+
+        public APIProductDTO isDefaultVersion(Boolean isDefaultVersion) {
+        
+        this.isDefaultVersion = isDefaultVersion;
+        return this;
+        }
+
+    /**
+        * Get isDefaultVersion
+    * @return isDefaultVersion
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "false", value = "")
+    
+    public Boolean isIsDefaultVersion() {
+        return isDefaultVersion;
+    }
+
+
+    public void setIsDefaultVersion(Boolean isDefaultVersion) {
+        this.isDefaultVersion = isDefaultVersion;
     }
 
 
@@ -1297,11 +1351,13 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             return Objects.equals(this.id, apIProduct.id) &&
             Objects.equals(this.name, apIProduct.name) &&
             Objects.equals(this.context, apIProduct.context) &&
+            Objects.equals(this.version, apIProduct.version) &&
             Objects.equals(this.description, apIProduct.description) &&
             Objects.equals(this.provider, apIProduct.provider) &&
             Objects.equals(this.hasThumbnail, apIProduct.hasThumbnail) &&
             Objects.equals(this.state, apIProduct.state) &&
             Objects.equals(this.enableSchemaValidation, apIProduct.enableSchemaValidation) &&
+            Objects.equals(this.isDefaultVersion, apIProduct.isDefaultVersion) &&
             Objects.equals(this.isRevision, apIProduct.isRevision) &&
             Objects.equals(this.revisionedApiProductId, apIProduct.revisionedApiProductId) &&
             Objects.equals(this.revisionId, apIProduct.revisionId) &&
@@ -1337,7 +1393,7 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, enableSchemaValidation, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, gatewayVendor, apis, scopes, categories, workflowStatus);
+        return Objects.hash(id, name, context, version, description, provider, hasThumbnail, state, enableSchemaValidation, isDefaultVersion, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTime, gatewayVendor, apis, scopes, categories, workflowStatus);
     }
 
 
@@ -1348,11 +1404,13 @@ sb.append("class APIProductDTO {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    context: ").append(toIndentedString(context)).append("\n");
+    sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");
     sb.append("    state: ").append(toIndentedString(state)).append("\n");
     sb.append("    enableSchemaValidation: ").append(toIndentedString(enableSchemaValidation)).append("\n");
+    sb.append("    isDefaultVersion: ").append(toIndentedString(isDefaultVersion)).append("\n");
     sb.append("    isRevision: ").append(toIndentedString(isRevision)).append("\n");
     sb.append("    revisionedApiProductId: ").append(toIndentedString(revisionedApiProductId)).append("\n");
     sb.append("    revisionId: ").append(toIndentedString(revisionId)).append("\n");
