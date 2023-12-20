@@ -746,6 +746,31 @@ public class RestAPIAdminImpl {
     }
 
     /**
+     * This method is used to reject a workflow
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while rejecting a workflow
+     */
+    public HttpResponse rejectWorkflowStatus(String workflowReferenceId) throws ApiException {
+        WorkflowDTO workflowdto = null;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+
+        WorkflowDTO body = new WorkflowDTO();
+        WorkflowDTO.StatusEnum status = WorkflowDTO.StatusEnum.valueOf(WorkflowDTO.StatusEnum.class, "REJECTED");
+        body.setStatus(status);
+        body.setDescription("Reject workflow request.");
+        //body.setAttributes();
+        try {
+            workflowdto = workflowsIndividualApi.workflowsUpdateWorkflowStatusPost(workflowReferenceId, body);
+            response = new HttpResponse(gson.toJson(workflowdto), 200);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
+    }
+
+    /**
      * This method is used to retrieve tenant Config.
      *
      * @return API response returned by API call.

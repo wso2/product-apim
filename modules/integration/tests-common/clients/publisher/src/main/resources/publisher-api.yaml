@@ -1810,6 +1810,40 @@ paths:
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
             "https://127.0.0.1:9443/api/am/publisher/v4/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
 
+  /apis/{apiId}/cancel-revision-workflow/{revisionId}/{envName}:
+    #--------------------------------------------------------
+    # Cancel a pending revision deployment workflow task given revision id and environment name
+    #--------------------------------------------------------
+    delete:
+      tags:
+        - API Revisions
+      summary: Delete Pending Revision Deployment Workflow Tasks
+      description: |
+        This operation can be used to remove pending revision deployment requests that are in pending state
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/revisionId'
+        - $ref: '#/components/parameters/envName'
+      responses:
+        200:
+          description: |
+            OK.
+            Revision deployment pending task removed successfully.
+          content: { }
+        404:
+          $ref: '#/components/responses/NotFound'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      security:
+        - OAuth2Security:
+            - apim:api_publish
+            - apim:api_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/publisher/v4/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/cancel-revision-workflow/e0824883-3e86-403a-aec1-22bbc454eb7c/Default"'
+      operationId: deleteAPIRevisionDeploymentPendingTask
+
   /apis/import-service:
     post:
       tags:
@@ -9124,6 +9158,14 @@ components:
           minLength: 1
           type: string
           example: default
+        status:
+          type: string
+          example: CREATED
+          default: CREATED
+          enum:
+            - CREATED
+            - APPROVED
+            - REJECTED
         vhost:
           maxLength: 255
           minLength: 1
@@ -12166,6 +12208,17 @@ components:
       in: path
       description: |
         Revision ID of an API
+      required: true
+      schema:
+        type: string
+
+    # API Revision Environment
+    # Specified as part of the path expression
+    envName:
+      name: envName
+      in: path
+      description: |
+        Environment name of an Revision
       required: true
       schema:
         type: string
