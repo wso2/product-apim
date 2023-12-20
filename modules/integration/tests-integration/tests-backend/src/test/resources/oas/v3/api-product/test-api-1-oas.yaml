@@ -63,7 +63,62 @@ paths:
         optional: false
     parameters:
       - $ref: "#/components/parameters/ProductIDPathParam"
+  "/users/{userID}/user-info":
+    get:
+      parameters:
+        - $ref: "#/components/parameters/userIDPathParam"
+      responses:
+        "200":
+          $ref: '#/components/responses/user_info_response'
+      security:
+       -
+        default: []
+      x-auth-type: Application & Application User
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+         - oauth2
+        optional: false
 components:
+  schemas:
+      standard_response:
+        required:
+        - result
+        type: object
+        description: |
+          A standard response schema representing the structure of API responses. 
+          It includes a required "result" field.
+  responses:
+    user_info_response:
+      description: Response containing user information
+      content:
+        application/json:
+          schema:
+            allOf:
+              -
+                $ref: '#/components/schemas/standard_response'
+              -
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        description: The username associated with the user
+                        example: testUser
+                      user_details:
+                        type: array
+                        description: An array of user details, each represented as key-value pairs
+                        items:
+                          type: object
+                          properties:
+                            key:
+                              type: string
+                              example: key
+                            value:
+                              type: string
+                              example: value
+                    description: Additional properties providing detailed user information
   parameters:
     ProductIDPathParam:
       name: productID
