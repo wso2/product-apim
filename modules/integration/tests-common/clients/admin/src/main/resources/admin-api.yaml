@@ -4266,7 +4266,106 @@ paths:
         - lang: Shell
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -F "type=WSO2-IS" "https://127.0.0.1:9443/api/am/admin/v4/key-managers/discover"'
+  ######################################################
+  # The "API Collection" resource APIs
+  ######################################################
+  /apis:
+    get:
+      tags:
+        - APIs
+      summary: |
+        Retrieve/Search APIs
+      description: |
+        This operation provides you a list of available APIs qualifying under a given search condition.
+        Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - name: query
+          in: query
+          description: |
+            **Search and get all apis in admin portal**.
 
+            You can search by proving a keyword.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            List of qualifying APIs is returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Content-Type:
+              description: The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultList'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+          content: { }
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:api_provider_change
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis"'
+      operationId: getAllAPIs
+  ######################################################
+  # Change Api Provider
+  ######################################################
+  /apis/{apiId}/change-provider:
+    post:
+      tags:
+        - Api Provider Change
+      summary: Update the api provider
+      description: |
+        Update the api provider
+      operationId: providerNamePost
+      parameters:
+        - name: provider
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/apiId'
+      responses:
+        200:
+          description: |
+            OK.
+            Api Provider updated.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:api_provider_change
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+              -H "Content-Type: application/json" "https://127.0.0.1:9443/api/am/admin/v4/provider/admin/apis/33662a62-8db1-4d75-af08-afd63c6bd0b4"'
 components:
   schemas:
     Error:
@@ -5937,6 +6036,57 @@ components:
             - Internal/subscriber
           items:
             type: string
+    SearchResultList:
+      title: Unified Search Result List
+      type: object
+      properties:
+        apis:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiResult'
+        count:
+          type: integer
+          description: |
+            Number of results returned.
+          example: 1
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    ApiResult:
+      type: object
+      properties:
+        provider:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        id:
+          type: string
+    Pagination:
+      title: Pagination
+      type: object
+      properties:
+        offset:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 1
+        total:
+          type: integer
+          example: 10
+        next:
+          type: string
+          description: |
+            Link to the next subset of resources qualified.
+            Empty if no more resources are to be returned.
+            example: ""
+        previous:
+          type: string
+          description: |
+            Link to the previous subset of resources qualified.
+            Empty if current subset is the first subset returned.
+            example: ""
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
@@ -6229,6 +6379,14 @@ components:
       in: path
       description: |
         Key Manager UUID
+      required: true
+      schema:
+        type: string
+    apiId:
+      name: apiId
+      in: path
+      description: |
+        **API ID** consisting of the **UUID** of the API.
       required: true
       schema:
         type: string

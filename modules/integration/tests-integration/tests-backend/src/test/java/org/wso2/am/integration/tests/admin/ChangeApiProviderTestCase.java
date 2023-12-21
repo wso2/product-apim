@@ -86,7 +86,6 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
                         storeContext.getContextTenant().getContextUser().getPassword(),
                         storeContext.getContextTenant().getDomain(), storeURLHttps);
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_ENDPOINT_POSTFIX_URL;
-        restAPIAdminClient = new RestAPIAdminImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, publisherURLHttps);
     }
 
     @Test(groups = {"wso2.am"}, description = "Calling API with invalid token")
@@ -137,6 +136,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         assertEquals(apiInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, RESPONSE_CODE_MISMATCH_ERROR_MESSAGE);
 
         //Update provider of the api
+        restAPIAdminClient = new RestAPIAdminImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, publisherURLHttps);
         ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(newUser, apiID);
         Assert.assertEquals(changeProviderResponse.getStatusCode(), HttpStatus.SC_OK);
 
@@ -149,6 +149,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
+        restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiID);
         super.cleanUp();
     }
