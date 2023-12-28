@@ -43,14 +43,15 @@ public class DtoFactory {
         return exportPolicy;
     }
 
-    public static APIProductDTO createApiProductDTO(String provider, String name, String context, List<ProductAPIDTO> apis,
-                                                    List<String> polices) {
+    public static APIProductDTO createApiProductDTO(String provider, String name, String context, String version,
+            List<ProductAPIDTO> apis, List<String> polices) {
         return new APIProductDTO().
                 accessControl(APIProductDTO.AccessControlEnum.NONE).
                 visibility(APIProductDTO.VisibilityEnum.PUBLIC).
                 apis(apis).
                 context(context).
                 name(name).
+                version(version).
                 policies(polices).
                 provider(provider);
     }
