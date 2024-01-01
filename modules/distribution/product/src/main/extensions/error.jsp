@@ -26,7 +26,12 @@
 <%@ page import="java.net.URISyntaxException" %>
 <%@ taglib prefix="layout" uri="org.wso2.identity.apps.taglibs.layout.controller" %>
 <jsp:directive.include file="includes/localize.jsp"/>
-<jsp:directive.include file="includes/layout-resolver.jsp"/>
+
+<%-- Include tenant context --%>
+<jsp:directive.include file="tenant-resolve.jsp"/>
+
+<%-- Branding Preferences --%>
+<jsp:directive.include file="includes/branding-preferences.jsp"/>
 
 <%
     String errorMsg = IdentityManagementEndpointUtil.getStringValue(request.getAttribute("errorMsg"));

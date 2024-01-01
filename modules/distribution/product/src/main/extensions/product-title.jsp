@@ -38,10 +38,10 @@
     String logoHeight = (String)request.getAttribute("logoHeight");
     String logoWidth = (String)request.getAttribute("logoWidth");
     String logoAltText = (String)request.getAttribute("logoAltText");
-    if (!StringUtils.isEmpty(logoSrc)) {
+    if (!StringUtils.isEmpty(logoURL)) {
 %>
-        <div class="product-title box">
-            <img src=<%=logoSrc%> alt=<%=logoAltText%> height=<%=logoHeight%> width=<%=logoWidth%>>
+        <div class="theme-icon inline auto transparent product-logo portal-logo">
+            <img src="<%= StringEscapeUtils.escapeHtml4(logoURL) %>" id="product-logo" alt="<%= StringEscapeUtils.escapeHtml4(logoAlt) %>" />
         </div>
 <%  } else { %>
         <div class="product-title box">

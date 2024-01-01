@@ -118,7 +118,7 @@ under the License.
                             <environmentVariables>
                                 <SHARED_DATABASE_DRIVER>org.h2.Driver</SHARED_DATABASE_DRIVER>
                                 <SHARED_DATABASE_URL>
-                                    jdbc:h2:./repository/database/WSO2SHARED_DB;DB_CLOSE_ON_EXIT=FALSE
+                                    jdbc:h2:./repository/database/WSO2SHARED_DB
                                 </SHARED_DATABASE_URL>
                                 <SHARED_DATABASE_USERNAME>wso2carbon</SHARED_DATABASE_USERNAME>
                                 <SHARED_DATABASE_PASSWORD>wso2carbon</SHARED_DATABASE_PASSWORD>

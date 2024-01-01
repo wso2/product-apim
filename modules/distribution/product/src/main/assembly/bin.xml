@@ -546,6 +546,7 @@
                 <exclude>accountrecoveryendpoint/self-registration-username-request.jsp</exclude>
                 <exclude>accountrecoveryendpoint/self-registration-with-verification.jsp</exclude>
                 <exclude>accountrecoveryendpoint/error.jsp</exclude>
+                <exclude>accountrecoveryendpoint/includes/branding-preferences.jsp</exclude>
             </excludes>
         </fileSet>
 
@@ -560,6 +561,7 @@
                 <include>header.jsp</include>
                 <include>product-footer.jsp</include>
                 <include>product-title.jsp</include>
+                <include>branding-preferences.jsp</include>
             </includes>
         </fileSet>
 
@@ -1629,7 +1631,12 @@
             </source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
         </file>
-
+        <file>
+            <source>src/main/resources/identity/apple/attestation/apple_attestation_root_ca.pem</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/identity/apple/attestation</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
     </files>
 
 </assembly>

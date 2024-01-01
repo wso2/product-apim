@@ -29,6 +29,15 @@
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.AuthenticationEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
 
+<%-- Localization --%>
+<jsp:directive.include file="localize.jsp" />
+
+<%-- Include tenant context --%>
+<jsp:directive.include file="../tenant-resolve.jsp"/>
+
+<%-- Branding Preferences --%>
+<jsp:directive.include file="branding-preferences.jsp"/>
+
 <%
   String tenant = request.getParameter("tenantDomain");
   if (tenant == null) {
@@ -157,12 +166,46 @@
 
 <title><%=request.getAttribute("pageTitle")%></title>
 
+<%-- Load Default Theme Skeleton --%>
+<jsp:include page="theme-skeleton.jsp"/>
+
+<%-- If an override stylesheet is defined in branding-preferences, applying it... --%>
+<% if (overrideStylesheet != null && !StringUtils.startsWith(layout, PREFIX_FOR_CUSTOM_LAYOUT_NAME)) { %>
+<link rel="stylesheet" href="<%= StringEscapeUtils.escapeHtml4(overrideStylesheet) %>">
+<% } %>
+
+<%-- Layout specific style sheet --%>
 <%
-  String cssPath = request.getAttribute("customCSS") + "";
-  if (!StringUtils.isEmpty(cssPath)) {
+    String styleFilePath = "";
+    if (StringUtils.startsWith(layout, PREFIX_FOR_CUSTOM_LAYOUT_NAME)) {
+        if (StringUtils.equals(layout, PREFIX_FOR_CUSTOM_LAYOUT_NAME + CUSTOM_LAYOUT_NAME_SEPERATOR
+                + tenantRequestingPreferences)) {
+            styleFilePath = layoutStoreURL.replace("${tenantDomain}", tenantRequestingPreferences) + "/styles.css";
+        } else if (StringUtils.equals(layout, PREFIX_FOR_CUSTOM_LAYOUT_NAME + CUSTOM_LAYOUT_NAME_SEPERATOR
+                + tenantRequestingPreferences + CUSTOM_LAYOUT_NAME_SEPERATOR + convertApplicationName(applicationRequestingPreferences))) {
+            styleFilePath = layoutStoreURL.replace("${tenantDomain}", tenantRequestingPreferences) + "/apps/" + convertApplicationName(applicationRequestingPreferences) + "/styles.css";
+        }
+    } else {
+        styleFilePath = "includes/layouts/" + layout + "/styles.css";
+    }
+
+    if (config.getServletContext().getResource(styleFilePath) != null) {
 %>
-      <link href=<%=cssPath%> rel="stylesheet" type="text/css">
-<%	}
+        <link rel="stylesheet" href="<%= styleFilePath %>">
+<%
+    }
+%>
+
+<%-- Updates the site tile with the text resolved in branding-preferences --%>
+<title><%= i18n(recoveryResourceBundle, customText, "site.title", __DEPRECATED__siteTitle) %></title>
+
+<%-- Downtime banner --%>
+<%
+    if (config.getServletContext().getResource("extensions/planned-downtime-banner.jsp") != null) {
+%>
+        <jsp:include page="/extensions/planned-downtime-banner.jsp"/>
+<%
+    }
 %>
 
 <script src="libs/jquery_3.6.0/jquery-3.6.0.min.js"></script>

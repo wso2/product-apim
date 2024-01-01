@@ -47,8 +47,8 @@
             <artifactId>commons-digester</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.h2database.wso2</groupId>
-            <artifactId>h2-database-engine</artifactId>
+            <groupId>org.wso2.orbit.com.h2database</groupId>
+            <artifactId>h2-engine</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.osgi</groupId>
@@ -59,6 +59,7 @@
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
+            <version>${orbit.version.h2.engine}</version>
         </dependency>
         <dependency>
             <groupId>javax.jms</groupId>

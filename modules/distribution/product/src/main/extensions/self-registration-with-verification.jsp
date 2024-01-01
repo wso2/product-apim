@@ -49,7 +49,9 @@
 
 <jsp:directive.include file="includes/localize.jsp"/>
 <jsp:directive.include file="tenant-resolve.jsp"/>
-<jsp:directive.include file="includes/layout-resolver.jsp"/>
+
+<%-- Branding Preferences --%>
+<jsp:directive.include file="includes/branding-preferences.jsp"/>
 
 <%
     boolean error = IdentityManagementEndpointUtil.getBooleanValue(request.getAttribute("error"));

@@ -41,7 +41,11 @@
 
 <%@ include file="includes/localize.jsp" %>
 <jsp:directive.include file="includes/init-url.jsp"/>
-<jsp:directive.include file="includes/layout-resolver.jsp"/>
+
+<%-- Branding Preferences --%>
+<jsp:directive.include file="includes/branding-preferences.jsp"/>
+
+<jsp:directive.include file="includes/username-label-resolver.jsp"/>
 
 <%!
     private static final String FIDO_AUTHENTICATOR = "FIDOAuthenticator";

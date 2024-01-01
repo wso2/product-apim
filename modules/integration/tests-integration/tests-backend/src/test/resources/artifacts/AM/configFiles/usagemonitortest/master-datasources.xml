@@ -56,7 +56,7 @@
             </jndiConfig>
             <definition type="RDBMS">
                 <configuration>
-                    <url>jdbc:h2:<!-- Full path to JDBC database -->;AUTO_SERVER=TRUE</url>
+                    <url>jdbc:h2:<!-- Full path to JDBC database --></url>
                     <username>wso2carbon</username>
                     <password>wso2carbon</password>
                     <driverClassName>org.h2.Driver</driverClassName>
