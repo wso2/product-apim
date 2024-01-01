@@ -75,6 +75,10 @@ public class DtoFactory {
         applicationThrottlePolicyDTO.setDescription(description);
         applicationThrottlePolicyDTO.setIsDeployed(isDeployed);
         applicationThrottlePolicyDTO.setDefaultLimit(defaultLimit);
+        BurstLimitDTO burstLimitDTO = new BurstLimitDTO();
+        burstLimitDTO.setRateLimitCount(0);
+        burstLimitDTO.setRateLimitTimeUnit(null);
+        applicationThrottlePolicyDTO.setBurstLimit(burstLimitDTO);
         return applicationThrottlePolicyDTO;
     }
 
