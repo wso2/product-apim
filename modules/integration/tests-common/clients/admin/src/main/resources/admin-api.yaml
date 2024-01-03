@@ -3031,6 +3031,7 @@ paths:
               - AM_APPLICATION_DELETION
               - AM_API_STATE
               - AM_API_PRODUCT_STATE
+              - AM_REVISION_DEPLOYMENT
       responses:
         200:
           description: |
@@ -4459,6 +4460,8 @@ components:
           properties:
             defaultLimit:
               $ref: '#/components/schemas/ThrottleLimit'
+            burstLimit:
+              $ref: '#/components/schemas/BurstLimit'
     ApplicationThrottlePolicyList:
       title: Application Level Throttling Policy List
       type: object
@@ -4786,6 +4789,18 @@ components:
           $ref: '#/components/schemas/BandwidthLimit'
         eventCount:
           $ref: '#/components/schemas/EventCountLimit'
+    BurstLimit:
+      title: Burst Limit object
+      type: object
+      properties:
+        rateLimitCount:
+          type: integer
+          description: Burst control request count
+          example: 10
+        rateLimitTimeUnit:
+          type: string
+          description: Burst control time unit
+          example: min
     MonetizationInfo:
       title: API monetization details object
       required:
@@ -5815,6 +5830,7 @@ components:
             - SUBSCRIPTION_DELETION
             - SUBSCRIPTION_UPDATE
             - API_PRODUCT_STATE
+            - REVISION_DEPLOYMENT
         workflowStatus:
           type: string
           description: |

@@ -5195,6 +5195,7 @@ paths:
           - AM_APPLICATION_DELETION
           - AM_API_STATE
           - AM_API_PRODUCT_STATE
+          - AM_REVISION_DEPLOYMENT
           type: string
         style: form
       responses:
@@ -9442,6 +9443,7 @@ components:
           - SUBSCRIPTION_DELETION
           - SUBSCRIPTION_UPDATE
           - API_PRODUCT_STATE
+          - REVISION_DEPLOYMENT
           example: APPLICATION_CREATION
           type: string
         workflowStatus:

@@ -23,65 +23,64 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.admin.api.dto.BurstLimitDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* ApplicationThrottlePolicyAllOfDTO
+* BurstLimitDTO
 */
 
-public class ApplicationThrottlePolicyAllOfDTO {
-        public static final String SERIALIZED_NAME_DEFAULT_LIMIT = "defaultLimit";
-        @SerializedName(SERIALIZED_NAME_DEFAULT_LIMIT)
-            private ThrottleLimitDTO defaultLimit;
+public class BurstLimitDTO {
+        public static final String SERIALIZED_NAME_RATE_LIMIT_COUNT = "rateLimitCount";
+        @SerializedName(SERIALIZED_NAME_RATE_LIMIT_COUNT)
+            private Integer rateLimitCount;
 
-        public static final String SERIALIZED_NAME_BURST_LIMIT = "burstLimit";
-        @SerializedName(SERIALIZED_NAME_BURST_LIMIT)
-            private BurstLimitDTO burstLimit;
+        public static final String SERIALIZED_NAME_RATE_LIMIT_TIME_UNIT = "rateLimitTimeUnit";
+        @SerializedName(SERIALIZED_NAME_RATE_LIMIT_TIME_UNIT)
+            private String rateLimitTimeUnit;
 
 
-        public ApplicationThrottlePolicyAllOfDTO defaultLimit(ThrottleLimitDTO defaultLimit) {
+        public BurstLimitDTO rateLimitCount(Integer rateLimitCount) {
         
-        this.defaultLimit = defaultLimit;
+        this.rateLimitCount = rateLimitCount;
         return this;
         }
 
     /**
-        * Get defaultLimit
-    * @return defaultLimit
-    **/
-      @ApiModelProperty(required = true, value = "")
-    
-    public ThrottleLimitDTO getDefaultLimit() {
-        return defaultLimit;
-    }
-
-
-    public void setDefaultLimit(ThrottleLimitDTO defaultLimit) {
-        this.defaultLimit = defaultLimit;
-    }
-
-
-        public ApplicationThrottlePolicyAllOfDTO burstLimit(BurstLimitDTO burstLimit) {
-        
-        this.burstLimit = burstLimit;
-        return this;
-        }
-
-    /**
-        * Get burstLimit
-    * @return burstLimit
+        * Burst control request count
+    * @return rateLimitCount
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+      @ApiModelProperty(example = "10", value = "Burst control request count")
     
-    public BurstLimitDTO getBurstLimit() {
-        return burstLimit;
+    public Integer getRateLimitCount() {
+        return rateLimitCount;
     }
 
 
-    public void setBurstLimit(BurstLimitDTO burstLimit) {
-        this.burstLimit = burstLimit;
+    public void setRateLimitCount(Integer rateLimitCount) {
+        this.rateLimitCount = rateLimitCount;
+    }
+
+
+        public BurstLimitDTO rateLimitTimeUnit(String rateLimitTimeUnit) {
+        
+        this.rateLimitTimeUnit = rateLimitTimeUnit;
+        return this;
+        }
+
+    /**
+        * Burst control time unit
+    * @return rateLimitTimeUnit
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "min", value = "Burst control time unit")
+    
+    public String getRateLimitTimeUnit() {
+        return rateLimitTimeUnit;
+    }
+
+
+    public void setRateLimitTimeUnit(String rateLimitTimeUnit) {
+        this.rateLimitTimeUnit = rateLimitTimeUnit;
     }
 
 
@@ -93,23 +92,23 @@ public class ApplicationThrottlePolicyAllOfDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            ApplicationThrottlePolicyAllOfDTO applicationThrottlePolicyAllOf = (ApplicationThrottlePolicyAllOfDTO) o;
-            return Objects.equals(this.defaultLimit, applicationThrottlePolicyAllOf.defaultLimit) &&
-            Objects.equals(this.burstLimit, applicationThrottlePolicyAllOf.burstLimit);
+            BurstLimitDTO burstLimit = (BurstLimitDTO) o;
+            return Objects.equals(this.rateLimitCount, burstLimit.rateLimitCount) &&
+            Objects.equals(this.rateLimitTimeUnit, burstLimit.rateLimitTimeUnit);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(defaultLimit, burstLimit);
+        return Objects.hash(rateLimitCount, rateLimitTimeUnit);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class ApplicationThrottlePolicyAllOfDTO {\n");
-    sb.append("    defaultLimit: ").append(toIndentedString(defaultLimit)).append("\n");
-    sb.append("    burstLimit: ").append(toIndentedString(burstLimit)).append("\n");
+sb.append("class BurstLimitDTO {\n");
+    sb.append("    rateLimitCount: ").append(toIndentedString(rateLimitCount)).append("\n");
+    sb.append("    rateLimitTimeUnit: ").append(toIndentedString(rateLimitTimeUnit)).append("\n");
 sb.append("}");
 return sb.toString();
 }

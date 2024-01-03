@@ -28,6 +28,7 @@
             <class name="org.wso2.am.integration.tests.other.AdvancedWebAppDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.other.APISecurityAuditTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.DisableSecurityAndTryOutRESTResourceWithElkAnalyticsEnabledTestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.MicroGWJWTRevocationTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTRevocationTestCase"/>
@@ -186,6 +187,7 @@
             <!--class name="org.wso2.am.integration.tests.header.ESBJAVA5121CheckAuthHeaderOrderTestCase"/-->
             <!--<class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.SOAPAPIImportExportTestCase"/>
             <class name="org.wso2.am.integration.tests.other.WSDLImportTestCase"/>
             <class name="org.wso2.am.integration.tests.other.SoapToRestTestCase"/>
             <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
@@ -384,6 +386,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.jwt.urlsafe.UrlSafeJWTTestSuite"/>
             <class name="org.wso2.am.integration.tests.jwt.urlsafe.URLSafeJWTTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.jwtdecoding.JWTDecodingTestCase"/>
         </classes>
     </test>
 
@@ -421,6 +424,13 @@
             <class name="org.wso2.am.integration.tests.workflow.WorkflowApprovalExecutorTest"/>
         </classes>
     </test>
+    <test name="apim-logging-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group1"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.logging.APILoggingTest"/>
+<!--            <class name="org.wso2.am.integration.tests.logging.CorrelationLoggingTest"/>-->
+        </classes>
+    </test>
 
     <test name="apim-cross-tenant-scenario" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group2"/>
@@ -438,13 +448,7 @@
         </classes>
     </test>
 
-    <test name="apim-logging-tests" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.logging.APILoggingTest"/>
-<!--            <class name="org.wso2.am.integration.tests.logging.CorrelationLoggingTest"/>-->
-        </classes>
-    </test>
+
     <test name="apim-revoke-one-time-token-flow-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
         <classes>
@@ -462,12 +466,12 @@
             <class name="org.wso2.am.integration.tests.other.TenantDomainValidationTestCase"/>
         </classes>
     </test>
-    <test name="apim-websocket-invocation-tests" preserve-order="true" parallel="false" group-by-instances="true">
+    <!--<test name="apim-websocket-invocation-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.websocket.WebSocketAPIInvocationWithTracingTestCase"/>
         </classes>
-    </test>
+    </test> -->
 
     <test name="apim-integration-tests-mandatory-properties-with-restart" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>

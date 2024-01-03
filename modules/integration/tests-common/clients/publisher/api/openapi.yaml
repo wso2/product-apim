@@ -3129,6 +3129,83 @@ paths:
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
       x-accepts: application/json
+  /apis/{apiId}/cancel-revision-workflow/{revisionId}/{envName}:
+    delete:
+      description: |
+        This operation can be used to remove pending revision deployment requests that are in pending state
+      operationId: deleteAPIRevisionDeploymentPendingTask
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Revision ID of an API
+        explode: false
+        in: path
+        name: revisionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Environment name of an Revision
+        explode: false
+        in: path
+        name: envName
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Revision deployment pending task removed successfully.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+        - apim:api_manage
+      summary: Delete Pending Revision Deployment Workflow Tasks
+      tags:
+      - API Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/cancel-revision-workflow/e0824883-3e86-403a-aec1-22bbc454eb7c/Default"'
+      x-accepts: application/json
   /apis/import-service:
     post:
       description: This operation can be used to create an API from a Service from
@@ -10187,7 +10264,10 @@ paths:
         style: simple
       responses:
         "200":
-          content: {}
+          content:
+            application/json:
+              schema:
+                type: string
           description: |
             OK.
             Requested swagger document of the API is returned
@@ -11818,6 +11898,95 @@ paths:
       - lang: Curl
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+      x-accepts: application/json
+  /api-products/copy-api-products:
+    post:
+      description: |
+        This operation can be used to create a new version of an existing API Products. The new version is specified as `newVersion` query parameter. New API Product will be in `CREATED` state.
+      operationId: createNewAPIProductVersion
+      parameters:
+      - description: Version of the new API Product.
+        explode: true
+        in: query
+        name: newVersion
+        required: true
+        schema:
+          maxLength: 30
+          type: string
+        style: form
+      - description: Specifies whether new API Product should be added as default
+          version.
+        explode: true
+        in: query
+        name: defaultVersion
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product.
+          The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID.
+          Should be formatted as **provider-name-version**.
+        explode: true
+        in: query
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIProduct'
+          description: |
+            Created.
+            Successful response with the newly created API Product as entity in the body. Location header contains URL of newly created API Product.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created API Product.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+        - apim:api_manage
+      summary: Create a New API Product Version
+      tags:
+      - API Products
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/api-products/copy-api-products?newVersion=2.0&defaultVersion=false&apiproductId=2fd14eb8-b828-4013-b448-0739d2e76bf7"'
       x-accepts: application/json
   /api-products/export:
     get:
@@ -15161,6 +15330,16 @@ components:
       schema:
         type: string
       style: simple
+    envName:
+      description: |
+        Environment name of an Revision
+      explode: false
+      in: path
+      name: envName
+      required: true
+      schema:
+        type: string
+      style: simple
     revisionId-Q:
       description: |
         Revision ID of an API
@@ -16020,6 +16199,7 @@ components:
         createdTime: createdTime
         id: 01234567-0123-0123-0123-012345678901
         wsdlUrl: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
+        apiKeyHeader: apiKey
         accessControlRoles: []
         audience: PUBLIC
         visibility: PUBLIC
@@ -16333,6 +16513,12 @@ components:
           example: Authorization
           pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+]*$)
           type: string
+        apiKeyHeader:
+          description: |
+            Name of the API key header used for invoking the API. If it is not set, default value `apiKey` will be used.
+          example: apiKey
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+]*$)
+          type: string
         securityScheme:
           description: |
             Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If
@@ -16637,12 +16823,14 @@ components:
           deployedTime: deployedTime
           name: default
           successDeployedTime: successDeployedTime
+          status: CREATED
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
           deployedTime: deployedTime
           name: default
           successDeployedTime: successDeployedTime
+          status: CREATED
         apiInfo:
           id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -16694,12 +16882,14 @@ components:
             deployedTime: deployedTime
             name: default
             successDeployedTime: successDeployedTime
+            status: CREATED
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
             deployedTime: deployedTime
             name: default
             successDeployedTime: successDeployedTime
+            status: CREATED
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
         - displayName: REVISION 1
@@ -16713,12 +16903,14 @@ components:
             deployedTime: deployedTime
             name: default
             successDeployedTime: successDeployedTime
+            status: CREATED
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
             deployedTime: deployedTime
             name: default
             successDeployedTime: successDeployedTime
+            status: CREATED
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -16741,12 +16933,14 @@ components:
           deployedTime: deployedTime
           name: default
           successDeployedTime: successDeployedTime
+          status: CREATED
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
           deployedTime: deployedTime
           name: default
           successDeployedTime: successDeployedTime
+          status: CREATED
       properties:
         list:
           items:
@@ -16761,6 +16955,7 @@ components:
         deployedTime: deployedTime
         name: default
         successDeployedTime: successDeployedTime
+        status: CREATED
       properties:
         revisionUuid:
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
@@ -16771,6 +16966,14 @@ components:
           example: default
           maxLength: 255
           minLength: 1
+          type: string
+        status:
+          default: CREATED
+          enum:
+          - CREATED
+          - APPROVED
+          - REJECTED
+          example: CREATED
           type: string
         vhost:
           example: mg.wso2.com
@@ -16960,6 +17163,7 @@ components:
             name: name
             value: value
         revisionedApiProductId: 01234567-0123-0123-0123-012345678901
+        apiKeyHeader: apiKey
         accessControlRoles: []
         lastUpdatedTimestamp: lastUpdatedTimestamp
         hasThumbnail: false
@@ -16967,12 +17171,14 @@ components:
         transport:
         - http
         - https
+        version: 1.0.0
         tags:
         - pizza
         - food
         revisionId: 1
         visibleTenants: []
         cacheTimeout: 300
+        isDefaultVersion: false
         apis:
         - name: PizzaShackAPI
           apiId: 01234567-0123-0123-0123-012345678901
@@ -17024,6 +17230,12 @@ components:
           maxLength: 60
           minLength: 1
           type: string
+        version:
+          example: 1.0.0
+          maxLength: 30
+          minLength: 1
+          pattern: ^[^~!@#;:%^*()+={}|\\<>"',&/$\[\]\s+\/]+$
+          type: string
         description:
           description: A brief description about the API
           example: This is a simple API for Pizza Shack online pizza delivery store
@@ -17043,6 +17255,9 @@ components:
             State of the API product. Only published api products are visible on the Developer Portal
           type: string
         enableSchemaValidation:
+          example: false
+          type: boolean
+        isDefaultVersion:
           example: false
           type: boolean
         isRevision:
@@ -17141,6 +17356,12 @@ components:
             Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified
             in tenant or system level will be used.
           example: Authorization
+          type: string
+        apiKeyHeader:
+          description: |
+            Name of the API key header used for invoking the API. If it is not set, default value `apiKey` will be used.
+          example: apiKey
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+]*$)
           type: string
         securityScheme:
           description: |
