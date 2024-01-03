@@ -4,7 +4,6 @@
     <parameter name="useDefaultListeners" value="false"/>
 
     <test name="apim-restart-tests" preserve-order="true" parallel="false">
-        <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.server.restart.ServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.APIThrottlingServerRestartTestCase"/>
