@@ -14706,6 +14706,503 @@ paths:
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
       x-accepts: application/json
+  /gateway-policies:
+    get:
+      description: |
+        This operation provides you a list of all gateway policies mapping information.
+      operationId: getAllGatewayPolicies
+      parameters:
+      - description: |
+          Maximum size of policy array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          **Search condition**.
+
+          You can search in attributes by using an **"gatewayLabel:"** modifier.
+
+          Eg.
+          The entry "gatewayLabel:gateway1" will result in a match with a Gateway Policy Mapping only if the policy mapping is deployed on "gateway1".
+
+          If query attribute is provided, this returns the Gateway policy Mapping available under the given limit.
+
+          Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)
+        explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappingDataList'
+          description: |
+            OK.
+            List of gateway policies is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_view
+        - apim:gateway_policy_manage
+      summary: |
+        Get all gateway policies mapping information
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies"'
+      x-accepts: application/json
+    post:
+      description: |
+        This operation can be used to apply gateway policies to the request, response, fault flows.
+      operationId: addGatewayPoliciesToFlows
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayPolicyMappings'
+        description: Policy details object that needs to be added.
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappingInfo'
+          description: |
+            OK.
+            Policy mapping created successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the created gateway policy mapping.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_manage
+      summary: Engage gateway policies to the request, response, fault flows
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /gateway-policies/{gatewayPolicyMappingId}:
+    delete:
+      description: |
+        This operation can be used to delete an existing gateway policy mapping by providing the Id of the policy mapping.
+      operationId: deleteGatewayPolicyByPolicyId
+      parameters:
+      - description: |
+          Gateway policy mapping Id
+        explode: false
+        in: path
+        name: gatewayPolicyMappingId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Resource successfully deleted.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_manage
+      summary: Delete a gateway policy mapping
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+      x-accepts: application/json
+    get:
+      description: |
+        This operation can be used to retrieve information of a selected gateway policy mapping.
+      operationId: getGatewayPolicyMappingContentByPolicyMappingId
+      parameters:
+      - description: |
+          Gateway policy mapping Id
+        explode: false
+        in: path
+        name: gatewayPolicyMappingId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappings'
+          description: |
+            OK.
+            Gateway policy mapping information returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_view
+        - apim:gateway_policy_manage
+      summary: Retrieve information of a selected gateway policy mapping
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+      x-accepts: application/json
+    put:
+      description: |
+        This operation can be used to update already added gateway policies to the request, response, fault flows.
+      operationId: updateGatewayPoliciesToFlows
+      parameters:
+      - description: |
+          Gateway policy mapping Id
+        explode: false
+        in: path
+        name: gatewayPolicyMappingId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayPolicyMappings'
+        description: Policy details object that needs to be updated.
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappings'
+          description: |
+            OK.
+            Policy mapping updated successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_manage
+      summary: Update gateway policies added to the request, response, fault flows
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /gateway-policies/{gatewayPolicyMappingId}/deploy:
+    post:
+      description: |
+        This operation can be used to engage gateway policy mapping to the gateway/s.
+      operationId: engageGlobalPolicy
+      parameters:
+      - description: |
+          Gateway policy mapping Id
+        explode: false
+        in: path
+        name: gatewayPolicyMappingId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/GatewayPolicyDeployment'
+              type: array
+        description: Policy details object that needs to be added.
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyDeployment'
+          description: |
+            OK.
+            Gateway policy mapping engaged successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_manage
+      summary: Engage gateway policy mapping to the gateways
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/deploy"'
+      x-contentType: application/json
+      x-accepts: application/json
   /api-products/change-lifecycle:
     post:
       description: |
@@ -15316,6 +15813,16 @@ components:
       explode: false
       in: path
       name: operationPolicyId
+      required: true
+      schema:
+        type: string
+      style: simple
+    gatewayPolicyMappingId:
+      description: |
+        Gateway policy mapping Id
+      explode: false
+      in: path
+      name: gatewayPolicyMappingId
       required: true
       schema:
         type: string
@@ -20384,6 +20891,182 @@ components:
             $ref: '#/components/schemas/OperationPolicy'
           type: array
       title: API Operation Level Policies
+    GatewayPolicyMappings:
+      example:
+        policyMapping:
+          request:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          response:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          fault:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+        displayName: item_type_setter
+        description: Set header value to the request with item type and response header
+          set with served server name
+        id: 121223q41-24141-124124124-12414
+        appliedGatewayLabels:
+        - gatewayLabel_1
+        - gatewayLabel_1
+      properties:
+        id:
+          example: 121223q41-24141-124124124-12414
+          type: string
+        policyMapping:
+          $ref: '#/components/schemas/APIOperationPolicies'
+        description:
+          description: A brief description about the policy mapping
+          example: Set header value to the request with item type and response header
+            set with served server name
+          type: string
+        displayName:
+          description: Meaningful name to identify the policy mapping
+          example: item_type_setter
+          type: string
+        appliedGatewayLabels:
+          items:
+            example: gatewayLabel_1
+            type: string
+          type: array
+      required:
+      - displayName
+      - policyMapping
+      title: Gateway Policy Mappings
+      type: object
+    GatewayPolicyMappingDeploymentInfo:
+      example:
+        displayName: item_type_setter
+        description: Set header value to the request with item type and response header
+          set with served server name
+        id: 121223q41-24141-124124124-12414
+        appliedGatewayLabels:
+        - gatewayLabel_1
+        - gatewayLabel_1
+      properties:
+        id:
+          example: 121223q41-24141-124124124-12414
+          type: string
+        description:
+          description: A brief description about the policy mapping
+          example: Set header value to the request with item type and response header
+            set with served server name
+          type: string
+        displayName:
+          description: Meaningful name to identify the policy mapping
+          example: item_type_setter
+          type: string
+        appliedGatewayLabels:
+          items:
+            example: gatewayLabel_1
+            type: string
+          type: array
+      title: Gateway Policy Mapping and Deployment Information
+      type: object
+    GatewayPolicyMappingInfo:
+      example:
+        displayName: item_type_setter
+        description: Set header value to the request with item type and response header
+          set with served server name
+        id: 121223q41-24141-124124124-12414
+      properties:
+        id:
+          example: 121223q41-24141-124124124-12414
+          type: string
+        description:
+          description: A brief description about the policy mapping
+          example: Set header value to the request with item type and response header
+            set with served server name
+          type: string
+        displayName:
+          description: Meaningful name to identify the policy mapping
+          example: item_type_setter
+          type: string
+      title: Gateway Policy Mapping Information
+      type: object
+    GatewayPolicyDeployment:
+      example:
+        gatewayLabel: gatewayLabel_1
+        mappingUUID: 01234567-0123-0123-0123-012345678901
+        gatewayDeployment: true
+      properties:
+        gatewayLabel:
+          example: gatewayLabel_1
+          type: string
+        gatewayDeployment:
+          example: true
+          type: boolean
+        mappingUUID:
+          example: 01234567-0123-0123-0123-012345678901
+          type: string
+      required:
+      - gatewayDeployment
+      - gatewayLabel
+      title: Details to map, deploy, undeploy policy mappings to gateways
+      type: object
+    GatewayPolicyMappingDataList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 1
+        list:
+        - displayName: item_type_setter
+          description: Set header value to the request with item type and response
+            header set with served server name
+          id: 121223q41-24141-124124124-12414
+          appliedGatewayLabels:
+          - gatewayLabel_1
+          - gatewayLabel_1
+        - displayName: item_type_setter
+          description: Set header value to the request with item type and response
+            header set with served server name
+          id: 121223q41-24141-124124124-12414
+          appliedGatewayLabels:
+          - gatewayLabel_1
+          - gatewayLabel_1
+      properties:
+        count:
+          description: |
+            Number of gateway policy mappings returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/GatewayPolicyMappingDeploymentInfo'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Gateway Policy Mapping List
+      type: object
     GatewayEnvironmentProtocolURI:
       example:
         protocol: default

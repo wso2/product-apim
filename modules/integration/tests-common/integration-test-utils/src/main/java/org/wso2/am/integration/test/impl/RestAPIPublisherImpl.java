@@ -44,9 +44,12 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GatewayPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
+import org.wso2.am.integration.clients.publisher.api.v1.LinterCustomRulesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
@@ -55,8 +58,6 @@ import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
-import org.wso2.am.integration.clients.publisher.api.v1.LinterCustomRulesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -79,6 +80,9 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyDeploymentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyMappingInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyMappingsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
@@ -159,6 +163,7 @@ public class RestAPIPublisherImpl {
     private String disableVerification = System.getProperty("disableVerification");
     private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
+    private GatewayPoliciesApi gatewayPoliciesApi = new GatewayPoliciesApi();
 
     private ImportExportApi importExportApi = new ImportExportApi();
 
@@ -2539,6 +2544,94 @@ public class RestAPIPublisherImpl {
             policyMap.put(policyDataDTO.getName(), policyDataDTO.getId());
         }
         return policyMap;
+    }
+
+    /**
+     * Add a new gateway policy
+     *
+     * @param gatewayPolicyMappingsDTO Gateway policy mapping DTO
+     * @return http response of add gateway policy
+     * @throws ApiException - throws if add gateway policy fails
+     */
+    public HttpResponse addGatewayPolicy(GatewayPolicyMappingsDTO gatewayPolicyMappingsDTO) throws ApiException {
+
+        Gson gson = new Gson();
+        ApiResponse<GatewayPolicyMappingInfoDTO> addGatewayPolicyResponse = gatewayPoliciesApi.addGatewayPoliciesToFlowsWithHttpInfo(
+                gatewayPolicyMappingsDTO);
+        return new HttpResponse(gson.toJson(addGatewayPolicyResponse.getData()), addGatewayPolicyResponse.getStatusCode());
+    }
+
+    /**
+     * Deploy gateway policy
+     *
+     * @param gatewayPolicyMappingId     Gateway policy mapping Id
+     * @param gatewayPolicyDeploymentDTO Gateway policy deployment DTO
+     * @return http response of add gateway policy
+     * @throws ApiException - throws if add gateway policy fails
+     */
+    public HttpResponse deployGatewayPolicy(String gatewayPolicyMappingId,
+            List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO) throws ApiException {
+
+        Gson gson = new Gson();
+        ApiResponse<GatewayPolicyDeploymentDTO> policyDeployResponse = gatewayPoliciesApi.engageGlobalPolicyWithHttpInfo(
+                gatewayPolicyMappingId, gatewayPolicyDeploymentDTO);
+        return new HttpResponse(gson.toJson(policyDeployResponse.getData()), policyDeployResponse.getStatusCode());
+    }
+
+    /**
+     * Delete gateway policy
+     *
+     * @param gatewayPolicyMappingId     Gateway policy mapping Id to be deleted
+     * @return http response of add gateway policy
+     * @throws ApiException - throws if add gateway policy fails
+     */
+    public HttpResponse deleteGatewayPolicy(String gatewayPolicyMappingId) throws ApiException {
+
+        Gson gson = new Gson();
+        ApiResponse<Void> deleteResponse = gatewayPoliciesApi.deleteGatewayPolicyByPolicyIdWithHttpInfo(
+                gatewayPolicyMappingId);
+        HttpResponse response = null;
+        if (deleteResponse.getStatusCode() == 200) {
+            response = new HttpResponse("Successfully deleted the gateway policy", 200);
+        }
+        return response;
+    }
+
+    /**
+     * Get gateway policy by policy mapping UUID
+     *
+     * @param gatewayPolicyMappingId     Gateway policy mapping Id to be retrieved
+     * @return GatewayPolicyMappingsDTO  Gateway policy mapping DTO
+     * @throws ApiException - throws if add gateway policy fails
+     */
+    public GatewayPolicyMappingsDTO getGatewayPolicy(String gatewayPolicyMappingId) throws ApiException {
+
+        setActivityID();
+        ApiResponse<GatewayPolicyMappingsDTO> getGatewayPolicyResponse = gatewayPoliciesApi.getGatewayPolicyMappingContentByPolicyMappingIdWithHttpInfo(
+                gatewayPolicyMappingId);
+        Assert.assertEquals(getGatewayPolicyResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Unable to retrieve gateway policy for policy mapping Id " + gatewayPolicyMappingId + " "
+                        + getGatewayPolicyResponse.getData());
+
+        return getGatewayPolicyResponse.getData();
+    }
+
+    /**
+     * Update gateway policy
+     *
+     * @param gatewayPolicyMappingId     Gateway policy mapping Id
+     * @param gatewayPolicyMappingsDTO Gateway policy mapping DTO
+     * @return http response of add gateway policy
+     * @throws ApiException - throws if add gateway policy fails
+     */
+    public HttpResponse updateGatewayPolicy(String gatewayPolicyMappingId,
+            GatewayPolicyMappingsDTO gatewayPolicyMappingsDTO) throws ApiException {
+
+        Gson gson = new Gson();
+        ApiResponse<GatewayPolicyMappingsDTO> updateDeployedPolicyResponse = gatewayPoliciesApi.updateGatewayPoliciesToFlowsWithHttpInfo(
+                gatewayPolicyMappingId, gatewayPolicyMappingsDTO);
+        return new HttpResponse(gson.toJson(updateDeployedPolicyResponse.getData()),
+                updateDeployedPolicyResponse.getStatusCode());
     }
 
     private void waitUntilStatusToBlock(String apiId, String action) throws APIManagerIntegrationTestException {
