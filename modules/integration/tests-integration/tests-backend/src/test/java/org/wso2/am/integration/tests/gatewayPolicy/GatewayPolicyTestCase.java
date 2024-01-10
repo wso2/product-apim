@@ -19,6 +19,7 @@
 package org.wso2.am.integration.tests.gatewayPolicy;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.HttpClient;
@@ -29,7 +30,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyDeploymentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyMappingInfoDTO;
@@ -57,7 +57,6 @@ import static org.testng.Assert.assertNotNull;
 
 public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
 
-    private final Log log = LogFactory.getLog(GatewayPolicyTestCase.class);
     private final String API_NAME = "GatewayPolicyApplicableAPITest";
     private final String API_CONTEXT = "gatewayPolicyApplicableAPITest";
     private final String API_END_POINT_POSTFIX_URL = "xmlapi";
@@ -107,7 +106,7 @@ public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Add gateway policy",  dependsOnMethods = "testAPIInvocationBeforeAddingNewGatewayPolicy")
-    public void testAddNewGatewayPolicy() throws ApiException {
+    public void testAddNewGatewayPolicy() {
 
         GatewayPolicyMappingsDTO policyMapping = new GatewayPolicyMappingsDTO();
         policyMapping.setDisplayName("Policy_Mapping");
@@ -132,7 +131,7 @@ public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Deploy sample gateway policy", dependsOnMethods = "testAddNewGatewayPolicy")
-    public void testDeployGatewayPolicy() throws Exception {
+    public void testDeployGatewayPolicy() {
 
         List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTOList = new ArrayList<>();
         GatewayPolicyDeploymentDTO gatewayPolicyDeploymentDTO = new GatewayPolicyDeploymentDTO();
@@ -143,9 +142,9 @@ public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
                 gatewayPolicyDeploymentDTOList);
         assertEquals(deployPolicyResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Error while deploying gateway policy");
-        GatewayPolicyDeploymentDTO policyMappingDeploymentDTO = new Gson().fromJson(deployPolicyResponse.getData(),
-                GatewayPolicyDeploymentDTO.class);
-        String policyMappingId = policyMappingDeploymentDTO.getMappingUUID();
+        List<GatewayPolicyDeploymentDTO> policyMappingDeploymentDTOList = new Gson().fromJson(deployPolicyResponse.getData(),
+                new TypeToken<List<GatewayPolicyDeploymentDTO>>() {}.getType());
+        String policyMappingId = policyMappingDeploymentDTOList.get(0).getMappingUUID();
         assertEquals(policyMappingId, gatewayPolicyId, "Policy Id mismatch");
     }
 
@@ -159,10 +158,14 @@ public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
         while (!conditionMet && currentAttempt < maxAttempts) {
             org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(API_VERSION_1_0_0);
             if (invokeAPIResponse.getStatusLine().getStatusCode() == HTTP_RESPONSE_CODE_OK) {
-                assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "TestValue");
-                conditionMet = true;
-            } else {
-                currentAttempt++;
+                if (invokeAPIResponse.getHeaders("TestHeader").length > 0 &&
+                        invokeAPIResponse.getHeaders("TestHeader")[0].getValue().equals("TestValue")) {
+                    conditionMet = true;
+                    assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "TestValue");
+                }
+            }
+            currentAttempt++;
+            if (!conditionMet && currentAttempt < maxAttempts) {
                 Thread.sleep(2000);
             }
         }
@@ -172,7 +175,7 @@ public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Update deployed gateway policy", dependsOnMethods = "testAPIInvocationAfterDeployingNewGatewayPolicy")
-    public void testUpdateDeployGatewayPolicy() throws Exception {
+    public void testUpdateDeployedGatewayPolicy() throws Exception {
         GatewayPolicyMappingsDTO policyMapping = new GatewayPolicyMappingsDTO();
         policyMapping.setDisplayName("Policy_Mapping");
         policyMapping.setDescription("Description about the policy mapping");
@@ -197,10 +200,14 @@ public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
         while (!conditionMet && currentAttempt < maxAttempts) {
             org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(API_VERSION_1_0_0);
             if (invokeAPIResponse.getStatusLine().getStatusCode() == HTTP_RESPONSE_CODE_OK) {
-                assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "UpdatedTestValue");
-                conditionMet = true;
-            } else {
-                currentAttempt++;
+                if (invokeAPIResponse.getHeaders("TestHeader").length > 0 &&
+                        invokeAPIResponse.getHeaders("TestHeader")[0].getValue().equals("UpdatedTestValue")) {
+                    conditionMet = true;
+                    assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "UpdatedTestValue");
+                }
+            }
+            currentAttempt++;
+            if (!conditionMet && currentAttempt < maxAttempts) {
                 Thread.sleep(2000);
             }
         }
@@ -209,8 +216,8 @@ public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Deploy another gateway policy to same gateway", dependsOnMethods = "testUpdateDeployGatewayPolicy")
-    public void testDeployAnotherGatewayPolicyInSameGateway() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Deploy another gateway policy to same gateway", dependsOnMethods = "testUpdateDeployedGatewayPolicy")
+    public void testDeployAnotherGatewayPolicyInSameGateway() {
         GatewayPolicyMappingsDTO policyMapping = new GatewayPolicyMappingsDTO();
         policyMapping.setDisplayName("Policy_Mapping_1");
         policyMapping.setDescription("Description about the new policy mapping");
@@ -237,7 +244,7 @@ public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
         gatewayPolicyDeploymentDTO.setGatewayLabel(Constants.GATEWAY_ENVIRONMENT);
         gatewayPolicyDeploymentDTO.setGatewayDeployment(true);
         gatewayPolicyDeploymentDTOList.add(gatewayPolicyDeploymentDTO);
-        HttpResponse deployPolicyResponse = restAPIPublisher.deployGatewayPolicy(gatewayPolicyId,
+        HttpResponse deployPolicyResponse = restAPIPublisher.deployGatewayPolicy(newGatewayPolicyId,
                 gatewayPolicyDeploymentDTOList);
         assertEquals(deployPolicyResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
                 "Not allowed to deploy multiple gateway policies in a single gateway");
@@ -254,7 +261,7 @@ public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Undeploy sample gateway policy", dependsOnMethods = "testDeployedGatewayPolicyDeletion")
-    public void testUndeployGatewayPolicy() throws Exception {
+    public void testUndeployGatewayPolicy() {
 
         List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTOList = new ArrayList<>();
         GatewayPolicyDeploymentDTO gatewayPolicyDeploymentDTO = new GatewayPolicyDeploymentDTO();
@@ -273,7 +280,7 @@ public class GatewayPolicyTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(deletePolicyResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Error while deleting gateway policy");
         GatewayPolicyMappingsDTO getPolicyResponse = restAPIPublisher.getGatewayPolicy(gatewayPolicyId);
-        Assert.assertNull(getPolicyResponse,
+        Assert.assertNull(getPolicyResponse.getId(),
                 "Gateway policy is not deleted even though it does not have any active deployments");
     }
 

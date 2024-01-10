@@ -192,6 +192,7 @@ public class GatewayPoliciesApi {
         <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
@@ -250,6 +251,7 @@ public class GatewayPoliciesApi {
         <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
@@ -269,6 +271,7 @@ public class GatewayPoliciesApi {
         <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
@@ -290,6 +293,7 @@ public class GatewayPoliciesApi {
         <tr><td> 200 </td><td> OK. Resource successfully deleted.  </td><td>  -  </td></tr>
         <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
         <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
@@ -369,7 +373,7 @@ public class GatewayPoliciesApi {
      * This operation can be used to engage gateway policy mapping to the gateway/s. 
      * @param gatewayPolicyMappingId Gateway policy mapping Id  (required)
      * @param gatewayPolicyDeploymentDTO Policy details object that needs to be added. (required)
-     * @return GatewayPolicyDeploymentDTO
+     * @return List&lt;GatewayPolicyDeploymentDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -380,8 +384,8 @@ public class GatewayPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public GatewayPolicyDeploymentDTO engageGlobalPolicy(String gatewayPolicyMappingId, List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO) throws ApiException {
-        ApiResponse<GatewayPolicyDeploymentDTO> localVarResp = engageGlobalPolicyWithHttpInfo(gatewayPolicyMappingId, gatewayPolicyDeploymentDTO);
+    public List<GatewayPolicyDeploymentDTO> engageGlobalPolicy(String gatewayPolicyMappingId, List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO) throws ApiException {
+        ApiResponse<List<GatewayPolicyDeploymentDTO>> localVarResp = engageGlobalPolicyWithHttpInfo(gatewayPolicyMappingId, gatewayPolicyDeploymentDTO);
         return localVarResp.getData();
     }
 
@@ -390,7 +394,7 @@ public class GatewayPoliciesApi {
      * This operation can be used to engage gateway policy mapping to the gateway/s. 
      * @param gatewayPolicyMappingId Gateway policy mapping Id  (required)
      * @param gatewayPolicyDeploymentDTO Policy details object that needs to be added. (required)
-     * @return ApiResponse&lt;GatewayPolicyDeploymentDTO&gt;
+     * @return ApiResponse&lt;List&lt;GatewayPolicyDeploymentDTO&gt;&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -401,9 +405,9 @@ public class GatewayPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<GatewayPolicyDeploymentDTO> engageGlobalPolicyWithHttpInfo(String gatewayPolicyMappingId, List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO) throws ApiException {
+    public ApiResponse<List<GatewayPolicyDeploymentDTO>> engageGlobalPolicyWithHttpInfo(String gatewayPolicyMappingId, List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO) throws ApiException {
         okhttp3.Call localVarCall = engageGlobalPolicyValidateBeforeCall(gatewayPolicyMappingId, gatewayPolicyDeploymentDTO, null);
-        Type localVarReturnType = new TypeToken<GatewayPolicyDeploymentDTO>(){}.getType();
+        Type localVarReturnType = new TypeToken<List<GatewayPolicyDeploymentDTO>>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
@@ -424,10 +428,10 @@ public class GatewayPoliciesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call engageGlobalPolicyAsync(String gatewayPolicyMappingId, List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO, final ApiCallback<GatewayPolicyDeploymentDTO> _callback) throws ApiException {
+    public okhttp3.Call engageGlobalPolicyAsync(String gatewayPolicyMappingId, List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO, final ApiCallback<List<GatewayPolicyDeploymentDTO>> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = engageGlobalPolicyValidateBeforeCall(gatewayPolicyMappingId, gatewayPolicyDeploymentDTO, _callback);
-        Type localVarReturnType = new TypeToken<GatewayPolicyDeploymentDTO>(){}.getType();
+        Type localVarReturnType = new TypeToken<List<GatewayPolicyDeploymentDTO>>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

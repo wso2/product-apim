@@ -149,11 +149,12 @@ null (empty response body)
 **200** | OK. Resource successfully deleted.  |  -  |
 **403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
+**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
 **500** | Internal Server Error. |  -  |
 
 <a name="engageGlobalPolicy"></a>
 # **engageGlobalPolicy**
-> GatewayPolicyDeploymentDTO engageGlobalPolicy(gatewayPolicyMappingId, gatewayPolicyDeploymentDTO)
+> List&lt;GatewayPolicyDeploymentDTO&gt; engageGlobalPolicy(gatewayPolicyMappingId, gatewayPolicyDeploymentDTO)
 
 Engage gateway policy mapping to the gateways
 
@@ -182,7 +183,7 @@ public class Example {
     String gatewayPolicyMappingId = "gatewayPolicyMappingId_example"; // String | Gateway policy mapping Id 
     List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO = Arrays.asList(); // List<GatewayPolicyDeploymentDTO> | Policy details object that needs to be added.
     try {
-      GatewayPolicyDeploymentDTO result = apiInstance.engageGlobalPolicy(gatewayPolicyMappingId, gatewayPolicyDeploymentDTO);
+      List<GatewayPolicyDeploymentDTO> result = apiInstance.engageGlobalPolicy(gatewayPolicyMappingId, gatewayPolicyDeploymentDTO);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling GatewayPoliciesApi#engageGlobalPolicy");
@@ -204,7 +205,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**GatewayPolicyDeploymentDTO**](GatewayPolicyDeploymentDTO.md)
+[**List&lt;GatewayPolicyDeploymentDTO&gt;**](GatewayPolicyDeploymentDTO.md)
 
 ### Authorization
 

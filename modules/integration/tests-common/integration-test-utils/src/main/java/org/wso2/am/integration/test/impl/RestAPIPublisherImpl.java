@@ -191,7 +191,7 @@ public class RestAPIPublisherImpl {
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
                                 "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
                                 "apim:comment_write apim:common_operation_policy_view apim:common_operation_policy_manage " +
-                                "apim:policies_import_export",
+                                "apim:policies_import_export apim:gateway_policy_view apim:gateway_policy_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -226,6 +226,7 @@ public class RestAPIPublisherImpl {
         productLifecycleApi.setApiClient(apiPublisherClient);
         importExportApi.setApiClient(apiPublisherClient);
         linterCustomRulesApi.setApiClient(apiPublisherClient);
+        gatewayPoliciesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
@@ -2553,12 +2554,18 @@ public class RestAPIPublisherImpl {
      * @return http response of add gateway policy
      * @throws ApiException - throws if add gateway policy fails
      */
-    public HttpResponse addGatewayPolicy(GatewayPolicyMappingsDTO gatewayPolicyMappingsDTO) throws ApiException {
+    public HttpResponse addGatewayPolicy(GatewayPolicyMappingsDTO gatewayPolicyMappingsDTO) {
 
         Gson gson = new Gson();
-        ApiResponse<GatewayPolicyMappingInfoDTO> addGatewayPolicyResponse = gatewayPoliciesApi.addGatewayPoliciesToFlowsWithHttpInfo(
-                gatewayPolicyMappingsDTO);
-        return new HttpResponse(gson.toJson(addGatewayPolicyResponse.getData()), addGatewayPolicyResponse.getStatusCode());
+        HttpResponse response;
+        try {
+            ApiResponse<GatewayPolicyMappingInfoDTO> addGatewayPolicyResponse = gatewayPoliciesApi.addGatewayPoliciesToFlowsWithHttpInfo(
+                    gatewayPolicyMappingsDTO);
+            response = new HttpResponse(gson.toJson(addGatewayPolicyResponse.getData()), addGatewayPolicyResponse.getStatusCode());
+        } catch (ApiException e) {
+            response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
     }
 
     /**
@@ -2570,12 +2577,19 @@ public class RestAPIPublisherImpl {
      * @throws ApiException - throws if add gateway policy fails
      */
     public HttpResponse deployGatewayPolicy(String gatewayPolicyMappingId,
-            List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO) throws ApiException {
+            List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO) {
 
         Gson gson = new Gson();
-        ApiResponse<GatewayPolicyDeploymentDTO> policyDeployResponse = gatewayPoliciesApi.engageGlobalPolicyWithHttpInfo(
-                gatewayPolicyMappingId, gatewayPolicyDeploymentDTO);
-        return new HttpResponse(gson.toJson(policyDeployResponse.getData()), policyDeployResponse.getStatusCode());
+        HttpResponse response;
+        try {
+            ApiResponse<List<GatewayPolicyDeploymentDTO>> policyDeployResponse = gatewayPoliciesApi.engageGlobalPolicyWithHttpInfo(
+                    gatewayPolicyMappingId, gatewayPolicyDeploymentDTO);
+            response = new HttpResponse(gson.toJson(policyDeployResponse.getData()),
+                    policyDeployResponse.getStatusCode());
+        } catch (ApiException e) {
+            response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
     }
 
     /**
@@ -2585,14 +2599,19 @@ public class RestAPIPublisherImpl {
      * @return http response of add gateway policy
      * @throws ApiException - throws if add gateway policy fails
      */
-    public HttpResponse deleteGatewayPolicy(String gatewayPolicyMappingId) throws ApiException {
+    public HttpResponse deleteGatewayPolicy(String gatewayPolicyMappingId) {
 
         Gson gson = new Gson();
-        ApiResponse<Void> deleteResponse = gatewayPoliciesApi.deleteGatewayPolicyByPolicyIdWithHttpInfo(
-                gatewayPolicyMappingId);
         HttpResponse response = null;
-        if (deleteResponse.getStatusCode() == 200) {
-            response = new HttpResponse("Successfully deleted the gateway policy", 200);
+        try {
+            ApiResponse<Void> deleteResponse = gatewayPoliciesApi.deleteGatewayPolicyByPolicyIdWithHttpInfo(
+                    gatewayPolicyMappingId);
+            if (deleteResponse.getStatusCode() == 200) {
+                response = new HttpResponse("Successfully deleted the gateway policy", 200);
+            }
+        } catch (ApiException e) {
+            response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+            return response;
         }
         return response;
     }
@@ -2625,13 +2644,18 @@ public class RestAPIPublisherImpl {
      * @throws ApiException - throws if add gateway policy fails
      */
     public HttpResponse updateGatewayPolicy(String gatewayPolicyMappingId,
-            GatewayPolicyMappingsDTO gatewayPolicyMappingsDTO) throws ApiException {
+            GatewayPolicyMappingsDTO gatewayPolicyMappingsDTO) {
 
         Gson gson = new Gson();
-        ApiResponse<GatewayPolicyMappingsDTO> updateDeployedPolicyResponse = gatewayPoliciesApi.updateGatewayPoliciesToFlowsWithHttpInfo(
-                gatewayPolicyMappingId, gatewayPolicyMappingsDTO);
-        return new HttpResponse(gson.toJson(updateDeployedPolicyResponse.getData()),
-                updateDeployedPolicyResponse.getStatusCode());
+        HttpResponse response;
+        try {
+            ApiResponse<GatewayPolicyMappingsDTO> updateDeployedPolicyResponse = gatewayPoliciesApi.updateGatewayPoliciesToFlowsWithHttpInfo(
+                    gatewayPolicyMappingId, gatewayPolicyMappingsDTO);
+            response = new HttpResponse(gson.toJson(updateDeployedPolicyResponse.getData()), updateDeployedPolicyResponse.getStatusCode());
+        } catch (ApiException e) {
+            response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
     }
 
     private void waitUntilStatusToBlock(String apiId, String action) throws APIManagerIntegrationTestException {
