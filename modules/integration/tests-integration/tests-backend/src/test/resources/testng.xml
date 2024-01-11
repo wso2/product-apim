@@ -36,6 +36,7 @@
             <class name="org.wso2.am.integration.tests.api.revision.APIRevisionTestCase"/>
             <class name="org.wso2.am.integration.tests.api.APICreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
+            <class name="org.wso2.am.integration.tests.other.ELKAnalyticsWithRespondMediatorTestCase"/>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
         </classes>
     </test>
