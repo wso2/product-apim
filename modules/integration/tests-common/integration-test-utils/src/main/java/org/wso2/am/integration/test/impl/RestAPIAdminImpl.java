@@ -26,7 +26,6 @@ import org.wso2.am.integration.clients.admin.api.dto.*;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.HttpResponse;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Base64;
