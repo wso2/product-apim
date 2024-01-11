@@ -2559,9 +2559,10 @@ public class RestAPIPublisherImpl {
         Gson gson = new Gson();
         HttpResponse response;
         try {
-            ApiResponse<GatewayPolicyMappingInfoDTO> addGatewayPolicyResponse = gatewayPoliciesApi.addGatewayPoliciesToFlowsWithHttpInfo(
-                    gatewayPolicyMappingsDTO);
-            response = new HttpResponse(gson.toJson(addGatewayPolicyResponse.getData()), addGatewayPolicyResponse.getStatusCode());
+            ApiResponse<GatewayPolicyMappingInfoDTO> addGatewayPolicyResponse =
+                    gatewayPoliciesApi.addGatewayPoliciesToFlowsWithHttpInfo(gatewayPolicyMappingsDTO);
+            response = new HttpResponse(gson.toJson(addGatewayPolicyResponse.getData()),
+                    addGatewayPolicyResponse.getStatusCode());
         } catch (ApiException e) {
             response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
@@ -2582,8 +2583,8 @@ public class RestAPIPublisherImpl {
         Gson gson = new Gson();
         HttpResponse response;
         try {
-            ApiResponse<List<GatewayPolicyDeploymentDTO>> policyDeployResponse = gatewayPoliciesApi.engageGlobalPolicyWithHttpInfo(
-                    gatewayPolicyMappingId, gatewayPolicyDeploymentDTO);
+            ApiResponse<List<GatewayPolicyDeploymentDTO>> policyDeployResponse =
+                    gatewayPoliciesApi.engageGlobalPolicyWithHttpInfo(gatewayPolicyMappingId, gatewayPolicyDeploymentDTO);
             response = new HttpResponse(gson.toJson(policyDeployResponse.getData()),
                     policyDeployResponse.getStatusCode());
         } catch (ApiException e) {
@@ -2626,8 +2627,8 @@ public class RestAPIPublisherImpl {
     public GatewayPolicyMappingsDTO getGatewayPolicy(String gatewayPolicyMappingId) throws ApiException {
 
         setActivityID();
-        ApiResponse<GatewayPolicyMappingsDTO> getGatewayPolicyResponse = gatewayPoliciesApi.getGatewayPolicyMappingContentByPolicyMappingIdWithHttpInfo(
-                gatewayPolicyMappingId);
+        ApiResponse<GatewayPolicyMappingsDTO> getGatewayPolicyResponse =
+                gatewayPoliciesApi.getGatewayPolicyMappingContentByPolicyMappingIdWithHttpInfo(gatewayPolicyMappingId);
         Assert.assertEquals(getGatewayPolicyResponse.getStatusCode(), HttpStatus.SC_OK,
                 "Unable to retrieve gateway policy for policy mapping Id " + gatewayPolicyMappingId + " "
                         + getGatewayPolicyResponse.getData());
@@ -2649,9 +2650,11 @@ public class RestAPIPublisherImpl {
         Gson gson = new Gson();
         HttpResponse response;
         try {
-            ApiResponse<GatewayPolicyMappingsDTO> updateDeployedPolicyResponse = gatewayPoliciesApi.updateGatewayPoliciesToFlowsWithHttpInfo(
-                    gatewayPolicyMappingId, gatewayPolicyMappingsDTO);
-            response = new HttpResponse(gson.toJson(updateDeployedPolicyResponse.getData()), updateDeployedPolicyResponse.getStatusCode());
+            ApiResponse<GatewayPolicyMappingsDTO> updateDeployedPolicyResponse =
+                    gatewayPoliciesApi.updateGatewayPoliciesToFlowsWithHttpInfo(gatewayPolicyMappingId,
+                            gatewayPolicyMappingsDTO);
+            response = new HttpResponse(gson.toJson(updateDeployedPolicyResponse.getData()),
+                    updateDeployedPolicyResponse.getStatusCode());
         } catch (ApiException e) {
             response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
         }
