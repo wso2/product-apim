@@ -87,6 +87,7 @@ class WireMonitor extends Thread {
             throw new IllegalStateException("Wire monitor error occurred", ioException);
         } catch (Exception e) {
             log.warn("Error occurred", e);
+        }
     }
 
     public WireMonitor(int listenPort, WireMonitorServer trigger) {
