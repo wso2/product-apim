@@ -42,14 +42,18 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
+import org.wso2.carbon.logging.view.data.xsd.LogEvent;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -78,6 +82,7 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     String apiId;
     WireMockServer wireMockServer;
     private String accessToken;
+    private LogViewerClient logViewerClient;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIEndpointCertificateTestCase(TestUserMode userMode) {
@@ -137,6 +142,11 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         accessToken = applicationKeyDTO.getToken().getAccessToken();
         waitForAPIDeploymentSync(user.getUserName(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
+        AutomationContext autoContext = new AutomationContext();
+        logViewerClient = new LogViewerClient(autoContext.getContextUrls().getBackEndUrl(),
+                autoContext.getSuperTenant().getTenantAdmin().getUserName(),
+                autoContext.getSuperTenant().getTenantAdmin().getPassword());
+        logViewerClient.clearLogs();
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke API without inserting Endpoint Certificate")
@@ -263,7 +273,9 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
             "testSearchEndpointCertificates"})
     public void testInvokeAPI() throws ApiException, InterruptedException, XPathExpressionException, IOException {
 
-        Thread.sleep(60000); // Sleep to reload the transport
+        // Thread.sleep(60000); // Sleep to reload the transport
+        // Wait for SSLProfile with the uploaded certificate to be reloaded in Gateway
+        waitForSSLProfileReload();
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
@@ -282,7 +294,8 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         Assert.assertEquals(response.getStatusCode(), 200);
         response = restAPIPublisher.deleteEndpointCertificate("endpoint-2");
         Assert.assertEquals(response.getStatusCode(), 200);
-        Thread.sleep(60500); // Sleep to reload the transport
+        // Thread.sleep(60500); // Sleep to reload the transport
+        waitForSSLProfileReload();
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("accept", "application/json");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
@@ -318,6 +331,28 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         wireMockServer.stubFor(WireMock.get(urlEqualTo("/abc")).willReturn(aResponse().withHeader("Content" +
                 "-Type", "text/plain").withBody("Hello world!")));
         wireMockServer.start();
+    }
+
+    private void waitForSSLProfileReload() throws RemoteException, InterruptedException {
+        LogEvent[] logEvents = new LogEvent[0];
+        Thread.sleep(60000);
+        logEvents = logViewerClient.getAllRemoteSystemLogs();
+        int retryAttempt = 0;
+        boolean isSSProfileReloaded = false;
+        while (retryAttempt < 5 && !isSSProfileReloaded) {
+            for (LogEvent logEvent : logEvents) {
+                if (logEvent.getMessage()
+                        .contains("PassThroughHttpSender reloading SSL Config")) {
+                    isSSProfileReloaded = true;
+                    log.info("SSLProfile has been reloaded successfully");
+                    logViewerClient.clearLogs();
+                    break;
+                }
+            }
+            retryAttempt++;
+            log.info("SSLProfile has not been reloaded. Retry attempt - " + retryAttempt);
+            Thread.sleep(12000);
+        }
     }
 
     @AfterClass(alwaysRun = true)
