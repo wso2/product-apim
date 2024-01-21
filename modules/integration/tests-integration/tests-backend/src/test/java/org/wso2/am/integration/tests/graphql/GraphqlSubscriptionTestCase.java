@@ -988,7 +988,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
 
     private void testThrottling(String accessToken) throws Exception {
 
-        waitUntilClockHour();
+        waitUntilClockMinute();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
         int limit = 4;
         WebSocketClient client = new WebSocketClient();

@@ -454,7 +454,7 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
 
     private boolean isThrottled(Map<String, String> requestHeaders, Map<String, String> queryParams,
                                 int expectedCount) throws InterruptedException, IOException {
-        waitUntilClockHour();
+        waitUntilClockMinute();
         StringBuilder url = new StringBuilder(gatewayUrl);
         if (queryParams != null) {
             int i = 0;

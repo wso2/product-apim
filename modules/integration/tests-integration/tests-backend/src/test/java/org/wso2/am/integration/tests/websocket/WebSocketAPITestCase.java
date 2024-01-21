@@ -518,7 +518,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      */
     private void testThrottling(String accessToken) throws Exception {
 
-        waitUntilClockHour();
+        waitUntilClockMinute();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
         int limit = 2;
         WebSocketClient client = new WebSocketClient();
