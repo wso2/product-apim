@@ -367,14 +367,14 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         requestHeaders.put("content-type", "application/json");
         requestHeaders.put("X-Forwarded-For", "10.100.1.22");
 
-        Assert.assertFalse(isThrottled(requestHeaders, null, 12),
+        Assert.assertFalse(isThrottled(requestHeaders, null, -1),
                 "Request was throttled unexpectedly in Unlimited API tier");
 
         apidto.setApiThrottlingPolicy(apiPolicyName2);
         updatedAPI = restAPIPublisher.updateAPI(apidto, apiId);
         Assert.assertEquals(updatedAPI.getApiThrottlingPolicy(), apiPolicyName2,
                 "API tier not updated.");
-        Assert.assertFalse(isThrottled(requestHeaders, null, 12), "Request not need to throttle since policy was " +
+        Assert.assertFalse(isThrottled(requestHeaders, null, -1), "Request not need to throttle since policy was " +
                 "Unlimited");
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
