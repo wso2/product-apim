@@ -54,6 +54,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.am.integration.tests.throttling.ThrottlingUtils;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -474,9 +475,13 @@ public class JWTRequestCountThrottlingTestCase extends APIMIntegrationBaseTest {
         HttpResponse response;
         boolean isThrottled = false;
         for (int j = 0; j < expectedCount; j++) {
+            if (j == expectedCount - 1) {
+                log.info("Waiting for JMS messages to arrive in gateway before sending " + expectedCount + " request");
+                Thread.sleep(ThrottlingUtils.WAIT_FOR_JMS_THROTTLE_EVENT_IN_MILLISECONDS);
+            }
             String body = "{\"payload\" : \"00000000000000000\"}";
             response = HTTPSClientUtils.doPost(url.toString(), requestHeaders, body);
-            log.info("==============Response " + response.getResponseCode());
+            log.info("============== Response " + response.getResponseCode());
             if (response.getResponseCode() == 429) {
                 isThrottled = true;
                 break;
