@@ -25,7 +25,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertEquals;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerCertificatesDTO;
