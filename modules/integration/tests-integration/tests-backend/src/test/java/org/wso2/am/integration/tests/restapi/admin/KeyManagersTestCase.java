@@ -31,7 +31,6 @@ import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerCertificatesDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerPermissionsDTO;
-import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
