@@ -220,6 +220,9 @@ public class SOAPAPIImportExportTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        if (wireMockServer != null) {
+            wireMockServer.stop();
+        }
         restAPIPublisher.deleteAPI(newSoapToRestAPIId);
         userManagementClient.deleteRole(SOAPTOREST_ROLE);
         userManagementClient.deleteUser(SOAPTOREST_TEST_USER);
