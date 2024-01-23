@@ -35,7 +35,6 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.clients.store.api.ApiException as StoreApiException;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
@@ -1224,7 +1223,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
             generateKeyResponse = restAPIStore.generateKeysWithApiResponse(appId, "3600", null,
                     ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
                     grantTypes, null, keyManagerId);
-        } catch (StoreApiException e) {
+        } catch (Exception e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_FORBIDDEN);
         }
         restAPIAdmin.deleteKeyManager(keyManagerId);
