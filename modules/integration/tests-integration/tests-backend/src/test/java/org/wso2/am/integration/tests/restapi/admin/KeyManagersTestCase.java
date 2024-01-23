@@ -1223,7 +1223,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
             generateKeyResponse = restAPIStore.generateKeysWithApiResponse(appId, "3600", null,
                     ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
                     grantTypes, null, keyManagerId);
-        } catch (Exception e) {
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_FORBIDDEN);
         }
         restAPIAdmin.deleteKeyManager(keyManagerId);
