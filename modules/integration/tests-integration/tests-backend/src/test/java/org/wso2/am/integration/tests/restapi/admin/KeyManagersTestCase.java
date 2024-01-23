@@ -35,6 +35,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
+import org.wso2.am.integration.clients.store.api.ApiException as StoreApiException;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
@@ -1212,11 +1213,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
                 ApplicationDTO.TokenTypeEnum.OAUTH);
         assertEquals(applicationResponse.getResponseCode(), org.apache.commons.httpclient.HttpStatus.SC_OK, "Response code is not as expected");
         appId = applicationResponse.getData();
-        System.out.println(appId);
 
         SubscriptionDTO subscriptionDto = restAPIStore.subscribeToAPI(apiId, appId, APIMIntegrationConstants.API_TIER.GOLD);
-        System.out.println(subscriptionDto.toString());
-        System.out.println("Subscribed");
 
         org.wso2.am.integration.clients.store.api.ApiResponse<ApplicationKeyDTO> generateKeyResponse;
         ArrayList<String> grantTypes = new ArrayList<>();
@@ -1226,8 +1224,7 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
             generateKeyResponse = restAPIStore.generateKeysWithApiResponse(appId, "3600", null,
                     ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
                     grantTypes, null, keyManagerId);
-        } catch (ApiException e) {
-            System.out.println(e);
+        } catch (StoreApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_FORBIDDEN);
         }
         restAPIAdmin.deleteKeyManager(keyManagerId);
