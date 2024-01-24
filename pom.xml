@@ -1309,7 +1309,7 @@
         <carbon.identity.governance.version>1.7.2</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.7.1</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.6.0</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.9.7</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.9.9</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.5.1</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.6.1</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.8.0</carbon.identity-inbound-auth-openid.version>
@@ -1347,7 +1347,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.0.0-wso2v50</synapse.version>
+        <synapse.version>4.0.0-wso2v69</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v85</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v25</axiom.wso2.version>
@@ -1446,7 +1446,7 @@
         <carbon.consent.mgt.version>2.4.1</carbon.consent.mgt.version>
         <carbon.database.utils.version>2.1.5</carbon.database.utils.version>
 
-        <com.jayway.jsonpath.version>2.6.0.wso2v1</com.jayway.jsonpath.version>
+        <com.jayway.jsonpath.version>2.6.0.wso2v2</com.jayway.jsonpath.version>
         <!-- xml testing library -->
         <xml.unit.verions>2.6.2</xml.unit.verions>
         <version.cava-toml>0.5.0</version.cava-toml>
