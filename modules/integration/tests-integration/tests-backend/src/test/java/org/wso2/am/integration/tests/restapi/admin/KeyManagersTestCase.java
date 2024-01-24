@@ -101,6 +101,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         apiStore = new APIStoreRestClient(getStoreURLHttp());
         apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + "jaxrs_basic/services/customers/customerservice/";
         apiIdentifier = new APIIdentifier(USER_TEST, API_NAME, API_VERSION_1_0_0);
+        userManagementClient.addUser(USER_TEST, USER_TEST_PASSWORD, ROLE_LIST, USER_TEST);
+        userManagementClient.addRole(API_SUBSCRIBER, new String[]{ USER_TEST }, API_SUBSCRIBER_PERMISSIONS);
     }
 
     //1. Auth0 Key Manager
@@ -1150,8 +1152,6 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
             ,dependsOnMethods = "testDeleteKeyManagerWithAuth0")
     public void testKeyManagerPermissions() throws Exception {
 
-        userManagementClient.addUser(USER_TEST, USER_TEST_PASSWORD, ROLE_LIST, USER_TEST);
-        userManagementClient.addRole(API_SUBSCRIBER, new String[]{ USER_TEST }, API_SUBSCRIBER_PERMISSIONS);
         String providerName = user.getUserName();
 
         APIRequest apiRequest;
