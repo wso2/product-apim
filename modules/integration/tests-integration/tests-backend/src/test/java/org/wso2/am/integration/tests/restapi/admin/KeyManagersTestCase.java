@@ -1231,6 +1231,8 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        userManagementClient.deleteUser(USER_TEST);
+        userManagementClient.deleteRole(API_SUBSCRIBER);
         super.cleanUp();
     }
 }
