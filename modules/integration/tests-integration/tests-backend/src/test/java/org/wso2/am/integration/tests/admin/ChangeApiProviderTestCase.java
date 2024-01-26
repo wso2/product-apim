@@ -47,6 +47,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
     private String APIVersion = "1.0.0";
     private String apiID;
     private String newUser = "peter123";
+    private String firstUserName = "admin";
     private String newUserPass = "test123";
     private String[] subscriberRole = {APIMIntegrationConstants.APIM_INTERNAL_ROLE.CREATOR};
     private String APPLICATION_NAME = "testApplicationForProviderChange";
@@ -56,9 +57,6 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
     private String API_ENDPOINT_METHOD = "customers/123";
     private int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
     private String RESPONSE_CODE_MISMATCH_ERROR_MESSAGE = "Response code mismatch";
-    private String TENANT_ADMIN = "admin";
-    private String TENANT_ADMIN_PWD = "admin123";
-    private String TENANT_DOMAIN = "tenant.com";
 
     @Factory(dataProvider = "userModeDataProvider")
     public ChangeApiProviderTestCase(TestUserMode userMode) {
@@ -97,7 +95,6 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiRequest.setResourceMethod("GET");
-
         //add test api
         HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
         assertEquals(serviceResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
@@ -136,10 +133,12 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         assertEquals(apiInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, RESPONSE_CODE_MISMATCH_ERROR_MESSAGE);
 
         //Update provider of the api
-        restAPIAdminClient = new RestAPIAdminImpl(TENANT_ADMIN, TENANT_ADMIN_PWD, TENANT_DOMAIN, publisherURLHttps);
-        ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(newUser, apiID);
-        Assert.assertEquals(changeProviderResponse.getStatusCode(), HttpStatus.SC_OK);
-
+        restAPIAdminClient = new RestAPIAdminImpl(firstUserName, firstUserName, "carbon.super",
+                adminURLHttps);
+        if(user.getUserName().equals(firstUserName)){
+            ApiResponse<Void> changeProviderResponse = restAPIAdminClient.changeApiProvider(newUser, apiID);
+            Assert.assertEquals(changeProviderResponse.getStatusCode(), HttpStatus.SC_OK);
+        }
         apiInvokeResponse = HttpRequestUtil.doGet(
                 getAPIInvocationURLHttps(APIContext.replace(File.separator, Strings.EMPTY), APIVersion)
                         + File.separator + API_ENDPOINT_METHOD, requestHeaders);
@@ -151,6 +150,7 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiID);
+        userManagementClient.deleteUser(newUser);
         super.cleanUp();
     }
 }
