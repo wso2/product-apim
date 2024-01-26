@@ -5595,6 +5595,22 @@ components:
             self_validate_jwt: true
             Username: admin
             Password: admin
+        permissions:
+          type: object
+          properties:
+            permissionType:
+              type: string
+              example: ALLOW
+              default: PUBLIC
+              enum:
+                - PUBLIC
+                - ALLOW
+                - DENY
+            roles:
+              type: array
+              items:
+                type: string
+                example: Internal/subscriber
         tokenType:
           type: string
           description: The type of the tokens to be used (exchanged or without exchanged).
