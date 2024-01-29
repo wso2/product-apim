@@ -1489,7 +1489,7 @@
         <identity.org.mgt.version>1.2.1</identity.org.mgt.version>
         <identity.inbound.provisioning.scim2.version>3.1.1</identity.inbound.provisioning.scim2.version>
         <xmlsec.wso2.version>1.5.6-wso2v1</xmlsec.wso2.version>
-        <xmlsec.version>2.3.0</xmlsec.version>
+        <xmlsec.version>2.3.4</xmlsec.version>
         <identity.user.workflow.version>5.6.0</identity.user.workflow.version>
         <identity.carbon.auth.rest.version>1.4.9</identity.carbon.auth.rest.version>
     </properties>
