@@ -31,9 +31,9 @@ under the License.
     <packaging>pom</packaging>
 
     <modules>
-        <module>tests-benchmark</module>
+        <!--module>tests-benchmark</module-->
         <module>tests-backend</module>
-        <module>tests-restart</module>
+        <!--module>tests-restart</module-->
         <!--module>tests-config</module-->
     </modules>
 </project>

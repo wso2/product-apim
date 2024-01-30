@@ -99,8 +99,6 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     private String responseBody;
     private String endpointHost = "http://localhost";
     private int endpointPort;
-    private int lowerPortLimit = 9950;
-    private int upperPortLimit = 9999;
     private WireMockServer wireMockServer;
     private String apiEndPointURL;
     private String wsdlURL;
@@ -304,15 +302,14 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     }
 
     private void startWiremockServer() {
-        endpointPort = getAvailablePort();
-        assertNotEquals(endpointPort, -1, "No available port in the range " + lowerPortLimit + "-" +
-                upperPortLimit + " was found");
         wireMockServer = new WireMockServer(options().port(endpointPort));
         wireMockServer.stubFor(WireMock.get(urlEqualTo("/phoneverify/wsdl")).willReturn(aResponse()
                 .withStatus(200).withHeader("Content-Type", "text/xml").withBody(wsdlDefinition)));
         wireMockServer.stubFor(WireMock.post(urlEqualTo("/phoneverify")).willReturn(aResponse()
                 .withStatus(200).withHeader("Content-Type", "text/xml").withBody(responseBody)));
         wireMockServer.start();
+        endpointPort = wireMockServer.port();
+        log.info("Wiremock server started on port " + endpointPort);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing WSDL API definition and create API",
@@ -541,22 +538,6 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         String requestBody = "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"> <soap:Body> <CheckPhoneNumber xmlns=\"http://ws.cdyne.com/PhoneVerify/query\"> <PhoneNumber>077383968</PhoneNumber> <LicenseKey>123</LicenseKey> </CheckPhoneNumber> </soap:Body></soap:Envelope>";
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, requestBody);
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "API invocation failed");
-    }
-
-
-    /**
-     * Find a free port to start backend WebSocket server in given port range
-     *
-     * @return Available Port Number
-     */
-    private int getAvailablePort() {
-        while (lowerPortLimit < upperPortLimit) {
-            if (isPortFree(lowerPortLimit)) {
-                return lowerPortLimit;
-            }
-            lowerPortLimit++;
-        }
-        return -1;
     }
 
     /**

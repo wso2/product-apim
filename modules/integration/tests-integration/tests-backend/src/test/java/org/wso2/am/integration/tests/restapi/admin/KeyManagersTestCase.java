@@ -25,24 +25,62 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
 import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerCertificatesDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerDTO;
+import org.wso2.am.integration.clients.admin.api.dto.KeyManagerPermissionsDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.helpers.AdminApiTestHelper;
 import org.wso2.am.integration.test.impl.DtoFactory;
+import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.ArrayList;
 
 public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     private AdminApiTestHelper adminApiTestHelper;
     private KeyManagerDTO keyManagerDTO;
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String USER_TEST = "test";
+    private final String USER_TEST_PASSWORD = "test123";
+    private String apiEndPointUrl;
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
+    private APIIdentifier apiIdentifier;
+    private String API_NAME = "DummyApi";
+    private String apiId;
+    private String appId;
+    private String applicationId;
+    private String API_SUBSCRIBER = "APISubscriberRole";
+    private String apiCreatorStoreDomain;
+    private RestAPIStoreImpl restAPIStoreClient1;
+    private String[] API_SUBSCRIBER_PERMISSIONS = {
+            "/permission/admin/login",
+            "/permission/admin/manage/api/create",
+            "/permission/admin/manage/api/subscriber"
+    };
+    String[] ROLE_LIST = { "Internal/publisher", "Internal/subscriber", "Internal/everyone"};
+    private APICreationRequestBean apiCreationRequestBean;
 
     @Factory(dataProvider = "userModeDataProvider")
     public KeyManagersTestCase(TestUserMode userMode) {
@@ -59,6 +97,12 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
         adminApiTestHelper = new AdminApiTestHelper();
+        apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
+        apiStore = new APIStoreRestClient(getStoreURLHttp());
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + "jaxrs_basic/services/customers/customerservice/";
+        apiIdentifier = new APIIdentifier(USER_TEST, API_NAME, API_VERSION_1_0_0);
+        userManagementClient.addUser(USER_TEST, USER_TEST_PASSWORD, ROLE_LIST, USER_TEST);
+        userManagementClient.addRole(API_SUBSCRIBER, new String[]{ USER_TEST }, API_SUBSCRIBER_PERMISSIONS);
     }
 
     //1. Auth0 Key Manager
@@ -1104,8 +1148,91 @@ public class KeyManagersTestCase extends APIMIntegrationBaseTest {
         }
     }
 
+    @Test(groups = {"wso2.am"}, description = "Test key manager permissions with WSO2IS with permissions"
+            ,dependsOnMethods = "testDeleteKeyManagerWithAuth0")
+    public void testKeyManagerPermissions() throws Exception {
+
+        String providerName = user.getUserName();
+
+        APIRequest apiRequest;
+        apiRequest = new APIRequest("KMPermissionTestAPI", "KMPermissionTest", new URL(apiEndPointUrl));
+        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setProvider(providerName);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+
+        //add KMPermissionTestAPI api
+        HttpResponse serviceResponse = restAPIPublisher.addAPI(apiRequest);
+        apiId = serviceResponse.getData();
+
+        //publish KMPermissionTestAPI api
+        restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
+
+        String name = "Wso2ISKeyManagerWithPermission";
+        String type = "WSO2-IS";
+        String displayName = "Test Key Manager Permissions WSO2IS";
+        String introspectionEndpoint = "https://localhost:9444/oauth2/introspect";
+        String clientRegistrationEndpoint = "https://localhost:9444/keymanager-operations/dcr/register";
+        String scopeManagementEndpoint = "https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes";
+        String tokenEndpoint = "https://wso2is.com:9444/oauth2/token";
+        String revokeEndpoint = "https://wso2is.com:9444/oauth2/revoke";
+        String consumerKeyClaim = "azp";
+        String scopesClaim = "scope";
+        List<String> availableGrantTypes = Collections.emptyList();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("Username", "admin");
+        jsonObject.addProperty("Password", "admin");
+        jsonObject.addProperty("self_validate_jwt", true);
+        Object additionalProperties = new Gson().fromJson(jsonObject, Map.class);
+        List<String> rolesList = new ArrayList<>();
+        rolesList.add(API_SUBSCRIBER);
+        KeyManagerPermissionsDTO keyManagerPermissionsDTO = new KeyManagerPermissionsDTO();
+        keyManagerPermissionsDTO.setPermissionType(KeyManagerPermissionsDTO.PermissionTypeEnum.DENY);
+        keyManagerPermissionsDTO.setRoles(rolesList);
+        keyManagerDTO = DtoFactory.createKeyManagerDTO(name, null, type, displayName, introspectionEndpoint,
+                null, clientRegistrationEndpoint, tokenEndpoint, revokeEndpoint, null, null,
+                scopeManagementEndpoint, consumerKeyClaim, scopesClaim, availableGrantTypes, additionalProperties,
+                null);
+        keyManagerDTO.setPermissions(keyManagerPermissionsDTO);
+
+        //Add the WSO2 IS key manager
+        ApiResponse<KeyManagerDTO> addedKeyManagers = restAPIAdmin.addKeyManager(keyManagerDTO);
+        Assert.assertEquals(addedKeyManagers.getStatusCode(), HttpStatus.SC_CREATED);
+        KeyManagerDTO addedKeyManagerDTO = addedKeyManagers.getData();
+        String keyManagerId = addedKeyManagerDTO.getId();
+
+        //Assert the status code and key manager ID
+        Assert.assertNotNull(keyManagerId, "The Key Manager ID cannot be null or empty");
+        keyManagerDTO.setId(keyManagerId);
+        //Verify the created key manager DTO
+        adminApiTestHelper.verifyKeyManagerDTO(keyManagerDTO, addedKeyManagerDTO);
+        restAPIStore = new RestAPIStoreImpl(USER_TEST, USER_TEST_PASSWORD,
+                this.storeContext.getContextTenant().getDomain(), this.storeURLHttps);
+        HttpResponse applicationResponse = restAPIStore.createApplication("KMPermissionApplication7",
+                "KMPermissionTestApp", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                ApplicationDTO.TokenTypeEnum.OAUTH);
+        assertEquals(applicationResponse.getResponseCode(), org.apache.commons.httpclient.HttpStatus.SC_OK, "Response code is not as expected");
+        appId = applicationResponse.getData();
+
+        SubscriptionDTO subscriptionDto = restAPIStore.subscribeToAPI(apiId, appId, APIMIntegrationConstants.API_TIER.GOLD);
+
+        org.wso2.am.integration.clients.store.api.ApiResponse<ApplicationKeyDTO> generateKeyResponse;
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        try {
+            generateKeyResponse = restAPIStore.generateKeysWithApiResponse(appId, "3600", null,
+                    ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null,
+                    grantTypes, null, keyManagerId);
+        } catch (org.wso2.am.integration.clients.store.api.ApiException e) {
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_FORBIDDEN);
+        }
+        restAPIAdmin.deleteKeyManager(keyManagerId);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        userManagementClient.deleteUser(USER_TEST);
+        userManagementClient.deleteRole(API_SUBSCRIBER);
         super.cleanUp();
     }
 }

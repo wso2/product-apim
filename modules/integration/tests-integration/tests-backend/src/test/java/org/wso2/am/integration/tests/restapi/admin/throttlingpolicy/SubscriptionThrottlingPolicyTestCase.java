@@ -43,6 +43,7 @@ import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.tests.throttling.ThrottlingUtils;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -272,15 +273,20 @@ public class SubscriptionThrottlingPolicyTestCase extends APIMIntegrationBaseTes
         requestHeaders1.put("content-type", "application/json");
         HttpResponse response1;
         boolean isThrottled1 = false;
+        int totalNumberOfRequests = 15;
+        ThrottlingUtils.waitUntilNextClockHourIfCurrentHourIsInLastNMinutes(3);
         for (int i = 0; i < 15; i++) {
-            response1 = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + API_END_POINT_METHOD,
-                    requestHeaders1);
-            if (response1.getResponseCode() == 429) {
-                Assert.assertTrue(i >= 10);
-                isThrottled1 = true;
-                break;
-            }
-            Thread.sleep(1000);
+                if (i == totalNumberOfRequests - 1) {
+                        Thread.sleep(ThrottlingUtils.WAIT_FOR_JMS_THROTTLE_EVENT_IN_MILLISECONDS);
+                    }
+                response1 = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION) + API_END_POINT_METHOD,
+                        requestHeaders1);
+                if (response1.getResponseCode() == 429) {
+                        Assert.assertTrue(i >= 10);
+                        isThrottled1 = true;
+                        break;
+                }
+                Thread.sleep(1000);
         }
         Assert.assertTrue(isThrottled1, "Request not throttled by " + policyName1);
         restAPIStore.removeSubscription(subscriptionDTO);
