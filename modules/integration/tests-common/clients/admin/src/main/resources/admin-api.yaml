@@ -5153,6 +5153,10 @@ components:
         provider:
           type: string
           example: wso2
+        gatewayType:
+          type: string
+          example: Regular
+          default: Regular
         isReadOnly:
           type: boolean
           readOnly: true
@@ -5381,6 +5385,10 @@ components:
       type: object
       properties:
         scopes:
+          type: array
+          items:
+            type: string
+        gatewayTypes:
           type: array
           items:
             type: string

@@ -36,6 +36,10 @@ public class SettingsDTO {
         @SerializedName(SERIALIZED_NAME_SCOPES)
             private List<String> scopes = null;
 
+        public static final String SERIALIZED_NAME_GATEWAY_TYPES = "gatewayTypes";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_TYPES)
+            private List<String> gatewayTypes = null;
+
         public static final String SERIALIZED_NAME_KEY_MANAGER_CONFIGURATION = "keyManagerConfiguration";
         @SerializedName(SERIALIZED_NAME_KEY_MANAGER_CONFIGURATION)
             private List<SettingsKeyManagerConfigurationDTO> keyManagerConfiguration = null;
@@ -65,6 +69,29 @@ public class SettingsDTO {
 
     public void setScopes(List<String> scopes) {
         this.scopes = scopes;
+    }
+
+
+        public SettingsDTO gatewayTypes(List<String> gatewayTypes) {
+        
+        this.gatewayTypes = gatewayTypes;
+        return this;
+        }
+
+    /**
+        * Get gatewayTypes
+    * @return gatewayTypes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public List<String> getGatewayTypes() {
+        return gatewayTypes;
+    }
+
+
+    public void setGatewayTypes(List<String> gatewayTypes) {
+        this.gatewayTypes = gatewayTypes;
     }
 
 
@@ -124,13 +151,14 @@ public class SettingsDTO {
         }
             SettingsDTO settings = (SettingsDTO) o;
             return Objects.equals(this.scopes, settings.scopes) &&
+            Objects.equals(this.gatewayTypes, settings.gatewayTypes) &&
             Objects.equals(this.keyManagerConfiguration, settings.keyManagerConfiguration) &&
             Objects.equals(this.analyticsEnabled, settings.analyticsEnabled);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(scopes, keyManagerConfiguration, analyticsEnabled);
+        return Objects.hash(scopes, gatewayTypes, keyManagerConfiguration, analyticsEnabled);
     }
 
 
@@ -139,6 +167,7 @@ public String toString() {
 StringBuilder sb = new StringBuilder();
 sb.append("class SettingsDTO {\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
+    sb.append("    gatewayTypes: ").append(toIndentedString(gatewayTypes)).append("\n");
     sb.append("    keyManagerConfiguration: ").append(toIndentedString(keyManagerConfiguration)).append("\n");
     sb.append("    analyticsEnabled: ").append(toIndentedString(analyticsEnabled)).append("\n");
 sb.append("}");
