@@ -488,8 +488,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
         HttpResponse response = restAPIPublisher.addAPIWithMalformedContext(apiRequest);
         Assert.assertEquals(response.getResponseCode(), 400, "Response Code miss matched when creating the API");
-
-
     }
 
     /**

@@ -225,7 +225,6 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         response = restAPIPublisher.importGraphqlSchemaDefinitionWithInvalidContext(file, additionalPropertiesObj.toString());
         Assert.assertNotNull(response, "Response cannot be null");
         Assert.assertEquals(response.getResponseCode(), 400, "Response Code miss matched when creating the API");
-
     }
 
     @Test(groups = {"wso2.am"}, description = "test retrieve schemaDefinition at publisher")

@@ -275,7 +275,6 @@ public class RestAPIPublisherImpl {
             return response;
         }
         return null;
-
     }
 
     /**
@@ -1262,7 +1261,6 @@ public class RestAPIPublisherImpl {
         }
         return response;
     }
-
 
     public WSDLValidationResponseDTO validateWsdlDefinition(String url, File wsdlDefinition) throws ApiException {
         ApiResponse<WSDLValidationResponseDTO> response = validationApi

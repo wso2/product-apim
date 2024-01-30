@@ -289,7 +289,6 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode());
             Assert.assertTrue(e.getResponseBody().contains(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR));
-
         }
     }
 

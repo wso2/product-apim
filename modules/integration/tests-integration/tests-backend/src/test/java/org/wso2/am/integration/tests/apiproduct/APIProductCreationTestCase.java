@@ -327,10 +327,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
             Assert.assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode());
             Assert.assertTrue(e.getResponseBody().contains(
                     APIMIntegrationConstants.API_PRODUCT_CONTEXT_MALFORMED_ERROR));
-
         }
     }
-
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
             "on a visibility restricted API")
@@ -817,7 +815,6 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         restAPIPublisher.deleteAPI(apiID1);
         restAPIPublisher.deleteAPI(apiID2);
-
         super.cleanUp();
         userManagementClient.deleteUser(RESTRICTED_SUBSCRIBER);
         userManagementClient.deleteUser(STANDARD_SUBSCRIBER);
