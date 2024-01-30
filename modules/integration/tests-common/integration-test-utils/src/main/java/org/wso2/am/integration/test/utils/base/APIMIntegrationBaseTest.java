@@ -1118,7 +1118,7 @@ public class APIMIntegrationBaseTest {
         }
     }
 
-    protected static void waitUntilClockHour() throws InterruptedException {
+    protected static void waitUntilClockMinute() throws InterruptedException {
 
         long waitTime = getWaitTime();
         if (waitTime > 0) {

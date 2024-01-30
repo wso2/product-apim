@@ -37,6 +37,59 @@ public class APIRevisionDeploymentDTO {
         @SerializedName(SERIALIZED_NAME_NAME)
             private String name;
 
+            /**
+* Gets or Sets status
+*/
+    @JsonAdapter(StatusEnum.Adapter.class)
+public enum StatusEnum {
+        CREATED("CREATED"),
+        
+        APPROVED("APPROVED"),
+        
+        REJECTED("REJECTED");
+
+private String value;
+
+StatusEnum(String value) {
+this.value = value;
+}
+
+public String getValue() {
+return value;
+}
+
+@Override
+public String toString() {
+return String.valueOf(value);
+}
+
+public static StatusEnum fromValue(String value) {
+    for (StatusEnum b : StatusEnum.values()) {
+    if (b.name().equals(value)) {
+        return b;
+    }
+}
+    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+}
+
+    public static class Adapter extends TypeAdapter<StatusEnum> {
+    @Override
+    public void write(final JsonWriter jsonWriter, final StatusEnum enumeration) throws IOException {
+    jsonWriter.value(enumeration.getValue());
+    }
+
+    @Override
+    public StatusEnum read(final JsonReader jsonReader) throws IOException {
+    String value =  jsonReader.nextString();
+    return StatusEnum.fromValue(value);
+    }
+    }
+}
+
+        public static final String SERIALIZED_NAME_STATUS = "status";
+        @SerializedName(SERIALIZED_NAME_STATUS)
+            private StatusEnum status = StatusEnum.CREATED;
+
         public static final String SERIALIZED_NAME_VHOST = "vhost";
         @SerializedName(SERIALIZED_NAME_VHOST)
             private String vhost;
@@ -97,6 +150,29 @@ public class APIRevisionDeploymentDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+        public APIRevisionDeploymentDTO status(StatusEnum status) {
+        
+        this.status = status;
+        return this;
+        }
+
+    /**
+        * Get status
+    * @return status
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "CREATED", value = "")
+    
+    public StatusEnum getStatus() {
+        return status;
+    }
+
+
+    public void setStatus(StatusEnum status) {
+        this.status = status;
     }
 
 
@@ -203,6 +279,7 @@ public class APIRevisionDeploymentDTO {
             APIRevisionDeploymentDTO apIRevisionDeployment = (APIRevisionDeploymentDTO) o;
             return Objects.equals(this.revisionUuid, apIRevisionDeployment.revisionUuid) &&
             Objects.equals(this.name, apIRevisionDeployment.name) &&
+            Objects.equals(this.status, apIRevisionDeployment.status) &&
             Objects.equals(this.vhost, apIRevisionDeployment.vhost) &&
             Objects.equals(this.displayOnDevportal, apIRevisionDeployment.displayOnDevportal) &&
             Objects.equals(this.deployedTime, apIRevisionDeployment.deployedTime) &&
@@ -211,7 +288,7 @@ public class APIRevisionDeploymentDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(revisionUuid, name, vhost, displayOnDevportal, deployedTime, successDeployedTime);
+        return Objects.hash(revisionUuid, name, status, vhost, displayOnDevportal, deployedTime, successDeployedTime);
     }
 
 
@@ -221,6 +298,7 @@ StringBuilder sb = new StringBuilder();
 sb.append("class APIRevisionDeploymentDTO {\n");
     sb.append("    revisionUuid: ").append(toIndentedString(revisionUuid)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    vhost: ").append(toIndentedString(vhost)).append("\n");
     sb.append("    displayOnDevportal: ").append(toIndentedString(displayOnDevportal)).append("\n");
     sb.append("    deployedTime: ").append(toIndentedString(deployedTime)).append("\n");

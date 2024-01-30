@@ -256,6 +256,10 @@ public static AudienceEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_AUTHORIZATION_HEADER)
             private String authorizationHeader;
 
+        public static final String SERIALIZED_NAME_API_KEY_HEADER = "apiKeyHeader";
+        @SerializedName(SERIALIZED_NAME_API_KEY_HEADER)
+            private String apiKeyHeader;
+
         public static final String SERIALIZED_NAME_SECURITY_SCHEME = "securityScheme";
         @SerializedName(SERIALIZED_NAME_SECURITY_SCHEME)
             private List<String> securityScheme = null;
@@ -1151,6 +1155,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO apiKeyHeader(String apiKeyHeader) {
+        
+        this.apiKeyHeader = apiKeyHeader;
+        return this;
+        }
+
+    /**
+        * Name of the API key header used for invoking the API. If it is not set, default value &#x60;apiKey&#x60; will be used. 
+    * @return apiKeyHeader
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "apiKey", value = "Name of the API key header used for invoking the API. If it is not set, default value `apiKey` will be used. ")
+    
+    public String getApiKeyHeader() {
+        return apiKeyHeader;
+    }
+
+
+    public void setApiKeyHeader(String apiKeyHeader) {
+        this.apiKeyHeader = apiKeyHeader;
+    }
+
+
         public APIDTO securityScheme(List<String> securityScheme) {
         
         this.securityScheme = securityScheme;
@@ -1921,6 +1948,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.policies, API.policies) &&
             Objects.equals(this.apiThrottlingPolicy, API.apiThrottlingPolicy) &&
             Objects.equals(this.authorizationHeader, API.authorizationHeader) &&
+            Objects.equals(this.apiKeyHeader, API.apiKeyHeader) &&
             Objects.equals(this.securityScheme, API.securityScheme) &&
             Objects.equals(this.maxTps, API.maxTps) &&
             Objects.equals(this.visibility, API.visibility) &&
@@ -1957,7 +1985,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, apiPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, apiKeyHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, apiPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
     }
 
 
@@ -1990,6 +2018,7 @@ sb.append("class APIDTO {\n");
     sb.append("    policies: ").append(toIndentedString(policies)).append("\n");
     sb.append("    apiThrottlingPolicy: ").append(toIndentedString(apiThrottlingPolicy)).append("\n");
     sb.append("    authorizationHeader: ").append(toIndentedString(authorizationHeader)).append("\n");
+    sb.append("    apiKeyHeader: ").append(toIndentedString(apiKeyHeader)).append("\n");
     sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
     sb.append("    maxTps: ").append(toIndentedString(maxTps)).append("\n");
     sb.append("    visibility: ").append(toIndentedString(visibility)).append("\n");
