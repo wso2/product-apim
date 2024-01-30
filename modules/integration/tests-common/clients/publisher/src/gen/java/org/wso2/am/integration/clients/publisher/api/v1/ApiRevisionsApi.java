@@ -312,6 +312,141 @@ public class ApiRevisionsApi {
         return localVarCall;
     }
     /**
+     * Build call for deleteAPIRevisionDeploymentPendingTask
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param revisionId Revision ID of an API  (required)
+     * @param envName Environment name of an Revision  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Revision deployment pending task removed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteAPIRevisionDeploymentPendingTaskCall(String apiId, String revisionId, String envName, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/apis/{apiId}/cancel-revision-workflow/{revisionId}/{envName}"
+            .replaceAll("\\{" + "apiId" + "\\}", localVarApiClient.escapeString(apiId.toString()))
+            .replaceAll("\\{" + "revisionId" + "\\}", localVarApiClient.escapeString(revisionId.toString()))
+            .replaceAll("\\{" + "envName" + "\\}", localVarApiClient.escapeString(envName.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call deleteAPIRevisionDeploymentPendingTaskValidateBeforeCall(String apiId, String revisionId, String envName, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'apiId' is set
+        if (apiId == null) {
+            throw new ApiException("Missing the required parameter 'apiId' when calling deleteAPIRevisionDeploymentPendingTask(Async)");
+        }
+        
+        // verify the required parameter 'revisionId' is set
+        if (revisionId == null) {
+            throw new ApiException("Missing the required parameter 'revisionId' when calling deleteAPIRevisionDeploymentPendingTask(Async)");
+        }
+        
+        // verify the required parameter 'envName' is set
+        if (envName == null) {
+            throw new ApiException("Missing the required parameter 'envName' when calling deleteAPIRevisionDeploymentPendingTask(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = deleteAPIRevisionDeploymentPendingTaskCall(apiId, revisionId, envName, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Delete Pending Revision Deployment Workflow Tasks
+     * This operation can be used to remove pending revision deployment requests that are in pending state 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param revisionId Revision ID of an API  (required)
+     * @param envName Environment name of an Revision  (required)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Revision deployment pending task removed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void deleteAPIRevisionDeploymentPendingTask(String apiId, String revisionId, String envName) throws ApiException {
+        deleteAPIRevisionDeploymentPendingTaskWithHttpInfo(apiId, revisionId, envName);
+    }
+
+    /**
+     * Delete Pending Revision Deployment Workflow Tasks
+     * This operation can be used to remove pending revision deployment requests that are in pending state 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param revisionId Revision ID of an API  (required)
+     * @param envName Environment name of an Revision  (required)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Revision deployment pending task removed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> deleteAPIRevisionDeploymentPendingTaskWithHttpInfo(String apiId, String revisionId, String envName) throws ApiException {
+        okhttp3.Call localVarCall = deleteAPIRevisionDeploymentPendingTaskValidateBeforeCall(apiId, revisionId, envName, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Delete Pending Revision Deployment Workflow Tasks (asynchronously)
+     * This operation can be used to remove pending revision deployment requests that are in pending state 
+     * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
+     * @param revisionId Revision ID of an API  (required)
+     * @param envName Environment name of an Revision  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Revision deployment pending task removed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 412 </td><td> Precondition Failed. The request has not been performed because one of the preconditions is not met. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call deleteAPIRevisionDeploymentPendingTaskAsync(String apiId, String revisionId, String envName, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = deleteAPIRevisionDeploymentPendingTaskValidateBeforeCall(apiId, revisionId, envName, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for deployAPIRevision
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param revisionId Revision ID of an API  (optional)
