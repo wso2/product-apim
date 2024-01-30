@@ -370,6 +370,15 @@
                 <include>**/**.j2</include>
             </includes>
         </fileSet>
+        <!-- Gateway policy templates -->
+        <fileSet>
+            <directory>../resources/templates</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/templates</outputDirectory>
+            <includes>
+                <include>**/**.xml</include>
+                <include>**/**.j2</include>
+            </includes>
+        </fileSet>
         <!-- Operation policy specifications -->
         <fileSet>
             <directory>../resources/operation_policies/specifications</directory>
@@ -470,6 +479,7 @@
             <excludes>
                 <!--Need to remove after GA-->
                 <exclude>authenticationendpoint/basicauth.jsp</exclude>
+                <exclude>authenticationendpoint/EndpointConfig.properties</exclude>
                 <exclude>authenticationendpoint/identifierauth.jsp</exclude>
                 <exclude>authenticationendpoint/includes/cookie-policy-content.jsp</exclude>
                 <exclude>authenticationendpoint/includes/header.jsp</exclude>
@@ -526,6 +536,7 @@
             </includes>
             <!--Need to remove after GA-->
             <excludes>
+                <exclude>accountrecoveryendpoint/RecoveryEndpointConfig.properties</exclude>
                 <exclude>accountrecoveryendpoint/self-registration-complete.jsp</exclude>
                 <exclude>accountrecoveryendpoint/password-recovery.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/header.jsp</exclude>
@@ -904,14 +915,6 @@
             </includes>
         </fileSet>
 
-        <!--Copy the outbound authenticator jars such as OIDC.-->
-        <fileSet>
-            <directory>../../authenticators/target/authenticatoroutboundCopied/jar</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
-            <includes>
-                <include>**/*.jar</include>
-            </includes>
-        </fileSet>
 
         <!-- copy cxf filter extensions -->
         <fileSet>

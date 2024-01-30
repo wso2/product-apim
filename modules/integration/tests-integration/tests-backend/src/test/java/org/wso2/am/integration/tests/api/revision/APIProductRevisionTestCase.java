@@ -79,10 +79,11 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
         final String provider = UUID.randomUUID().toString();
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
         apiId = apiProductDTO.getId();
 
@@ -132,7 +133,7 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiId, revisionUUID,
                 apiRevisionDeployRequestList,"APIProduct");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
-                "Unable to deploy API Product Revisions:" +apiRevisionsDeployResponse.getData());
+                "Unable to deploy API Product Revisions:" + apiRevisionsDeployResponse.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Product Revision to gateway environments",

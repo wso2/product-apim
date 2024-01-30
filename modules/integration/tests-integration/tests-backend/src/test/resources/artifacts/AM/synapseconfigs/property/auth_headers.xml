@@ -27,9 +27,9 @@
       <inSequence>
                <send>
                   <endpoint name="admin--AuthHeaderTestAPI_APIproductionEndpoint_0">
-                     <http uri-template="http://localhost:8991/am/sample/calculator/v1/api/multiply"/>
+                     <http uri-template="http://localhost:8993/am/sample/calculator/v1/api/multiply"/>
                      <property name="ENDPOINT_ADDRESS"
-                               value="http://localhost:8991/am/sample/calculator/v1/api/multiply"/>
+                               value="http://localhost:8993/am/sample/calculator/v1/api/multiply"/>
                   </endpoint>
                </send>
       </inSequence>
