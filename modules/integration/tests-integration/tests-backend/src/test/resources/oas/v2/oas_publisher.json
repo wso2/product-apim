@@ -71,6 +71,7 @@
       }
     }
   },
+  "x-wso2-api-key-header": "ApiKey",
   "securityDefinitions" : {
     "default" : {
       "type" : "oauth2",

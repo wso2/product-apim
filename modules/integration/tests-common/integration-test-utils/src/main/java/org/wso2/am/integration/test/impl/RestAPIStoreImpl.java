@@ -1737,6 +1737,35 @@ public class RestAPIStoreImpl {
         return subscriptionResponse.getData();
     }
 
+    /**
+     * Update subscription to an API of a specific tenant
+     *
+     * @param apiID        API ID
+     * @param appID        Application ID
+     * @param existingTier      Existing subscription Tier
+     * @param requestedTier     Requested subscription Tier
+     * @param subscriptionStatus subscription status
+     * @param subscriptionId Subscription ID
+     * @param xWso2Tenant Tenant Domain
+     * @return SubscriptionDTO
+     * @throws ApiException If an API exception occurs.
+     */
+    public SubscriptionDTO updateSubscriptionToAPI(String apiID, String appID, String existingTier,
+               String requestedTier, SubscriptionDTO.StatusEnum subscriptionStatus, String subscriptionId,
+               String xWso2Tenant) throws ApiException, APIManagerIntegrationTestException {
+
+        SubscriptionDTO subscription = new SubscriptionDTO();
+        subscription.setApplicationId(appID);
+        subscription.setApiId(apiID);
+        subscription.setThrottlingPolicy(existingTier);
+        subscription.setRequestedThrottlingPolicy(requestedTier);
+        subscription.setStatus(subscriptionStatus);
+        SubscriptionDTO subscriptionUpdate = subscriptionIndividualApi.subscriptionsSubscriptionIdPut(
+                subscriptionId, subscription, xWso2Tenant);
+        waitUntilSubscriptionAvailableInGateway(subscriptionUpdate);
+        return subscriptionUpdate;
+    }
+
     private void waitUntilSubscriptionAvailableInGateway(SubscriptionDTO subscribedDto)
             throws APIManagerIntegrationTestException {
         if (Boolean.parseBoolean(disableVerification)){
