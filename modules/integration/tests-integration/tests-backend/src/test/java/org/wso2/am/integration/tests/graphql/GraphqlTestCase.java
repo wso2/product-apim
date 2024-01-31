@@ -189,6 +189,44 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
                 APIMIntegrationConstants.IS_API_EXISTS);
     }
 
+    @Test(groups = { "wso2.am" }, description =
+            "Attempt GraphQL API creation using a malformed context")
+    public void testCreateAndPublishGraphQLAPIUsingSchemaWithMalformedContext() throws Exception {
+
+        String schemaDefinitionWithInterface = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream("graphql" + File.separator
+                        + "schemaWithInterface.graphql"), "UTF-8");
+        File file = getTempFileWithContent(schemaDefinitionWithInterface);
+        GraphQLValidationResponseDTO responseApiDto = restAPIPublisher.validateGraphqlSchemaDefinition(file);
+        GraphQLValidationResponseGraphQLInfoDTO graphQLInfo = responseApiDto.getGraphQLInfo();
+        String arrayToJson = new ObjectMapper().writeValueAsString(graphQLInfo.getOperations());
+        JSONArray operations = new JSONArray(arrayToJson);
+        HttpResponse response = null;
+
+        ArrayList<String> policies = new ArrayList<String>();
+        policies.add(APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        JSONObject additionalPropertiesObj = new JSONObject();
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_NAME, "GraphQLAPIWithInvalidContext");
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_CONTEXT, "invalidContext{version}");
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_VERSION, API_VERSION_1_0_0);
+
+        JSONObject url = new JSONObject();
+        url.put("url", END_POINT_URL);
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put(APIMIntegrationConstants.ENDPOINT_TYPE, "http");
+        endpointConfig.put(APIMIntegrationConstants.SANDBOX_ENDPOINTS, url);
+        endpointConfig.put(APIMIntegrationConstants.PRODUCTION_ENDPOINTS, url);
+        additionalPropertiesObj.put(APIMIntegrationConstants.ENDPOINT_CONFIG, endpointConfig);
+        additionalPropertiesObj.put(APIMIntegrationConstants.POLICIES, policies);
+        additionalPropertiesObj.put(APIMIntegrationConstants.OPERATIONS, operations);
+
+        // create Graphql API
+        response = restAPIPublisher.importGraphqlSchemaDefinitionWithInvalidContext(file, additionalPropertiesObj.toString());
+        Assert.assertNotNull(response, "Response cannot be null");
+        Assert.assertEquals(response.getResponseCode(), 400, "Response Code miss matched when creating the API");
+    }
+
     @Test(groups = {"wso2.am"}, description = "test retrieve schemaDefinition at publisher")
     public void testRetrieveSchemaDefinitionAtPublisher() throws Exception {
         GraphQLSchemaDTO schema = restAPIPublisher.getGraphqlSchemaDefinition(graphqlAPIId);

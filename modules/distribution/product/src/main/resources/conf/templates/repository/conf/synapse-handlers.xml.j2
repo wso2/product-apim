@@ -20,6 +20,11 @@
     </handler>
 {% endif %}
 {% endif %}
+{% if integration.transaction_counter is defined %}
+{% if integration.transaction_counter.enable %}
+    <handler name="TransactionCountHandler" class="org.wso2.integration.transaction.counter.TransactionCountHandler"/>
+{% endif %}
+{% endif %}
 {% for key,value in synapse_handlers.items() %}
     {% if value.enabled %}
     <handler name="{{key}}" class="{{value.class}}"/>

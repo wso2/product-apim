@@ -20,7 +20,7 @@ package org.wso2.am.integration.tests.other;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
@@ -67,7 +67,7 @@ public class MandatoryPropertiesTestWithRestart extends APIManagerLifecycleBaseT
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN }};
     }
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeTest(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,

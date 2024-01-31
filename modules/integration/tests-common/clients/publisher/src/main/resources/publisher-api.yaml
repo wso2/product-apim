@@ -8223,6 +8223,276 @@ paths:
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
 
+  ######################################################
+  # The Gateway Policies API
+  ######################################################
+  /gateway-policies:
+    post:
+      tags:
+        - Gateway Policies
+      summary: Engage gateway policies to the request, response, fault flows
+      description: |
+        This operation can be used to apply gateway policies to the request, response, fault flows.
+      operationId: addGatewayPoliciesToFlows
+      requestBody:
+        description: Policy details object that needs to be added.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayPolicyMappings'
+        required: true
+      responses:
+        201:
+          description: |
+            OK.
+            Policy mapping created successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the created gateway policy mapping.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappingInfo'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:gateway_policy_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+              -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies"'
+
+    get:
+      tags:
+        - Gateway Policies
+      summary: |
+        Get all gateway policies mapping information
+      description: |
+        This operation provides you a list of all gateway policies mapping information.
+      operationId: getAllGatewayPolicies
+      parameters:
+        - $ref: '#/components/parameters/policyLimit'
+        - $ref: '#/components/parameters/offset'
+        - name: query
+          in: query
+          description: |
+            **Search condition**.
+
+            You can search in attributes by using an **"gatewayLabel:"** modifier.
+
+            Eg.
+            The entry "gatewayLabel:gateway1" will result in a match with a Gateway Policy Mapping only if the policy mapping is deployed on "gateway1".
+
+            If query attribute is provided, this returns the Gateway policy Mapping available under the given limit.
+
+            Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+            List of gateway policies is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappingDataList'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:gateway_policy_view
+            - apim:gateway_policy_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies"'
+
+  /gateway-policies/{gatewayPolicyMappingId}:
+    get:
+      tags:
+        - Gateway Policies
+      summary: Retrieve information of a selected gateway policy mapping
+      description: |
+        This operation can be used to retrieve information of a selected gateway policy mapping.
+      operationId: getGatewayPolicyMappingContentByPolicyMappingId
+      parameters:
+        - $ref: '#/components/parameters/gatewayPolicyMappingId'
+      responses:
+        200:
+          description: |
+            OK.
+            Gateway policy mapping information returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappings'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:gateway_policy_view
+            - apim:gateway_policy_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+
+    delete:
+      tags:
+        - Gateway Policies
+      summary: Delete a gateway policy mapping
+      description: |
+        This operation can be used to delete an existing gateway policy mapping by providing the Id of the policy mapping.
+      operationId: deleteGatewayPolicyByPolicyId
+      parameters:
+        - $ref: '#/components/parameters/gatewayPolicyMappingId'
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+          content: { }
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:gateway_policy_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+
+    put:
+      tags:
+        - Gateway Policies
+      summary: Update gateway policies added to the request, response, fault flows
+      description: |
+        This operation can be used to update already added gateway policies to the request, response, fault flows.
+      operationId: updateGatewayPoliciesToFlows
+      parameters:
+        - $ref: '#/components/parameters/gatewayPolicyMappingId'
+      requestBody:
+        description: Policy details object that needs to be updated.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayPolicyMappings'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Policy mapping updated successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappings'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:gateway_policy_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+              -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+
+  /gateway-policies/{gatewayPolicyMappingId}/deploy:
+    post:
+      tags:
+        - Gateway Policies
+      summary: Engage gateway policy mapping to the gateways
+      description: |
+        This operation can be used to engage gateway policy mapping to the gateway/s.
+      operationId: engageGlobalPolicy
+      parameters:
+        - $ref: '#/components/parameters/gatewayPolicyMappingId'
+      requestBody:
+        description: Policy details object that needs to be added.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GatewayPolicyDeployment'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Gateway policy mapping engaged successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GatewayPolicyDeployment'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:gateway_policy_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+              -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/deploy"'
+
+
   /api-products/change-lifecycle:
     post:
       tags:
@@ -11854,6 +12124,97 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OperationPolicy'
+    GatewayPolicyMappings:
+      title: Gateway Policy Mappings
+      type: object
+      required:
+        - policyMapping
+        - displayName
+      properties:
+        id:
+          type: string
+          example: 121223q41-24141-124124124-12414
+        policyMapping:
+          $ref: '#/components/schemas/APIOperationPolicies'
+        description:
+          type: string
+          description: A brief description about the policy mapping
+          example: Set header value to the request with item type and response header set with served server name
+        displayName:
+          type: string
+          description: Meaningful name to identify the policy mapping
+          example: item_type_setter
+        appliedGatewayLabels:
+          type: array
+          items:
+            type: string
+            example: gatewayLabel_1
+    GatewayPolicyMappingDeploymentInfo:
+      title: Gateway Policy Mapping and Deployment Information
+      type: object
+      properties:
+        id:
+          type: string
+          example: 121223q41-24141-124124124-12414
+        description:
+          type: string
+          description: A brief description about the policy mapping
+          example: Set header value to the request with item type and response header set with served server name
+        displayName:
+          type: string
+          description: Meaningful name to identify the policy mapping
+          example: item_type_setter
+        appliedGatewayLabels:
+          type: array
+          items:
+            type: string
+            example: gatewayLabel_1
+    GatewayPolicyMappingInfo:
+      title: Gateway Policy Mapping Information
+      type: object
+      properties:
+        id:
+          type: string
+          example: 121223q41-24141-124124124-12414
+        description:
+          type: string
+          description: A brief description about the policy mapping
+          example: Set header value to the request with item type and response header set with served server name
+        displayName:
+          type: string
+          description: Meaningful name to identify the policy mapping
+          example: item_type_setter
+    GatewayPolicyDeployment:
+      title: Details to map, deploy, undeploy policy mappings to gateways
+      required:
+        - gatewayLabel
+        - gatewayDeployment
+      type: object
+      properties:
+        gatewayLabel:
+          type: string
+          example: gatewayLabel_1
+        gatewayDeployment:
+          type: boolean
+          example: true
+        mappingUUID:
+          type: string
+          example: 01234567-0123-0123-0123-012345678901
+    GatewayPolicyMappingDataList:
+      title: Gateway Policy Mapping List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of gateway policy mappings returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/GatewayPolicyMappingDeploymentInfo'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
     GatewayEnvironmentProtocolURI:
       title: Gateway Environment protocols and URIs
       required:
@@ -12263,6 +12624,14 @@ components:
       required: true
       schema:
         type: string
+    gatewayPolicyMappingId:
+      name: gatewayPolicyMappingId
+      in: path
+      description: |
+        Gateway policy mapping Id
+      required: true
+      schema:
+        type: string
 
     # API Revision Identifier
     # Specified as part of the path expression
@@ -12551,6 +12920,8 @@ components:
             apim:mediation_policy_manage: Update and delete mediation policies
             apim:common_operation_policy_view: View common operation policies
             apim:common_operation_policy_manage: Add, Update and Delete common operation policies
+            apim:gateway_policy_view: View gateway policies
+            apim:gateway_policy_manage: Add, Update and Delete gateway policies
             apim:client_certificates_view: View client certificates
             apim:client_certificates_add: Add client certificates
             apim:client_certificates_update: Update and delete client certificates
