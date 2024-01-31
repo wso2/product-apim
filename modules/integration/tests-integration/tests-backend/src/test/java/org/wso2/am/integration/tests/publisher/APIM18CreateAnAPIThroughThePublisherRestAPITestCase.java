@@ -166,11 +166,11 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
         apiCreationRequestBean.setVersion(apiVersion);
         apiCreationRequestBean.setDescription(apiDescription);
         apiCreationRequestBean.setTags(apiTag);
-        apiCreationRequestBean.setTier("Gold");
+        apiCreationRequestBean.setTier(APIMIntegrationConstants.API_TIER.GOLD);
 
         HttpResponse response = restAPIPublisher.addAPIWithMalformedContext(apiCreationRequestBean);
         Assert.assertNotNull(response, "Response cannot be null");
-        Assert.assertEquals(response.getResponseCode(), 400, "Response Code miss matched when creating the API");
+        Assert.assertEquals(response.getResponseCode(), Response.Status.BAD_REQUEST.getStatusCode(), "Response Code miss matched when creating the API");
     }
 
     @Test(groups = {"wso2.am"}, description = "Remove an API Through the Publisher Rest API",

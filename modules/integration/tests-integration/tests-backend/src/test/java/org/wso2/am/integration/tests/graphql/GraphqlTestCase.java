@@ -204,22 +204,22 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         HttpResponse response = null;
 
         ArrayList<String> policies = new ArrayList<String>();
-        policies.add("Unlimited");
+        policies.add(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         JSONObject additionalPropertiesObj = new JSONObject();
-        additionalPropertiesObj.put("name", "GraphQLAPIWithInvalidContext");
-        additionalPropertiesObj.put("context", "invalidContext{version}");
-        additionalPropertiesObj.put("version", API_VERSION_1_0_0);
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_NAME, "GraphQLAPIWithInvalidContext");
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_CONTEXT, "invalidContext{version}");
+        additionalPropertiesObj.put(APIMIntegrationConstants.API_VERSION, API_VERSION_1_0_0);
 
         JSONObject url = new JSONObject();
         url.put("url", END_POINT_URL);
         JSONObject endpointConfig = new JSONObject();
-        endpointConfig.put("endpoint_type", "http");
-        endpointConfig.put("sandbox_endpoints", url);
-        endpointConfig.put("production_endpoints", url);
-        additionalPropertiesObj.put("endpointConfig", endpointConfig);
-        additionalPropertiesObj.put("policies", policies);
-        additionalPropertiesObj.put("operations", operations);
+        endpointConfig.put(APIMIntegrationConstants.ENDPOINT_TYPE, "http");
+        endpointConfig.put(APIMIntegrationConstants.SANDBOX_ENDPOINTS, url);
+        endpointConfig.put(APIMIntegrationConstants.PRODUCTION_ENDPOINTS, url);
+        additionalPropertiesObj.put(APIMIntegrationConstants.ENDPOINT_CONFIG, endpointConfig);
+        additionalPropertiesObj.put(APIMIntegrationConstants.POLICIES, policies);
+        additionalPropertiesObj.put(APIMIntegrationConstants.OPERATIONS, operations);
 
         // create Graphql API
         response = restAPIPublisher.importGraphqlSchemaDefinitionWithInvalidContext(file, additionalPropertiesObj.toString());

@@ -42,6 +42,15 @@ public class APIMIntegrationConstants {
     public static final String API_RESPONSE_ELEMENT_NAME_APIS = "apis";
     public static final String API_RESPONSE_ELEMENT_NAME_ID = "id";
 
+    public static final String API_NAME = "name";
+    public static final String API_CONTEXT = "context";
+    public static final String API_VERSION = "version";
+    public static final String ENDPOINT_TYPE = "endpoint_type";
+    public static final String SANDBOX_ENDPOINTS = "sandbox_endpoints";
+    public static final String PRODUCTION_ENDPOINTS = "production_endpoints";
+    public static final String ENDPOINT_CONFIG = "endpointConfig";
+    public static final String POLICIES = "policies";
+    public static final String OPERATIONS = "operations";
     public static final String API_CONTEXT_MALFORMED_ERROR = "The API context is malformed";
     public static final String API_PRODUCT_CONTEXT_MALFORMED_ERROR = "The API Product context is malformed";
 
