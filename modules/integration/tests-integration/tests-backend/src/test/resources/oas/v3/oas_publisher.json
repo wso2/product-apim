@@ -94,6 +94,7 @@
       }
     }
   },
+  "x-wso2-api-key-header": "ApiKey",
   "x-throttling-tier" : "Unlimited",
   "x-wso2-cors" : {
     "corsConfigurationEnabled" : true,

@@ -146,7 +146,7 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
         assertTrue(response.getData().contains(apiNameTest), "Invalid API Name");
         assertTrue(response.getData().contains(apiVersion), "Invalid API Version");
         assertTrue(response.getData().contains(apiContextTest), "Invalid API Context");
-
+        assertTrue(response.getData().contains("lastUpdatedTimestamp"), "Last Updated Timestamp is not available");
     }
 
     @Test(groups = {"wso2.am"}, description = "Remove an API Through the Publisher Rest API",

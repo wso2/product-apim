@@ -18,17 +18,25 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%@ page import="org.owasp.encoder.Encode" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApiException" %>
 <%@ page import="org.wso2.carbon.identity.mgt.constants.SelfRegistrationStatusCodes" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.api.ReCaptchaApi" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.ReCaptchaProperties" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointConstants" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementServiceUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.User" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
+<%@ page import="org.wso2.carbon.identity.captcha.util.CaptchaUtil" %>
+<%@ page import="java.util.Arrays" %>
+<%@ page import="java.util.HashMap" %>
 <%@ page import="java.io.File" %>
+<%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Enumeration" %>
 <%@ taglib prefix="layout" uri="org.wso2.identity.apps.taglibs.layout.controller" %>
 
 <jsp:directive.include file="includes/localize.jsp"/>
+<jsp:directive.include file="tenant-resolve.jsp"/>
 <jsp:directive.include file="includes/layout-resolver.jsp"/>
 
 <%
@@ -67,12 +75,38 @@
     } else if (errorMsgObj != null) {
         errorMsg = errorMsgObj.toString();
     }
+    ReCaptchaApi reCaptchaApi = new ReCaptchaApi();
+    try {
+        ReCaptchaProperties reCaptchaProperties = reCaptchaApi.getReCaptcha(tenantDomain, true, "ReCaptcha",
+                "self-registration");
+        if (reCaptchaProperties.getReCaptchaEnabled()) {
+            Map<String, List<String>> headers = new HashMap<>();
+            headers.put("reCaptcha", Arrays.asList(String.valueOf(true)));
+            headers.put("reCaptchaAPI", Arrays.asList(reCaptchaProperties.getReCaptchaAPI()));
+            headers.put("reCaptchaKey", Arrays.asList(reCaptchaProperties.getReCaptchaKey()));
+            IdentityManagementEndpointUtil.addReCaptchaHeaders(request, headers);
+        }
+    } catch (ApiException e) {
+        request.setAttribute("error", true);
+        request.setAttribute("errorMsg", e.getMessage());
+        request.getRequestDispatcher("error.jsp").forward(request, response);
+        return;
+    }
     boolean skipSignUpEnableCheck = Boolean.parseBoolean(request.getParameter("skipsignupenablecheck"));
 %>
 
 	<%-- Data for the layout from the page --%>
 <%
     layoutData.put("containerSize", "medium");
+%>
+
+<%
+    boolean reCaptchaEnabled = false;
+    if (request.getAttribute("reCaptcha") != null && "TRUE".equalsIgnoreCase((String) request.getAttribute("reCaptcha"))) {
+        reCaptchaEnabled = true;
+    } else if (request.getParameter("reCaptcha") != null && Boolean.parseBoolean(request.getParameter("reCaptcha"))) {
+        reCaptchaEnabled = true;
+    }
 %>
 
 <!doctype html>
@@ -87,6 +121,14 @@
     <% } else { %>
     <jsp:directive.include file="includes/header.jsp"/>
     <% } %>
+    <%
+        if (reCaptchaEnabled) {
+            String reCaptchaAPI = CaptchaUtil.reCaptchaAPIURL();
+    %>
+    <script src='<%=(reCaptchaAPI)%>'></script>
+    <%
+        }
+    %>
 </head>
 <body class="login-portal layout recovery-layout">
      <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
@@ -151,6 +193,23 @@
                         </div>
                         <% } %>
 
+                        <%
+                            if (reCaptchaEnabled) {
+                                String reCaptchaKey = CaptchaUtil.reCaptchaSiteKey();
+                        %>
+                        <div class="field">
+                            <div class="g-recaptcha"
+                                data-size="invisible"
+                                data-callback="onCompleted"
+                                data-action="register"
+                                data-sitekey="<%=Encode.forHtmlContent(reCaptchaKey)%>"
+                            >
+                            </div>
+                        </div>
+                        <%
+                            }
+                        %>
+
                         <div class="ui divider hidden"></div>
 
                         <div class="align-right buttons">
@@ -209,6 +268,9 @@
                 }
             }
         });
+        function onCompleted() {
+            $('#register').submit();
+         }
         function goBack() {
             window.history.back();
         }
@@ -226,6 +288,16 @@
                         console.warn("Prevented a possible double submit event");
                     } else {
                         e.preventDefault();
+                        <%
+                            if (reCaptchaEnabled) {
+                        %>
+                        if (!grecaptcha.getResponse()) {
+                            grecaptcha.execute();
+                            return;
+                        }
+                        <%
+                            }
+                        %>
                         var userName = document.getElementById("username");
                         var normalizedUsername = userName.value.trim();
                         userName.value = normalizedUsername;
