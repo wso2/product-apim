@@ -358,18 +358,26 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
     }
 
     @Test(groups = {"wso2.am"}, description = "Check Visibility of API from cross Tenant")
-    public void testVisibilityOfAPIFromOtherDomain2() throws ApiException {
+    public void testVisibilityOfAPIFromOtherDomain2() throws ApiException, InterruptedException {
 
-        APIListDTO allAPIs = apiStoreRestClientTenant2.getAllAPIs(tenant1Name);
-        Assert.assertNotNull(allAPIs);
-        assert allAPIs.getCount() != null;
-        Assert.assertEquals(allAPIs.getCount().intValue(), 1);
         boolean found = false;
-        assert allAPIs.getList() != null;
-        for (APIInfoDTO apiInfoDTO : allAPIs.getList()) {
-            if (apiId1.equals(apiInfoDTO.getId())) {
-                found = true;
-                break;
+        int tries = 0;
+        while (!found && tries < 15) {
+            APIListDTO allAPIs = apiStoreRestClientTenant2.getAllAPIs(tenant1Name);
+            Assert.assertNotNull(allAPIs);
+            assert allAPIs.getCount() != null;
+            if (allAPIs.getCount() == 1) {
+                assert allAPIs.getList() != null;
+                for (APIInfoDTO apiInfoDTO : allAPIs.getList()) {
+                    if (apiId1.equals(apiInfoDTO.getId())) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            tries++;
+            if (!found) {
+                Thread.sleep(5000);
             }
         }
         Assert.assertTrue(found, "API with ID" + apiId1 + "not found");

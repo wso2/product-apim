@@ -19,6 +19,9 @@
 
 package org.wso2.am.integration.tests.oas;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.internal.LinkedTreeMap;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
@@ -135,7 +138,40 @@ public class OASTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = { "wso2.am" }, description = "API definition import", dependsOnMethods = "testAPIDefinitionUpdate")
+    @Test(groups = { "wso2.am" }, description = "API definition update with advance configs",
+            dependsOnMethods = "testAPIDefinitionUpdate")
+    public void testAddAdvanceConfigsToAPIDefinition() throws Exception {
+        String apiDefinitionInPublisher = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_with_advance_configs.json"),
+                "UTF-8");
+        String addedAdvanceEndpointConfigsSandbox = "{\"circuitBreakers\":{\"maxRetries\":4.0,\"maxConnectionPools\"" +
+                ":2048.0,\"maxRequests\":100.0,\"maxPendingRequests\":25.0,\"maxConnections\":2048.0}}" ;
+        String addedAdvanceEndpointConfigsProduction = "{\"circuitBreakers\":{\"maxRetries\":3.0,\"maxConnectionPools" +
+                "\":1024.0,\"maxRequests\":75.0,\"maxPendingRequests\":35.0,\"maxConnections\":1024.0}}";
+        restAPIPublisher.updateSwagger(apiId, apiDefinitionInPublisher);
+
+        APIDTO apidto = restAPIPublisher.getAPIByID(apiId, user.getUserDomain());
+        Assert.assertNotNull(apidto);
+
+        LinkedTreeMap endpointConfiglinkedTreeMap = (LinkedTreeMap) apidto.getEndpointConfig();
+        Gson gson = new Gson();
+
+        JsonObject advanceConfigsObject = gson.toJsonTree(((LinkedTreeMap)endpointConfiglinkedTreeMap
+                .get("sandbox_endpoints")).get("advanceEndpointConfig")).getAsJsonObject();
+
+        //added advance configs should be there in the updated endpointConfigs string
+        Assert.assertEquals(advanceConfigsObject.toString(), addedAdvanceEndpointConfigsSandbox);
+
+        advanceConfigsObject = gson.toJsonTree(((LinkedTreeMap)endpointConfiglinkedTreeMap
+                .get("production_endpoints")).get("advanceEndpointConfig")).getAsJsonObject();
+
+        //added advance configs should be there in the updated endpointConfigs string
+        Assert.assertEquals(advanceConfigsObject.toString(), addedAdvanceEndpointConfigsProduction);
+
+    }
+
+    @Test(groups = { "wso2.am" }, description = "API definition import", dependsOnMethods =
+            "testAddAdvanceConfigsToAPIDefinition")
     public void testAPIDefinitionImport() throws Exception {
         String originalDefinition = IOUtils.toString(
                 getClass().getClassLoader().getResourceAsStream(resourcePath + "oas_import.json"),

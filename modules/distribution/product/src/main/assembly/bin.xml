@@ -370,6 +370,15 @@
                 <include>**/**.j2</include>
             </includes>
         </fileSet>
+        <!-- Gateway policy templates -->
+        <fileSet>
+            <directory>../resources/templates</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/templates</outputDirectory>
+            <includes>
+                <include>**/**.xml</include>
+                <include>**/**.j2</include>
+            </includes>
+        </fileSet>
         <!-- Operation policy specifications -->
         <fileSet>
             <directory>../resources/operation_policies/specifications</directory>
@@ -906,14 +915,6 @@
             </includes>
         </fileSet>
 
-        <!--Copy the outbound authenticator jars such as OIDC.-->
-        <fileSet>
-            <directory>../../authenticators/target/authenticatoroutboundCopied/jar</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
-            <includes>
-                <include>**/*.jar</include>
-            </includes>
-        </fileSet>
 
         <!-- copy cxf filter extensions -->
         <fileSet>

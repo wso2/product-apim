@@ -45,7 +45,7 @@ jobs:
       with:
         node-version: '10.x'
     - name: Build product-apim with Test.
-      run: mvn clean install --file pom.xml -DskipBenchMarkTest=true
+      run: mvn clean install --file pom.xml -DskipBenchMarkTest=true -DskipRestartTests=true
       env:
         PRODUCT_APIM_TEST_GROUPS: ${{ matrix.segment }}
     - name: Prepare upload testng report

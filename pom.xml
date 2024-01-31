@@ -23,7 +23,7 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>https://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
@@ -1277,10 +1277,11 @@
         <carbon.analytics.common.version>5.3.5</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.0.453</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.0.494</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.28.177</carbon.apimgt.version>
+
+        <carbon.apimgt.version>9.29.3</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1294,7 +1295,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.8.1</carbon.kernel.version>
-        <apimserver.version>4.2.0-SNAPSHOT</apimserver.version>
+        <apimserver.version>4.3.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.20</cipher.tool.version>
 
@@ -1305,11 +1306,11 @@
         <carbon.mediation.version>4.7.180</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.24.8</carbon.identity.version>
+        <carbon.identity.version>5.24.10</carbon.identity.version>
         <carbon.identity.governance.version>1.7.2</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.7.1</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.6.0</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.9.7</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.9.8</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.5.1</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.6.1</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.8.0</carbon.identity-inbound-auth-openid.version>
@@ -1471,7 +1472,7 @@
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.6.8</wso2is.km.version>
         <okta.keymanager.feature.version>3.2.0</okta.keymanager.feature.version>
-        <azure.keymanager.feature.version>1.0.5</azure.keymanager.feature.version>
+        <azure.keymanager.feature.version>1.0.6</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.0</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.4</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.6</pingfederate.keymanager.feature.version>

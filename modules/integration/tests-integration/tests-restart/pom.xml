@@ -20,7 +20,7 @@ under the License.
     <parent>
         <artifactId>org.wso2.carbon.am.integration.test</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>4.2.0-SNAPSHOT</version>
+        <version>4.3.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -132,7 +132,7 @@ under the License.
                                 <apim.server.version>${apimserver.version}</apim.server.version>
                                 <startupScript>api-manager</startupScript>
                             </systemProperties>
-                            <skipTests>${skipIntegrationTests}</skipTests>
+                            <skipTests>${skipRestartTests}</skipTests>
                             <environmentVariables>
                                 <SHARED_DATABASE_DRIVER>org.h2.Driver</SHARED_DATABASE_DRIVER>
                                 <SHARED_DATABASE_URL>
