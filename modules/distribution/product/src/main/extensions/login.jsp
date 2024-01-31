@@ -501,9 +501,13 @@
     <script>
         function checkSessionKey() {
             var proxyPath = "<%=contextPath%>"
+            let loginRequestPath = "<%=loginContextRequestUrl%>"
+            if (proxyPath !== "") {
+                loginRequestPath = loginRequestPath.startsWith('../') ? loginRequestPath.substring(2, loginRequestPath.length) : loginRequestPath
+            }
             $.ajax({
                 type: "GET",
-                url: proxyPath + "<%=loginContextRequestUrl%>",
+                url: proxyPath + loginRequestPath,
                 xhrFields: { withCredentials: true },
                 success: function (data) {
                     if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {

@@ -47,7 +47,7 @@ public class ESBJAVA5121CheckAuthHeaderOrderTestCase extends APIMIntegrationBase
 	@BeforeClass(alwaysRun = true)
 	public void setEnvironment() throws Exception {
 		super.init();
-		wireServer = new WireMonitorServer(8991);
+		wireServer = new WireMonitorServer(8993);
 
 		AuthenticatorClient login = new AuthenticatorClient(gatewayContextMgt.getContextUrls().getBackEndUrl());
 		String session = login.login("admin", "admin", "localhost");

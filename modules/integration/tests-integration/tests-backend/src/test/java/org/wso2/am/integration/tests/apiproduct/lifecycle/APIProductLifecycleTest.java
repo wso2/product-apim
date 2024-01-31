@@ -124,10 +124,11 @@ public class APIProductLifecycleTest extends APIManagerLifecycleBaseTest {
         }
         final String name = UUID.randomUUID().toString();
         context = "/" + UUID.randomUUID();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
         apiProductId = apiProductDTO.getId();
         assert apiProductDTO.getState() != null;

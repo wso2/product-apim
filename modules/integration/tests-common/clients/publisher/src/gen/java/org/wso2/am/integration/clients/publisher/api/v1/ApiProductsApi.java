@@ -178,6 +178,149 @@ public class ApiProductsApi {
         return localVarCall;
     }
     /**
+     * Build call for createNewAPIProductVersion
+     * @param newVersion Version of the new API Product. (required)
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID. Should be formatted as **provider-name-version**.  (required)
+     * @param defaultVersion Specifies whether new API Product should be added as default version. (optional, default to false)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created API Product as entity in the body. Location header contains URL of newly created API Product.  </td><td>  * Location - The URL of the newly created API Product.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call createNewAPIProductVersionCall(String newVersion, String apiProductId, Boolean defaultVersion, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/api-products/copy-api-products";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (newVersion != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("newVersion", newVersion));
+        }
+
+        if (defaultVersion != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("defaultVersion", defaultVersion));
+        }
+
+        if (apiProductId != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("apiProductId", apiProductId));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call createNewAPIProductVersionValidateBeforeCall(String newVersion, String apiProductId, Boolean defaultVersion, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'newVersion' is set
+        if (newVersion == null) {
+            throw new ApiException("Missing the required parameter 'newVersion' when calling createNewAPIProductVersion(Async)");
+        }
+        
+        // verify the required parameter 'apiProductId' is set
+        if (apiProductId == null) {
+            throw new ApiException("Missing the required parameter 'apiProductId' when calling createNewAPIProductVersion(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = createNewAPIProductVersionCall(newVersion, apiProductId, defaultVersion, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Create a New API Product Version
+     * This operation can be used to create a new version of an existing API Products. The new version is specified as &#x60;newVersion&#x60; query parameter. New API Product will be in &#x60;CREATED&#x60; state. 
+     * @param newVersion Version of the new API Product. (required)
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID. Should be formatted as **provider-name-version**.  (required)
+     * @param defaultVersion Specifies whether new API Product should be added as default version. (optional, default to false)
+     * @return APIProductDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created API Product as entity in the body. Location header contains URL of newly created API Product.  </td><td>  * Location - The URL of the newly created API Product.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public APIProductDTO createNewAPIProductVersion(String newVersion, String apiProductId, Boolean defaultVersion) throws ApiException {
+        ApiResponse<APIProductDTO> localVarResp = createNewAPIProductVersionWithHttpInfo(newVersion, apiProductId, defaultVersion);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Create a New API Product Version
+     * This operation can be used to create a new version of an existing API Products. The new version is specified as &#x60;newVersion&#x60; query parameter. New API Product will be in &#x60;CREATED&#x60; state. 
+     * @param newVersion Version of the new API Product. (required)
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID. Should be formatted as **provider-name-version**.  (required)
+     * @param defaultVersion Specifies whether new API Product should be added as default version. (optional, default to false)
+     * @return ApiResponse&lt;APIProductDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created API Product as entity in the body. Location header contains URL of newly created API Product.  </td><td>  * Location - The URL of the newly created API Product.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<APIProductDTO> createNewAPIProductVersionWithHttpInfo(String newVersion, String apiProductId, Boolean defaultVersion) throws ApiException {
+        okhttp3.Call localVarCall = createNewAPIProductVersionValidateBeforeCall(newVersion, apiProductId, defaultVersion, null);
+        Type localVarReturnType = new TypeToken<APIProductDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Create a New API Product Version (asynchronously)
+     * This operation can be used to create a new version of an existing API Products. The new version is specified as &#x60;newVersion&#x60; query parameter. New API Product will be in &#x60;CREATED&#x60; state. 
+     * @param newVersion Version of the new API Product. (required)
+     * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID. Should be formatted as **provider-name-version**.  (required)
+     * @param defaultVersion Specifies whether new API Product should be added as default version. (optional, default to false)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 201 </td><td> Created. Successful response with the newly created API Product as entity in the body. Location header contains URL of newly created API Product.  </td><td>  * Location - The URL of the newly created API Product.  <br>  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call createNewAPIProductVersionAsync(String newVersion, String apiProductId, Boolean defaultVersion, final ApiCallback<APIProductDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = createNewAPIProductVersionValidateBeforeCall(newVersion, apiProductId, defaultVersion, _callback);
+        Type localVarReturnType = new TypeToken<APIProductDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for deleteAPIProduct
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -518,6 +661,7 @@ public class ApiProductsApi {
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
+     * @return String
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -528,8 +672,9 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public void getAPIProductSwagger(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
-        getAPIProductSwaggerWithHttpInfo(apiProductId, accept, ifNoneMatch);
+    public String getAPIProductSwagger(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+        ApiResponse<String> localVarResp = getAPIProductSwaggerWithHttpInfo(apiProductId, accept, ifNoneMatch);
+        return localVarResp.getData();
     }
 
     /**
@@ -538,7 +683,7 @@ public class ApiProductsApi {
      * @param apiProductId **API Product ID** consisting of the **UUID** of the API Product. Using the **UUID** in the API call is recommended.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource.  (optional)
-     * @return ApiResponse&lt;Void&gt;
+     * @return ApiResponse&lt;String&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table summary="Response Details" border="1">
@@ -549,9 +694,10 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<Void> getAPIProductSwaggerWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
+    public ApiResponse<String> getAPIProductSwaggerWithHttpInfo(String apiProductId, String accept, String ifNoneMatch) throws ApiException {
         okhttp3.Call localVarCall = getAPIProductSwaggerValidateBeforeCall(apiProductId, accept, ifNoneMatch, null);
-        return localVarApiClient.execute(localVarCall);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
@@ -572,10 +718,11 @@ public class ApiProductsApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call getAPIProductSwaggerAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<Void> _callback) throws ApiException {
+    public okhttp3.Call getAPIProductSwaggerAsync(String apiProductId, String accept, String ifNoneMatch, final ApiCallback<String> _callback) throws ApiException {
 
         okhttp3.Call localVarCall = getAPIProductSwaggerValidateBeforeCall(apiProductId, accept, ifNoneMatch, _callback);
-        localVarApiClient.executeAsync(localVarCall, _callback);
+        Type localVarReturnType = new TypeToken<String>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
     /**

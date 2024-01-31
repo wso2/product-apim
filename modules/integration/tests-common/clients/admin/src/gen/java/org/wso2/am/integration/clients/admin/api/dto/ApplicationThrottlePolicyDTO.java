@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationThrottlePolicyAllOfDTO;
+import org.wso2.am.integration.clients.admin.api.dto.BurstLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ThrottlePolicyDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -35,6 +36,10 @@ public class ApplicationThrottlePolicyDTO extends ThrottlePolicyDTO {
         public static final String SERIALIZED_NAME_DEFAULT_LIMIT = "defaultLimit";
         @SerializedName(SERIALIZED_NAME_DEFAULT_LIMIT)
             private ThrottleLimitDTO defaultLimit;
+
+        public static final String SERIALIZED_NAME_BURST_LIMIT = "burstLimit";
+        @SerializedName(SERIALIZED_NAME_BURST_LIMIT)
+            private BurstLimitDTO burstLimit;
 
 
         public ApplicationThrottlePolicyDTO defaultLimit(ThrottleLimitDTO defaultLimit) {
@@ -59,6 +64,29 @@ public class ApplicationThrottlePolicyDTO extends ThrottlePolicyDTO {
     }
 
 
+        public ApplicationThrottlePolicyDTO burstLimit(BurstLimitDTO burstLimit) {
+        
+        this.burstLimit = burstLimit;
+        return this;
+        }
+
+    /**
+        * Get burstLimit
+    * @return burstLimit
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public BurstLimitDTO getBurstLimit() {
+        return burstLimit;
+    }
+
+
+    public void setBurstLimit(BurstLimitDTO burstLimit) {
+        this.burstLimit = burstLimit;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -69,12 +97,13 @@ public class ApplicationThrottlePolicyDTO extends ThrottlePolicyDTO {
         }
             ApplicationThrottlePolicyDTO applicationThrottlePolicy = (ApplicationThrottlePolicyDTO) o;
             return Objects.equals(this.defaultLimit, applicationThrottlePolicy.defaultLimit) &&
+            Objects.equals(this.burstLimit, applicationThrottlePolicy.burstLimit) &&
             super.equals(o);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(defaultLimit, super.hashCode());
+        return Objects.hash(defaultLimit, burstLimit, super.hashCode());
     }
 
 
@@ -84,6 +113,7 @@ StringBuilder sb = new StringBuilder();
 sb.append("class ApplicationThrottlePolicyDTO {\n");
     sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    defaultLimit: ").append(toIndentedString(defaultLimit)).append("\n");
+    sb.append("    burstLimit: ").append(toIndentedString(burstLimit)).append("\n");
 sb.append("}");
 return sb.toString();
 }
