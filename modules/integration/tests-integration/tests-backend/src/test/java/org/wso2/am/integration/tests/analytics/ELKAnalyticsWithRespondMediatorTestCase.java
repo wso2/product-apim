@@ -36,6 +36,8 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.FileManager;
@@ -68,7 +70,9 @@ public class ELKAnalyticsWithRespondMediatorTestCase extends APIManagerLifecycle
             IOException, AutomationUtilException, XPathExpressionException,
             org.wso2.am.integration.clients.store.api.ApiException {
         super.init();
-
+        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
 
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
@@ -107,6 +111,7 @@ public class ELKAnalyticsWithRespondMediatorTestCase extends APIManagerLifecycle
         String log4jPropertiesTargetLocation = System.getProperty(ServerConstants.CARBON_HOME) + File.separator
                 + "repository" + File.separator + "conf" + File.separator + "log4j2.properties";
         FileManager.copyFile(new File(log4jPropertiesFile), log4jPropertiesTargetLocation);
+
 
         // Add common operation policy with respond mediator
         addNewOperationPolicy();
