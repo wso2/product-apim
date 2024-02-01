@@ -1309,7 +1309,7 @@
         <carbon.identity.version>5.25.92</carbon.identity.version>
         <carbon.identity.governance.version>1.8.14</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.6</carbon.identity.event.handler.account.lock.version>
-        <carbon.identity.event.handler.notification.version>1.6.2</carbon.identity.event.handler.notification.version>
+        <carbon.identity.event.handler.notification.version>1.7.7</carbon.identity.event.handler.notification.version>
         <carbon.identity-inbound-auth-oauth.version>6.11.21</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.2</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.7.2</carbon.identity-user-ws.version>
