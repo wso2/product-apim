@@ -673,6 +673,10 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.user.store.configuration.server.feature:${carbon.identity.version}
                                 </featureArtifactDef>
+                                <!-- Identity Branding Preference Management feature -->
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.branding.preference.management:org.wso2.carbon.identity.branding.preference.management.core.server.feature:${identity.branding.preference.management.version}
+                                </featureArtifactDef>
 
                             </featureArtifacts>
                         </configuration>
@@ -1503,6 +1507,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.store.configuration.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.branding.preference.management.core.server.feature.group</id>
+                                    <version>${identity.branding.preference.management.version}</version>
                                 </feature>
                             </features>
                         </configuration>

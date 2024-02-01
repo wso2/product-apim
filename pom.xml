@@ -1271,6 +1271,11 @@
                 <artifactId>org.wso2.carbon.identity.organization.management.core.server.feature</artifactId>
                 <version>${identity.org.mgt.core.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.branding.preference.management</groupId>
+                <artifactId>org.wso2.carbon.identity.branding.preference.management.core</artifactId>
+                <version>${identity.branding.preference.management.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1499,6 +1504,9 @@
         <xmlsec.version>2.3.0</xmlsec.version>
         <identity.user.workflow.version>5.6.0</identity.user.workflow.version>
         <identity.carbon.auth.rest.version>1.8.11</identity.carbon.auth.rest.version>
+
+        <!-- Identity Branding Preference Management Versions -->
+        <identity.branding.preference.management.version>1.0.1</identity.branding.preference.management.version>
     </properties>
 
 </project>
