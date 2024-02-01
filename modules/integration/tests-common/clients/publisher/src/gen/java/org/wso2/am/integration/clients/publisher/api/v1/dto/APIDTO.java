@@ -33,6 +33,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPro
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoAdditionalPropertiesMapDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMaxTpsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIMonetizationInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationPoliciesDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIScopeDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIServiceInfoDTO;
@@ -255,6 +256,10 @@ public static AudienceEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_AUTHORIZATION_HEADER)
             private String authorizationHeader;
 
+        public static final String SERIALIZED_NAME_API_KEY_HEADER = "apiKeyHeader";
+        @SerializedName(SERIALIZED_NAME_API_KEY_HEADER)
+            private String apiKeyHeader;
+
         public static final String SERIALIZED_NAME_SECURITY_SCHEME = "securityScheme";
         @SerializedName(SERIALIZED_NAME_SECURITY_SCHEME)
             private List<String> securityScheme = null;
@@ -327,6 +332,10 @@ public static VisibilityEnum fromValue(String value) {
         public static final String SERIALIZED_NAME_MEDIATION_POLICIES = "mediationPolicies";
         @SerializedName(SERIALIZED_NAME_MEDIATION_POLICIES)
             private List<MediationPolicyDTO> mediationPolicies = null;
+
+        public static final String SERIALIZED_NAME_API_POLICIES = "apiPolicies";
+        @SerializedName(SERIALIZED_NAME_API_POLICIES)
+            private APIOperationPoliciesDTO apiPolicies;
 
             /**
 * The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
@@ -471,6 +480,10 @@ public static AccessControlEnum fromValue(String value) {
         public static final String SERIALIZED_NAME_CREATED_TIME = "createdTime";
         @SerializedName(SERIALIZED_NAME_CREATED_TIME)
             private String createdTime;
+
+        public static final String SERIALIZED_NAME_LAST_UPDATED_TIMESTAMP = "lastUpdatedTimestamp";
+        @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIMESTAMP)
+            private String lastUpdatedTimestamp;
 
         public static final String SERIALIZED_NAME_LAST_UPDATED_TIME = "lastUpdatedTime";
         @SerializedName(SERIALIZED_NAME_LAST_UPDATED_TIME)
@@ -1142,6 +1155,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO apiKeyHeader(String apiKeyHeader) {
+        
+        this.apiKeyHeader = apiKeyHeader;
+        return this;
+        }
+
+    /**
+        * Name of the API key header used for invoking the API. If it is not set, default value &#x60;apiKey&#x60; will be used. 
+    * @return apiKeyHeader
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "apiKey", value = "Name of the API key header used for invoking the API. If it is not set, default value `apiKey` will be used. ")
+    
+    public String getApiKeyHeader() {
+        return apiKeyHeader;
+    }
+
+
+    public void setApiKeyHeader(String apiKeyHeader) {
+        this.apiKeyHeader = apiKeyHeader;
+    }
+
+
         public APIDTO securityScheme(List<String> securityScheme) {
         
         this.securityScheme = securityScheme;
@@ -1277,6 +1313,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     public void setMediationPolicies(List<MediationPolicyDTO> mediationPolicies) {
         this.mediationPolicies = mediationPolicies;
+    }
+
+
+        public APIDTO apiPolicies(APIOperationPoliciesDTO apiPolicies) {
+        
+        this.apiPolicies = apiPolicies;
+        return this;
+        }
+
+    /**
+        * Get apiPolicies
+    * @return apiPolicies
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public APIOperationPoliciesDTO getApiPolicies() {
+        return apiPolicies;
+    }
+
+
+    public void setApiPolicies(APIOperationPoliciesDTO apiPolicies) {
+        this.apiPolicies = apiPolicies;
     }
 
 
@@ -1553,6 +1612,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     public void setCreatedTime(String createdTime) {
         this.createdTime = createdTime;
+    }
+
+
+        public APIDTO lastUpdatedTimestamp(String lastUpdatedTimestamp) {
+        
+        this.lastUpdatedTimestamp = lastUpdatedTimestamp;
+        return this;
+        }
+
+    /**
+        * Get lastUpdatedTimestamp
+    * @return lastUpdatedTimestamp
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getLastUpdatedTimestamp() {
+        return lastUpdatedTimestamp;
+    }
+
+
+    public void setLastUpdatedTimestamp(String lastUpdatedTimestamp) {
+        this.lastUpdatedTimestamp = lastUpdatedTimestamp;
     }
 
 
@@ -1866,12 +1948,14 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.policies, API.policies) &&
             Objects.equals(this.apiThrottlingPolicy, API.apiThrottlingPolicy) &&
             Objects.equals(this.authorizationHeader, API.authorizationHeader) &&
+            Objects.equals(this.apiKeyHeader, API.apiKeyHeader) &&
             Objects.equals(this.securityScheme, API.securityScheme) &&
             Objects.equals(this.maxTps, API.maxTps) &&
             Objects.equals(this.visibility, API.visibility) &&
             Objects.equals(this.visibleRoles, API.visibleRoles) &&
             Objects.equals(this.visibleTenants, API.visibleTenants) &&
             Objects.equals(this.mediationPolicies, API.mediationPolicies) &&
+            Objects.equals(this.apiPolicies, API.apiPolicies) &&
             Objects.equals(this.subscriptionAvailability, API.subscriptionAvailability) &&
             Objects.equals(this.subscriptionAvailableTenants, API.subscriptionAvailableTenants) &&
             Objects.equals(this.additionalProperties, API.additionalProperties) &&
@@ -1884,6 +1968,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.websubSubscriptionConfiguration, API.websubSubscriptionConfiguration) &&
             Objects.equals(this.workflowStatus, API.workflowStatus) &&
             Objects.equals(this.createdTime, API.createdTime) &&
+            Objects.equals(this.lastUpdatedTimestamp, API.lastUpdatedTimestamp) &&
             Objects.equals(this.lastUpdatedTime, API.lastUpdatedTime) &&
             Objects.equals(this.endpointConfig, API.endpointConfig) &&
             Objects.equals(this.endpointImplementationType, API.endpointImplementationType) &&
@@ -1900,7 +1985,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, apiKeyHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, apiPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, asyncTransportProtocols);
     }
 
 
@@ -1933,12 +2018,14 @@ sb.append("class APIDTO {\n");
     sb.append("    policies: ").append(toIndentedString(policies)).append("\n");
     sb.append("    apiThrottlingPolicy: ").append(toIndentedString(apiThrottlingPolicy)).append("\n");
     sb.append("    authorizationHeader: ").append(toIndentedString(authorizationHeader)).append("\n");
+    sb.append("    apiKeyHeader: ").append(toIndentedString(apiKeyHeader)).append("\n");
     sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
     sb.append("    maxTps: ").append(toIndentedString(maxTps)).append("\n");
     sb.append("    visibility: ").append(toIndentedString(visibility)).append("\n");
     sb.append("    visibleRoles: ").append(toIndentedString(visibleRoles)).append("\n");
     sb.append("    visibleTenants: ").append(toIndentedString(visibleTenants)).append("\n");
     sb.append("    mediationPolicies: ").append(toIndentedString(mediationPolicies)).append("\n");
+    sb.append("    apiPolicies: ").append(toIndentedString(apiPolicies)).append("\n");
     sb.append("    subscriptionAvailability: ").append(toIndentedString(subscriptionAvailability)).append("\n");
     sb.append("    subscriptionAvailableTenants: ").append(toIndentedString(subscriptionAvailableTenants)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
@@ -1951,6 +2038,7 @@ sb.append("class APIDTO {\n");
     sb.append("    websubSubscriptionConfiguration: ").append(toIndentedString(websubSubscriptionConfiguration)).append("\n");
     sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
+    sb.append("    lastUpdatedTimestamp: ").append(toIndentedString(lastUpdatedTimestamp)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
     sb.append("    endpointConfig: ").append(toIndentedString(endpointConfig)).append("\n");
     sb.append("    endpointImplementationType: ").append(toIndentedString(endpointImplementationType)).append("\n");

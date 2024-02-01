@@ -146,7 +146,31 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
         assertTrue(response.getData().contains(apiNameTest), "Invalid API Name");
         assertTrue(response.getData().contains(apiVersion), "Invalid API Version");
         assertTrue(response.getData().contains(apiContextTest), "Invalid API Context");
+        assertTrue(response.getData().contains("lastUpdatedTimestamp"), "Last Updated Timestamp is not available");
+    }
 
+    @Test(groups = {
+            "wso2.am" }, description = "Create an API Through the Publisher Rest API with malformed context")
+    public void testCreateAnAPIWithMalformedContextThroughThePublisherRest()
+            throws Exception {
+
+        // Now APIs with malformed context should not be allowed to create
+        String apiContextTest = "apim18PublisherTestAPIMalformed`";
+        String apiDescription = "This is Test API Created by API Manager Integration Test";
+        String apiTag = "tag18-4, tag18-5, tag18-6";
+        String apiName = "APIM18PublisherTestMalformed";
+
+        APIRequest apiCreationRequestBean;
+        apiCreationRequestBean = new APIRequest(apiName, apiContextTest, new URL(apiProductionEndPointUrl));
+
+        apiCreationRequestBean.setVersion(apiVersion);
+        apiCreationRequestBean.setDescription(apiDescription);
+        apiCreationRequestBean.setTags(apiTag);
+        apiCreationRequestBean.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+
+        HttpResponse response = restAPIPublisher.addAPIWithMalformedContext(apiCreationRequestBean);
+        Assert.assertNotNull(response, "Response cannot be null");
+        Assert.assertEquals(response.getResponseCode(), Response.Status.BAD_REQUEST.getStatusCode(), "Response Code miss matched when creating the API");
     }
 
     @Test(groups = {"wso2.am"}, description = "Remove an API Through the Publisher Rest API",
