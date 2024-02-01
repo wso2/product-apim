@@ -1266,6 +1266,11 @@
                 <artifactId>xmlsec</artifactId>
                 <version>${xmlsec.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.organization.management.core</groupId>
+                <artifactId>org.wso2.carbon.identity.organization.management.core.server.feature</artifactId>
+                <version>${identity.org.mgt.core.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1488,6 +1493,7 @@
         <io.gsonfire.version>1.8.3</io.gsonfire.version>
         <org.apache.oltu.oauth2.version>1.0.1</org.apache.oltu.oauth2.version>
         <identity.org.mgt.version>1.3.22</identity.org.mgt.version>
+        <identity.org.mgt.core.version>1.0.34</identity.org.mgt.core.version>
         <identity.inbound.provisioning.scim2.version>3.1.1</identity.inbound.provisioning.scim2.version>
         <xmlsec.wso2.version>1.5.6-wso2v1</xmlsec.wso2.version>
         <xmlsec.version>2.3.0</xmlsec.version>
