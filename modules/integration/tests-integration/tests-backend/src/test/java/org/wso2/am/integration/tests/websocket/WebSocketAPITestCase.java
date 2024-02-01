@@ -665,6 +665,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             }
             client.stop();
         }
+    }
 
     @Test(description = "Create WebSocket API with malformed context",
             dependsOnMethods = "testWebSocketAPIRemoveEndpoint")
