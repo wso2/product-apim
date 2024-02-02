@@ -1,6 +1,6 @@
 # DocumentsApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/store/v1*
+All URIs are relative to *https://apis.wso2.com/api/am/devportal/v4*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

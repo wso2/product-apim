@@ -196,7 +196,7 @@ public class RestAPIPublisherImpl {
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
-        apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v4");
+        apiPublisherClient.setBasePath(publisherURL + "api/am/publisher/v5");
         apiPublisherClient.setDebugging(true);
         apiPublisherClient.setReadTimeout(600000);
         apiPublisherClient.setConnectTimeout(600000);

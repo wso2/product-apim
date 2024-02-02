@@ -93,7 +93,7 @@ public class APIMIntegrationConstants {
     public static final String STORE_APPLICATION_REST_URL = "store/site/pages/applications.jag";
 
     public static final String SECONDARY_USER_STORE = "secondary";
-    public static final String REST_API_PUBLISHER_CONTEXT_FULL = "api/am/publisher/v4";
+    public static final String REST_API_PUBLISHER_CONTEXT_FULL = "api/am/publisher/v5";
     public static final String REST_API_PUBLISHER_EXPORT_API_RESOURCE = "/apis/export";
     public static final String REST_API_PUBLISHER_IMPORT_API_RESOURCE = "/apis/import";
 
@@ -150,7 +150,7 @@ public class APIMIntegrationConstants {
     }
 
     public static final String REST_API_ADMIN_CONTEXT = "api/am/admin/";
-    public static final String REST_API_ADMIN_VERSION = "v3";
+    public static final String REST_API_ADMIN_VERSION = "v5";
     public static final String REST_API_ADMIN_CONTEXT_FULL_0 = REST_API_ADMIN_CONTEXT + REST_API_ADMIN_VERSION;
     public static final String REST_API_ADMIN_IMPORT_API_RESOURCE = "/import/api";
     public static final String REST_API_ADMIN_EXPORT_API_RESOURCE = "/export/api";
