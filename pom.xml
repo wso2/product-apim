@@ -1331,7 +1331,7 @@
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.0</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.8.3</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.8.11</carbon.identity.auth.version>
-        <identity.apps.version>1.6.191</identity.apps.version>
+        <identity.apps.version>1.5.0</identity.apps.version>
         <identity.oauth.addons.version>2.4.11</identity.oauth.addons.version>
 
         <!--SAML Common Utils Version-->
