@@ -1281,12 +1281,12 @@
 
         <!-- APIM Component Version -->
 
-        <carbon.apimgt.version>9.29.10</carbon.apimgt.version>
+        <carbon.apimgt.version>9.29.14-SNAPSHOT</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.8.22</carbon.registry.version>
+        <carbon.registry.version>4.8.23</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
@@ -1303,7 +1303,7 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.180</carbon.mediation.version>
+        <carbon.mediation.version>4.7.189</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.24.10</carbon.identity.version>
