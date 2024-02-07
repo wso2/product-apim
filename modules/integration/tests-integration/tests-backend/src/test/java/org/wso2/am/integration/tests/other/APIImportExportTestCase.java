@@ -48,6 +48,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -59,6 +60,7 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
@@ -200,6 +202,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         }
 
         createAndPublishAPI();
+        addDocument();
 
     }
 
@@ -253,6 +256,33 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         // Create Revision and Deploy to Gateway
         createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
 
+    }
+
+    private void addDocument() throws Exception {
+        String fileNameAPIM614 = "APIM614.txt";
+        String docName = "test-doc";
+        String summary = "test doc summary";
+        String filePathAPIM614 = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
+                File.separator + "AM" + File.separator + "lifecycletest" + File.separator + fileNameAPIM614;
+        File file = new File(filePathAPIM614);
+
+        //Add document
+        DocumentDTO documentDTO = new DocumentDTO();
+        documentDTO.setName(docName);
+        documentDTO.setSummary(summary);
+        documentDTO.setType(DocumentDTO.TypeEnum.HOWTO);
+        documentDTO.setSourceType(DocumentDTO.SourceTypeEnum.FILE);
+        documentDTO.setVisibility(DocumentDTO.VisibilityEnum.API_LEVEL);
+        documentDTO.setName(docName);
+        HttpResponse documentationResponse = restAPIPublisher.addDocument(apiId, documentDTO);
+        assertEquals(documentationResponse.getResponseCode(), 200,
+                "Error while adding file-based documentation to API");
+        String fileTypeDocumentId = documentationResponse.getData();
+
+        //Update the document content
+        HttpResponse updateDocumentResponse = restAPIPublisher.updateContentDocument(apiId, fileTypeDocumentId, file);
+        assertEquals(updateDocumentResponse.getResponseCode(), 200,
+                "Error while updating documentation to API");
     }
 
     @Test(groups = { "wso2.am" }, description = "Exported Sample API with endpoint security enabled")

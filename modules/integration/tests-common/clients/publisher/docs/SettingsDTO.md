@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **devportalUrl** | **String** | The Developer Portal URL |  [optional]
 **environment** | [**List&lt;EnvironmentDTO&gt;**](EnvironmentDTO.md) |  |  [optional]
+**gatewayTypes** | **List&lt;String&gt;** |  |  [optional]
 **scopes** | **List&lt;String&gt;** |  |  [optional]
 **monetizationAttributes** | [**List&lt;MonetizationAttributeDTO&gt;**](MonetizationAttributeDTO.md) |  |  [optional]
 **securityAuditProperties** | [**Object**](.md) |  |  [optional]

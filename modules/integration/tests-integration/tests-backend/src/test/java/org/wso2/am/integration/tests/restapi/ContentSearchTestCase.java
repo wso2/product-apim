@@ -223,7 +223,7 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
                 } else {
                     log.warn("Document content search in publisher failed. Received response : " + searchResultListDTO
                             .getCount() + " Retrying...");
-                    Thread.sleep(3000);
+                    Thread.sleep(Math.min(3000L * (i + 1), 30000L));
                 }
             }
         }
@@ -243,7 +243,7 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
                 } else {
                     log.warn("Document content search in store failed. Received response : " + searchResultListDTO
                             .getCount() + " Retrying...");
-                    Thread.sleep(3000);
+                    Thread.sleep(Math.min(3000L * (i + 1), 30000L));
                 }
             }
         }

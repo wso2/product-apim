@@ -578,6 +578,10 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_GATEWAY_VENDOR)
             private String gatewayVendor;
 
+        public static final String SERIALIZED_NAME_GATEWAY_TYPE = "gatewayType";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_TYPE)
+            private String gatewayType = "wso2/synapse";
+
         public static final String SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS = "asyncTransportProtocols";
         @SerializedName(SERIALIZED_NAME_ASYNC_TRANSPORT_PROTOCOLS)
             private List<String> asyncTransportProtocols = null;
@@ -1891,6 +1895,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
     }
 
 
+        public APIDTO gatewayType(String gatewayType) {
+        
+        this.gatewayType = gatewayType;
+        return this;
+        }
+
+    /**
+        * The gateway type selected for the API policies. Accepts one of the following. wso2/synapse, wso2/apk.
+    * @return gatewayType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "wso2/synapse", value = "The gateway type selected for the API policies. Accepts one of the following. wso2/synapse, wso2/apk.")
+    
+    public String getGatewayType() {
+        return gatewayType;
+    }
+
+
+    public void setGatewayType(String gatewayType) {
+        this.gatewayType = gatewayType;
+    }
+
+
         public APIDTO asyncTransportProtocols(List<String> asyncTransportProtocols) {
         
         this.asyncTransportProtocols = asyncTransportProtocols;
@@ -1980,6 +2007,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.serviceInfo, API.serviceInfo) &&
             Objects.equals(this.advertiseInfo, API.advertiseInfo) &&
             Objects.equals(this.gatewayVendor, API.gatewayVendor) &&
+            Objects.equals(this.gatewayType, API.gatewayType) &&
             Objects.equals(this.asyncTransportProtocols, API.asyncTransportProtocols);
     }
 
@@ -2050,6 +2078,7 @@ sb.append("class APIDTO {\n");
     sb.append("    serviceInfo: ").append(toIndentedString(serviceInfo)).append("\n");
     sb.append("    advertiseInfo: ").append(toIndentedString(advertiseInfo)).append("\n");
     sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
+    sb.append("    gatewayType: ").append(toIndentedString(gatewayType)).append("\n");
     sb.append("    asyncTransportProtocols: ").append(toIndentedString(asyncTransportProtocols)).append("\n");
 sb.append("}");
 return sb.toString();

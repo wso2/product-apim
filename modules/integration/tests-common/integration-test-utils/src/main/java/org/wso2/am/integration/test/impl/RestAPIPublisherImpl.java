@@ -44,9 +44,12 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiRevisionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ClientCertificatesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.CommentsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.EndpointCertificatesApi;
+import org.wso2.am.integration.clients.publisher.api.v1.GatewayPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaApi;
 import org.wso2.am.integration.clients.publisher.api.v1.GraphQlSchemaIndividualApi;
+import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
+import org.wso2.am.integration.clients.publisher.api.v1.LinterCustomRulesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.OperationPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.RolesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ScopesApi;
@@ -55,8 +58,6 @@ import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ThrottlingPoliciesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.UnifiedSearchApi;
 import org.wso2.am.integration.clients.publisher.api.v1.ValidationApi;
-import org.wso2.am.integration.clients.publisher.api.v1.ImportExportApi;
-import org.wso2.am.integration.clients.publisher.api.v1.LinterCustomRulesApi;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIBusinessInformationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APICorsConfigurationDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
@@ -79,6 +80,9 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyDeploymentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyMappingInfoDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyMappingsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLQueryComplexityInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GraphQLSchemaTypeListDTO;
@@ -105,6 +109,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.WorkflowResponseDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.io.File;
@@ -159,6 +164,7 @@ public class RestAPIPublisherImpl {
     private String disableVerification = System.getProperty("disableVerification");
     private ApiOperationPoliciesApi apisOperationPoliciesApi = new ApiOperationPoliciesApi();
     private OperationPoliciesApi operationPoliciesApi = new OperationPoliciesApi();
+    private GatewayPoliciesApi gatewayPoliciesApi = new GatewayPoliciesApi();
 
     private ImportExportApi importExportApi = new ImportExportApi();
 
@@ -186,7 +192,7 @@ public class RestAPIPublisherImpl {
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
                                 "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
                                 "apim:comment_write apim:common_operation_policy_view apim:common_operation_policy_manage " +
-                                "apim:policies_import_export",
+                                "apim:policies_import_export apim:gateway_policy_view apim:gateway_policy_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -221,6 +227,7 @@ public class RestAPIPublisherImpl {
         productLifecycleApi.setApiClient(apiPublisherClient);
         importExportApi.setApiClient(apiPublisherClient);
         linterCustomRulesApi.setApiClient(apiPublisherClient);
+        gatewayPoliciesApi.setApiClient(apiPublisherClient);
         this.tenantDomain = tenantDomain;
         this.restAPIGateway = new RestAPIGatewayImpl(this.username, this.password, tenantDomain);
     }
@@ -254,6 +261,20 @@ public class RestAPIPublisherImpl {
             response = new HttpResponse(apidto.getId(), 201);
         }
         return response;
+    }
+
+    public HttpResponse addAPIWithMalformedContext(APIRequest apiRequest) {
+
+        String osVersion = "v3";
+        setActivityID();
+        HttpResponse response = null;
+        try {
+            this.addAPI(apiRequest, osVersion);
+        } catch (ApiException e) {
+            response = new HttpResponse(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR, e.getCode());
+            return response;
+        }
+        return null;
     }
 
     /**
@@ -315,6 +336,9 @@ public class RestAPIPublisherImpl {
         body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
+        if (apiRequest.getGatewayType() != null) {
+            body.setGatewayType(apiRequest.getGatewayType());
+        }
         if (apiRequest.getOperationsDTOS() != null) {
             body.setOperations(apiRequest.getOperationsDTOS());
         } else {
@@ -359,6 +383,9 @@ public class RestAPIPublisherImpl {
         } catch (ApiException e) {
             if (e.getResponseBody().contains("already exists")) {
                 return null;
+            }
+            if (e.getResponseBody().contains(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR)) {
+                throw new ApiException(e.getCode(), APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR);
             }
             throw new ApiException(e);
         }
@@ -520,6 +547,27 @@ public class RestAPIPublisherImpl {
         }
         return response;
     }
+
+
+    /**
+     * copy API from existing API Product
+     *
+     * @param newVersion - new version of the API Product
+     * @param apiProductId      - existing API Product Id
+     * @param isDefault  - make the default version
+     * @return - http response object
+     * @throws APIManagerIntegrationTestException - Throws if error occurred at API Product copy operation
+     */
+    public HttpResponse copyAPIProduct(String newVersion, String apiProductId, Boolean isDefault) throws ApiException {
+
+        APIProductDTO apiProductDto = apiProductsApi.createNewAPIProductVersion(newVersion, apiProductId, isDefault);
+        HttpResponse response = null;
+        if (StringUtils.isNotEmpty(apiProductDto.getId())) {
+            response = new HttpResponse(apiProductDto.getId(), 200);
+        }
+        return response;
+    }
+
 
     /**
      * @param newVersion
@@ -1124,6 +1172,13 @@ public class RestAPIPublisherImpl {
         return response.getData();
     }
 
+    public String getAPIProductSwaggerByID(String apiProductId) throws ApiException {
+
+        ApiResponse<String> response = apiProductsApi.getAPIProductSwaggerWithHttpInfo(apiProductId, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        return response.getData();
+    }
+
     public String updateSwagger(String apiId, String definition) throws ApiException {
 
         ApiResponse<String> apiResponse = apIsApi.updateAPISwaggerWithHttpInfo(apiId, null, definition, null, null);
@@ -1193,6 +1248,21 @@ public class RestAPIPublisherImpl {
         ApiResponse<Void> schemaDefinitionDTO = graphQlSchemaApi.updateAPIGraphQLSchemaWithHttpInfo
                 (apiId, schemaDefinition, null);
         Assert.assertEquals(HttpStatus.SC_OK, schemaDefinitionDTO.getStatusCode());
+    }
+
+    public HttpResponse importGraphqlSchemaDefinitionWithInvalidContext(File file, String properties) throws ApiException {
+        ApiResponse<APIDTO> apiDtoApiResponse = null;
+        HttpResponse response = null;
+        try {
+            apiDtoApiResponse = apIsApi.importGraphQLSchemaWithHttpInfo(null, "GRAPHQL",
+                    file, properties);
+            Assert.assertEquals(HttpStatus.SC_CREATED, apiDtoApiResponse.getStatusCode());
+        } catch (ApiException e) {
+            if (e.getResponseBody().contains(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR)) {
+                response = new HttpResponse(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR, e.getCode());
+            }
+        }
+        return response;
     }
 
     public WSDLValidationResponseDTO validateWsdlDefinition(String url, File wsdlDefinition) throws ApiException {
@@ -1694,7 +1764,7 @@ public class RestAPIPublisherImpl {
         if ("APIProduct".equals(apiType)) {
             APIProductDTO apiProduct = getApiProduct(revisionUUID);
             context = apiProduct.getContext();
-            version = "1.0.0";
+            version = apiProduct.getVersion();
             provider = apiProduct.getProvider();
             name = apiProduct.getName();
             apiPolicy = apiProduct.getApiThrottlingPolicy();
@@ -1708,15 +1778,12 @@ public class RestAPIPublisherImpl {
         }
         APIInfoDTO apiInfo = restAPIGateway.getAPIInfo(apiUUID);
         if (apiInfo != null) {
-            if (!"APIProduct".equals(apiType)) {
-                if (context.startsWith("/{version}")) {
-                    Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
-                } else {
-                    Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
-                }
+            if (context.startsWith("/{version}")) {
+                Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
             } else {
-                Assert.assertEquals(apiInfo.getContext(), context);
-
+                log.info("AAAAAAAAAA********************************************AAAAAAAAAA");
+                log.info("context: " + context + " version: " + version);
+                Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
             }
             Assert.assertEquals(apiInfo.getName(), name);
             Assert.assertEquals(apiInfo.getProvider(), provider);
@@ -1745,15 +1812,10 @@ public class RestAPIPublisherImpl {
             }
             apiInfo = restAPIGateway.getAPIInfo(apiUUID);
             if (apiInfo != null) {
-                if (!"APIProduct".equals(apiType)) {
-                    if (context.startsWith("/{version}")) {
-                        Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
-                    } else {
-                        Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
-                    }
+                if (context.startsWith("/{version}")) {
+                    Assert.assertEquals(apiInfo.getContext(), context.replace("{version}", version));
                 } else {
-                    Assert.assertEquals(apiInfo.getContext(), context);
-
+                    Assert.assertEquals(apiInfo.getContext(), context.concat("/").concat(version));
                 }
                 Assert.assertEquals(apiInfo.getName(), name);
                 Assert.assertEquals(apiInfo.getProvider(), provider);
@@ -2095,14 +2157,13 @@ public class RestAPIPublisherImpl {
     /**
      * Add comment to given API
      *
-     * @param apiId    - api Id
-     * @param comment  - comment to  add
-     * @param category - category of the comment
-     * @param replyTo  - comment id of the root comment to add replies
-     * @return - http response of add comment
-     * @throws ApiException - throws if add comment fails
+     * @param apiId    api Id
+     * @param comment  comment to  add
+     * @param category category of the comment
+     * @param replyTo  comment id of the root comment to add replies
+     * @return http response of add comment
+     * @throws ApiException throws if add comment fails
      */
-
     public HttpResponse addComment(String apiId, String comment, String category, String replyTo) throws ApiException {
 
         PostRequestBodyDTO postRequestBodyDTO = new PostRequestBodyDTO();
@@ -2120,13 +2181,13 @@ public class RestAPIPublisherImpl {
     /**
      * Get Comment from given API
      *
-     * @param commentId    - comment Id
-     * @param apiId        - api Id
-     * @param tenantDomain - tenant domain
-     * @param limit        - for pagination
-     * @param offset       - for pagination
-     * @return - http response get comment
-     * @throws ApiException - throws if get comment fails
+     * @param commentId    comment Id
+     * @param apiId        api Id
+     * @param tenantDomain tenant domain
+     * @param limit        for pagination
+     * @param offset       for pagination
+     * @return http response get comment
+     * @throws ApiException throws if get comment fails
      */
     public HttpResponse getComment(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo,
                                    Integer limit, Integer offset) throws ApiException {
@@ -2149,12 +2210,12 @@ public class RestAPIPublisherImpl {
     /**
      * Get all the comments from given API
      *
-     * @param apiId        - api Id
-     * @param tenantDomain - tenant domain
-     * @param limit        - for pagination
-     * @param offset       - for pagination
-     * @return - http response get comment
-     * @throws ApiException - throws if get comment fails
+     * @param apiId        api Id
+     * @param tenantDomain tenant domain
+     * @param limit        for pagination
+     * @param offset       for pagination
+     * @return http response get comment
+     * @throws ApiException throws if get comment fails
      */
     public HttpResponse getComments(String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit,
                                     Integer offset) throws ApiException {
@@ -2176,13 +2237,13 @@ public class RestAPIPublisherImpl {
     /**
      * Get replies of a comment from given API
      *
-     * @param commentId    - comment Id
-     * @param apiId        - api Id
-     * @param tenantDomain - tenant domain
-     * @param limit        - for pagination
-     * @param offset       - for pagination
-     * @return - http response get comment
-     * @throws ApiException - throws if get comment fails
+     * @param commentId    comment Id
+     * @param apiId        api Id
+     * @param tenantDomain tenant domain
+     * @param limit        for pagination
+     * @param offset       for pagination
+     * @return http response get comment
+     * @throws ApiException throws if get comment fails
      */
     public HttpResponse getReplies(String commentId, String apiId, String tenantDomain, boolean includeCommentorInfo, Integer limit, Integer offset)
             throws ApiException {
@@ -2207,12 +2268,12 @@ public class RestAPIPublisherImpl {
     /**
      * Get Comment from given API
      *
-     * @param commentId - comment Id
-     * @param apiId     - api Id
-     * @param comment   - comment to  add
-     * @param category  - category of the comment
-     * @return - http response get comment
-     * @throws ApiException - throws if get comment fails
+     * @param commentId comment Id
+     * @param apiId     api Id
+     * @param comment   comment to  add
+     * @param category  category of the comment
+     * @return http response get comment
+     * @throws ApiException throws if get comment fails
      */
     public HttpResponse editComment(String commentId, String apiId, String comment, String category) throws
             ApiException {
@@ -2239,9 +2300,9 @@ public class RestAPIPublisherImpl {
     /**
      * Remove comment in given API
      *
-     * @param commentId - comment Id
-     * @param apiId     - api Id
-     * @throws ApiException - throws if remove comment fails
+     * @param commentId comment Id
+     * @param apiId     api Id
+     * @throws ApiException throws if remove comment fails
      */
     public HttpResponse removeComment(String commentId, String apiId) throws ApiException {
 
@@ -2519,6 +2580,120 @@ public class RestAPIPublisherImpl {
             policyMap.put(policyDataDTO.getName(), policyDataDTO.getId());
         }
         return policyMap;
+    }
+
+    /**
+     * Add a new gateway policy
+     *
+     * @param gatewayPolicyMappingsDTO Gateway policy mapping DTO
+     * @return http response of add gateway policy
+     * @throws ApiException - throws if add gateway policy fails
+     */
+    public HttpResponse addGatewayPolicy(GatewayPolicyMappingsDTO gatewayPolicyMappingsDTO) {
+
+        Gson gson = new Gson();
+        HttpResponse response;
+        try {
+            ApiResponse<GatewayPolicyMappingInfoDTO> addGatewayPolicyResponse =
+                    gatewayPoliciesApi.addGatewayPoliciesToFlowsWithHttpInfo(gatewayPolicyMappingsDTO);
+            response = new HttpResponse(gson.toJson(addGatewayPolicyResponse.getData()),
+                    addGatewayPolicyResponse.getStatusCode());
+        } catch (ApiException e) {
+            response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
+    }
+
+    /**
+     * Deploy gateway policy
+     *
+     * @param gatewayPolicyMappingId     Gateway policy mapping Id
+     * @param gatewayPolicyDeploymentDTO Gateway policy deployment DTO
+     * @return http response of add gateway policy
+     * @throws ApiException - throws if add gateway policy fails
+     */
+    public HttpResponse deployGatewayPolicy(String gatewayPolicyMappingId,
+            List<GatewayPolicyDeploymentDTO> gatewayPolicyDeploymentDTO) {
+
+        Gson gson = new Gson();
+        HttpResponse response;
+        try {
+            ApiResponse<List<GatewayPolicyDeploymentDTO>> policyDeployResponse =
+                    gatewayPoliciesApi.engageGlobalPolicyWithHttpInfo(gatewayPolicyMappingId, gatewayPolicyDeploymentDTO);
+            response = new HttpResponse(gson.toJson(policyDeployResponse.getData()),
+                    policyDeployResponse.getStatusCode());
+        } catch (ApiException e) {
+            response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
+    }
+
+    /**
+     * Delete gateway policy
+     *
+     * @param gatewayPolicyMappingId     Gateway policy mapping Id to be deleted
+     * @return http response of add gateway policy
+     * @throws ApiException - throws if add gateway policy fails
+     */
+    public HttpResponse deleteGatewayPolicy(String gatewayPolicyMappingId) {
+
+        Gson gson = new Gson();
+        HttpResponse response = null;
+        try {
+            ApiResponse<Void> deleteResponse = gatewayPoliciesApi.deleteGatewayPolicyByPolicyIdWithHttpInfo(
+                    gatewayPolicyMappingId);
+            if (deleteResponse.getStatusCode() == 200) {
+                response = new HttpResponse("Successfully deleted the gateway policy", 200);
+            }
+        } catch (ApiException e) {
+            response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+            return response;
+        }
+        return response;
+    }
+
+    /**
+     * Get gateway policy by policy mapping UUID
+     *
+     * @param gatewayPolicyMappingId     Gateway policy mapping Id to be retrieved
+     * @return GatewayPolicyMappingsDTO  Gateway policy mapping DTO
+     * @throws ApiException - throws if add gateway policy fails
+     */
+    public GatewayPolicyMappingsDTO getGatewayPolicy(String gatewayPolicyMappingId) throws ApiException {
+
+        setActivityID();
+        ApiResponse<GatewayPolicyMappingsDTO> getGatewayPolicyResponse =
+                gatewayPoliciesApi.getGatewayPolicyMappingContentByPolicyMappingIdWithHttpInfo(gatewayPolicyMappingId);
+        Assert.assertEquals(getGatewayPolicyResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Unable to retrieve gateway policy for policy mapping Id " + gatewayPolicyMappingId + " "
+                        + getGatewayPolicyResponse.getData());
+
+        return getGatewayPolicyResponse.getData();
+    }
+
+    /**
+     * Update gateway policy
+     *
+     * @param gatewayPolicyMappingId     Gateway policy mapping Id
+     * @param gatewayPolicyMappingsDTO Gateway policy mapping DTO
+     * @return http response of add gateway policy
+     * @throws ApiException - throws if add gateway policy fails
+     */
+    public HttpResponse updateGatewayPolicy(String gatewayPolicyMappingId,
+            GatewayPolicyMappingsDTO gatewayPolicyMappingsDTO) {
+
+        Gson gson = new Gson();
+        HttpResponse response;
+        try {
+            ApiResponse<GatewayPolicyMappingsDTO> updateDeployedPolicyResponse =
+                    gatewayPoliciesApi.updateGatewayPoliciesToFlowsWithHttpInfo(gatewayPolicyMappingId,
+                            gatewayPolicyMappingsDTO);
+            response = new HttpResponse(gson.toJson(updateDeployedPolicyResponse.getData()),
+                    updateDeployedPolicyResponse.getStatusCode());
+        } catch (ApiException e) {
+            response = new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
     }
 
     private void waitUntilStatusToBlock(String apiId, String action) throws APIManagerIntegrationTestException {

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.wso2.am.integration.clients.admin.api.dto.ClaimMappingEntryDTO;
 import org.wso2.am.integration.clients.admin.api.dto.KeyManagerCertificatesDTO;
+import org.wso2.am.integration.clients.admin.api.dto.KeyManagerPermissionsDTO;
 import org.wso2.am.integration.clients.admin.api.dto.TokenValidationDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
@@ -157,6 +158,10 @@ public class KeyManagerDTO {
         public static final String SERIALIZED_NAME_ADDITIONAL_PROPERTIES = "additionalProperties";
         @SerializedName(SERIALIZED_NAME_ADDITIONAL_PROPERTIES)
             private Object additionalProperties;
+
+        public static final String SERIALIZED_NAME_PERMISSIONS = "permissions";
+        @SerializedName(SERIALIZED_NAME_PERMISSIONS)
+            private KeyManagerPermissionsDTO permissions;
 
             /**
 * The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED and DIRECT.
@@ -923,6 +928,29 @@ public static TokenTypeEnum fromValue(String value) {
     }
 
 
+        public KeyManagerDTO permissions(KeyManagerPermissionsDTO permissions) {
+        
+        this.permissions = permissions;
+        return this;
+        }
+
+    /**
+        * Get permissions
+    * @return permissions
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public KeyManagerPermissionsDTO getPermissions() {
+        return permissions;
+    }
+
+
+    public void setPermissions(KeyManagerPermissionsDTO permissions) {
+        this.permissions = permissions;
+    }
+
+
         public KeyManagerDTO tokenType(TokenTypeEnum tokenType) {
         
         this.tokenType = tokenType;
@@ -986,12 +1014,13 @@ public static TokenTypeEnum fromValue(String value) {
             Objects.equals(this.tokenValidation, keyManager.tokenValidation) &&
             Objects.equals(this.enabled, keyManager.enabled) &&
             Objects.equals(this.additionalProperties, keyManager.additionalProperties) &&
+            Objects.equals(this.permissions, keyManager.permissions) &&
             Objects.equals(this.tokenType, keyManager.tokenType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, displayName, type, description, wellKnownEndpoint, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, displayTokenEndpoint, revokeEndpoint, displayRevokeEndpoint, userInfoEndpoint, authorizeEndpoint, certificates, issuer, alias, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties, tokenType);
+        return Objects.hash(id, name, displayName, type, description, wellKnownEndpoint, introspectionEndpoint, clientRegistrationEndpoint, tokenEndpoint, displayTokenEndpoint, revokeEndpoint, displayRevokeEndpoint, userInfoEndpoint, authorizeEndpoint, certificates, issuer, alias, scopeManagementEndpoint, availableGrantTypes, enableTokenGeneration, enableTokenEncryption, enableTokenHashing, enableMapOAuthConsumerApps, enableOAuthAppCreation, enableSelfValidationJWT, claimMapping, consumerKeyClaim, scopesClaim, tokenValidation, enabled, additionalProperties, permissions, tokenType);
     }
 
 
@@ -1030,6 +1059,7 @@ sb.append("class KeyManagerDTO {\n");
     sb.append("    tokenValidation: ").append(toIndentedString(tokenValidation)).append("\n");
     sb.append("    enabled: ").append(toIndentedString(enabled)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+    sb.append("    permissions: ").append(toIndentedString(permissions)).append("\n");
     sb.append("    tokenType: ").append(toIndentedString(tokenType)).append("\n");
 sb.append("}");
 return sb.toString();

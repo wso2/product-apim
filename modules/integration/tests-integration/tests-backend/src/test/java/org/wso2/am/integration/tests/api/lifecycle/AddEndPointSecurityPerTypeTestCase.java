@@ -500,7 +500,7 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
             dependsOnMethods = "testAddEndpointSecurityForOauthForClientCredentialsGrantType")
     public void testAddEndpointSecurityForOauthForPasswordGrantType() throws Exception {
 
-        String clientCredGrantTypeEndpointSecurityForProductionAndSandboxForPasswordGrantType = "{\n" +
+        final String clientCredGrantTypeEndpointSecurityForProductionAndSandboxForPasswordGrantType = "{\n" +
                 "  \"production\":{\n" +
                 "    \"enabled\":true,\n" +
                 "    \"type\":\"OAUTH\",\n" +

@@ -28,6 +28,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
@@ -71,6 +72,7 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     private final Log log = LogFactory.getLog(WSDLImportTestCase.class);
     private String WSDL_FILE_API_NAME = "WSDLImportAPIWithWSDLFile";
     private String WSDL_FILE_API_CONTEXT = "wsdlimportwithwsdlfile";
+    private String WSDL_FILE_MALFORMED_API_CONTEXT = "wsdlimportwithwsdlfile{version}";
     private String WSDL_ZIP_API_NAME = "WSDLImportAPIWithZipFile";
     private String WSDL_ZIP_API_CONTEXT = "wsdlimportwithzipfile";
     private String WSDL_URL_API_NAME = "WSDLImportAPIWithURL";
@@ -99,8 +101,6 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     private String responseBody;
     private String endpointHost = "http://localhost";
     private int endpointPort;
-    private int lowerPortLimit = 9950;
-    private int upperPortLimit = 9999;
     private WireMockServer wireMockServer;
     private String apiEndPointURL;
     private String wsdlURL;
@@ -249,6 +249,49 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         accessToken = applicationKeyDTO.getToken().getAccessToken();
     }
 
+    @Test(groups = {"wso2.am"}, description = "Importing WSDL API definition and create API")
+    public void testWsdlDefinitionImportWithMalformedContext() throws Exception {
+        log.info("testWsdlDefinitionImport initiated");
+
+        // Set environment
+        ArrayList<String> environment = new ArrayList<>();
+        environment.add(Constants.GATEWAY_ENVIRONMENT);
+
+        // Set policies
+        ArrayList<String> policies = new ArrayList<>();
+        policies.add(APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        // Set endpointConfig
+        JSONObject url = new JSONObject();
+        url.put("url", apiEndPointURL);
+        JSONObject endpointConfig = new JSONObject();
+        endpointConfig.put("endpoint_type", "http");
+        endpointConfig.put("sandbox_endpoints", url);
+        endpointConfig.put("production_endpoints", url);
+
+        // Create additional properties object
+        JSONObject additionalPropertiesObj = new JSONObject();
+        additionalPropertiesObj.put("provider", user.getUserName());
+        additionalPropertiesObj.put("name", WSDL_FILE_API_NAME);
+        additionalPropertiesObj.put("context", WSDL_FILE_MALFORMED_API_CONTEXT);
+        additionalPropertiesObj.put("version", API_VERSION);
+        additionalPropertiesObj.put("policies", policies);
+        additionalPropertiesObj.put("endpointConfig", endpointConfig);
+
+        // Create API by importing the WSDL definition as .wsdl file
+        String wsdlDefinitionPath = FrameworkPathUtil.getSystemResourceLocation() + "wsdl"
+                + File.separator + "Sample.wsdl";
+        File file = new File(wsdlDefinitionPath);
+
+        try{
+            APIDTO wsdlFileApidto = restAPIPublisher.importWSDLSchemaDefinition(file, null,
+                    additionalPropertiesObj.toString(), "SOAP");
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode());
+            Assert.assertTrue(e.getResponseBody().contains(APIMIntegrationConstants.API_CONTEXT_MALFORMED_ERROR));
+        }
+    }
+
     @Test(groups = {"wso2.am"}, description = "Get WSDL API definition of the created API",
             dependsOnMethods = "testWsdlDefinitionImport")
     public void testGetWsdlDefinitions() throws Exception {
@@ -304,15 +347,14 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
     }
 
     private void startWiremockServer() {
-        endpointPort = getAvailablePort();
-        assertNotEquals(endpointPort, -1, "No available port in the range " + lowerPortLimit + "-" +
-                upperPortLimit + " was found");
         wireMockServer = new WireMockServer(options().port(endpointPort));
         wireMockServer.stubFor(WireMock.get(urlEqualTo("/phoneverify/wsdl")).willReturn(aResponse()
                 .withStatus(200).withHeader("Content-Type", "text/xml").withBody(wsdlDefinition)));
         wireMockServer.stubFor(WireMock.post(urlEqualTo("/phoneverify")).willReturn(aResponse()
                 .withStatus(200).withHeader("Content-Type", "text/xml").withBody(responseBody)));
         wireMockServer.start();
+        endpointPort = wireMockServer.port();
+        log.info("Wiremock server started on port " + endpointPort);
     }
 
     @Test(groups = {"wso2.am"}, description = "Importing WSDL API definition and create API",
@@ -541,22 +583,6 @@ public class WSDLImportTestCase extends APIManagerLifecycleBaseTest {
         String requestBody = "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"> <soap:Body> <CheckPhoneNumber xmlns=\"http://ws.cdyne.com/PhoneVerify/query\"> <PhoneNumber>077383968</PhoneNumber> <LicenseKey>123</LicenseKey> </CheckPhoneNumber> </soap:Body></soap:Envelope>";
         HttpResponse serviceResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, requestBody);
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "API invocation failed");
-    }
-
-
-    /**
-     * Find a free port to start backend WebSocket server in given port range
-     *
-     * @return Available Port Number
-     */
-    private int getAvailablePort() {
-        while (lowerPortLimit < upperPortLimit) {
-            if (isPortFree(lowerPortLimit)) {
-                return lowerPortLimit;
-            }
-            lowerPortLimit++;
-        }
-        return -1;
     }
 
     /**

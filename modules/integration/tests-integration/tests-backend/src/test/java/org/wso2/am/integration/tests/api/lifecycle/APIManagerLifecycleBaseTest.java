@@ -64,6 +64,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             Response.Status.SERVICE_UNAVAILABLE.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_TOO_MANY_REQUESTS = 429; // Define manually since value is not available in enum
     protected static final int HTTP_RESPONSE_CODE_FORBIDDEN = Response.Status.FORBIDDEN.getStatusCode();
+    protected static final int HTTP_RESPONSE_PRECONDITION_FAILED = Response.Status.PRECONDITION_FAILED.getStatusCode();
     protected static final String HTTP_RESPONSE_DATA_API_BLOCK =
             "{\"code\":\"700700\",\"type\":\"API blocked\",\"description\":\"This API has been blocked temporarily. " +
                     "Please try again later or contact the system administrators.\"}";

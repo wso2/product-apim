@@ -43,14 +43,15 @@ public class DtoFactory {
         return exportPolicy;
     }
 
-    public static APIProductDTO createApiProductDTO(String provider, String name, String context, List<ProductAPIDTO> apis,
-                                                    List<String> polices) {
+    public static APIProductDTO createApiProductDTO(String provider, String name, String context, String version,
+            List<ProductAPIDTO> apis, List<String> polices) {
         return new APIProductDTO().
                 accessControl(APIProductDTO.AccessControlEnum.NONE).
                 visibility(APIProductDTO.VisibilityEnum.PUBLIC).
                 apis(apis).
                 context(context).
                 name(name).
+                version(version).
                 policies(polices).
                 provider(provider);
     }
@@ -74,6 +75,10 @@ public class DtoFactory {
         applicationThrottlePolicyDTO.setDescription(description);
         applicationThrottlePolicyDTO.setIsDeployed(isDeployed);
         applicationThrottlePolicyDTO.setDefaultLimit(defaultLimit);
+        BurstLimitDTO burstLimitDTO = new BurstLimitDTO();
+        burstLimitDTO.setRateLimitCount(0);
+        burstLimitDTO.setRateLimitTimeUnit(null);
+        applicationThrottlePolicyDTO.setBurstLimit(burstLimitDTO);
         return applicationThrottlePolicyDTO;
     }
 
@@ -430,14 +435,15 @@ public class DtoFactory {
      * @return Environment DTO object
      */
     public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description, String
-            provider, boolean isReadOnly, List<VHostDTO> vhosts) {
+            provider, boolean isReadOnly, List<VHostDTO> vhosts, String gatewayType) {
         return new EnvironmentDTO()
                 .name(name)
                 .displayName(displayName)
                 .description(description)
                 .provider(provider)
                 .isReadOnly(isReadOnly)
-                .vhosts(vhosts);
+                .vhosts(vhosts)
+                .gatewayType(gatewayType);
     }
 
     /**

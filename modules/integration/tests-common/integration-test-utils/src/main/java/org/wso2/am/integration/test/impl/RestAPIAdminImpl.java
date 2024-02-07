@@ -28,6 +28,8 @@ import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.HttpResponse;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Base64;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -700,8 +702,43 @@ public class RestAPIAdminImpl {
         return applicationApi.applicationsApplicationIdChangeOwnerPostWithHttpInfo(newOwner, applicationId);
     }
 
+
     public ApiResponse<Void> changeApiProvider(String newProvider, String apiId) throws ApiException {
         return apiProviderChangeApi.providerNamePostWithHttpInfo(newProvider, apiId);
+    }
+  
+    /**
+     * This method is used to retrieve scopes for a particular user.
+     *
+     * @param scopeName Scope name.
+     * @param username  Username of the user.
+     * @return ScopeSettingsDTO returned by API call.
+     * @throws ApiException if an error occurs while retrieving the scopes of a particular user.
+     */
+    public ScopeSettingsDTO retrieveScopesForParticularUser(String scopeName, String username) throws ApiException {
+        return systemScopesApi.systemScopesScopeNameGet(new String(Base64.getEncoder().encode(scopeName.getBytes())), username);
+    }
+
+    /**
+     * This method is used to add a new role alias mapping for system scope roles.
+     *
+     * @param count   The number of role aliases.
+     * @param role    Name of the role.
+     * @param aliases List of aliases.
+     * @return RoleAliasListDTO returned by API call.
+     * @throws ApiException if an error occurs while adding role aliases mappings for system scope roles.
+     */
+    public RoleAliasListDTO addRoleAliasMappingForSystemScopeRoles(int count, String role, String[] aliases) throws ApiException {
+
+        RoleAliasDTO roleAliasDTO = new RoleAliasDTO();
+        roleAliasDTO.setRole(role);
+        roleAliasDTO.setAliases(Arrays.asList(aliases));
+
+        RoleAliasListDTO roleAliasListDTO = new RoleAliasListDTO();
+        roleAliasListDTO.setCount(count);
+        roleAliasListDTO.setList(Arrays.asList(roleAliasDTO));
+
+        return systemScopesApi.systemScopesRoleAliasesPut(roleAliasListDTO);
     }
 
     public HttpResponse getWorkflowByExternalWorkflowReference(String externalWorkflowRef) throws ApiException {
@@ -741,6 +778,31 @@ public class RestAPIAdminImpl {
         WorkflowDTO.StatusEnum status = WorkflowDTO.StatusEnum.valueOf(WorkflowDTO.StatusEnum.class, "APPROVED");
         body.setStatus(status);
         body.setDescription("Approve workflow request.");
+        //body.setAttributes();
+        try {
+            workflowdto = workflowsIndividualApi.workflowsUpdateWorkflowStatusPost(workflowReferenceId, body);
+            response = new HttpResponse(gson.toJson(workflowdto), 200);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
+    }
+
+    /**
+     * This method is used to reject a workflow
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while rejecting a workflow
+     */
+    public HttpResponse rejectWorkflowStatus(String workflowReferenceId) throws ApiException {
+        WorkflowDTO workflowdto = null;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+
+        WorkflowDTO body = new WorkflowDTO();
+        WorkflowDTO.StatusEnum status = WorkflowDTO.StatusEnum.valueOf(WorkflowDTO.StatusEnum.class, "REJECTED");
+        body.setStatus(status);
+        body.setDescription("Reject workflow request.");
         //body.setAttributes();
         try {
             workflowdto = workflowsIndividualApi.workflowsUpdateWorkflowStatusPost(workflowReferenceId, body);

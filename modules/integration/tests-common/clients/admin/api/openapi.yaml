@@ -5195,6 +5195,7 @@ paths:
           - AM_APPLICATION_DELETION
           - AM_API_STATE
           - AM_API_PRODUCT_STATE
+          - AM_REVISION_DEPLOYMENT
           type: string
         style: form
       responses:
@@ -7961,6 +7962,18 @@ components:
       - type
       title: Throttle Limit
       type: object
+    BurstLimit:
+      properties:
+        rateLimitCount:
+          description: Burst control request count
+          example: 10
+          type: integer
+        rateLimitTimeUnit:
+          description: Burst control time unit
+          example: min
+          type: string
+      title: Burst Limit object
+      type: object
     MonetizationInfo:
       properties:
         monetizationPlan:
@@ -8345,6 +8358,7 @@ components:
           endpointURI: default
         - protocol: default
           endpointURI: default
+        gatewayType: Regular
         isReadOnly: false
         provider: wso2
         displayName: US Region
@@ -8392,6 +8406,10 @@ components:
         provider:
           example: wso2
           type: string
+        gatewayType:
+          default: Regular
+          example: Regular
+          type: string
         isReadOnly:
           example: false
           readOnly: true
@@ -8423,6 +8441,7 @@ components:
             endpointURI: default
           - protocol: default
             endpointURI: default
+          gatewayType: Regular
           isReadOnly: false
           provider: wso2
           displayName: US Region
@@ -8452,6 +8471,7 @@ components:
             endpointURI: default
           - protocol: default
             endpointURI: default
+          gatewayType: Regular
           isReadOnly: false
           provider: wso2
           displayName: US Region
@@ -8785,11 +8805,18 @@ components:
             mask: true
           defaultScopesClaim: scope
           type: default
+        gatewayTypes:
+        - gatewayTypes
+        - gatewayTypes
         scopes:
         - scopes
         - scopes
       properties:
         scopes:
+          items:
+            type: string
+          type: array
+        gatewayTypes:
           items:
             type: string
           type: array
@@ -8883,6 +8910,11 @@ components:
           tokenEndpoint: https://localhost:9444/oauth2/token
           consumerKeyClaim: azp
           scopesClaim: scp
+          permissions:
+            permissionType: ALLOW
+            roles:
+            - Internal/subscriber
+            - Internal/subscriber
           alias: https://localhost:9443/oauth2/token
           id: 01234567-0123-0123-0123-012345678901
           userInfoEndpoint: https://localhost:9444/oauth2/userinfo?schema=openid
@@ -8945,6 +8977,11 @@ components:
         tokenEndpoint: https://localhost:9444/oauth2/token
         consumerKeyClaim: azp
         scopesClaim: scp
+        permissions:
+          permissionType: ALLOW
+          roles:
+          - Internal/subscriber
+          - Internal/subscriber
         alias: https://localhost:9443/oauth2/token
         id: 01234567-0123-0123-0123-012345678901
         userInfoEndpoint: https://localhost:9444/oauth2/userinfo?schema=openid
@@ -9103,6 +9140,8 @@ components:
             Password: admin
           properties: {}
           type: object
+        permissions:
+          $ref: '#/components/schemas/KeyManager_permissions'
         tokenType:
           default: DIRECT
           description: The type of the tokens to be used (exchanged or without exchanged).
@@ -9442,6 +9481,7 @@ components:
           - SUBSCRIPTION_DELETION
           - SUBSCRIPTION_UPDATE
           - API_PRODUCT_STATE
+          - REVISION_DEPLOYMENT
           example: APPLICATION_CREATION
           type: string
         workflowStatus:
@@ -9626,6 +9666,8 @@ components:
       properties:
         defaultLimit:
           $ref: '#/components/schemas/ThrottleLimit'
+        burstLimit:
+          $ref: '#/components/schemas/BurstLimit'
       required:
       - defaultLimit
     SubscriptionThrottlePolicy_allOf:
@@ -9781,6 +9823,26 @@ components:
           type: string
         value:
           type: string
+    KeyManager_permissions:
+      example:
+        permissionType: ALLOW
+        roles:
+        - Internal/subscriber
+        - Internal/subscriber
+      properties:
+        permissionType:
+          default: PUBLIC
+          enum:
+          - PUBLIC
+          - ALLOW
+          - DENY
+          example: ALLOW
+          type: string
+        roles:
+          items:
+            example: Internal/subscriber
+            type: string
+          type: array
   securitySchemes:
     OAuth2Security:
       flows:
