@@ -662,6 +662,9 @@
                                     org.wso2.carbon.identity.organization.management:org.wso2.carbon.identity.organization.management.server.feature:${identity.org.mgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.identity.organization.management.core:org.wso2.carbon.identity.organization.management.core.server.feature:${identity.org.mgt.core.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.identity.outbound.auth.oidc:org.wso2.carbon.identity.application.authenticator.oidc.server.feature:${identity.outbound.auth.oidc.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
@@ -669,6 +672,10 @@
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.user.store.configuration.server.feature:${carbon.identity.version}
+                                </featureArtifactDef>
+                                <!-- Identity Branding Preference Management feature -->
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.branding.preference.management:org.wso2.carbon.identity.branding.preference.management.core.server.feature:${identity.branding.preference.management.version}
                                 </featureArtifactDef>
 
                             </featureArtifacts>
@@ -904,6 +911,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.organization.management.server.feature.group</id>
                                     <version>${identity.org.mgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.organization.management.core.server.feature.group</id>
+                                    <version>${identity.org.mgt.core.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.central.log.mgt.server.feature.group</id>
@@ -1496,6 +1507,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.store.configuration.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.branding.preference.management.core.server.feature.group</id>
+                                    <version>${identity.branding.preference.management.version}</version>
                                 </feature>
                             </features>
                         </configuration>
