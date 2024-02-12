@@ -9386,6 +9386,13 @@ components:
           type: string
           example:
             wso2
+        gatewayType:
+          title: Field to identify gateway type.
+          type: string
+          description: The gateway type selected for the API policies. Accepts one of the
+            following. wso2/synapse, wso2/apk.
+          example: wso2/synapse
+          default: wso2/synapse
         asyncTransportProtocols:
           type: array
           description: |
@@ -11762,6 +11769,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Environment'
+        gatewayTypes:
+          type: array
+          example:
+            - Regular
+            - APK
+          items:
+            type: string
         scopes:
           type: array
           example:

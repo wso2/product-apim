@@ -424,7 +424,7 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
             "testUpdateEndpointSecurityForOauthForClientCredentialsGrantType")
     public void testUpdateEndpointSecurityForOauthForPasswordGrantType() throws Exception {
 
-        String endpointSecurity = "{\n" +
+        final String endpointSecurity = "{\n" +
                 "  \"production\":{\n" +
                 "    \"enabled\":true,\n" +
                 "    \"type\":\"OAUTH\",\n" +

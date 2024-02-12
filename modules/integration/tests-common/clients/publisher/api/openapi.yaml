@@ -16718,6 +16718,7 @@ components:
         responseCachingEnabled: true
         type: HTTP
         enableSchemaValidation: false
+        gatewayType: wso2/synapse
         context: pizza
         createdTime: createdTime
         id: 01234567-0123-0123-0123-012345678901
@@ -17313,6 +17314,13 @@ components:
         gatewayVendor:
           example: wso2
           title: field to identify gateway vendor
+          type: string
+        gatewayType:
+          default: wso2/synapse
+          description: The gateway type selected for the API policies. Accepts one
+            of the following. wso2/synapse, wso2/apk.
+          example: wso2/synapse
+          title: Field to identify gateway type.
           type: string
         asyncTransportProtocols:
           description: |
@@ -20421,6 +20429,9 @@ components:
             websubHttpsPort: 8021
             httpsPort: 443
         crossTenantSubscriptionEnabled: false
+        gatewayTypes:
+        - Regular
+        - APK
         defaultSubscriptionPolicy: defaultSubscriptionPolicy
         securityAuditProperties: '{}'
         scopes:
@@ -20438,6 +20449,13 @@ components:
         environment:
           items:
             $ref: '#/components/schemas/Environment'
+          type: array
+        gatewayTypes:
+          example:
+          - Regular
+          - APK
+          items:
+            type: string
           type: array
         scopes:
           example:
