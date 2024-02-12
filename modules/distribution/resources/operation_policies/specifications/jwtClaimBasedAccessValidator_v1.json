@@ -26,7 +26,7 @@
       {
         "name": "grantVerificationClaimValue",
         "displayName": "Access grant claim value",
-        "description": "This should be the alue of a custom claim which is expected in the JWT access token",
+        "description": "This should be the value of a custom claim which is expected in the JWT access token",
         "type": "String",
         "defaultValue": "APPLICATION",
         "required": true
