@@ -1,0 +1,52 @@
+{
+    "category": "Mediation",
+    "name": "jwtClaimBasedAccessValidator",
+    "version": "v1",
+    "displayName": "JWT claim based access grant validator",
+    "description": "This policy validates configured claim name and value in this policy with the claim name and value sent in the JWT access token to grant access to the API resource.",
+    "applicableFlows": [
+      "request"
+    ],
+    "supportedGateways": [
+      "Synapse"
+    ],
+    "supportedApiTypes": [
+      "HTTP"
+    ],
+    "policyAttributes": [
+      {
+        "name": "grantVerificationClaim",
+        "displayName": "Access grant claim name",
+        "description": "This should be the name the custom claim which is expected in the JWT access token",
+        "validationRegex": "^[a-zA-Z_]+$",
+        "type": "String",
+        "defaultValue": "aut",
+        "required": true
+      },
+      {
+        "name": "grantVerificationClaimValue",
+        "displayName": "Access grant claim value",
+        "description": "This should be the alue of a custom claim which is expected in the JWT access token",
+        "type": "String",
+        "defaultValue": "APPLICATION",
+        "required": true
+      },
+      {
+        "name": "shouldAllowValidation",
+        "displayName": "Allow claim based access grant validation",
+        "description": "If ticked, the claim based access grant validation will be performed.",
+        "type": "Boolean",
+        "defaultValue": "true",
+        "required": false
+      },
+      {
+        "name": "claimBasedAccessGrantValidator",
+        "displayName": "JWT claim based access grant validation mediator",
+        "description": "Fully qualified class name for the validation implementation",
+        "validationRegex": "^([a-zA-Z_$][a-zA-Z\\d_$.]*)$",
+        "type": "String",
+        "defaultValue": "org.wso2.carbon.apimgt.gateway.mediators.ClaimBasedResourceAccessValidationMediator",
+        "required": true
+      }
+    ]
+  }
