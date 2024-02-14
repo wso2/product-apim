@@ -97,13 +97,24 @@
     String multiOptionURIParam = "";
     if (localAuthenticatorNames.size() > 1 || idpAuthenticatorMapping != null && idpAuthenticatorMapping.size() > 1) {
         String baseURL;
-        try {
-            baseURL = ServiceURLBuilder.create().addPath(request.getRequestURI()).build().getRelativePublicURL();
-        } catch (URLBuilderException e) {
-            request.setAttribute(STATUS, AuthenticationEndpointUtil.i18n(resourceBundle, "internal.error.occurred"));
-            request.setAttribute(STATUS_MSG, AuthenticationEndpointUtil.i18n(resourceBundle, "error.when.processing.authentication.request"));
-            request.getRequestDispatcher("error.do").forward(request, response);
-            return;
+        // Check whether authentication endpoint is hosted externally.
+        String isHostedExternally = application.getInitParameter("IsHostedExternally");
+        if (Boolean.parseBoolean(isHostedExternally)) {
+            String requestURI = request.getRequestURI();
+            if (StringUtils.isNotBlank(requestURI)) {
+                requestURI = requestURI.startsWith("/") ? requestURI : "/" + requestURI;
+                requestURI = requestURI.endsWith("/") ? requestURI.substring(0, requestURI.length() - 1) : requestURI;
+            }
+            baseURL = requestURI;
+        } else {
+            try {
+                baseURL = ServiceURLBuilder.create().addPath(request.getRequestURI()).build().getRelativePublicURL();
+            } catch (URLBuilderException e) {
+                request.setAttribute(STATUS, AuthenticationEndpointUtil.i18n(resourceBundle, "internal.error.occurred"));
+                request.setAttribute(STATUS_MSG, AuthenticationEndpointUtil.i18n(resourceBundle, "error.when.processing.authentication.request"));
+                request.getRequestDispatcher("error.do").forward(request, response);
+                return;
+            }
         }
 
         String queryParamString = request.getQueryString() != null ? ("?" + request.getQueryString()) : "";
@@ -193,7 +204,7 @@
 <!doctype html>
 <html>
 <head>
-    <!-- header -->
+    <%-- header --%>
     <%
         File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
         if (headerFile.exists()) {
@@ -222,7 +233,7 @@
 
     <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
         <layout:component componentName="ProductHeader" >
-            <!-- product-title -->
+            <%-- product-title --%>
             <%
                 File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
                 if (productTitleFile.exists()) {
@@ -374,7 +385,7 @@
                                 <button class="ui blue labeled icon button fluid"
                                     onclick="handleNoDomain(this,
                                         '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpEntry.getKey()))%>',
-                                        'IWAAuthenticator')"
+                                        'IwaNTLMAuthenticator')"
                                     id="icon-<%=iconId%>"
                                     title="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> IWA">
                                     <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> <strong>IWA</strong>
@@ -461,7 +472,7 @@
             </div>
         </layout:component>
         <layout:component componentName="ProductFooter" >
-            <!-- product-footer -->
+            <%-- product-footer --%>
             <%
                 File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
                 if (productFooterFile.exists()) {
@@ -473,7 +484,7 @@
         </layout:component>
     </layout:main>
 
-    <!-- footer -->
+    <%-- footer --%>
     <%
         File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
         if (footerFile.exists()) {
