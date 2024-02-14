@@ -492,12 +492,6 @@
                 <exclude>authenticationendpoint/smsOtp.jsp</exclude>
                 <exclude>authenticationendpoint/smsOtpError.jsp</exclude>
                 <exclude>authenticationendpoint/totp.jsp</exclude>
-<!--                <exclude>authenticationendpoint/includes/country-dropdown.jsp</exclude>-->
-<!--                <exclude>authenticationendpoint/includes/footer.jsp</exclude>-->
-<!--                <exclude>authenticationendpoint/includes/init-loginform-action-url.jsp</exclude>-->
-<!--                <exclude>authenticationendpoint/includes/init-url.jsp</exclude>-->
-<!--                <exclude>authenticationendpoint/includes/localize.jsp</exclude>-->
-<!--                <exclude>authenticationendpoint/includes/template-mapper.jsp</exclude>-->
             </excludes>
         </fileSet>
 
