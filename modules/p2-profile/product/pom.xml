@@ -598,6 +598,9 @@
                                 <featureArtifactDef>
                                     org.wso2.km.ext.wso2is:wso2is.key.manager.notification.feature:${wso2is.km.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.km.ext.wso2is:wso2is.key.manager.tokenpersistence.feature:${wso2is.km.version}
+                                </featureArtifactDef>
                                 <!-- Okta KeyManager Feature -->
                                 <featureArtifactDef>
                                     org.wso2.km.ext.okta:okta.key.manager.feature:${okta.keymanager.feature.version}
@@ -1430,6 +1433,10 @@
                                     <id>wso2is.key.manager.operations.endpoint.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
+                                 <feature>
+                                    <id>wso2is.key.manager.tokenpersistence.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>
                                 <feature>
                                     <id>okta.key.manager.feature.group</id>
                                     <version>${okta.keymanager.feature.version}</version>
@@ -2047,6 +2054,10 @@
                                 </feature>
                                 <feature>
                                     <id>wso2is.key.manager.operations.endpoint.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>wso2is.key.manager.tokenpersistence.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
@@ -3070,6 +3081,10 @@
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>wso2is.key.manager.tokenpersistence.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>                                
+                                <feature>
                                     <id>okta.key.manager.feature.group</id>
                                     <version>${okta.keymanager.feature.version}</version>
                                 </feature>
@@ -3559,6 +3574,10 @@
                                 </feature>
                                 <feature>
                                     <id>wso2is.key.manager.operations.endpoint.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>wso2is.key.manager.tokenpersistence.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
@@ -4058,6 +4077,10 @@
                                 </feature>
                                 <feature>
                                     <id>wso2is.key.manager.notification.feature.group</id>
+                                    <version>${wso2is.km.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>wso2is.key.manager.tokenpersistence.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
