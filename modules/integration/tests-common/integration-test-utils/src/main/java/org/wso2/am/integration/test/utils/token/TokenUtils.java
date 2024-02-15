@@ -18,8 +18,12 @@ package org.wso2.am.integration.test.utils.token;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.codec.binary.Base64;
+import org.wso2.am.integration.test.utils.bean.APIMURLBean;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -55,5 +59,25 @@ public class TokenUtils {
         String basicAuthHeader = clientId + ":" + clientSecret;
         byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes(StandardCharsets.UTF_8));
         return new String(encodedBytes, StandardCharsets.UTF_8);
+    }
+
+    /**
+     +     * Send token revocation request
+     +     * @param consumerKey of the application
+     +     * @param consumerSecret of the application
+     +     * @param token that needs to be revoked
+     +     * @param keyMangerUrl
+     +     * @return
+     +     * @throws IOException
+     +     */
+    public static HttpResponse revokeToken(String consumerKey, String consumerSecret,
+                                           String token, APIMURLBean keyMangerUrl) throws IOException {
+        Map<String, String> revokeRequestHeaders = new HashMap<>();
+        String basicAuthHeader = consumerKey + ":" + consumerSecret;
+        byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes(StandardCharsets.UTF_8));
+        revokeRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes, StandardCharsets.UTF_8));
+        String input = "token=" + token;
+        URL revokeEndpointURL = new URL(keyMangerUrl.getWebAppURLHttps() + "oauth2/revoke");
+        return HTTPSClientUtils.doPost(revokeEndpointURL, input, revokeRequestHeaders);
     }
 }
