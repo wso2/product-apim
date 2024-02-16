@@ -28,7 +28,7 @@ import java.io.IOException;
 
 
 import org.wso2.am.integration.clients.internal.api.dto.ErrorDTO;
-import org.wso2.am.integration.clients.internal.api.dto.RevokedJWTListDTO;
+import org.wso2.am.integration.clients.internal.api.dto.RevokedEventsDTO;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -115,23 +115,23 @@ public class RevokeJwt_Api {
     /**
      * JTIs of revoked jwt tokens
      * This will provide access to JTIs of revoked JWT tokens in database. 
-     * @return RevokedJWTListDTO
+     * @return RevokedEventsDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public RevokedJWTListDTO revokedjwtGet() throws ApiException {
-        ApiResponse<RevokedJWTListDTO> resp = revokedjwtGetWithHttpInfo();
+    public RevokedEventsDTO revokedjwtGet() throws ApiException {
+        ApiResponse<RevokedEventsDTO> resp = revokedjwtGetWithHttpInfo();
         return resp.getData();
     }
 
     /**
      * JTIs of revoked jwt tokens
      * This will provide access to JTIs of revoked JWT tokens in database. 
-     * @return ApiResponse&lt;RevokedJWTListDTO&gt;
+     * @return ApiResponse&lt;RevokedEventsDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<RevokedJWTListDTO> revokedjwtGetWithHttpInfo() throws ApiException {
+    public ApiResponse<RevokedEventsDTO> revokedjwtGetWithHttpInfo() throws ApiException {
         com.squareup.okhttp.Call call = revokedjwtGetValidateBeforeCall(null, null);
-        Type localVarReturnType = new TypeToken<RevokedJWTListDTO>(){}.getType();
+        Type localVarReturnType = new TypeToken<RevokedEventsDTO>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
 
@@ -142,7 +142,7 @@ public class RevokeJwt_Api {
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call revokedjwtGetAsync(final ApiCallback<RevokedJWTListDTO> callback) throws ApiException {
+    public com.squareup.okhttp.Call revokedjwtGetAsync(final ApiCallback<RevokedEventsDTO> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -164,7 +164,7 @@ public class RevokeJwt_Api {
         }
 
         com.squareup.okhttp.Call call = revokedjwtGetValidateBeforeCall(progressListener, progressRequestListener);
-        Type localVarReturnType = new TypeToken<RevokedJWTListDTO>(){}.getType();
+        Type localVarReturnType = new TypeToken<RevokedEventsDTO>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
     }
