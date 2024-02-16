@@ -76,22 +76,22 @@
         errorMsg = errorMsgObj.toString();
     }
     ReCaptchaApi reCaptchaApi = new ReCaptchaApi();
-    try {
-        ReCaptchaProperties reCaptchaProperties = reCaptchaApi.getReCaptcha(tenantDomain, true, "ReCaptcha",
+        try {
+            ReCaptchaProperties reCaptchaProperties = reCaptchaApi.getReCaptcha(tenantDomain, true, "ReCaptcha",
                 "self-registration");
-        if (reCaptchaProperties.getReCaptchaEnabled()) {
-            Map<String, List<String>> headers = new HashMap<>();
-            headers.put("reCaptcha", Arrays.asList(String.valueOf(true)));
-            headers.put("reCaptchaAPI", Arrays.asList(reCaptchaProperties.getReCaptchaAPI()));
-            headers.put("reCaptchaKey", Arrays.asList(reCaptchaProperties.getReCaptchaKey()));
-            IdentityManagementEndpointUtil.addReCaptchaHeaders(request, headers);
+            if (reCaptchaProperties.getReCaptchaEnabled()) {
+                Map<String, List<String>> headers = new HashMap<>();
+                headers.put("reCaptcha", Arrays.asList(String.valueOf(true)));
+                headers.put("reCaptchaAPI", Arrays.asList(reCaptchaProperties.getReCaptchaAPI()));
+                headers.put("reCaptchaKey", Arrays.asList(reCaptchaProperties.getReCaptchaKey()));
+                IdentityManagementEndpointUtil.addReCaptchaHeaders(request, headers);
+            }
+        } catch (ApiException e) {
+            request.setAttribute("error", true);
+            request.setAttribute("errorMsg", e.getMessage());
+            request.getRequestDispatcher("error.jsp").forward(request, response);
+            return;
         }
-    } catch (ApiException e) {
-        request.setAttribute("error", true);
-        request.setAttribute("errorMsg", e.getMessage());
-        request.getRequestDispatcher("error.jsp").forward(request, response);
-        return;
-    }
     boolean skipSignUpEnableCheck = Boolean.parseBoolean(request.getParameter("skipsignupenablecheck"));
 %>
 
@@ -110,9 +110,9 @@
 %>
 
 <!doctype html>
-<html>
+<html lang="en-US">
 <head>
-    <!-- header -->
+    <%-- header --%>
     <%
         File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
         if (headerFile.exists()) {
@@ -122,18 +122,18 @@
     <jsp:directive.include file="includes/header.jsp"/>
     <% } %>
     <%
-        if (reCaptchaEnabled) {
-            String reCaptchaAPI = CaptchaUtil.reCaptchaAPIURL();
-    %>
-    <script src='<%=(reCaptchaAPI)%>'></script>
-    <%
-        }
-    %>
+            if (reCaptchaEnabled) {
+                String reCaptchaAPI = CaptchaUtil.reCaptchaAPIURL();
+        %>
+        <script src='<%=(reCaptchaAPI)%>'></script>
+         <%
+            }
+        %>
 </head>
 <body class="login-portal layout recovery-layout">
      <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
         <layout:component componentName="ProductHeader" >
-            <!-- product-title -->
+            <%-- product-title --%>
             <%
                 File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
                 if (productTitleFile.exists()) {
@@ -156,7 +156,7 @@
                     <%=IdentityManagementEndpointUtil.i18nBase64(recoveryResourceBundle, errorMsg)%>
                 </div>
                 <% } %>
-                <!-- validation -->
+                <%-- validation --%>
                 <p>
                     <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Enter.your.username.here")%>
                 </p>
@@ -232,7 +232,7 @@
             </div>
         </layout:component>
         <layout:component componentName="ProductFooter" >
-            <!-- product-footer -->
+            <%-- product-footer --%>
             <%
                 File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
                 if (productFooterFile.exists()) {
@@ -244,7 +244,7 @@
         </layout:component>
     </layout:main>
 
-    <!-- footer -->
+    <%-- footer --%>
     <%
         File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
         if (footerFile.exists()) {
@@ -291,10 +291,10 @@
                         <%
                             if (reCaptchaEnabled) {
                         %>
-                        if (!grecaptcha.getResponse()) {
-                            grecaptcha.execute();
-                            return;
-                        }
+                            if (!grecaptcha.getResponse()) {
+                                grecaptcha.execute();
+                                return;
+                            }
                         <%
                             }
                         %>
