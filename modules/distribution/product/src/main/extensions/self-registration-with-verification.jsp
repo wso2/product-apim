@@ -225,9 +225,9 @@
 %>
 
 <!doctype html>
-<html>
+<html lang="en-US">
 <head>
-    <!-- header -->
+    <%-- header --%>
     <%
         File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
         if (headerFile.exists()) {
@@ -249,7 +249,7 @@
 <body class="login-portal layout recovery-layout">
     <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
         <layout:component componentName="ProductHeader" >
-            <!-- product-title -->
+            <%-- product-title --%>
             <%
                 File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
                 if (productTitleFile.exists()) {
@@ -266,7 +266,7 @@
                     <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Create.account")%>
                 </h2>
                 <div class="ui divider hidden"></div>
-                <!-- content -->
+                <%-- content --%>
                 <div class="segment-form">
                     <% if (skipSignUpEnableCheck) { %>
                     <form class="ui large form" action="../commonauth" method="post" id="register">
@@ -291,7 +291,7 @@
                                 </p>
                             </div>
                             <div class="ui divider hidden"></div>
-                            <!-- validation -->
+                            <%-- validation --%>
                             <div>
                                 <div id="regFormError" class="ui negative message" style="display:none"></div>
                                 <div id="regFormSuc" class="ui positive message" style="display:none"></div>
@@ -307,7 +307,7 @@
                                     <div class="two fields">
                                 <% } %>
                                     <div class="<% if (firstNamePII.getRequired() || !piisConfigured) {%> required <%}%> field">
-                                        <label class="control-label">
+                                        <label for="firstname" class="control-label">
                                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "First.name")%>
                                         </label>
                                         <input type="text" name="http://wso2.org/claims/givenname" class="form-control" id="firstname"
@@ -323,7 +323,7 @@
                                                     request.getParameter(IdentityManagementEndpointConstants.ClaimURIs.LAST_NAME_CLAIM);
                                     %>
                                     <div class="<% if (lastNamePII.getRequired() || !piisConfigured) {%> required <%}%> field">
-                                        <label class="control-label">
+                                        <label for="lastname" class="control-label">
                                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Last.name")%>
                                         </label>
                                         <input type="text" name="http://wso2.org/claims/lastname" class="form-control" id="lastname"
@@ -343,14 +343,14 @@
                                 </div>
                                 <div class="two fields">
                                     <div class="required field">
-                                        <label class="control-label">
+                                        <label for="password" class="control-label">
                                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Password")%>
                                         </label>
                                         <input id="password" name="password" type="password"
                                                class="form-control" required>
                                     </div>
                                     <div class="required field">
-                                        <label class="control-label">
+                                        <label for="password2" class="control-label">
                                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Confirm.password")%>
                                         </label>
                                         <input id="password2" name="password2" type="password" class="form-control"
@@ -365,10 +365,10 @@
                                                 request.getParameter(IdentityManagementEndpointConstants.ClaimURIs.EMAIL_CLAIM);
                                 %>
                                 <div class="<% if (emailNamePII.getRequired() || !piisConfigured) {%> required <%}%> field">
-                                    <label class="control-label">
+                                    <label for="email" class="control-label">
                                         <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Email")%>
                                     </label>
-                                    <input type="email" name="http://wso2.org/claims/emailaddress" class="form-control"
+                                    <input id="email" type="email" name="http://wso2.org/claims/emailaddress" class="form-control"
                                            data-validate="email"
                                         <% if (MultitenantUtils.isEmailUserName()) { %>
                                            value="<%= user.getUsername()%>" readonly
@@ -403,7 +403,7 @@
                                             .equals(claim, IdentityManagementEndpointConstants.ClaimURIs.EMAIL_CLAIM)) {
                                 %>
                                 <div class="required field">
-                                    <label class="control-label">
+                                    <label for="<%=Encode.forHtmlAttribute(claim)%>" class="control-label">
                                         <%=IdentityManagementEndpointUtil.i18nBase64(recoveryResourceBundle, claimDisplayName)%>
                                     </label>
                                     <input type="text" name="missing-<%=Encode.forHtmlAttribute(claim)%>"
@@ -431,7 +431,7 @@
                                             String claimValue = request.getParameter(claimURI);
                                 %>
                                 <div class="<% if (claim.getRequired()) {%> required <%}%>field">
-                                    <label <% if (claim.getRequired()) {%> class="control-label" <%}%>>
+                                    <label for="country-dropdown" <% if (claim.getRequired()) {%> class="control-label" <%}%>>
                                         <%=IdentityManagementEndpointUtil.i18nBase64(recoveryResourceBundle, claim.getDisplayName())%>
                                     </label>
                                     <% if(claimURI.contains("claims/country")) { %>
@@ -498,9 +498,9 @@
                             <% } else { %>
                             <div>
                                 <div class="field">
-                                    <label class="control-label">User Name
+                                    <label for="<%=Encode.forHtmlAttribute(username)%>" class="control-label">User Name
                                     </label>
-                                    <input type="text" class="form-control"
+                                    <input type="text" class="form-control" id="<%=Encode.forHtmlAttribute(username)%>"
                                            value="<%=Encode.forHtmlAttribute(username)%>" disabled>
                                 </div>
                                 <%
@@ -510,10 +510,10 @@
 
                                         if (StringUtils.isNotEmpty(claimValue)) { %>
                                 <div class="field">
-                                    <label class="control-label">
+                                    <label for="claim" class="control-label">
                                         <%=IdentityManagementEndpointUtil.i18nBase64(recoveryResourceBundle, claim.getDisplayName())%>
                                     </label>
-                                    <input type="text" class="form-control"
+                                    <input type="text" class="form-control" id="claim"
                                            value="<%= Encode.forHtmlAttribute(claimValue)%>" disabled>
                                 </div>
                                 <% }
@@ -546,19 +546,19 @@
                                     <%
                                         if (consentDisplayType == "template") {
                                     %>
-                                    <!--User Consents from Template-->
+                                    <%--User Consents from Template--%>
                                         <div class="consent-statement"></div>
-                                    <!--End User Consents from Template-->
+                                    <%--End User Consents from Template--%>
                                     <% } else if (consentDisplayType == "tree") { %>
-                                    <!--User Consents Tree-->
+                                    <%--User Consents Tree--%>
                                         <div id="tree-table"></div>
-                                    <!--End User Consents Tree-->
+                                    <%--End User Consents Tree--%>
                                     <%
                                     } else if (consentDisplayType == "row") {
                                     %>
-                                    <!--User Consents Row-->
+                                    <%--User Consents Row--%>
                                         <div id="row-container"></div>
-                                    <!--End User Consents Row-->
+                                    <%--End User Consents Row--%>
                                     <%
                                         }
                                     %>
@@ -584,7 +584,7 @@
                                 %>
                                 <div class="ui divider hidden"></div>
                                 <div>
-                                    <!--Cookie Policy-->
+                                    <%--Cookie Policy--%>
                                     <div class="ui message info compact" role="alert">
                                         <div>
                                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
@@ -596,22 +596,22 @@
                                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "For.more.details")%>
                                         </div>
                                     </div>
-                                    <!--End Cookie Policy-->
+                                    <%--End Cookie Policy--%>
                                 </div>
                                 <div class="ui divider hidden"></div>
                                 <div>
-                                    <!--Terms/Privacy Policy-->
+                                    <%--Terms/Privacy Policy--%>
                                     <div class="required field">
                                         <div class="ui checkbox">
                                             <input id="termsCheckbox" type="checkbox"/>
-                                            <label><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
+                                            <label for="termsCheckbox" ><%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle,
                                                     "I.confirm.that.read.and.understood")%>
                                                 <a href="/authenticationendpoint/privacy_policy.do" target="policy-pane">
                                                     <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Privacy.policy")%>
                                                 </a></label>
                                         </div>
                                     </div>
-                                    <!--End Terms/Privacy Policy-->
+                                    <%--End Terms/Privacy Policy--%>
                                 </div>
                                 <div class="ui divider hidden"></div>
                                 <div class="align-right buttons">
@@ -653,7 +653,7 @@
             </div>
         </layout:component>
         <layout:component componentName="ProductFooter" >
-            <!-- product-footer -->
+            <%-- product-footer --%>
             <%
                 File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
                 if (productFooterFile.exists()) {
@@ -666,7 +666,7 @@
     </layout:main>
 
 
-    <!-- footer -->
+    <%-- footer --%>
     <%
         File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
         if (footerFile.exists()) {

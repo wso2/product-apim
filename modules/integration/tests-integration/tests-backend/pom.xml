@@ -807,6 +807,11 @@ under the License.
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.clients.internal.api</artifactId>
             <scope>test</scope>
