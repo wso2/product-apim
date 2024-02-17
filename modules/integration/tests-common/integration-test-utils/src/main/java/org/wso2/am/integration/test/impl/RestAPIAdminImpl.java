@@ -59,6 +59,7 @@ public class RestAPIAdminImpl {
     private ThrottlingPolicySearchApi throttlingPolicySearchApi = new ThrottlingPolicySearchApi();
     private SystemScopesApi systemScopesApi = new SystemScopesApi();
     private ApplicationApi applicationApi = new ApplicationApi();
+    private ApiProviderChangeApi apiProviderChangeApi = new ApiProviderChangeApi();
     private LabelApi labelApi = new LabelApi();
     private LabelCollectionApi labelCollectionApi = new LabelCollectionApi();
     private EnvironmentApi environmentApi = new EnvironmentApi();
@@ -152,6 +153,7 @@ public class RestAPIAdminImpl {
         systemScopesApi.setApiClient(apiAdminClient);
         tenantConfigApi.setApiClient(apiAdminClient);
         tenantConfigSchemaApi.setApiClient(apiAdminClient);
+        apiProviderChangeApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -700,6 +702,11 @@ public class RestAPIAdminImpl {
         return applicationApi.applicationsApplicationIdChangeOwnerPostWithHttpInfo(newOwner, applicationId);
     }
 
+
+    public ApiResponse<Void> changeApiProvider(String newProvider, String apiId) throws ApiException {
+        return apiProviderChangeApi.providerNamePostWithHttpInfo(newProvider, apiId);
+    }
+  
     /**
      * This method is used to retrieve scopes for a particular user.
      *

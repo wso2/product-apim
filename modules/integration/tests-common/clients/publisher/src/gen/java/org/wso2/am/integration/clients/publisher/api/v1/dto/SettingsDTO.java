@@ -41,6 +41,10 @@ public class SettingsDTO {
         @SerializedName(SERIALIZED_NAME_ENVIRONMENT)
             private List<EnvironmentDTO> environment = null;
 
+        public static final String SERIALIZED_NAME_GATEWAY_TYPES = "gatewayTypes";
+        @SerializedName(SERIALIZED_NAME_GATEWAY_TYPES)
+            private List<String> gatewayTypes = null;
+
         public static final String SERIALIZED_NAME_SCOPES = "scopes";
         @SerializedName(SERIALIZED_NAME_SCOPES)
             private List<String> scopes = null;
@@ -121,6 +125,29 @@ public class SettingsDTO {
 
     public void setEnvironment(List<EnvironmentDTO> environment) {
         this.environment = environment;
+    }
+
+
+        public SettingsDTO gatewayTypes(List<String> gatewayTypes) {
+        
+        this.gatewayTypes = gatewayTypes;
+        return this;
+        }
+
+    /**
+        * Get gatewayTypes
+    * @return gatewayTypes
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(example = "[\"Regular\",\"APK\"]", value = "")
+    
+    public List<String> getGatewayTypes() {
+        return gatewayTypes;
+    }
+
+
+    public void setGatewayTypes(List<String> gatewayTypes) {
+        this.gatewayTypes = gatewayTypes;
     }
 
 
@@ -342,6 +369,7 @@ public class SettingsDTO {
             SettingsDTO settings = (SettingsDTO) o;
             return Objects.equals(this.devportalUrl, settings.devportalUrl) &&
             Objects.equals(this.environment, settings.environment) &&
+            Objects.equals(this.gatewayTypes, settings.gatewayTypes) &&
             Objects.equals(this.scopes, settings.scopes) &&
             Objects.equals(this.monetizationAttributes, settings.monetizationAttributes) &&
             Objects.equals(this.securityAuditProperties, settings.securityAuditProperties) &&
@@ -355,7 +383,7 @@ public class SettingsDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(devportalUrl, environment, scopes, monetizationAttributes, securityAuditProperties, externalStoresEnabled, docVisibilityEnabled, crossTenantSubscriptionEnabled, defaultAdvancePolicy, defaultSubscriptionPolicy, authorizationHeader);
+        return Objects.hash(devportalUrl, environment, gatewayTypes, scopes, monetizationAttributes, securityAuditProperties, externalStoresEnabled, docVisibilityEnabled, crossTenantSubscriptionEnabled, defaultAdvancePolicy, defaultSubscriptionPolicy, authorizationHeader);
     }
 
 
@@ -365,6 +393,7 @@ StringBuilder sb = new StringBuilder();
 sb.append("class SettingsDTO {\n");
     sb.append("    devportalUrl: ").append(toIndentedString(devportalUrl)).append("\n");
     sb.append("    environment: ").append(toIndentedString(environment)).append("\n");
+    sb.append("    gatewayTypes: ").append(toIndentedString(gatewayTypes)).append("\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    monetizationAttributes: ").append(toIndentedString(monetizationAttributes)).append("\n");
     sb.append("    securityAuditProperties: ").append(toIndentedString(securityAuditProperties)).append("\n");

@@ -1295,8 +1295,6 @@
         <carbon.apimgt.ui.version>9.0.505</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-
-
         <carbon.apimgt.version>9.29.35</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
@@ -1485,7 +1483,7 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.6.8</wso2is.km.version>
+        <wso2is.km.version>1.7.1</wso2is.km.version>
         <okta.keymanager.feature.version>3.2.0</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.0.6</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.0</keycloak.keymanager.feature.version>

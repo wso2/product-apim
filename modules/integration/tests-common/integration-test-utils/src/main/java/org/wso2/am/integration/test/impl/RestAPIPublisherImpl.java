@@ -336,6 +336,9 @@ public class RestAPIPublisherImpl {
         body.setTransport(transports);
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
+        if (apiRequest.getGatewayType() != null) {
+            body.setGatewayType(apiRequest.getGatewayType());
+        }
         if (apiRequest.getOperationsDTOS() != null) {
             body.setOperations(apiRequest.getOperationsDTOS());
         } else {
