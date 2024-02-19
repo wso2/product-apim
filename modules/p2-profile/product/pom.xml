@@ -2072,7 +2072,7 @@
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>wso2is.key.manager.tokenpersistence.group</id>
+                                    <id>wso2is.key.manager.tokenpersistence.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
@@ -3096,7 +3096,7 @@
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>wso2is.key.manager.tokenpersistence.group</id>
+                                    <id>wso2is.key.manager.tokenpersistence.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
@@ -3592,7 +3592,7 @@
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>wso2is.key.manager.tokenpersistence.group</id>
+                                    <id>wso2is.key.manager.tokenpersistence.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
@@ -4095,7 +4095,7 @@
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>wso2is.key.manager.tokenpersistence.group</id>
+                                    <id>wso2is.key.manager.tokenpersistence.feature.group</id>
                                     <version>${wso2is.km.version}</version>
                                 </feature>
                                 <feature>
