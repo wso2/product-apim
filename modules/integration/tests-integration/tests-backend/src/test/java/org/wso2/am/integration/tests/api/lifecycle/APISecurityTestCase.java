@@ -36,6 +36,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.internal.api.dto.RevokedEventsDTO;
 import org.wso2.am.integration.clients.internal.api.dto.RevokedJWTDTO;
 import org.wso2.am.integration.clients.internal.api.dto.RevokedJWTListDTO;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
@@ -1232,8 +1233,9 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         int retryCount = 0;
         RevokedJWTDTO selectedRevokedJWTDTO = null;
         do {
-            RevokedJWTListDTO revokedJWTListDTOS = restAPIInternal.retrieveRevokedList();
-            for (RevokedJWTDTO revokedJWTDTO : revokedJWTListDTOS) {
+            RevokedEventsDTO revokedEventsDTO = restAPIInternal.retrieveRevokedList();
+            List<RevokedJWTDTO> revokedJWTList = revokedEventsDTO.getRevokedJWTList();
+            for (RevokedJWTDTO revokedJWTDTO : revokedJWTList) {
                 if (alias.equals(revokedJWTDTO.getJwtSignature())) {
                     selectedRevokedJWTDTO = revokedJWTDTO;
                     break;

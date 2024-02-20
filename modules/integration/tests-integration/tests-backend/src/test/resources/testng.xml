@@ -197,6 +197,7 @@
             <class name="org.wso2.am.integration.tests.other.APICategoriesTestCase"/>
             <class name="org.wso2.am.integration.tests.other.SharedScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.analytics.APIMAnalyticsTest"/>
+            <class name="org.wso2.am.integration.tests.analytics.ELKAnalyticsWithRespondMediatorTestCase"/>
         </classes>
     </test>
 
@@ -256,6 +257,7 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER5326CustomStatusMsgTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/-->
             <class name="org.wso2.am.integration.tests.admin.OAuthApplicationOwnerUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.admin.ChangeApiProviderTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTGrantTestCase"/>
             <class name="org.wso2.am.integration.tests.api.sdk.SDKGenerationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.CAPIMGT12CallBackURLOverwriteTestCase"/>
