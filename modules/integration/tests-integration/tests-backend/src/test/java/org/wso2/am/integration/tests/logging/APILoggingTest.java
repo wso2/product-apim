@@ -174,6 +174,7 @@ public class APILoggingTest extends APIManagerLifecycleBaseTest {
             if (lineNo == logLineCounter) {
                 if (logLineCounter < 4 || (logLineCounter >= 8 && logLineCounter < 12)) {
                     assertTrue(logLine.contains("INFO {API_LOG} " + API_NAME));
+                    assertTrue(logLine.contains("correlationId"));
                 }
                 logLineCounter++;
             }
