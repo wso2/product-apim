@@ -268,7 +268,13 @@
         }
     %>
 
-    <% if (Boolean.parseBoolean(loginFailed)) { %>
+    <% if (StringUtils.equals(request.getParameter("errorCode"), IdentityCoreConstants.USER_ACCOUNT_LOCKED_ERROR_CODE) &&
+            StringUtils.equals(request.getParameter("remainingAttempts"), "0") ) { %>
+        <div class="ui visible negative message" id="error-msg" data-testid="login-page-error-message">
+            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "error.user.account.locked.incorrect.login.attempts")%>
+        </div>
+    <% } else if (Boolean.parseBoolean(loginFailed) &&
+            !errorCode.equals(IdentityCoreConstants.USER_ACCOUNT_NOT_CONFIRMED_ERROR_CODE)) { %>
     <div class="ui visible negative message" id="error-msg" data-testid="login-page-error-message">
         <%= AuthenticationEndpointUtil.i18n(resourceBundle, errorMessage) %>
     </div>
