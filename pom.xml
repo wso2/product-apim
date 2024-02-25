@@ -1305,7 +1305,7 @@
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.8.30</carbon.governance.version>
+        <carbon.governance.version>4.8.31</carbon.governance.version>
 
         <!--carbon versions-->
         <carbon.kernel.version>4.9.26-alpha1</carbon.kernel.version>
