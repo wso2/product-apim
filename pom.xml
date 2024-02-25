@@ -1431,7 +1431,7 @@
 
         <carbon.messaging.version>3.3.33</carbon.messaging.version>
         <carbon.event-processing.version>2.3.8</carbon.event-processing.version>
-        <andes.version>3.3.29</andes.version>
+        <andes.version>3.3.30</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.1.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
