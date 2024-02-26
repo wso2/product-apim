@@ -16,7 +16,7 @@
   ~ under the License.
 --%>
 
-<%-- page content -->
+<%-- page content --%>
 <div class="ui grid">
     <div class="two column row"></div>
         <div class="four wide computer four wide tablet column">
