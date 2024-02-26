@@ -23,7 +23,7 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.3.1-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>https://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
@@ -1309,7 +1309,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.9.26-alpha1</carbon.kernel.version>
-        <apimserver.version>4.3.1-SNAPSHOT</apimserver.version>
+        <apimserver.version>4.3.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.20</cipher.tool.version>
 
