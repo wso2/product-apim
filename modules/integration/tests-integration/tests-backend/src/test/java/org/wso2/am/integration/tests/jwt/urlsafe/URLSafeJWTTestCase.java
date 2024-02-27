@@ -166,6 +166,9 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name"));
         claim = jsonObject.getString("http://wso2.org/claims/lastname");
         assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name"));
+        claim = jsonObject.getString("http://wso2.org/claims/region");
+        assertTrue("JWT claim region not received" + claim,
+                claim.contains("[{\"areaId\":\"71224\",\"areaName\":\"20-NYU\"}]"));
         boolean bExceptionOccured = false;
         try {
             jsonObject.getString("http://wso2.org/claims/wrongclaim");
@@ -276,6 +279,8 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
                 "http://wso2.org/claims/givenname", "first name", DEFAULT_PROFILE);
         remoteUserStoreManagerServiceClient.setUserClaimValue(enduserName,
                 "http://wso2.org/claims/lastname", "last name", DEFAULT_PROFILE);
+        remoteUserStoreManagerServiceClient.setUserClaimValue(enduserName,
+                "http://wso2.org/claims/region", "[{'areaId':'71224','areaName':'20-NYU'}]", DEFAULT_PROFILE);
 
     }
 
