@@ -348,7 +348,7 @@
                 <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.ops4j.pax.logging</groupId>
+                <groupId>org.wso2.org.ops4j.pax.logging</groupId>
                 <artifactId>pax-logging-api</artifactId>
                 <version>${versions.pax.logging}</version>
             </dependency>
@@ -1467,7 +1467,7 @@
 
         <!-- API Import/Export Dependencies -->
         <com.fasterxml.jackson.dataformat.version>2.16.1</com.fasterxml.jackson.dataformat.version>
-        <versions.pax.logging>2.1.0</versions.pax.logging>
+        <versions.pax.logging>2.2.1-wso2v2</versions.pax.logging>
         <config.mapper.version>1.0.2</config.mapper.version>
 
         <!-- Authenticator Properties -->
