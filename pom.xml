@@ -1346,7 +1346,7 @@
         <carbon.deployment.version>4.11.10</carbon.deployment.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.9.21</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.9.22</carbon.multitenancy.version>
 
         <siddhi.version>3.2.9</siddhi.version>
 
