@@ -1291,7 +1291,7 @@
         <carbon.analytics.common.version>5.3.9</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.0.516</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.0.518</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>9.29.44</carbon.apimgt.version>
@@ -1335,7 +1335,7 @@
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.4</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.8.6</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.8.41</carbon.identity.auth.version>
-        <identity.apps.version>1.6.377</identity.apps.version>
+        <identity.apps.version>1.6.378</identity.apps.version>
         <identity.oauth.addons.version>2.4.38</identity.oauth.addons.version>
 
         <!--SAML Common Utils Version-->
