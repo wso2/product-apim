@@ -414,7 +414,6 @@
                                 <delete dir="target/sources" />
                                 <delete dir="target/site" />
                                 <delete dir="src/site" />
-                                <delete dir="target/forget-me" />
                             </tasks>
                         </configuration>
                         <goals>
