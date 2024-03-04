@@ -304,6 +304,9 @@
                                 <featureArtifactDef>
                                     org.wso2.am:org.wso2.am.security.feature:${apimserver.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.am:org.wso2.carbon.identity.local.auth.api.endpoint.feature:${apimserver.version}
+                                </featureArtifactDef>
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.cache.invalidation.feature:${carbon.apimgt.version}
@@ -1036,6 +1039,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.data.publisher.application.authentication.server.feature.group</id>
                                     <version>${carbon.identity-data-publisher-application-authentication.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.local.auth.api.endpoint.feature.group</id>
+                                    <version>${apimserver.version}</version>
                                 </feature>
 
                             

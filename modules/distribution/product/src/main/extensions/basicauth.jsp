@@ -16,6 +16,9 @@
   ~ under the License.
   --%>
 
+<%@ page import="org.apache.cxf.jaxrs.client.Client" %>
+<%@ page import="org.apache.cxf.configuration.jsse.TLSClientParameters" %>
+<%@ page import="org.apache.cxf.transport.http.HTTPConduit" %>
 <%@ page import="org.apache.cxf.jaxrs.client.JAXRSClientFactory" %>
 <%@ page import="org.apache.cxf.jaxrs.provider.json.JSONProvider" %>
 <%@ page import="org.apache.cxf.jaxrs.client.WebClient" %>
@@ -51,6 +54,12 @@
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApplicationDataRetrievalClientException" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.PreferenceRetrievalClient" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.PreferenceRetrievalClientException" %>
+<%@ page import="org.wso2.carbon.utils.CustomHostNameVerifier" %>
+<%@ page import="javax.net.ssl.HostnameVerifier" %>
+<%@ page import="static org.wso2.carbon.CarbonConstants.ALLOW_ALL" %>
+<%@ page import="static org.wso2.carbon.CarbonConstants.DEFAULT_AND_LOCALHOST" %>
+<%@ page import="static org.wso2.carbon.CarbonConstants.HOST_NAME_VERIFIER" %>
+<%@ page import="org.apache.http.conn.ssl.AllowAllHostnameVerifier" %>
 
 <jsp:directive.include file="includes/init-loginform-action-url.jsp"/>
 <jsp:directive.include file="plugins/basicauth-extensions.jsp"/>
@@ -229,6 +238,32 @@
 
         SelfUserRegistrationResource selfUserRegistrationResource = JAXRSClientFactory
                 .create(url, SelfUserRegistrationResource.class, providers);
+
+        Client client = WebClient.client(selfUserRegistrationResource);
+        HTTPConduit conduit = WebClient.getConfig(client).getHttpConduit();
+        TLSClientParameters tlsParams = conduit.getTlsClientParameters();
+        if (tlsParams == null) {
+            tlsParams = new TLSClientParameters();
+        }
+        HostnameVerifier allowAllHostnameVerifier = new AllowAllHostnameVerifier();
+        if (EndpointConfigManager.isHostnameVerificationEnabled()) {
+            if (DEFAULT_AND_LOCALHOST.equals(System.getProperty(HOST_NAME_VERIFIER))) {
+                /*
+                 * If hostname verifier is set to DefaultAndLocalhost, allow following domains in addition to the
+                 * hostname:
+                 *      ["::1", "127.0.0.1", "localhost", "localhost.localdomain"]
+                 */
+                tlsParams.setHostnameVerifier(new CustomHostNameVerifier());
+            } else if (ALLOW_ALL.equals(System.getProperty(HOST_NAME_VERIFIER))) {
+                // If hostname verifier is set to AllowAll, disable hostname verification.
+                tlsParams.setHostnameVerifier(allowAllHostnameVerifier);
+            }
+        } else {
+            // Disable hostname verification
+            tlsParams.setHostnameVerifier(allowAllHostnameVerifier);
+        }
+        conduit.setTlsClientParameters(tlsParams);
+
         WebClient.client(selfUserRegistrationResource).header("Authorization", header);
         Response selfRegistrationResponse = selfUserRegistrationResource.regenerateCode(selfRegistrationRequest);
         if (selfRegistrationResponse != null &&  selfRegistrationResponse.getStatus() == HttpStatus.SC_CREATED) {
@@ -262,7 +297,13 @@
         }
     %>
 
-    <% if (Boolean.parseBoolean(loginFailed)) { %>
+    <% if (StringUtils.equals(request.getParameter("errorCode"), IdentityCoreConstants.USER_ACCOUNT_LOCKED_ERROR_CODE) &&
+            StringUtils.equals(request.getParameter("remainingAttempts"), "0") ) { %>
+        <div class="ui visible negative message" id="error-msg" data-testid="login-page-error-message">
+            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "error.user.account.locked.incorrect.login.attempts")%>
+        </div>
+    <% } else if (Boolean.parseBoolean(loginFailed) &&
+            !errorCode.equals(IdentityCoreConstants.USER_ACCOUNT_NOT_CONFIRMED_ERROR_CODE)) { %>
     <div class="ui visible negative message" id="error-msg" data-testid="login-page-error-message">
         <%= AuthenticationEndpointUtil.i18n(resourceBundle, errorMessage) %>
     </div>
