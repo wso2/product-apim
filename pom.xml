@@ -1324,7 +1324,7 @@
         <carbon.identity.governance.version>1.8.105</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.13.6</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.13.8</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.10</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.7.5</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.9.8</carbon.identity-inbound-auth-openid.version>
@@ -1332,11 +1332,11 @@
         <carbon.identity-outbound-auth-samlsso.version>5.8.11</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.7.70</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.6.8</carbon.identity-data-publisher-application-authentication.version>
-        <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.3</carbon.extension.identity.oauth2.grantType.jwt.version>
+        <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.4</carbon.extension.identity.oauth2.grantType.jwt.version>
         <carbon.identity.carbon.auth.saml2.version>5.8.6</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.8.11</carbon.identity.auth.version>
         <identity.apps.version>1.6.377</identity.apps.version>
-        <identity.oauth.addons.version>2.4.37</identity.oauth.addons.version>
+        <identity.oauth.addons.version>2.4.38</identity.oauth.addons.version>
 
         <!--SAML Common Utils Version-->
         <saml.common.util.version>1.3.1</saml.common.util.version>
@@ -1413,7 +1413,7 @@
         <slf4j.api.version>1.7.28</slf4j.api.version>
         <org.slf4j.version>1.7.30</org.slf4j.version>
         <google.code.gson.version>2.9.1</google.code.gson.version>
-        <carbon.extension.identity.oauth2.grantType.token.exchange>1.0.1</carbon.extension.identity.oauth2.grantType.token.exchange>
+        <carbon.extension.identity.oauth2.grantType.token.exchange>1.0.5</carbon.extension.identity.oauth2.grantType.token.exchange>
 
         <!-- Developer Portal -->
         <caramel.feature.version>1.0.1</caramel.feature.version>
@@ -1471,7 +1471,7 @@
         <config.mapper.version>1.0.2</config.mapper.version>
 
         <!-- Authenticator Properties -->
-        <identity.outbound.auth.oidc.version>5.11.33</identity.outbound.auth.oidc.version>
+        <identity.outbound.auth.oidc.version>5.11.34</identity.outbound.auth.oidc.version>
         <swagger-parser-version>2.0.14</swagger-parser-version>
         <nimbus.jwt.version>7.3.0.wso2v1</nimbus.jwt.version>
         <json-smart.version>2.5.0</json-smart.version>
@@ -1483,13 +1483,13 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.7.3</wso2is.km.version>
+        <wso2is.km.version>1.7.5</wso2is.km.version>
         <okta.keymanager.feature.version>3.2.0</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.0.6</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.0</keycloak.keymanager.feature.version>
         <auth0.keymanager.feature.version>1.0.4</auth0.keymanager.feature.version>
         <pingfederate.keymanager.feature.version>1.0.6</pingfederate.keymanager.feature.version>
-        <forgerock.keymanager.feature.version>1.1.0</forgerock.keymanager.feature.version>
+        <forgerock.keymanager.feature.version>1.1.5</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>1.2.17</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
