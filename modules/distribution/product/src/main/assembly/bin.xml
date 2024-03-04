@@ -779,6 +779,7 @@
             <excludes>
                 <exclude>**/cxf3/spring-asm-3.1.4.RELEASE.jar</exclude>
                 <exclude>**/cxf3/snakeyaml-1.28.jar</exclude>
+                <exclude>**/cxf3/spring-*.jar</exclude>
             </excludes>
         </fileSet>
 
