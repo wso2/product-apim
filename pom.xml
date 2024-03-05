@@ -1319,7 +1319,7 @@
         <carbon.mediation.version>4.7.198</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.694</carbon.identity.version>
+        <carbon.identity.version>5.25.695-SNAPSHOT</carbon.identity.version>
         <carbon.identity.governance.version>1.8.107</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
@@ -1329,11 +1329,11 @@
         <carbon.identity-inbound-auth-openid.version>5.9.8</carbon.identity-inbound-auth-openid.version>
         <org.wso2.carbon.identity.local.auth.api.version>2.5.6</org.wso2.carbon.identity.local.auth.api.version>
         <carbon.identity-local-auth-basicauth.version>6.7.32</carbon.identity-local-auth-basicauth.version>
-        <carbon.identity-outbound-auth-samlsso.version>5.8.11</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.8.12</carbon.identity-outbound-auth-samlsso.version>
         <carbon.identity-metadata-saml2.version>1.7.70</carbon.identity-metadata-saml2.version>
         <carbon.identity-data-publisher-application-authentication.version>5.6.8</carbon.identity-data-publisher-application-authentication.version>
         <carbon.extension.identity.oauth2.grantType.jwt.version>2.2.4</carbon.extension.identity.oauth2.grantType.jwt.version>
-        <carbon.identity.carbon.auth.saml2.version>5.8.6</carbon.identity.carbon.auth.saml2.version>
+        <carbon.identity.carbon.auth.saml2.version>5.8.7</carbon.identity.carbon.auth.saml2.version>
         <carbon.identity.auth.version>1.8.41</carbon.identity.auth.version>
         <identity.apps.version>1.6.378</identity.apps.version>
         <identity.oauth.addons.version>2.4.38</identity.oauth.addons.version>
@@ -1393,7 +1393,7 @@
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
-        <opensaml2.wso2.version>3.3.1.wso2v4</opensaml2.wso2.version>
+        <opensaml2.wso2.version>3.3.1.wso2v11</opensaml2.wso2.version>
         <transport.http.netty.version>6.3.50</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
@@ -1487,7 +1487,6 @@
         <forgerock.keymanager.feature.version>1.1.5</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>1.2.18</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
-        <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
         <rampart.wso2.version>1.7.0-wso2v3</rampart.wso2.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
 
