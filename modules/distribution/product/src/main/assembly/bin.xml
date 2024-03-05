@@ -712,16 +712,16 @@
                 <include>client-registration#v0.17.war</include>
             </includes>
         </fileSet>
-<!--        <fileSet>-->
-<!--            <directory>-->
-<!--                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps-->
-<!--            </directory>-->
-<!--            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps-->
-<!--            </outputDirectory>-->
-<!--            <includes>-->
-<!--                <include>api#identity#auth#v1.1.war</include>-->
-<!--            </includes>-->
-<!--        </fileSet>-->
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>api#identity#auth#v1.1.war</include>
+            </includes>
+        </fileSet>
 
 
         <!-- Copy sample calculator api webapp-->

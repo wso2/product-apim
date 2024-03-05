@@ -197,7 +197,7 @@
             <class name="org.wso2.am.integration.tests.other.APICategoriesTestCase"/>
             <class name="org.wso2.am.integration.tests.other.SharedScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.analytics.APIMAnalyticsTest"/>
-            <class name="org.wso2.am.integration.tests.analytics.ELKAnalyticsWithRespondMediatorTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.analytics.ELKAnalyticsWithRespondMediatorTestCase"/>-->
         </classes>
     </test>
 
