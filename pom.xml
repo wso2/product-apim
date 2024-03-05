@@ -1191,6 +1191,13 @@
                 <version>${javax.jms.version}</version>
             </dependency>
 
+            <!-- Diagnostic Server Dependencies -->
+            <dependency>
+                <groupId>org.wso2.diagnostics</groupId>
+                <artifactId>runtime-diagnostics</artifactId>
+                <version>${diagnostics.tool.version}</version>
+            </dependency>
+
             <!-- API Import/Export -->
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -1469,6 +1476,9 @@
         <com.fasterxml.jackson.dataformat.version>2.16.1</com.fasterxml.jackson.dataformat.version>
         <versions.pax.logging>2.1.0</versions.pax.logging>
         <config.mapper.version>1.0.2</config.mapper.version>
+
+        <!-- Diagnostic Tool Dependencies -->
+        <diagnostics.tool.version>1.0.3</diagnostics.tool.version>
 
         <!-- Authenticator Properties -->
         <identity.outbound.auth.oidc.version>5.11.33</identity.outbound.auth.oidc.version>

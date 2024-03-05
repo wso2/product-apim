@@ -313,6 +313,16 @@ if [ $java_version_formatted -ge 1700 ]; then
     JAVA_VER_BASED_OPTS="$JAVA_VER_BASED_OPTS --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED"
 fi
 
+# start diagnostic tool in background in diagnostic-tool/bin/diagnostic
+"$CARBON_HOME"/diagnostics-tool/bin/diagnostics.sh &
+diagnostic_tool_pid=$!
+
+# trap signals so we can shutdown the diagnostic tool
+cleanup() {
+    kill "$diagnostic_tool_pid"
+}
+trap 'cleanup' EXIT
+
 while [ "$status" = "$START_EXIT_STATUS" ]
 do
     $JAVACMD \
