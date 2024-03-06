@@ -176,6 +176,26 @@
             </excludes>
         </fileSet>
         <fileSet>
+            <directory>target/diagnostics-tool</directory>
+            <outputDirectory>wso2am-${pom.version}/diagnostics-tool</outputDirectory>
+            <excludes>
+                <exclude>bin/diagnostics</exclude>
+                <exclude>lib/**</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>target/diagnostics-tool/lib</directory>
+            <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
+            <excludes>
+                <exclude>antlr-runtime-*.jar</exclude>
+                <exclude>gson*.jar</exclude>
+                <exclude>commons-lang3-*.jar</exclude>
+                <exclude>log4j-api-*.jar</exclude>
+                <exclude>log4j-core-*.jar</exclude>
+                <exclude>cava-toml-*.jar</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
             <directory>target/wso2carbon-core-${carbon.kernel.version}</directory>
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <includes>
@@ -1300,6 +1320,21 @@
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/startup-scripts/diagnostics.sh</source>
+            <outputDirectory>wso2am-${pom.version}/diagnostics-tool/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/resources/conf/templates/diagnostics-tool/conf/config.toml.j2</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/templates/diagnostics-tool/conf</outputDirectory>
+            <destName>config.toml.j2</destName>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
         </file>
 
         <file>

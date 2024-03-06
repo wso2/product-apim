@@ -476,5 +476,64 @@
   "apim.analytics.properties.truststore_location": "${carbon.home}/repository/resources/security/$ref{truststore.file_name}",
   "apim.analytics.properties.truststore_password": "$ref{truststore.password}",
   "tenant_mgt.disable_email_domain_validation": true,
-  "apim.jwt.use_kid_property": true
+  "apim.jwt.use_kid_property": true,
+  "server_configuration": {
+    "deployment_toml_path": "../conf/deployment.toml",
+    "logs_directory": "../repository/logs",
+    "updates_config_path": "../updates/config.json",
+    "diagnostic_log_file_path": "logs/diagnostics.log",
+    "carbon_log_file_path": "../repository/logs/wso2-apigw-errors.log",
+    "process_id_path": "../wso2carbon.pid",
+    "server_name": "WSO2 API Manager",
+    "server_version": "4.3.0"
+  },
+  "cpu_watcher": {
+    "enabled": "true",
+    "threshold": "80",
+    "retry_count": "2",
+    "interval": "5",
+    "action_executors": "ThreadDumper,MetricsSnapshot,ServerInfo"
+  },
+  "memory_watcher": {
+    "enabled": "true",
+    "threshold": "80",
+    "retry_count": "2",
+    "interval": "5",
+    "action_executors": "ThreadDumper,MetricsSnapshot,ServerInfo"
+  },
+  "log_watcher": {
+    "enabled": "true",
+    "interval": 0.1
+  },
+  "traffic_analyzer": {
+    "last_second_requests_enabled": "false",
+    "last_second_requests_windows_size": "300",
+    "last_second_requests_delay": "60",
+    "last_second_requests_interval": "1",
+    "last_fifteen_seconds_requests_enabled": "true",
+    "last_fifteen_seconds_requests_window_size": "100",
+    "last_fifteen_seconds_requests_delay": "4",
+    "last_fifteen_seconds_requests_interval": "15",
+    "last_minutes_requests_enabled": "true",
+    "last_minutes_requests_window_size": "100",
+    "last_minutes_requests_delay": "1",
+    "last_minutes_requests_interval": "60",
+    "notify_interval": "60"
+  },
+  "zip_file_configuration": {
+    "output_directory": "data",
+    "max_count": "20"
+  },
+  "log_pattern.patterns": [
+    {
+      "pattern.regex": "(.*)org.apache.synapse.transport.passthru(.*)",
+      "pattern.executors": "MetricsSnapshot,Netstat,OpenFileFinder,ThreadDumper,ServerInfo",
+      "pattern.reload_time": "30"
+    },
+    {
+      "pattern.regex": "(.*)org.apache.synapse(.*)",
+      "pattern.executors": "ServerInfo",
+      "pattern.reload_time": "10"
+    }
+  ]
 }
