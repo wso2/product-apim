@@ -269,6 +269,14 @@
            <filePath>repository/resources/security/listenerprofiles.xml</filePath>
            <fileReadInterval>{{transport.passthru_https.listener.ssl_profile_interval}}</fileReadInterval>
        </parameter>
+       {% if transport.passthru_https.listener.cert_revocation_validation.enable %}
+       <parameter name="CertificateRevocationVerifier" enable="{{transport.passthru_https.listener.cert_revocation_validation.enable}}">
+           <CacheSize>{{transport.passthru_https.listener.cert_revocation_validation.cache_size}}</CacheSize>
+           <CacheDelay>{{transport.passthru_https.listener.cert_revocation_validation.cache_delay}}</CacheDelay>
+           <FullChainValidation>{{transport.passthru_https.listener.cert_revocation_validation.allow_full_cert_chain_validation}}</FullChainValidation>
+           <ExpiryValidation>{{transport.passthru_https.listener.cert_revocation_validation.allow_cert_expiry_validation}}</ExpiryValidation>
+       </parameter>
+       {% endif %}
     </transportReceiver>
     {% endif %}
 

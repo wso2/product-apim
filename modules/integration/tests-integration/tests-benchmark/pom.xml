@@ -133,7 +133,7 @@ under the License.
                             </environmentVariables>
                             <workingDirectory>${basedir}/target</workingDirectory>
                             <classpathDependencyExcludes>
-                                <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.wso2.org.ops4j.pax.logging</classpathDependencyExclude>
                             </classpathDependencyExcludes>
                             <systemPropertyVariables>
                                 <okHttpLogs>true</okHttpLogs>
@@ -254,7 +254,7 @@ under the License.
                             <skipTests>${skipBenchMarkTest}</skipTests>
                             <workingDirectory>${basedir}/target</workingDirectory>
                             <classpathDependencyExcludes>
-                                <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.wso2.org.ops4j.pax.logging</classpathDependencyExclude>
                             </classpathDependencyExcludes>
                             <systemPropertyVariables>
                                 <okHttpLogs>true</okHttpLogs>
@@ -354,7 +354,7 @@ under the License.
                             </systemPropertyVariables>
                             <workingDirectory>${basedir}/target</workingDirectory>
                             <classpathDependencyExcludes>
-                                <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.wso2.org.ops4j.pax.logging</classpathDependencyExclude>
                             </classpathDependencyExcludes>
                         </configuration>
                     </plugin>
@@ -409,11 +409,11 @@ under the License.
                     <artifactId>jcl-over-slf4j</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.ops4j.pax.logging</groupId>
+                    <groupId>org.wso2.org.ops4j.pax.logging</groupId>
                     <artifactId>pax-logging-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.ops4j.pax.logging</groupId>
+                    <groupId>org.wso2.org.ops4j.pax.logging</groupId>
                     <artifactId>pax-logging-log4j2</artifactId>
                 </exclusion>
                 <exclusion>

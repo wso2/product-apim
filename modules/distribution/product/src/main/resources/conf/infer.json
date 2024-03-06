@@ -136,5 +136,13 @@
       "broker.transport.amqp.enabled": false,
       "apim.throttling.enable_policy_deployment": false
     }
+  },
+  "authenticationendpoint.enable_shortened_urls": {
+    "false": {
+      "authentication.endpoint.redirect_params.filter_policy": "exclude",
+      "authentication.endpoint.redirect_params.parameters": [
+        "loggedInUser"
+      ]
+    }
   }
 }

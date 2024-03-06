@@ -177,6 +177,26 @@
             </excludes>
         </fileSet>
         <fileSet>
+            <directory>target/diagnostics-tool</directory>
+            <outputDirectory>wso2am-${pom.version}/diagnostics-tool</outputDirectory>
+            <excludes>
+                <exclude>bin/diagnostics</exclude>
+                <exclude>lib/**</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>target/diagnostics-tool/lib</directory>
+            <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
+            <excludes>
+                <exclude>antlr-runtime-*.jar</exclude>
+                <exclude>gson*.jar</exclude>
+                <exclude>commons-lang3-*.jar</exclude>
+                <exclude>log4j-api-*.jar</exclude>
+                <exclude>log4j-core-*.jar</exclude>
+                <exclude>cava-toml-*.jar</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
             <directory>target/wso2carbon-core-${carbon.kernel.version}</directory>
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <includes>
@@ -713,6 +733,16 @@
                 <include>client-registration#v0.17.war</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>api#identity#auth#v1.1.war</include>
+            </includes>
+        </fileSet>
 
 
         <!-- Copy sample calculator api webapp-->
@@ -780,6 +810,7 @@
             <excludes>
                 <exclude>**/cxf3/spring-asm-3.1.4.RELEASE.jar</exclude>
                 <exclude>**/cxf3/snakeyaml-1.28.jar</exclude>
+                <exclude>**/cxf3/spring-*.jar</exclude>
             </excludes>
         </fileSet>
 
@@ -1290,6 +1321,21 @@
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/startup-scripts/diagnostics.sh</source>
+            <outputDirectory>wso2am-${pom.version}/diagnostics-tool/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/resources/conf/templates/diagnostics-tool/conf/config.toml.j2</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/templates/diagnostics-tool/conf</outputDirectory>
+            <destName>config.toml.j2</destName>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
         </file>
 
         <file>
