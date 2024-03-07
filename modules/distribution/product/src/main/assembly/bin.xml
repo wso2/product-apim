@@ -28,6 +28,7 @@
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <excludes>
                 <exclude>**/bin/wso2server.sh</exclude>
+                <exclude>**/bin/carbondump.sh</exclude>
                 <exclude>**/bin/wso2server.bat</exclude>
                 <exclude>**/conf/axis2/*.j2</exclude>
                 <exclude>**/conf/axis2/axis2.xml</exclude>
