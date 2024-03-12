@@ -1301,12 +1301,12 @@
         <carbon.apimgt.ui.version>9.0.520</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.29.47</carbon.apimgt.version>
+        <carbon.apimgt.version>9.29.50</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.8.26</carbon.registry.version>
+        <carbon.registry.version>4.8.27</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
