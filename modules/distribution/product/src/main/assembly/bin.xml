@@ -77,9 +77,6 @@
                 <exclude>**/repository/components/plugins/nimbus-jose-jwt_2.26.1.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/net.minidev.json-smart_1.2.0.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/wss4j_1.5.11.wso2v10.jar</exclude>-->
-                <exclude>**/repository/components/plugins/rampart-trust_1.6.1.wso2v14.jar</exclude>
-                <exclude>**/repository/components/plugins/rampart-policy_1.6.1.wso2v14.jar</exclude>
-                <exclude>**/repository/components/plugins/rampart-core_1.6.1.wso2v14.jar</exclude>
                 <exclude>**/repository/components/plugins/commons-io_2.0.0.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/com.google.gson_2.1.0.jar</exclude>
                 <exclude>**/repository/components/plugins/com.google.gson_2.2.4.jar</exclude>
@@ -983,24 +980,6 @@
                 <include>org.apache.qpid.wso2:qpid-client:jar</include>
             </includes>
         </dependencySet>
-        <dependencySet>
-            <outputDirectory>wso2am-${pom.version}/samples/axis2Client/client_repo/modules</outputDirectory>
-            <includes>
-                <include>org.apache.axis2:addressing:mar</include>
-                <include>org.apache.rampart:rampart:mar</include>
-                <include>org.apache.sandesha2:sandesha2:mar</include>
-            </includes>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
-        <dependencySet>
-            <outputDirectory>wso2am-${pom.version}/samples/axis2Server/repository/modules</outputDirectory>
-            <includes>
-                <include>org.apache.axis2:addressing:mar</include>
-                <include>org.apache.rampart:rampart:mar</include>
-                <include>org.apache.sandesha2:sandesha2:mar</include>
-            </includes>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
         <!--dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/axis2/client/lib</outputDirectory>
             <excludes>
@@ -1016,9 +995,6 @@
         </dependencySet-->
         <dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/client/modules</outputDirectory>
-            <includes>
-                <include>org.apache.rampart:rampart:mar</include>
-            </includes>
         </dependencySet>
         <dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
