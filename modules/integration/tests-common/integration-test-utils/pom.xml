@@ -61,28 +61,6 @@ under the License.
             <artifactId>org.wso2.carbon.automation.engine</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.rampart</groupId>
-            <artifactId>rampart-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.sf.saxon</groupId>
-                    <artifactId>Saxon-HE</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-jdk12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ws.security.wso2</groupId>
-            <artifactId>wss4j</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
