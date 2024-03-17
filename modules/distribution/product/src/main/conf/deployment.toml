@@ -102,6 +102,11 @@ gateway_labels =["Default"]
 enable = false
 auth_token = ""
 
+[apim.ai]
+enable = true
+auth_token = ""
+endpoint = "http://localhost:9090"
+
 [apim.key_manager]
 enable_apikey_subscription_validation = true
 #service_url = "https://localhost:${mgt.transport.https.port}/services/"
