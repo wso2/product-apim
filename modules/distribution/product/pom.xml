@@ -69,8 +69,8 @@
             <artifactId>disruptor</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.diagnostics</groupId>
-            <artifactId>runtime-diagnostics</artifactId>
+            <groupId>org.wso2.runtime.diagnostics</groupId>
+            <artifactId>runtime-diagnostics-tool</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -97,8 +97,8 @@
                                     <outputDirectory>target</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.wso2.diagnostics</groupId>
-                                    <artifactId>runtime-diagnostics</artifactId>
+                                    <groupId>org.wso2.runtime.diagnostics</groupId>
+                                    <artifactId>runtime-diagnostics-tool</artifactId>
                                     <version>${diagnostics.tool.version}</version>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
