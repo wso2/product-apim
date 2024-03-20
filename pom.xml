@@ -1187,8 +1187,8 @@
 
             <!-- Diagnostic Server Dependencies -->
             <dependency>
-                <groupId>org.wso2.diagnostics</groupId>
-                <artifactId>runtime-diagnostics</artifactId>
+                <groupId>org.wso2.runtime.diagnostics</groupId>
+                <artifactId>runtime-diagnostics-tool</artifactId>
                 <version>${diagnostics.tool.version}</version>
             </dependency>
 
@@ -1456,7 +1456,7 @@
         <config.mapper.version>1.0.2</config.mapper.version>
 
         <!-- Diagnostic Tool Dependencies -->
-        <diagnostics.tool.version>1.0.3</diagnostics.tool.version>
+        <diagnostics.tool.version>1.0.11</diagnostics.tool.version>
 
         <!-- Authenticator Properties -->
         <identity.outbound.auth.oidc.version>5.11.34</identity.outbound.auth.oidc.version>

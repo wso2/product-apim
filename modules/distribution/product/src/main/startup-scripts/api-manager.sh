@@ -321,7 +321,7 @@ diagnostic_tool_pid=$!
 cleanup() {
     kill "$diagnostic_tool_pid"
 }
-trap 'cleanup' EXIT
+trap 'cleanup' EXIT INT
 
 while [ "$status" = "$START_EXIT_STATUS" ]
 do
