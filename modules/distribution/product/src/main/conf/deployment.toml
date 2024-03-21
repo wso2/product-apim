@@ -104,7 +104,7 @@ auth_token = ""
 
 [apim.ai]
 enable = true
-auth_token = ""
+token = ""
 endpoint = "http://localhost:9090"
 
 [apim.key_manager]
