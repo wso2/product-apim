@@ -11,7 +11,7 @@
   "identity.data_source": "jdbc/WSO2AM_DB",
   "database.apim_db.url": "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000",
   "database.apim_db.driver": "org.h2.Driver",
-  "database.mb.store_db.url": "jdbc:h2:./repository/database/WSO2MB_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000",
+  "database.mb.store_db.url": "jdbc:h2:./repository/database/WSO2MB_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000;IFEXISTS=TRUE;DB_CLOSE_DELAY=-1",
   "database.mb.store_db.driver": "org.h2.Driver",
   "database.mb.store_db.validationQuery": "SELECT 1",
   "database.mb.store_db.username": "wso2carbon",
