@@ -18,6 +18,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%@ page isErrorPage="true" %>
+<%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.recovery.IdentityRecoveryConstants" %>
@@ -141,7 +142,7 @@
             // Check if the error is related to the confirmation code being invalid.
             // If so, navigate the users to the URL defined in `callback` URL param.
             if (errorCodeFromParams === invalidConfirmationErrorCode) {
-                window.location.href = "<%=callback%>";
+                window.location.href = "<%=Encode.forHtmlAttribute(callback)%>";
 
                 return;
             }
