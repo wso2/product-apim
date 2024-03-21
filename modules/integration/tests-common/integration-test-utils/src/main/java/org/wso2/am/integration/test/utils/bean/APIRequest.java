@@ -84,6 +84,15 @@ public class APIRequest extends AbstractRequest {
     private List<String> apiCategories;
     private List<String> keyManagers;
     private String subscriptionAvailability;
+    private String gatewayType;
+
+    public String getGatewayType() {
+        return gatewayType;
+    }
+
+    public void setGatewayType(String gatewayType) {
+        this.gatewayType = gatewayType;
+    }
 
     public List<String> getVisibleTenants() {
 

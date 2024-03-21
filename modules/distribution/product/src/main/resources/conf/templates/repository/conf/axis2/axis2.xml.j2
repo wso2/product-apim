@@ -46,6 +46,9 @@
     <!-- Sandesha2 persistance storage manager -->
     <parameter name="Sandesha2StorageManager" locked="false">inmemory</parameter>
 
+    <!-- This property will enable strict service URL validation -->
+    <parameter name="strictServicePathValidation" locked="false">{{server.strict_service_path_validation}}</parameter>
+
     <!-- Our HTTP endpoints can handle both REST and SOAP under the following service path. In -->
     <!-- case of a servlet container, if you change this you have to manually change the -->
     <!-- settings of your servlet container to map this context path to proper Axis2 servlets -->
@@ -266,6 +269,14 @@
            <filePath>repository/resources/security/listenerprofiles.xml</filePath>
            <fileReadInterval>{{transport.passthru_https.listener.ssl_profile_interval}}</fileReadInterval>
        </parameter>
+       {% if transport.passthru_https.listener.cert_revocation_validation.enable %}
+       <parameter name="CertificateRevocationVerifier" enable="{{transport.passthru_https.listener.cert_revocation_validation.enable}}">
+           <CacheSize>{{transport.passthru_https.listener.cert_revocation_validation.cache_size}}</CacheSize>
+           <CacheDelay>{{transport.passthru_https.listener.cert_revocation_validation.cache_delay}}</CacheDelay>
+           <FullChainValidation>{{transport.passthru_https.listener.cert_revocation_validation.allow_full_cert_chain_validation}}</FullChainValidation>
+           <ExpiryValidation>{{transport.passthru_https.listener.cert_revocation_validation.allow_cert_expiry_validation}}</ExpiryValidation>
+       </parameter>
+       {% endif %}
     </transportReceiver>
     {% endif %}
 

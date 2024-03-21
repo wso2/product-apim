@@ -165,7 +165,7 @@ paths:
         200:
           description: An array of revoke JWTs
           schema:
-              $ref: '#/definitions/RevokedJWTList'
+            $ref: '#/definitions/RevokedEvents'
         default:
           description: Unexpected error
           schema:
@@ -684,10 +684,20 @@ definitions:
         type: array
         items:
           type: string
-  RevokedJWTList:
-    type: array
-    items:
-      $ref: '#/definitions/RevokedJWT'
+  RevokedEvents:
+    properties:
+      revokedJWTList:
+        type: array
+        items:
+          $ref: '#/definitions/RevokedJWT'
+      revokedJWTSubjectEntityList:
+        type: array
+        items:
+          $ref: '#/definitions/RevokedJWTSubjectEntity'
+      revokedJWTConsumerKeyList:
+        type: array
+        items:
+          $ref: '#/definitions/RevokedJWTConsumerKey'
   RevokedJWT:
     properties:
       jwt_signature:
@@ -697,6 +707,36 @@ definitions:
         type: integer
         format: int64
         description: expiry timestamp.
+  RevokedJWTSubjectEntity:
+    properties:
+      entity_id:
+        type: string
+        description: Subject Id of the revoked JWT(s). Can be user id or client id.
+      entity_type:
+        type: string
+        description: Type of the subject id. User id or client id.
+      revocation_time:
+        type: integer
+        format: int64
+        description: revocation timestamp.
+      organization:
+        type: string
+        description: Organization of the revoked subject entity.
+  RevokedJWTConsumerKey:
+    properties:
+      consumer_key:
+        type: string
+        description: consumer key of the JWT.
+      revocation_time:
+        type: integer
+        format: int64
+        description: revocation timestamp.
+      type:
+        type: string
+        description: revoked consumer key type.
+      organization:
+        type: string
+        description: organization of the revoked consumer key
   RevokeAPIKey:
     properties:
       apiKey:

@@ -72,6 +72,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.xml.StringUtils;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -100,8 +101,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         HEADER,
         QUERY
     }
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final String apiName = "WebSocketAPI";
+    private final String apiNameWithMalformedContext = "WebSocketAPIWithMalformedContext";
     private final String applicationName = "WebSocketApplication";
     private final String applicationJWTName = "WebSocketJWTTypeApplication";
     private final String testMessage = "Web Socket Test Message";
@@ -131,6 +132,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     long throttleMarkTime = 0;
     String apiVersion2 = "2.0.0";
     String endPointApplication = "EndPointApplication";
+    Server server = null;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPITestCase(TestUserMode userMode) {
@@ -160,15 +162,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 (new File(wsEventPublisherSource + wsThrottleOutEventPublisherSource),
                         new File(wsEventPublisherTarget + wsThrottleOutEventPublisherSource), false);
         webSocketServerHost = InetAddress.getLocalHost().getHostName();
-        int lowerPortLimit = 9950;
-        int upperPortLimit = 9999;
-        webSocketServerPort = getAvailablePort(lowerPortLimit, upperPortLimit);
-        if (webSocketServerPort == -1) {
-            throw new APIManagerIntegrationTestException("No available port in the range " +
-                    lowerPortLimit + "-" + upperPortLimit + " was found");
-        }
-        log.info("Selected port " + webSocketServerPort + " to start backend server");
-        startWebSocketServer(webSocketServerPort);
+        startWebSocketServer();
     }
 
     @Test(description = "Publish WebSocket API")
@@ -475,6 +469,28 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         }
     }
 
+    @Test(description = "Create WebSocket API with malformed context",
+            dependsOnMethods = "testWebSocketAPIRemoveEndpoint")
+    public void testCreateWebSocketAPIWithMalformedContext() throws Exception {
+
+        provider = user.getUserName();
+        String apiContext = "echo{version}";
+        String apiVersion = "1.0.0";
+
+        URI endpointUri = new URI("ws://" + webSocketServerHost + ":" + webSocketServerPort);
+
+        //Create the api creation request object
+        apiRequest = new APIRequest(apiNameWithMalformedContext, apiContext, endpointUri, endpointUri);
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
+        apiRequest.setProvider(provider);
+        apiRequest.setType("WS");
+        apiRequest.setApiTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        HttpResponse response = restAPIPublisher.addAPIWithMalformedContext(apiRequest);
+        Assert.assertEquals(response.getResponseCode(), Response.Status.BAD_REQUEST.getStatusCode(), "Response Code miss matched when creating the API");
+    }
+
     /**
      * Wait for client to receive reply from the server
      *
@@ -498,33 +514,25 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     /**
      * Starts backend web socket server in given port
      *
-     * @param serverPort Port that WebSocket Server starts
      */
-    private void startWebSocketServer(final int serverPort) {
-
-        executorService.execute(new Runnable() {
-            public void run() {
-
-                WebSocketHandler wsHandler = new WebSocketHandler() {
-                    @Override
-                    public void configure(WebSocketServletFactory factory) {
-
-                        factory.register(WebSocketServerImpl.class);
-                    }
-                };
-                Server server = new Server(serverPort);
-                server.setHandler(wsHandler);
-                try {
-                    server.start();
-                    log.info("WebSocket backend server started at port: " + serverPort);
-                } catch (InterruptedException ignore) {
-                } catch (Exception e) {
-                    log.error("Error while starting backend server at port: " + serverPort, e);
-                    Assert.fail("Cannot start WebSocket server");
-                }
+    private void startWebSocketServer() {
+        WebSocketHandler wsHandler = new WebSocketHandler() {
+            @Override
+            public void configure(WebSocketServletFactory factory) {
+                factory.register(WebSocketServerImpl.class);
             }
-
-        });
+        };
+        server = new Server(0);
+        server.setHandler(wsHandler);
+        try {
+            server.start();
+            webSocketServerPort = server.getURI().getPort();
+            log.info("WebSocket backend server started at port :" + webSocketServerPort);
+        } catch (InterruptedException ignore) {
+        } catch (Exception e) {
+            log.error("Error while starting backend server at port: " + webSocketServerPort, e);
+            Assert.fail("Cannot start WebSocket server");
+        }
     }
 
     /**
@@ -534,7 +542,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      */
     private void testThrottling(String accessToken) throws Exception {
 
-        waitUntilClockHour();
+        waitUntilClockMinute();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
         int limit = 2;
         WebSocketClient client = new WebSocketClient();
@@ -563,6 +571,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                         log.info("Repeating the test as throttling testing time duration is dispersed into two " +
                                 "separate units of time");
                         testThrottling(accessToken);
+                        return;
                     }
                     assertEquals(socket.getResponseMessage(), "Error code: 4003 reason: Websocket frame throttled out",
                             "Received response is not matching");
@@ -626,9 +635,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
+        if (server != null) {
+            server.stop();
+        }
         serverConfigurationManager.restoreToLastConfiguration(false);
-        executorService.shutdownNow();
         super.cleanUp();
     }
 }

@@ -109,7 +109,7 @@
 %>
 
 <!doctype html>
-<html>
+<html lang="en-US">
 <head>
     <%
         File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
@@ -131,7 +131,7 @@
 <body class="login-portal layout recovery-layout">
     <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
         <layout:component componentName="ProductHeader" >
-            <!-- product-title -->
+            <%-- product-title --%>
             <%
                 File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
                 if (productTitleFile.exists()) {
@@ -143,7 +143,7 @@
         </layout:component>
         <layout:component componentName="MainSection" >
             <div class="ui segment">
-                <!-- page content -->
+                <%-- page content --%>
                 <h3 class="ui header">
                     <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Recover.password")%>
                 </h3>
@@ -275,7 +275,7 @@
             </div>
         </layout:component>
         <layout:component componentName="ProductFooter" >
-            <!-- product-footer -->
+            <%-- product-footer --%>
             <%
                 File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
                 if (productFooterFile.exists()) {
@@ -287,7 +287,7 @@
         </layout:component>
     </layout:main>
 
-    <!-- footer -->
+    <%-- footer --%>
     <%
         File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
         if (footerFile.exists()) {

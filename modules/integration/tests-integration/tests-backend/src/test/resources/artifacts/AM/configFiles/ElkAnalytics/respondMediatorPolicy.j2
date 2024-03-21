@@ -1,0 +1,10 @@
+<property name="switchExpression"
+             expression="fn:concat($ctx:REST_METHOD,'_',$ctx:API_ELECTED_RESOURCE)"/>
+<switch source="$ctx:switchExpression">
+   <case regex="GET_\/customers\/123">
+      <log level="full">
+         <property name="MESSAGE" value="MESSAGE"/>
+      </log>
+   </case>
+</switch>
+<respond/>

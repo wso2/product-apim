@@ -7120,6 +7120,178 @@ paths:
           -F "type=WSO2-IS" "https://127.0.0.1:9443/api/am/admin/v4/key-managers/discover"'
       x-contentType: multipart/form-data
       x-accepts: application/json
+  /apis:
+    get:
+      description: |
+        This operation provides you a list of available APIs qualifying under a given search condition.
+        Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
+      operationId: getAllAPIs
+      parameters:
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          **Search and get all apis in admin portal**.
+
+          You can search by proving a keyword.
+        explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          Validator for conditional requests; based on the ETag of the formerly retrieved
+          variant of the resource (Will be supported in future).
+        explode: false
+        in: header
+        name: If-None-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultList'
+          description: |
+            OK.
+            List of qualifying APIs is returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "304":
+          content: {}
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:api_provider_change
+      summary: |
+        Retrieve/Search APIs
+      tags:
+      - APIs
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis"'
+      x-accepts: application/json
+  /apis/{apiId}/change-provider:
+    post:
+      description: |
+        Update the api provider
+      operationId: providerNamePost
+      parameters:
+      - explode: true
+        in: query
+        name: provider
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: |
+            OK.
+            Api Provider updated.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:api_provider_change
+      summary: Update the api provider
+      tags:
+      - Api Provider Change
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" "https://127.0.0.1:9443/api/am/admin/v4/provider/admin/apis/33662a62-8db1-4d75-af08-afd63c6bd0b4"'
+      x-accepts: application/json
 components:
   parameters:
     username:
@@ -7334,6 +7506,16 @@ components:
       explode: false
       in: path
       name: keyManagerId
+      required: true
+      schema:
+        type: string
+      style: simple
+    apiId:
+      description: |
+        **API ID** consisting of the **UUID** of the API.
+      explode: false
+      in: path
+      name: apiId
       required: true
       schema:
         type: string
@@ -7962,6 +8144,18 @@ components:
       - type
       title: Throttle Limit
       type: object
+    BurstLimit:
+      properties:
+        rateLimitCount:
+          description: Burst control request count
+          example: 10
+          type: integer
+        rateLimitTimeUnit:
+          description: Burst control time unit
+          example: min
+          type: string
+      title: Burst Limit object
+      type: object
     MonetizationInfo:
       properties:
         monetizationPlan:
@@ -8346,6 +8540,7 @@ components:
           endpointURI: default
         - protocol: default
           endpointURI: default
+        gatewayType: Regular
         isReadOnly: false
         provider: wso2
         displayName: US Region
@@ -8393,6 +8588,10 @@ components:
         provider:
           example: wso2
           type: string
+        gatewayType:
+          default: Regular
+          example: Regular
+          type: string
         isReadOnly:
           example: false
           readOnly: true
@@ -8424,6 +8623,7 @@ components:
             endpointURI: default
           - protocol: default
             endpointURI: default
+          gatewayType: Regular
           isReadOnly: false
           provider: wso2
           displayName: US Region
@@ -8453,6 +8653,7 @@ components:
             endpointURI: default
           - protocol: default
             endpointURI: default
+          gatewayType: Regular
           isReadOnly: false
           provider: wso2
           displayName: US Region
@@ -8786,11 +8987,18 @@ components:
             mask: true
           defaultScopesClaim: scope
           type: default
+        gatewayTypes:
+        - gatewayTypes
+        - gatewayTypes
         scopes:
         - scopes
         - scopes
       properties:
         scopes:
+          items:
+            type: string
+          type: array
+        gatewayTypes:
           items:
             type: string
           type: array
@@ -8884,6 +9092,11 @@ components:
           tokenEndpoint: https://localhost:9444/oauth2/token
           consumerKeyClaim: azp
           scopesClaim: scp
+          permissions:
+            permissionType: ALLOW
+            roles:
+            - Internal/subscriber
+            - Internal/subscriber
           alias: https://localhost:9443/oauth2/token
           id: 01234567-0123-0123-0123-012345678901
           userInfoEndpoint: https://localhost:9444/oauth2/userinfo?schema=openid
@@ -8946,6 +9159,11 @@ components:
         tokenEndpoint: https://localhost:9444/oauth2/token
         consumerKeyClaim: azp
         scopesClaim: scp
+        permissions:
+          permissionType: ALLOW
+          roles:
+          - Internal/subscriber
+          - Internal/subscriber
         alias: https://localhost:9443/oauth2/token
         id: 01234567-0123-0123-0123-012345678901
         userInfoEndpoint: https://localhost:9444/oauth2/userinfo?schema=openid
@@ -9104,6 +9322,8 @@ components:
             Password: admin
           properties: {}
           type: object
+        permissions:
+          $ref: '#/components/schemas/KeyManager_permissions'
         tokenType:
           default: DIRECT
           description: The type of the tokens to be used (exchanged or without exchanged).
@@ -9608,6 +9828,85 @@ components:
           type: array
       title: Role alias
       type: object
+    SearchResultList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        apis:
+        - provider: provider
+          name: name
+          id: id
+          version: version
+        - provider: provider
+          name: name
+          id: id
+          version: version
+        count: 1
+      properties:
+        apis:
+          items:
+            $ref: '#/components/schemas/ApiResult'
+          type: array
+        count:
+          description: |
+            Number of results returned.
+          example: 1
+          type: integer
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Unified Search Result List
+      type: object
+    ApiResult:
+      example:
+        provider: provider
+        name: name
+        id: id
+        version: version
+      properties:
+        provider:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        id:
+          type: string
+      type: object
+    Pagination:
+      example:
+        next: next
+        total: 10
+        offset: 0
+        previous: previous
+        limit: 1
+      properties:
+        offset:
+          example: 0
+          type: integer
+        limit:
+          example: 1
+          type: integer
+        total:
+          example: 10
+          type: integer
+        next:
+          description: |
+            Link to the next subset of resources qualified.
+            Empty if no more resources are to be returned.
+            example: ""
+          type: string
+        previous:
+          description: |
+            Link to the previous subset of resources qualified.
+            Empty if current subset is the first subset returned.
+            example: ""
+          type: string
+      title: Pagination
+      type: object
     AdvancedThrottlePolicyInfo_allOf:
       properties:
         defaultLimit:
@@ -9628,6 +9927,8 @@ components:
       properties:
         defaultLimit:
           $ref: '#/components/schemas/ThrottleLimit'
+        burstLimit:
+          $ref: '#/components/schemas/BurstLimit'
       required:
       - defaultLimit
     SubscriptionThrottlePolicy_allOf:
@@ -9783,6 +10084,26 @@ components:
           type: string
         value:
           type: string
+    KeyManager_permissions:
+      example:
+        permissionType: ALLOW
+        roles:
+        - Internal/subscriber
+        - Internal/subscriber
+      properties:
+        permissionType:
+          default: PUBLIC
+          enum:
+          - PUBLIC
+          - ALLOW
+          - DENY
+          example: ALLOW
+          type: string
+        roles:
+          items:
+            example: Internal/subscriber
+            type: string
+          type: array
   securitySchemes:
     OAuth2Security:
       flows:
