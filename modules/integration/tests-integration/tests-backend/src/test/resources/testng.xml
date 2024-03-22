@@ -115,6 +115,7 @@
             <class name="org.wso2.am.integration.tests.throttling.BurstControlTestCase"/>
             <class name="org.wso2.am.integration.tests.operationPolicy.OperationPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APICreationForTenantsTestCase" />
+            <class name="org.wso2.am.integration.tests.operationPolicy.JWTClaimBasedAccessValidatorPolicyTestCase"/>
         </classes>
     </test>
 

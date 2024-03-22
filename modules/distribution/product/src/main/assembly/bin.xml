@@ -28,6 +28,7 @@
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <excludes>
                 <exclude>**/bin/wso2server.sh</exclude>
+                <exclude>**/bin/carbondump.sh</exclude>
                 <exclude>**/bin/wso2server.bat</exclude>
                 <exclude>**/conf/axis2/*.j2</exclude>
                 <exclude>**/conf/axis2/axis2.xml</exclude>
@@ -76,9 +77,6 @@
                 <exclude>**/repository/components/plugins/nimbus-jose-jwt_2.26.1.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/net.minidev.json-smart_1.2.0.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/wss4j_1.5.11.wso2v10.jar</exclude>-->
-                <exclude>**/repository/components/plugins/rampart-trust_1.6.1.wso2v14.jar</exclude>
-                <exclude>**/repository/components/plugins/rampart-policy_1.6.1.wso2v14.jar</exclude>
-                <exclude>**/repository/components/plugins/rampart-core_1.6.1.wso2v14.jar</exclude>
                 <exclude>**/repository/components/plugins/commons-io_2.0.0.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/com.google.gson_2.1.0.jar</exclude>
                 <exclude>**/repository/components/plugins/com.google.gson_2.2.4.jar</exclude>
@@ -173,6 +171,26 @@
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v4.jar</exclude>
                 <exclude>**/lib/xalan*.jar</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>target/diagnostics-tool</directory>
+            <outputDirectory>wso2am-${pom.version}/diagnostics-tool</outputDirectory>
+            <excludes>
+                <exclude>bin/diagnostics</exclude>
+                <exclude>lib/**</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>target/diagnostics-tool/lib</directory>
+            <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
+            <excludes>
+                <exclude>antlr-runtime-*.jar</exclude>
+                <exclude>gson*.jar</exclude>
+                <exclude>commons-lang3-*.jar</exclude>
+                <exclude>log4j-api-*.jar</exclude>
+                <exclude>log4j-core-*.jar</exclude>
+                <exclude>cava-toml-*.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -712,16 +730,16 @@
                 <include>client-registration#v0.17.war</include>
             </includes>
         </fileSet>
-<!--        <fileSet>-->
-<!--            <directory>-->
-<!--                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps-->
-<!--            </directory>-->
-<!--            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps-->
-<!--            </outputDirectory>-->
-<!--            <includes>-->
-<!--                <include>api#identity#auth#v1.1.war</include>-->
-<!--            </includes>-->
-<!--        </fileSet>-->
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>api#identity#auth#v1.1.war</include>
+            </includes>
+        </fileSet>
 
 
         <!-- Copy sample calculator api webapp-->
@@ -962,24 +980,6 @@
                 <include>org.apache.qpid.wso2:qpid-client:jar</include>
             </includes>
         </dependencySet>
-        <dependencySet>
-            <outputDirectory>wso2am-${pom.version}/samples/axis2Client/client_repo/modules</outputDirectory>
-            <includes>
-                <include>org.apache.axis2:addressing:mar</include>
-                <include>org.apache.rampart:rampart:mar</include>
-                <include>org.apache.sandesha2:sandesha2:mar</include>
-            </includes>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
-        <dependencySet>
-            <outputDirectory>wso2am-${pom.version}/samples/axis2Server/repository/modules</outputDirectory>
-            <includes>
-                <include>org.apache.axis2:addressing:mar</include>
-                <include>org.apache.rampart:rampart:mar</include>
-                <include>org.apache.sandesha2:sandesha2:mar</include>
-            </includes>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
         <!--dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/axis2/client/lib</outputDirectory>
             <excludes>
@@ -995,9 +995,6 @@
         </dependencySet-->
         <dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/client/modules</outputDirectory>
-            <includes>
-                <include>org.apache.rampart:rampart:mar</include>
-            </includes>
         </dependencySet>
         <dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
@@ -1300,6 +1297,21 @@
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/startup-scripts/diagnostics.sh</source>
+            <outputDirectory>wso2am-${pom.version}/diagnostics-tool/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/resources/conf/templates/diagnostics-tool/conf/config.toml.j2</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/templates/diagnostics-tool/conf</outputDirectory>
+            <destName>config.toml.j2</destName>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
         </file>
 
         <file>

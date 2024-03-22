@@ -152,6 +152,9 @@ enable_apikey_subscription_validation = true
 #enable_cross_tenant_subscriptions = true
 #default_reserved_username = "apim_reserved_user"
 
+#[apim.publisher]
+#enable_portal_configuration_only_mode = false
+
 [apim.cors]
 allow_origins = "*"
 allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
