@@ -1381,7 +1381,7 @@
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
-        <opensaml2.wso2.version>3.3.1.wso2v4</opensaml2.wso2.version>
+        <opensaml2.wso2.version>3.3.1.wso2v11</opensaml2.wso2.version>
         <transport.http.netty.version>6.3.50</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
@@ -1477,7 +1477,6 @@
         <forgerock.keymanager.feature.version>1.1.5</forgerock.keymanager.feature.version>
         <apim.analytics.publisher.version>1.2.18</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
-        <opensaml2.version>2.6.6.wso2v4</opensaml2.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
 
         <!-- Service Catalog Client Dependencies -->
