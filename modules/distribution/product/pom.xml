@@ -224,6 +224,27 @@
                             <overWriteSnapshots>true</overWriteSnapshots>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-charon-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.charon</groupId>
+                                    <artifactId>org.wso2.charon3.core</artifactId>
+                                    <version>${charon3.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/apim-is-plugin-resources/dropins</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
