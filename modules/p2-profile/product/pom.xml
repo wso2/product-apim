@@ -280,10 +280,7 @@
                                     org.wso2.carbon.commons:org.wso2.carbon.deployment.synchronizer.feature:${carbon.commons.version}
                                 </featureArtifactDef>
 
-                                <featureArtifactDef>
-                                    org.wso2.carbon.registry:org.wso2.carbon.registry.community.features.server.feature:${carbon.registry.version}
-                                </featureArtifactDef>
-               
+
                                 <!--API Management related feature-->
 
                                 <featureArtifactDef>
@@ -332,9 +329,6 @@
                                 <!--Governance Feature-->
                                 <featureArtifactDef>
                                     org.wso2.carbon.governance:org.wso2.carbon.governance.metadata.feature:${carbon.governance.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.governance:org.wso2.carbon.governance.lifecycle.management.server.feature:${carbon.governance.version}
                                 </featureArtifactDef>
 
                                 <!-- Cloud API Manager related features -->
@@ -1108,10 +1102,6 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.registry.community.features.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
                                     <version>${carbon.identity-inbound-auth-openid.version}</version>
                                 </feature>
@@ -1153,10 +1143,7 @@
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.websocket.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1209,12 +1196,7 @@
                                     <version>${carbon.governance.version}</version>
                                 </feature>
 
-                                <feature>
-                                    <id>org.wso2.carbon.governance.lifecycle.management.server.feature.group</id>
-                                    <version>${carbon.governance.version}</version>
-                                </feature>
 
-                                
                                 <!--Identity Feature-->
                                 <feature>
                                     <id>org.wso2.carbon.user.mgt.feature.group</id>
@@ -1779,10 +1761,7 @@
                                     <id>org.wso2.carbon.registry.associations.dependencies.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.registry.community.features.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
                                     <version>${carbon.identity-inbound-auth-openid.version}</version>
@@ -1825,10 +1804,7 @@
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
+
 
                                 <feature>
                                     <id>org.wso2.carbon.registry.ws.feature.group</id>
@@ -1852,11 +1828,6 @@
 
                                 <feature>
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
-                                    <version>${carbon.governance.version}</version>
-                                </feature>
-
-                                <feature>
-                                    <id>org.wso2.carbon.governance.lifecycle.management.server.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
 
@@ -2331,7 +2302,7 @@
                                     <id>org.wso2.carbon.security.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-                                
+
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.registry.version}</version>
@@ -2386,10 +2357,7 @@
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
                                     <version>${carbon.identity-inbound-auth-openid.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.registry.community.features.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.identity.oauth.feature.group</id>
                                     <version>${carbon.identity-inbound-auth-oauth.version}</version>
@@ -2411,10 +2379,7 @@
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.registry.ws.feature.group</id>
                                     <version>${carbon.registry.version}</version>
@@ -2425,10 +2390,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
-                                    <version>${carbon.governance.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.governance.lifecycle.management.server.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
@@ -2900,10 +2861,6 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.registry.community.features.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
                                     <version>${carbon.identity-inbound-auth-openid.version}</version>
                                 </feature>
@@ -2941,10 +2898,7 @@
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.registry.ws.feature.group</id>
                                     <version>${carbon.registry.version}</version>
@@ -2990,10 +2944,7 @@
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.governance.lifecycle.management.server.feature.group</id>
-                                    <version>${carbon.governance.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.identity.tenant.resource.manager</id>
                                     <version>${carbon.identity.governance.version}</version>
@@ -3407,10 +3358,6 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.registry.community.features.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
                                     <version>${carbon.identity-inbound-auth-openid.version}</version>
                                 </feature>
@@ -3448,10 +3395,7 @@
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.registry.ws.feature.group</id>
                                     <version>${carbon.registry.version}</version>
@@ -3496,10 +3440,7 @@
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.governance.lifecycle.management.server.feature.group</id>
-                                    <version>${carbon.governance.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.user.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -3963,10 +3904,6 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.registry.community.features.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.identity.oauth.feature.group</id>
                                     <version>${carbon.identity-inbound-auth-oauth.version}</version>
                                 </feature>
@@ -3983,10 +3920,7 @@
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
-                                    <version>${carbon.registry.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.registry.ws.feature.group</id>
                                     <version>${carbon.registry.version}</version>
@@ -3997,10 +3931,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
-                                    <version>${carbon.governance.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.governance.lifecycle.management.server.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
