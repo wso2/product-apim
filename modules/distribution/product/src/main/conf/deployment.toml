@@ -134,6 +134,7 @@ enable_apikey_subscription_validation = true
 #signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever"
+#use_sha1_hash = false
 
 #[apim.oauth_config]
 #enable_outbound_auth_header = false
