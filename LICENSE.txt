@@ -872,6 +872,7 @@ bcprov-jdk18on-1.77.jar                                                         
 org.wso2.charon3.core-4.0.18.jar                                                                    bundle         apache2
 org.wso2.carbon.identity.oauth2.grant.jwt-2.2.4.jar                                                 bundle         apache2
 org.wso2.carbon.identity.oauth2.token.handler.clientauth.mutualtls-2.4.38.jar                       bundle         apache2
+addressing-1.6.1-wso2v76.mar                                                                        bundle         apache2
 geronimo-stax-api_1.0_spec-1.0.1.jar                                                                bundle         apache2
 h2-1.2.140-wso2v3.jar                                                                               bundle         apache2
 taglibs-standard-impl-1.2.5.jar                                                                     bundle         apache2
