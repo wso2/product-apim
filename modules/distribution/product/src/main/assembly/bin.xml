@@ -105,6 +105,7 @@
                 <exclude>**/repository/components/plugins/hadoop-client_2.7.2.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/org.apache.servicemix.bundles.jaxb-api-2.0_4.0.0.m1.jar
                 </exclude>
+                <exclude>**/repository/deployment/client/modules/*</exclude>
 
                 <exclude>**/repository/components/plugins/cassandra-thrift_1.2.13.wso2v4.jar</exclude>
                 <exclude>**/repository/components/plugins/org.wso2.carbon.event.output.adapter.cassandra_*.jar</exclude>
@@ -451,12 +452,6 @@
             <includes>
                 <include>**/*.*</include>
             </includes>
-        </fileSet>
-
-        <!--copy the callhome jar -->
-        <fileSet>
-            <directory>../../callhome/target/callhomeCopied/jar</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
         </fileSet>
 
         <fileSet>
@@ -993,9 +988,9 @@
             </excludes>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet-->
-        <dependencySet>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/client/modules</outputDirectory>
-        </dependencySet>
+<!--        <dependencySet>-->
+<!--            <outputDirectory>wso2am-${pom.version}/repository/deployment/client/modules</outputDirectory>-->
+<!--        </dependencySet>-->
         <dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
             <includes>
