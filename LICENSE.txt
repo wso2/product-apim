@@ -12,7 +12,7 @@ At the bottom of this file is a table that shows what each license indicated
 below is and where the actual text of the license can be found.
 
 
-Name                                                                                                Type          License
+Name                                                                                                Type           License
 _________________________________________________________________________________________________________________________________________________
 org.wso2.carbon.bootstrap-4.9.26-alpha3.jar                                                         bundle         apache2
 tomcat-juli-9.0.85.jar                                                                              bundle         apache2
