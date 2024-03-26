@@ -294,7 +294,9 @@
     "claim_mgt_menu",
     "identity_mgt_emailtemplate_menu",
     "identity_security_questions_menu",
-    "metrics_menu"
+    "metrics_menu",
+    "new_datasource_menu",
+    "shutdown_restart_menu"
   ],
     "error_page.code_400.location": "/carbon/errors/error_400.html",
     "error_page.code_401.location": "/carbon/errors/error_401.html",
