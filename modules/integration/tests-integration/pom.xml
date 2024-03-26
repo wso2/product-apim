@@ -66,5 +66,11 @@ under the License.
             <modules>
             </modules>
         </profile>
+        <profile>
+            <id>restart-test</id>
+            <modules>
+                <module>tests-restart</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
