@@ -1276,7 +1276,7 @@ public class APIMTestCaseUtils {
         JSONObject jsonHeaderObject = null;
         try {
             jsonHeaderObject = new JSONObject(jsonHeader);
-            thumbPrint = new String(Base64.decodeBase64(jsonHeaderObject.get("x5t").toString().getBytes()));
+            thumbPrint = new String(Base64.decodeBase64(jsonHeaderObject.get("x5t#S256").toString().getBytes()));
             signatureAlgorithm = (String) jsonHeaderObject.get("alg");
         } catch (JSONException e) {
             log.error("Error while parsing json" + e);
@@ -1490,7 +1490,7 @@ public class APIMTestCaseUtils {
         Certificate cert = null;
         MessageDigest sha = null;
         try {
-            sha = MessageDigest.getInstance("SHA-1");
+            sha = MessageDigest.getInstance("SHA-256");
             for (Enumeration e = keyStore.aliases(); e.hasMoreElements();) {
                 String alias = (String) e.nextElement();
                 Certificate[] certs = keyStore.getCertificateChain(alias);
