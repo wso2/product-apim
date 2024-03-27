@@ -219,8 +219,8 @@ public class WebSocketAPIInvocationWithTracingTestCase extends APIMIntegrationBa
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, tokenJti, WebSocketAPITestCase.AUTH_IN.HEADER, null, apiEndPoint);
-            invokeAPI(client, tokenJti, WebSocketAPITestCase.AUTH_IN.QUERY, null, apiEndPoint);
+            invokeAPI(client, tokenJti, WebSocketAPITestCase.AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
+            invokeAPI(client, tokenJti, WebSocketAPITestCase.AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -278,10 +278,10 @@ public class WebSocketAPIInvocationWithTracingTestCase extends APIMIntegrationBa
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = null;
 
-        if (WebSocketAPITestCase.AUTH_IN.HEADER == in) {
+        if (WebSocketAPITestCase.AUTH_IN.OAUTH_HEADER == in) {
             request.setHeader("Authorization", "Bearer " + accessToken);
             echoUri = new URI(apiEndPoint);
-        } else if (WebSocketAPITestCase.AUTH_IN.QUERY == in) {
+        } else if (WebSocketAPITestCase.AUTH_IN.OAUTH_QUERY == in) {
             echoUri = new URI(apiEndPoint + "?access_token=" + accessToken);
         }
 
