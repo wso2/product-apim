@@ -1474,7 +1474,7 @@
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.7.6</wso2is.km.version>
-        <wso2is7.km.version>2.0.0</wso2is7.km.version>
+        <wso2is7.km.version>2.0.1</wso2is7.km.version>
         <okta.keymanager.feature.version>3.2.1</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.0.8</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.1</keycloak.keymanager.feature.version>
@@ -1484,7 +1484,7 @@
         <apim.analytics.publisher.version>1.2.18</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
-        <charon3.version>4.0.18</charon3.version>
+        <charon3.version>4.0.19</charon3.version>
 
         <!-- Service Catalog Client Dependencies -->
         <com.squareup.okhttp3.version>4.9.0</com.squareup.okhttp3.version>
