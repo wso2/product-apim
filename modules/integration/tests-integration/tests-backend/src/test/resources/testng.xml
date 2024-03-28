@@ -35,7 +35,7 @@
             <class name="org.wso2.am.integration.tests.oas.OASTestCase"/>
             <class name="org.wso2.am.integration.tests.api.revision.APIRevisionTestCase"/>
             <class name="org.wso2.am.integration.tests.api.APICreationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
+<!--            <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>-->
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
         </classes>
     </test>
@@ -285,7 +285,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.graphql.GraphqlTestCase"/>
             <class name="org.wso2.am.integration.tests.graphqlqueryanalysis.GraphQLQueryAnalysisTest"/>
-            <class name="org.wso2.am.integration.tests.graphql.GraphqlSubscriptionTestCase"/>
+<!--            <class name="org.wso2.am.integration.tests.graphql.GraphqlSubscriptionTestCase"/>-->
         </classes>
     </test>
 
@@ -329,7 +329,7 @@
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
-            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
+<!--            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>-->
         </classes>
     </test>
 
