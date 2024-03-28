@@ -1284,10 +1284,10 @@
         <carbon.analytics.common.version>5.3.11</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.1.34</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.1.46</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.29.87</carbon.apimgt.version>
+        <carbon.apimgt.version>9.29.93</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1300,7 +1300,7 @@
         <carbon.governance.version>4.8.33</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.9.26-alpha3</carbon.kernel.version>
+        <carbon.kernel.version>4.9.26-beta</carbon.kernel.version>
         <apimserver.version>4.3.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.23</cipher.tool.version>
@@ -1309,14 +1309,14 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.201</carbon.mediation.version>
+        <carbon.mediation.version>4.7.202</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.699</carbon.identity.version>
+        <carbon.identity.version>5.25.701</carbon.identity.version>
         <carbon.identity.governance.version>1.8.107</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.13.12</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.13.14</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.10</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.7.5</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.9.9</carbon.identity-inbound-auth-openid.version>
@@ -1336,10 +1336,10 @@
         <saml.common.util.version.range>[1.0.0,2.0.0)</saml.common.util.version.range>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.11.14-SNAPSHOT</carbon.deployment.version>
+        <carbon.deployment.version>4.11.14</carbon.deployment.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.9.25</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.9.26</carbon.multitenancy.version>
 
         <siddhi.version>3.2.13</siddhi.version>
 
@@ -1353,7 +1353,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.0.0-wso2v102</synapse.version>
+        <synapse.version>4.0.0-wso2v103</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1-wso2v98</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v29</axiom.wso2.version>
@@ -1387,7 +1387,7 @@
         <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
         <opensaml2.wso2.version>3.3.1.wso2v11</opensaml2.wso2.version>
-        <transport.http.netty.version>6.3.51-SNAPSHOT</transport.http.netty.version>
+        <transport.http.netty.version>6.3.51</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
@@ -1473,8 +1473,8 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.7.6</wso2is.km.version>
-        <wso2is7.km.version>2.0.0</wso2is7.km.version>
+        <wso2is.km.version>1.7.7</wso2is.km.version>
+        <wso2is7.km.version>2.0.1</wso2is7.km.version>
         <okta.keymanager.feature.version>3.2.1</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.0.8</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.1</keycloak.keymanager.feature.version>
@@ -1484,7 +1484,7 @@
         <apim.analytics.publisher.version>1.2.18</apim.analytics.publisher.version>
         <disruptor.orbit.version>3.4.2.wso2v1</disruptor.orbit.version>
         <wss4j.version>1.6.0-wso2v7</wss4j.version>
-        <charon3.version>4.0.18</charon3.version>
+        <charon3.version>4.0.19</charon3.version>
 
         <!-- Service Catalog Client Dependencies -->
         <com.squareup.okhttp3.version>4.9.0</com.squareup.okhttp3.version>
