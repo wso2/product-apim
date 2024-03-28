@@ -557,6 +557,7 @@
                 <exclude>accountrecoveryendpoint/RecoveryEndpointConfig.properties</exclude>
                 <exclude>accountrecoveryendpoint/self-registration-complete.jsp</exclude>
                 <exclude>accountrecoveryendpoint/password-recovery.jsp</exclude>
+                <exclude>accountrecoveryendpoint/password-reset-complete.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/header.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/title.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/product-footer.jsp</exclude>
@@ -591,6 +592,7 @@
             <includes>
                 <include>self-registration-complete.jsp</include>
                 <include>password-recovery.jsp</include>
+                <include>password-reset-complete.jsp</include>
                 <include>self-registration-username-request.jsp</include>
                 <include>self-registration-with-verification.jsp</include>
                 <include>error.jsp</include>
