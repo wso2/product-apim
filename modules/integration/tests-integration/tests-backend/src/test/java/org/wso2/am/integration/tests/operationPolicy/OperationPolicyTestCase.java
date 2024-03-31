@@ -634,8 +634,45 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         policyMap.put("customAPISpecificLogPolicyYAML", newPolicyId);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Delete API specific operation policy created using YAML Policy Definition",
+    @Test(groups = {"wso2.am"}, description = "Get API specific operation policy for API revision",
             dependsOnMethods = "testAddAPISpecificOperationPolicyYAML")
+    public void testGetAPISpecificOperationPolicyForAPIRevision() throws Exception {
+
+        HttpResponse getAPIResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apidto = new Gson().fromJson(getAPIResponse.getData(), APIDTO.class);
+
+        String policyName = "customAPISpecificLogPolicyYAML";
+        Assert.assertNotNull(policyMap.get(policyName), "Unable to find a common policy with name " + policyName);
+
+        List<OperationPolicyDTO> opList = getPolicyList(policyName, policyMap, null);
+
+        APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
+        apiOperationPoliciesDTO.setRequest(opList);
+
+        // Add the operation policy to the API
+        apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
+        restAPIPublisher.updateAPI(apidto);
+
+        // Create a new Revision and Deploy to Gateway
+        String revisionID = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
+        waitForAPIDeployment();
+
+        // Remove the operation policy from the API
+        apidto.getOperations().get(0).setOperationPolicies(new APIOperationPoliciesDTO());
+        restAPIPublisher.updateAPI(apidto);
+
+        // Get & Validate the operation policy from the API Revision
+        HttpResponse getAPIRevisionResponse = restAPIPublisher.getAPI(revisionID);
+        APIDTO apiRevisiondto = new Gson().fromJson(getAPIRevisionResponse.getData(), APIDTO.class);
+        String policyId = apiRevisiondto.getOperations().get(0).getOperationPolicies().getRequest().get(0).getPolicyId();
+        OperationPolicyDataDTO operationPolicyDataDTO = restAPIPublisher.getAPISpecificOperationPolicy(policyId, revisionID);
+        assertNotNull(operationPolicyDataDTO);
+        assertEquals(operationPolicyDataDTO.getName(), policyName);
+        assertEquals(operationPolicyDataDTO.getId(), policyId);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Delete API specific operation policy created using YAML Policy Definition",
+            dependsOnMethods = "testGetAPISpecificOperationPolicyForAPIRevision")
     public void testDeleteAPISpecificOperationPolicyYAML() throws Exception {
 
         int responseCode = deleteOperationPolicy(policyMap.get("customAPISpecificLogPolicyYAML"), apiId);
