@@ -494,14 +494,14 @@
   "cpu_watcher": {
     "enabled": "true",
     "threshold": "80",
-    "retry_count": "2",
+    "attempts": "2",
     "interval": "5",
     "action_executors": "ThreadDumper,MetricsSnapshot,ServerInfo"
   },
   "memory_watcher": {
     "enabled": "true",
     "threshold": "80",
-    "retry_count": "2",
+    "attempts": "2",
     "interval": "5",
     "action_executors": "ThreadDumper,MetricsSnapshot,ServerInfo"
   },
