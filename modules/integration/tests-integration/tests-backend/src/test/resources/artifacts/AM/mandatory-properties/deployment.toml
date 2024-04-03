@@ -56,6 +56,11 @@ gateway_labels =["Default"]
 enable = false
 auth_token = ""
 
+[apim.ai]
+enable = true
+token = ""
+endpoint = ""
+
 [apim.key_manager]
 enable_apikey_subscription_validation = true
 
