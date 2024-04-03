@@ -118,8 +118,6 @@ if not exist "%CARBON_HOME%\repository\components\plugins\bcpkix-jdk*.jar" (
     ) else ( echo "Required bcpkix jar is not available in %homeDir%/.wso2-bc/backup. Download the jar from maven central repository." )
 )
 
-echo "bcprov_text %bcprov_text%"
-echo "bcpkix_text %bcpkix_text%"
 findstr /c:%bcprov_text% %api_publisher_bundles_info% > nul
 if %errorlevel%==1 (
     set server_restart_required=true
@@ -369,9 +367,6 @@ if not exist "%CARBON_HOME%\repository\components\lib\bcpkix-fips*.jar" (
 
 set bcprov_text=%bcprov_jar%,%bcprov_version%,../plugins/%bcprov_jar%_%bcprov_version%.jar,4,true
 set bcpkix_text=%bcpkix_jar%,%bcpkix_version%,../plugins/%bcpkix_jar%_%bcpkix_version%.jar,4,true
-
-echo "bcprov_text %bcprov_text%"
-echo "bcpkix_text %bcpkix_text%"
 
 set api_publisher_temp_file=%CARBON_HOME%\repository\components\api-publisher-deprecated\configuration\org.eclipse.equinox.simpleconfigurator\api_publisher_temp.info
 findstr /v /c:%bcprov_text% /c:%bcpkix_text% %api_publisher_bundles_info% > !api_publisher_temp_file!
