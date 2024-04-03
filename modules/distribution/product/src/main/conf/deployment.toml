@@ -234,7 +234,7 @@ allow_credentials = false
 #enable_authentication = true
 
 #[apim.token.revocation]
-#notifier_impl = "org.wso2.carbon.apimgt.keymgt.events.TokenRevocationNotifierImpl"
+#notifier_impl = "org.wso2.carbon.apimgt.notification.TokenRevocationNotifierImpl"
 #enable_realtime_notifier = true
 #realtime_notifier.ttl = 5000
 #enable_persistent_notifier = true
