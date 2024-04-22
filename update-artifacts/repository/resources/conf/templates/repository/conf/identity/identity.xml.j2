@@ -945,6 +945,13 @@
         <!-- Configuration for allowing users to introspect tokens from other tenants. -->
         <AllowCrossTenantTokenIntrospection>{{oauth.introspect.allow_cross_tenant}}</AllowCrossTenantTokenIntrospection>
 
+        <!-- Configuration for allowing users to hexify the x5t parameter in JWT token -->
+        {% if oauth.jwt_x5t_hexify_required is defined %}
+        <JWTX5tHexifyingRequired>{{oauth.jwt_x5t_hexify_required}}</JWTX5tHexifyingRequired>
+        {% else %}
+        <JWTX5tHexifyingRequired>true</JWTX5tHexifyingRequired>
+        {% endif %}
+
     </OAuth>
     <!--
     Configuration to select JS engine for Adaptive authentication feature.
