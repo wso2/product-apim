@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Change the endpoint security of APi and invoke. Endpoint application was developed to return thr security token in
@@ -148,10 +149,10 @@ public class ChangeEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBa
         sandboxApplication = restAPIStore
                 .generateKeys(applicationID, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.SANDBOX,
                         null, grantTypes);
-        DCRParamRequest oauthAppProduction = new DCRParamRequest("dummyapp--production", null, null,
+        DCRParamRequest oauthAppProduction = new DCRParamRequest(UUID.randomUUID().toString(), null, null,
                 user.getUserName(), "password client_credentials", dcrURL, user.getUserName(),
                 user.getPassword(), null);
-        DCRParamRequest oauthAppSandbox = new DCRParamRequest("dummyapp--sandbox", null, null, user.getUserName(),
+        DCRParamRequest oauthAppSandbox = new DCRParamRequest(UUID.randomUUID().toString(), null, null, user.getUserName(),
                 "password client_credentials", dcrURL, user.getUserName(), user.getPassword(), null);
         applicationKeyBeanProduction = ClientAuthenticator.makeDCRRequest(oauthAppProduction);
         applicationKeyBeanSandbox = ClientAuthenticator.makeDCRRequest(oauthAppSandbox);
