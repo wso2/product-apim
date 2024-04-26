@@ -47,7 +47,7 @@
     Object errorMsgObj = request.getAttribute("errorMsg");
     String callback = Encode.forHtmlAttribute(request.getParameter("callback"));
     boolean isCallBackUrlEmpty = false;
-    if (request.getParameter("callback") == null || request.getParameter("callback").length() == 0) {
+    if (callback == null || callback.length() == 0) {
         isCallBackUrlEmpty = true;
     }
     String errorCode = null;
@@ -214,7 +214,9 @@
 
                         <div class="align-right buttons">
                              <% if (!isCallBackUrlEmpty) { %>
-                            <a id="goBack" href='<%=request.getParameter("callback")%>' class="ui button link-button">
+                            <a id="goBack"
+                               href='<%=Encode.forHtmlAttribute(request.getParameter("callback"))%>'
+                               class="ui button link-button">
                             <% } else { %>
                             <a id="goBack" onclick="window.history.back()" class="ui button link-button">
                             <% } %>
