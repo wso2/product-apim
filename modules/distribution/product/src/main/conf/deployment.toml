@@ -105,7 +105,6 @@ auth_token = ""
 [apim.ai]
 enable = true
 token = ""
-endpoint = "https://dev-tools.wso2.com/apim-ai-service"
 
 [apim.key_manager]
 enable_apikey_subscription_validation = true
