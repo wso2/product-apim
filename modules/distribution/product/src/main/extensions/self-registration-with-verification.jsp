@@ -42,6 +42,7 @@
 <%@ page import="org.wso2.carbon.utils.multitenancy.MultitenantUtils" %>
 <%@ page import="java.io.File" %>
 <%@ page import="java.util.Arrays" %>
+<%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Locale" %>
 <%@ page import="java.util.Map" %>
@@ -67,6 +68,21 @@
     String[] missingClaimDisplayName = new String[0];
     Map<String, Claim> uniquePIIs = null;
     boolean piisConfigured = false;
+
+    ArrayList<String> claimsToHide = new ArrayList();
+    claimsToHide.add("http://wso2.org/claims/identity/accountLocked");
+    claimsToHide.add("http://wso2.org/claims/identity/accountDisabled");
+    claimsToHide.add("http://wso2.org/claims/identity/accountState");
+    claimsToHide.add("http://wso2.org/claims/identity/adminForcedPasswordReset");
+    claimsToHide.add("http://wso2.org/claims/identity/failedEmailOtpAttempts");
+    claimsToHide.add("http://wso2.org/claims/identity/failedLoginAttempts");
+    claimsToHide.add("http://wso2.org/claims/identity/failedLoginAttemptsBeforeSuccess");
+    claimsToHide.add("http://wso2.org/claims/identity/failedLoginLockoutCount");
+    claimsToHide.add("http://wso2.org/claims/identity/failedPasswordRecoveryAttempts");
+    claimsToHide.add("http://wso2.org/claims/identity/failedSmsOtpAttempts");
+    claimsToHide.add("http://wso2.org/claims/identity/failedTotpAttempts");
+    claimsToHide.add("http://wso2.org/claims/identity/lockedReason");
+
     if (request.getParameter(Constants.MISSING_CLAIMS) != null) {
         missingClaimList = request.getParameter(Constants.MISSING_CLAIMS).split(",");
     }
@@ -445,6 +461,7 @@
                                                 !StringUtils.equals(claim.getUri(), IdentityManagementEndpointConstants.ClaimURIs.CHALLENGE_QUESTION_URI_CLAIM) &&
                                                 !StringUtils.equals(claim.getUri(), IdentityManagementEndpointConstants.ClaimURIs.CHALLENGE_QUESTION_1_CLAIM) &&
                                                 !StringUtils.equals(claim.getUri(), IdentityManagementEndpointConstants.ClaimURIs.CHALLENGE_QUESTION_2_CLAIM) &&
+                                                !claimsToHide.contains(claim.getUri()) &&
                                                 !(claim.getReadOnly() != null ? claim.getReadOnly() : false)) {
                                             String claimURI = claim.getUri();
                                             String claimValue = request.getParameter(claimURI);
