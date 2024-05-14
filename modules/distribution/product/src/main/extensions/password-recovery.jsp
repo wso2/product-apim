@@ -259,11 +259,9 @@
                         %>
                         <div class="ui divider hidden"></div>
                         <div class="align-right buttons">
-                            <button type="button" id="recoveryCancel"
-                                    class="ui button secondary"
-                                    onclick="location.href='<%=Encode.forJavaScript(IdentityManagementEndpointUtil.getURLEncodedCallback(callback))%>';">
+                            <a href="javascript:goBack()" class="ui button link-button">
                                 <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Cancel")%>
-                            </button>
+                            </a>
                             <button id="recoverySubmit"
                                     class="ui primary button"
                                     type="submit">
