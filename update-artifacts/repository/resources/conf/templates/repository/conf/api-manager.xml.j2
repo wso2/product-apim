@@ -1301,6 +1301,9 @@
      <MutualSSL>
         <ClientCertificateHeader>{{apimgt.mutual_ssl.certificate_header}}</ClientCertificateHeader>
         <EnableClientCertificateValidation>{{apimgt.mutual_ssl.enable_client_validation}}</EnableClientCertificateValidation>
+        {% if apimgt.mutual_ssl.enable_certificate_chain_validation is defined %}
+        <EnableCertificateChainValidation>{{apimgt.mutual_ssl.enable_certificate_chain_validation}}</EnableCertificateChainValidation>
+        {% endif %}
         {% if apimgt.mutual_ssl.client_certificate_encode is defined %}
         <ClientCertificateEncode>{{apimgt.mutual_ssl.client_certificate_encode}}</ClientCertificateEncode>
         {% endif %}
