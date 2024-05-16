@@ -63,6 +63,7 @@ Name | Type | Description | Notes
 **serviceInfo** | [**APIServiceInfoDTO**](APIServiceInfoDTO.md) |  |  [optional]
 **advertiseInfo** | [**AdvertiseInfoDTO**](AdvertiseInfoDTO.md) |  |  [optional]
 **gatewayVendor** | **String** |  |  [optional]
+**gatewayType** | **String** | The gateway type selected for the API policies. Accepts one of the following. wso2/synapse, wso2/apk. |  [optional]
 **asyncTransportProtocols** | **List&lt;String&gt;** | Supported transports for the async API (http and/or https).  |  [optional]
 
 

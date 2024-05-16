@@ -18,6 +18,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%@ page isErrorPage="true" %>
+<%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.recovery.IdentityRecoveryConstants" %>
@@ -47,9 +48,9 @@
     layoutData.put("containerSize", "large");
 %>
 <!doctype html>
-<html>
+<html lang="en-US">
 <head>
-    <!-- header -->
+    <%-- header --%>
     <%
         File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
         if (headerFile.exists()) {
@@ -62,7 +63,7 @@
 <body class="login-portal layout recovery-layout">
     <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
         <layout:component componentName="ProductHeader" >
-            <!-- product-title -->
+            <%-- product-title --%>
             <%
                 File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
                 if (productTitleFile.exists()) {
@@ -102,7 +103,7 @@
             </div>
         </layout:component>
         <layout:component componentName="ProductFooter" >
-            <!-- product-footer -->
+            <%-- product-footer --%>
             <%
                 File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
                 if (productFooterFile.exists()) {
@@ -114,7 +115,7 @@
         </layout:component>
     </layout:main>
 
-    <!-- footer -->
+    <%-- footer --%>
     <%
         File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
         if (footerFile.exists()) {
@@ -141,7 +142,7 @@
             // Check if the error is related to the confirmation code being invalid.
             // If so, navigate the users to the URL defined in `callback` URL param.
             if (errorCodeFromParams === invalidConfirmationErrorCode) {
-                window.location.href = "<%=callback%>";
+                window.location.href = "<%=Encode.forHtmlAttribute(callback)%>";
 
                 return;
             }

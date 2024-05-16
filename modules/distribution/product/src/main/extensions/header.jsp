@@ -32,6 +32,9 @@
 <%
   String tenant = request.getParameter("tenantDomain");
   if (tenant == null) {
+        tenant = request.getParameter("TenantDomain");
+    }
+  if (tenant == null) {
       String cb = request.getParameter("callback");
       cb = StringUtils.replace(cb, " ", "");
       if (cb != null) {
@@ -39,7 +42,7 @@
           String decodedValue = uri.getQuery();
           String[] params = decodedValue.split("&");
           for (String param : params) {
-              if (param.startsWith("tenantDomain=")) {
+              if (param.startsWith("tenantDomain=") || param.startsWith("TenantDomain=")) {
                   String[] keyVal = param.split("=");
                   tenant = keyVal[1];
               }
@@ -153,7 +156,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="icon" href="libs/themes/default/assets/images/favicon.ico" type="image/x-icon"/>
-<link href="libs/themes/default/theme.2857d6ef.min.css" rel="stylesheet">
+<link href="libs/themes/default/theme.70534561.min.css" rel="stylesheet">
 
 <title><%=request.getAttribute("pageTitle")%></title>
 

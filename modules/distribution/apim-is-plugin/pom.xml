@@ -78,6 +78,14 @@
                                     <outputDirectory>target/apim-is-plugin-resources/webapps</outputDirectory>
                                     <destFileName>keymanager-operations.war</destFileName>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.km.ext.wso2is</groupId>
+                                    <artifactId>wso2is.key.manager.tokenpersistence</artifactId>
+                                    <version>${wso2is.km.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/apim-is-plugin-resources/dropins</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>

@@ -435,14 +435,15 @@ public class DtoFactory {
      * @return Environment DTO object
      */
     public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description, String
-            provider, boolean isReadOnly, List<VHostDTO> vhosts) {
+            provider, boolean isReadOnly, List<VHostDTO> vhosts, String gatewayType) {
         return new EnvironmentDTO()
                 .name(name)
                 .displayName(displayName)
                 .description(description)
                 .provider(provider)
                 .isReadOnly(isReadOnly)
-                .vhosts(vhosts);
+                .vhosts(vhosts)
+                .gatewayType(gatewayType);
     }
 
     /**

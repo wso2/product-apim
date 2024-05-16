@@ -251,6 +251,13 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             verifyUserProfileInfoClaims(jsonObject, endUser);
             // check wrong claims
             BackendJWTUtil.verifyWrongClaims(jsonObject);
+
+            // http://wso2.org/claims/applicationAttributes should contain 'Optional attribute' as
+            // enable_empty_values_in_application_attributes is true and therefore empty values are allowed for custom
+            // application attributes
+            assertTrue(jsonObject.getString("http://wso2.org/claims/applicationAttributes").
+                    equals("{\"Required attribute 2\":\"Default value of Required attribute 2\",\"Required attribute 1\"" +
+                            ":\"Default value of Required attribute 1\",\"Optional attribute\":\"\"}"));
         }
     }
 
@@ -303,6 +310,13 @@ public class JWTTestCase extends APIManagerLifecycleBaseTest {
             assertTrue("JWT claim mobile  not received" + claim, claim.contains("ABC".concat(endUser)));
             // verify wrong claims
             BackendJWTUtil.verifyWrongClaims(jsonObject);
+
+            // http://wso2.org/claims/applicationAttributes should contain 'Optional attribute' as
+            // enable_empty_values_in_application_attributes is true and therefore empty values are allowed for custom
+            // application attributes
+            assertTrue(jsonObject.getString("http://wso2.org/claims/applicationAttributes").
+                    equals("{\"Required attribute 2\":\"Default value of Required attribute 2\",\"Required attribute 1\"" +
+                            ":\"Default value of Required attribute 1\",\"Optional attribute\":\"\"}"));
         }
     }
 

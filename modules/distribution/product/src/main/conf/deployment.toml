@@ -15,7 +15,7 @@ type = "database_unique_id"
 
 [database.apim_db]
 type = "h2"
-url = "jdbc:h2:./repository/database/WSO2AM_DB;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE"
+url = "jdbc:h2:./repository/database/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE"
 username = "wso2carbon"
 password = "wso2carbon"
 
@@ -52,6 +52,7 @@ key_password =  "wso2carbon"
 [[apim.gateway.environment]]
 name = "Default"
 type = "hybrid"
+gateway_type = "Regular"
 provider = "wso2"
 display_in_api_console = true
 description = "This is a hybrid gateway that handles both production and sandbox token traffic."
@@ -101,6 +102,10 @@ gateway_labels =["Default"]
 enable = false
 auth_token = ""
 
+[apim.ai]
+enable = true
+token = ""
+
 [apim.key_manager]
 enable_apikey_subscription_validation = true
 #service_url = "https://localhost:${mgt.transport.https.port}/services/"
@@ -128,6 +133,7 @@ enable_apikey_subscription_validation = true
 #signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever"
+#use_sha256_hash = false
 
 #[apim.oauth_config]
 #enable_outbound_auth_header = false
@@ -150,6 +156,9 @@ enable_apikey_subscription_validation = true
 #enable_anonymous_mode=true
 #enable_cross_tenant_subscriptions = true
 #default_reserved_username = "apim_reserved_user"
+
+#[apim.publisher]
+#enable_portal_configuration_only_mode = false
 
 [apim.cors]
 allow_origins = "*"
@@ -224,7 +233,7 @@ allow_credentials = false
 #enable_authentication = true
 
 #[apim.token.revocation]
-#notifier_impl = "org.wso2.carbon.apimgt.keymgt.events.TokenRevocationNotifierImpl"
+#notifier_impl = "org.wso2.carbon.apimgt.notification.TokenRevocationNotifierImpl"
 #enable_realtime_notifier = true
 #realtime_notifier.ttl = 5000
 #enable_persistent_notifier = true

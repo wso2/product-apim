@@ -57,6 +57,7 @@ import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
+import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -89,6 +90,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     private ApiProductTestHelper apiProductTestHelper;
     private String apiProductId2;
     private String resourcePath;
+    private String apiID1;
+    private String apiID2;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIProductCreationTestCase(TestUserMode userMode) {
@@ -296,6 +299,35 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         boolean isDefaultVersion = Boolean.TRUE.equals(newApiProductDTO.isIsDefaultVersion());
         Assert.assertEquals(isDefaultVersion, true, "Copied API Product is not the default version");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test creation of API Product with malformed context")
+    public void testCreateApiProductWithMalformedContext() throws Exception {
+        // Pre-Conditions : Create APIs
+        List<APIDTO> apisToBeUsed = new ArrayList<>();
+        APIDTO apiOne = apiTestHelper.createApiOne(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        APIDTO apiTwo = apiTestHelper.createApiTwo(getBackendEndServiceEndPointHttp("wildcard/resources"));
+        apisToBeUsed.add(apiOne);
+        apisToBeUsed.add(apiTwo);
+        apiID1 = apiOne.getId();
+        apiID2 = apiTwo.getId();
+
+        // Step 1 : Create APIProduct
+        final String provider = user.getUserName();
+        final String name = UUID.randomUUID().toString();
+        final String context = "/" + UUID.randomUUID().toString() + "{version}" ;
+        final String version = "1.0.0";
+
+        List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
+
+        try{
+            apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
+                    apisToBeUsed, policies);
+        } catch (ApiException e) {
+            Assert.assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode());
+            Assert.assertTrue(e.getResponseBody().contains(
+                    APIMIntegrationConstants.API_PRODUCT_CONTEXT_MALFORMED_ERROR));
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Test creation and invocation of API Product which depends " +
@@ -781,6 +813,8 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
 
+        restAPIPublisher.deleteAPI(apiID1);
+        restAPIPublisher.deleteAPI(apiID2);
         super.cleanUp();
         userManagementClient.deleteUser(RESTRICTED_SUBSCRIBER);
         userManagementClient.deleteUser(STANDARD_SUBSCRIBER);
