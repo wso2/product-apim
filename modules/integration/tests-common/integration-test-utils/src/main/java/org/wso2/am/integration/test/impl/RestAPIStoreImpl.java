@@ -56,6 +56,7 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyMappingRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyReGenerateResponseDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationThrottleResetDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.CurrentAndNewPasswordsDTO;
@@ -1154,6 +1155,27 @@ public class RestAPIStoreImpl {
 //        }
         return null;
 
+    }
+
+    /**
+     * Reset Application Throttle policy for given application and user
+     *
+     * @param applicationId     - uuid of the application
+     * @param userId            - username for which the policy should be reset
+     * @return                  - http response of reset application throttle policy
+     * @throws APIManagerIntegrationTestException
+     */
+    public ApiResponse<Void> resetApplicationThrottlePolicy(String applicationId,
+            String userId) throws APIManagerIntegrationTestException {
+
+        try {
+            ApplicationThrottleResetDTO applicationThrottleResetDTO = new ApplicationThrottleResetDTO().userName(
+                    userId);
+            return applicationsApi.applicationsApplicationIdResetThrottlePolicyPostWithHttpInfo(applicationId,
+                    applicationThrottleResetDTO);
+        } catch (ApiException e) {
+            throw new APIManagerIntegrationTestException("Error when resetting application " + e.getResponseBody(), e);
+        }
     }
 
     /**

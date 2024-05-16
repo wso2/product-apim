@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationThrottleResetDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ErrorDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.WorkflowResponseDTO;
 
@@ -461,6 +462,142 @@ public class ApplicationsApi {
         okhttp3.Call localVarCall = applicationsApplicationIdPutValidateBeforeCall(applicationId, applicationDTO, ifMatch, _callback);
         Type localVarReturnType = new TypeToken<ApplicationDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
+     * Build call for applicationsApplicationIdResetThrottlePolicyPost
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param applicationThrottleResetDTO Payload for which the application-level throttle policy needs to be reset  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Application-level throttle policy reset successfully </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call applicationsApplicationIdResetThrottlePolicyPostCall(String applicationId, ApplicationThrottleResetDTO applicationThrottleResetDTO, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = applicationThrottleResetDTO;
+
+        // create path and map variables
+        String localVarPath = "/applications/{applicationId}/reset-throttle-policy"
+            .replaceAll("\\{" + "applicationId" + "\\}", localVarApiClient.escapeString(applicationId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            "application/json"
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call applicationsApplicationIdResetThrottlePolicyPostValidateBeforeCall(String applicationId, ApplicationThrottleResetDTO applicationThrottleResetDTO, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'applicationId' is set
+        if (applicationId == null) {
+            throw new ApiException("Missing the required parameter 'applicationId' when calling applicationsApplicationIdResetThrottlePolicyPost(Async)");
+        }
+        
+        // verify the required parameter 'applicationThrottleResetDTO' is set
+        if (applicationThrottleResetDTO == null) {
+            throw new ApiException("Missing the required parameter 'applicationThrottleResetDTO' when calling applicationsApplicationIdResetThrottlePolicyPost(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = applicationsApplicationIdResetThrottlePolicyPostCall(applicationId, applicationThrottleResetDTO, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Reset Application-Level Throttle Policy
+     * This operation can be used to reset the application-level throttle policy for a specific user. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param applicationThrottleResetDTO Payload for which the application-level throttle policy needs to be reset  (required)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Application-level throttle policy reset successfully </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void applicationsApplicationIdResetThrottlePolicyPost(String applicationId, ApplicationThrottleResetDTO applicationThrottleResetDTO) throws ApiException {
+        applicationsApplicationIdResetThrottlePolicyPostWithHttpInfo(applicationId, applicationThrottleResetDTO);
+    }
+
+    /**
+     * Reset Application-Level Throttle Policy
+     * This operation can be used to reset the application-level throttle policy for a specific user. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param applicationThrottleResetDTO Payload for which the application-level throttle policy needs to be reset  (required)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Application-level throttle policy reset successfully </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> applicationsApplicationIdResetThrottlePolicyPostWithHttpInfo(String applicationId, ApplicationThrottleResetDTO applicationThrottleResetDTO) throws ApiException {
+        okhttp3.Call localVarCall = applicationsApplicationIdResetThrottlePolicyPostValidateBeforeCall(applicationId, applicationThrottleResetDTO, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Reset Application-Level Throttle Policy (asynchronously)
+     * This operation can be used to reset the application-level throttle policy for a specific user. 
+     * @param applicationId Application Identifier consisting of the UUID of the Application.  (required)
+     * @param applicationThrottleResetDTO Payload for which the application-level throttle policy needs to be reset  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Application-level throttle policy reset successfully </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 401 </td><td> Unauthorized. The user is not authorized. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified.  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call applicationsApplicationIdResetThrottlePolicyPostAsync(String applicationId, ApplicationThrottleResetDTO applicationThrottleResetDTO, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = applicationsApplicationIdResetThrottlePolicyPostValidateBeforeCall(applicationId, applicationThrottleResetDTO, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
         return localVarCall;
     }
     /**
