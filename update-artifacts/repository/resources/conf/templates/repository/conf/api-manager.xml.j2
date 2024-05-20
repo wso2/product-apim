@@ -303,7 +303,11 @@
             <Property name="{{key}}">{{value}}</Property>
             {% endfor %}
         </Properties>
-
+        <MaskProperties>
+            {% for key,value in apim.analytics.mask.items() %}
+            <Property name="{{key}}">{{value}}</Property>
+            {% endfor %}
+        </MaskProperties>
     </Analytics>
 
     <!--
@@ -1218,6 +1222,8 @@
     </ApplicationConfiguration>
     {% endif %}
 
+    <EnableEmptyValuesInApplicationAttributes>{{apim.devportal.enable_empty_values_in_application_attributes}}</EnableEmptyValuesInApplicationAttributes>
+
     {% if apim.ai_security is defined %}
     <AISecurityHandler>
         {% if apim.ai_security.operation_mode is defined %}
@@ -1526,6 +1532,16 @@
      <!--This parameter is used to Enable the password changing feature in devportal. When this is enabled, a user can
       change his/her password via devportal. By default this feature is enabled.-->
      <EnableChangePassword>{{apim.enable_change_password}}</EnableChangePassword>
+
+    {% if apim.lambda_mediator_config is defined %}
+    <LambdaMediatorConfig>
+        <PassRequestParamsToLambdaFunction>{{apim.lambda_mediator_config.pass_request_params}}</PassRequestParamsToLambdaFunction>
+    </LambdaMediatorConfig>
+    {% else %}
+    <LambdaMediatorConfig>
+        <PassRequestParamsToLambdaFunction>true</PassRequestParamsToLambdaFunction>
+    </LambdaMediatorConfig>
+    {% endif %}
 
     {% if apim.extension.listener is defined %}
     <ExtensionListeners>
