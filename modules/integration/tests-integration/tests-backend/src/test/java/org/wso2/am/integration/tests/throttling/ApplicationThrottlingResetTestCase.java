@@ -54,15 +54,15 @@ import java.util.*;
  */
 public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest {
 
-    private String displayName1 = "5PerHour Test Policy";
-    private String policyName1 = "5PerHourTestPolicy";
+    private String displayName1 = "5PerHour Test Policy 1";
+    private String policyName1 = "5PerHourTestPolicy1";
     private String description1 = "This is a request count test application throttle policy";
 
-    private String displayName2 = "5PerHour Test Policy";
-    private String policyName2 = "5PerHourTestPolicy";
+    private String displayName2 = "5PerHour Test Policy 1";
+    private String policyName2 = "5PerHourTestPolicy2";
     private String description2 = "This is a bandwidth test application throttle policy";
     private String timeUnit = "min";
-    private String dataUnit = "KB";
+    private String dataUnit = "B";
     private Integer unitTime = 60;
     private ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO1;
     private ApplicationThrottlePolicyDTO applicationThrottlePolicyDTO2;
@@ -88,7 +88,8 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
     public static Object[][] userModeDataProvider() {
         return new Object[][]{new Object[]{TestUserMode.SUPER_TENANT_USER},
                 new Object[]{TestUserMode.TENANT_USER},
-                new Object[]{TestUserMode.SUPER_TENANT_EMAIL_USER}};
+                new Object[]{TestUserMode.TENANT_EMAIL_USER},
+                };
     }
 
     @BeforeClass(alwaysRun = true)
@@ -115,7 +116,7 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         applicationThrottlePolicyDTO1.setIsDeployed(true);
 
         //Create the application throttling policy DTO with request count limit
-        Long bandwidth = 5L;
+        Long bandwidth = 150L;
         BandwidthLimitDTO bandWidthLimit =
                 DtoFactory.createBandwidthLimitDTO(timeUnit, unitTime, bandwidth, dataUnit);
         ThrottleLimitDTO defaultLimit2 =
@@ -194,12 +195,14 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         checkThrottling(apiInvocationUrl, requestHeaders, 5);
 
         String userId = requestCountApplicationDTO.getOwner();
-        if (requestCountApplicationDTO.getOwner() != null && requestCountApplicationDTO.getOwner().contains("@")) {
-            userId = requestCountApplicationDTO.getOwner().split("@")[0];
+        if (userId != null && userId.contains("@")) {
+//            userId = requestCountApplicationDTO.getOwner().split("@")[0];
+            userId = userId.substring(0, userId.lastIndexOf("@"));
         }
 
         org.wso2.am.integration.clients.store.api.ApiResponse<Void> resetResponse = restAPIStore.resetApplicationThrottlePolicy(requestCountApplicationDTO.getApplicationId(),userId);
         Assert.assertEquals(resetResponse.getStatusCode(), 200, "reset Application policy is not successful");
+        Thread.sleep(5000);
 
         checkThrottling(apiInvocationUrl, requestHeaders, 5);
 
@@ -229,13 +232,15 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         checkThrottling(apiInvocationUrl, requestHeaders, 5);
 
         String userId = bandwidthApplicationDTO.getOwner();
-        if (bandwidthApplicationDTO.getOwner() != null && bandwidthApplicationDTO.getOwner().contains("@")) {
-            userId = bandwidthApplicationDTO.getOwner().split("@")[0];
+        if (userId != null && userId.contains("@")) {
+//            userId = bandwidthApplicationDTO.getOwner().split("@")[0];
+            userId = userId.substring(0, userId.lastIndexOf("@"));
         }
 
         org.wso2.am.integration.clients.store.api.ApiResponse<Void> resetResponse = restAPIStore.resetApplicationThrottlePolicy(bandwidthApplicationDTO.getApplicationId(),userId);
         Assert.assertEquals(resetResponse.getStatusCode(), 200, "reset Application policy is not successful");
 
+        Thread.sleep(5000);
         checkThrottling(apiInvocationUrl, requestHeaders, 5);
 
     }
@@ -270,5 +275,11 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 //        restAPIAdmin.deleteApplicationThrottlingPolicy(bandwidthPolicyDTO.getPolicyId());
+        restAPIStore.deleteApplication(requestCountApplicationDTO.getApplicationId());
+        restAPIStore.deleteApplication(bandwidthApplicationDTO.getApplicationId());
+        restAPIPublisher.deleteAPI(apiId);
+        restAPIAdmin.deleteApplicationThrottlingPolicy(applicationThrottlePolicyDTO1.getPolicyId());
+        restAPIAdmin.deleteApplicationThrottlingPolicy(applicationThrottlePolicyDTO2.getPolicyId());
+        super.cleanUp();
     }
 }
