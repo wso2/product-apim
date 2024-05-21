@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ import java.net.URL;
 import java.util.*;
 
 /**
- * Test Application Throttle Policy Resetting
+ * Test Application Throttle Policy Resetting for client credentials grant type
  */
 public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest {
 
@@ -192,18 +192,20 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         requestHeaders.put("content-type", "application/json");
         String apiInvocationUrl = getAPIInvocationURLHttps(APIContext + "/" + APIVersion + "/");
 
+        // invoke the api and check the throttling
         checkThrottling(apiInvocationUrl, requestHeaders, 5);
 
         String userId = requestCountApplicationDTO.getOwner();
         if (userId != null && userId.contains("@")) {
-//            userId = requestCountApplicationDTO.getOwner().split("@")[0];
             userId = userId.substring(0, userId.lastIndexOf("@"));
         }
 
+        // reset the application policy
         org.wso2.am.integration.clients.store.api.ApiResponse<Void> resetResponse = restAPIStore.resetApplicationThrottlePolicy(requestCountApplicationDTO.getApplicationId(),userId);
         Assert.assertEquals(resetResponse.getStatusCode(), 200, "reset Application policy is not successful");
         Thread.sleep(5000);
 
+        // invoke the api and check the throttling again to verify reset is happened
         checkThrottling(apiInvocationUrl, requestHeaders, 5);
 
     }
@@ -229,18 +231,20 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         requestHeaders.put("content-type", "application/json");
         String apiInvocationUrl = getAPIInvocationURLHttps(APIContext + "/" + APIVersion + "/");
 
+        // invoke the api and check the throttling
         checkThrottling(apiInvocationUrl, requestHeaders, 5);
 
         String userId = bandwidthApplicationDTO.getOwner();
         if (userId != null && userId.contains("@")) {
-//            userId = bandwidthApplicationDTO.getOwner().split("@")[0];
             userId = userId.substring(0, userId.lastIndexOf("@"));
         }
 
+        // reset the application policy
         org.wso2.am.integration.clients.store.api.ApiResponse<Void> resetResponse = restAPIStore.resetApplicationThrottlePolicy(bandwidthApplicationDTO.getApplicationId(),userId);
         Assert.assertEquals(resetResponse.getStatusCode(), 200, "reset Application policy is not successful");
-
         Thread.sleep(5000);
+
+        // invoke the api and check the throttling again to verify reset is happened
         checkThrottling(apiInvocationUrl, requestHeaders, 5);
 
     }
@@ -274,7 +278,6 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-//        restAPIAdmin.deleteApplicationThrottlingPolicy(bandwidthPolicyDTO.getPolicyId());
         restAPIStore.deleteApplication(requestCountApplicationDTO.getApplicationId());
         restAPIStore.deleteApplication(bandwidthApplicationDTO.getApplicationId());
         restAPIPublisher.deleteAPI(apiId);
