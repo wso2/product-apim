@@ -113,6 +113,7 @@
             <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.JWTBandwidthThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.BurstControlTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.ApplicationThrottlingResetTestCase"/>
             <class name="org.wso2.am.integration.tests.operationPolicy.OperationPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APICreationForTenantsTestCase" />
             <class name="org.wso2.am.integration.tests.operationPolicy.JWTClaimBasedAccessValidatorPolicyTestCase"/>
