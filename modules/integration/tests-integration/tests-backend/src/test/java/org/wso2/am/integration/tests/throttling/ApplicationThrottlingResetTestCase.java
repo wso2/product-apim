@@ -75,6 +75,10 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
     private ApplicationDTO requestCountApplicationDTO;
     private ApplicationDTO bandwidthApplicationDTO;
     private String payload = "{\"payload\" : \"test\"}";
+    private Map<String, String> requestHeadersForRequestCount = new HashMap<String, String>();
+    private Map<String, String> requestHeadersForBandwidth = new HashMap<String, String>();
+    private String apiInvocationUrlForRequestCount;
+    private String apiInvocationUrlForBandwidth;
 
     @Factory(dataProvider = "userModeDataProvider")
     public ApplicationThrottlingResetTestCase(TestUserMode userMode) {
@@ -166,33 +170,51 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         // Create an Application for bandwidth limit
         bandwidthApplicationDTO = restAPIStore.addApplication(applicationName2, policyName2, "",
                 "this-is-test-application-for-bandwidth-limit");
-    }
 
-    @Test(groups = { "wso2.am" }, description = "Test reset application throttling policy with request count limit")
-    public void testResetPolicyWithRequestCountLimit() throws Exception {
-        //subscribe to API
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId,
+        //subscribe to API with application with request count limit throttle policy
+        SubscriptionDTO subscriptionDTO1 = restAPIStore.subscribeToAPI(apiId,
                 requestCountApplicationDTO.getApplicationId(), Constants.TIERS_UNLIMITED);
-        Assert.assertEquals(subscriptionDTO.getThrottlingPolicy(), Constants.TIERS_UNLIMITED,
+        Assert.assertEquals(subscriptionDTO1.getThrottlingPolicy(), Constants.TIERS_UNLIMITED,
                 "Error occurred " + "while subscribing to the api. Subscribed policy is not as expected as "
-                + Constants.TIERS_UNLIMITED);
+                        + Constants.TIERS_UNLIMITED);
 
         // generate keys and token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(requestCountApplicationDTO.getApplicationId(),
+        ApplicationKeyDTO applicationKeyDTO1 = restAPIStore.generateKeys(requestCountApplicationDTO.getApplicationId(),
                 "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
                 null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        String accessToken1 = applicationKeyDTO1.getToken().getAccessToken();
 
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
-        requestHeaders.put("accept", "text/xml");
-        requestHeaders.put("content-type", "application/json");
-        String apiInvocationUrl = getAPIInvocationURLHttps(APIContext + "/" + APIVersion + "/");
+        requestHeadersForRequestCount.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken1);
+        requestHeadersForRequestCount.put("accept", "text/xml");
+        requestHeadersForRequestCount.put("content-type", Constants.APPLICATION_JSON);
+        apiInvocationUrlForRequestCount = getAPIInvocationURLHttps(APIContext + "/" + APIVersion + "/");
 
+        //subscribe to API with application with bandwidth limit throttle policy
+        SubscriptionDTO subscriptionDTO2 = restAPIStore.subscribeToAPI(apiId, bandwidthApplicationDTO.getApplicationId(),
+                Constants.TIERS_UNLIMITED);
+        Assert.assertEquals(subscriptionDTO2.getThrottlingPolicy(), Constants.TIERS_UNLIMITED,
+                "Error occurred " + "while subscribing to the api. Subscribed policy is not as expected as "
+                        + Constants.TIERS_UNLIMITED);
+
+        // generate keys and token
+        ApplicationKeyDTO applicationKeyDTO2 = restAPIStore.generateKeys(bandwidthApplicationDTO.getApplicationId(),
+                "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                null, grantTypes);
+        String accessToken2 = applicationKeyDTO2.getToken().getAccessToken();
+
+        requestHeadersForBandwidth.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken2);
+        requestHeadersForBandwidth.put("accept", "text/xml");
+        requestHeadersForBandwidth.put("content-type", Constants.APPLICATION_JSON);
+        apiInvocationUrlForBandwidth = getAPIInvocationURLHttps(APIContext + "/" + APIVersion + "/");
+
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test reset application throttling policy with request count limit")
+    public void testResetPolicyWithRequestCountLimit() throws Exception {
         // invoke the api and check the throttling
-        checkThrottling(apiInvocationUrl, requestHeaders, 5);
+        checkThrottling(apiInvocationUrlForRequestCount, requestHeadersForRequestCount, 5);
 
         String userId = requestCountApplicationDTO.getOwner();
         if (userId != null && userId.contains("@")) {
@@ -207,34 +229,13 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         Thread.sleep(5000);
 
         // invoke the api and check the throttling again to verify reset is happened
-        checkThrottling(apiInvocationUrl, requestHeaders, 5);
+        checkThrottling(apiInvocationUrlForRequestCount, requestHeadersForRequestCount, 5);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Test reset application throttling policy with request count limit")
+    @Test(groups = { "wso2.am" }, description = "Test reset application throttling policy with bandwidth limit")
     public void testResetPolicyWithBandwidthLimit() throws Exception {
-        //subscribe to API
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, bandwidthApplicationDTO.getApplicationId(),
-                Constants.TIERS_UNLIMITED);
-        Assert.assertEquals(subscriptionDTO.getThrottlingPolicy(), Constants.TIERS_UNLIMITED,
-                "Error occurred " + "while subscribing to the api. Subscribed policy is not as expected as "
-                + Constants.TIERS_UNLIMITED);
-
-        // generate keys and token
-        ArrayList<String> grantTypes = new ArrayList<>();
-        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(bandwidthApplicationDTO.getApplicationId(),
-                "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
-                null, grantTypes);
-        String accessToken = applicationKeyDTO.getToken().getAccessToken();
-
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
-        requestHeaders.put("accept", "text/xml");
-        requestHeaders.put("content-type", "application/json");
-        String apiInvocationUrl = getAPIInvocationURLHttps(APIContext + "/" + APIVersion + "/");
-
         // invoke the api and check the throttling
-        checkThrottling(apiInvocationUrl, requestHeaders, 5);
+        checkThrottling(apiInvocationUrlForBandwidth, requestHeadersForBandwidth, 5);
 
         String userId = bandwidthApplicationDTO.getOwner();
         if (userId != null && userId.contains("@")) {
@@ -249,7 +250,7 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         Thread.sleep(5000);
 
         // invoke the api and check the throttling again to verify reset is happened
-        checkThrottling(apiInvocationUrl, requestHeaders, 5);
+        checkThrottling(apiInvocationUrlForBandwidth, requestHeadersForBandwidth, 5);
     }
 
     private void checkThrottling(String invokeURL, Map<String, String> requestHeaders, int limit)
