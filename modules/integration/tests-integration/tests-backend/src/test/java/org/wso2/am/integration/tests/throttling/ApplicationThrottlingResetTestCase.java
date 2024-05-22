@@ -208,7 +208,6 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         requestHeadersForBandwidth.put("accept", "text/xml");
         requestHeadersForBandwidth.put("content-type", Constants.APPLICATION_JSON);
         apiInvocationUrlForBandwidth = getAPIInvocationURLHttps(APIContext + "/" + APIVersion + "/");
-
     }
 
     @Test(groups = { "wso2.am" }, description = "Test reset application throttling policy with request count limit")
