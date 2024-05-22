@@ -208,7 +208,6 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
 
         // invoke the api and check the throttling again to verify reset is happened
         checkThrottling(apiInvocationUrl, requestHeaders, 5);
-
     }
 
     @Test(groups = { "wso2.am" }, description = "Test reset application throttling policy with request count limit")
