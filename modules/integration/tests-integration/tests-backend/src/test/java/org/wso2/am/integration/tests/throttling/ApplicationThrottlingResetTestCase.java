@@ -57,7 +57,6 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
     private String displayName1 = "5PerHour Test Policy 1";
     private String policyName1 = "5PerHourTestPolicy1";
     private String description1 = "This is a request count test application throttle policy";
-
     private String displayName2 = "5PerHour Test Policy 1";
     private String policyName2 = "5PerHourTestPolicy2";
     private String description2 = "This is a bandwidth test application throttle policy";
@@ -75,8 +74,6 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
     private String applicationName2 = "bandwidth-limit-application";
     private ApplicationDTO requestCountApplicationDTO;
     private ApplicationDTO bandwidthApplicationDTO;
-
-    //    private final Log log = LogFactory.getLog(BurstControlTestCase.class);
     private String payload = "{\"payload\" : \"test\"}";
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -97,16 +94,16 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         super.init(userMode);
         //Create the application throttling policy DTO with request count limit
         Long requestCount = 5L;
-        RequestCountLimitDTO requestCountLimit =
-                DtoFactory.createRequestCountLimitDTO(timeUnit, unitTime, requestCount);
-        ThrottleLimitDTO defaultLimit1 =
-                DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT, requestCountLimit, null);
-        applicationThrottlePolicyDTO1 = DtoFactory
-                .createApplicationThrottlePolicyDTO(policyName1, displayName1, description1, false, defaultLimit1);
+        RequestCountLimitDTO requestCountLimit = DtoFactory.createRequestCountLimitDTO(timeUnit, unitTime,
+                requestCount);
+        ThrottleLimitDTO defaultLimit1 = DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.REQUESTCOUNTLIMIT,
+                requestCountLimit, null);
+        applicationThrottlePolicyDTO1 = DtoFactory.createApplicationThrottlePolicyDTO(policyName1, displayName1,
+                description1, false, defaultLimit1);
 
         //Add the application throttling policy
-        ApiResponse<ApplicationThrottlePolicyDTO> addedPolicy1 =
-                restAPIAdmin.addApplicationThrottlingPolicy(applicationThrottlePolicyDTO1);
+        ApiResponse<ApplicationThrottlePolicyDTO> addedPolicy1 = restAPIAdmin.addApplicationThrottlingPolicy(
+                applicationThrottlePolicyDTO1);
 
         //Assert the status code and policy ID
         Assert.assertEquals(addedPolicy1.getStatusCode(), HttpStatus.SC_CREATED);
@@ -117,16 +114,15 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
 
         //Create the application throttling policy DTO with request count limit
         Long bandwidth = 150L;
-        BandwidthLimitDTO bandWidthLimit =
-                DtoFactory.createBandwidthLimitDTO(timeUnit, unitTime, bandwidth, dataUnit);
-        ThrottleLimitDTO defaultLimit2 =
-                DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.BANDWIDTHLIMIT, null, bandWidthLimit);
-        applicationThrottlePolicyDTO2 = DtoFactory
-                .createApplicationThrottlePolicyDTO(policyName2, displayName2, description2, false, defaultLimit2);
+        BandwidthLimitDTO bandWidthLimit = DtoFactory.createBandwidthLimitDTO(timeUnit, unitTime, bandwidth, dataUnit);
+        ThrottleLimitDTO defaultLimit2 = DtoFactory.createThrottleLimitDTO(ThrottleLimitDTO.TypeEnum.BANDWIDTHLIMIT,
+                null, bandWidthLimit);
+        applicationThrottlePolicyDTO2 = DtoFactory.createApplicationThrottlePolicyDTO(policyName2, displayName2,
+                description2, false, defaultLimit2);
 
         //Add the application throttling policy
-        ApiResponse<ApplicationThrottlePolicyDTO> addedPolicy2 =
-                restAPIAdmin.addApplicationThrottlingPolicy(applicationThrottlePolicyDTO2);
+        ApiResponse<ApplicationThrottlePolicyDTO> addedPolicy2 = restAPIAdmin.addApplicationThrottlingPolicy(
+                applicationThrottlePolicyDTO2);
 
         //Assert the status code and policy ID
         Assert.assertEquals(addedPolicy2.getStatusCode(), HttpStatus.SC_CREATED);
@@ -164,26 +160,29 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(response.getResponseCode(), 200, "Backend (dummy_api.xml) is not up and running");
 
         // Create an Application for request count limit
-        requestCountApplicationDTO = restAPIStore.addApplication(applicationName1,
-                policyName1, "", "this-is-test-application-for-request-count-limit");
+        requestCountApplicationDTO = restAPIStore.addApplication(applicationName1, policyName1, "",
+                "this-is-test-application-for-request-count-limit");
 
         // Create an Application for bandwidth limit
-        bandwidthApplicationDTO = restAPIStore.addApplication(applicationName2, policyName2, "", "this-is-test-application-for-bandwidth-limit");
+        bandwidthApplicationDTO = restAPIStore.addApplication(applicationName2, policyName2, "",
+                "this-is-test-application-for-bandwidth-limit");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test reset application throttling policy with request count limit")
+    @Test(groups = { "wso2.am" }, description = "Test reset application throttling policy with request count limit")
     public void testResetPolicyWithRequestCountLimit() throws Exception {
         //subscribe to API
-        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, requestCountApplicationDTO.getApplicationId(),
-                Constants.TIERS_UNLIMITED);
+        SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId,
+                requestCountApplicationDTO.getApplicationId(), Constants.TIERS_UNLIMITED);
         Assert.assertEquals(subscriptionDTO.getThrottlingPolicy(), Constants.TIERS_UNLIMITED,
-                "Error occurred " + "while subscribing to the api. Subscribed policy is not as expected as " + Constants.TIERS_UNLIMITED);
+                "Error occurred " + "while subscribing to the api. Subscribed policy is not as expected as "
+                + Constants.TIERS_UNLIMITED);
 
         // generate keys and token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(requestCountApplicationDTO.getApplicationId(), "3600", null,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(requestCountApplicationDTO.getApplicationId(),
+                "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
@@ -201,7 +200,9 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         }
 
         // reset the application policy
-        org.wso2.am.integration.clients.store.api.ApiResponse<Void> resetResponse = restAPIStore.resetApplicationThrottlePolicy(requestCountApplicationDTO.getApplicationId(),userId);
+        org.wso2.am.integration.clients.store.api.ApiResponse<Void> resetResponse =
+                restAPIStore.resetApplicationThrottlePolicy(
+                requestCountApplicationDTO.getApplicationId(), userId);
         Assert.assertEquals(resetResponse.getStatusCode(), 200, "reset Application policy is not successful");
         Thread.sleep(5000);
 
@@ -210,19 +211,21 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test reset application throttling policy with request count limit")
+    @Test(groups = { "wso2.am" }, description = "Test reset application throttling policy with request count limit")
     public void testResetPolicyWithBandwidthLimit() throws Exception {
         //subscribe to API
         SubscriptionDTO subscriptionDTO = restAPIStore.subscribeToAPI(apiId, bandwidthApplicationDTO.getApplicationId(),
                 Constants.TIERS_UNLIMITED);
         Assert.assertEquals(subscriptionDTO.getThrottlingPolicy(), Constants.TIERS_UNLIMITED,
-                "Error occurred " + "while subscribing to the api. Subscribed policy is not as expected as " + Constants.TIERS_UNLIMITED);
+                "Error occurred " + "while subscribing to the api. Subscribed policy is not as expected as "
+                + Constants.TIERS_UNLIMITED);
 
         // generate keys and token
         ArrayList<String> grantTypes = new ArrayList<>();
         grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
-        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(bandwidthApplicationDTO.getApplicationId(), "3600", null,
-                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore.generateKeys(bandwidthApplicationDTO.getApplicationId(),
+                "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
@@ -240,14 +243,16 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         }
 
         // reset the application policy
-        org.wso2.am.integration.clients.store.api.ApiResponse<Void> resetResponse = restAPIStore.resetApplicationThrottlePolicy(bandwidthApplicationDTO.getApplicationId(),userId);
+        org.wso2.am.integration.clients.store.api.ApiResponse<Void> resetResponse =
+                restAPIStore.resetApplicationThrottlePolicy(
+                bandwidthApplicationDTO.getApplicationId(), userId);
         Assert.assertEquals(resetResponse.getStatusCode(), 200, "reset Application policy is not successful");
         Thread.sleep(5000);
 
         // invoke the api and check the throttling again to verify reset is happened
         checkThrottling(apiInvocationUrl, requestHeaders, 5);
-
     }
+
     private void checkThrottling(String invokeURL, Map<String, String> requestHeaders, int limit)
             throws IOException, InterruptedException {
         HttpResponse apiCallResponse;
@@ -266,10 +271,12 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
             } else {
                 apiCallResponse = HTTPSClientUtils.doPost(invokeURL, requestHeaders, payload);
                 if (apiCallResponse.getResponseCode() == 429) {
-                    Assert.fail("Throttling has happened at the count : " + count
-                            + ". But expected to throttle after the request count " + limit);
+                    Assert.fail(
+                            "Throttling has happened at the count : " + count + ". But expected to throttle after the"
+                                    + " request count " + limit);
                 } else {
-                    Assert.assertEquals(apiCallResponse.getResponseCode(), org.apache.commons.httpclient.HttpStatus.SC_OK,
+                    Assert.assertEquals(apiCallResponse.getResponseCode(),
+                            org.apache.commons.httpclient.HttpStatus.SC_OK,
                             "API invocation Response code is not as expected");
                 }
             }
