@@ -108,7 +108,7 @@ socket_timeout=20000
 
 [synapse_properties]
 synapse_commons_json_buildValidNCNames=true
-
+'ws.transport.max.http.codec.init.length' = 8192
 
 [apim.notification]
 from_address = "APIM.com"
