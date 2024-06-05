@@ -281,6 +281,23 @@ public class DtoFactory {
     }
 
     /**
+     * Creates a blacklist policy DTO using the given parameters.
+     *
+     * @param conditionType     Blocking condition type
+     * @param conditionValue    Blocking condition value
+     * @param conditionStatus   Activation status of the blocking condition
+     * @return Created blocking conditions DTO.
+     */
+    public static BlockingConditionDTO createBlockingConditionDTO(BlockingConditionDTO.ConditionTypeEnum conditionType,
+            String conditionValue, boolean conditionStatus) {
+
+        return new BlockingConditionDTO().
+                conditionType(conditionType).
+                conditionValue(conditionValue).
+                conditionStatus(conditionStatus);
+    }
+
+    /**
      * Creates a header condition DTO using the given parameters.
      *
      * @param headerName  Name of the header.
