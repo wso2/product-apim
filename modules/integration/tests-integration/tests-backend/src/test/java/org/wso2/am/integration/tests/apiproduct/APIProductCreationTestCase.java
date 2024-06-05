@@ -168,6 +168,9 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         org.wso2.am.integration.clients.store.api.v1.dto.APIDTO apiDTO =
                 apiProductTestHelper.verifyApiProductInPortal(apiProductDTO);
 
+        // Validate APIProduct on search
+        apiProductTestHelper.validateAPITypeForAPIProductOnSearch(name);
+
         // Step 4 : Subscribe to APIProduct
         ApplicationDTO applicationDTO = apiTestHelper.verifySubscription(apiDTO, UUID.randomUUID().toString(),
                 TIER_UNLIMITED);
