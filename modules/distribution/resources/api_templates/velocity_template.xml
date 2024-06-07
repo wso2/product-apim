@@ -351,14 +351,14 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
                 #if( $apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected )
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
-        #if($endpointSecurityProd.clientId && ($endpointSecurityProd.type == "oauth" || $endpointSecurityProd.type == "OAUTH"))
+                    #if($endpointSecurityProd.clientId && ($endpointSecurityProd.type == "oauth" || $endpointSecurityProd.type == "OAUTH"))
         <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
-        #end
+                    #end
     </then>
     <else>
-        #if($endpointSecuritySand.clientId && ($endpointSecuritySand.type == "oauth" || $endpointSecuritySand.type == "OAUTH"))
+                    #if($endpointSecuritySand.clientId && ($endpointSecuritySand.type == "oauth" || $endpointSecuritySand.type == "OAUTH"))
         <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
-        #end
+                    #end
     </else>
 </filter>
                 #end
