@@ -31,6 +31,8 @@
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
         #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
         #set( $ep_key = "${endpointKey}_API${type}Endpoint")
+        #set( $endpointSecurityProd = $endpoint_security.get("production"))
+        #set( $endpointSecuritySand = $endpoint_security.get("sandbox"))
         #set( $endpointsecurity = $endpoint_security.get("${type}"))
         ## IF endpoint secured
         #if($endpointsecurity.enabled)
@@ -346,8 +348,19 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
                 #if( $responseCacheEnabled )
 <cache scope="per-host" collector="true"/>
                 #end
-                #if( $endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH" )
-<class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
+                #if( $apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected )
+<filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
+    <then>
+                    #if($endpointSecurityProd.clientId && ($endpointSecurityProd.type == "oauth" || $endpointSecurityProd.type == "OAUTH"))
+        <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
+                    #end
+    </then>
+    <else>
+                    #if($endpointSecuritySand.clientId && ($endpointSecuritySand.type == "oauth" || $endpointSecuritySand.type == "OAUTH"))
+        <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
+                    #end
+    </else>
+</filter>
                 #end
 <send/>
 </outSequence>
