@@ -766,6 +766,7 @@
   "apim.devportal.api_key_alias": "gateway_certificate_alias",
   "apim.devportal.application_sharing_claim": "http://wso2.org/claims/organization",
   "apim.devportal.enable_anonymous_mode": true,
+  "apim.devportal.enable_empty_values_in_application_attributes": false,
   "apim.publisher.key_alias": "gateway_certificate_alias",
   "apim.publisher.enable_api_doc_visibility": false,
   "apim.publisher.display_url": false,
