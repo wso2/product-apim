@@ -120,6 +120,9 @@
         {% if service_provider.fetch_chunk_size is defined %}
         <FetchChunkSize>{{service_provider.fetch_chunk_size}}</FetchChunkSize>
         {% endif %}
+        {% if service_provider.use_username_as_sub_claim is defined %}
+        <UseUsernameAsSubClaim>{{service_provider.use_username_as_sub_claim}}</UseUsernameAsSubClaim>
+        {% endif %}
     </ServiceProviders>
 
     <OpenID>
