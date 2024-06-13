@@ -541,5 +541,6 @@
       "pattern.executors": "ServerInfo",
       "pattern.reload_time": "10"
     }
-  ]
+  ],
+  "service_provider.use_username_as_sub_claim": false
 }
