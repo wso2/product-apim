@@ -22,6 +22,7 @@
   "transport.binary.receiver.parameters.ciphers": "transport.binary.receiver.parameters.ciphers",
   "synapse_properties.synapse_commons_json_buildValidNCNames": "synapse_properties.'synapse.commons.json.buildValidNCNames'",
   "transport.http.socket_timeout": "passthru_http.'http.socket.timeout'",
+  "transport.http.block_service_list": "passthru_http.'http.block_service_list'",
   "transport.http.core_worker_pool_size": "passthru_http.worker_pool_size_core",
   "transport.http.max_worker_pool_size": "passthru_http.worker_pool_size_max",
   "transport.http.worker_pool_queue_length": "passthru_http.worker_pool_queue_length",
