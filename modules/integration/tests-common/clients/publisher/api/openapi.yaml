@@ -8375,6 +8375,9 @@ paths:
                 tier:
                   description: api tier to which the certificate should be applied.
                   type: string
+                keyType:
+                  description: key type to which the certificate should be applied.
+                  type: string
               required:
               - alias
               - certificate
@@ -8656,6 +8659,9 @@ paths:
                   type: string
                 tier:
                   description: The tier of the certificate
+                  type: string
+                keyType:
+                  description: The key type of the certificate
                   type: string
       responses:
         "200":
@@ -19796,9 +19802,11 @@ components:
         certificates:
         - tier: Gold
           alias: wso2carbon
+          keyType: PRODUCTION
           apiId: 64eca60b-2e55-4c38-8603-e9e6bad7d809
         - tier: Gold
           alias: wso2carbon
+          keyType: PRODUCTION
           apiId: 64eca60b-2e55-4c38-8603-e9e6bad7d809
         count: 1
       properties:
@@ -19818,6 +19826,7 @@ components:
       example:
         tier: Gold
         alias: wso2carbon
+        keyType: PRODUCTION
         apiId: 64eca60b-2e55-4c38-8603-e9e6bad7d809
       properties:
         alias:
@@ -19828,6 +19837,9 @@ components:
           type: string
         tier:
           example: Gold
+          type: string
+        keyType:
+          default: PRODUCTION
           type: string
       title: Client certificate meta data
       type: object

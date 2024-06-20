@@ -4671,6 +4671,9 @@ paths:
                 tier:
                   type: string
                   description: api tier to which the certificate should be applied.
+                keyType:
+                  type: string
+                  description: key type to which the certificate should be applied.
         required: true
       responses:
         200:
@@ -4783,6 +4786,9 @@ paths:
                 tier:
                   type: string
                   description: The tier of the certificate
+                keyType:
+                  type: string
+                  description: The key type of the certificate
       responses:
         200:
           description: |
@@ -11282,6 +11288,9 @@ components:
         tier:
           type: string
           example: Gold
+        keyType:
+          type: string
+          default: PRODUCTION
       description: Meta data of certificate
     LifecycleState:
       title: Lifecycle State

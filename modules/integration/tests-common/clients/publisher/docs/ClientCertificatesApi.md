@@ -14,7 +14,7 @@ Method | HTTP request | Description
 
 <a name="addAPIClientCertificate"></a>
 # **addAPIClientCertificate**
-> ClientCertMetadataDTO addAPIClientCertificate(apiId, certificate, alias, tier)
+> ClientCertMetadataDTO addAPIClientCertificate(apiId, certificate, alias, tier, keyType)
 
 Upload a New Certificate
 
@@ -44,8 +44,9 @@ public class Example {
     File certificate = new File("/path/to/file"); // File | The certificate that needs to be uploaded.
     String alias = "alias_example"; // String | Alias for the certificate
     String tier = "tier_example"; // String | api tier to which the certificate should be applied.
+    String keyType = "keyType_example"; // String | key type to which the certificate should be applied.
     try {
-      ClientCertMetadataDTO result = apiInstance.addAPIClientCertificate(apiId, certificate, alias, tier);
+      ClientCertMetadataDTO result = apiInstance.addAPIClientCertificate(apiId, certificate, alias, tier, keyType);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ClientCertificatesApi#addAPIClientCertificate");
@@ -66,6 +67,7 @@ Name | Type | Description  | Notes
  **certificate** | **File**| The certificate that needs to be uploaded. |
  **alias** | **String**| Alias for the certificate |
  **tier** | **String**| api tier to which the certificate should be applied. |
+ **keyType** | **String**| key type to which the certificate should be applied. | [optional]
 
 ### Return type
 
@@ -378,7 +380,7 @@ Name | Type | Description  | Notes
 
 <a name="updateAPIClientCertificateByAlias"></a>
 # **updateAPIClientCertificateByAlias**
-> ClientCertMetadataDTO updateAPIClientCertificateByAlias(alias, apiId, certificate, tier)
+> ClientCertMetadataDTO updateAPIClientCertificateByAlias(alias, apiId, certificate, tier, keyType)
 
 Update a Certificate
 
@@ -408,8 +410,9 @@ public class Example {
     String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
     File certificate = new File("/path/to/file"); // File | The certificate that needs to be uploaded.
     String tier = "tier_example"; // String | The tier of the certificate
+    String keyType = "keyType_example"; // String | The key type of the certificate
     try {
-      ClientCertMetadataDTO result = apiInstance.updateAPIClientCertificateByAlias(alias, apiId, certificate, tier);
+      ClientCertMetadataDTO result = apiInstance.updateAPIClientCertificateByAlias(alias, apiId, certificate, tier, keyType);
       System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ClientCertificatesApi#updateAPIClientCertificateByAlias");
@@ -430,6 +433,7 @@ Name | Type | Description  | Notes
  **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
  **certificate** | **File**| The certificate that needs to be uploaded. | [optional]
  **tier** | **String**| The tier of the certificate | [optional]
+ **keyType** | **String**| The key type of the certificate | [optional]
 
 ### Return type
 

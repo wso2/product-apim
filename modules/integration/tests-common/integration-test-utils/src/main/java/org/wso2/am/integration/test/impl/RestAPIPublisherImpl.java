@@ -1419,14 +1419,15 @@ public class RestAPIPublisherImpl {
      *
      * @param certificate certificate
      * @param alias       alis
+     * @param keyType key type (whether PRODUCTION or SANDBOX)
      * @return
      * @throws ApiException if an error occurred while uploading the certificate.
      */
-    public HttpResponse uploadCertificate(File certificate, String alias, String apiId, String tier)
+    public HttpResponse uploadCertificate(File certificate, String alias, String apiId, String tier, String keyType)
             throws ApiException {
 
         ClientCertMetadataDTO certificateDTO = clientCertificatesApi.addAPIClientCertificate(apiId, certificate,
-                alias, tier);
+                alias, tier, keyType);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
             response = new HttpResponse("Successfully uploaded the certificate", 200);
