@@ -189,7 +189,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         String certOne = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "example.crt";
         restAPIPublisher.uploadCertificate(new File(certOne), "example", apiId1,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.SANDBOX);
 
         APIRequest apiRequest2 = new APIRequest(mutualSSLWithOAuthAPI, mutualSSLWithOAuthAPIContext,
                 new URL(apiEndPointUrl));
@@ -217,7 +217,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         String certTwo = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "example.crt";
         restAPIPublisher.uploadCertificate(new File(certTwo), "abcde", apiId2,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.SANDBOX);
 
 
         APIRequest apiRequest3 = new APIRequest(mutualSSLandOauthMandatoryAPI, mutualSSLandOAuthMandatoryAPIContext,
@@ -245,8 +245,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         apiId3 = response3.getData();
         String certThree = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "example.crt";
-        restAPIPublisher
-                .uploadCertificate(new File(certThree), "abcdef", apiId3, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        restAPIPublisher.uploadCertificate(new File(certThree), "abcdef", apiId3,
+                        APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.SANDBOX);
         // Create Revision and Deploy to Gateway
 
         // Add an API Secured with APIKey only

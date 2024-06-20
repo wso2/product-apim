@@ -42,6 +42,10 @@ public class ClientCertMetadataDTO {
         @SerializedName(SERIALIZED_NAME_TIER)
             private String tier;
 
+        public static final String SERIALIZED_NAME_KEY_TYPE = "keyType";
+        @SerializedName(SERIALIZED_NAME_KEY_TYPE)
+            private String keyType = "PRODUCTION";
+
 
         public ClientCertMetadataDTO alias(String alias) {
         
@@ -112,6 +116,29 @@ public class ClientCertMetadataDTO {
     }
 
 
+        public ClientCertMetadataDTO keyType(String keyType) {
+        
+        this.keyType = keyType;
+        return this;
+        }
+
+    /**
+        * Get keyType
+    * @return keyType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getKeyType() {
+        return keyType;
+    }
+
+
+    public void setKeyType(String keyType) {
+        this.keyType = keyType;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -123,12 +150,13 @@ public class ClientCertMetadataDTO {
             ClientCertMetadataDTO clientCertMetadata = (ClientCertMetadataDTO) o;
             return Objects.equals(this.alias, clientCertMetadata.alias) &&
             Objects.equals(this.apiId, clientCertMetadata.apiId) &&
-            Objects.equals(this.tier, clientCertMetadata.tier);
+            Objects.equals(this.tier, clientCertMetadata.tier) &&
+            Objects.equals(this.keyType, clientCertMetadata.keyType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(alias, apiId, tier);
+        return Objects.hash(alias, apiId, tier, keyType);
     }
 
 
@@ -139,6 +167,7 @@ sb.append("class ClientCertMetadataDTO {\n");
     sb.append("    alias: ").append(toIndentedString(alias)).append("\n");
     sb.append("    apiId: ").append(toIndentedString(apiId)).append("\n");
     sb.append("    tier: ").append(toIndentedString(tier)).append("\n");
+    sb.append("    keyType: ").append(toIndentedString(keyType)).append("\n");
 sb.append("}");
 return sb.toString();
 }

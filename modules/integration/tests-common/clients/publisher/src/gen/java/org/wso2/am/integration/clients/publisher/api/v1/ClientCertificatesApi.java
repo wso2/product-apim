@@ -64,6 +64,7 @@ public class ClientCertificatesApi {
      * @param certificate The certificate that needs to be uploaded. (required)
      * @param alias Alias for the certificate (required)
      * @param tier api tier to which the certificate should be applied. (required)
+     * @param keyType key type to which the certificate should be applied. (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -75,7 +76,7 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call addAPIClientCertificateCall(String apiId, File certificate, String alias, String tier, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call addAPIClientCertificateCall(String apiId, File certificate, String alias, String tier, String keyType, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -99,6 +100,10 @@ public class ClientCertificatesApi {
             localVarFormParams.put("tier", tier);
         }
 
+        if (keyType != null) {
+            localVarFormParams.put("keyType", keyType);
+        }
+
         final String[] localVarAccepts = {
             "application/json"
         };
@@ -118,7 +123,7 @@ public class ClientCertificatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call addAPIClientCertificateValidateBeforeCall(String apiId, File certificate, String alias, String tier, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call addAPIClientCertificateValidateBeforeCall(String apiId, File certificate, String alias, String tier, String keyType, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
@@ -141,7 +146,7 @@ public class ClientCertificatesApi {
         }
         
 
-        okhttp3.Call localVarCall = addAPIClientCertificateCall(apiId, certificate, alias, tier, _callback);
+        okhttp3.Call localVarCall = addAPIClientCertificateCall(apiId, certificate, alias, tier, keyType, _callback);
         return localVarCall;
 
     }
@@ -153,6 +158,7 @@ public class ClientCertificatesApi {
      * @param certificate The certificate that needs to be uploaded. (required)
      * @param alias Alias for the certificate (required)
      * @param tier api tier to which the certificate should be applied. (required)
+     * @param keyType key type to which the certificate should be applied. (optional)
      * @return ClientCertMetadataDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -163,8 +169,8 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ClientCertMetadataDTO addAPIClientCertificate(String apiId, File certificate, String alias, String tier) throws ApiException {
-        ApiResponse<ClientCertMetadataDTO> localVarResp = addAPIClientCertificateWithHttpInfo(apiId, certificate, alias, tier);
+    public ClientCertMetadataDTO addAPIClientCertificate(String apiId, File certificate, String alias, String tier, String keyType) throws ApiException {
+        ApiResponse<ClientCertMetadataDTO> localVarResp = addAPIClientCertificateWithHttpInfo(apiId, certificate, alias, tier, keyType);
         return localVarResp.getData();
     }
 
@@ -175,6 +181,7 @@ public class ClientCertificatesApi {
      * @param certificate The certificate that needs to be uploaded. (required)
      * @param alias Alias for the certificate (required)
      * @param tier api tier to which the certificate should be applied. (required)
+     * @param keyType key type to which the certificate should be applied. (optional)
      * @return ApiResponse&lt;ClientCertMetadataDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -185,8 +192,8 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<ClientCertMetadataDTO> addAPIClientCertificateWithHttpInfo(String apiId, File certificate, String alias, String tier) throws ApiException {
-        okhttp3.Call localVarCall = addAPIClientCertificateValidateBeforeCall(apiId, certificate, alias, tier, null);
+    public ApiResponse<ClientCertMetadataDTO> addAPIClientCertificateWithHttpInfo(String apiId, File certificate, String alias, String tier, String keyType) throws ApiException {
+        okhttp3.Call localVarCall = addAPIClientCertificateValidateBeforeCall(apiId, certificate, alias, tier, keyType, null);
         Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -198,6 +205,7 @@ public class ClientCertificatesApi {
      * @param certificate The certificate that needs to be uploaded. (required)
      * @param alias Alias for the certificate (required)
      * @param tier api tier to which the certificate should be applied. (required)
+     * @param keyType key type to which the certificate should be applied. (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -209,9 +217,9 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call addAPIClientCertificateAsync(String apiId, File certificate, String alias, String tier, final ApiCallback<ClientCertMetadataDTO> _callback) throws ApiException {
+    public okhttp3.Call addAPIClientCertificateAsync(String apiId, File certificate, String alias, String tier, String keyType, final ApiCallback<ClientCertMetadataDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = addAPIClientCertificateValidateBeforeCall(apiId, certificate, alias, tier, _callback);
+        okhttp3.Call localVarCall = addAPIClientCertificateValidateBeforeCall(apiId, certificate, alias, tier, keyType, _callback);
         Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
@@ -756,6 +764,7 @@ public class ClientCertificatesApi {
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param certificate The certificate that needs to be uploaded. (optional)
      * @param tier The tier of the certificate (optional)
+     * @param keyType The key type of the certificate (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -768,7 +777,8 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call updateAPIClientCertificateByAliasCall(String alias, String apiId, File certificate, String tier, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call updateAPIClientCertificateByAliasCall(String alias, String apiId, File certificate, String tier,
+      String keyType, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -787,6 +797,10 @@ public class ClientCertificatesApi {
 
         if (tier != null) {
             localVarFormParams.put("tier", tier);
+        }
+
+        if (keyType != null) {
+            localVarFormParams.put("keyType", keyType);
         }
 
         final String[] localVarAccepts = {
@@ -808,7 +822,8 @@ public class ClientCertificatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call updateAPIClientCertificateByAliasValidateBeforeCall(String alias, String apiId, File certificate, String tier, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call updateAPIClientCertificateByAliasValidateBeforeCall(String alias, String apiId,
+     File certificate, String tier, String keyType, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'alias' is set
         if (alias == null) {
@@ -821,7 +836,7 @@ public class ClientCertificatesApi {
         }
         
 
-        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasCall(alias, apiId, certificate, tier, _callback);
+        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasCall(alias, apiId, certificate, tier, keyType, _callback);
         return localVarCall;
 
     }
@@ -833,6 +848,7 @@ public class ClientCertificatesApi {
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param certificate The certificate that needs to be uploaded. (optional)
      * @param tier The tier of the certificate (optional)
+     * @param keyType The key type of the certificate (optional)
      * @return ClientCertMetadataDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -844,8 +860,8 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ClientCertMetadataDTO updateAPIClientCertificateByAlias(String alias, String apiId, File certificate, String tier) throws ApiException {
-        ApiResponse<ClientCertMetadataDTO> localVarResp = updateAPIClientCertificateByAliasWithHttpInfo(alias, apiId, certificate, tier);
+    public ClientCertMetadataDTO updateAPIClientCertificateByAlias(String alias, String apiId, File certificate, String tier, String keyType) throws ApiException {
+        ApiResponse<ClientCertMetadataDTO> localVarResp = updateAPIClientCertificateByAliasWithHttpInfo(alias, apiId, certificate, tier, keyType);
         return localVarResp.getData();
     }
 
@@ -856,6 +872,7 @@ public class ClientCertificatesApi {
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param certificate The certificate that needs to be uploaded. (optional)
      * @param tier The tier of the certificate (optional)
+     * @param keyType The key type of the certificate (optional)
      * @return ApiResponse&lt;ClientCertMetadataDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -867,8 +884,8 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<ClientCertMetadataDTO> updateAPIClientCertificateByAliasWithHttpInfo(String alias, String apiId, File certificate, String tier) throws ApiException {
-        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, certificate, tier, null);
+    public ApiResponse<ClientCertMetadataDTO> updateAPIClientCertificateByAliasWithHttpInfo(String alias, String apiId, File certificate, String tier, String keyType) throws ApiException {
+        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, certificate, tier, keyType, null);
         Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -880,6 +897,7 @@ public class ClientCertificatesApi {
      * @param apiId **API ID** consisting of the **UUID** of the API.  (required)
      * @param certificate The certificate that needs to be uploaded. (optional)
      * @param tier The tier of the certificate (optional)
+     * @param keyType The key type of the certificate (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -892,9 +910,11 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call updateAPIClientCertificateByAliasAsync(String alias, String apiId, File certificate, String tier, final ApiCallback<ClientCertMetadataDTO> _callback) throws ApiException {
+    public okhttp3.Call updateAPIClientCertificateByAliasAsync(String alias, String apiId, File certificate,
+        String tier, String keyType, final ApiCallback<ClientCertMetadataDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, certificate, tier, _callback);
+        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, certificate, tier,
+                keyType, _callback);
         Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
