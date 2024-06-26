@@ -777,8 +777,7 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call updateAPIClientCertificateByAliasCall(String alias, String apiId, File certificate, String tier,
-      String keyType, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call updateAPIClientCertificateByAliasCall(String alias, String apiId, File certificate, String tier, String keyType, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -822,8 +821,7 @@ public class ClientCertificatesApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call updateAPIClientCertificateByAliasValidateBeforeCall(String alias, String apiId,
-     File certificate, String tier, String keyType, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call updateAPIClientCertificateByAliasValidateBeforeCall(String alias, String apiId, File certificate, String tier, String keyType, final ApiCallback _callback) throws ApiException {
         
         // verify the required parameter 'alias' is set
         if (alias == null) {
@@ -910,11 +908,9 @@ public class ClientCertificatesApi {
         <tr><td> 500 </td><td> Internal Server Error. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call updateAPIClientCertificateByAliasAsync(String alias, String apiId, File certificate,
-        String tier, String keyType, final ApiCallback<ClientCertMetadataDTO> _callback) throws ApiException {
+    public okhttp3.Call updateAPIClientCertificateByAliasAsync(String alias, String apiId, File certificate, String tier, String keyType, final ApiCallback<ClientCertMetadataDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, certificate, tier,
-                keyType, _callback);
+        okhttp3.Call localVarCall = updateAPIClientCertificateByAliasValidateBeforeCall(alias, apiId, certificate, tier, keyType, _callback);
         Type localVarReturnType = new TypeToken<ClientCertMetadataDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
