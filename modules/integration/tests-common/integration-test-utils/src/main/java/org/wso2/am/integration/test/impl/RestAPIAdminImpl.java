@@ -510,6 +510,18 @@ public class RestAPIAdminImpl {
     }
 
     /**
+     * This method is used to retrieve blocking conditions by condition type and condition value.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving the blocking conditions.
+     */
+    public BlockingConditionListDTO getBlockingConditionsByConditionTypeAndValue(String query) throws ApiException {
+
+        return denyPolicyCollectionApi.throttlingDenyPoliciesGet(Constants.APPLICATION_JSON, null, null, query);
+    }
+
+
+    /**
      * Deletes a deny throttling policy.
      *
      * @param policyId policy id of the deny throttling policy to be deleted.
