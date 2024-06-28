@@ -127,6 +127,11 @@ public class APIMIntegrationConstants {
 
     }
 
+    public static class KEY_TYPE {
+        public static final String PRODUCTION = "PRODUCTION";
+        public static final String SANDBOX = "SANDBOX";
+    }
+
     public static class GRANT_TYPE {
         public static final String PASSWORD = "password";
         public static final String CLIENT_CREDENTIAL = "client_credentials";
