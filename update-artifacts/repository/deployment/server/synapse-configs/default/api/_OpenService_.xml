@@ -1,0 +1,16 @@
+<api xmlns="http://ws.apache.org/ns/synapse" name="_OpenService_" context="/service">
+    <resource methods="HEAD DELETE POST GET OPTIONS PATCH PUT" url-mapping="/*" faultSequence="_token_fault_">
+        <inSequence>
+            <class name="org.wso2.carbon.apimgt.gateway.mediators.BotDetectionMediator"/>
+            <property name="messageType" value="text/plain" scope="axis2" type="STRING"/>
+            <property name="NO_ENTITY_BODY" value="true" scope="axis2" type="BOOLEAN"/>
+            <respond/>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+    </resource>
+    <handlers>
+        <handler class="org.wso2.carbon.apimgt.gateway.handlers.common.SynapsePropertiesHandler"/>
+    </handlers>
+</api>
