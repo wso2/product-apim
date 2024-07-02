@@ -1,6 +1,6 @@
 {
     "category": "Mediation",
-    "name": "ccRemoveHeader",
+    "name": "apkRemoveHeader",
     "version": "v2",
     "displayName": "Remove Header",
     "description": "This policy allows you to remove a header from the request",
