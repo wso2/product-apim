@@ -1,6 +1,6 @@
 {
     "category": "Mediation",
-    "name": "ccMirrorRequest",
+    "name": "apkMirrorRequest",
     "version": "v1",
     "displayName": "Mirror Request",
     "description": "This policy allows you to mirror a request to various URLs",

@@ -1,6 +1,6 @@
 {
   "category": "Mediation",
-  "name": "ccCallInterceptorService",
+  "name": "apkCallInterceptorService",
   "version": "v1",
   "displayName": "Call Interceptor Service",
   "description": "This policy allows you to call an interceptor service for a request message",
