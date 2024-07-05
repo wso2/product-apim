@@ -1426,8 +1426,8 @@ public class RestAPIPublisherImpl {
     public HttpResponse uploadCertificate(File certificate, String alias, String apiId, String tier, String keyType)
             throws ApiException {
 
-        ClientCertMetadataDTO certificateDTO = clientCertificatesApi.addAPIClientCertificate(apiId, certificate,
-                alias, tier, keyType);
+        ClientCertMetadataDTO certificateDTO = clientCertificatesApi.addAPIClientCertificateOfGivenKeyType(keyType,
+                apiId, certificate, alias, tier);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
             response = new HttpResponse("Successfully uploaded the certificate", 200);
