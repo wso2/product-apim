@@ -827,7 +827,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Create and Export API with Thumb",
-            dependsOnMethods = "testRestrictedAPIExportFromUserWithoutAccessRole")
+            dependsOnMethods = "testRestrictedAPIExportFromAdminUser")
     public void createAPIWithThumb() throws Exception {
 
         // Create a dummy API
