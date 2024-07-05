@@ -517,7 +517,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
 
         HttpResponse updateResponse = restAPIPublisher.updateAPIWithHttpInfo(apidto);
-        assertEquals(updateResponse.getResponseCode(), 500);
+        assertEquals(updateResponse.getResponseCode(), 400);
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the add header operation policy",
@@ -537,7 +537,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
 
         HttpResponse updateResponse = restAPIPublisher.updateAPIWithHttpInfo(apidto);
-        assertEquals(updateResponse.getResponseCode(), 500);
+        assertEquals(updateResponse.getResponseCode(), 400);
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the add header operation policy",
