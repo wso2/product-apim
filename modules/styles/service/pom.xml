@@ -78,17 +78,17 @@
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse.equinox</groupId>
+            <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.equinox.http.servlet</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse.equinox</groupId>
-            <artifactId>org.eclipse.equinox.http.helper</artifactId>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.equinox.http.service.api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.eclipse.equinox</groupId>
+            <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.equinox.jsp.jasper</artifactId>
         </dependency>
 
