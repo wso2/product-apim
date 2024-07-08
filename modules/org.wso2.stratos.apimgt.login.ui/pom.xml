@@ -83,7 +83,7 @@
             <artifactId>commons-logging</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.equinox</groupId>
+            <groupId>org.eclipse.platform</groupId>
             <artifactId>javax.servlet</artifactId>
         </dependency>
         <dependency>
