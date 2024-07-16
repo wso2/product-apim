@@ -1012,6 +1012,9 @@
         <EnableQueryParamConditions>{{apim.throttling.enable_query_param_based_throttling}}</EnableQueryParamConditions>
         <SkipRedeployingPolicies>RequestPreProcessorExecutionPlan{% for policy in apim.throttling.skip_redeploying_policies %}{{ "," if loop.first }}{{policy}}{{ "," if not loop.last }}{% endfor %}</SkipRedeployingPolicies>
         <EnablePolicyDeployment>{{apim.throttling.enable_policy_deployment}}</EnablePolicyDeployment>
+        {% if apim.throttling.set_header_based_throttling_case_insensitive is defined %}
+        <SetHeaderConditionsCaseInsensitive>{{apim.throttling.set_header_based_throttling_case_insensitive}}</SetHeaderConditionsCaseInsensitive>
+        {% endif %}
     </ThrottlingConfigurations>
 
     <WorkflowConfigurations>
