@@ -85,6 +85,7 @@
         {% endif %}
         <GatewayJWTGeneration>
             <ImplClass>{{apim.jwt.gateway_generator.impl}}</ImplClass>
+            <EncodeX5tWithoutPadding>{{apim.jwt.encode_x5t_without_padding}}</EncodeX5tWithoutPadding>
             <Configuration>
             <ExcludedClaims>
                 {%- for claim in apim.jwt.gateway_generator.excluded_claims -%}
@@ -415,6 +416,11 @@
         </PersistentNotifier>
         {% endif %}
     </TokenRevocationNotifiers>
+
+    <TokenValidation>
+        <!-- Enforce validating JWT type header -->
+        <EnforceTypeHeaderValidation>{{apim.token.validation.enforce_type_header_validation}}</EnforceTypeHeaderValidation>
+    </TokenValidation>
 
     <!-- Settings related to managing API access tiers. -->
     <TierManagement>
