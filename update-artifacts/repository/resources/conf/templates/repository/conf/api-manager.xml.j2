@@ -94,6 +94,9 @@
             </ExcludedClaims>
             <EnableUserClaimRetrievalFromKeyManager>{{apim.jwt.gateway_generator.enable_claim_retrieval}}</EnableUserClaimRetrievalFromKeyManager>
             </Configuration>
+            {% if apim.jwt.enable_base64_padding is defined %}
+            <EnableBase64Padding>{{apim.jwt.enable_base64_padding}}</EnableBase64Padding>
+            {% endif %}
         </GatewayJWTGeneration>
     </JWTConfiguration>
 
