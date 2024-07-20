@@ -73,8 +73,10 @@ import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -1130,5 +1132,37 @@ public class APIMIntegrationBaseTest {
         Calendar calendar = Calendar.getInstance();
         int secondsInTime = calendar.get(Calendar.SECOND);
         return 60 - secondsInTime;
+    }
+
+
+    /**
+     * Read the file content and return the content as String.
+     *
+     * @param fileLocation Location of the file.
+     * @return String Content of the file.
+     * @throws APIManagerIntegrationTestException exception throws when reading the file.
+     */
+    protected String readFile(String fileLocation) throws APIManagerIntegrationTestException {
+        BufferedReader bufferedReader = null;
+        try {
+            bufferedReader = new BufferedReader(new FileReader(new File(fileLocation)));
+            String line;
+            StringBuilder stringBuilder = new StringBuilder();
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+            return stringBuilder.toString();
+        } catch (IOException ioE) {
+            throw new APIManagerIntegrationTestException("IOException when reading the file from:" + fileLocation, ioE);
+        } finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    log.warn("Error when closing the buffer reade which used to reed the file:" + fileLocation +
+                            ". Error:" + e.getMessage());
+                }
+            }
+        }
     }
 }

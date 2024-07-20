@@ -199,6 +199,153 @@ public class SubscriptionsApi {
         return localVarCall;
     }
     /**
+     * Build call for changeSubscriptionBusinessPlan
+     * @param subscriptionId Subscription Id  (required)
+     * @param businessPlan The business plan to be assigned to the subscription.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Subscription business plan was changed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call changeSubscriptionBusinessPlanCall(String subscriptionId, String businessPlan, String ifMatch, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/subscriptions/change-business-plan";
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (subscriptionId != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("subscriptionId", subscriptionId));
+        }
+
+        if (businessPlan != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("businessPlan", businessPlan));
+        }
+
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        if (ifMatch != null) {
+            localVarHeaderParams.put("If-Match", localVarApiClient.parameterToString(ifMatch));
+        }
+
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call changeSubscriptionBusinessPlanValidateBeforeCall(String subscriptionId, String businessPlan, String ifMatch, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'subscriptionId' is set
+        if (subscriptionId == null) {
+            throw new ApiException("Missing the required parameter 'subscriptionId' when calling changeSubscriptionBusinessPlan(Async)");
+        }
+        
+        // verify the required parameter 'businessPlan' is set
+        if (businessPlan == null) {
+            throw new ApiException("Missing the required parameter 'businessPlan' when calling changeSubscriptionBusinessPlan(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = changeSubscriptionBusinessPlanCall(subscriptionId, businessPlan, ifMatch, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Change subscription business plan
+     * This operation can be used to change the business plan of a subscription specifying the subscription Id and the business plan. 
+     * @param subscriptionId Subscription Id  (required)
+     * @param businessPlan The business plan to be assigned to the subscription.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Subscription business plan was changed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+     </table>
+     */
+    public void changeSubscriptionBusinessPlan(String subscriptionId, String businessPlan, String ifMatch) throws ApiException {
+        changeSubscriptionBusinessPlanWithHttpInfo(subscriptionId, businessPlan, ifMatch);
+    }
+
+    /**
+     * Change subscription business plan
+     * This operation can be used to change the business plan of a subscription specifying the subscription Id and the business plan. 
+     * @param subscriptionId Subscription Id  (required)
+     * @param businessPlan The business plan to be assigned to the subscription.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @return ApiResponse&lt;Void&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Subscription business plan was changed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<Void> changeSubscriptionBusinessPlanWithHttpInfo(String subscriptionId, String businessPlan, String ifMatch) throws ApiException {
+        okhttp3.Call localVarCall = changeSubscriptionBusinessPlanValidateBeforeCall(subscriptionId, businessPlan, ifMatch, null);
+        return localVarApiClient.execute(localVarCall);
+    }
+
+    /**
+     * Change subscription business plan (asynchronously)
+     * This operation can be used to change the business plan of a subscription specifying the subscription Id and the business plan. 
+     * @param subscriptionId Subscription Id  (required)
+     * @param businessPlan The business plan to be assigned to the subscription.  (required)
+     * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Subscription business plan was changed successfully.  </td><td>  -  </td></tr>
+        <tr><td> 400 </td><td> Bad Request. Invalid request or validation error. </td><td>  -  </td></tr>
+        <tr><td> 403 </td><td> Forbidden. The request must be conditional but no condition has been specified. </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 409 </td><td> Conflict. Specified resource already exists. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call changeSubscriptionBusinessPlanAsync(String subscriptionId, String businessPlan, String ifMatch, final ApiCallback<Void> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = changeSubscriptionBusinessPlanValidateBeforeCall(subscriptionId, businessPlan, ifMatch, _callback);
+        localVarApiClient.executeAsync(localVarCall, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for getSubscriptions
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (optional)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)

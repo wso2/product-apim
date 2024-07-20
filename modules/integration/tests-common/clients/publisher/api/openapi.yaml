@@ -7842,6 +7842,105 @@ paths:
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/subscriptions/unblock-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809"'
       x-accepts: application/json
+  /subscriptions/change-business-plan:
+    post:
+      description: |
+        This operation can be used to change the business plan of a subscription specifying the subscription Id and the business plan.
+      operationId: changeSubscriptionBusinessPlan
+      parameters:
+      - description: |
+          Subscription Id
+        explode: true
+        in: query
+        name: subscriptionId
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: |
+          The business plan to be assigned to the subscription.
+        explode: true
+        in: query
+        name: businessPlan
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: |
+            OK.
+            Subscription business plan was changed successfully.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "409":
+          content:
+            application/json:
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict. Specified resource already exists.
+      security:
+      - OAuth2Security:
+        - apim:subscription_manage
+      summary: Change subscription business plan
+      tags:
+      - Subscriptions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -X POST "https://127.0.0.1:9443/api/am/publisher/v4/subscriptions/change-business-plan?subscriptionId=92c50632-012f-4739-b37d-baa23008c813&businessPlan=Silver"'
+      x-accepts: application/json
   /throttling-policies/{policyLevel}:
     get:
       description: |

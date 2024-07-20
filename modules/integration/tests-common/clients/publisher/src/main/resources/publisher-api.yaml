@@ -4390,6 +4390,44 @@ paths:
           "https://127.0.0.1:9443/api/am/publisher/v4/subscriptions/unblock-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809"'
       operationId: unBlockSubscription
 
+  /subscriptions/change-business-plan:
+    post:
+      tags:
+        - Subscriptions
+      summary: Change subscription business plan
+      description: |
+        This operation can be used to change the business plan of a subscription specifying the subscription Id and the business plan.
+      parameters:
+        - $ref: '#/components/parameters/subscriptionId-Q'
+        - name: businessPlan
+          in: query
+          description: |
+            The business plan to be assigned to the subscription.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/If-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Subscription business plan was changed successfully.
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+      security:
+        - OAuth2Security:
+            - apim:subscription_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -X POST
+          "https://127.0.0.1:9443/api/am/publisher/v4/subscriptions/change-business-plan?subscriptionId=92c50632-012f-4739-b37d-baa23008c813&businessPlan=Silver"'
+      operationId: changeSubscriptionBusinessPlan
 
   ######################################################
   # The "Thorttling Tier Collection" resource APIs
