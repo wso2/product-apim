@@ -49,6 +49,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.FileInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
@@ -63,6 +64,7 @@ import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -101,6 +103,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private final String NEW_API_NAME = "NewAPIImportExportTestCaseAPIName";
     private final String PRESERVE_PUBLISHER_API_NAME = "preserveNewAPIImportExportAPIName";
     private final String NOT_PRESERVE_PUBLISHER_API_NAME = "notPreserveNewAPIImportExportAPIName";
+    private final String API_WITH_THUMB_NAME = "apiWithThumb";
     private final String PRESERVE_PUBLISHER_API_CONTEXT = "preserveAPIImportExportContext";
     private final String NOT_PRESERVE_PUBLISHER_API_CONTEXT = "notPreserveAPIImportExportContext";
     private final String API_CONTEXT = "APIImportExportTestCaseContext";
@@ -126,7 +129,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private String allowedUser = "allowedUser";
     private String publisherUser = "importExportPublisher";
     private String publisherURLHttps;
-    private File zipTempDir, apiZip, newApiZip, preservePublisherApiZip, notPreservePublisherApiZip;
+    private File zipTempDir, apiZip, apiWithThumbZip, newApiZip, preservePublisherApiZip, notPreservePublisherApiZip;
     private String importUrl;
     private String exportUrl;
     private APICreationRequestBean apiCreationRequestBean;
@@ -137,6 +140,7 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
     private Map<String, String> requestHeaders = new HashMap<String, String>();
     private String apiId;
     private String newApiId;
+    private String apiWithThumbId;
     private String applicationId;
     private String newApplicationId;
     private String preservePublisherApiId;
@@ -852,12 +856,75 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         exportArtifact(exportRequest, apiZip, publisherUser, String.valueOf(PUBLISHER_USER_PASS));
     }
 
+    @Test(groups = { "wso2.am" }, description = "Create and Export API with Thumb",
+            dependsOnMethods = "testRestrictedAPIExportFromAdminUser")
+    public void createAPIWithThumb() throws Exception {
+
+        // Create a dummy API
+        String imageFile = "thumbnail.png";
+        String provider = user.getUserName();
+        APIRequest apiRequest = new APIRequest(API_WITH_THUMB_NAME, "apiWithThumbContext", new URL(exportUrl));
+        apiRequest.setDescription("This is test API create by API manager integration test");
+        apiRequest.setVersion(API_VERSION);
+        apiRequest.setSandbox(exportUrl);
+        apiRequest.setResourceMethod("GET");
+        apiRequest.setProvider(provider);
+
+        // Check the API creation
+        HttpResponse response = restAPIPublisher.addAPI(apiRequest);
+        String APICreatedWithThumbId = response.getData();
+        int responseCode = response.getResponseCode();
+        Assert.assertEquals(responseCode, HttpStatus.SC_CREATED);
+
+        // Publish API
+        HttpResponse lifecycleResponse = restAPIPublisher.
+                changeAPILifeCycleStatusToPublish(APICreatedWithThumbId, false);
+        Assert.assertEquals(lifecycleResponse.getResponseCode(), HttpStatus.SC_OK);
+
+        // Set the Thumbnail
+        String imagePath = (new File(System.getProperty("user.dir"))).getParent() + RESTAPITestConstants.PATH_SUBSTRING
+                + imageFile;
+        File image = new File(imagePath);
+        FileInfoDTO thumbUpdateResponse = restAPIPublisher.updateAPIThumbnail(APICreatedWithThumbId, image);
+        waitForAPIDeployment();
+        Assert.assertNotNull(thumbUpdateResponse.getRelativePath(), "Thumbnail hasn't been added successfully");
+        APIDTO apiWithThumbObj = getAPI(API_WITH_THUMB_NAME, API_VERSION, user.getUserName());
+        Assert.assertTrue(apiWithThumbObj.isHasThumbnail(), "hasThumbnail hasn't been updated successfully");
+
+        // Export API
+        URL exportRequest =
+                new URL(exportUrl + "?name=" + API_WITH_THUMB_NAME + "&version=" + API_VERSION + "&providerName="
+                        + provider + "&format=JSON");
+        String fileName = user.getUserDomain() + "_" + API_WITH_THUMB_NAME;
+        apiWithThumbZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
+        exportArtifact(exportRequest, apiWithThumbZip, USER_WITH_ACCESS_ROLE, PASSWORD);
+
+        // Delete API
+        HttpResponse serviceResponse = restAPIPublisher.deleteAPI(APICreatedWithThumbId);
+        assertEquals(serviceResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "API delete failed");
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Import exported API with Thumb", dependsOnMethods = "createAPIWithThumb")
+    public void testAPIImportWithThumb() throws Exception {
+
+        // upload the api zip which has thumbnail
+        importArtifact(importUrl, apiWithThumbZip, user.getUserName(), user.getPassword().toCharArray());
+        waitForAPIDeployment();
+
+        // get the imported API
+        APIDTO apiObjWithThumb = getAPI("apiWithThumb", API_VERSION, user.getUserName());
+        Assert.assertTrue(apiObjWithThumb.isHasThumbnail(), "Imported API has lost the thumbnail");
+
+        apiWithThumbId = apiObjWithThumb.getId();
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         allowedStoreUser.deleteApplication(applicationId);
         allowedStoreUser.deleteApplication(newApplicationId);
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newApiId);
+        restAPIPublisher.deleteAPI(apiWithThumbId);
         restAPIPublisher.deleteAPI(preservePublisherApiId);
         restAPIPublisher.deleteAPI(notPreservePublisherApiId);
         restAPIPublisher.deleteAPI(publisherAccessControlAPIId);
@@ -865,6 +932,8 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         deleteStatus = apiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         deleteStatus = newApiZip.delete();
+        Assert.assertTrue(deleteStatus, "temp file delete not successful");
+        deleteStatus = apiWithThumbZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         deleteStatus = preservePublisherApiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");

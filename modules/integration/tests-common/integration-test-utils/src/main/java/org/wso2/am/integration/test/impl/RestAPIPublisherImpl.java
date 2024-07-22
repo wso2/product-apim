@@ -80,6 +80,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.FileInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyDeploymentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyMappingInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyMappingsDTO;
@@ -397,6 +398,10 @@ public class RestAPIPublisherImpl {
         ApiResponse<APIDTO> httpInfo = apIsApi.createAPIWithHttpInfo(apidto, osVersion);
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
+    }
+
+    public FileInfoDTO updateAPIThumbnail(String apiId, File file) throws ApiException {
+        return apIsApi.updateAPIThumbnail(apiId, file, null);
     }
 
     private boolean isAsyncApi(APIRequest apiRequest) {
