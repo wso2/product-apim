@@ -193,7 +193,7 @@ public class RestAPIPublisherImpl {
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
                                 "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
                                 "apim:comment_write apim:common_operation_policy_view apim:common_operation_policy_manage " +
-                                "apim:policies_import_export apim:gateway_policy_view apim:gateway_policy_manage",
+                                "apim:policies_import_export apim:gateway_policy_view apim:gateway_policy_manage apim:subscription_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -2757,5 +2757,17 @@ public class RestAPIPublisherImpl {
 
     public SettingsDTO getSettings() throws ApiException {
         return settingsApi.getSettings();
+    }
+
+    /**
+     * Changes the business plan of a subscription.
+     *
+     * @param subscriptionId the ID of the subscription to be updated
+     * @param businessPlan the new business plan to be assigned to the subscription
+     * @param ifMatch the ETag value to check for concurrency control
+     * @throws ApiException if an error occurs while changing the business plan
+     */
+    public void changeSubscriptionBusinessPlan(String subscriptionId, String businessPlan, String ifMatch) throws ApiException {
+        subscriptionsApi.changeSubscriptionBusinessPlan(subscriptionId, businessPlan, ifMatch);
     }
 }

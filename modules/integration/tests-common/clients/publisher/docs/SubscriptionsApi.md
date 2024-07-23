@@ -5,6 +5,7 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v4*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**blockSubscription**](SubscriptionsApi.md#blockSubscription) | **POST** /subscriptions/block-subscription | Block a Subscription
+[**changeSubscriptionBusinessPlan**](SubscriptionsApi.md#changeSubscriptionBusinessPlan) | **POST** /subscriptions/change-business-plan | Change subscription business plan
 [**getSubscriptions**](SubscriptionsApi.md#getSubscriptions) | **GET** /subscriptions | Get all Subscriptions
 [**unBlockSubscription**](SubscriptionsApi.md#unBlockSubscription) | **POST** /subscriptions/unblock-subscription | Unblock a Subscription
 
@@ -81,6 +82,80 @@ null (empty response body)
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
+
+<a name="changeSubscriptionBusinessPlan"></a>
+# **changeSubscriptionBusinessPlan**
+> changeSubscriptionBusinessPlan(subscriptionId, businessPlan, ifMatch)
+
+Change subscription business plan
+
+This operation can be used to change the business plan of a subscription specifying the subscription Id and the business plan. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.SubscriptionsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    SubscriptionsApi apiInstance = new SubscriptionsApi(defaultClient);
+    String subscriptionId = "subscriptionId_example"; // String | Subscription Id 
+    String businessPlan = "businessPlan_example"; // String | The business plan to be assigned to the subscription. 
+    String ifMatch = "ifMatch_example"; // String | Validator for conditional requests; based on ETag. 
+    try {
+      apiInstance.changeSubscriptionBusinessPlan(subscriptionId, businessPlan, ifMatch);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling SubscriptionsApi#changeSubscriptionBusinessPlan");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **subscriptionId** | **String**| Subscription Id  |
+ **businessPlan** | **String**| The business plan to be assigned to the subscription.  |
+ **ifMatch** | **String**| Validator for conditional requests; based on ETag.  | [optional]
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Subscription business plan was changed successfully.  |  -  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**409** | Conflict. Specified resource already exists. |  -  |
 
 <a name="getSubscriptions"></a>
 # **getSubscriptions**
