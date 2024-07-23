@@ -18,7 +18,7 @@
             "displayName": "Status Code",
             "description": "Status code to display upon redirecting the request. Must be either 301 or 302",
             "validationRegex": "^(301|302)$",
-            "type": "String",
+            "type": "Integer",
             "required": true
         }
     ],
