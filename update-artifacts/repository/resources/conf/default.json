@@ -1482,6 +1482,7 @@
   "authentication.jit_provisioning.username_provisioning_url": "/accountrecoveryendpoint/register.do",
   "authentication.jit_provisioning.password_provisioning_url": "/accountrecoveryendpoint/signup.do",
   "authentication.jit_provisioning.enable_enhanced_feature": false,
+  "authentication.jit_provisioning.retain_email_domain_on_provisioning": false,
   "application_mgt.enable_role_validation": false,
   "event.default_listener.workflow.priority": "10",
   "event.default_listener.workflow.enable": true,

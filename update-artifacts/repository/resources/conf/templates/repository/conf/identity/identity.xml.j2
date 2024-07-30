@@ -1328,6 +1328,22 @@
         </AutoLogin>
     </SelfRegistration>
 
+    <AdminServices>
+        {% if user_registration_admin_service.enable is sameas true %}
+        <UserRegistrationAdminService>
+            <Enable>{{user_registration_admin_service.enable}}</Enable>
+            <AllowedSignUpRoles>{{ user_registration_admin_service.allowed_sign_up_roles | join(',') }}</AllowedSignUpRoles>
+         </UserRegistrationAdminService>
+        {% endif %}
+        {% if user_info_recovery_admin_service.allowed_usernames is defined %}
+        <UserInformationRecoveryService>
+            <AllowedUsers>
+                <Usernames>{{ user_info_recovery_admin_service.allowed_usernames | join(',') }}</Usernames>
+            </AllowedUsers>
+        </UserInformationRecoveryService>
+        {% endif %}
+    </AdminServices>
+
     <LiteRegistration>
         <Enable>{{identity_mgt.lite_user_registration.enable}}</Enable>
         <LockOnCreation>{{identity_mgt.lite_user_registration.lock_on_creation}}</LockOnCreation>
@@ -1470,7 +1486,8 @@
                 <ClaimURI>{{claimuri}}</ClaimURI>
             {% endfor %}
         </IndelibleClaims>
-
+        <AllowAssociatingToExistingUser>{{authentication.jit_provisioning.associating_to_existing_user | default(true)}}</AllowAssociatingToExistingUser>
+        <RetainEmailDomainOnProvisioning>{{authentication.jit_provisioning.retain_email_domain_on_provisioning}}</RetainEmailDomainOnProvisioning>
     </JITProvisioning>
 
     <!--Application management service configurations-->
