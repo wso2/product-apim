@@ -237,5 +237,6 @@
   "scim.authentication_handler.oauth.properties.authorization_server": "scim.authentication_handler.oauth.properties.AuthorizationServer",
   "scim.authentication_handler.oauth.properties.username": "scim.authentication_handler.oauth.properties.UserName",
   "scim.authentication_handler.oauth.properties.password": "scim.authentication_handler.oauth.properties.Password",
-  "password_update.preserve_logged_in_session": "identity_mgt.password_update.preserve_logged_in_session"
+  "password_update.preserve_logged_in_session": "identity_mgt.password_update.preserve_logged_in_session",
+  "authentication.jit_provisioning.allow_email_username_when_email_as_username_not_enabled": "authentication.jit_provisioning.retain_email_domain_on_provisioning"
 }
