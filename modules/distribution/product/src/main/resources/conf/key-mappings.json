@@ -103,6 +103,5 @@
   "broker.flow_control.global.low_limit":"broker.flowControl.global.lowLimit",
   "broker.flow_control.global.high_limit":"broker.flowControl.global.highLimit",
   "broker.flow_control.buffer_based.low_limit":"broker.flowControl.bufferBased.lowLimit",
-  "broker.flow_control.buffer_based.high_limit":"broker.flowControl.bufferBased.highLimit",
-  "authentication.jit_provisioning.allow_email_username_when_email_as_username_not_enabled": "authentication.jit_provisioning.retain_email_domain_on_provisioning"
+  "broker.flow_control.buffer_based.high_limit":"broker.flowControl.bufferBased.highLimit"
 }
