@@ -117,7 +117,7 @@ public class APISecurityMutualSSLCertificateChainValidationTestCase extends APIM
         String rootCertPath = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "cert_chain_root.cer";
         restAPIPublisher.uploadCertificate(new File(rootCertPath), "cert_chain_root", apiId1,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.SANDBOX);
         createAPIRevisionAndDeployUsingRest(apiId1, restAPIPublisher);
 
         APIRequest apiRequest2 = new APIRequest(intermediateCertAPI, intermediateCertAPI, new URL(apiEndPointUrl));
@@ -139,7 +139,7 @@ public class APISecurityMutualSSLCertificateChainValidationTestCase extends APIM
         String intermediateCertPath = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "cert_chain_intermediate.cer";
         restAPIPublisher.uploadCertificate(new File(intermediateCertPath), "cert_chain_intermediate", apiId2,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.SANDBOX);
         createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
 
         waitForAPIDeploymentSync(user.getUserName(), rootCertAPI, API_VERSION_1_0_0,
