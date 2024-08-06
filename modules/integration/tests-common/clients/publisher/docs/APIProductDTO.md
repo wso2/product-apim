@@ -49,6 +49,7 @@ Name | Type | Description | Notes
 **scopes** | [**List&lt;APIScopeDTO&gt;**](APIScopeDTO.md) |  |  [optional]
 **categories** | **List&lt;String&gt;** | API categories  |  [optional]
 **workflowStatus** | **String** |  |  [optional]
+**audiences** | **List&lt;String&gt;** | The audiences of the API for jwt validation. Accepted values are any String values |  [optional]
 
 
 
