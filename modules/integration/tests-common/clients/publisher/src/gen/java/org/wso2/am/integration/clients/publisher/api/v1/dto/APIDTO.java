@@ -236,6 +236,10 @@ public static AudienceEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_AUDIENCE)
             private AudienceEnum audience;
 
+        public static final String SERIALIZED_NAME_AUDIENCES = "audiences";
+        @SerializedName(SERIALIZED_NAME_AUDIENCES)
+            private List<String> audiences = null;
+
         public static final String SERIALIZED_NAME_TRANSPORT = "transport";
         @SerializedName(SERIALIZED_NAME_TRANSPORT)
             private List<String> transport = null;
@@ -1041,6 +1045,29 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     public void setAudience(AudienceEnum audience) {
         this.audience = audience;
+    }
+
+
+        public APIDTO audiences(List<String> audiences) {
+        
+        this.audiences = audiences;
+        return this;
+        }
+
+    /**
+        * The audiences of the API for jwt validation. Accepted values are any String values
+    * @return audiences
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "The audiences of the API for jwt validation. Accepted values are any String values")
+    
+    public List<String> getAudiences() {
+        return audiences;
+    }
+
+
+    public void setAudiences(List<String> audiences) {
+        this.audiences = audiences;
     }
 
 
@@ -1970,6 +1997,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
             Objects.equals(this.enableSubscriberVerification, API.enableSubscriberVerification) &&
             Objects.equals(this.type, API.type) &&
             Objects.equals(this.audience, API.audience) &&
+            Objects.equals(this.audiences, API.audiences) &&
             Objects.equals(this.transport, API.transport) &&
             Objects.equals(this.tags, API.tags) &&
             Objects.equals(this.policies, API.policies) &&
@@ -2013,7 +2041,7 @@ public static EndpointImplementationTypeEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, apiKeyHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, apiPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, gatewayType, asyncTransportProtocols);
+        return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, hasThumbnail, isDefaultVersion, isRevision, revisionedApiId, revisionId, enableSchemaValidation, enableSubscriberVerification, type, audience, audiences, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, apiKeyHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, mediationPolicies, apiPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, websubSubscriptionConfiguration, workflowStatus, createdTime, lastUpdatedTimestamp, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories, keyManagers, serviceInfo, advertiseInfo, gatewayVendor, gatewayType, asyncTransportProtocols);
     }
 
 
@@ -2041,6 +2069,7 @@ sb.append("class APIDTO {\n");
     sb.append("    enableSubscriberVerification: ").append(toIndentedString(enableSubscriberVerification)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    audience: ").append(toIndentedString(audience)).append("\n");
+    sb.append("    audiences: ").append(toIndentedString(audiences)).append("\n");
     sb.append("    transport: ").append(toIndentedString(transport)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
     sb.append("    policies: ").append(toIndentedString(policies)).append("\n");

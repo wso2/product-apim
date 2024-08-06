@@ -26,6 +26,7 @@ Name | Type | Description | Notes
 **enableSubscriberVerification** | **Boolean** |  |  [optional]
 **type** | [**TypeEnum**](#TypeEnum) | The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC |  [optional]
 **audience** | [**AudienceEnum**](#AudienceEnum) | The audience of the API. Accepted values are PUBLIC, SINGLE |  [optional]
+**audiences** | **List&lt;String&gt;** | The audiences of the API for jwt validation. Accepted values are any String values |  [optional]
 **transport** | **List&lt;String&gt;** | Supported transports for the API (http and/or https).  |  [optional]
 **tags** | **List&lt;String&gt;** |  |  [optional]
 **policies** | **List&lt;String&gt;** |  |  [optional]
