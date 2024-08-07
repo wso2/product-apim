@@ -55,6 +55,7 @@
   "oauth.grant_type.uma_ticket.grant_validator": "org.wso2.carbon.identity.oauth.uma.grant.GrantValidator",
   "oauth.revoked_token_headers_in_response.enable": true,
   "oauth.token_persistence.enable": true,
+  "apim.token.validation.enforce_type_header_validation": false,
   "system.parameter.'org.wso2.CipherTransformation'": "RSA/ECB/OAEPwithSHA1andMGF1Padding",
   "server.userAgent": "WSO2 AM 4.4.0",
   "server.serverDetails": "WSO2 AM 4.4.0",
