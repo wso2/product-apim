@@ -17166,6 +17166,9 @@ components:
           - securityScheme
           name: CalculatorAPI
           context: CalculatorAPI
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
           additionalProperties:
@@ -17196,6 +17199,9 @@ components:
           - securityScheme
           name: CalculatorAPI
           context: CalculatorAPI
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
           additionalProperties:
@@ -17276,6 +17282,9 @@ components:
         - securityScheme
         name: CalculatorAPI
         context: CalculatorAPI
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         createdTime: 2021-02-11 09:57:25
         id: 01234567-0123-0123-0123-012345678901
         additionalProperties:
@@ -17331,6 +17340,13 @@ components:
           - SINGLE
           example: PUBLIC
           type: string
+        audiences:
+          description: The audiences of the API for jwt validation. Accepted values
+            are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
         lifeCycleStatus:
           example: CREATED
           type: string
@@ -17557,6 +17573,9 @@ components:
             url: https://localhost:9443/am/sample/pizzashack/v1/api/
           production_endpoints:
             url: https://localhost:9443/am/sample/pizzashack/v1/api/
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         mediationPolicies:
         - name: json_to_xml_in_message
           type: in
@@ -17717,6 +17736,13 @@ components:
           - SINGLE
           example: PUBLIC
           type: string
+        audiences:
+          description: The audiences of the API for jwt validation. Accepted values
+            are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
         transport:
           description: |
             Supported transports for the API (http and/or https).
@@ -18292,6 +18318,9 @@ components:
           context: pizzaproduct
           description: This is a simple API for Pizza Shack online pizza delivery
             store
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           id: 01234567-0123-0123-0123-012345678901
           state: state
         - hasThumbnail: true
@@ -18303,6 +18332,9 @@ components:
           context: pizzaproduct
           description: This is a simple API for Pizza Shack online pizza delivery
             store
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           id: 01234567-0123-0123-0123-012345678901
           state: state
       properties:
@@ -18329,6 +18361,9 @@ components:
         name: PizzaShackAPIProduct
         context: pizzaproduct
         description: This is a simple API for Pizza Shack online pizza delivery store
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         id: 01234567-0123-0123-0123-012345678901
         state: state
       properties:
@@ -18373,6 +18408,13 @@ components:
         gatewayVendor:
           example: wso2
           type: string
+        audiences:
+          description: The audiences of the API product for jwt validation. Accepted
+            values are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
       title: API Info object with basic API details.
       type: object
     APIProduct:
@@ -18407,6 +18449,9 @@ components:
         provider: admin
         context: pizzaproduct
         createdTime: createdTime
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         lastUpdatedTime: lastUpdatedTime
         id: 01234567-0123-0123-0123-012345678901
         state: CREATED
@@ -18703,6 +18748,13 @@ components:
         workflowStatus:
           example: APPROVED
           type: string
+        audiences:
+          description: The audiences of the API for jwt validation. Accepted values
+            are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
       required:
       - name
       title: API Product object

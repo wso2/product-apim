@@ -96,6 +96,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateUsageTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.UpdateAPINullPointerTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AudienceValidationTestCase"/>
         </classes>
     </test>
 

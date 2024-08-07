@@ -67,6 +67,10 @@ public class APIProductInfoDTO {
         @SerializedName(SERIALIZED_NAME_GATEWAY_VENDOR)
             private String gatewayVendor;
 
+        public static final String SERIALIZED_NAME_AUDIENCES = "audiences";
+        @SerializedName(SERIALIZED_NAME_AUDIENCES)
+            private List<String> audiences = null;
+
 
         public APIProductInfoDTO id(String id) {
         
@@ -275,6 +279,29 @@ public class APIProductInfoDTO {
     }
 
 
+        public APIProductInfoDTO audiences(List<String> audiences) {
+        
+        this.audiences = audiences;
+        return this;
+        }
+
+    /**
+        * The audiences of the API product for jwt validation. Accepted values are any String values
+    * @return audiences
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "The audiences of the API product for jwt validation. Accepted values are any String values")
+    
+    public List<String> getAudiences() {
+        return audiences;
+    }
+
+
+    public void setAudiences(List<String> audiences) {
+        this.audiences = audiences;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -292,12 +319,13 @@ public class APIProductInfoDTO {
             Objects.equals(this.hasThumbnail, apIProductInfo.hasThumbnail) &&
             Objects.equals(this.state, apIProductInfo.state) &&
             Objects.equals(this.securityScheme, apIProductInfo.securityScheme) &&
-            Objects.equals(this.gatewayVendor, apIProductInfo.gatewayVendor);
+            Objects.equals(this.gatewayVendor, apIProductInfo.gatewayVendor) &&
+            Objects.equals(this.audiences, apIProductInfo.audiences);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, securityScheme, gatewayVendor);
+        return Objects.hash(id, name, context, description, provider, hasThumbnail, state, securityScheme, gatewayVendor, audiences);
     }
 
 
@@ -314,6 +342,7 @@ sb.append("class APIProductInfoDTO {\n");
     sb.append("    state: ").append(toIndentedString(state)).append("\n");
     sb.append("    securityScheme: ").append(toIndentedString(securityScheme)).append("\n");
     sb.append("    gatewayVendor: ").append(toIndentedString(gatewayVendor)).append("\n");
+    sb.append("    audiences: ").append(toIndentedString(audiences)).append("\n");
 sb.append("}");
 return sb.toString();
 }

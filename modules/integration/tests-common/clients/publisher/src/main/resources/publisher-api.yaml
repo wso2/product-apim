@@ -9209,6 +9209,12 @@ components:
           enum:
             - PUBLIC
             - SINGLE
+        audiences:
+          type: array
+          description: The audiences of the API for jwt validation. Accepted values are any String values
+          items:
+            type: string
+            example: [ "aud1","aud2","aud3" ]
         lifeCycleStatus:
           type: string
           example: CREATED
@@ -9403,6 +9409,12 @@ components:
           enum:
             - PUBLIC
             - SINGLE
+        audiences:
+          type: array
+          description: The audiences of the API for jwt validation. Accepted values are any String values
+          items:
+            type: string
+            example: [ "aud1","aud2","aud3" ]
         transport:
           type: array
           description: |
@@ -9973,6 +9985,12 @@ components:
         gatewayVendor:
           type: string
           example: wso2
+        audiences:
+          type: array
+          description: The audiences of the API product for jwt validation. Accepted values are any String values
+          items:
+            type: string
+            example: [ "aud1","aud2","aud3" ]
     APIProduct:
       title: API Product object
       required:
@@ -10231,6 +10249,12 @@ components:
         workflowStatus:
           type: string
           example: APPROVED
+        audiences:
+          type: array
+          description: The audiences of the API for jwt validation. Accepted values are any String values
+          items:
+            type: string
+            example: [ "aud1","aud2","aud3" ]
     ProductAPI:
       title: ProductAPI
       required:
