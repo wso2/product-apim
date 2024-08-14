@@ -2418,6 +2418,35 @@ public class RestAPIPublisherImpl {
         return null;
     }
 
+    /**
+     * Method to get all common operation policies passing limit, offset and query as parameters
+     *
+     * @param limit  limit
+     * @param offset offset
+     * @param query  query
+     * @return A map of policy name and policy UUID
+     * @throws ApiException - Throws if policy information cannot be retrieved.
+     */
+    public Map<String, String> getAllCommonOperationPolicies(Integer limit, Integer offset, String query)
+            throws ApiException {
+
+        setActivityID();
+        if (limit == null) {
+            limit = 50;
+        }
+        if (offset == null) {
+            offset = 0;
+        }
+        ApiResponse<OperationPolicyDataListDTO> apiResponse = operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(
+                limit, offset, query);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Unable to retrieve common policies " + apiResponse.getData());
+        if (apiResponse != null && apiResponse.getData().getCount() >= 0) {
+            return mapPolicyNameToId(apiResponse.getData());
+        }
+        return null;
+    }
+
     public Map<String, String> getAllCommonOperationPolicies(int limit) throws ApiException {
 
         setActivityID();
