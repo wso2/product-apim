@@ -3169,6 +3169,9 @@
         {% if common_auth_caller_path.default_url is defined %}
         <DefaultUrl>{{common_auth_caller_path.default_url}}</DefaultUrl>
         {% endif %}
+        {% if common_auth_caller_path.enable_fallback_to_default_on_no_return_url is defined %}
+        <EnableFallbackToDefaultOnNoReturnUrl>{{common_auth_caller_path.enable_fallback_to_default_on_no_return_url}}</EnableFallbackToDefaultOnNoReturnUrl>
+        {% endif %}
     </CommonAuthCallerPath>
 
     <!-- Cookies to invalidate during authentication flow failures. -->
