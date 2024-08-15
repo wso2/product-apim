@@ -44,7 +44,7 @@
         <id>gov</id>
         <cacheId>{{governance_data.cache_id}}</cacheId>
         <dbConfig>govregistry</dbConfig>
-        <readOnly>{{!governance_data.overwrite}}</readOnly>
+        <readOnly>{{governance_data.readonly}}</readOnly>
         <enableCache>{{governance_data.enable_cache}}</enableCache>
         <registryRoot>/</registryRoot>
     </remoteInstance>
@@ -53,7 +53,7 @@
         <id>conf</id>
         <cacheId>{{config_data.cache_id}}</cacheId>
         <dbConfig>configregistry</dbConfig>
-        <readOnly>{{!config_data.overwrite}}</readOnly>
+        <readOnly>{{config_data.readonly}}</readOnly>
         <enableCache>{{config_data.enable_cache}}</enableCache>
         <registryRoot>/</registryRoot>
     </remoteInstance>
