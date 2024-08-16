@@ -1288,7 +1288,6 @@
 
         <!-- APIM Component Version -->
 
-        <!-- TO DO: Update version after releasing carbon-apimgt -->
         <carbon.apimgt.version>9.29.188</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
