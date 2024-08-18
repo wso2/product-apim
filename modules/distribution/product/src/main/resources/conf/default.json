@@ -339,6 +339,8 @@
   "apim.auth_manager.service_url" : "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
   "config_data.overwrite": "true",
   "governance_data.overwrite": "true",
+  "config_data.readonly": "false",
+  "governance_data.readonly": "false",
   "static_configuration.versioning_properties.enable": false,
   "static_configuration.versioning_comments.enable": false,
   "static_configuration.versioning_tags.enable": false,
