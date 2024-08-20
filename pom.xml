@@ -1284,11 +1284,11 @@
         <carbon.analytics.common.version>5.3.13</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.1.99</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.1.105</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
 
-        <carbon.apimgt.version>9.29.188</carbon.apimgt.version>
+        <carbon.apimgt.version>9.29.191</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1474,7 +1474,7 @@
 
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
-        <wso2is.km.version>1.7.10</wso2is.km.version>
+        <wso2is.km.version>1.7.11</wso2is.km.version>
         <wso2is7.km.version>2.0.2</wso2is7.km.version>
         <okta.keymanager.feature.version>3.2.1</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.0.11</azure.keymanager.feature.version>
