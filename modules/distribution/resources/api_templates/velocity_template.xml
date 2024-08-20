@@ -292,17 +292,14 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
 <loopback />
                 ## AWS Lambda: end
                 #else
-                    #if( $apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected )
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
-                    #end
                     #if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
                         && ! $endpoint_config.get("production_endpoints")) )
                         #draw_endpoint( "sandbox" $endpoint_config )
                     #else
                         #draw_endpoint( "production" $endpoint_config )
                     #end
-                    #if( $apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected )
     </then>
     <else>
                         #if( $environmentType !='hybrid' )
@@ -335,7 +332,6 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                         #end
     </else>
 </filter>
-                    #end
                 #end
 </inSequence>
 <outSequence>
@@ -348,7 +344,6 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
                 #if( $responseCacheEnabled )
 <cache scope="per-host" collector="true"/>
                 #end
-                #if( $apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected )
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
                     #if($endpointSecurityProd.clientId && ($endpointSecurityProd.type == "oauth" || $endpointSecurityProd.type == "OAUTH"))
@@ -361,7 +356,7 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
                     #end
     </else>
 </filter>
-                #end
+
 <send/>
 </outSequence>
         </resource>

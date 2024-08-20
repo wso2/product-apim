@@ -1419,14 +1419,15 @@ public class RestAPIPublisherImpl {
      *
      * @param certificate certificate
      * @param alias       alis
+     * @param keyType key type (whether PRODUCTION or SANDBOX)
      * @return
      * @throws ApiException if an error occurred while uploading the certificate.
      */
-    public HttpResponse uploadCertificate(File certificate, String alias, String apiId, String tier)
+    public HttpResponse uploadCertificate(File certificate, String alias, String apiId, String tier, String keyType)
             throws ApiException {
 
-        ClientCertMetadataDTO certificateDTO = clientCertificatesApi.addAPIClientCertificate(apiId, certificate,
-                alias, tier);
+        ClientCertMetadataDTO certificateDTO = clientCertificatesApi.addAPIClientCertificateOfGivenKeyType(keyType,
+                apiId, certificate, alias, tier);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
             response = new HttpResponse("Successfully uploaded the certificate", 200);
@@ -2409,6 +2410,35 @@ public class RestAPIPublisherImpl {
         setActivityID();
         ApiResponse<OperationPolicyDataListDTO> apiResponse =
                 operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(50, 0, null);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Unable to retrieve common policies " + apiResponse.getData());
+        if (apiResponse != null && apiResponse.getData().getCount() >= 0) {
+            return mapPolicyNameToId(apiResponse.getData());
+        }
+        return null;
+    }
+
+    /**
+     * Method to get all common operation policies passing limit, offset and query as parameters
+     *
+     * @param limit  limit
+     * @param offset offset
+     * @param query  query
+     * @return A map of policy name and policy UUID
+     * @throws ApiException - Throws if policy information cannot be retrieved.
+     */
+    public Map<String, String> getAllCommonOperationPolicies(Integer limit, Integer offset, String query)
+            throws ApiException {
+
+        setActivityID();
+        if (limit == null) {
+            limit = 50;
+        }
+        if (offset == null) {
+            offset = 0;
+        }
+        ApiResponse<OperationPolicyDataListDTO> apiResponse = operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(
+                limit, offset, query);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
                 "Unable to retrieve common policies " + apiResponse.getData());
         if (apiResponse != null && apiResponse.getData().getCount() >= 0) {
