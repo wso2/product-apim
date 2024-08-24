@@ -20,6 +20,7 @@
 
 package org.wso2.am.integration.tests.publisher;
 
+import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -81,7 +82,7 @@ public class APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase exten
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-//                new Object[]{TestUserMode.TENANT_ADMIN},
+                //                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 
@@ -141,7 +142,9 @@ public class APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase exten
         //Check the availability of API in Publisher
         Thread.sleep(5000);
         APIListDTO response = restAPIPublisher.getAllAPIs();
-        JSONObject jsonObject = new JSONObject(response);
+        Gson gson = new Gson();
+        String json = gson.toJson(response);
+        JSONObject jsonObject = new JSONObject(json);
         JSONArray jsonArray = jsonObject.getJSONArray("list");
         List<String> allApiList = new ArrayList<String>();
 
