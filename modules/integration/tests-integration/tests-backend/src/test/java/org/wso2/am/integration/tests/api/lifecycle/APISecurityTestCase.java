@@ -1240,6 +1240,40 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 ", but got " + invocationResponseAfterSubscriptionRemoved.getResponseCode());
     }
 
+    @Test(description = "Testing the WWW-Authorization header when invocating an API with API Keys using invalid Authorization header",
+            dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
+    public void testWWWAuthorizationHeaderForApiWithApiKeys() throws Exception{
+
+        String expectedValue = "API Key realm=\"WSO2 API Manager\"";
+
+        // Validate WWW-Authenticate response header when request is made without Authorization header
+        Map<String, String> requestHeaders1 = new HashMap<>();
+        requestHeaders1.put("accept", "application/json");
+
+        HttpResponse response1 =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0) +
+                        API_END_POINT_METHOD, requestHeaders1);
+
+        String wwwAuthenticateHeader = response1.getHeaders().get("WWW-Authenticate");
+
+        Assert.assertTrue(wwwAuthenticateHeader.contains(expectedValue),
+                "The WWW-Authenticate header does not contain the expected API Key value.");
+
+        // Validate WWW-Authenticate response header when request is made with invalid Authorization header
+        Map<String, String> requestHeaders2 = new HashMap<>();
+        requestHeaders2.put("accept", "application/json");
+        requestHeaders2.put("Authorization", null);
+
+        HttpResponse response2 =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0) +
+                        API_END_POINT_METHOD, requestHeaders2);
+
+        wwwAuthenticateHeader = response2.getHeaders().get("WWW-Authenticate");
+
+        Assert.assertTrue(wwwAuthenticateHeader.contains(expectedValue),
+                "The WWW-Authenticate header does not contain the expected API Key value.");
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
         restAPIStore.deleteApplication(applicationId);
