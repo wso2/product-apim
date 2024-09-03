@@ -23,199 +23,171 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.admin.api.dto.AIQuotaLimitDTO;
-import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
-import org.wso2.am.integration.clients.admin.api.dto.EventCountLimitDTO;
-import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.AIQuotaLimitAllOfDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitBaseDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* ThrottleLimitDTO
+* AIQuotaLimitDTO
 */
 
-public class ThrottleLimitDTO {
-            /**
-* Type of the throttling limit. Allowed values are \&quot;REQUESTCOUNTLIMIT\&quot; and \&quot;BANDWIDTHLIMIT\&quot;. Please see schemas of \&quot;RequestCountLimit\&quot; and \&quot;BandwidthLimit\&quot; throttling limit types in Definitions section. 
-*/
-    @JsonAdapter(TypeEnum.Adapter.class)
-public enum TypeEnum {
-        REQUESTCOUNTLIMIT("REQUESTCOUNTLIMIT"),
-        
-        BANDWIDTHLIMIT("BANDWIDTHLIMIT"),
-        
-        EVENTCOUNTLIMIT("EVENTCOUNTLIMIT"),
-        
-        AIQUOTALIMIT("AIQUOTALIMIT");
+public class AIQuotaLimitDTO {
+        public static final String SERIALIZED_NAME_TIME_UNIT = "timeUnit";
+        @SerializedName(SERIALIZED_NAME_TIME_UNIT)
+            private String timeUnit;
 
-private String value;
-
-TypeEnum(String value) {
-this.value = value;
-}
-
-public String getValue() {
-return value;
-}
-
-@Override
-public String toString() {
-return String.valueOf(value);
-}
-
-public static TypeEnum fromValue(String value) {
-    for (TypeEnum b : TypeEnum.values()) {
-    if (b.name().equals(value)) {
-        return b;
-    }
-}
-    throw new IllegalArgumentException("Unexpected value '" + value + "'");
-}
-
-    public static class Adapter extends TypeAdapter<TypeEnum> {
-    @Override
-    public void write(final JsonWriter jsonWriter, final TypeEnum enumeration) throws IOException {
-    jsonWriter.value(enumeration.getValue());
-    }
-
-    @Override
-    public TypeEnum read(final JsonReader jsonReader) throws IOException {
-    String value =  jsonReader.nextString();
-    return TypeEnum.fromValue(value);
-    }
-    }
-}
-
-        public static final String SERIALIZED_NAME_TYPE = "type";
-        @SerializedName(SERIALIZED_NAME_TYPE)
-            private TypeEnum type;
+        public static final String SERIALIZED_NAME_UNIT_TIME = "unitTime";
+        @SerializedName(SERIALIZED_NAME_UNIT_TIME)
+            private Integer unitTime;
 
         public static final String SERIALIZED_NAME_REQUEST_COUNT = "requestCount";
         @SerializedName(SERIALIZED_NAME_REQUEST_COUNT)
-            private RequestCountLimitDTO requestCount = null;
+            private Long requestCount;
 
-        public static final String SERIALIZED_NAME_BANDWIDTH = "bandwidth";
-        @SerializedName(SERIALIZED_NAME_BANDWIDTH)
-            private BandwidthLimitDTO bandwidth = null;
+        public static final String SERIALIZED_NAME_TOTAL_TOKEN_COUNT = "totalTokenCount";
+        @SerializedName(SERIALIZED_NAME_TOTAL_TOKEN_COUNT)
+            private Long totalTokenCount;
 
-        public static final String SERIALIZED_NAME_EVENT_COUNT = "eventCount";
-        @SerializedName(SERIALIZED_NAME_EVENT_COUNT)
-            private EventCountLimitDTO eventCount = null;
+        public static final String SERIALIZED_NAME_REQUEST_TOKEN_COUNT = "requestTokenCount";
+        @SerializedName(SERIALIZED_NAME_REQUEST_TOKEN_COUNT)
+            private Long requestTokenCount;
 
-        public static final String SERIALIZED_NAME_AI_QUOTA = "aiQuota";
-        @SerializedName(SERIALIZED_NAME_AI_QUOTA)
-            private AIQuotaLimitDTO aiQuota = null;
+        public static final String SERIALIZED_NAME_RESPONSE_TOKEN_COUNT = "responseTokenCount";
+        @SerializedName(SERIALIZED_NAME_RESPONSE_TOKEN_COUNT)
+            private Long responseTokenCount;
 
 
-        public ThrottleLimitDTO type(TypeEnum type) {
+        public AIQuotaLimitDTO timeUnit(String timeUnit) {
         
-        this.type = type;
+        this.timeUnit = timeUnit;
         return this;
         }
 
     /**
-        * Type of the throttling limit. Allowed values are \&quot;REQUESTCOUNTLIMIT\&quot; and \&quot;BANDWIDTHLIMIT\&quot;. Please see schemas of \&quot;RequestCountLimit\&quot; and \&quot;BandwidthLimit\&quot; throttling limit types in Definitions section. 
-    * @return type
+        * Unit of the time. Allowed values are \&quot;sec\&quot;, \&quot;min\&quot;, \&quot;hour\&quot;, \&quot;day\&quot;
+    * @return timeUnit
     **/
-      @ApiModelProperty(example = "REQUESTCOUNTLIMIT", required = true, value = "Type of the throttling limit. Allowed values are \"REQUESTCOUNTLIMIT\" and \"BANDWIDTHLIMIT\". Please see schemas of \"RequestCountLimit\" and \"BandwidthLimit\" throttling limit types in Definitions section. ")
+      @ApiModelProperty(example = "min", required = true, value = "Unit of the time. Allowed values are \"sec\", \"min\", \"hour\", \"day\"")
     
-    public TypeEnum getType() {
-        return type;
+    public String getTimeUnit() {
+        return timeUnit;
     }
 
 
-    public void setType(TypeEnum type) {
-        this.type = type;
+    public void setTimeUnit(String timeUnit) {
+        this.timeUnit = timeUnit;
     }
 
 
-        public ThrottleLimitDTO requestCount(RequestCountLimitDTO requestCount) {
+        public AIQuotaLimitDTO unitTime(Integer unitTime) {
+        
+        this.unitTime = unitTime;
+        return this;
+        }
+
+    /**
+        * Time limit that the throttling limit applies.
+    * @return unitTime
+    **/
+      @ApiModelProperty(example = "10", required = true, value = "Time limit that the throttling limit applies.")
+    
+    public Integer getUnitTime() {
+        return unitTime;
+    }
+
+
+    public void setUnitTime(Integer unitTime) {
+        this.unitTime = unitTime;
+    }
+
+
+        public AIQuotaLimitDTO requestCount(Long requestCount) {
         
         this.requestCount = requestCount;
         return this;
         }
 
     /**
-        * Get requestCount
+        * Maximum number of requests allowed
     * @return requestCount
     **/
-        @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+      @ApiModelProperty(example = "30", required = true, value = "Maximum number of requests allowed")
     
-    public RequestCountLimitDTO getRequestCount() {
+    public Long getRequestCount() {
         return requestCount;
     }
 
 
-    public void setRequestCount(RequestCountLimitDTO requestCount) {
+    public void setRequestCount(Long requestCount) {
         this.requestCount = requestCount;
     }
 
 
-        public ThrottleLimitDTO bandwidth(BandwidthLimitDTO bandwidth) {
+        public AIQuotaLimitDTO totalTokenCount(Long totalTokenCount) {
         
-        this.bandwidth = bandwidth;
+        this.totalTokenCount = totalTokenCount;
         return this;
         }
 
     /**
-        * Get bandwidth
-    * @return bandwidth
+        * Maximum number of total tokens allowed
+    * @return totalTokenCount
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+      @ApiModelProperty(example = "1000", value = "Maximum number of total tokens allowed")
     
-    public BandwidthLimitDTO getBandwidth() {
-        return bandwidth;
+    public Long getTotalTokenCount() {
+        return totalTokenCount;
     }
 
 
-    public void setBandwidth(BandwidthLimitDTO bandwidth) {
-        this.bandwidth = bandwidth;
+    public void setTotalTokenCount(Long totalTokenCount) {
+        this.totalTokenCount = totalTokenCount;
     }
 
 
-        public ThrottleLimitDTO eventCount(EventCountLimitDTO eventCount) {
+        public AIQuotaLimitDTO requestTokenCount(Long requestTokenCount) {
         
-        this.eventCount = eventCount;
+        this.requestTokenCount = requestTokenCount;
         return this;
         }
 
     /**
-        * Get eventCount
-    * @return eventCount
+        * Maximum number of request tokens allowed
+    * @return requestTokenCount
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+      @ApiModelProperty(example = "300", value = "Maximum number of request tokens allowed")
     
-    public EventCountLimitDTO getEventCount() {
-        return eventCount;
+    public Long getRequestTokenCount() {
+        return requestTokenCount;
     }
 
 
-    public void setEventCount(EventCountLimitDTO eventCount) {
-        this.eventCount = eventCount;
+    public void setRequestTokenCount(Long requestTokenCount) {
+        this.requestTokenCount = requestTokenCount;
     }
 
 
-        public ThrottleLimitDTO aiQuota(AIQuotaLimitDTO aiQuota) {
+        public AIQuotaLimitDTO responseTokenCount(Long responseTokenCount) {
         
-        this.aiQuota = aiQuota;
+        this.responseTokenCount = responseTokenCount;
         return this;
         }
 
     /**
-        * Get aiQuota
-    * @return aiQuota
+        * Maximum number of response tokens allowed
+    * @return responseTokenCount
     **/
         @javax.annotation.Nullable
-      @ApiModelProperty(value = "")
+      @ApiModelProperty(example = "300", value = "Maximum number of response tokens allowed")
     
-    public AIQuotaLimitDTO getAiQuota() {
-        return aiQuota;
+    public Long getResponseTokenCount() {
+        return responseTokenCount;
     }
 
 
-    public void setAiQuota(AIQuotaLimitDTO aiQuota) {
-        this.aiQuota = aiQuota;
+    public void setResponseTokenCount(Long responseTokenCount) {
+        this.responseTokenCount = responseTokenCount;
     }
 
 
@@ -227,29 +199,31 @@ public static TypeEnum fromValue(String value) {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            ThrottleLimitDTO throttleLimit = (ThrottleLimitDTO) o;
-            return Objects.equals(this.type, throttleLimit.type) &&
-            Objects.equals(this.requestCount, throttleLimit.requestCount) &&
-            Objects.equals(this.bandwidth, throttleLimit.bandwidth) &&
-            Objects.equals(this.eventCount, throttleLimit.eventCount) &&
-            Objects.equals(this.aiQuota, throttleLimit.aiQuota);
+            AIQuotaLimitDTO aiQuotaLimit = (AIQuotaLimitDTO) o;
+            return Objects.equals(this.timeUnit, aiQuotaLimit.timeUnit) &&
+            Objects.equals(this.unitTime, aiQuotaLimit.unitTime) &&
+            Objects.equals(this.requestCount, aiQuotaLimit.requestCount) &&
+            Objects.equals(this.totalTokenCount, aiQuotaLimit.totalTokenCount) &&
+            Objects.equals(this.requestTokenCount, aiQuotaLimit.requestTokenCount) &&
+            Objects.equals(this.responseTokenCount, aiQuotaLimit.responseTokenCount);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, requestCount, bandwidth, eventCount, aiQuota);
+        return Objects.hash(timeUnit, unitTime, requestCount, totalTokenCount, requestTokenCount, responseTokenCount);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class ThrottleLimitDTO {\n");
-    sb.append("    type: ").append(toIndentedString(type)).append("\n");
+sb.append("class AIQuotaLimitDTO {\n");
+    sb.append("    timeUnit: ").append(toIndentedString(timeUnit)).append("\n");
+    sb.append("    unitTime: ").append(toIndentedString(unitTime)).append("\n");
     sb.append("    requestCount: ").append(toIndentedString(requestCount)).append("\n");
-    sb.append("    bandwidth: ").append(toIndentedString(bandwidth)).append("\n");
-    sb.append("    eventCount: ").append(toIndentedString(eventCount)).append("\n");
-    sb.append("    aiQuota: ").append(toIndentedString(aiQuota)).append("\n");
+    sb.append("    totalTokenCount: ").append(toIndentedString(totalTokenCount)).append("\n");
+    sb.append("    requestTokenCount: ").append(toIndentedString(requestTokenCount)).append("\n");
+    sb.append("    responseTokenCount: ").append(toIndentedString(responseTokenCount)).append("\n");
 sb.append("}");
 return sb.toString();
 }

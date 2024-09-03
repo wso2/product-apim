@@ -1373,6 +1373,8 @@ definitions:
         $ref: '#/definitions/BandwidthLimit'
       eventCount:
         $ref: '#/definitions/EventCountLimit'
+      aiQuota:
+        $ref: '#/definitions/AIQuotaLimit'
 
   #-----------------------------------------------------
   # The Throttling Bandwidth Limit resource
@@ -1428,3 +1430,33 @@ definitions:
             format: int64
             example: 3000
 
+  #-----------------------------------------------------
+  # The Throttling AI Quota Limit resource
+  #-----------------------------------------------------
+  AIQuotaLimit:
+    title: AI Quota Limit object
+    allOf:
+      - $ref: '#/definitions/ThrottleLimitBase'
+      - required:
+          - requestCount
+        properties:
+          requestCount:
+            type: integer
+            format: int64
+            description: Maximum number of requests allowed
+            example: 1000
+          totalTokenCount:
+            type: integer
+            description: Maximum number of total tokens allowed
+            format: int64
+            example: 1000
+          requestTokenCount:
+            type: integer
+            description: Maximum number of request tokens allowed
+            format: int64
+            example: 300
+          responseTokenCount:
+            type: integer
+            description: Maximum number of response tokens allowed
+            format: int64
+            example: 300
