@@ -375,6 +375,7 @@
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingConfig"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingTestCase"/>
 <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityMutualSSLCertificateChainValidationTestCase" />-->
         </classes>
