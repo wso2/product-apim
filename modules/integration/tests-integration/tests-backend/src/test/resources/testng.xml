@@ -269,6 +269,7 @@
             <class name="org.wso2.am.integration.tests.application.ApplicationAttributesTestCase"/>
             <class name="org.wso2.am.integration.tests.application.PkceEnabledApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationBlockSubscriptionTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.SubscriptionValidationDisableTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5417PrototypedAPIsInMonetizedTestCase"/>-->
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
