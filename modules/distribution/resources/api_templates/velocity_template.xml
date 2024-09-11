@@ -210,7 +210,6 @@
 
         faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
-
                 ## check and set response caching
                 #if( $responseCacheEnabled )
 <cache scope="per-host" collector="false" hashGenerator="org.wso2.carbon.mediator.cache.digest.HttpRequestHashGenerator" timeout="$!responseCacheTimeOut">
@@ -245,8 +244,19 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                 #else
                     #set( $filterRegex = "PRODUCTION" )
                 #end
+                #if( $endpoint_config.get("endpoint_type") == 'custom_backend' )
+                    #if( $endpoint_config.get("sandbox"))
+                        #set( $sandboxConf = $endpoint_config.get("sandbox") )
+                        #set( $sequenceKey = $sandboxConf.get("sequence_name"))
+                        <sequence key="$sequenceKey"/>
+                    #end
+                    #if( $endpoint_config.get("production"))
+                        #set( $sandboxConf = $endpoint_config.get("production") )
+                        #set( $sequenceKey = $sandboxConf.get("sequence_name"))
+                        <sequence key="$sequenceKey"/>
+                    #end
                 ## AWS Lambda: start
-                #if( $endpoint_config.get("endpoint_type") == 'awslambda' )
+                #elseif( $endpoint_config.get("endpoint_type") == 'awslambda' )
                     #set( $accessKey = $!{endpoint_config.get("amznAccessKey")} )
                     #set( $secretKey = $!{endpoint_config.get("amznSecretKey")} )
                     #set( $region = $!{endpoint_config.get("amznRegion")} )
