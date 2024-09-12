@@ -345,7 +345,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                 #end
 </inSequence>
 <outSequence>
-                #if( $isSoapToRestMode )
+                #if( $isSoapToRestMode && $endpoint_config.get("endpoint_type") == 'custom_backend' )
                     #foreach( $uri in $out_sequences.get("$resource.getUriTemplate()").keySet() )
 $out_sequences.get("$resource.getUriTemplate()").get($uri)
                     #end
@@ -354,6 +354,7 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
                 #if( $responseCacheEnabled )
 <cache scope="per-host" collector="true"/>
                 #end
+if( $endpoint_config.get("endpoint_type") == 'custom_backend' )
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
                     #if($endpointSecurityProd.clientId && ($endpointSecurityProd.type == "oauth" || $endpointSecurityProd.type == "OAUTH"))
@@ -366,7 +367,7 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
                     #end
     </else>
 </filter>
-
+#end
 <send/>
 </outSequence>
         </resource>
