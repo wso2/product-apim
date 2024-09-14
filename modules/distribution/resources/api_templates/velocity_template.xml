@@ -244,23 +244,23 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                 #else
                     #set( $filterRegex = "PRODUCTION" )
                 #end
-                #if( $endpoint_config.get("endpoint_type") == 'custom_backend' )
+                #if( $endpoint_config.get("endpoint_type") == 'sequence_backend' )
                     #if( $endpoint_config.get("sandbox"))
-                        #set( $sandboxConf = $endpoint_config.get("sandbox") )
-                        #set( $sequenceKey = $sandboxConf.get("sequence_name"))
+                        #set( $sequenceKey = $endpoint_config.get("sandbox") )
                         <filter source="$ctx:AM_KEY_TYPE" regex="SANDBOX">
                             <then>
                                 <sequence key="$sequenceKey"/>
+                                <loopback/>
                             </then>
                             <else/>
                         </filter>
                     #end
                     #if( $endpoint_config.get("production"))
-                        #set( $sandboxConf = $endpoint_config.get("production") )
-                        #set( $sequenceKey = $sandboxConf.get("sequence_name"))
+                        #set( $sequenceKey = $endpoint_config.get("production") )
                         <filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
                             <then>
                                 <sequence key="$sequenceKey"/>
+                                <loopback/>
                             </then>
                             <else/>
                         </filter>
@@ -364,7 +364,7 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
                 #if( $responseCacheEnabled )
 <cache scope="per-host" collector="true"/>
                 #end
-if( $endpoint_config.get("endpoint_type") != 'custom_backend' )
+#if( $endpoint_config.get("endpoint_type") != 'sequence_backend' )
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
                     #if($endpointSecurityProd.clientId && ($endpointSecurityProd.type == "oauth" || $endpointSecurityProd.type == "OAUTH"))
