@@ -157,75 +157,29 @@ public class DenyPolicySearchTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {
             "wso2.am" }, description = "Test retrieve block conditions by condition type and exact value", dependsOnMethods = "testAddNewBlockingConditions")
     public void testGetBlockConditionsByConditionTypeAndExactValue() throws Exception {
-        // Retrieve blocking condition values that exactly matchers with /test
         BlockingConditionListDTO conditionsList = restAPIAdmin.getBlockingConditionsByConditionTypeAndValue(
                 "conditionType:API&conditionValue:\"/test\"");
         Assert.assertNotNull(conditionsList);
+        Assert.assertEquals(conditionsList.getList().size(), 0);
 
-        int countTest1 = 0;
-        int countTest2 = 0;
-        for (BlockingConditionDTO condition : conditionsList.getList()) {
-            if (apiContextResolver(API1_CONTEXT, API1_VERSION).equals(condition.getConditionValue())) {
-                countTest1++;
-            } else if (apiContextResolver(API2_CONTEXT, API2_VERSION).equals(condition.getConditionValue())) {
-                countTest2++;
-            }
-        }
-        Assert.assertEquals(countTest1, 0);
-        Assert.assertEquals(countTest2, 0);
-
-        // Retrieve blocking condition values that exactly matches with /test/abc
         conditionsList = restAPIAdmin.getBlockingConditionsByConditionTypeAndValue(
                 "conditionType:API&conditionValue:\"/test/abc\"");
         Assert.assertNotNull(conditionsList);
-
-        countTest1 = 0;
-        countTest2 = 0;
-        for (BlockingConditionDTO condition : conditionsList.getList()) {
-            if (apiContextResolver(API1_CONTEXT, API1_VERSION).equals(condition.getConditionValue())) {
-                countTest1++;
-            } else if (apiContextResolver(API2_CONTEXT, API2_VERSION).equals(condition.getConditionValue())) {
-                countTest2++;
-            }
-        }
-        Assert.assertEquals(countTest1, 0);
-        Assert.assertEquals(countTest2, 0);
+        Assert.assertEquals(conditionsList.getList().size(), 0);
 
         String conditionValue = apiContextResolver(API1_CONTEXT, API1_VERSION);
-        // Retrieve blocking condition values that exactly matches with /test/1.0.0
         conditionsList = restAPIAdmin.getBlockingConditionsByConditionTypeAndValue(
                 "conditionType:API&conditionValue:" + conditionValue);
         Assert.assertNotNull(conditionsList);
-
-        countTest1 = 0;
-        countTest2 = 0;
-        for (BlockingConditionDTO condition : conditionsList.getList()) {
-            if (apiContextResolver(API1_CONTEXT, API1_VERSION).equals(condition.getConditionValue())) {
-                countTest1++;
-            } else if (apiContextResolver(API2_CONTEXT, API2_VERSION).equals(condition.getConditionValue())) {
-                countTest2++;
-            }
-        }
-        Assert.assertEquals(countTest1, 1);
-        Assert.assertEquals(countTest2, 0);
+        Assert.assertEquals(conditionsList.getList().size(), 1);
+        Assert.assertEquals(conditionsList.getList().get(0).getConditionValue(), conditionValue);
 
         conditionValue = apiContextResolver(API2_CONTEXT, API2_VERSION);
-        // Retrieve blocking condition values that exactly matches with /test/abc/2.0.0
         conditionsList = restAPIAdmin.getBlockingConditionsByConditionTypeAndValue(
                 "conditionType:API&conditionValue:" + conditionValue);
         Assert.assertNotNull(conditionsList);
-
-        countTest1 = 0;
-        countTest2 = 0;
-        for (BlockingConditionDTO condition : conditionsList.getList()) {
-            if (apiContextResolver(API1_CONTEXT, API1_VERSION).equals(condition.getConditionValue())) {
-                countTest1++;
-            } else if (apiContextResolver(API2_CONTEXT, API2_VERSION).equals(condition.getConditionValue())) {
-                countTest2++;
-            }
-        }
-        Assert.assertEquals(countTest1, 0);
-        Assert.assertEquals(countTest2, 1);
+        Assert.assertEquals(conditionsList.getList().size(), 1);
+        Assert.assertEquals(conditionsList.getList().get(0).getConditionValue(), conditionValue);
     }
 
     private String apiContextResolver(String context, String version) {
