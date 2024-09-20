@@ -61,7 +61,7 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
         SubscriptionPolicyListDTO subscriptionPolicyList = restAPIPublisher.getSubscriptionPolicies(EVENT_COUNT_TYPE);
         assertNotNull(subscriptionPolicyList, "There are no subscription policies available");
         assertNotNull(subscriptionPolicyList.getCount(), "Subscription policy count should be available");
-        assertEquals(subscriptionPolicyList.getCount().intValue(), 8, "There must be only 8 policies by default");
+        assertEquals(subscriptionPolicyList.getCount().intValue(), 9, "There must be only 9 policies by default");
         assertNotNull(subscriptionPolicyList.getList(), "Subscription policy list should be available");
 
         SubscriptionPolicyDTO tierAsyncBronze = getSubscriptionPolicy("AsyncBronze",
@@ -95,6 +95,15 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
                 "Invalid display name of the tier AsyncUnlimited");
         assertEquals(tierAsyncUnlimited.getDescription(), "Allows unlimited events",
                 "Invalid description of the tier AsyncUnlimited");
+
+        SubscriptionPolicyDTO tierAsyncSubscriptionless
+                = getSubscriptionPolicy("AsyncDefaultSubscriptionless", subscriptionPolicyList.getList());
+        assertNotNull(tierAsyncSubscriptionless, "Tier AsyncDefaultSubscriptionless is not available");
+        assertEquals(tierAsyncSubscriptionless.getDisplayName(), "AsyncDefaultSubscriptionless",
+                "Invalid display name of the tier AsyncDefaultSubscriptionless");
+        assertEquals(tierAsyncSubscriptionless.getDescription(),
+                "Allows 10000 events per day when subscription validation is disabled",
+                "Invalid description of the tier AsyncDefaultSubscriptionless");
 
         SubscriptionPolicyDTO tierAsyncWHBronze = getSubscriptionPolicy("AsyncWHBronze",
                 subscriptionPolicyList.getList());
@@ -131,7 +140,7 @@ public class APIMGetAllSubscriptionThrottlingPolicies extends APIMIntegrationBas
 
     public SubscriptionPolicyDTO getSubscriptionPolicy(String policyName, List<SubscriptionPolicyDTO> subscriptionPolicyDTOList) {
         for (SubscriptionPolicyDTO subscriptionPolicyDTO: subscriptionPolicyDTOList) {
-            if (subscriptionPolicyDTO.getPolicyName().equals(policyName)) {
+            if (policyName.equals(subscriptionPolicyDTO.getPolicyName())) {
                 return subscriptionPolicyDTO;
             }
         }
