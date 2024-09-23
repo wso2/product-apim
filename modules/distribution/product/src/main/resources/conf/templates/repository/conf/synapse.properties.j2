@@ -22,4 +22,6 @@
 synapse.artifacts.file.storage.enabled=false
 {% endif %}
 {% endif %}
-
+{% if apim.mediator_config.oauth.enable_retry_call_with_new_token && apim.redis_config is defined %}
+token.cache.class=org.wso2.carbon.apimgt.gateway.mediators.oauth.RedisTokenCache
+{% endif %}

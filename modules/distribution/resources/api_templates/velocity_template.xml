@@ -75,7 +75,7 @@
 <target type="body"/>
 </enrich>
         #else
-        #if($endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH")
+        #if(!($enableRetryCallWithNewOauthToken && $endpointClass == "http") && ($endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH"))
 <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthMediator">
 <property name="uniqueIdentifier" value="$util.escapeXml($endpointsecurity.uniqueIdentifier)" type="STRING"/>
 <property name="tokenEndpointUrl" value="$util.escapeXml($endpointsecurity.tokenUrl)" type="STRING"/>
@@ -346,12 +346,12 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
                 #end
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
-                    #if($endpointSecurityProd.clientId && ($endpointSecurityProd.type == "oauth" || $endpointSecurityProd.type == "OAUTH"))
+                    #if(!($enableRetryCallWithNewOauthToken && $endpointClass == "http") && $endpointSecurityProd.clientId && ($endpointSecurityProd.type == "oauth" || $endpointSecurityProd.type == "OAUTH"))
         <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
                     #end
     </then>
     <else>
-                    #if($endpointSecuritySand.clientId && ($endpointSecuritySand.type == "oauth" || $endpointSecuritySand.type == "OAUTH"))
+                    #if(!($enableRetryCallWithNewOauthToken && $endpointClass == "http") && $endpointSecuritySand.clientId && ($endpointSecuritySand.type == "oauth" || $endpointSecuritySand.type == "OAUTH"))
         <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
                     #end
     </else>
