@@ -242,8 +242,7 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
     public void testContentSearchWithAccessControl() throws Exception {
         // Set API publisher access control to role1
         HttpResponse httpResponse = restAPIPublisher.getAPI(apiId);
-        Gson g = new Gson();
-        APIDTO apiDto = g.fromJson(httpResponse.getData(), APIDTO.class);
+        APIDTO apiDto = new Gson().fromJson(httpResponse.getData(), APIDTO.class);
 
         apiDto.setAccessControl(APIDTO.AccessControlEnum.RESTRICTED);
         List<String> roles = new ArrayList<>();
@@ -310,8 +309,7 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
 
         // Set store visibility to role1
         HttpResponse httpResponse = restAPIPublisher.getAPI(apiId);
-        Gson g = new Gson();
-        APIDTO apiDto = g.fromJson(httpResponse.getData(), APIDTO.class);
+        APIDTO apiDto = new Gson().fromJson(httpResponse.getData(), APIDTO.class);
         apiDto.setAccessControl(APIDTO.AccessControlEnum.NONE);
 
         List<String> roles = new ArrayList<>();
