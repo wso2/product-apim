@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.admin.api.dto.AIQuotaLimitDTO;
+import org.wso2.am.integration.clients.admin.api.dto.AIAPIQuotaLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EventCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
@@ -44,7 +44,7 @@ public enum TypeEnum {
         
         EVENTCOUNTLIMIT("EVENTCOUNTLIMIT"),
         
-        AIQUOTALIMIT("AIQUOTALIMIT");
+        AIAPIQUOTALIMIT("AIAPIQUOTALIMIT");
 
 private String value;
 
@@ -100,9 +100,9 @@ public static TypeEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_EVENT_COUNT)
             private EventCountLimitDTO eventCount = null;
 
-        public static final String SERIALIZED_NAME_AI_QUOTA = "aiQuota";
-        @SerializedName(SERIALIZED_NAME_AI_QUOTA)
-            private AIQuotaLimitDTO aiQuota = null;
+        public static final String SERIALIZED_NAME_AI_API_QUOTA = "aiApiQuota";
+        @SerializedName(SERIALIZED_NAME_AI_API_QUOTA)
+            private AIAPIQuotaLimitDTO aiApiQuota = null;
 
 
         public ThrottleLimitDTO type(TypeEnum type) {
@@ -196,26 +196,26 @@ public static TypeEnum fromValue(String value) {
     }
 
 
-        public ThrottleLimitDTO aiQuota(AIQuotaLimitDTO aiQuota) {
+        public ThrottleLimitDTO aiApiQuota(AIAPIQuotaLimitDTO aiApiQuota) {
         
-        this.aiQuota = aiQuota;
+        this.aiApiQuota = aiApiQuota;
         return this;
         }
 
     /**
-        * Get aiQuota
-    * @return aiQuota
+        * Get aiApiQuota
+    * @return aiApiQuota
     **/
         @javax.annotation.Nullable
       @ApiModelProperty(value = "")
     
-    public AIQuotaLimitDTO getAiQuota() {
-        return aiQuota;
+    public AIAPIQuotaLimitDTO getAiApiQuota() {
+        return aiApiQuota;
     }
 
 
-    public void setAiQuota(AIQuotaLimitDTO aiQuota) {
-        this.aiQuota = aiQuota;
+    public void setAiApiQuota(AIAPIQuotaLimitDTO aiApiQuota) {
+        this.aiApiQuota = aiApiQuota;
     }
 
 
@@ -232,12 +232,12 @@ public static TypeEnum fromValue(String value) {
             Objects.equals(this.requestCount, throttleLimit.requestCount) &&
             Objects.equals(this.bandwidth, throttleLimit.bandwidth) &&
             Objects.equals(this.eventCount, throttleLimit.eventCount) &&
-            Objects.equals(this.aiQuota, throttleLimit.aiQuota);
+            Objects.equals(this.aiApiQuota, throttleLimit.aiApiQuota);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, requestCount, bandwidth, eventCount, aiQuota);
+        return Objects.hash(type, requestCount, bandwidth, eventCount, aiApiQuota);
     }
 
 
@@ -249,7 +249,7 @@ sb.append("class ThrottleLimitDTO {\n");
     sb.append("    requestCount: ").append(toIndentedString(requestCount)).append("\n");
     sb.append("    bandwidth: ").append(toIndentedString(bandwidth)).append("\n");
     sb.append("    eventCount: ").append(toIndentedString(eventCount)).append("\n");
-    sb.append("    aiQuota: ").append(toIndentedString(aiQuota)).append("\n");
+    sb.append("    aiApiQuota: ").append(toIndentedString(aiApiQuota)).append("\n");
 sb.append("}");
 return sb.toString();
 }

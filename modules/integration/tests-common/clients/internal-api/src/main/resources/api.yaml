@@ -1373,8 +1373,8 @@ definitions:
         $ref: '#/definitions/BandwidthLimit'
       eventCount:
         $ref: '#/definitions/EventCountLimit'
-      aiQuota:
-        $ref: '#/definitions/AIQuotaLimit'
+      aiApiQuota:
+        $ref: '#/definitions/AIAPIQuotaLimit'
 
   #-----------------------------------------------------
   # The Throttling Bandwidth Limit resource
@@ -1431,10 +1431,10 @@ definitions:
             example: 3000
 
   #-----------------------------------------------------
-  # The Throttling AI Quota Limit resource
+  # The Throttling AI API Quota Limit resource
   #-----------------------------------------------------
-  AIQuotaLimit:
-    title: AI Quota Limit object
+  AIAPIQuotaLimit:
+    title: AI API Quota Limit object
     allOf:
       - $ref: '#/definitions/ThrottleLimitBase'
       - required:

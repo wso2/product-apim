@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.internal.api.dto.AIQuotaLimitDTO;
+import org.wso2.am.integration.clients.internal.api.dto.AIAPIQuotaLimitDTO;
 import org.wso2.am.integration.clients.internal.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.internal.api.dto.EventCountLimitDTO;
 import org.wso2.am.integration.clients.internal.api.dto.RequestCountLimitDTO;
@@ -45,8 +45,8 @@ public class ThrottleLimitDTO {
   @SerializedName("eventCount")
   private EventCountLimitDTO eventCount = null;
 
-  @SerializedName("aiQuota")
-  private AIQuotaLimitDTO aiQuota = null;
+  @SerializedName("aiApiQuota")
+  private AIAPIQuotaLimitDTO aiApiQuota = null;
 
   public ThrottleLimitDTO quotaType(String quotaType) {
     this.quotaType = quotaType;
@@ -120,22 +120,22 @@ public class ThrottleLimitDTO {
     this.eventCount = eventCount;
   }
 
-  public ThrottleLimitDTO aiQuota(AIQuotaLimitDTO aiQuota) {
-    this.aiQuota = aiQuota;
+  public ThrottleLimitDTO aiApiQuota(AIAPIQuotaLimitDTO aiApiQuota) {
+    this.aiApiQuota = aiApiQuota;
     return this;
   }
 
    /**
-   * Get aiQuota
-   * @return aiQuota
+   * Get aiApiQuota
+   * @return aiApiQuota
   **/
   @ApiModelProperty(value = "")
-  public AIQuotaLimitDTO getAiQuota() {
-    return aiQuota;
+  public AIAPIQuotaLimitDTO getAiApiQuota() {
+    return aiApiQuota;
   }
 
-  public void setAiQuota(AIQuotaLimitDTO aiQuota) {
-    this.aiQuota = aiQuota;
+  public void setAiApiQuota(AIAPIQuotaLimitDTO aiApiQuota) {
+    this.aiApiQuota = aiApiQuota;
   }
 
 
@@ -152,12 +152,12 @@ public class ThrottleLimitDTO {
         Objects.equals(this.requestCount, throttleLimit.requestCount) &&
         Objects.equals(this.bandwidth, throttleLimit.bandwidth) &&
         Objects.equals(this.eventCount, throttleLimit.eventCount) &&
-        Objects.equals(this.aiQuota, throttleLimit.aiQuota);
+        Objects.equals(this.aiApiQuota, throttleLimit.aiApiQuota);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(quotaType, requestCount, bandwidth, eventCount, aiQuota);
+    return Objects.hash(quotaType, requestCount, bandwidth, eventCount, aiApiQuota);
   }
 
 
@@ -170,7 +170,7 @@ public class ThrottleLimitDTO {
     sb.append("    requestCount: ").append(toIndentedString(requestCount)).append("\n");
     sb.append("    bandwidth: ").append(toIndentedString(bandwidth)).append("\n");
     sb.append("    eventCount: ").append(toIndentedString(eventCount)).append("\n");
-    sb.append("    aiQuota: ").append(toIndentedString(aiQuota)).append("\n");
+    sb.append("    aiApiQuota: ").append(toIndentedString(aiApiQuota)).append("\n");
     sb.append("}");
     return sb.toString();
   }

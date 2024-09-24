@@ -8147,7 +8147,7 @@ components:
           - REQUESTCOUNTLIMIT
           - BANDWIDTHLIMIT
           - EVENTCOUNTLIMIT
-          - AIQUOTALIMIT
+          - AIAPIQUOTALIMIT
           example: REQUESTCOUNTLIMIT
           type: string
         requestCount:
@@ -8156,8 +8156,8 @@ components:
           $ref: '#/components/schemas/BandwidthLimit'
         eventCount:
           $ref: '#/components/schemas/EventCountLimit'
-        aiQuota:
-          $ref: '#/components/schemas/AIQuotaLimit'
+        aiApiQuota:
+          $ref: '#/components/schemas/AIAPIQuotaLimit'
       required:
       - type
       title: Throttle Limit
@@ -8203,11 +8203,11 @@ components:
       - $ref: '#/components/schemas/ThrottleLimitBase'
       - $ref: '#/components/schemas/RequestCountLimit_allOf'
       title: Request Count Limit object
-    AIQuotaLimit:
+    AIAPIQuotaLimit:
       allOf:
       - $ref: '#/components/schemas/ThrottleLimitBase'
-      - $ref: '#/components/schemas/AIQuotaLimit_allOf'
-      title: AI Quota Limit object
+      - $ref: '#/components/schemas/AIAPIQuotaLimit_allOf'
+      title: AI API Quota Limit object
     EventCountLimit:
       allOf:
       - $ref: '#/components/schemas/ThrottleLimitBase'
@@ -10033,7 +10033,7 @@ components:
           type: integer
       required:
       - requestCount
-    AIQuotaLimit_allOf:
+    AIAPIQuotaLimit_allOf:
       properties:
         requestCount:
           description: Maximum number of requests allowed

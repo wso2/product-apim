@@ -4894,15 +4894,15 @@ components:
             - REQUESTCOUNTLIMIT
             - BANDWIDTHLIMIT
             - EVENTCOUNTLIMIT
-            - AIQUOTALIMIT
+            - AIAPIQUOTALIMIT
         requestCount:
           $ref: '#/components/schemas/RequestCountLimit'
         bandwidth:
           $ref: '#/components/schemas/BandwidthLimit'
         eventCount:
           $ref: '#/components/schemas/EventCountLimit'
-        aiQuota:
-          $ref: '#/components/schemas/AIQuotaLimit'
+        aiApiQuota:
+          $ref: '#/components/schemas/AIAPIQuotaLimit'
     BurstLimit:
       title: Burst Limit object
       type: object
@@ -4966,8 +4966,8 @@ components:
               description: Maximum number of requests allowed
               format: int64
               example: 30
-    AIQuotaLimit:
-      title: AI Quota Limit object
+    AIAPIQuotaLimit:
+      title: AI API Quota Limit object
       allOf:
         - $ref: '#/components/schemas/ThrottleLimitBase'
         - required:

@@ -23,22 +23,12 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
-import org.wso2.am.integration.clients.admin.api.dto.AIQuotaLimitAllOfDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitBaseDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 /**
-* AIQuotaLimitDTO
+* AIAPIQuotaLimitAllOfDTO
 */
 
-public class AIQuotaLimitDTO {
-        public static final String SERIALIZED_NAME_TIME_UNIT = "timeUnit";
-        @SerializedName(SERIALIZED_NAME_TIME_UNIT)
-            private String timeUnit;
-
-        public static final String SERIALIZED_NAME_UNIT_TIME = "unitTime";
-        @SerializedName(SERIALIZED_NAME_UNIT_TIME)
-            private Integer unitTime;
-
+public class AIAPIQuotaLimitAllOfDTO {
         public static final String SERIALIZED_NAME_REQUEST_COUNT = "requestCount";
         @SerializedName(SERIALIZED_NAME_REQUEST_COUNT)
             private Long requestCount;
@@ -56,51 +46,7 @@ public class AIQuotaLimitDTO {
             private Long responseTokenCount;
 
 
-        public AIQuotaLimitDTO timeUnit(String timeUnit) {
-        
-        this.timeUnit = timeUnit;
-        return this;
-        }
-
-    /**
-        * Unit of the time. Allowed values are \&quot;sec\&quot;, \&quot;min\&quot;, \&quot;hour\&quot;, \&quot;day\&quot;
-    * @return timeUnit
-    **/
-      @ApiModelProperty(example = "min", required = true, value = "Unit of the time. Allowed values are \"sec\", \"min\", \"hour\", \"day\"")
-    
-    public String getTimeUnit() {
-        return timeUnit;
-    }
-
-
-    public void setTimeUnit(String timeUnit) {
-        this.timeUnit = timeUnit;
-    }
-
-
-        public AIQuotaLimitDTO unitTime(Integer unitTime) {
-        
-        this.unitTime = unitTime;
-        return this;
-        }
-
-    /**
-        * Time limit that the throttling limit applies.
-    * @return unitTime
-    **/
-      @ApiModelProperty(example = "10", required = true, value = "Time limit that the throttling limit applies.")
-    
-    public Integer getUnitTime() {
-        return unitTime;
-    }
-
-
-    public void setUnitTime(Integer unitTime) {
-        this.unitTime = unitTime;
-    }
-
-
-        public AIQuotaLimitDTO requestCount(Long requestCount) {
+        public AIAPIQuotaLimitAllOfDTO requestCount(Long requestCount) {
         
         this.requestCount = requestCount;
         return this;
@@ -122,7 +68,7 @@ public class AIQuotaLimitDTO {
     }
 
 
-        public AIQuotaLimitDTO totalTokenCount(Long totalTokenCount) {
+        public AIAPIQuotaLimitAllOfDTO totalTokenCount(Long totalTokenCount) {
         
         this.totalTokenCount = totalTokenCount;
         return this;
@@ -145,7 +91,7 @@ public class AIQuotaLimitDTO {
     }
 
 
-        public AIQuotaLimitDTO requestTokenCount(Long requestTokenCount) {
+        public AIAPIQuotaLimitAllOfDTO requestTokenCount(Long requestTokenCount) {
         
         this.requestTokenCount = requestTokenCount;
         return this;
@@ -168,7 +114,7 @@ public class AIQuotaLimitDTO {
     }
 
 
-        public AIQuotaLimitDTO responseTokenCount(Long responseTokenCount) {
+        public AIAPIQuotaLimitAllOfDTO responseTokenCount(Long responseTokenCount) {
         
         this.responseTokenCount = responseTokenCount;
         return this;
@@ -199,27 +145,23 @@ public class AIQuotaLimitDTO {
         if (o == null || getClass() != o.getClass()) {
         return false;
         }
-            AIQuotaLimitDTO aiQuotaLimit = (AIQuotaLimitDTO) o;
-            return Objects.equals(this.timeUnit, aiQuotaLimit.timeUnit) &&
-            Objects.equals(this.unitTime, aiQuotaLimit.unitTime) &&
-            Objects.equals(this.requestCount, aiQuotaLimit.requestCount) &&
-            Objects.equals(this.totalTokenCount, aiQuotaLimit.totalTokenCount) &&
-            Objects.equals(this.requestTokenCount, aiQuotaLimit.requestTokenCount) &&
-            Objects.equals(this.responseTokenCount, aiQuotaLimit.responseTokenCount);
+            AIAPIQuotaLimitAllOfDTO aiAPIQuotaLimitAllOf = (AIAPIQuotaLimitAllOfDTO) o;
+            return Objects.equals(this.requestCount, aiAPIQuotaLimitAllOf.requestCount) &&
+            Objects.equals(this.totalTokenCount, aiAPIQuotaLimitAllOf.totalTokenCount) &&
+            Objects.equals(this.requestTokenCount, aiAPIQuotaLimitAllOf.requestTokenCount) &&
+            Objects.equals(this.responseTokenCount, aiAPIQuotaLimitAllOf.responseTokenCount);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(timeUnit, unitTime, requestCount, totalTokenCount, requestTokenCount, responseTokenCount);
+        return Objects.hash(requestCount, totalTokenCount, requestTokenCount, responseTokenCount);
     }
 
 
 @Override
 public String toString() {
 StringBuilder sb = new StringBuilder();
-sb.append("class AIQuotaLimitDTO {\n");
-    sb.append("    timeUnit: ").append(toIndentedString(timeUnit)).append("\n");
-    sb.append("    unitTime: ").append(toIndentedString(unitTime)).append("\n");
+sb.append("class AIAPIQuotaLimitAllOfDTO {\n");
     sb.append("    requestCount: ").append(toIndentedString(requestCount)).append("\n");
     sb.append("    totalTokenCount: ").append(toIndentedString(totalTokenCount)).append("\n");
     sb.append("    requestTokenCount: ").append(toIndentedString(requestTokenCount)).append("\n");

@@ -26,10 +26,10 @@ import java.io.IOException;
 import org.wso2.am.integration.clients.internal.api.dto.ThrottleLimitBaseDTO;
 
 /**
- * AIQuotaLimitDTO
+ * AIAPIQuotaLimitDTO
  */
 
-public class AIQuotaLimitDTO {
+public class AIAPIQuotaLimitDTO {
   @SerializedName("timeUnit")
   private String timeUnit = null;
 
@@ -48,7 +48,7 @@ public class AIQuotaLimitDTO {
   @SerializedName("responseTokenCount")
   private Long responseTokenCount = null;
 
-  public AIQuotaLimitDTO timeUnit(String timeUnit) {
+  public AIAPIQuotaLimitDTO timeUnit(String timeUnit) {
     this.timeUnit = timeUnit;
     return this;
   }
@@ -66,7 +66,7 @@ public class AIQuotaLimitDTO {
     this.timeUnit = timeUnit;
   }
 
-  public AIQuotaLimitDTO unitTime(Integer unitTime) {
+  public AIAPIQuotaLimitDTO unitTime(Integer unitTime) {
     this.unitTime = unitTime;
     return this;
   }
@@ -84,7 +84,7 @@ public class AIQuotaLimitDTO {
     this.unitTime = unitTime;
   }
 
-  public AIQuotaLimitDTO requestCount(Long requestCount) {
+  public AIAPIQuotaLimitDTO requestCount(Long requestCount) {
     this.requestCount = requestCount;
     return this;
   }
@@ -102,7 +102,7 @@ public class AIQuotaLimitDTO {
     this.requestCount = requestCount;
   }
 
-  public AIQuotaLimitDTO totalTokenCount(Long totalTokenCount) {
+  public AIAPIQuotaLimitDTO totalTokenCount(Long totalTokenCount) {
     this.totalTokenCount = totalTokenCount;
     return this;
   }
@@ -120,7 +120,7 @@ public class AIQuotaLimitDTO {
     this.totalTokenCount = totalTokenCount;
   }
 
-  public AIQuotaLimitDTO requestTokenCount(Long requestTokenCount) {
+  public AIAPIQuotaLimitDTO requestTokenCount(Long requestTokenCount) {
     this.requestTokenCount = requestTokenCount;
     return this;
   }
@@ -138,7 +138,7 @@ public class AIQuotaLimitDTO {
     this.requestTokenCount = requestTokenCount;
   }
 
-  public AIQuotaLimitDTO responseTokenCount(Long responseTokenCount) {
+  public AIAPIQuotaLimitDTO responseTokenCount(Long responseTokenCount) {
     this.responseTokenCount = responseTokenCount;
     return this;
   }
@@ -165,13 +165,13 @@ public class AIQuotaLimitDTO {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    AIQuotaLimitDTO aiQuotaLimit = (AIQuotaLimitDTO) o;
-    return Objects.equals(this.timeUnit, aiQuotaLimit.timeUnit) &&
-        Objects.equals(this.unitTime, aiQuotaLimit.unitTime) &&
-        Objects.equals(this.requestCount, aiQuotaLimit.requestCount) &&
-        Objects.equals(this.totalTokenCount, aiQuotaLimit.totalTokenCount) &&
-        Objects.equals(this.requestTokenCount, aiQuotaLimit.requestTokenCount) &&
-        Objects.equals(this.responseTokenCount, aiQuotaLimit.responseTokenCount);
+    AIAPIQuotaLimitDTO aiAPIQuotaLimit = (AIAPIQuotaLimitDTO) o;
+    return Objects.equals(this.timeUnit, aiAPIQuotaLimit.timeUnit) &&
+        Objects.equals(this.unitTime, aiAPIQuotaLimit.unitTime) &&
+        Objects.equals(this.requestCount, aiAPIQuotaLimit.requestCount) &&
+        Objects.equals(this.totalTokenCount, aiAPIQuotaLimit.totalTokenCount) &&
+        Objects.equals(this.requestTokenCount, aiAPIQuotaLimit.requestTokenCount) &&
+        Objects.equals(this.responseTokenCount, aiAPIQuotaLimit.responseTokenCount);
   }
 
   @Override
@@ -183,7 +183,7 @@ public class AIQuotaLimitDTO {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class AIQuotaLimitDTO {\n");
+    sb.append("class AIAPIQuotaLimitDTO {\n");
     
     sb.append("    timeUnit: ").append(toIndentedString(timeUnit)).append("\n");
     sb.append("    unitTime: ").append(toIndentedString(unitTime)).append("\n");
