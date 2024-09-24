@@ -852,6 +852,7 @@ public class APIMIntegrationBaseTest {
             throws ApiException, JSONException, APIManagerIntegrationTestException {
         int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
         int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
+        int HTTP_RESPONSE_CODE_BAD_REQUEST = Response.Status.BAD_REQUEST.getStatusCode();
         int HTTP_RESPONSE_CODE_INTERNAL_SERVER_ERROR = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
         String revisionUUID = null;
         //Add the API Revision using the API publisher.
@@ -860,8 +861,9 @@ public class APIMIntegrationBaseTest {
         apiRevisionRequest.setDescription("Test Revision 1");
 
         HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
-
-        if (apiRevisionResponse.getResponseCode() != HTTP_RESPONSE_CODE_INTERNAL_SERVER_ERROR) {
+        int responseCode = apiRevisionResponse.getResponseCode();
+        if (responseCode != HTTP_RESPONSE_CODE_INTERNAL_SERVER_ERROR && responseCode
+                != HTTP_RESPONSE_CODE_BAD_REQUEST) {
             assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                     "Create API Response Code is invalid." + apiRevisionResponse.getData());
             JSONObject jsonObject = new JSONObject(apiRevisionResponse.getData());
