@@ -157,7 +157,8 @@ public class AsyncAPITestCase extends APIMIntegrationBaseTest {
         try {
             revisionUUID = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         } catch (ApiException e) {
-            Assert.assertTrue(e.getMessage().contains("Error while adding new API Revision for API : "));
+            Assert.assertTrue(e.getMessage().contains("Error while adding new API Revision for API : ")
+                    || e.getMessage().contains("Creating API Revisions is not supported"));
         }
         if (revisionUUID != null) {
             Assert.fail();
