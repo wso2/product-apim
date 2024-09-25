@@ -41,13 +41,13 @@
           URI uri = new URI(cb);
           String decodedValue = uri.getQuery();
           if(decodedValue != null) {
-            String[] params = decodedValue.split("&");
-            for (String param : params) {
-                if (param.startsWith("tenantDomain=") || param.startsWith("TenantDomain=")) {
-                    String[] keyVal = param.split("=");
-                    tenant = keyVal[1];
-                }
-            }
+              String[] params = decodedValue.split("&");
+              for (String param : params) {
+                  if (param.startsWith("tenantDomain=") || param.startsWith("TenantDomain=")) {
+                      String[] keyVal = param.split("=");
+                      tenant = keyVal[1];
+                  }
+              }
           }
       }
   }
