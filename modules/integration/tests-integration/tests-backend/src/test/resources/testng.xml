@@ -37,6 +37,7 @@
             <class name="org.wso2.am.integration.tests.api.APICreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
+            <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>
         </classes>
     </test>
 
@@ -290,13 +291,6 @@
             <class name="org.wso2.am.integration.tests.graphql.GraphqlTestCase"/>
             <class name="org.wso2.am.integration.tests.graphqlqueryanalysis.GraphQLQueryAnalysisTest"/>
             <class name="org.wso2.am.integration.tests.graphql.GraphqlSubscriptionTestCase"/>
-        </classes>
-    </test>
-
-    <test name="apim-integration-tests-aiapi" preserve-order="true" parallel="false" group-by-instances="true">
-        <parameter name="group" value="group1"/>
-        <classes>
-            <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>
         </classes>
     </test>
 
