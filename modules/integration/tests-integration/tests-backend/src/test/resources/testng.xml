@@ -293,6 +293,13 @@
         </classes>
     </test>
 
+    <test name="apim-integration-tests-aiapi" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group1"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>
+        </classes>
+    </test>
+
     <test name="admin-rest-api-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
         <classes>
