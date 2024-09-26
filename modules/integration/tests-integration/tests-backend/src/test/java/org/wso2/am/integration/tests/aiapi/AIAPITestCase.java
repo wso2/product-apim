@@ -165,21 +165,24 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "Test AI API invocation",
             dependsOnMethods = "testMistralAIAPICreationAndPublish")
     public void testMistralAIApiInvocation() throws Exception {
+
+        // Subscribe to API
         SubscriptionDTO subscriptionDTO = restAPIStore.
                 subscribeToAPI(mistralAPIId, applicationId, APIMIntegrationConstants.API_TIER.UNLIMITED);
         assertNotNull(subscriptionDTO, "Mistral AI API Subscription failed");
 
+        // Get API Key
         APIKeyDTO apiKeyDTO = restAPIStore.
                 generateAPIKeys(applicationId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(),
                         -1, null, null);
         assertNotNull(apiKeyDTO, "Mistral AI API Key generation failed");
         String apiKey = apiKeyDTO.getApikey();
 
+        // Invoke API
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("ApiKey", apiKey);
         String invokeURL = getAPIInvocationURLHttp(mistralAPIContext, mistralAPIVersion) +
                 mistralAPIResource;
-
         String mistralPayload = readFile(resourcePath + "mistral-payload.json");
         HttpResponse serviceResponse = HTTPSClientUtils.
                 doPost(invokeURL, requestHeaders, mistralPayload);
