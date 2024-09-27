@@ -23,6 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import org.wso2.am.integration.clients.internal.api.dto.AIAPIQuotaLimitDTO;
 import org.wso2.am.integration.clients.internal.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.internal.api.dto.EventCountLimitDTO;
 import org.wso2.am.integration.clients.internal.api.dto.RequestCountLimitDTO;
@@ -43,6 +44,9 @@ public class ThrottleLimitDTO {
 
   @SerializedName("eventCount")
   private EventCountLimitDTO eventCount = null;
+
+  @SerializedName("aiApiQuota")
+  private AIAPIQuotaLimitDTO aiApiQuota = null;
 
   public ThrottleLimitDTO quotaType(String quotaType) {
     this.quotaType = quotaType;
@@ -116,6 +120,24 @@ public class ThrottleLimitDTO {
     this.eventCount = eventCount;
   }
 
+  public ThrottleLimitDTO aiApiQuota(AIAPIQuotaLimitDTO aiApiQuota) {
+    this.aiApiQuota = aiApiQuota;
+    return this;
+  }
+
+   /**
+   * Get aiApiQuota
+   * @return aiApiQuota
+  **/
+  @ApiModelProperty(value = "")
+  public AIAPIQuotaLimitDTO getAiApiQuota() {
+    return aiApiQuota;
+  }
+
+  public void setAiApiQuota(AIAPIQuotaLimitDTO aiApiQuota) {
+    this.aiApiQuota = aiApiQuota;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -129,12 +151,13 @@ public class ThrottleLimitDTO {
     return Objects.equals(this.quotaType, throttleLimit.quotaType) &&
         Objects.equals(this.requestCount, throttleLimit.requestCount) &&
         Objects.equals(this.bandwidth, throttleLimit.bandwidth) &&
-        Objects.equals(this.eventCount, throttleLimit.eventCount);
+        Objects.equals(this.eventCount, throttleLimit.eventCount) &&
+        Objects.equals(this.aiApiQuota, throttleLimit.aiApiQuota);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(quotaType, requestCount, bandwidth, eventCount);
+    return Objects.hash(quotaType, requestCount, bandwidth, eventCount, aiApiQuota);
   }
 
 
@@ -147,6 +170,7 @@ public class ThrottleLimitDTO {
     sb.append("    requestCount: ").append(toIndentedString(requestCount)).append("\n");
     sb.append("    bandwidth: ").append(toIndentedString(bandwidth)).append("\n");
     sb.append("    eventCount: ").append(toIndentedString(eventCount)).append("\n");
+    sb.append("    aiApiQuota: ").append(toIndentedString(aiApiQuota)).append("\n");
     sb.append("}");
     return sb.toString();
   }
