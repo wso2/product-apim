@@ -107,7 +107,7 @@ enable = true
 token = ""
 
 [apim.key_manager]
-enable_apikey_subscription_validation = true
+enable_lightweight_apikey_generation = true
 #service_url = "https://localhost:${mgt.transport.https.port}/services/"
 #username = "$ref{super_admin.username}"
 #password = "$ref{super_admin.password}"
