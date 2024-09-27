@@ -807,9 +807,11 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         } else if (AUTH_IN.OAUTH_QUERY == in) {
             echoUri = new URI(apiEndPoint + "?access_token=" + accessToken);
         } else if (AUTH_IN.APIKEY_HEADER == in) {
+            Thread.sleep(24000);
             request.setHeader("apikey", accessToken);
             echoUri = new URI(apiEndPoint);
         } else if (AUTH_IN.APIKEY_QUERY == in) {
+            Thread.sleep(24000);
             echoUri = new URI(apiEndPoint + "?apikey=" + accessToken);
         }
 

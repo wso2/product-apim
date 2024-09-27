@@ -356,6 +356,7 @@
         <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
             <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
             <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
             <!--THis test will be enabled once the stats event streams are finalized  -->
@@ -369,8 +370,6 @@
             <class name="org.wso2.am.integration.tests.websocket.WebSocketAPICorsValidationTestCase"/>
         </classes>
     </test>
-
-
 
     <test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
