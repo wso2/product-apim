@@ -23,6 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
+import org.wso2.am.integration.clients.admin.api.dto.AIAPIQuotaLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.BandwidthLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.EventCountLimitDTO;
 import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
@@ -33,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class ThrottleLimitDTO {
             /**
-* Type of the throttling limit. Allowed values are \&quot;REQUESTCOUNTLIMIT\&quot; and \&quot;BANDWIDTHLIMIT\&quot;. Please see schemas of \&quot;RequestCountLimit\&quot; and \&quot;BandwidthLimit\&quot; throttling limit types in Definitions section. 
+* Type of the throttling limit. Allowed values are \&quot;REQUESTCOUNTLIMIT\&quot;, \&quot;BANDWIDTHLIMIT\&quot;, \&quot;EVENTCOUNTLIMIT\&quot; and \&quot;AIAPIQUOTALIMIT\&quot;. Please see schemas of \&quot;RequestCountLimit\&quot;, \&quot;BandwidthLimit\&quot;, \&quot;EventCountLimit\&quot; and \&quot;AIAPIQuotaLimit\&quot;  throttling limit types in Definitions section. 
 */
     @JsonAdapter(TypeEnum.Adapter.class)
 public enum TypeEnum {
@@ -41,7 +42,9 @@ public enum TypeEnum {
         
         BANDWIDTHLIMIT("BANDWIDTHLIMIT"),
         
-        EVENTCOUNTLIMIT("EVENTCOUNTLIMIT");
+        EVENTCOUNTLIMIT("EVENTCOUNTLIMIT"),
+        
+        AIAPIQUOTALIMIT("AIAPIQUOTALIMIT");
 
 private String value;
 
@@ -97,6 +100,10 @@ public static TypeEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_EVENT_COUNT)
             private EventCountLimitDTO eventCount = null;
 
+        public static final String SERIALIZED_NAME_AI_API_QUOTA = "aiApiQuota";
+        @SerializedName(SERIALIZED_NAME_AI_API_QUOTA)
+            private AIAPIQuotaLimitDTO aiApiQuota = null;
+
 
         public ThrottleLimitDTO type(TypeEnum type) {
         
@@ -105,10 +112,10 @@ public static TypeEnum fromValue(String value) {
         }
 
     /**
-        * Type of the throttling limit. Allowed values are \&quot;REQUESTCOUNTLIMIT\&quot; and \&quot;BANDWIDTHLIMIT\&quot;. Please see schemas of \&quot;RequestCountLimit\&quot; and \&quot;BandwidthLimit\&quot; throttling limit types in Definitions section. 
+        * Type of the throttling limit. Allowed values are \&quot;REQUESTCOUNTLIMIT\&quot;, \&quot;BANDWIDTHLIMIT\&quot;, \&quot;EVENTCOUNTLIMIT\&quot; and \&quot;AIAPIQUOTALIMIT\&quot;. Please see schemas of \&quot;RequestCountLimit\&quot;, \&quot;BandwidthLimit\&quot;, \&quot;EventCountLimit\&quot; and \&quot;AIAPIQuotaLimit\&quot;  throttling limit types in Definitions section. 
     * @return type
     **/
-      @ApiModelProperty(example = "REQUESTCOUNTLIMIT", required = true, value = "Type of the throttling limit. Allowed values are \"REQUESTCOUNTLIMIT\" and \"BANDWIDTHLIMIT\". Please see schemas of \"RequestCountLimit\" and \"BandwidthLimit\" throttling limit types in Definitions section. ")
+      @ApiModelProperty(example = "REQUESTCOUNTLIMIT", required = true, value = "Type of the throttling limit. Allowed values are \"REQUESTCOUNTLIMIT\", \"BANDWIDTHLIMIT\", \"EVENTCOUNTLIMIT\" and \"AIAPIQUOTALIMIT\". Please see schemas of \"RequestCountLimit\", \"BandwidthLimit\", \"EventCountLimit\" and \"AIAPIQuotaLimit\"  throttling limit types in Definitions section. ")
     
     public TypeEnum getType() {
         return type;
@@ -189,6 +196,29 @@ public static TypeEnum fromValue(String value) {
     }
 
 
+        public ThrottleLimitDTO aiApiQuota(AIAPIQuotaLimitDTO aiApiQuota) {
+        
+        this.aiApiQuota = aiApiQuota;
+        return this;
+        }
+
+    /**
+        * Get aiApiQuota
+    * @return aiApiQuota
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public AIAPIQuotaLimitDTO getAiApiQuota() {
+        return aiApiQuota;
+    }
+
+
+    public void setAiApiQuota(AIAPIQuotaLimitDTO aiApiQuota) {
+        this.aiApiQuota = aiApiQuota;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -201,12 +231,13 @@ public static TypeEnum fromValue(String value) {
             return Objects.equals(this.type, throttleLimit.type) &&
             Objects.equals(this.requestCount, throttleLimit.requestCount) &&
             Objects.equals(this.bandwidth, throttleLimit.bandwidth) &&
-            Objects.equals(this.eventCount, throttleLimit.eventCount);
+            Objects.equals(this.eventCount, throttleLimit.eventCount) &&
+            Objects.equals(this.aiApiQuota, throttleLimit.aiApiQuota);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, requestCount, bandwidth, eventCount);
+        return Objects.hash(type, requestCount, bandwidth, eventCount, aiApiQuota);
     }
 
 
@@ -218,6 +249,7 @@ sb.append("class ThrottleLimitDTO {\n");
     sb.append("    requestCount: ").append(toIndentedString(requestCount)).append("\n");
     sb.append("    bandwidth: ").append(toIndentedString(bandwidth)).append("\n");
     sb.append("    eventCount: ").append(toIndentedString(eventCount)).append("\n");
+    sb.append("    aiApiQuota: ").append(toIndentedString(aiApiQuota)).append("\n");
 sb.append("}");
 return sb.toString();
 }
