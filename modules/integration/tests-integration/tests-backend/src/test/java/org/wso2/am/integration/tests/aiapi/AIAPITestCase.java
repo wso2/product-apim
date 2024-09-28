@@ -199,7 +199,6 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         restAPIStore.removeAPISubscriptionByName(mistralAPIName, mistralAPIVersion, apiProvider, applicationName);
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(mistralAPIId);
-        super.cleanUp();
     }
 
     private File getTempFileWithContent(String content) throws IOException {
