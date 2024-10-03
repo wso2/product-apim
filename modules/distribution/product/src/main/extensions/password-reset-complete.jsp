@@ -241,7 +241,7 @@
                         <%
                     } else {
                         if (StringUtils.isNotBlank(callback) && callback.contains("myaccount")) {
-                        	callback = callback.replace("myaccount", "carbon");
+                            callback = callback.replace("myaccount", "carbon");
                         }
                         URIBuilder callbackUrlBuilder = new
                                 URIBuilder(IdentityManagementEndpointUtil.encodeURL(callback));
