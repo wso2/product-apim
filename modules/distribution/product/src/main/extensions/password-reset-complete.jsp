@@ -240,7 +240,7 @@
                         document.callbackForm.submit();
                         <%
                     } else {
-                        if (callback.contains("myaccount")) {
+                        if (StringUtils.isNotBlank(callback) && callback.contains("myaccount")) {
                         	callback = callback.replace("myaccount", "carbon");
                         }
                         URIBuilder callbackUrlBuilder = new
