@@ -222,9 +222,9 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
 
     /**
-     * Although API visibility on the dev portal is restricted (eg, to the 'admin' role), if a user has the
+     * Although API visibility on the publisher portal is restricted (eg, to the 'admin' role), if a user has the
      * 'internal/publisher' role, the API should still be visible to them.
-     * This ensures that publishers can view all APIs of the organization on the publisher
+     * This ensures that publishers can view all APIs of the organization on the publisher portal
      */
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for API creator ")
     public void testVisibilityForCreatorInPublisher()
@@ -276,7 +276,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
     /**
-     * Although API visibility on the dev portal is restricted (eg, to the 'admin' role), if a user has the
+     * Although API visibility on the devportal is restricted (eg, to the 'admin' role), if a user has the
      * 'internal/publisher' role, the API should still be visible to them.
      * This ensures that publishers can view all APIs of the organization on the devportal
      */
