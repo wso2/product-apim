@@ -382,14 +382,14 @@
                                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Password")%>
                                         </label>
                                         <input id="password" name="password" type="password"
-                                               class="form-control" required>
+                                               class="form-control" autocomplete="off" required>
                                     </div>
                                     <div class="required field">
                                         <label for="password2" class="control-label">
                                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Confirm.password")%>
                                         </label>
                                         <input id="password2" name="password2" type="password" class="form-control"
-                                               data-match="reg-password" required>
+                                               data-match="reg-password" autocomplete="off" required>
                                     </div>
                                 </div>
 

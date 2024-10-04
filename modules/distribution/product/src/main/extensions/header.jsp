@@ -59,6 +59,7 @@
   String logoWidth = "50";
   String logoAltText = "";
   File customCSSFile = null;
+  FileReader fr = null;
   String customCSS = "";
   String tenantThemeDirectoryName = "";
   boolean showCookiePolicy = true;
@@ -77,7 +78,8 @@
           File themeFile = new File(tenantThemeFile);
           customCSSFile = new File(customCSS);
           if (themeFile != null && themeFile.exists() && themeFile.isFile()) {
-              FileReader fr = new FileReader(themeFile);
+            try {
+              fr = new FileReader(themeFile);
               JSONParser parser = new JSONParser();
               Object obj = parser.parse(fr);
               JSONObject jsonObject = (JSONObject) obj;
@@ -126,6 +128,11 @@
                   showPrivacyPolicy = (Boolean)(privacyPolicyThemeObj.get("visible"));
                   privacyPolicyText = (String)privacyPolicyThemeObj.get("text");
               }
+            } finally {
+                if (fr != null) {
+                    fr.close();
+                }
+            }
           }
       }
   }
