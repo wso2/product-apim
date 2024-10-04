@@ -955,6 +955,10 @@
         <JWTX5tHexifyingRequired>true</JWTX5tHexifyingRequired>
         {% endif %}
 
+        {% if oauth.enable_typ_field_in_jwt_access_token_header is defined %}
+        <EnableTypFieldInJWTAccessTokenHeader>{{oauth.enable_typ_field_in_jwt_access_token_header}}</EnableTypFieldInJWTAccessTokenHeader>
+        {% endif %}
+
     </OAuth>
     <!--
     Configuration to select JS engine for Adaptive authentication feature.
