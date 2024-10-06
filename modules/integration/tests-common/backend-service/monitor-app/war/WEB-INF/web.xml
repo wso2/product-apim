@@ -24,8 +24,17 @@
     <display-name>apiInfoWeb-App</display-name>
     <servlet>
         <servlet-name>apiMonitorServlet</servlet-name>
-        <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+        <servlet-class>org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
+
+        <init-param>
+            <param-name>jaxrs.serviceClasses</param-name>
+            <param-value>
+                org.wso2.am.apiMonitorService.WebAppInformationService,
+                org.wso2.am.apiMonitorService.ApiInformationService,
+                org.wso2.am.apiMonitorService.KeyManagerInformationService
+            </param-value>
+        </init-param>
     </servlet>
 
     <servlet-mapping>
