@@ -107,6 +107,13 @@
 #end
 #end
 </class>
+## user defined Mediator
+		#else
+        #if($endpointsecurity.type == "userDefined")
+<class name="org.wso2.carbon.apimgt.gateway.mediators.endpointsecurity.UserDefinedMediator">
+<property name="customParameters" value="$util.escapeXml($endpointsecurity.customParameters)" type="STRING"/>
+</class>
+## user defined Mediator
         #end
         #end
         #end
