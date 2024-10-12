@@ -28,6 +28,8 @@ import org.wso2.am.integration.clients.store.api.v1.dto.APIBusinessInformationDT
 import org.wso2.am.integration.clients.store.api.v1.dto.APIInfoDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.*;
+import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
 import java.util.*;
@@ -237,6 +239,25 @@ public class ApiProductTestHelper {
         Assert.assertEquals(productCount, 1);
 
         return responseData;
+    }
+
+    /**
+     * Validate the API Type returned for a API Product on Search
+     *
+     * @param apiProductName API Product name passed as the query parameter
+     * @throws org.wso2.am.integration.clients.store.api.ApiException APIException if exists
+     */
+    public void validateAPITypeForAPIProductOnSearch(String apiProductName)
+            throws org.wso2.am.integration.clients.store.api.ApiException {
+        SearchResultListDTO searchResultDTO = restAPIStore.searchAPIs(apiProductName);
+
+        for (Object object : searchResultDTO.getList()) {
+            if (object instanceof APIInfoDTO) {
+                APIInfoDTO apiInfoDTO = (APIInfoDTO) object;
+                Assert.assertEquals(apiInfoDTO.getType(), "APIPRODUCT");
+            }
+        }
+        Assert.fail("APIProduct Not Found in Store");
     }
 
     /**
