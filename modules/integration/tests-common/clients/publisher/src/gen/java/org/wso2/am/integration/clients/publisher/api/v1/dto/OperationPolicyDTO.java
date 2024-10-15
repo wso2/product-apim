@@ -40,6 +40,10 @@ public class OperationPolicyDTO {
         @SerializedName(SERIALIZED_NAME_POLICY_VERSION)
             private String policyVersion = "v1";
 
+        public static final String SERIALIZED_NAME_POLICY_TYPE = "policyType";
+        @SerializedName(SERIALIZED_NAME_POLICY_TYPE)
+            private String policyType;
+
         public static final String SERIALIZED_NAME_POLICY_ID = "policyId";
         @SerializedName(SERIALIZED_NAME_POLICY_ID)
             private String policyId;
@@ -91,6 +95,29 @@ public class OperationPolicyDTO {
 
     public void setPolicyVersion(String policyVersion) {
         this.policyVersion = policyVersion;
+    }
+
+
+        public OperationPolicyDTO policyType(String policyType) {
+        
+        this.policyType = policyType;
+        return this;
+        }
+
+    /**
+        * Get policyType
+    * @return policyType
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "")
+    
+    public String getPolicyType() {
+        return policyType;
+    }
+
+
+    public void setPolicyType(String policyType) {
+        this.policyType = policyType;
     }
 
 
@@ -151,13 +178,14 @@ public class OperationPolicyDTO {
             OperationPolicyDTO operationPolicy = (OperationPolicyDTO) o;
             return Objects.equals(this.policyName, operationPolicy.policyName) &&
             Objects.equals(this.policyVersion, operationPolicy.policyVersion) &&
+            Objects.equals(this.policyType, operationPolicy.policyType) &&
             Objects.equals(this.policyId, operationPolicy.policyId) &&
             Objects.equals(this.parameters, operationPolicy.parameters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(policyName, policyVersion, policyId, parameters);
+        return Objects.hash(policyName, policyVersion, policyType, policyId, parameters);
     }
 
 
@@ -167,6 +195,7 @@ StringBuilder sb = new StringBuilder();
 sb.append("class OperationPolicyDTO {\n");
     sb.append("    policyName: ").append(toIndentedString(policyName)).append("\n");
     sb.append("    policyVersion: ").append(toIndentedString(policyVersion)).append("\n");
+    sb.append("    policyType: ").append(toIndentedString(policyType)).append("\n");
     sb.append("    policyId: ").append(toIndentedString(policyId)).append("\n");
     sb.append("    parameters: ").append(toIndentedString(parameters)).append("\n");
 sb.append("}");

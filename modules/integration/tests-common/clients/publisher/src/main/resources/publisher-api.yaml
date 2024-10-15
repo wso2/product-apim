@@ -11779,6 +11779,8 @@ components:
         policyVersion:
           type: string
           default: v1
+        policyType:
+          type: string
         policyId:
           type: string
         parameters:
