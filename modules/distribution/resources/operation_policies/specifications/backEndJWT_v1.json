@@ -1,6 +1,6 @@
 {
   "category": "Mediation",
-  "name": "BackEndJWT",
+  "name": "backEndJWT",
   "version": "v1",
   "displayName": "Backend JWT",
   "description": "This policy allows you to enable backend jwt",
