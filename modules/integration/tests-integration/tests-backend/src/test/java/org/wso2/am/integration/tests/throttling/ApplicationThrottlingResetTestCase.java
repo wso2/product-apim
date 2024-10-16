@@ -216,9 +216,6 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         checkThrottling(apiInvocationUrlForRequestCount, requestHeadersForRequestCount, 5);
 
         String userId = requestCountApplicationDTO.getOwner();
-        if (userId != null && userId.contains("@")) {
-            userId = userId.substring(0, userId.lastIndexOf("@"));
-        }
 
         // reset the application policy
         org.wso2.am.integration.clients.store.api.ApiResponse<Void> resetResponse =
@@ -237,9 +234,6 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         checkThrottling(apiInvocationUrlForBandwidth, requestHeadersForBandwidth, 5);
 
         String userId = bandwidthApplicationDTO.getOwner();
-        if (userId != null && userId.contains("@")) {
-            userId = userId.substring(0, userId.lastIndexOf("@"));
-        }
 
         // reset the application policy
         org.wso2.am.integration.clients.store.api.ApiResponse<Void> resetResponse =
