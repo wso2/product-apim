@@ -1,8 +1,0 @@
-<%
-jagg.initializer("menu/left", {
-
-    preInitialize:function (){
-    }
-});
-%>
-

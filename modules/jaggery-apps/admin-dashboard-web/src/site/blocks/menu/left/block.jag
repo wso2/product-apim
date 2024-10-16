@@ -1,8 +1,0 @@
-<%
-jagg.block("menu/left", {
-    initializer:function (data) {
-
-    }
-
-});
-%>
