@@ -371,7 +371,7 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
 
         //Verify the owner of the updated application
         ApiResponse<ApplicationListDTO> getApplicationsResponse =
-                restAPIAdminClient.getApplications(newOwner, null, null, appTenantDomain);
+                restAPIAdminClient.getApplications(newOwner, null, null, appTenantDomain, null);
         Assert.assertEquals(getApplicationsResponse.getStatusCode(), HttpStatus.SC_OK);
         ApplicationListDTO applicationList = getApplicationsResponse.getData();
         List<ApplicationInfoDTO> applicationInfoList = applicationList.getList();
