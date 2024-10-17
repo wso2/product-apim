@@ -1,8 +1,0 @@
-<%
-jagg.initializer("layout/login", {
-
-    preInitialize:function () {
-        jagg.addHeaderJS("layout/login", "login", "templates/layout/login/js/login.js");
-    }
-});
-%>

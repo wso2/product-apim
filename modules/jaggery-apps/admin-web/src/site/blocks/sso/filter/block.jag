@@ -1,8 +1,0 @@
-<%
-jagg.block("sso/filter", {
-    initialize:function (data) {
-
-    }
-
-});
-%>
