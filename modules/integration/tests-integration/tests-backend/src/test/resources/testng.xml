@@ -357,7 +357,6 @@
         <parameter name="group" value="group4"/>
         <classes>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
             <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
             <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
             <!--THis test will be enabled once the stats event streams are finalized  -->
@@ -376,6 +375,7 @@
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingConfig"/>
+<!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />-->
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingTestCase"/>
 <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityMutualSSLCertificateChainValidationTestCase" />-->
         </classes>

@@ -547,5 +547,6 @@
       "pattern.reload_time": "10"
     }
   ],
-  "service_provider.use_username_as_sub_claim": false
+  "service_provider.use_username_as_sub_claim": false,
+  "apim.ai.llm_provider_events_enabled": true
 }

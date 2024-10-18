@@ -36,6 +36,17 @@
         #set( $endpointsecurity = $endpoint_security.get("${type}"))
         ## IF endpoint secured
         #if($endpointsecurity.enabled)
+        #if($endpointsecurity.type == "apikey" || $endpointsecurity.type == "APIKEY")
+<class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
+<property name="apiKeyIdentifier" value="$util.escapeXml($endpointsecurity.apiKeyIdentifier)" type="STRING"/>
+<property name="apiKeyIdentifierType" value="$util.escapeXml($endpointsecurity.apiKeyIdentifierType)" type="STRING"/>
+#if($isSecureVaultEnabled)
+<property name="apiKeyValue" expression="wso2:vault-lookup('$endpointsecurity.apiKeyValue')" type="STRING"/>
+#else
+<property name="apiKeyValue" value="$util.escapeXml($endpointsecurity.apiKeyValue)" type="STRING"/>
+#end
+</class>
+        #else
         #if($endpointsecurity.type == "basic" || $endpointsecurity.type == "BASIC")
         #if($isSecureVaultEnabled)
 <property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$endpointsecurity.alias')"/>
@@ -96,6 +107,7 @@
 #end
 #end
 </class>
+        #end
         #end
         #end
         #end
