@@ -486,6 +486,7 @@
   "tenant_mgt.disable_email_domain_validation": true,
   "apim.jwt.use_kid_property": true,
   "apim.jwt.use_sha256_hash": false,
+  "apim.hashing.hashing_algorithm": "SHA-256",
   "server_configuration": {
     "diagnostic_tool_enabled": "true",
     "deployment_toml_path": "../conf/deployment.toml",
