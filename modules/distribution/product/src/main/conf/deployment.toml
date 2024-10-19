@@ -135,9 +135,6 @@ enable_lightweight_apikey_generation = true
 #claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever"
 #use_sha256_hash = false
 
-#[apim.hashing]
-#hashing_algorithm = "SHA-256"
-
 #[apim.oauth_config]
 #enable_outbound_auth_header = false
 #auth_header = "Authorization"
