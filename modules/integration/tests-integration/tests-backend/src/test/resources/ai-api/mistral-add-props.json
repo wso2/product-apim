@@ -37,9 +37,12 @@
       }
     }
   },
-  "aiConfiguration": {
-    "llmProviderName": "MistralAI",
-    "llmProviderApiVersion": "1.0.0"
+  "subtypeConfiguration": {
+    "subtype": "AIAPI",
+    "configuration": {
+      "llmProviderName": "MistralAI",
+      "llmProviderApiVersion": "1.0.0"
+    }
   },
   "maxTps": {
     "production": 1000,
