@@ -72,5 +72,12 @@ under the License.
                 <module>tests-restart</module>
             </modules>
         </profile>
+        <profile>
+            <id>without-benchmark</id>
+            <modules>
+                <module>tests-backend</module>
+                <module>tests-restart</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
