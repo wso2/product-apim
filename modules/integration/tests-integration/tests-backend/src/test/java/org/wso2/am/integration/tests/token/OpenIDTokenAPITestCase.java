@@ -124,7 +124,6 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
-        super.cleanUp();
     }
 
     @DataProvider
