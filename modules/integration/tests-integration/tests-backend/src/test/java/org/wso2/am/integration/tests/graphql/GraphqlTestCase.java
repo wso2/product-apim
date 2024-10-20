@@ -493,6 +493,5 @@ public class GraphqlTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(testAppId4);
         undeployAndDeleteAPIRevisionsUsingRest(graphqlAPIId, restAPIPublisher);
         restAPIPublisher.deleteAPI(graphqlAPIId);
-        super.cleanUp();
     }
 }

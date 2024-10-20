@@ -192,7 +192,6 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 
     @DataProvider

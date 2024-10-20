@@ -215,6 +215,5 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiID);
-        super.cleanUp();
     }
 }

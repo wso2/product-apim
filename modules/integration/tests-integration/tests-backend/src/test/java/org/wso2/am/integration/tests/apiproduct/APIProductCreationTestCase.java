@@ -815,7 +815,6 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
 
         restAPIPublisher.deleteAPI(apiID1);
         restAPIPublisher.deleteAPI(apiID2);
-        super.cleanUp();
         userManagementClient.deleteUser(RESTRICTED_SUBSCRIBER);
         userManagementClient.deleteUser(STANDARD_SUBSCRIBER);
         userManagementClient.deleteRole(RESTRICTED_ROLE);

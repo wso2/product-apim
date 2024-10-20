@@ -159,7 +159,6 @@ public class APIMANAGER5417PrototypedAPIsInMonetizedTestCase extends APIMIntegra
     public void cleanUpArtifacts() throws Exception {
         resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfigBeforeTestCase);
         apiPublisher.deleteAPI(apiName, apiVersion, apiProvider);
-        super.cleanUp();
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

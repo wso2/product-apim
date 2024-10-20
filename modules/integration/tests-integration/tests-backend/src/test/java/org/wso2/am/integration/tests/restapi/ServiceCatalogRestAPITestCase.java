@@ -466,7 +466,6 @@ public class ServiceCatalogRestAPITestCase extends APIMIntegrationBaseTest {
         restAPIPublisher.deleteAPI(apiId);
         restAPIServiceCatalog.deleteService(serviceIdOne);
         restAPIServiceCatalog.deleteService(importedServiceId);
-        super.cleanUp();
     }
 
     private String validateCreateServiceRes(ServiceDTO createServiceRes, String name, String version, String serviceKey) {

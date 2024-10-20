@@ -108,7 +108,6 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         undeployAndDeleteAPIRevisionsUsingRest(apiID, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiID);
-        super.cleanUp();
     }
 
     @DataProvider

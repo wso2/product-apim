@@ -527,7 +527,6 @@ public class APIM34InvokeAPIWithSandboxTokenTestCase extends APIMIntegrationBase
         apiPublisher.deleteAPI(apiNameTest3, apiVersion, apiProviderName);
         apiPublisher.deleteAPI(apiNameTest4, apiVersion, apiProviderName);
         apiPublisher.deleteAPI(apiNameTest5, apiVersion, apiProviderName);
-        super.cleanUp();
     }
 
     @DataProvider

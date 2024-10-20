@@ -101,6 +101,5 @@ public class APIMANAGER5834APICreationWithInvalidInputsTestCase extends APIMInte
         if (apiId != null) {
             restAPIPublisher.deleteAPI(apiId);
         }
-        super.cleanUp();
     }
 }

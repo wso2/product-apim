@@ -280,7 +280,6 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 
 }

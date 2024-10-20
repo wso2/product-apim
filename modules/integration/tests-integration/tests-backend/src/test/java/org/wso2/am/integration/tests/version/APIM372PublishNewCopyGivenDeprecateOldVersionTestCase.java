@@ -390,7 +390,6 @@ public class APIM372PublishNewCopyGivenDeprecateOldVersionTestCase extends APIMI
         apiStore.removeApplication(applicationName);
         apiPublisher.deleteAPI(apiName, apiVersionOld, providerNameApi);
         apiPublisher.deleteAPI(apiName, apiVersionNew, providerNameApi);
-        super.cleanUp();
     }
 
 

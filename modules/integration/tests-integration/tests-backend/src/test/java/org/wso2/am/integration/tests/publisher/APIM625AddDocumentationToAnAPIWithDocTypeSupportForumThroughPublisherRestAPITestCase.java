@@ -129,6 +129,5 @@ public class APIM625AddDocumentationToAnAPIWithDocTypeSupportForumThroughPublish
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 }

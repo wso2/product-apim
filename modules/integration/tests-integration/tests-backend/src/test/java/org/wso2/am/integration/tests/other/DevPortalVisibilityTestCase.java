@@ -372,7 +372,5 @@ public class DevPortalVisibilityTestCase extends APIManagerLifecycleBaseTest {
 
         userManagementClient1.deleteRole(DEV_USER_A_ROLE);
         userManagementClient1.deleteRole(DEV_USER_B_ROLE);
-        super.cleanUp();
-
     }
 }

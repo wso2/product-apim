@@ -1335,6 +1335,5 @@ public class WorkflowApprovalExecutorTest extends APIManagerLifecycleBaseTest {
         userManagementClient.deleteUser(USER_ADMIN);
         userManagementClient.deleteUser("JaneDoe");
         resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION, originalWFExtentionsXML);
-        super.cleanUp();
     }
 }

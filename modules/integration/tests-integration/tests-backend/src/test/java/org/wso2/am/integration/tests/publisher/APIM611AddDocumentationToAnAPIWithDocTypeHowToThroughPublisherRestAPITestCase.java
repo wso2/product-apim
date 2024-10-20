@@ -164,6 +164,5 @@ public class APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestA
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 }

@@ -486,7 +486,6 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         deleteAPI(apiVisibilityByRoleId, apiPublisherClientCarbonSuperAdmin);
         userManagementClient1.deleteUser(CARBON_SUPER_SUBSCRIBER_USERNAME);
         userManagementClient2.deleteUser(TENANT_SUBSCRIBER_USERNAME);
-        super.cleanUp();
     }
 
 }

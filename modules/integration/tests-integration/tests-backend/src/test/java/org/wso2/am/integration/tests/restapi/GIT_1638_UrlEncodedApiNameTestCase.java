@@ -215,7 +215,6 @@ public class GIT_1638_UrlEncodedApiNameTestCase extends APIMIntegrationBaseTest 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIStore.deleteApplication(applicationId);
-        super.cleanUp();
     }
 
     private String generateOAuthAccessToken(String username, String password, String consumerKey, String consumerSecret)

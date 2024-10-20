@@ -175,7 +175,6 @@ public class APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase exten
         for (String id : idList) {
             restAPIPublisher.deleteAPI(id);
         }
-        super.cleanUp();
     }
 
 

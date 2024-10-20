@@ -144,7 +144,6 @@ public class APISearchAPIByTagTestCase extends APIManagerLifecycleBaseTest {
         undeployAndDeleteAPIRevisionsUsingRest(api4, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(api5, restAPIPublisher);
         undeployAndDeleteAPIRevisionsUsingRest(api6, restAPIPublisher);
-        super.cleanUp();
     }
 
     @Test(groups = { "wso2.am" }, description = "API search by TAG", dependsOnMethods = "testAPICreation")
