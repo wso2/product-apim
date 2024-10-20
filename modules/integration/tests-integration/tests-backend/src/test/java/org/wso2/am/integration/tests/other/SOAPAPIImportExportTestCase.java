@@ -231,7 +231,6 @@ public class SOAPAPIImportExportTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertTrue(deleteStatus, "temp file deletion not successful");
         FileUtils.deleteDirectory(zipTempDir);
         Assert.assertTrue(deleteStatus, "temp directory deletion not successful");
-        super.cleanUp();
     }
 
     private void startWiremockServer() {

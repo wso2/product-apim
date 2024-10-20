@@ -606,7 +606,6 @@ public class AddEndPointSecurityPerTypeTestCase extends APIManagerLifecycleBaseT
             undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
             restAPIPublisher.deleteAPI(apiId);
         }
-        super.cleanUp();
     }
 
     private void validateIntrospectionResponse(User user, String accessToken, String clientId) throws Exception {

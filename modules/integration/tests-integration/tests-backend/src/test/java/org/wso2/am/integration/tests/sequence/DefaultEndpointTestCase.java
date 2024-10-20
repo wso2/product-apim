@@ -155,7 +155,6 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(applicationID);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 
 }

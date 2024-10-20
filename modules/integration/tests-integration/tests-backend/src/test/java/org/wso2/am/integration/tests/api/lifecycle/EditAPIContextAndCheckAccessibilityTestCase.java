@@ -212,7 +212,6 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 
 

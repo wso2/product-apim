@@ -118,6 +118,5 @@ public class CustomLifeCycleTestCase extends APIManagerLifecycleBaseTest {
     public void cleanupArtifacts() throws Exception {
         //Remove test api and revert to original lifecycle config
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 }

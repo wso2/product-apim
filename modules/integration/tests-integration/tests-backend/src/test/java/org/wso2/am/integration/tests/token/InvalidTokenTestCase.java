@@ -146,6 +146,5 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         undeployAndDeleteAPIRevisionsUsingRest(id, restAPIPublisher);
         restAPIPublisher.deleteAPI(id);
-        super.cleanUp();
     }
 }

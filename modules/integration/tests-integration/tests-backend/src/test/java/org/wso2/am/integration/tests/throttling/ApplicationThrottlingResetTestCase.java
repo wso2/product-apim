@@ -283,6 +283,5 @@ public class ApplicationThrottlingResetTestCase extends APIMIntegrationBaseTest 
         restAPIPublisher.deleteAPI(apiId);
         restAPIAdmin.deleteApplicationThrottlingPolicy(applicationThrottlePolicyDTO1.getPolicyId());
         restAPIAdmin.deleteApplicationThrottlingPolicy(applicationThrottlePolicyDTO2.getPolicyId());
-        super.cleanUp();
     }
 }

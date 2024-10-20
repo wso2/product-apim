@@ -293,8 +293,6 @@ public class APIScopeTestForTenantsTestCase extends APIMIntegrationBaseTest {
             userManagementClient2.deleteUser(USER_PETER);
             userManagementClient2.deleteRole(TENANT2_SUBSCRIBER_ROLE);
         }
-
-        super.cleanUp();
     }
 
 }

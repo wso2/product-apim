@@ -376,7 +376,6 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
         }
         userManagementClient1.deleteUser(user1);
         userManagementClient1.deleteUser(user2);
-        super.cleanUp();
     }
 
     private APIRequest createAPIRequest(String name, String context, String url, String version, String provider,

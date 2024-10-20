@@ -324,7 +324,6 @@ public class DefaultVersionAPITestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newAPIVersion);
         restAPIPublisher.deleteAPI(newApiId);
-        super.cleanUp();
     }
 
     private HttpResponse invokeDefaultAPIWithWait(String invocationUrl, Map<String, String> headers,

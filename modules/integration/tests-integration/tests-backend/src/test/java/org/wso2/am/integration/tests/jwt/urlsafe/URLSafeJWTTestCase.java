@@ -248,8 +248,6 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(jwtApplicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
-
     }
 
     private void checkDefaultUserClaims(JSONObject jsonObject, String applicationName) throws JSONException {

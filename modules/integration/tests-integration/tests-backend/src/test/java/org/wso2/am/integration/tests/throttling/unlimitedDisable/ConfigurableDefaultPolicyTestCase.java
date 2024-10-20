@@ -323,7 +323,6 @@ public class ConfigurableDefaultPolicyTestCase extends APIMIntegrationBaseTest {
         restAPIAdmin.deleteAdvancedThrottlingPolicy(advancedThrottlePolicyDTO.getPolicyId());
         restAPIAdmin.deleteSubscriptionThrottlingPolicy(defaultSubscriptionPolicy.getPolicyId());
         restAPIAdmin.deleteApplicationThrottlingPolicy(defaultApplicationThrottlePolicyDTO.getPolicyId());
-        super.cleanUp();
     }
 
     private void validateThrottlingPolicy(String swaggerContent) throws APIManagementException {

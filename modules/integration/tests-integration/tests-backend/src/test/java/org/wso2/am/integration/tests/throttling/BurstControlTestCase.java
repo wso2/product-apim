@@ -243,6 +243,5 @@ public class BurstControlTestCase  extends APIManagerLifecycleBaseTest {
         restAPIPublisher.deleteAPI(apiId);
         restAPIAdmin.deleteSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO1.getPolicyId());
         restAPIAdmin.deleteSubscriptionThrottlingPolicy(subscriptionThrottlePolicyDTO2.getPolicyId());
-        super.cleanUp();
     }
 }

@@ -177,6 +177,5 @@ public class DeleteTierAlreadyAttachedToAPITestCase extends APIMIntegrationBaseT
     public void cleanup() throws Exception {
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 }

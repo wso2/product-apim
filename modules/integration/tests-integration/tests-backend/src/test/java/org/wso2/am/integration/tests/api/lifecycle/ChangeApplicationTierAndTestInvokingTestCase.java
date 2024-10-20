@@ -212,7 +212,6 @@ public class ChangeApplicationTierAndTestInvokingTestCase extends APIManagerLife
         apiStoreClientUser1.removeAPISubscriptionByApplicationName (API_NAME, API_VERSION_1_0_0, providerName, applicationNameSilver);
         apiStoreClientUser1.removeApplication(applicationNameSilver);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
-        super.cleanUp();
     }
 
 

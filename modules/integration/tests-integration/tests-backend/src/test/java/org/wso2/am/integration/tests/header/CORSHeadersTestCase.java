@@ -316,8 +316,6 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
-
-        super.cleanUp();
     }
 
     @DataProvider

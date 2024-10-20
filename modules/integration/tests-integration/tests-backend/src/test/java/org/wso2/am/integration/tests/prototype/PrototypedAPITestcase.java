@@ -401,7 +401,6 @@ public class PrototypedAPITestcase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(applicationId1);
         restAPIStore.deleteApplication(applicationId2);
         restAPIStore.deleteApplication(applicationId3);
-        super.cleanUp();
     }
 
     private File getTempFileWithContent(String swagger) throws Exception {

@@ -286,6 +286,5 @@ public class ChangeSubscriptionBusinessPlanForcefullyTestCase extends APIMIntegr
         userManagementClient.deleteUser(SUBSCRIBER_USER_NAME);
         resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENSIONS_XML_REG_CONFIG_LOCATION,
                 originalWFExtensionsXML);
-        super.cleanUp();
     }
 }

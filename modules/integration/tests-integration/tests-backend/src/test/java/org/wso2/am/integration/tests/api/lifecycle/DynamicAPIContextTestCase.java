@@ -173,7 +173,6 @@ public class DynamicAPIContextTestCase extends APIManagerLifecycleBaseTest {
         restAPIStore.deleteApplication(applicationId);
         undeployAndDeleteAPIRevisionsUsingRest(apiId, restAPIPublisher);
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 
 }

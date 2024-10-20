@@ -941,7 +941,6 @@ public class APIImportExportTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         FileUtils.deleteDirectory(zipTempDir);
         Assert.assertTrue(deleteStatus, "temp directory delete not successful");
-        super.cleanUp();
     }
 
     @DataProvider

@@ -158,7 +158,6 @@ public class APIM620AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 
 
