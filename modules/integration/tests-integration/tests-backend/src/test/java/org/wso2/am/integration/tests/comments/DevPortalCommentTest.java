@@ -659,6 +659,5 @@ public class DevPortalCommentTest
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 }

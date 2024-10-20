@@ -239,7 +239,6 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
         restAPIPublisher.deleteAPI(apiId);
         restAPIPublisher.deleteAPI(newApiId);
 
-        super.cleanUp();
     }
 
 }
