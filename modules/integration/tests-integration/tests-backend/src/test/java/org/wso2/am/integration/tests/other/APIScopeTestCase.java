@@ -532,7 +532,6 @@ public class APIScopeTestCase extends APIManagerLifecycleBaseTest {
             userManagementClient1.deleteUser(INTERNAL_CREATOR_USER);
             userManagementClient1.deleteUser(INTERNAL_CREATOR_PUBLISHER_USER);
         }
-        super.cleanUp();
     }
 
     @DataProvider

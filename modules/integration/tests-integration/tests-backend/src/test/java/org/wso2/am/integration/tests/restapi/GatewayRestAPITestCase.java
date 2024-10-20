@@ -167,6 +167,5 @@ public class GatewayRestAPITestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
 
         restAPIPublisher.deleteAPI(apiId);
-        super.cleanUp();
     }
 }
