@@ -35,6 +35,7 @@ import org.wso2.carbon.automation.extensions.servers.carbonserver.TestServerMana
 import org.wso2.carbon.integration.common.utils.FileManager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -115,6 +116,12 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                             serverManager.getCarbonHome() + File.separator + "repository" + File.separator
                                     + "deployment" + File.separator + "server" + File.separator + "synapse-configs"
                                     + File.separator + "default" + File.separator + "api";
+
+                    try {
+                        FileManager.readFile(synapseApiPath);
+                    } catch (FileNotFoundException e) {
+                        new File(synapseApiPath).mkdirs();
+                    }
 
                     FileManager.copyFile(new File(
                             resourcePath + File.separator + "synapseconfigs" + File.separator + "rest" + File.separator
