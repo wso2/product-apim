@@ -1284,11 +1284,11 @@
         <carbon.analytics.common.version>5.3.15</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.1.152</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.1.153</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
 
-        <carbon.apimgt.version>9.30.59</carbon.apimgt.version>
+        <carbon.apimgt.version>9.30.61</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1314,7 +1314,7 @@
 
         <!-- carbon identity -->
         <carbon.identity.version>5.25.713</carbon.identity.version>
-        <carbon.identity.governance.version>1.8.107</carbon.identity.governance.version>
+        <carbon.identity.governance.version>1.8.108</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
         <carbon.identity-inbound-auth-oauth.version>6.13.19</carbon.identity-inbound-auth-oauth.version>
