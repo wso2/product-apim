@@ -63,6 +63,8 @@ public class RestAPIAdminImpl {
     private LabelApi labelApi = new LabelApi();
     private LabelCollectionApi labelCollectionApi = new LabelCollectionApi();
     private EnvironmentApi environmentApi = new EnvironmentApi();
+    private LlmProviderApi llmProviderApi = new LlmProviderApi();
+    private LlmProvidersApi llmProvidersApi = new LlmProvidersApi();
     private EnvironmentCollectionApi environmentCollectionApi = new EnvironmentCollectionApi();
     private TenantConfigApi tenantConfigApi = new TenantConfigApi();
     private TenantConfigSchemaApi tenantConfigSchemaApi = new TenantConfigSchemaApi();
@@ -145,6 +147,8 @@ public class RestAPIAdminImpl {
         labelApi.setApiClient(apiAdminClient);
         labelCollectionApi.setApiClient(apiAdminClient);
         environmentApi.setApiClient(apiAdminClient);
+        llmProviderApi.setApiClient(apiAdminClient);
+        llmProvidersApi.setApiClient(apiAdminClient);
         environmentCollectionApi.setApiClient(apiAdminClient);
         workflowCollectionApi.setApiClient(apiAdminClient);
         workflowsIndividualApi.setApiClient(apiAdminClient);
@@ -243,6 +247,73 @@ public class RestAPIAdminImpl {
     public ApiResponse<Void> deleteApiCategory(String uuid) throws ApiException {
 
         return apiCategoryIndividualApi.apiCategoriesApiCategoryIdDeleteWithHttpInfo(uuid, null, null);
+    }
+
+    /**
+     * Retrieves a list of LLM Providers.
+     *
+     * @return ApiResponse containing a list of LLMProviderSummaryResponseListDTO with details about available LLM providers.
+     * @throws ApiException if there is an error during the API call.
+     */
+    public ApiResponse<LLMProviderSummaryResponseListDTO> getLLMProviders() throws ApiException {
+        return llmProvidersApi.llmProvidersGetWithHttpInfo();
+    }
+
+    /**
+     * Retrieves details of a specific LLM Provider by its ID.
+     *
+     * @param llmProviderId The unique identifier of the LLM provider.
+     * @return ApiResponse containing LLMProviderResponseDTO with details of the specified LLM provider.
+     * @throws ApiException if there is an error during the API call.
+     */
+    public ApiResponse<LLMProviderResponseDTO> getLLMProvider(String llmProviderId) throws ApiException {
+        return llmProviderApi.llmProvidersLlmProviderIdGetWithHttpInfo(llmProviderId);
+    }
+
+    /**
+     * Add the details of a specific LLM Provider.
+     *
+     * @param name          The new name of the LLM provider.
+     * @param apiVersion    The API version of the LLM provider.
+     * @param description   A brief description of the LLM provider.
+     * @param configuration Configuration details for the LLM provider.
+     * @param apiDefinition The API definition file for the LLM provider.
+     * @return ApiResponse containing LLMProviderResponseDTO with the updated details of the LLM provider.
+     * @throws ApiException if there is an error during the API call.
+     */
+    public ApiResponse<LLMProviderResponseDTO> addLLMProvider(String name, String apiVersion, String description,
+                                                              String configuration, File apiDefinition) throws ApiException {
+
+        return llmProvidersApi.llmProvidersPostWithHttpInfo(name, apiVersion, description, configuration,
+                apiDefinition);
+    }
+
+    /**
+     * Updates the details of a specific LLM Provider by its ID.
+     *
+     * @param llmProviderId The unique identifier of the LLM provider.
+     * @param name The new name of the LLM provider.
+     * @param apiVersion The API version of the LLM provider.
+     * @param description A brief description of the LLM provider.
+     * @param configuration Configuration details for the LLM provider.
+     * @param apiDefinition The API definition file for the LLM provider.
+     * @return ApiResponse containing LLMProviderResponseDTO with the updated details of the LLM provider.
+     * @throws ApiException if there is an error during the API call.
+     */
+    public ApiResponse<LLMProviderResponseDTO> updateLLMProvider(String llmProviderId, String name, String apiVersion, String description,
+                                                                 String configuration, File apiDefinition) throws ApiException {
+        return llmProviderApi.llmProvidersLlmProviderIdPutWithHttpInfo(llmProviderId, name, apiVersion, description, configuration, apiDefinition);
+    }
+
+    /**
+     * Deletes a specific LLM Provider by its ID.
+     *
+     * @param llmProviderId The unique identifier of the LLM provider to be deleted.
+     * @return ApiResponse containing void, indicating successful deletion of the LLM provider.
+     * @throws ApiException if there is an error during the API call.
+     */
+    public ApiResponse<Void> deleteLLMProvider(String llmProviderId) throws ApiException {
+        return llmProviderApi.llmProvidersLlmProviderIdDeleteWithHttpInfo(llmProviderId);
     }
 
     /***
@@ -683,7 +754,7 @@ public class RestAPIAdminImpl {
 
         return environmentApi.environmentsEnvironmentIdDeleteWithHttpInfo(environmentId);
     }
-
+    
     /**
      * This method is used to retrieve applications.
      *
