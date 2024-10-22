@@ -144,12 +144,6 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
         restAPIStoreClientUser2.revokeAPIKey(userOneSharedApplicationId, key.getApikey());
     }
 
-    @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception {
-        restAPIStoreClientUser2.removeApplicationById(userTwoApplicationId);
-        super.cleanUp();
-    }
-
     private void createUsersAndApplications() throws Exception {
         //signup of user one
         UserManagementUtils.signupUser(USER_ONE, PASSWORD, FIRST_NAME, ORGANIZATION);
@@ -175,5 +169,10 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
                 "App created by user1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT, groups);
         userOneSharedApplicationId = appCreationResponse3.getData();
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        restAPIStoreClientUser2.removeApplicationById(userTwoApplicationId);
     }
 }

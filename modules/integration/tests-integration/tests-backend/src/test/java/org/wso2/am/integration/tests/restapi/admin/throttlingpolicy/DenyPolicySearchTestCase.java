@@ -166,6 +166,5 @@ public class DenyPolicySearchTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         restAPIAdmin.deleteDenyThrottlingPolicy(blockingCondition1ID);
         restAPIAdmin.deleteDenyThrottlingPolicy(blockingCondition2ID);
-        super.cleanUp();
     }
 }
