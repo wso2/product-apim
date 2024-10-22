@@ -1463,6 +1463,9 @@
 
     <AuthenticationPolicy>
         <CheckAccountExist>{{authentication_policy.check_account_exist}}</CheckAccountExist>
+        {% if authentication_policy.pre_authentication_account_lock_check is defined %}
+        <PreAuthenticationAccountLockCheck>{{authentication_policy.pre_authentication_account_lock_check}}</PreAuthenticationAccountLockCheck>
+        {% endif %}
         {% if authentication_policy.disable_account_lock_handler is defined %}
         <DisableAccountLockHandler>{{authentication_policy.disable_account_lock_handler}}</DisableAccountLockHandler>
         {% endif %}
