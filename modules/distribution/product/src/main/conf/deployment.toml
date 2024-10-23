@@ -268,7 +268,7 @@ enable = true
 allow_refresh_tokens = true
 iat_validity_period = "1h"
 
-#[integration.transaction_counter]
+#[apim.transaction_counter]
 #enable = true
 #server_id = "Gateway1"
 #producer_counting_thread_pool_size = 10
