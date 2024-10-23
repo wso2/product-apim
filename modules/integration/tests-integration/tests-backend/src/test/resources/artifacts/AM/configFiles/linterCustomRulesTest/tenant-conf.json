@@ -384,6 +384,14 @@
       {
         "Name": "apim:api_provider_change",
         "Roles": "admin"
+      },
+      {
+        "Name": "apim:llm_provider_manage",
+        "Roles": "admin"
+      },
+      {
+        "Name": "apim:llm_provider_read",
+        "Roles": "admin,Internal/publisher,Internal/creator"
       }
     ]
   },
