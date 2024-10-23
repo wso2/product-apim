@@ -20,8 +20,8 @@
     </handler>
 {% endif %}
 {% endif %}
-{% if integration.transaction_counter is defined %}
-{% if integration.transaction_counter.enable %}
+{% if apim.transaction_counter is defined %}
+{% if apim.transaction_counter.enable %}
     <handler name="TransactionCountHandler" class="org.wso2.integration.transaction.counter.TransactionCountHandler"/>
 {% endif %}
 {% endif %}
