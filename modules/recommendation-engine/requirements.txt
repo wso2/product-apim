@@ -7,5 +7,5 @@ pymongo==3.9.0
 PyYAML==5.2
 rake-nltk==1.0.4
 spacy==2.2.3
-Werkzeug==0.16.0
+Werkzeug==3.0.6
 
