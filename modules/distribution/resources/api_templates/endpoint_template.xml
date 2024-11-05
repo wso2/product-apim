@@ -117,6 +117,19 @@
                         <clientSecret>$util.escapeXml($endpointSecurity.clientSecret)</clientSecret>
                     #end
                     <tokenUrl>$util.escapeXml($endpointSecurity.tokenUrl)</tokenUrl>
+                    #if($endpointSecurity.proxyConfigs && $endpointSecurity.proxyConfigs.proxyEnabled == true)
+                    <proxyConfigs>
+                        <proxyHost>$util.escapeXml($endpointSecurity.proxyConfigs.proxyHost)</proxyHost>
+                        <proxyPort>$util.escapeXml($endpointSecurity.proxyConfigs.proxyPort)</proxyPort>
+                        <proxyUsername>$util.escapeXml($endpointSecurity.proxyConfigs.proxyUsername)</proxyUsername>
+                        #if($isSecureVaultEnabled)
+                        <proxyPassword>{wso2:vault-lookup('$endpointSecurity.proxyConfigs.proxyPasswordAlias')}</proxyPassword>
+                        #else
+                        <proxyPassword>$util.escapeXml($endpointSecurity.proxyConfigs.proxyPassword)</proxyPassword>
+                        #end
+                        <proxyProtocol>$util.escapeXml($endpointSecurity.proxyConfigs.proxyProtocol)</proxyProtocol>
+                    </proxyConfigs>
+                    #end
                     <connectionTimeout>$util.escapeXml($endpointSecurity.connectionTimeoutDuration)</connectionTimeout>
                     <connectionRequestTimeout>$util.escapeXml($endpointSecurity.connectionRequestTimeoutDuration)</connectionRequestTimeout>
                     <socketTimeout>$util.escapeXml($endpointSecurity.socketTimeoutDuration)</socketTimeout>
