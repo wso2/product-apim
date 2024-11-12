@@ -695,10 +695,10 @@ public class RestAPIAdminImpl {
      * @throws ApiException if an error occurs while retrieving applications.
      */
     public ApiResponse<ApplicationListDTO> getApplications(String user, Integer limit, Integer offset,
-            String appTenantDomain) throws ApiException {
+            String appTenantDomain, String name) throws ApiException {
 
         return applicationCollectionApi.applicationsGetWithHttpInfo(user, limit, offset, null,
-                null, null, appTenantDomain);
+                null, name, appTenantDomain);
     }
 
     /**

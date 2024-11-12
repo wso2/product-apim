@@ -308,6 +308,7 @@
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.ThrottlePolicyExportImportTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.GetThrottlingPoliciesTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.DenyPolicySearchTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.ApplicationsSearchByNameOrOwnerTestCase"/>
         </classes>
     </test>
 
