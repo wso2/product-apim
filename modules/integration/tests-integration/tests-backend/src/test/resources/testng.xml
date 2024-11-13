@@ -109,6 +109,8 @@
             <class name="org.wso2.am.integration.tests.header.CustomHeaderTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.header.DuplicateHeaderTestCase"/>-->
             <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.token.InvokeAPIWithVariousEndpointsAndTokensTestCase"/>
+            <class name="org.wso2.am.integration.tests.token.InvokeAPIWithVariousEndpointsAndTokensInSandboxEnvTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.JWTBandwidthThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.BurstControlTestCase"/>
