@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2024, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -69,6 +69,8 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
     ApplicationKeyDTO applicationKeySandboxDTO;
     private final String SANDBOX_RESPONSE_BODY = "HelloWSO2 from File 1_Sandbox";
     private final String PRODUCTION_RESPONSE_BODY = "HelloWSO2 from File 1";
+    private final String SANDBOX_KEY_FOR_API_WITH_NO_SANDBOX_ENDPOINT_ERROR = "{\"code\":\"900901\",\"type\":\"Status report\",\"message\":\"Runtime Error\",\"description\":\"Sandbox key offered to the API with no sandbox endpoint\"}";
+    private final String PRODUCTION_KEY_FOR_API_WITH_NO_PRODUCTION_ENDPOINT_ERROR = "{\"code\":\"900901\",\"type\":\"Status report\",\"message\":\"Runtime Error\",\"description\":\"Production key offered to the API with no production endpoint\"}";
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
@@ -119,6 +121,7 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
         String apiContext = "invokeAPIWithBothEndpointsAndTokens";
         String apiVersion = "1.0.0";
         String apiDescription = "This is a test API created by API manager integration test";
+        String endpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         String apiSandboxEndpoint = backEndServerUrl.getWebAppURLHttp() + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME;
         String apiProductionEndpoint = backEndServerUrl.getWebAppURLHttp() + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME;
 
@@ -147,20 +150,18 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
                 applicationTier);
 
         // Invoke the API with sandbox endpoint and JWT token
-        String sandboxEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         Map<String, String> requestHeaders = new HashMap<>();
         assert applicationKeySandboxDTO.getToken() != null;
         requestHeaders.put("Authorization", "Bearer " + applicationKeySandboxDTO.getToken().getAccessToken());
-        HttpResponse sandboxResponse = HttpRequestUtil.doGet(sandboxEndpointUrl, requestHeaders);
+        HttpResponse sandboxResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(sandboxResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(sandboxResponse.getData(), SANDBOX_RESPONSE_BODY, "Response body mismatch");
 
         // Invoke the API with production endpoint and JWT token
-        String productionEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         requestHeaders = new HashMap<>();
         assert applicationKeyProductionDTO.getToken() != null;
         requestHeaders.put("Authorization", "Bearer " + applicationKeyProductionDTO.getToken().getAccessToken());
-        HttpResponse productionResponse = HttpRequestUtil.doGet(productionEndpointUrl, requestHeaders);
+        HttpResponse productionResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(productionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(productionResponse.getData(), PRODUCTION_RESPONSE_BODY, "Response body mismatch");
 
@@ -185,18 +186,16 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
                 "Error in API Update in " + getAPIIdentifierString(apiIdentifier));
 
         // Invoke the updated API with sandbox endpoint and JWT token
-        sandboxEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization", "Bearer " + applicationKeySandboxDTO.getToken().getAccessToken());
-        sandboxResponse = HttpRequestUtil.doGet(sandboxEndpointUrl, requestHeaders);
+        sandboxResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(sandboxResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(sandboxResponse.getData(), PRODUCTION_RESPONSE_BODY, "Response body mismatch");
 
         // Invoke the updated API with production endpoint and JWT token
-        productionEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization", "Bearer " + applicationKeyProductionDTO.getToken().getAccessToken());
-        productionResponse = HttpRequestUtil.doGet(productionEndpointUrl, requestHeaders);
+        productionResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(productionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(productionResponse.getData(), PRODUCTION_RESPONSE_BODY, "Response body mismatch");
     }
@@ -208,6 +207,7 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
         String apiContext = "invokeAPIWithProductionEndpointAndBothTokens";
         String apiVersion = "1.0.0";
         String apiDescription = "This is a test API created by API manager integration test";
+        String endpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         String apiProductionEndpoint = backEndServerUrl.getWebAppURLHttp() + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME;
         List<String> endpointLB = new ArrayList<>();
         endpointLB.add(apiProductionEndpoint);
@@ -236,22 +236,19 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
                 applicationTier);
 
         // Invoke the API with sandbox endpoint and JWT token
-        String sandboxEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         Map<String, String> requestHeaders = new HashMap<>();
         assert applicationKeySandboxDTO.getToken() != null;
         requestHeaders.put("Authorization", "Bearer " + applicationKeySandboxDTO.getToken().getAccessToken());
-        HttpResponse sandboxResponse = HttpRequestUtil.doGet(sandboxEndpointUrl, requestHeaders);
+        HttpResponse sandboxResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(sandboxResponse.getResponseCode(), HTTP_RESPONSE_CODE_FORBIDDEN, "Response code mismatched");
-        String SANDBOX_KEY_FOR_API_WITH_NO_SANDBOX_ENDPOINT_ERROR = "{\"code\":\"900901\",\"type\":\"Status report\",\"message\":\"Runtime Error\",\"description\":\"Sandbox key offered to the API with no sandbox endpoint\"}";
         assertEquals(sandboxResponse.getData(), SANDBOX_KEY_FOR_API_WITH_NO_SANDBOX_ENDPOINT_ERROR,
                 "Response body mismatch");
 
         // Invoke the API with production endpoint and JWT token
-        String productionEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         requestHeaders = new HashMap<>();
         assert applicationKeyProductionDTO.getToken() != null;
         requestHeaders.put("Authorization", "Bearer " + applicationKeyProductionDTO.getToken().getAccessToken());
-        HttpResponse productionResponse = HttpRequestUtil.doGet(productionEndpointUrl, requestHeaders);
+        HttpResponse productionResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(productionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(productionResponse.getData(), PRODUCTION_RESPONSE_BODY, "Response body mismatch");
 
@@ -276,18 +273,16 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
                 "Error in API Update in " + getAPIIdentifierString(apiIdentifier));
 
         // Invoke the updated API with sandbox endpoint and JWT token
-        sandboxEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization", "Bearer " + applicationKeySandboxDTO.getToken().getAccessToken());
-        sandboxResponse = HttpRequestUtil.doGet(sandboxEndpointUrl, requestHeaders);
+        sandboxResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(sandboxResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(sandboxResponse.getData(), PRODUCTION_RESPONSE_BODY, "Response body mismatch");
 
         // Invoke the updated API with production endpoint and JWT token
-        productionEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization", "Bearer " + applicationKeyProductionDTO.getToken().getAccessToken());
-        productionResponse = HttpRequestUtil.doGet(productionEndpointUrl, requestHeaders);
+        productionResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(productionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(productionResponse.getData(), PRODUCTION_RESPONSE_BODY, "Response body mismatch");
     }
@@ -299,6 +294,7 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
         String apiContext = "invokeAPIWithSandboxEndpointAndBothTokens";
         String apiVersion = "1.0.0";
         String apiDescription = "This is a test API created by API manager integration test";
+        String endpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         String apiSandboxEndpoint = backEndServerUrl.getWebAppURLHttp() + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME;
         List<String> endpointLB = new ArrayList<>();
         endpointLB.add(apiSandboxEndpoint);
@@ -327,22 +323,19 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
                 applicationTier);
 
         // Invoke the API with sandbox endpoint and JWT token
-        String sandboxEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         Map<String, String> requestHeaders = new HashMap<>();
         assert applicationKeySandboxDTO.getToken() != null;
         requestHeaders.put("Authorization", "Bearer " + applicationKeySandboxDTO.getToken().getAccessToken());
-        HttpResponse sandboxResponse = HttpRequestUtil.doGet(sandboxEndpointUrl, requestHeaders);
+        HttpResponse sandboxResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(sandboxResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(sandboxResponse.getData(), SANDBOX_RESPONSE_BODY, "Response body mismatch");
 
         // Invoke the API with production endpoint and JWT token
-        String productionEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         requestHeaders = new HashMap<>();
         assert applicationKeyProductionDTO.getToken() != null;
         requestHeaders.put("Authorization", "Bearer " + applicationKeyProductionDTO.getToken().getAccessToken());
-        HttpResponse productionResponse = HttpRequestUtil.doGet(productionEndpointUrl, requestHeaders);
+        HttpResponse productionResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(productionResponse.getResponseCode(), HTTP_RESPONSE_CODE_FORBIDDEN, "Response code mismatched");
-        String PRODUCTION_KEY_FOR_API_WITH_NO_PRODUCTION_ENDPOINT_ERROR = "{\"code\":\"900901\",\"type\":\"Status report\",\"message\":\"Runtime Error\",\"description\":\"Production key offered to the API with no production endpoint\"}";
         assertEquals(productionResponse.getData(), PRODUCTION_KEY_FOR_API_WITH_NO_PRODUCTION_ENDPOINT_ERROR,
                 "Response body mismatch");
 
@@ -367,18 +360,16 @@ public class InvokeAPIWithVariousEndpointsAndTokensTestCase extends APIManagerLi
                 "Error in API Update in " + getAPIIdentifierString(apiIdentifier));
 
         // Invoke the updated API with sandbox endpoint and JWT token
-        sandboxEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization", "Bearer " + applicationKeySandboxDTO.getToken().getAccessToken());
-        sandboxResponse = HttpRequestUtil.doGet(sandboxEndpointUrl, requestHeaders);
+        sandboxResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(sandboxResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(sandboxResponse.getData(), SANDBOX_RESPONSE_BODY, "Response body mismatch");
 
         // Invoke the updated API with production endpoint and JWT token
-        productionEndpointUrl = gatewayUrl + apiContext + "/" + apiVersion + "/name";
         requestHeaders = new HashMap<>();
         requestHeaders.put("Authorization", "Bearer " + applicationKeyProductionDTO.getToken().getAccessToken());
-        productionResponse = HttpRequestUtil.doGet(productionEndpointUrl, requestHeaders);
+        productionResponse = HttpRequestUtil.doGet(endpointUrl, requestHeaders);
         assertEquals(productionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(productionResponse.getData(), SANDBOX_RESPONSE_BODY, "Response body mismatch");
     }
