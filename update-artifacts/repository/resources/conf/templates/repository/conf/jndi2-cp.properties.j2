@@ -17,12 +17,17 @@
         # register some connection factories
         # connectionfactory.[jndiname] = [ConnectionURL]
         #connectionfactory.TopicConnectionFactory = amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{{apim.throttling.throttle_decision_endpoints | join("?retries='5'%26connectdelay='50';")}}?retries='5'%26connectdelay='50';'
-
-
-        {% if apim.throttling.event_duplicate_url is defined %}
+        {% if apim.event_hub.event_duplicate_url is defined %}
+        {% if (apim.event_hub.jms.username is defined) and (apim.event_hub.jms.password is defined) %}
+        connectionfactory.TopicConnectionFactory = amqp://{{apim.event_hub.jms.username}}:{{apim.event_hub.jms.password}}@clientid/carbon?brokerlist='{% for url in apim.event_hub.event_duplicate_url %}{{url}}{% if '?' in url %}%26{% else %}?{% endif %}retries='5'%26connectdelay='50'{% if apim.event_hub.ssl is defined %}%26ssl='{{apim.event_hub.ssl}}'{% endif %};{% endfor %}'
+        {% else %}
+        connectionfactory.TopicConnectionFactory = amqp://{{apim.event_hub.username}}:{{apim.event_hub.password}}@clientid/carbon?brokerlist='{% for url in apim.event_hub.event_duplicate_url %}{{url}}{% if '?' in url %}%26{% else %}?{% endif %}retries='5'%26connectdelay='50'{% if apim.event_hub.ssl is defined %}%26ssl='{{apim.event_hub.ssl}}'{% endif %};{% endfor %}'
+         {% endif %}
+        {% elif apim.throttling.event_duplicate_url is defined %}
         connectionfactory.TopicConnectionFactory = amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{% for url in apim.throttling.event_duplicate_url %}{{url}}{% if '?' in url %}%26{% else %}?{% endif %}retries='5'%26connectdelay='50'{% if apim.throttling.jms.ssl is defined %}%26ssl='{{apim.throttling.jms.ssl}}'{% endif %};{% endfor %}'
+        {% else %}
+        connectionfactory.TopicConnectionFactory = amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}{% if apim.throttling.jms.ssl is defined %}?ssl='{{apim.throttling.jms.ssl}}'{% endif %}'
         {% endif %}
-
         # register some queues in JNDI using the form
         # queue.[jndiName] = [physicalName]
         #queue.MyQueue = example.MyQueue
@@ -32,5 +37,7 @@
         topic.throttleData = throttleData
         topic.tokenRevocation = tokenRevocation
         topic.cacheInvalidation = cacheInvalidation
+        topic.globalCacheInvalidation = globalCacheInvalidation
         topic.keyManager = keyManager
         topic.notification = notification
+        topic.asyncWebhooksData = asyncWebhooksData
