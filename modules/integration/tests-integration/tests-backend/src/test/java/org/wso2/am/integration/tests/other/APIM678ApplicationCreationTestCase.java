@@ -31,6 +31,8 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationListDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -187,6 +189,14 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         String newappDescription = "Application updated";
         String newAppTier = "20PerMin";
 
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+
+        ApplicationKeyDTO applicationKeyDTO = restAPIStore
+                .generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, grantTypes);
+
+        assertNotNull(applicationKeyDTO.getToken().getAccessToken());
 
         //Update AppTier
         HttpResponse updateTierResponse = restAPIStore.updateApplicationByID(applicationResponse.getData(),
@@ -201,6 +211,12 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
                 ApplicationDTO.TokenTypeEnum.JWT);
         assertTrue(updateNameResponse.getData().contains(newAppName), "Error while updating application name" +
                 applicationName);
+
+        ApplicationKeyDTO applicationKeyDTONew = restAPIStore
+                .generateKeys(applicationId, "3600", null, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                        null, grantTypes);
+
+        assertNotNull(applicationKeyDTONew.getToken().getAccessToken());
 
         //Update AppDescription
         HttpResponse updateDesResponse = restAPIStore.updateApplicationByID(applicationResponse.getData(),
