@@ -1,12 +1,13 @@
 # ApplicationsApi
 
-All URIs are relative to *https://apis.wso2.com/api/am/devportal/v2*
+All URIs are relative to *https://apis.wso2.com/api/am/devportal/v3*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**applicationsApplicationIdDelete**](ApplicationsApi.md#applicationsApplicationIdDelete) | **DELETE** /applications/{applicationId} | Remove an Application 
 [**applicationsApplicationIdGet**](ApplicationsApi.md#applicationsApplicationIdGet) | **GET** /applications/{applicationId} | Get Details of an Application 
 [**applicationsApplicationIdPut**](ApplicationsApi.md#applicationsApplicationIdPut) | **PUT** /applications/{applicationId} | Update an Application 
+[**applicationsApplicationIdResetThrottlePolicyPost**](ApplicationsApi.md#applicationsApplicationIdResetThrottlePolicyPost) | **POST** /applications/{applicationId}/reset-throttle-policy | Reset Application-Level Throttle Policy
 [**applicationsGet**](ApplicationsApi.md#applicationsGet) | **GET** /applications | Retrieve/Search Applications 
 [**applicationsPost**](ApplicationsApi.md#applicationsPost) | **POST** /applications | Create a New Application 
 
@@ -32,7 +33,7 @@ import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -103,7 +104,7 @@ import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -177,7 +178,7 @@ import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -230,6 +231,79 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
 
+<a name="applicationsApplicationIdResetThrottlePolicyPost"></a>
+# **applicationsApplicationIdResetThrottlePolicyPost**
+> applicationsApplicationIdResetThrottlePolicyPost(applicationId, applicationThrottleResetDTO)
+
+Reset Application-Level Throttle Policy
+
+This operation can be used to reset the application-level throttle policy for a specific user. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.store.api.ApiClient;
+import org.wso2.am.integration.clients.store.api.ApiException;
+import org.wso2.am.integration.clients.store.api.Configuration;
+import org.wso2.am.integration.clients.store.api.auth.*;
+import org.wso2.am.integration.clients.store.api.models.*;
+import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v3");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApplicationsApi apiInstance = new ApplicationsApi(defaultClient);
+    String applicationId = "applicationId_example"; // String | Application Identifier consisting of the UUID of the Application. 
+    ApplicationThrottleResetDTO applicationThrottleResetDTO = new ApplicationThrottleResetDTO(); // ApplicationThrottleResetDTO | Payload for which the application-level throttle policy needs to be reset 
+    try {
+      apiInstance.applicationsApplicationIdResetThrottlePolicyPost(applicationId, applicationThrottleResetDTO);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApplicationsApi#applicationsApplicationIdResetThrottlePolicyPost");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **applicationId** | **String**| Application Identifier consisting of the UUID of the Application.  |
+ **applicationThrottleResetDTO** | [**ApplicationThrottleResetDTO**](ApplicationThrottleResetDTO.md)| Payload for which the application-level throttle policy needs to be reset  |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Application-level throttle policy reset successfully |  -  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**401** | Unauthorized. The user is not authorized. |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified.  |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**500** | Internal Server Error. |  -  |
+
 <a name="applicationsGet"></a>
 # **applicationsGet**
 > ApplicationListDTO applicationsGet(groupId, query, sortBy, sortOrder, limit, offset, ifNoneMatch)
@@ -251,7 +325,7 @@ import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -333,7 +407,7 @@ import org.wso2.am.integration.clients.store.api.v1.ApplicationsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v2");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/devportal/v3");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");

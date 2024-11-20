@@ -4,7 +4,7 @@
 ---
 
 
-[![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fwso2.org%2Fjenkins%2Fview%2Fproducts%2Fjob%2Fproducts%2Fjob%2Fproduct-apim%2F)](https://wso2.org/jenkins/view/products/job/products/job/product-apim/)
+[![Build Status](https://wso2.org/jenkins/job/products/job/product-apim/badge/icon)](https://wso2.org/jenkins/job/products/job/product-apim/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![stackoverflow](https://img.shields.io/badge/stackoverflow-wso2am-orange)](https://stackoverflow.com/tags/wso2-am/)
 [![slack](https://img.shields.io/badge/slack-wso2--apim-blueviolet)](https://join.slack.com/t/wso2-apim/shared_invite/enQtNzEzMzk5Njc5MzM0LTgwODI3NmQ1MjI0ZDQyMGNmZGI4ZjdkZmI1ZWZmMjNkY2E0NmY3ZmExYjkxYThjNzNkOTU2NWJmYzM4YzZiOWU?src=sidebar)
@@ -204,7 +204,7 @@ System Requirements
 Installation & Running
 ==================================
 
-1. Extract the wso2am-4.2.0-alpha.zip and go to the 'bin' directory
+1. Extract the wso2am-4.4.0.zip and go to the 'bin' directory
 2. Run the api-manager.sh or api-manager.bat script based on you operating system.
 3. Access the respective WSO2 API-M interfaces
     * API Publisher web application is running at - https://localhost:9443/publisher \
@@ -228,6 +228,16 @@ hours, to premium 24x7 phone support.
 For additional support information please refer to http://wso2.com/support
 
 For more information on WSO2 API Manager please visit https://wso2.com/api-management/
+
+Survey On Open Source Community Communication
+==================================
+
+WSO2 wants to learn more about our open source software (OSS) community and your communication preferences to serve you better.
+
+In addition, we may reach out to a small number of respondents to ask additional questions and offer a small gift.
+
+Link to survey: https://forms.gle/h5q4M3K7vyXba3bK6
+
 
 Known Issues of WSO2 API Manager
 ==================================

@@ -100,7 +100,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         String provider = Constants.WSO2_GATEWAY_ENVIRONMENT;
         List<VHostDTO> vHostDTOList = new ArrayList<>();
         environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, provider,
-                false, vHostDTOList);
+                false, vHostDTOList, null);
 
         //Add the environment
         try {
@@ -123,7 +123,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods",
                 8280, 8243, 9099, 8099));
         environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, provider,
-                false, vHostDTOList);
+                false, vHostDTOList, null);
         //Add the environment
         try {
             restAPIAdmin.addEnvironment(environmentDTO);
@@ -144,7 +144,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods",
                 8280, 8243, 9099, 8099));
         environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, provider,
-                false, vHostDTOList);
+                false, vHostDTOList, null);
         //Able to add the environment successfully
         ApiResponse<EnvironmentDTO> addedEnvironments = restAPIAdmin.addEnvironment(environmentDTO);
 
@@ -155,8 +155,34 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(environmentId, "The environment ID cannot be null or empty");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with multiple Vhosts with same hostname",
+    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with Gateway Type configured",
             dependsOnMethods = "testAddingGatewayEnvironmentWithoutDisplayName")
+    public void testAddingGatewayEnvironmentWithGatewayType() throws Exception {
+        //Create the environment DTO
+        String name = "asia-region-gateway-type";
+        String displayName = "Asia Region";
+        String description = "Gateway environment deployed in Asia region";
+        String provider = Constants.WSO2_GATEWAY_ENVIRONMENT;
+        String gatewayType = "APK";
+        List<VHostDTO> vHostDTOList = new ArrayList<>();
+        vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods",
+                8280, 8243, null, null));
+        environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, provider,
+                false, vHostDTOList, gatewayType);
+        //Able to add the environment successfully
+        ApiResponse<EnvironmentDTO> addedEnvironments = restAPIAdmin.addEnvironment(environmentDTO);
+
+        //Assert the status code and environment ID
+        Assert.assertEquals(addedEnvironments.getStatusCode(), HttpStatus.SC_CREATED);
+        EnvironmentDTO addedEnvironmentDTO = addedEnvironments.getData();
+        String environmentId = addedEnvironmentDTO.getId();
+        Assert.assertNotNull(environmentId, "The environment ID cannot be null or empty");
+        String addedGatewayType = addedEnvironmentDTO.getGatewayType();
+        Assert.assertEquals(addedGatewayType, gatewayType, "The added gateway type is not matching with the expected");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test adding gateway environment with multiple Vhosts with same hostname",
+            dependsOnMethods = "testAddingGatewayEnvironmentWithGatewayType")
     public void testAddingGatewayEnvironmentWithMultipleVhostsWithSameHostName() throws Exception {
         //Create the environment DTO
         String name = "asia-region";
@@ -169,7 +195,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods",
                 8280, 8243, 9099, 8099));
         environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, provider,
-                false, vHostDTOList);
+                false, vHostDTOList, null);
         //Add the environment
         try {
             restAPIAdmin.addEnvironment(environmentDTO);
@@ -190,7 +216,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         vHostDTOList.add(DtoFactory.createVhostDTO("foods.com#$%?", "zfoods",
                 8280, 8243, 9099, 8099));
         environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, provider,
-                false, vHostDTOList);
+                false, vHostDTOList, null);
         //Add the environment
         try {
             restAPIAdmin.addEnvironment(environmentDTO);
@@ -211,7 +237,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods",
                 8280, 8243, 9099, 8099));
         environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, provider,
-                false, vHostDTOList);
+                false, vHostDTOList, null);
 
         //Add the environment
         ApiResponse<EnvironmentDTO> addedEnvironments = restAPIAdmin.addEnvironment(environmentDTO);
@@ -250,7 +276,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
         List<VHostDTO> vHostDTOList = new ArrayList<>();
         vHostDTOList.add(DtoFactory.createVhostDTO("us.mg.wso2.com", "", 80, 443, 9099, 8099));
         vHostDTOList.add(DtoFactory.createVhostDTO("foods.com", "zfoods", 8280, 8243, 9099, 8099));
-        environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, provider, false, vHostDTOList);
+        environmentDTO = DtoFactory.createEnvironmentDTO(name, displayName, description, provider, false, vHostDTOList, null);
 
         //Add the environment
         ApiResponse<EnvironmentDTO> addedEnvironments = restAPIAdmin.addEnvironment(environmentDTO);
@@ -454,7 +480,7 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
                 "This is a hybrid gateway that handles both production and sandbox token traffic.",
                 Constants.WSO2_GATEWAY_ENVIRONMENT,
                 true,
-                Collections.singletonList(vhostDTO)
+                Collections.singletonList(vhostDTO), "Regular"
         );
         configuredEnv.setId(Constants.GATEWAY_ENVIRONMENT);
         return configuredEnv;
@@ -482,9 +508,10 @@ public class EnvironmentTestCase extends APIMIntegrationBaseTest {
             provider = provider + "@" + tenantDomain;
         }
 
+        final String version = "1.0.0";
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
 
         waitForAPIDeployment();

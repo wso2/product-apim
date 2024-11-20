@@ -111,22 +111,10 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
             userManagementClient1.updateRolesOfUser(user.getUserNameWithoutDomain(), newRoleList);
         }
 
-        userManagementClient1
-                .addUser(user1, password, new String[] { role1, "Internal/publisher", "Internal/subscriber" }, user1);
-        userManagementClient1
-                .addUser(user2, password, new String[] { role2, "Internal/publisher", "Internal/subscriber" }, user2);
-
         APIRequest apiRequest = createAPIRequest(contentSearchTestAPI, contentSearchTestAPI, endpointURL, version,
                 user.getUserName(), description);
 
         apiId = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
-
-        //Login to API Publisher adn Store with CarbonSuper normal user1
-        restAPIPublisherFirstUser = new RestAPIPublisherImpl(user1, password, user.getUserDomain(), publisherURLHttps);
-        restAPIPublisherSecondUser = new RestAPIPublisherImpl(user2, password, user.getUserDomain(), publisherURLHttps);
-
-        restAPIStoreFirstUser = new RestAPIStoreImpl(user1, password, user.getUserDomain(), storeURLHttps);
-        restAPIStoreSecondUser = new RestAPIStoreImpl(user2, password, user.getUserDomain(), storeURLHttps);
 
     }
 
@@ -137,7 +125,7 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
         //check in publisher
         for (int i = 0; i <= retries; i++) {
             SearchResultListDTO searchResultListDTO = restAPIPublisher.searchAPIs(description);
-            if (searchResultListDTO.getCount() == 1) {
+            if (searchResultListDTO.getCount() >= 1) {
                 Assert.assertTrue(true);
                 break;
             } else {
@@ -156,7 +144,7 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
             //search term : UnifiedSearchFeature, created api has this in description filed
             org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO searchResultListDTO = restAPIStore
                     .searchAPIs(description);
-            if (searchResultListDTO.getCount() == 1) {
+            if (searchResultListDTO.getCount() >= 1) { // API and API Definitions
                 Assert.assertTrue(true);
                 break;
             } else {
@@ -223,7 +211,7 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
                 } else {
                     log.warn("Document content search in publisher failed. Received response : " + searchResultListDTO
                             .getCount() + " Retrying...");
-                    Thread.sleep(3000);
+                    Thread.sleep(Math.min(3000L * (i + 1), 30000L));
                 }
             }
         }
@@ -243,7 +231,7 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
                 } else {
                     log.warn("Document content search in store failed. Received response : " + searchResultListDTO
                             .getCount() + " Retrying...");
-                    Thread.sleep(3000);
+                    Thread.sleep(Math.min(3000L * (i + 1), 30000L));
                 }
             }
         }
@@ -252,35 +240,40 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {
             "wso2.am" }, description = "Test content Search with access control", dependsOnMethods = "testBasicContentSearch")
     public void testContentSearchWithAccessControl() throws Exception {
-
+        // Set API publisher access control to role1
         HttpResponse httpResponse = restAPIPublisher.getAPI(apiId);
-        Gson g = new Gson();
-        APIDTO apiDto = g.fromJson(httpResponse.getData(), APIDTO.class);
+        APIDTO apiDto = new Gson().fromJson(httpResponse.getData(), APIDTO.class);
 
         apiDto.setAccessControl(APIDTO.AccessControlEnum.RESTRICTED);
         List<String> roles = new ArrayList<>();
         roles.add(role1);
         apiDto.setAccessControlRoles(roles);
 
-        apiDto.setVisibility(APIDTO.VisibilityEnum.RESTRICTED);
-        apiDto.setVisibleRoles(roles);
-
         restAPIPublisher.updateAPI(apiDto);
-
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction());
+
+        // Add users for test
+        userManagementClient1
+                .addUser(user1, password, new String[] { role1, "Internal/publisher"}, user1);
+        userManagementClient1
+                .addUser(user2, password, new String[] { role2, "Internal/publisher"}, user2);
+
+        //Login to API Publisher adn Store with CarbonSuper normal user1
+        restAPIPublisherFirstUser = new RestAPIPublisherImpl(user1, password, user.getUserDomain(), publisherURLHttps);
+        restAPIPublisherSecondUser = new RestAPIPublisherImpl(user2, password, user.getUserDomain(), publisherURLHttps);
 
         //check with user1
         for (int i = 0; i <= retries; i++) {
             SearchResultListDTO searchResultListDTO = restAPIPublisherFirstUser.searchAPIs(description);
-            if (searchResultListDTO.getCount() == 1) {
+            if (searchResultListDTO.getCount() == 2) { // API and API Definition
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Content search with access control failed. 1 result expected. Received response : "
+                    Assert.fail("Content search with access control failed. 2 result expected. Received response : "
                             + searchResultListDTO.getCount());
                 } else {
-                    log.warn("Content search with access control failed. 1 results expected. Received response : "
+                    log.warn("Content search with access control failed. 2 results expected. Received response : "
                             + searchResultListDTO.getCount() + " Retrying...");
                     Thread.sleep(3000);
                 }
@@ -314,19 +307,38 @@ public class ContentSearchTestCase extends APIManagerLifecycleBaseTest {
             "wso2.am" }, description = "Test content Search with store visibility", dependsOnMethods = "testContentSearchWithAccessControl")
     public void testContentSearchWithStoreVisibility() throws Exception {
 
+        // Set store visibility to role1
+        HttpResponse httpResponse = restAPIPublisher.getAPI(apiId);
+        APIDTO apiDto = new Gson().fromJson(httpResponse.getData(), APIDTO.class);
+        apiDto.setAccessControl(APIDTO.AccessControlEnum.NONE);
+
+        List<String> roles = new ArrayList<>();
+        roles.add(role1);
+        apiDto.setVisibility(APIDTO.VisibilityEnum.RESTRICTED);
+        apiDto.setVisibleRoles(roles);
+
+        restAPIPublisher.updateAPI(apiDto);
+
+        // Update user for tests
+        userManagementClient1.updateRolesOfUser(user1, new String[] { role1, "Internal/subscriber" });
+        userManagementClient1.updateRolesOfUser(user2, new String[] { role2, "Internal/subscriber" });
+
+        restAPIStoreFirstUser = new RestAPIStoreImpl(user1, password, user.getUserDomain(), storeURLHttps);
+        restAPIStoreSecondUser = new RestAPIStoreImpl(user2, password, user.getUserDomain(), storeURLHttps);
+
         //check with user1
         for (int i = 0; i <= retries; i++) {
             org.wso2.am.integration.clients.store.api.v1.dto.SearchResultListDTO searchResultListDTO = restAPIStoreFirstUser
                     .searchAPIs(description);
-            if (searchResultListDTO.getCount() == 1) {
+            if (searchResultListDTO.getCount() == 2) { // API and API Definition
                 Assert.assertTrue(true);
                 break;
             } else {
                 if (i == retries) {
-                    Assert.fail("Content search with visibility failed. 1 result expected. Received response : "
+                    Assert.fail("Content search with visibility failed. 2 result expected. Received response : "
                             + searchResultListDTO.getCount());
                 } else {
-                    log.warn("Content search with visibility failed. 1 results expected. Received response : "
+                    log.warn("Content search with visibility failed. 2 results expected. Received response : "
                             + searchResultListDTO.getCount() + " Retrying...");
                     Thread.sleep(5000);
                 }

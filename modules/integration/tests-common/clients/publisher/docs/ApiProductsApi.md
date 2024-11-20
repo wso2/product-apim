@@ -5,6 +5,7 @@ All URIs are relative to *https://apis.wso2.com/api/am/publisher/v4*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createAPIProduct**](ApiProductsApi.md#createAPIProduct) | **POST** /api-products | Create a New API Product
+[**createNewAPIProductVersion**](ApiProductsApi.md#createNewAPIProductVersion) | **POST** /api-products/copy-api-products | Create a New API Product Version
 [**deleteAPIProduct**](ApiProductsApi.md#deleteAPIProduct) | **DELETE** /api-products/{apiProductId} | Delete an API Product
 [**getAPIProduct**](ApiProductsApi.md#getAPIProduct) | **GET** /api-products/{apiProductId} | Get Details of an API Product
 [**getAPIProductSwagger**](ApiProductsApi.md#getAPIProductSwagger) | **GET** /api-products/{apiProductId}/swagger | Get Swagger Definition
@@ -83,6 +84,79 @@ Name | Type | Description  | Notes
 **201** | &#39;Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.&#39;  |  * ETag - Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).  <br>  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
 **400** | Bad Request. Invalid request or validation error. |  -  |
 **415** | Unsupported Media Type. The entity of the request was not in a supported format. |  -  |
+
+<a name="createNewAPIProductVersion"></a>
+# **createNewAPIProductVersion**
+> APIProductDTO createNewAPIProductVersion(newVersion, apiProductId, defaultVersion)
+
+Create a New API Product Version
+
+This operation can be used to create a new version of an existing API Products. The new version is specified as &#x60;newVersion&#x60; query parameter. New API Product will be in &#x60;CREATED&#x60; state. 
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApiProductsApi apiInstance = new ApiProductsApi(defaultClient);
+    String newVersion = "newVersion_example"; // String | Version of the new API Product.
+    String apiProductId = "apiProductId_example"; // String | **API Product ID** consisting of the **UUID** of the API Product. The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID. Should be formatted as **provider-name-version**. 
+    Boolean defaultVersion = false; // Boolean | Specifies whether new API Product should be added as default version.
+    try {
+      APIProductDTO result = apiInstance.createNewAPIProductVersion(newVersion, apiProductId, defaultVersion);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApiProductsApi#createNewAPIProductVersion");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **newVersion** | **String**| Version of the new API Product. |
+ **apiProductId** | **String**| **API Product ID** consisting of the **UUID** of the API Product. The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID. Should be formatted as **provider-name-version**.  |
+ **defaultVersion** | **Boolean**| Specifies whether new API Product should be added as default version. | [optional] [default to false]
+
+### Return type
+
+[**APIProductDTO**](APIProductDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**201** | Created. Successful response with the newly created API Product as entity in the body. Location header contains URL of newly created API Product.  |  * Location - The URL of the newly created API Product.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
 
 <a name="deleteAPIProduct"></a>
 # **deleteAPIProduct**
@@ -231,7 +305,7 @@ Name | Type | Description  | Notes
 
 <a name="getAPIProductSwagger"></a>
 # **getAPIProductSwagger**
-> getAPIProductSwagger(apiProductId, accept, ifNoneMatch)
+> String getAPIProductSwagger(apiProductId, accept, ifNoneMatch)
 
 Get Swagger Definition
 
@@ -261,7 +335,8 @@ public class Example {
     String accept = "\"application/json\""; // String | Media types acceptable for the response. Default is application/json. 
     String ifNoneMatch = "ifNoneMatch_example"; // String | Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
     try {
-      apiInstance.getAPIProductSwagger(apiProductId, accept, ifNoneMatch);
+      String result = apiInstance.getAPIProductSwagger(apiProductId, accept, ifNoneMatch);
+      System.out.println(result);
     } catch (ApiException e) {
       System.err.println("Exception when calling ApiProductsApi#getAPIProductSwagger");
       System.err.println("Status code: " + e.getCode());
@@ -283,7 +358,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+**String**
 
 ### Authorization
 
@@ -396,7 +471,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -473,7 +548,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -547,7 +622,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
@@ -622,7 +697,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.ApiProductsApi;
 public class Example {
   public static void main(String[] args) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v3");
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
     
     // Configure OAuth2 access token for authorization: OAuth2Security
     OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");

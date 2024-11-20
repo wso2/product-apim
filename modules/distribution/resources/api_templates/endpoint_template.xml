@@ -90,6 +90,63 @@
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$name">
 <http uri-template="$util.escapeXml($ep.get("url"))">
 #timeout( $ep.get('config') )
+#if($enableRetryCallWithNewOauthToken)
+    #set( $endpointSecurity = $endpoint_security.get($type) )
+    #if($endpointSecurity.type == "oauth" || $endpointSecurity.type == "OAUTH")
+        <authentication>
+            <oauth>
+                #if($endpointSecurity.grantType == "client_credentials" || $endpointSecurity.grantType == "CLIENT_CREDENTIALS")
+                    #set($grantType = "clientCredentials")
+                #elseif($endpointSecurity.grantType == "password" || $endpointSecurity.grantType == "PASSWORD")
+                    #set($grantType = "passwordCredentials")
+                #end
+
+                <$grantType>
+                    #if($grantType == "passwordCredentials")
+                        <username>$util.escapeXml($endpointSecurity.username)</username>
+                        #if($isSecureVaultEnabled)
+                            <password>{wso2:vault-lookup('$endpointSecurity.passwordAlias')}</password>
+                        #else
+                            <password>$util.escapeXml($endpointSecurity.password)</password>
+                        #end
+                    #end
+                    <clientId>$util.escapeXml($endpointSecurity.clientId)</clientId>
+                    #if($isSecureVaultEnabled)
+                        <clientSecret>{wso2:vault-lookup('$endpointSecurity.clientSecretAlias')}</clientSecret>
+                    #else
+                        <clientSecret>$util.escapeXml($endpointSecurity.clientSecret)</clientSecret>
+                    #end
+                    <tokenUrl>$util.escapeXml($endpointSecurity.tokenUrl)</tokenUrl>
+                    #if($endpointSecurity.proxyConfigs && $endpointSecurity.proxyConfigs.proxyEnabled == true)
+                    <proxyConfigs>
+                        <proxyHost>$util.escapeXml($endpointSecurity.proxyConfigs.proxyHost)</proxyHost>
+                        <proxyPort>$util.escapeXml($endpointSecurity.proxyConfigs.proxyPort)</proxyPort>
+                        <proxyUsername>$util.escapeXml($endpointSecurity.proxyConfigs.proxyUsername)</proxyUsername>
+                        #if($isSecureVaultEnabled)
+                        <proxyPassword>{wso2:vault-lookup('$endpointSecurity.proxyConfigs.proxyPasswordAlias')}</proxyPassword>
+                        #else
+                        <proxyPassword>$util.escapeXml($endpointSecurity.proxyConfigs.proxyPassword)</proxyPassword>
+                        #end
+                        <proxyProtocol>$util.escapeXml($endpointSecurity.proxyConfigs.proxyProtocol)</proxyProtocol>
+                    </proxyConfigs>
+                    #end
+                    <connectionTimeout>$util.escapeXml($endpointSecurity.connectionTimeoutDuration)</connectionTimeout>
+                    <connectionRequestTimeout>$util.escapeXml($endpointSecurity.connectionRequestTimeoutDuration)</connectionRequestTimeout>
+                    <socketTimeout>$util.escapeXml($endpointSecurity.socketTimeoutDuration)</socketTimeout>
+                    #set($requestParametersMap = $util.jsonStringToMap($endpointSecurity.customParameters))
+                    #if($requestParametersMap.size() > 0)
+                        <requestParameters>
+                            #foreach($entry in $requestParametersMap.entrySet())
+                                <parameter name="$util.escapeXml($entry.key)">$util.escapeXml($entry.value)</parameter>
+                            #end
+                        </requestParameters>
+                    #end
+                    <authMode/>
+                </$grantType>
+            </oauth>
+        </authentication>
+    #end
+#end
 </http>
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
         </endpoint>

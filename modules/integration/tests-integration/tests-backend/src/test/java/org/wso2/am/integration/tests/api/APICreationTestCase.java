@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.tests.api;
 
+import org.codehaus.plexus.util.StringUtils;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -35,10 +37,14 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.testng.Assert.assertTrue;
+
 public class APICreationTestCase extends APIManagerLifecycleBaseTest {
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndpointUrl;
     private String apiId;
+    private String apiIdAPK;
+    private String apiIdSynapse;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APICreationTestCase(TestUserMode userMode) {
@@ -77,11 +83,53 @@ public class APICreationTestCase extends APIManagerLifecycleBaseTest {
         String certificate = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "example.crt";
         restAPIPublisher.uploadCertificate(new File(certificate), "example", apiId,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.SANDBOX);
 
         // Verify deployment of API with Mutual SSL enabled
         String revisionUUID = createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
         Assert.assertNotNull(revisionUUID);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deployment of API with Mutual SSL enabled")
+    public void testCreateAndDeployApiWithGatewayType() throws Exception {
+        // Create API with gateway type APK
+        APIRequest apiRequest;
+        apiRequest = new APIRequest("APKGatewayAPI1", "apkgateway", new URL(apiEndpointUrl));
+        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setProvider(user.getUserName());
+        apiRequest.setGatewayType("wso2/apk");
+        HttpResponse apiResponse = restAPIPublisher.addAPI(apiRequest);
+        apiIdAPK = apiResponse.getData();
+        String revisionUUID = createAPIRevisionAndDeployUsingRest(apiIdAPK, restAPIPublisher);
+        Assert.assertNotNull(revisionUUID);
+
+        // Verify the API in API Publisher
+        HttpResponse apiDto = restAPIPublisher.getAPI(apiIdAPK);
+        assertTrue(StringUtils.isNotEmpty(apiDto.getData()),
+                "Added Api is not available in APi Publisher. API ID " + apiId);
+        JSONObject apiResponseData = new JSONObject(apiDto.getData());
+        String addedGatewayType = apiResponseData.getString("gatewayType");
+        Assert.assertEquals(addedGatewayType, "wso2/apk", "Gateway type is not set as expected");
+
+        // Create API with gateway type Synapse
+        apiRequest = new APIRequest("SynapseGatewayAPI1", "synapsegateway", new URL(apiEndpointUrl));
+        apiRequest.setVersion(API_VERSION_1_0_0);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setProvider(user.getUserName());
+        apiRequest.setGatewayType("wso2/synapse");
+        apiResponse = restAPIPublisher.addAPI(apiRequest);
+        apiIdSynapse = apiResponse.getData();
+        revisionUUID = createAPIRevisionAndDeployUsingRest(apiIdSynapse, restAPIPublisher);
+        Assert.assertNotNull(revisionUUID);
+
+        // Verify the API in API Publisher
+        apiDto = restAPIPublisher.getAPI(apiIdSynapse);
+        assertTrue(StringUtils.isNotEmpty(apiDto.getData()),
+                "Added Api is not available in APi Publisher. API ID " + apiId);
+        apiResponseData = new JSONObject(apiDto.getData());
+        addedGatewayType = apiResponseData.getString("gatewayType");
+        Assert.assertEquals(addedGatewayType, "wso2/synapse", "Gateway type is not set as expected");
     }
 
     @AfterClass(alwaysRun = true)

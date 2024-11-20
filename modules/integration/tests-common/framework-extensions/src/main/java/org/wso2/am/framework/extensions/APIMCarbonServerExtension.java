@@ -35,6 +35,7 @@ import org.wso2.carbon.automation.extensions.servers.carbonserver.TestServerMana
 import org.wso2.carbon.integration.common.utils.FileManager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -116,6 +117,12 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                                     + "deployment" + File.separator + "server" + File.separator + "synapse-configs"
                                     + File.separator + "default" + File.separator + "api";
 
+                    try {
+                        FileManager.readFile(synapseApiPath);
+                    } catch (FileNotFoundException e) {
+                        new File(synapseApiPath).mkdirs();
+                    }
+
                     FileManager.copyFile(new File(
                             resourcePath + File.separator + "synapseconfigs" + File.separator + "rest" + File.separator
                                     + "BackEndSecurity.xml"), synapseApiPath + File.separator + "BackEndSecurity.xml");
@@ -169,94 +176,50 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war", 120000L);
 
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.EP1_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.EP1_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(webappsPath + APIMIntegrationConstants.EP1_WEB_APP_NAME,
-                            120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME + ".war", 120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME + ".war", 120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME + ".war", 120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war", 120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war", 120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war", 120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.WILDCARD_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.WILDCARD_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.WILDCARD_WEB_APP_NAME + ".war", 120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war", 120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.GRAPHQL_API_WEB_APP_NAME + ".war", 120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.AUDIT_API_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.AUDIT_API_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.AUDIT_API_WEB_APP_NAME + ".war", 120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.ETCD_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.ETCD_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(webappsPath + APIMIntegrationConstants.ETCD_WEB_APP_NAME,
-                            120000L);
-
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.DUPLICATE_HEADER_BACKEND_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.DUPLICATE_HEADER_BACKEND_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.DUPLICATE_HEADER_BACKEND_WEB_APP_NAME + ".war",
-                            120000L);
 
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.BPMN_PROCESS_ENGINE_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.BPMN_PROCESS_ENGINE_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.BPMN_PROCESS_ENGINE_WEB_APP_NAME + ".war", 120000L);
-
                     log.info("Web Apps Deployed");
                 } catch (IOException e) {
                     throw new AutomationFrameworkException(e.getMessage(), e);

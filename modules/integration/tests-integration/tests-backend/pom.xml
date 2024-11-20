@@ -20,7 +20,7 @@ under the License.
     <parent>
         <artifactId>org.wso2.carbon.am.integration.test</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>4.2.0-SNAPSHOT</version>
+        <version>4.4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -151,6 +151,7 @@ under the License.
                             </environmentVariables>
                             <workingDirectory>${basedir}/target</workingDirectory>
                             <classpathDependencyExcludes>
+                                <classpathDependencyExclude>org.wso2.org.ops4j.pax.logging</classpathDependencyExclude>
                                 <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
                             </classpathDependencyExcludes>
                             <systemPropertyVariables>
@@ -250,6 +251,7 @@ under the License.
                             </systemProperties>
                             <workingDirectory>${basedir}/target</workingDirectory>
                             <classpathDependencyExcludes>
+                                <classpathDependencyExclude>org.wso2.org.ops4j.pax.logging</classpathDependencyExclude>
                                 <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
                             </classpathDependencyExcludes>
                             <systemPropertyVariables>
@@ -357,7 +359,7 @@ under the License.
                             </systemPropertyVariables>
                             <workingDirectory>${basedir}/target</workingDirectory>
                             <classpathDependencyExcludes>
-                                <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.wso2.org.ops4j.pax.logging</classpathDependencyExclude>
                             </classpathDependencyExcludes>
                         </configuration>
                     </plugin>
@@ -565,7 +567,7 @@ under the License.
                     <artifactId>pax-logging-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.ops4j.pax.logging</groupId>
+                    <groupId>org.wso2.org.ops4j.pax.logging</groupId>
                     <artifactId>pax-logging-api</artifactId>
                 </exclusion>
                 <exclusion>
@@ -599,11 +601,11 @@ under the License.
                     <artifactId>jcl-over-slf4j</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.ops4j.pax.logging</groupId>
+                    <groupId>org.wso2.org.ops4j.pax.logging</groupId>
                     <artifactId>pax-logging-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.ops4j.pax.logging</groupId>
+                    <groupId>org.wso2.org.ops4j.pax.logging</groupId>
                     <artifactId>pax-logging-log4j2</artifactId>
                 </exclusion>
                 <exclusion>
@@ -633,6 +635,16 @@ under the License.
         <dependency>
             <groupId>org.wso2.carbon.automationutils</groupId>
             <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-jdk14</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -807,6 +819,11 @@ under the License.
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.clients.internal.api</artifactId>
             <scope>test</scope>
@@ -832,7 +849,7 @@ under the License.
                     <artifactId>pax-logging-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.ops4j.pax.logging</groupId>
+                    <groupId>org.wso2.org.ops4j.pax.logging</groupId>
                     <artifactId>pax-logging-api</artifactId>
                 </exclusion>
                 <exclusion>
@@ -844,7 +861,7 @@ under the License.
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8-standalone</artifactId>
-            <version>2.27.2</version>
+            <version>2.32.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

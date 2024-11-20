@@ -18,17 +18,25 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%@ page import="org.owasp.encoder.Encode" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApiException" %>
 <%@ page import="org.wso2.carbon.identity.mgt.constants.SelfRegistrationStatusCodes" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.api.ReCaptchaApi" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.ReCaptchaProperties" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointConstants" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementServiceUtil" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.model.User" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
+<%@ page import="org.wso2.carbon.identity.captcha.util.CaptchaUtil" %>
+<%@ page import="java.util.Arrays" %>
+<%@ page import="java.util.HashMap" %>
 <%@ page import="java.io.File" %>
+<%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Enumeration" %>
 <%@ taglib prefix="layout" uri="org.wso2.identity.apps.taglibs.layout.controller" %>
 
 <jsp:directive.include file="includes/localize.jsp"/>
+<jsp:directive.include file="tenant-resolve.jsp"/>
 <jsp:directive.include file="includes/layout-resolver.jsp"/>
 
 <%
@@ -39,7 +47,7 @@
     Object errorMsgObj = request.getAttribute("errorMsg");
     String callback = Encode.forHtmlAttribute(request.getParameter("callback"));
     boolean isCallBackUrlEmpty = false;
-    if (request.getParameter("callback") == null || request.getParameter("callback").length() == 0) {
+    if (callback == null || callback.length() == 0) {
         isCallBackUrlEmpty = true;
     }
     String errorCode = null;
@@ -67,6 +75,23 @@
     } else if (errorMsgObj != null) {
         errorMsg = errorMsgObj.toString();
     }
+    ReCaptchaApi reCaptchaApi = new ReCaptchaApi();
+        try {
+            ReCaptchaProperties reCaptchaProperties = reCaptchaApi.getReCaptcha(tenantDomain, true, "ReCaptcha",
+                "self-registration");
+            if (reCaptchaProperties.getReCaptchaEnabled()) {
+                Map<String, List<String>> headers = new HashMap<>();
+                headers.put("reCaptcha", Arrays.asList(String.valueOf(true)));
+                headers.put("reCaptchaAPI", Arrays.asList(reCaptchaProperties.getReCaptchaAPI()));
+                headers.put("reCaptchaKey", Arrays.asList(reCaptchaProperties.getReCaptchaKey()));
+                IdentityManagementEndpointUtil.addReCaptchaHeaders(request, headers);
+            }
+        } catch (ApiException e) {
+            request.setAttribute("error", true);
+            request.setAttribute("errorMsg", e.getMessage());
+            request.getRequestDispatcher("error.jsp").forward(request, response);
+            return;
+        }
     boolean skipSignUpEnableCheck = Boolean.parseBoolean(request.getParameter("skipsignupenablecheck"));
 %>
 
@@ -75,10 +100,19 @@
     layoutData.put("containerSize", "medium");
 %>
 
+<%
+    boolean reCaptchaEnabled = false;
+    if (request.getAttribute("reCaptcha") != null && "TRUE".equalsIgnoreCase((String) request.getAttribute("reCaptcha"))) {
+        reCaptchaEnabled = true;
+    } else if (request.getParameter("reCaptcha") != null && Boolean.parseBoolean(request.getParameter("reCaptcha"))) {
+        reCaptchaEnabled = true;
+    }
+%>
+
 <!doctype html>
-<html>
+<html lang="en-US">
 <head>
-    <!-- header -->
+    <%-- header --%>
     <%
         File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
         if (headerFile.exists()) {
@@ -87,11 +121,19 @@
     <% } else { %>
     <jsp:directive.include file="includes/header.jsp"/>
     <% } %>
+    <%
+            if (reCaptchaEnabled) {
+                String reCaptchaAPI = CaptchaUtil.reCaptchaAPIURL();
+        %>
+        <script src='<%=(reCaptchaAPI)%>'></script>
+         <%
+            }
+        %>
 </head>
 <body class="login-portal layout recovery-layout">
      <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
         <layout:component componentName="ProductHeader" >
-            <!-- product-title -->
+            <%-- product-title --%>
             <%
                 File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
                 if (productTitleFile.exists()) {
@@ -114,7 +156,7 @@
                     <%=IdentityManagementEndpointUtil.i18nBase64(recoveryResourceBundle, errorMsg)%>
                 </div>
                 <% } %>
-                <!-- validation -->
+                <%-- validation --%>
                 <p>
                     <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Enter.your.username.here")%>
                 </p>
@@ -151,11 +193,30 @@
                         </div>
                         <% } %>
 
+                        <%
+                            if (reCaptchaEnabled) {
+                                String reCaptchaKey = CaptchaUtil.reCaptchaSiteKey();
+                        %>
+                        <div class="field">
+                            <div class="g-recaptcha"
+                                data-size="invisible"
+                                data-callback="onCompleted"
+                                data-action="register"
+                                data-sitekey="<%=Encode.forHtmlContent(reCaptchaKey)%>"
+                            >
+                            </div>
+                        </div>
+                        <%
+                            }
+                        %>
+
                         <div class="ui divider hidden"></div>
 
                         <div class="align-right buttons">
                              <% if (!isCallBackUrlEmpty) { %>
-                            <a id="goBack" href='<%=request.getParameter("callback")%>' class="ui button link-button">
+                            <a id="goBack"
+                               href='<%=Encode.forHtmlAttribute(request.getParameter("callback"))%>'
+                               class="ui button link-button">
                             <% } else { %>
                             <a id="goBack" onclick="window.history.back()" class="ui button link-button">
                             <% } %>
@@ -173,7 +234,7 @@
             </div>
         </layout:component>
         <layout:component componentName="ProductFooter" >
-            <!-- product-footer -->
+            <%-- product-footer --%>
             <%
                 File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
                 if (productFooterFile.exists()) {
@@ -185,7 +246,7 @@
         </layout:component>
     </layout:main>
 
-    <!-- footer -->
+    <%-- footer --%>
     <%
         File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
         if (footerFile.exists()) {
@@ -209,6 +270,9 @@
                 }
             }
         });
+        function onCompleted() {
+            $('#register').submit();
+         }
         function goBack() {
             window.history.back();
         }
@@ -226,6 +290,16 @@
                         console.warn("Prevented a possible double submit event");
                     } else {
                         e.preventDefault();
+                        <%
+                            if (reCaptchaEnabled) {
+                        %>
+                            if (!grecaptcha.getResponse()) {
+                                grecaptcha.execute();
+                                return;
+                            }
+                        <%
+                            }
+                        %>
                         var userName = document.getElementById("username");
                         var normalizedUsername = userName.value.trim();
                         userName.value = normalizedUsername;

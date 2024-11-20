@@ -1544,6 +1544,18 @@ paths:
         - $ref: '#/parameters/Accept'
         - $ref: '#/parameters/If-None-Match'
         - $ref: '#/parameters/If-Modified-Since'
+        - name: query
+          in: query
+          description: |
+            **Search condition**.
+            You can search in attributes by using **"conditionType:"** modifier and **"conditionValue:"** modifier.
+            Eg.
+            The entry "conditionType:API" will result in a match with blocking conditions only if the conditionType is "API". Similarly, "conditionValue:test/1.0.0" will result in a match with blocking conditions only if the conditionValue is "test/1.0.0".
+            When you use "conditionType:API & conditionValue:test/1.0.0" as a combination, it will result in a match with blocking conditions only if both the conditionType is "API" and the conditionValue is "test/1.0.0".
+            If query attribute is provided, this returns the blocking conditions that match the specified attributes.
+            Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)
+          schema:
+            type: string
       tags:
         - Blacklist (Collection)
       responses:

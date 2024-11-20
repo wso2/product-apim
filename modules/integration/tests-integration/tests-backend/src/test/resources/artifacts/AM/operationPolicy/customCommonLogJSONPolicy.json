@@ -1,6 +1,6 @@
 {
   "type": "operation_policy_specification",
-  "version": "v4.2.0",
+  "version": "v4.4.0",
   "data": {
     "category": "Mediation",
     "name": "customCommonLogPolicy",

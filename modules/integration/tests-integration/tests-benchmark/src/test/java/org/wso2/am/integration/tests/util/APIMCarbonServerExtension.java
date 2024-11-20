@@ -139,14 +139,10 @@ public class APIMCarbonServerExtension extends ExecutionListenerExtension {
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war", 120000L);
 
                     WebAppDeploymentUtil.copyWebApp(relativeResourcePath + File.separator + "war" + File.separator
                                     + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war",
                             webappsPath + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
-                    WebAppDeploymentUtil.waitForWebappToDeploy(
-                            webappsPath + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war", 120000L);
 
                     log.info("Web Apps Deployed");
                 } catch (IOException e) {

@@ -1,6 +1,8 @@
 package org.wso2.am.integration.tests.crossSubscription;
 
+import jdk.internal.joptsimple.internal.Strings;
 import org.apache.http.HttpStatus;
+import org.apache.synapse.endpoints.auth.AuthConstants;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -47,9 +49,11 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.identity.base.IdentityConstants;
 import org.wso2.carbon.um.ws.api.stub.PermissionDTO;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -95,10 +99,16 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
     private String residentKMTenant2;
     private ApplicationKeyDTO tenant1AppTenant2Store;
     private ApplicationKeyDTO tenant1AppTenant1Store;
+    private ApplicationKeyDTO tenant2AppTenant2Store;
     private RemoteUserStoreManagerServiceClient tenant1UserStoreManager;
     private RemoteUserStoreManagerServiceClient tenant2UserStoreManager;
     private ApplicationDTO tenant3Application;
     private ApplicationDTO tenant4Application;
+    private ApplicationDTO tenant5Application;
+    private final String tenantApp5 = "Tenant5App";
+    private final String tenant2AppPolicy = "Tenant2AppPolicy";
+    private final String errorMessageKeyGeneration = "Error occurred while generating keys";
+    private final String errorMessageTokenGeneration = "Error occurred while generating access token";
     private SubscriptionThrottlePolicyDTO testPolicyTenant1Public;
     private SubscriptionThrottlePolicyDTO testPolicyTenant2Public;
     private SubscriptionThrottlePolicyDTO testPolicyTenant1Restricted;
@@ -348,18 +358,26 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
     }
 
     @Test(groups = {"wso2.am"}, description = "Check Visibility of API from cross Tenant")
-    public void testVisibilityOfAPIFromOtherDomain2() throws ApiException {
+    public void testVisibilityOfAPIFromOtherDomain2() throws ApiException, InterruptedException {
 
-        APIListDTO allAPIs = apiStoreRestClientTenant2.getAllAPIs(tenant1Name);
-        Assert.assertNotNull(allAPIs);
-        assert allAPIs.getCount() != null;
-        Assert.assertEquals(allAPIs.getCount().intValue(), 1);
         boolean found = false;
-        assert allAPIs.getList() != null;
-        for (APIInfoDTO apiInfoDTO : allAPIs.getList()) {
-            if (apiId1.equals(apiInfoDTO.getId())) {
-                found = true;
-                break;
+        int tries = 0;
+        while (!found && tries < 15) {
+            APIListDTO allAPIs = apiStoreRestClientTenant2.getAllAPIs(tenant1Name);
+            Assert.assertNotNull(allAPIs);
+            assert allAPIs.getCount() != null;
+            if (allAPIs.getCount() == 1) {
+                assert allAPIs.getList() != null;
+                for (APIInfoDTO apiInfoDTO : allAPIs.getList()) {
+                    if (apiId1.equals(apiInfoDTO.getId())) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            tries++;
+            if (!found) {
+                Thread.sleep(5000);
             }
         }
         Assert.assertTrue(found, "API with ID" + apiId1 + "not found");
@@ -557,6 +575,38 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
             Assert.assertEquals(e.getCode(), 403L);
         }
 
+    }
+
+    @Test(groups = { "wso2.am" },
+            description = "Create new application and generate access token using an already subscribed application",
+            dependsOnMethods = { "testCreateSubscriptionFromTenant2AppToTenant1API" })
+    public void testCreateNewApplicationAndGenerateTokenSubscribedApplication()
+            throws APIManagerIntegrationTestException, ApiException, MalformedURLException, JSONException {
+
+        tenant5Application = apiStoreRestClientTenant2.addApplication(tenantApp5, tenant2AppPolicy, Strings.EMPTY,
+                                                                      Strings.EMPTY);
+
+        ArrayList<String> grantTypes = new ArrayList<>();
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.PASSWORD);
+        grantTypes.add(APIMIntegrationConstants.GRANT_TYPE.CLIENT_CREDENTIAL);
+        tenant2AppTenant2Store =
+                apiStoreRestClientTenant2.generateKeys(tenant2Application.getApplicationId(),
+                                                       APIMIntegrationConstants.DEFAULT_TOKEN_VALIDITY_TIME,
+                                                       Strings.EMPTY,
+                                                       ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION,
+                                                       new ArrayList<>(),
+                                                       grantTypes,
+                                                       residentKMTenant1);
+        Assert.assertNotNull(tenant2AppTenant2Store, errorMessageKeyGeneration);
+
+        URL tokenEndpointURL = new URL(keyManagerHTTPSURL + IdentityConstants.OAuth.TOKEN);
+        HttpResponse httpResponse = restAPIStore.generateUserAccessKey(tenant2AppTenant2Store.getConsumerKey(),
+                                                                       tenant2AppTenant2Store.getConsumerSecret(),
+                                                                       AuthConstants.CLIENT_CRED_GRANT_TYPE,
+                                                                       tokenEndpointURL);
+        JSONObject subsAccessTokenGenerationResponse = new JSONObject(httpResponse.getData());
+        String accessToken = subsAccessTokenGenerationResponse.getString(AuthConstants.ACCESS_TOKEN);
+        Assert.assertNotNull(accessToken, errorMessageTokenGeneration);
     }
 
     @Test(groups = {"wso2.am"}, description = "Create Application from other tenant")
@@ -815,6 +865,7 @@ public class CrossTenantSubscriptionTestCase extends APIManagerLifecycleBaseTest
         apiStoreRestClientTenant2.deleteApplication(tenant2Application.getApplicationId());
         apiStoreRestClientTenant2.deleteApplication(tenant3Application.getApplicationId());
         apiStoreRestClientTenant1.deleteApplication(tenant4Application.getApplicationId());
+        apiStoreRestClientTenant2.deleteApplication(tenant5Application.getApplicationId());
         apiPublisherRestClientTenant1.deleteAPI(apiId1);
         apiPublisherRestClientTenant2.deleteAPI(apiId2);
         restAPIAdminTenant1.deleteApplicationThrottlingPolicy(policyIdTenant1);

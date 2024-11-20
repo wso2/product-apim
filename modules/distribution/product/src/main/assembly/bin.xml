@@ -28,6 +28,7 @@
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <excludes>
                 <exclude>**/bin/wso2server.sh</exclude>
+                <exclude>**/bin/carbondump.sh</exclude>
                 <exclude>**/bin/wso2server.bat</exclude>
                 <exclude>**/conf/axis2/*.j2</exclude>
                 <exclude>**/conf/axis2/axis2.xml</exclude>
@@ -76,14 +77,12 @@
                 <exclude>**/repository/components/plugins/nimbus-jose-jwt_2.26.1.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/net.minidev.json-smart_1.2.0.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/wss4j_1.5.11.wso2v10.jar</exclude>-->
-                <exclude>**/repository/components/plugins/rampart-trust_1.6.1.wso2v14.jar</exclude>
-                <exclude>**/repository/components/plugins/rampart-policy_1.6.1.wso2v14.jar</exclude>
-                <exclude>**/repository/components/plugins/rampart-core_1.6.1.wso2v14.jar</exclude>
                 <exclude>**/repository/components/plugins/commons-io_2.0.0.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/com.google.gson_2.1.0.jar</exclude>
                 <exclude>**/repository/components/plugins/com.google.gson_2.2.4.jar</exclude>
                 <exclude>**/repository/components/plugins/com.google.gson_2.5.0.jar</exclude>
                 <exclude>**/repository/components/plugins/com.google.gson_2.3.1.jar</exclude>
+                <exclude>**/repository/components/plugins/com.google.gson_2.9.0.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/org.wso2.carbon.captcha.mgt_4.2.0.jar</exclude>-->
                 <exclude>**/repository/components/plugins/guava_12.0.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/wadl-core_1.1.3.wso2v2.jar</exclude>
@@ -106,6 +105,7 @@
                 <exclude>**/repository/components/plugins/hadoop-client_2.7.2.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/org.apache.servicemix.bundles.jaxb-api-2.0_4.0.0.m1.jar
                 </exclude>
+                <exclude>**/repository/deployment/client/modules/*.jar</exclude>
 
                 <exclude>**/repository/components/plugins/cassandra-thrift_1.2.13.wso2v4.jar</exclude>
                 <exclude>**/repository/components/plugins/org.wso2.carbon.event.output.adapter.cassandra_*.jar</exclude>
@@ -130,6 +130,7 @@
                 <exclude>**/repository/components/plugins/httpcore_4.4.14.wso2v1.jar</exclude>
                 <!--This jar is not used in apim-->
                 <exclude>**/repository/components/plugins/swagger-parser_2.0.20.wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/libthrift_0.9.2.wso2v1.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/org.wso2.carbon.tenant.redirector.servlet*.jar</exclude>-->
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
@@ -171,6 +172,26 @@
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v2.jar</exclude>
                 <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v4.jar</exclude>
                 <exclude>**/lib/xalan*.jar</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>target/diagnostics-tool</directory>
+            <outputDirectory>wso2am-${pom.version}/diagnostics-tool</outputDirectory>
+            <excludes>
+                <exclude>bin/diagnostics</exclude>
+                <exclude>lib/**</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>target/diagnostics-tool/lib</directory>
+            <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
+            <excludes>
+                <exclude>antlr-runtime-*.jar</exclude>
+                <exclude>gson*.jar</exclude>
+                <exclude>commons-lang3-*.jar</exclude>
+                <exclude>log4j-api-*.jar</exclude>
+                <exclude>log4j-core-*.jar</exclude>
+                <exclude>cava-toml-*.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -368,6 +389,15 @@
                 <include>**/**.j2</include>
             </includes>
         </fileSet>
+        <!-- Gateway policy templates -->
+        <fileSet>
+            <directory>../resources/templates</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/templates</outputDirectory>
+            <includes>
+                <include>**/**.xml</include>
+                <include>**/**.j2</include>
+            </includes>
+        </fileSet>
         <!-- Operation policy specifications -->
         <fileSet>
             <directory>../resources/operation_policies/specifications</directory>
@@ -393,6 +423,26 @@
             <outputDirectory>wso2am-${pom.version}/repository/resources/policy_templates</outputDirectory>
             <includes>
                 <include>**/**.xml</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/api_definitions
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/api_definitions</outputDirectory>
+            <includes>
+                <include>**/**.yaml</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/api_definitions
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/api_definitions</outputDirectory>
+            <includes>
+                <include>**/**.yaml</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -422,12 +472,6 @@
             <includes>
                 <include>**/*.*</include>
             </includes>
-        </fileSet>
-
-        <!--copy the callhome jar -->
-        <fileSet>
-            <directory>../../callhome/target/callhomeCopied/jar</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
         </fileSet>
 
         <fileSet>
@@ -468,6 +512,7 @@
             <excludes>
                 <!--Need to remove after GA-->
                 <exclude>authenticationendpoint/basicauth.jsp</exclude>
+                <exclude>authenticationendpoint/EndpointConfig.properties</exclude>
                 <exclude>authenticationendpoint/identifierauth.jsp</exclude>
                 <exclude>authenticationendpoint/includes/cookie-policy-content.jsp</exclude>
                 <exclude>authenticationendpoint/includes/header.jsp</exclude>
@@ -524,8 +569,10 @@
             </includes>
             <!--Need to remove after GA-->
             <excludes>
+                <exclude>accountrecoveryendpoint/RecoveryEndpointConfig.properties</exclude>
                 <exclude>accountrecoveryendpoint/self-registration-complete.jsp</exclude>
                 <exclude>accountrecoveryendpoint/password-recovery.jsp</exclude>
+                <exclude>accountrecoveryendpoint/password-reset-complete.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/header.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/title.jsp</exclude>
                 <exclude>accountrecoveryendpoint/includes/product-footer.jsp</exclude>
@@ -560,6 +607,7 @@
             <includes>
                 <include>self-registration-complete.jsp</include>
                 <include>password-recovery.jsp</include>
+                <include>password-reset-complete.jsp</include>
                 <include>self-registration-username-request.jsp</include>
                 <include>self-registration-with-verification.jsp</include>
                 <include>error.jsp</include>
@@ -699,6 +747,16 @@
                 <include>client-registration#v0.17.war</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>api#identity#auth#v1.1.war</include>
+            </includes>
+        </fileSet>
 
 
         <!-- Copy sample calculator api webapp-->
@@ -765,6 +823,8 @@
             </includes>
             <excludes>
                 <exclude>**/cxf3/spring-asm-3.1.4.RELEASE.jar</exclude>
+                <exclude>**/cxf3/snakeyaml-1.28.jar</exclude>
+                <exclude>**/cxf3/spring-*.jar</exclude>
             </excludes>
         </fileSet>
 
@@ -901,14 +961,6 @@
             </includes>
         </fileSet>
 
-        <!--Copy the outbound authenticator jars such as OIDC.-->
-        <fileSet>
-            <directory>../../authenticators/target/authenticatoroutboundCopied/jar</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
-            <includes>
-                <include>**/*.jar</include>
-            </includes>
-        </fileSet>
 
         <!-- copy cxf filter extensions -->
         <fileSet>
@@ -945,24 +997,6 @@
                 <include>org.apache.qpid.wso2:qpid-client:jar</include>
             </includes>
         </dependencySet>
-        <dependencySet>
-            <outputDirectory>wso2am-${pom.version}/samples/axis2Client/client_repo/modules</outputDirectory>
-            <includes>
-                <include>org.apache.axis2:addressing:mar</include>
-                <include>org.apache.rampart:rampart:mar</include>
-                <include>org.apache.sandesha2:sandesha2:mar</include>
-            </includes>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
-        <dependencySet>
-            <outputDirectory>wso2am-${pom.version}/samples/axis2Server/repository/modules</outputDirectory>
-            <includes>
-                <include>org.apache.axis2:addressing:mar</include>
-                <include>org.apache.rampart:rampart:mar</include>
-                <include>org.apache.sandesha2:sandesha2:mar</include>
-            </includes>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-        </dependencySet>
         <!--dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/axis2/client/lib</outputDirectory>
             <excludes>
@@ -976,12 +1010,9 @@
             </excludes>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet-->
-        <dependencySet>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/client/modules</outputDirectory>
-            <includes>
-                <include>org.apache.rampart:rampart:mar</include>
-            </includes>
-        </dependencySet>
+<!--        <dependencySet>-->
+<!--            <outputDirectory>wso2am-${pom.version}/repository/deployment/client/modules</outputDirectory>-->
+<!--        </dependencySet>-->
         <dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
             <includes>
@@ -1244,6 +1275,20 @@
         </file>
 
         <file>
+            <source>src/main/startup-scripts/fips.sh</source>
+            <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/startup-scripts/fips.bat</source>
+            <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
             <source>src/main/startup-scripts/profileSetup.sh</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
@@ -1269,6 +1314,21 @@
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/startup-scripts/diagnostics.sh</source>
+            <outputDirectory>wso2am-${pom.version}/diagnostics-tool/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/resources/conf/templates/diagnostics-tool/conf/config.toml.j2</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/conf/templates/diagnostics-tool/conf</outputDirectory>
+            <destName>config.toml.j2</destName>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
         </file>
 
         <file>
@@ -1615,7 +1675,10 @@
             </source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/attributes/userstore</outputDirectory>
         </file>
-
+        <file>
+            <source>target/apim-is-plugin-resources/dropins/org.wso2.charon3.core-${charon3.version}.jar</source>
+            <outputDirectory>wso2am-${pom.version}/repository/components/dropins</outputDirectory>
+        </file>
     </files>
 
 </assembly>

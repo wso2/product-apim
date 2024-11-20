@@ -1612,7 +1612,7 @@ paths:
       - Comments
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
       x-examples:
         $ref: docs/examples/apis/comments.yaml#/get
       x-accepts: application/json
@@ -1757,7 +1757,7 @@ paths:
       x-code-samples:
       - lang: Curl
         source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
       x-examples:
         $ref: docs/examples/apis/comments.yaml#/post
       x-contentType: application/json
@@ -2017,7 +2017,7 @@ paths:
       - Comments
       x-code-samples:
       - lang: Curl
-        source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+        source: curl -k "https://localhost:9443/api/am/devportal/v3/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
       x-examples:
         $ref: docs/examples/apis/comment_id-comments.yaml#/get
       x-accepts: application/json
@@ -5781,6 +5781,99 @@ paths:
       - lang: Curl
         source: curl -k "https://localhost:9443/api/am/devportal/v2/throttling-policies/application/10PerMin"
       x-accepts: application/json
+  /applications/{applicationId}/reset-throttle-policy:
+    post:
+      description: |
+        This operation can be used to reset the application-level throttle policy for a specific user.
+      parameters:
+      - description: |
+          Application Identifier consisting of the UUID of the Application.
+        explode: false
+        in: path
+        name: applicationId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationThrottleReset'
+        description: |
+          Payload for which the application-level throttle policy needs to be reset
+        required: true
+      responses:
+        "200":
+          content: {}
+          description: OK. Application-level throttle policy reset successfully
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "401":
+          content:
+            application/json:
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized. The user is not authorized.
+        "403":
+          content: {}
+          description: |
+            Forbidden.
+            The request must be conditional but no condition has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:app_manage
+        - apim:subscribe
+      summary: Reset Application-Level Throttle Policy
+      tags:
+      - Applications
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k \ -H "Authorization: Bearer 80249337-fe7c-3c66-bde6-ed431c144372"
+          \ -H "Content-Type: application/json" -X POST \ -d @payload.json \ "https://localhost:9443/api/am/devportal/v3/application/37dd21cc-631e-4c73-bf73-c59cc7087a63/reset-throttle-policy"'
+      x-contentType: application/json
+      x-accepts: application/json
   /tags:
     get:
       description: |
@@ -8806,6 +8899,14 @@ components:
           properties: {}
           type: object
       title: API Key generation request object
+      type: object
+    ApplicationThrottleReset:
+      properties:
+        userName:
+          description: The username for which the throttle policy needs to be reset
+          example: admin
+          type: string
+      title: Reset application level throttling
       type: object
     APIKeyRevokeRequest:
       properties:

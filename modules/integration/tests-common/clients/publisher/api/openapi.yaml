@@ -3129,6 +3129,83 @@ paths:
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
       x-accepts: application/json
+  /apis/{apiId}/cancel-revision-workflow/{revisionId}/{envName}:
+    delete:
+      description: |
+        This operation can be used to remove pending revision deployment requests that are in pending state
+      operationId: deleteAPIRevisionDeploymentPendingTask
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Revision ID of an API
+        explode: false
+        in: path
+        name: revisionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Environment name of an Revision
+        explode: false
+        in: path
+        name: envName
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Revision deployment pending task removed successfully.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+        - apim:api_manage
+      summary: Delete Pending Revision Deployment Workflow Tasks
+      tags:
+      - API Revisions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/cancel-revision-workflow/e0824883-3e86-403a-aec1-22bbc454eb7c/Default"'
+      x-accepts: application/json
   /apis/import-service:
     post:
       description: This operation can be used to create an API from a Service from
@@ -7765,6 +7842,105 @@ paths:
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/subscriptions/unblock-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809"'
       x-accepts: application/json
+  /subscriptions/change-business-plan:
+    post:
+      description: |
+        This operation can be used to change the business plan of a subscription specifying the subscription Id and the business plan.
+      operationId: changeSubscriptionBusinessPlan
+      parameters:
+      - description: |
+          Subscription Id
+        explode: true
+        in: query
+        name: subscriptionId
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: |
+          The business plan to be assigned to the subscription.
+        explode: true
+        in: query
+        name: businessPlan
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: |
+            OK.
+            Subscription business plan was changed successfully.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "409":
+          content:
+            application/json:
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict. Specified resource already exists.
+      security:
+      - OAuth2Security:
+        - apim:subscription_manage
+      summary: Change subscription business plan
+      tags:
+      - Subscriptions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -X POST "https://127.0.0.1:9443/api/am/publisher/v4/subscriptions/change-business-plan?subscriptionId=92c50632-012f-4739-b37d-baa23008c813&businessPlan=Silver"'
+      x-accepts: application/json
   /throttling-policies/{policyLevel}:
     get:
       description: |
@@ -8643,6 +8819,630 @@ paths:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon/content"'
+      x-accepts: application/json
+  /apis/{apiId}/client-certs/{keyType}:
+    get:
+      description: |
+        This operation can be used to retrieve and search the uploaded client certificates of a given key type.
+      operationId: getAPIClientCertificatesByKeyType
+      parameters:
+      - description: Key type for the certificate
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: Alias for the client certificate
+        explode: true
+        in: query
+        name: alias
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertificates'
+          description: |
+            OK. Successful response with the list of matching certificate information in the body.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:client_certificates_view
+        - apim:client_certificates_manage
+      summary: Retrieve/ Search Uploaded Client Certificates of a given key type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION?alias=wso2carbon"'
+      x-accepts: application/json
+    post:
+      description: |
+        This operation can be used to upload a new certificate for an endpoint of the given type.
+      operationId: addAPIClientCertificateOfGivenKeyType
+      parameters:
+      - description: Key type for the certificate
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                certificate:
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+                  type: string
+                alias:
+                  description: Alias for the certificate
+                  maxLength: 30
+                  minLength: 1
+                  type: string
+                tier:
+                  description: API tier to which the certificate should be applied.
+                  type: string
+              required:
+              - alias
+              - certificate
+              - tier
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertMetadata'
+          description: |
+            OK.
+            The Certificate added successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:client_certificates_add
+        - apim:client_certificates_manage
+      summary: Upload a New Certificate of the given key type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: multipart/form-data" -F certificate=@test.crt -F alias=wso2carbon
+          -F tier=Gold "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /apis/{apiId}/client-certs/{keyType}/{alias}:
+    delete:
+      description: |
+        This operation can be used to delete an uploaded certificate of a given key type.
+      operationId: deleteAPIClientCertificateByKeyTypeAndAlias
+      parameters:
+      - description: Key type for the certificate
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          The alias of the certificate that should be deleted.
+        explode: false
+        in: path
+        name: alias
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            The Certificate deleted successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:client_certificates_update
+      summary: Delete a Certificate of a Given Key Type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon"'
+      x-accepts: application/json
+    get:
+      description: |
+        This operation can be used to get the information about a certificate of a given key type.
+      operationId: getAPIClientCertificateByKeyTypeAndAlias
+      parameters:
+      - description: Key type for the certificate
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: alias
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateInfo'
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:client_certificates_view
+        - apim:client_certificates_manage
+      summary: Get the Certificate Information of a Given Key Type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION/wso2carbon"'
+      x-accepts: application/json
+    put:
+      description: |
+        This operation can be used to update an uploaded certificate of a given key type.
+      operationId: updateAPIClientCertificateByKeyTypeAndAlias
+      parameters:
+      - description: Key type for the certificate
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Alias for the certificate
+        explode: false
+        in: path
+        name: alias
+        required: true
+        schema:
+          maxLength: 30
+          minLength: 1
+          type: string
+        style: simple
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                certificate:
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+                  type: string
+                tier:
+                  description: The tier of the certificate
+                  type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertMetadata'
+          description: |
+            OK.
+            The Certificate updated successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:client_certificates_update
+        - apim:client_certificates_manage
+      summary: Update a Certificate of a Given Key Type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: multipart/form-data" -F certificate=@test.crt -F alias=wso2carbon
+          -F apiId=fea749dd-d548-4a8b-b308-34903b39a34b -F tier=Gold "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION/wso2carbon"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /apis/{apiId}/client-certs/{keyType}/{alias}/content:
+    get:
+      description: |
+        This operation can be used to download a certificate which matches the given alias and key type.
+      operationId: getAPIClientCertificateContentByKeyTypeAndAlias
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: alias
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          The key type of the certificate that should be deleted.
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:client_certificates_view
+        - apim:client_certificates_manage
+      summary: Download a Certificate of Given Key Type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION/wso2carbon/content"
+          > test.crt'
       x-accepts: application/json
   /endpoint-certificates:
     get:
@@ -10187,7 +10987,10 @@ paths:
         style: simple
       responses:
         "200":
-          content: {}
+          content:
+            application/json:
+              schema:
+                type: string
           description: |
             OK.
             Requested swagger document of the API is returned
@@ -11818,6 +12621,95 @@ paths:
       - lang: Curl
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/api-products/890a4f4d-09eb-4877-a323-57f6ce2ed79b/restore-revision?revisionId=e0824883-3e86-403a-aec1-22bbc454eb7c"'
+      x-accepts: application/json
+  /api-products/copy-api-products:
+    post:
+      description: |
+        This operation can be used to create a new version of an existing API Products. The new version is specified as `newVersion` query parameter. New API Product will be in `CREATED` state.
+      operationId: createNewAPIProductVersion
+      parameters:
+      - description: Version of the new API Product.
+        explode: true
+        in: query
+        name: newVersion
+        required: true
+        schema:
+          maxLength: 30
+          type: string
+        style: form
+      - description: Specifies whether new API Product should be added as default
+          version.
+        explode: true
+        in: query
+        name: defaultVersion
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: |
+          **API Product ID** consisting of the **UUID** of the API Product.
+          The combination of the provider, name and the version of the API Product is also accepted as a valid API Product ID.
+          Should be formatted as **provider-name-version**.
+        explode: true
+        in: query
+        name: apiProductId
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIProduct'
+          description: |
+            Created.
+            Successful response with the newly created API Product as entity in the body. Location header contains URL of newly created API Product.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created API Product.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:api_publish
+        - apim:api_manage
+      summary: Create a New API Product Version
+      tags:
+      - API Products
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/api-products/copy-api-products?newVersion=2.0&defaultVersion=false&apiproductId=2fd14eb8-b828-4013-b448-0739d2e76bf7"'
       x-accepts: application/json
   /api-products/export:
     get:
@@ -14537,6 +15429,519 @@ paths:
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v2/operation-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a/content"'
       x-accepts: application/json
+  /gateway-policies:
+    get:
+      description: |
+        This operation provides you a list of all gateway policies mapping information.
+      operationId: getAllGatewayPolicies
+      parameters:
+      - description: |
+          Maximum size of policy array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: |
+          **Search condition**.
+
+          You can search in attributes by using an **"gatewayLabel:"** modifier.
+
+          Eg.
+          The entry "gatewayLabel:gateway1" will result in a match with a Gateway Policy Mapping only if the policy mapping is deployed on "gateway1".
+
+          If query attribute is provided, this returns the Gateway policy Mapping available under the given limit.
+
+          Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)
+        explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappingDataList'
+          description: |
+            OK.
+            List of gateway policies is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_view
+        - apim:gateway_policy_manage
+      summary: |
+        Get all gateway policies mapping information
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies"'
+      x-accepts: application/json
+    post:
+      description: |
+        This operation can be used to apply gateway policies to the request, response, fault flows.
+      operationId: addGatewayPoliciesToFlows
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayPolicyMappings'
+        description: Policy details object that needs to be added.
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappingInfo'
+          description: |
+            OK.
+            Policy mapping created successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the created gateway policy mapping.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_manage
+      summary: Engage gateway policies to the request, response, fault flows
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /gateway-policies/{gatewayPolicyMappingId}:
+    delete:
+      description: |
+        This operation can be used to delete an existing gateway policy mapping by providing the Id of the policy mapping.
+      operationId: deleteGatewayPolicyByPolicyId
+      parameters:
+      - description: |
+          Gateway policy mapping Id
+        explode: false
+        in: path
+        name: gatewayPolicyMappingId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Resource successfully deleted.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_manage
+      summary: Delete a gateway policy mapping
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+      x-accepts: application/json
+    get:
+      description: |
+        This operation can be used to retrieve information of a selected gateway policy mapping.
+      operationId: getGatewayPolicyMappingContentByPolicyMappingId
+      parameters:
+      - description: |
+          Gateway policy mapping Id
+        explode: false
+        in: path
+        name: gatewayPolicyMappingId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappings'
+          description: |
+            OK.
+            Gateway policy mapping information returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_view
+        - apim:gateway_policy_manage
+      summary: Retrieve information of a selected gateway policy mapping
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+      x-accepts: application/json
+    put:
+      description: |
+        This operation can be used to update already added gateway policies to the request, response, fault flows.
+      operationId: updateGatewayPoliciesToFlows
+      parameters:
+      - description: |
+          Gateway policy mapping Id
+        explode: false
+        in: path
+        name: gatewayPolicyMappingId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayPolicyMappings'
+        description: Policy details object that needs to be updated.
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayPolicyMappings'
+          description: |
+            OK.
+            Policy mapping updated successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_manage
+      summary: Update gateway policies added to the request, response, fault flows
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/f56eb8b4-128c-45aa-ad35-9c87a546261a"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /gateway-policies/{gatewayPolicyMappingId}/deploy:
+    post:
+      description: |
+        This operation can be used to engage gateway policy mapping to the gateway/s.
+      operationId: engageGlobalPolicy
+      parameters:
+      - description: |
+          Gateway policy mapping Id
+        explode: false
+        in: path
+        name: gatewayPolicyMappingId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/GatewayPolicyDeployment'
+              type: array
+        description: Policy details object that needs to be added.
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GatewayPolicyDeployment'
+                type: array
+          description: |
+            OK.
+            Gateway policy mapping engaged successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:gateway_policy_manage
+      summary: Engage gateway policy mapping to the gateways
+      tags:
+      - Gateway Policies
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/gateway-policies/deploy"'
+      x-contentType: application/json
+      x-accepts: application/json
   /api-products/change-lifecycle:
     post:
       description: |
@@ -15151,12 +16556,32 @@ components:
       schema:
         type: string
       style: simple
+    gatewayPolicyMappingId:
+      description: |
+        Gateway policy mapping Id
+      explode: false
+      in: path
+      name: gatewayPolicyMappingId
+      required: true
+      schema:
+        type: string
+      style: simple
     revisionId:
       description: |
         Revision ID of an API
       explode: false
       in: path
       name: revisionId
+      required: true
+      schema:
+        type: string
+      style: simple
+    envName:
+      description: |
+        Environment name of an Revision
+      explode: false
+      in: path
+      name: envName
       required: true
       schema:
         type: string
@@ -15741,6 +17166,9 @@ components:
           - securityScheme
           name: CalculatorAPI
           context: CalculatorAPI
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
           additionalProperties:
@@ -15771,6 +17199,9 @@ components:
           - securityScheme
           name: CalculatorAPI
           context: CalculatorAPI
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
           additionalProperties:
@@ -15851,6 +17282,9 @@ components:
         - securityScheme
         name: CalculatorAPI
         context: CalculatorAPI
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         createdTime: 2021-02-11 09:57:25
         id: 01234567-0123-0123-0123-012345678901
         additionalProperties:
@@ -15906,6 +17340,13 @@ components:
           - SINGLE
           example: PUBLIC
           type: string
+        audiences:
+          description: The audiences of the API for jwt validation. Accepted values
+            are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
         lifeCycleStatus:
           example: CREATED
           type: string
@@ -16016,10 +17457,12 @@ components:
         responseCachingEnabled: true
         type: HTTP
         enableSchemaValidation: false
+        gatewayType: wso2/synapse
         context: pizza
         createdTime: createdTime
         id: 01234567-0123-0123-0123-012345678901
         wsdlUrl: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
+        apiKeyHeader: apiKey
         accessControlRoles: []
         audience: PUBLIC
         visibility: PUBLIC
@@ -16059,6 +17502,40 @@ components:
           value: value
         lifeCycleStatus: CREATED
         accessControl: NONE
+        apiPolicies:
+          request:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          response:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          fault:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
         monetization:
           enabled: true
           properties:
@@ -16096,6 +17573,9 @@ components:
             url: https://localhost:9443/am/sample/pizzashack/v1/api/
           production_endpoints:
             url: https://localhost:9443/am/sample/pizzashack/v1/api/
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         mediationPolicies:
         - name: json_to_xml_in_message
           type: in
@@ -16118,6 +17598,7 @@ components:
             display: false
             name: name
             value: value
+        lastUpdatedTimestamp: lastUpdatedTimestamp
         wsdlInfo:
           type: WSDL
         hasThumbnail: false
@@ -16255,6 +17736,13 @@ components:
           - SINGLE
           example: PUBLIC
           type: string
+        audiences:
+          description: The audiences of the API for jwt validation. Accepted values
+            are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
         transport:
           description: |
             Supported transports for the API (http and/or https).
@@ -16296,6 +17784,12 @@ components:
             Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified
             in tenant or system level will be used.
           example: Authorization
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+]*$)
+          type: string
+        apiKeyHeader:
+          description: |
+            Name of the API key header used for invoking the API. If it is not set, default value `apiKey` will be used.
+          example: apiKey
           pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+]*$)
           type: string
         securityScheme:
@@ -16348,6 +17842,8 @@ components:
           items:
             $ref: '#/components/schemas/MediationPolicy'
           type: array
+        apiPolicies:
+          $ref: '#/components/schemas/APIOperationPolicies'
         subscriptionAvailability:
           default: CURRENT_TENANT
           description: The subscription availability. Accepts one of the following.
@@ -16415,6 +17911,8 @@ components:
           example: APPROVED
           type: string
         createdTime:
+          type: string
+        lastUpdatedTimestamp:
           type: string
         lastUpdatedTime:
           type: string
@@ -16566,6 +18064,13 @@ components:
           example: wso2
           title: field to identify gateway vendor
           type: string
+        gatewayType:
+          default: wso2/synapse
+          description: The gateway type selected for the API policies. Accepts one
+            of the following. wso2/synapse, wso2/apk.
+          example: wso2/synapse
+          title: Field to identify gateway type.
+          type: string
         asyncTransportProtocols:
           description: |
             Supported transports for the async API (http and/or https).
@@ -16598,12 +18103,14 @@ components:
           deployedTime: deployedTime
           name: default
           successDeployedTime: successDeployedTime
+          status: CREATED
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
           deployedTime: deployedTime
           name: default
           successDeployedTime: successDeployedTime
+          status: CREATED
         apiInfo:
           id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -16655,12 +18162,14 @@ components:
             deployedTime: deployedTime
             name: default
             successDeployedTime: successDeployedTime
+            status: CREATED
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
             deployedTime: deployedTime
             name: default
             successDeployedTime: successDeployedTime
+            status: CREATED
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
         - displayName: REVISION 1
@@ -16674,12 +18183,14 @@ components:
             deployedTime: deployedTime
             name: default
             successDeployedTime: successDeployedTime
+            status: CREATED
           - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
             vhost: mg.wso2.com
             displayOnDevportal: true
             deployedTime: deployedTime
             name: default
             successDeployedTime: successDeployedTime
+            status: CREATED
           apiInfo:
             id: 01234567-0123-0123-0123-012345678901
       properties:
@@ -16702,12 +18213,14 @@ components:
           deployedTime: deployedTime
           name: default
           successDeployedTime: successDeployedTime
+          status: CREATED
         - revisionUuid: c26b2b9b-4632-4ca4-b6f3-521c8863990c
           vhost: mg.wso2.com
           displayOnDevportal: true
           deployedTime: deployedTime
           name: default
           successDeployedTime: successDeployedTime
+          status: CREATED
       properties:
         list:
           items:
@@ -16722,6 +18235,7 @@ components:
         deployedTime: deployedTime
         name: default
         successDeployedTime: successDeployedTime
+        status: CREATED
       properties:
         revisionUuid:
           example: c26b2b9b-4632-4ca4-b6f3-521c8863990c
@@ -16732,6 +18246,14 @@ components:
           example: default
           maxLength: 255
           minLength: 1
+          type: string
+        status:
+          default: CREATED
+          enum:
+          - CREATED
+          - APPROVED
+          - REJECTED
+          example: CREATED
           type: string
         vhost:
           example: mg.wso2.com
@@ -16796,8 +18318,11 @@ components:
           context: pizzaproduct
           description: This is a simple API for Pizza Shack online pizza delivery
             store
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           id: 01234567-0123-0123-0123-012345678901
-          state: CREATED
+          state: state
         - hasThumbnail: true
           provider: admin
           gatewayVendor: wso2
@@ -16807,8 +18332,11 @@ components:
           context: pizzaproduct
           description: This is a simple API for Pizza Shack online pizza delivery
             store
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           id: 01234567-0123-0123-0123-012345678901
-          state: CREATED
+          state: state
       properties:
         count:
           description: |
@@ -16833,8 +18361,11 @@ components:
         name: PizzaShackAPIProduct
         context: pizzaproduct
         description: This is a simple API for Pizza Shack online pizza delivery store
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         id: 01234567-0123-0123-0123-012345678901
-        state: CREATED
+        state: state
       properties:
         id:
           description: |
@@ -16864,13 +18395,6 @@ components:
         state:
           description: |
             State of the API product. Only published api products are visible on the Developer Portal
-          enum:
-          - CREATED
-          - PUBLISHED
-          - DEPRECATED
-          - RETIRED
-          - BLOCKED
-          - PROTOTYPED
           type: string
         securityScheme:
           description: |
@@ -16884,6 +18408,13 @@ components:
         gatewayVendor:
           example: wso2
           type: string
+        audiences:
+          description: The audiences of the API product for jwt validation. Accepted
+            values are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
       title: API Info object with basic API details.
       type: object
     APIProduct:
@@ -16918,6 +18449,9 @@ components:
         provider: admin
         context: pizzaproduct
         createdTime: createdTime
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         lastUpdatedTime: lastUpdatedTime
         id: 01234567-0123-0123-0123-012345678901
         state: CREATED
@@ -16928,18 +18462,22 @@ components:
             name: name
             value: value
         revisionedApiProductId: 01234567-0123-0123-0123-012345678901
+        apiKeyHeader: apiKey
         accessControlRoles: []
+        lastUpdatedTimestamp: lastUpdatedTimestamp
         hasThumbnail: false
         visibility: PUBLIC
         transport:
         - http
         - https
+        version: 1.0.0
         tags:
         - pizza
         - food
         revisionId: 1
         visibleTenants: []
         cacheTimeout: 300
+        isDefaultVersion: false
         apis:
         - name: PizzaShackAPI
           apiId: 01234567-0123-0123-0123-012345678901
@@ -16991,6 +18529,12 @@ components:
           maxLength: 60
           minLength: 1
           type: string
+        version:
+          example: 1.0.0
+          maxLength: 30
+          minLength: 1
+          pattern: ^[^~!@#;:%^*()+={}|\\<>"',&/$\[\]\s+\/]+$
+          type: string
         description:
           description: A brief description about the API
           example: This is a simple API for Pizza Shack online pizza delivery store
@@ -17008,15 +18552,11 @@ components:
           default: CREATED
           description: |
             State of the API product. Only published api products are visible on the Developer Portal
-          enum:
-          - CREATED
-          - PUBLISHED
-          - DEPRECATED
-          - RETIRED
-          - BLOCKED
-          - PROTOTYPED
           type: string
         enableSchemaValidation:
+          example: false
+          type: boolean
+        isDefaultVersion:
           example: false
           type: boolean
         isRevision:
@@ -17116,6 +18656,12 @@ components:
             in tenant or system level will be used.
           example: Authorization
           type: string
+        apiKeyHeader:
+          description: |
+            Name of the API key header used for invoking the API. If it is not set, default value `apiKey` will be used.
+          example: apiKey
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\s+]*$)
+          type: string
         securityScheme:
           description: |
             Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If
@@ -17160,6 +18706,8 @@ components:
           $ref: '#/components/schemas/APICorsConfiguration'
         createdTime:
           type: string
+        lastUpdatedTimestamp:
+          type: string
         lastUpdatedTime:
           type: string
         gatewayVendor:
@@ -17200,6 +18748,13 @@ components:
         workflowStatus:
           example: APPROVED
           type: string
+        audiences:
+          description: The audiences of the API for jwt validation. Accepted values
+            are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
       required:
       - name
       title: API Product object
@@ -19577,6 +21132,7 @@ components:
     Settings:
       example:
         devportalUrl: https://localhost:9443/devportal
+        defaultAdvancePolicy: defaultAdvancePolicy
         externalStoresEnabled: true
         environment:
         - endpointURIs:
@@ -19648,6 +21204,10 @@ components:
             websubHttpsPort: 8021
             httpsPort: 443
         crossTenantSubscriptionEnabled: false
+        gatewayTypes:
+        - Regular
+        - APK
+        defaultSubscriptionPolicy: defaultSubscriptionPolicy
         securityAuditProperties: '{}'
         scopes:
         - apim:api_create
@@ -19664,6 +21224,13 @@ components:
         environment:
           items:
             $ref: '#/components/schemas/Environment'
+          type: array
+        gatewayTypes:
+          example:
+          - Regular
+          - APK
+          items:
+            type: string
           type: array
         scopes:
           example:
@@ -19697,6 +21264,12 @@ components:
             Is Cross Tenant Subscriptions Enabled
           example: false
           type: boolean
+        defaultAdvancePolicy:
+          description: Default Advance Policy.
+          type: string
+        defaultSubscriptionPolicy:
+          description: Default Subscription Policy.
+          type: string
         authorizationHeader:
           description: Authorization Header
           example: authorization
@@ -20127,6 +21700,182 @@ components:
             $ref: '#/components/schemas/OperationPolicy'
           type: array
       title: API Operation Level Policies
+    GatewayPolicyMappings:
+      example:
+        policyMapping:
+          request:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          response:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          fault:
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+          - policyVersion: v1
+            policyId: policyId
+            policyName: policyName
+            parameters:
+              key: '{}'
+        displayName: item_type_setter
+        description: Set header value to the request with item type and response header
+          set with served server name
+        id: 121223q41-24141-124124124-12414
+        appliedGatewayLabels:
+        - gatewayLabel_1
+        - gatewayLabel_1
+      properties:
+        id:
+          example: 121223q41-24141-124124124-12414
+          type: string
+        policyMapping:
+          $ref: '#/components/schemas/APIOperationPolicies'
+        description:
+          description: A brief description about the policy mapping
+          example: Set header value to the request with item type and response header
+            set with served server name
+          type: string
+        displayName:
+          description: Meaningful name to identify the policy mapping
+          example: item_type_setter
+          type: string
+        appliedGatewayLabels:
+          items:
+            example: gatewayLabel_1
+            type: string
+          type: array
+      required:
+      - displayName
+      - policyMapping
+      title: Gateway Policy Mappings
+      type: object
+    GatewayPolicyMappingDeploymentInfo:
+      example:
+        displayName: item_type_setter
+        description: Set header value to the request with item type and response header
+          set with served server name
+        id: 121223q41-24141-124124124-12414
+        appliedGatewayLabels:
+        - gatewayLabel_1
+        - gatewayLabel_1
+      properties:
+        id:
+          example: 121223q41-24141-124124124-12414
+          type: string
+        description:
+          description: A brief description about the policy mapping
+          example: Set header value to the request with item type and response header
+            set with served server name
+          type: string
+        displayName:
+          description: Meaningful name to identify the policy mapping
+          example: item_type_setter
+          type: string
+        appliedGatewayLabels:
+          items:
+            example: gatewayLabel_1
+            type: string
+          type: array
+      title: Gateway Policy Mapping and Deployment Information
+      type: object
+    GatewayPolicyMappingInfo:
+      example:
+        displayName: item_type_setter
+        description: Set header value to the request with item type and response header
+          set with served server name
+        id: 121223q41-24141-124124124-12414
+      properties:
+        id:
+          example: 121223q41-24141-124124124-12414
+          type: string
+        description:
+          description: A brief description about the policy mapping
+          example: Set header value to the request with item type and response header
+            set with served server name
+          type: string
+        displayName:
+          description: Meaningful name to identify the policy mapping
+          example: item_type_setter
+          type: string
+      title: Gateway Policy Mapping Information
+      type: object
+    GatewayPolicyDeployment:
+      example:
+        gatewayLabel: gatewayLabel_1
+        mappingUUID: 01234567-0123-0123-0123-012345678901
+        gatewayDeployment: true
+      properties:
+        gatewayLabel:
+          example: gatewayLabel_1
+          type: string
+        gatewayDeployment:
+          example: true
+          type: boolean
+        mappingUUID:
+          example: 01234567-0123-0123-0123-012345678901
+          type: string
+      required:
+      - gatewayDeployment
+      - gatewayLabel
+      title: Details to map, deploy, undeploy policy mappings to gateways
+      type: object
+    GatewayPolicyMappingDataList:
+      example:
+        pagination:
+          next: next
+          total: 10
+          offset: 0
+          previous: previous
+          limit: 1
+        count: 1
+        list:
+        - displayName: item_type_setter
+          description: Set header value to the request with item type and response
+            header set with served server name
+          id: 121223q41-24141-124124124-12414
+          appliedGatewayLabels:
+          - gatewayLabel_1
+          - gatewayLabel_1
+        - displayName: item_type_setter
+          description: Set header value to the request with item type and response
+            header set with served server name
+          id: 121223q41-24141-124124124-12414
+          appliedGatewayLabels:
+          - gatewayLabel_1
+          - gatewayLabel_1
+      properties:
+        count:
+          description: |
+            Number of gateway policy mappings returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/GatewayPolicyMappingDeploymentInfo'
+          type: array
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      title: Gateway Policy Mapping List
+      type: object
     GatewayEnvironmentProtocolURI:
       example:
         protocol: default
@@ -21021,6 +22770,8 @@ components:
             apim:common_operation_policy_view: View common operation policies
             apim:common_operation_policy_manage: Add, Update and Delete common operation
               policies
+            apim:gateway_policy_view: View gateway policies
+            apim:gateway_policy_manage: Add, Update and Delete gateway policies
             apim:client_certificates_view: View client certificates
             apim:client_certificates_add: Add client certificates
             apim:client_certificates_update: Update and delete client certificates

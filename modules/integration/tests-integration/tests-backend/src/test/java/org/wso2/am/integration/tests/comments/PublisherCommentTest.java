@@ -66,6 +66,7 @@ public class PublisherCommentTest
     private RestAPIPublisherImpl apiPublisherClientCarbonSuperNewAdmin;
     private RestAPIPublisherImpl apiPublisherClientCarbonSuperNonAdminUser;
     private RestAPIStoreImpl apiStoreClientCarbonSuperNonAdminUser;
+    private Gson getCommentsGson;
 
     @Factory(dataProvider = "userModeDataProvider")
     public PublisherCommentTest(TestUserMode userMode) {
@@ -87,6 +88,7 @@ public class PublisherCommentTest
         super.init(userMode);
         User nonAdminUser;
         String nonAdminUsername;
+        getCommentsGson = new Gson();
 
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             // Login to API Publisher and Store with CarbonSuper admin
@@ -131,7 +133,7 @@ public class PublisherCommentTest
         restAPIPublisher.changeAPILifeCycleStatus(apiId, APILifeCycleAction.PUBLISH.getAction(), null);
     }
 
-        //-------------------------Test Comments------------------------------------------
+    //-------------------------Test Comments------------------------------------------
         /* *
             In some databases(mysql, oracle), the timestamp format do not store milliseconds.
             So, a delay of 1 second is used when adding comments and replies and also when editing comments
@@ -147,7 +149,6 @@ public class PublisherCommentTest
             assertNotNull(addRootCommentResponse, "Error adding comment");
             assertEquals(addRootCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
-            Gson getCommentsGson = new Gson();
             CommentDTO addedRootCommentDTO = getCommentsGson
                     .fromJson(addRootCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
             String rootCommentId = addedRootCommentDTO.getId();
@@ -168,7 +169,6 @@ public class PublisherCommentTest
             assertNotNull(addReplyCommentResponse, "Error adding comment");
             assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
-            Gson getCommentsGson = new Gson();
             CommentDTO addedCommentDTO = getCommentsGson.fromJson(addReplyCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
             String replyCommentId = addedCommentDTO.getId();
             assertNotNull(replyCommentId, "Comment Id is null");
@@ -182,7 +182,6 @@ public class PublisherCommentTest
         assertNotNull(addReplyCommentResponse, "Error adding comment");
         assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
-        Gson getCommentsGson = new Gson();
         CommentDTO addedCommentDTO = getCommentsGson.fromJson(addReplyCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         replyToTestDevPortalVisibility = addedCommentDTO.getId();
         assertNotNull(replyToTestDevPortalVisibility, "Comment Id is null");
@@ -192,8 +191,7 @@ public class PublisherCommentTest
                 .getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 0);
         assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getCommentWithRepliesGson = new Gson();
-        CommentDTO commentWithRepliesCommentDTO = getCommentWithRepliesGson.fromJson(getCommentWithRepliesResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+        CommentDTO commentWithRepliesCommentDTO = getCommentsGson.fromJson(getCommentWithRepliesResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         assertEquals(commentWithRepliesCommentDTO.getContent(), "This is root comment 1", "Comments do not match");
         assertEquals(commentWithRepliesCommentDTO.getCategory(), "general", "Comments do not match");
         assertEquals(commentWithRepliesCommentDTO.getEntryPoint(), CommentDTO.EntryPointEnum.PUBLISHER,
@@ -209,14 +207,13 @@ public class PublisherCommentTest
         assertEquals(commentWithRepliesCommentDTO.getReplies().getList().size(), 3, "Replies limit does not match");
     }
 
-    @Test(dependsOnMethods = {"testAddRepliesToRootCommentByAdminTest"}, groups = { "wso2.am" }, description = "Verify Pagination of Replies List of a Comment Test Case")
+    @Test(dependsOnMethods = {"testAddRepliesToRootCommentByAdminTest"}, groups = {"wso2.am"}, description = "Verify Pagination of Replies List of a Comment Test Case")
     public void testPublisherPaginatedCommentListTest() throws Exception {
         HttpResponse getCommentToVerifyPagination = restAPIPublisher
                 .getComment(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 1);
         assertEquals(getCommentToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getCommentToVerifyPaginationGson = new Gson();
-        CommentDTO getCommentToVerifyPaginationCommentDTO = getCommentToVerifyPaginationGson.fromJson(getCommentToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+        CommentDTO getCommentToVerifyPaginationCommentDTO = getCommentsGson.fromJson(getCommentToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         assertNotNull(getCommentToVerifyPaginationCommentDTO.getReplies());
         assertNotNull(getCommentToVerifyPaginationCommentDTO.getReplies().getList());
         assertEquals(getCommentToVerifyPaginationCommentDTO.getReplies().getList().size(), 2,
@@ -227,12 +224,11 @@ public class PublisherCommentTest
                 "This is a reply 3", "Offset value does not captured");
     }
 
-    @Test(dependsOnMethods = {"testPublisherPaginatedCommentListTest"}, groups = { "wso2.am" }, description = "Get  all comments Test Case")
+    @Test(dependsOnMethods = {"testPublisherPaginatedCommentListTest"}, groups = {"wso2.am"}, description = "Get  all comments Test Case")
     public void testPublisherGetAllCommentsTest() throws Exception {
         HttpResponse getCommentsResponse = restAPIPublisher.getComments(apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 5, 0);
         assertEquals(getCommentsResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getCommentsGson = new Gson();
         CommentListDTO commentListDTO = getCommentsGson.fromJson(getCommentsResponse.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertNotNull(commentListDTO.getCount());
         assertEquals(commentListDTO.getCount().intValue(), 2, "Root comments count do not match");
@@ -245,26 +241,24 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testPublisherGetAllCommentsTest"}, groups = { "wso2.am" }, description = "Verify Pagination of Root Comment List Test Case")
+    @Test(dependsOnMethods = {"testPublisherGetAllCommentsTest"}, groups = {"wso2.am"}, description = "Verify Pagination of Root Comment List Test Case")
     public void testPublisherPaginatedRootCommentsTest() throws Exception {
         HttpResponse getRootCommentsToVerifyPagination = restAPIPublisher.getComments(apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 1);
         assertEquals(getRootCommentsToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getRootCommentsToVerifyPaginationGson = new Gson();
-        CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getRootCommentsToVerifyPaginationGson
+        CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getCommentsGson
                 .fromJson(getRootCommentsToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertNotNull(getRootCommentsToVerifyPaginationCommentDTO.getList());
         assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().size(), 1, "Comments limit does not match");
         assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(0).getContent(), "This is root comment 1", "Offset value does not captured");
     }
 
-    @Test(dependsOnMethods = {"testPublisherPaginatedRootCommentsTest"}, groups = { "wso2.am" }, description = "Verify Total Number of Comments from Pagination of Root Comment List Test Case")
+    @Test(dependsOnMethods = {"testPublisherPaginatedRootCommentsTest"}, groups = {"wso2.am"}, description = "Verify Total Number of Comments from Pagination of Root Comment List Test Case")
     public void testPublisherTotalCommentsOfPaginatedRootCommentsTest() throws Exception {
         HttpResponse getRootCommentsToVerifyPagination = restAPIPublisher.getComments(apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 1, 0);
         assertEquals(getRootCommentsToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getRootCommentsToVerifyPaginationGson = new Gson();
-        CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getRootCommentsToVerifyPaginationGson
+        CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getCommentsGson
                 .fromJson(getRootCommentsToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertNotNull(getRootCommentsToVerifyPaginationCommentDTO.getList());
         assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().size(), 1, "Comments limit does not match");
@@ -275,14 +269,13 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testPublisherTotalCommentsOfPaginatedRootCommentsTest"}, groups = { "wso2.am" }, description = "Get All Replies of Comment Test Case")
+    @Test(dependsOnMethods = {"testPublisherTotalCommentsOfPaginatedRootCommentsTest"}, groups = {"wso2.am"}, description = "Get All Replies of Comment Test Case")
     public void testPublisherGetRepliesOfCommentTest() throws Exception {
         HttpResponse getRepliesResponse = restAPIPublisher
                 .getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 5, 0);
         assertEquals(getRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getRepliesGson = new Gson();
-        CommentListDTO replyListDTO = getRepliesGson.fromJson(getRepliesResponse.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
+        CommentListDTO replyListDTO = getCommentsGson.fromJson(getRepliesResponse.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertNotNull(replyListDTO.getCount());
         assertEquals(replyListDTO.getCount().intValue(), 3, "Replies count do not match");
         assertNotNull(replyListDTO.getList());
@@ -294,14 +287,13 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testPublisherGetRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Verify Pagination of Replies List of Comment Test Case")
+    @Test(dependsOnMethods = {"testPublisherGetRepliesOfCommentTest"}, groups = {"wso2.am"}, description = "Verify Pagination of Replies List of Comment Test Case")
     public void testPublisherPaginationOfRepliesOfCommentTest() throws Exception {
         HttpResponse getRepliesToVerifyPagination = restAPIPublisher
                 .getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 1);
         assertEquals(getRepliesToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getRepliesToVerifyPaginationGson = new Gson();
-        CommentListDTO getRepliesToVerifyPaginationCommentListDTO = getRepliesToVerifyPaginationGson
+        CommentListDTO getRepliesToVerifyPaginationCommentListDTO = getCommentsGson
                 .fromJson(getRepliesToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertNotNull(getRepliesToVerifyPaginationCommentListDTO.getList());
         assertEquals(getRepliesToVerifyPaginationCommentListDTO.getList().size(), 2, "Comments limit does not match");
@@ -311,14 +303,13 @@ public class PublisherCommentTest
                 "Offset value does not captured");
     }
 
-    @Test(dependsOnMethods = {"testPublisherPaginationOfRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Verify Total Number of Replies from Pagination of Replies List of Comment Test Case")
+    @Test(dependsOnMethods = {"testPublisherPaginationOfRepliesOfCommentTest"}, groups = {"wso2.am"}, description = "Verify Total Number of Replies from Pagination of Replies List of Comment Test Case")
     public void testPublisherTotalRepliesOfPaginationOfRepliesOfCommentTest() throws Exception {
         HttpResponse getRepliesToVerifyPagination = restAPIPublisher
                 .getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 1, 0);
         assertEquals(getRepliesToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getRepliesToVerifyPaginationGson = new Gson();
-        CommentListDTO getRepliesToVerifyPaginationCommentListDTO = getRepliesToVerifyPaginationGson
+        CommentListDTO getRepliesToVerifyPaginationCommentListDTO = getCommentsGson
                 .fromJson(getRepliesToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertNotNull(getRepliesToVerifyPaginationCommentListDTO.getList());
         assertEquals(getRepliesToVerifyPaginationCommentListDTO.getList().size(), 1, "Replies limit does not match");
@@ -329,12 +320,11 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testPublisherPaginationOfRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Get  all comments from DevPortal Test Case")
+    @Test(dependsOnMethods = {"testPublisherPaginationOfRepliesOfCommentTest"}, groups = {"wso2.am"}, description = "Get  all comments from DevPortal Test Case")
     public void testVerifyDevPortalGetAllCommentsTest() throws Exception {
         HttpResponse getCommentsResponse = restAPIStore.getComments(apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 5, 0);
         assertEquals(getCommentsResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getCommentsGson = new Gson();
         CommentListDTO commentListDTO = getCommentsGson.fromJson(getCommentsResponse.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertNotNull(commentListDTO.getCount());
         assertEquals(commentListDTO.getCount().intValue(), 2, "Root comments count do not match");
@@ -347,27 +337,25 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testVerifyDevPortalGetAllCommentsTest"}, groups = { "wso2.am" }, description = "Verify Pagination of Root Comment List from DevPortal Test Case")
+    @Test(dependsOnMethods = {"testVerifyDevPortalGetAllCommentsTest"}, groups = {"wso2.am"}, description = "Verify Pagination of Root Comment List from DevPortal Test Case")
     public void testVerifyDevPortalPaginatedRootCommentsTest() throws Exception {
         HttpResponse getRootCommentsToVerifyPagination = restAPIStore.getComments(apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 1);
         assertEquals(getRootCommentsToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getRootCommentsToVerifyPaginationGson = new Gson();
-        CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getRootCommentsToVerifyPaginationGson
+        CommentListDTO getRootCommentsToVerifyPaginationCommentDTO = getCommentsGson
                 .fromJson(getRootCommentsToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertNotNull(getRootCommentsToVerifyPaginationCommentDTO.getList());
         assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().size(), 1, "Comments limit does not match");
         assertEquals(getRootCommentsToVerifyPaginationCommentDTO.getList().get(0).getContent(), "This is root comment 1", "Offset value does not captured");
     }
 
-    @Test(dependsOnMethods = {"testVerifyDevPortalPaginatedRootCommentsTest"}, groups = { "wso2.am" }, description = "Get All Replies of Comment from DevPortal Test Case")
+    @Test(dependsOnMethods = {"testVerifyDevPortalPaginatedRootCommentsTest"}, groups = {"wso2.am"}, description = "Get All Replies of Comment from DevPortal Test Case")
     public void testVerifyDevPortalGetRepliesOfCommentTest() throws Exception {
         HttpResponse getRepliesResponse = restAPIStore
                 .getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 5, 0);
         assertEquals(getRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getRepliesGson = new Gson();
-        CommentListDTO replyListDTO = getRepliesGson.fromJson(getRepliesResponse.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
+        CommentListDTO replyListDTO = getCommentsGson.fromJson(getRepliesResponse.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertNotNull(replyListDTO.getCount());
         assertEquals(replyListDTO.getCount().intValue(), 3, "Replies count do not match");
         assertNotNull(replyListDTO.getList());
@@ -379,14 +367,13 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testVerifyDevPortalGetRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Verify Pagination of Replies List of Comment from DevPortal Test Case")
+    @Test(dependsOnMethods = {"testVerifyDevPortalGetRepliesOfCommentTest"}, groups = {"wso2.am"}, description = "Verify Pagination of Replies List of Comment from DevPortal Test Case")
     public void testVerifyDevPortalPaginationOfRepliesOfCommentTest() throws Exception {
         HttpResponse getRepliesToVerifyPagination = restAPIStore
                 .getReplies(rootCommentIdToAddReplies, apiId, gatewayContextWrk.getContextTenant().getDomain(), false, 3, 1);
         assertEquals(getRepliesToVerifyPagination.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Error retrieving comment");
-        Gson getRepliesToVerifyPaginationGson = new Gson();
-        CommentListDTO getRepliesToVerifyPaginationCommentListDTO = getRepliesToVerifyPaginationGson
+        CommentListDTO getRepliesToVerifyPaginationCommentListDTO = getCommentsGson
                 .fromJson(getRepliesToVerifyPagination.getData().replace("publisher", "PUBLISHER"), CommentListDTO.class);
         assertNotNull(getRepliesToVerifyPaginationCommentListDTO.getList());
         assertEquals(getRepliesToVerifyPaginationCommentListDTO.getList().size(), 2, "Comments limit does not match");
@@ -396,9 +383,9 @@ public class PublisherCommentTest
                 "Offset value does not captured");
     }
 
-    @DataProvider (name = "input-data-provider")
+    @DataProvider(name = "input-data-provider")
     public Object[][] inputDataProviderMethod() {
-        return new Object[][] {
+        return new Object[][]{
                 //Edit the content only
                 {"Edited root comment", "general"},
                 //Edit the category only
@@ -409,8 +396,8 @@ public class PublisherCommentTest
     }
 
     //Edit a comment
-    @Test(dependsOnMethods = {"testVerifyDevPortalPaginationOfRepliesOfCommentTest"}, groups = { "wso2.am" }, description = "Edit Comment Test Case", dataProvider = "input-data-provider")
-        public void testPublisherEditCommentTest(String content, String category) throws Exception {
+    @Test(dependsOnMethods = {"testVerifyDevPortalPaginationOfRepliesOfCommentTest"}, groups = {"wso2.am"}, description = "Edit Comment Test Case", dataProvider = "input-data-provider")
+    public void testPublisherEditCommentTest(String content, String category) throws Exception {
         // sleep added to wait between edit comments due to update time assertions
         Thread.sleep(2000);
         HttpResponse editCommentResponse = restAPIPublisher
@@ -418,8 +405,7 @@ public class PublisherCommentTest
         assertNotNull(editCommentResponse, "Error adding comment");
         assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
-        Gson editCommentGson = new Gson();
-        CommentDTO editCommentDTO = editCommentGson
+        CommentDTO editCommentDTO = getCommentsGson
                 .fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         assertEquals(editCommentDTO.getContent(), content);
         assertEquals(editCommentDTO.getCategory(), category);
@@ -440,8 +426,7 @@ public class PublisherCommentTest
                             false, 3, 0);
             assertEquals(getCommentWithRepliesResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Error retrieving comment");
-            editCommentGson = new Gson();
-            editCommentDTO = editCommentGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
+            editCommentDTO = getCommentsGson.fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
             assertEquals(editCommentDTO.getContent(), content);
             assertEquals(editCommentDTO.getCategory(), category);
             assertNotEquals(editCommentDTO.getUpdatedTime(), null);
@@ -449,7 +434,7 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testPublisherEditCommentTest"}, groups = { "wso2.am" }, description = "Delete Comment Test Case")
+    @Test(dependsOnMethods = {"testPublisherEditCommentTest"}, groups = {"wso2.am"}, description = "Delete Comment Test Case")
     public void testPublisherDeleteCommentTest() throws Exception {
         HttpResponse deleteResponse = restAPIPublisher.removeComment(rootCommentIdToAddReplies, apiId);
         assertEquals(deleteResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -463,7 +448,7 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testPublisherDeleteCommentTest"}, groups = { "wso2.am" }, description = "Delete Not Existing Comment Test Case")
+    @Test(dependsOnMethods = {"testPublisherDeleteCommentTest"}, groups = {"wso2.am"}, description = "Delete Not Existing Comment Test Case")
     public void testPublisherDeleteNotExistingCommentTest() throws Exception {
         HttpResponse deleteResponse = restAPIPublisher.removeComment(rootCommentIdToAddReplies, apiId);
         assertEquals(deleteResponse.getResponseCode(), Response.Status.NOT_FOUND.getStatusCode(),
@@ -478,7 +463,6 @@ public class PublisherCommentTest
         assertNotNull(addRootCommentResponse, "Error adding comment");
         assertEquals(addRootCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
-        Gson getCommentsGson = new Gson();
         CommentDTO addedRootCommentDTO = getCommentsGson
                 .fromJson(addRootCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         rootCommentIdToAddReplies = addedRootCommentDTO.getId();
@@ -491,14 +475,13 @@ public class PublisherCommentTest
         assertNotNull(addReplyCommentResponse, "Error adding comment");
         assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
-        Gson getRepliesGson = new Gson();
-        CommentDTO addedCommentDTO = getRepliesGson
+        CommentDTO addedCommentDTO = getCommentsGson
                 .fromJson(addReplyCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
         replyToRootComment = addedCommentDTO.getId();
         assertNotNull(replyToRootComment, "Comment Id is null");
     }
 
-    @Test(dependsOnMethods = {"testPublisherAddNewRootCommentWithReplyTest"}, groups = { "wso2.am" }, description = "Edit Comment by Non Owner Non Admin User Test Case")
+    @Test(dependsOnMethods = {"testPublisherAddNewRootCommentWithReplyTest"}, groups = {"wso2.am"}, description = "Edit Comment by Non Owner Non Admin User Test Case")
     public void testPublisherEditCommentByNonOwnerNonAdminUserTest() throws Exception {
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             HttpResponse editCommentResponse = apiPublisherClientCarbonSuperNonAdminUser
@@ -510,7 +493,7 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testPublisherEditCommentByNonOwnerNonAdminUserTest"}, groups = { "wso2.am" }, description = "Edit Comment by Non Owner Admin User Test Case")
+    @Test(dependsOnMethods = {"testPublisherEditCommentByNonOwnerNonAdminUserTest"}, groups = {"wso2.am"}, description = "Edit Comment by Non Owner Admin User Test Case")
     public void testPublisherEditCommentByNonOwnerAdminUserTest() throws Exception {
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             HttpResponse editCommentResponse = apiPublisherClientCarbonSuperNewAdmin
@@ -519,15 +502,14 @@ public class PublisherCommentTest
             assertNotNull(editCommentResponse, "Error adding comment");
             assertEquals(editCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
-            Gson editCommentGson = new Gson();
-            CommentDTO editCommentDTO = editCommentGson
+            CommentDTO editCommentDTO = getCommentsGson
                     .fromJson(editCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
             assertEquals(editCommentDTO.getContent(), "Edited root comment by non owner admin user");
             assertEquals(editCommentDTO.getCategory(), "new_general");
         }
     }
 
-    @Test(dependsOnMethods = { "testPublisherEditCommentByNonOwnerAdminUserTest" }, groups = { "wso2.am" }, description = "Add New Comment by Non Admin User Test Case")
+    @Test(dependsOnMethods = {"testPublisherEditCommentByNonOwnerAdminUserTest"}, groups = {"wso2.am"}, description = "Add New Comment by Non Admin User Test Case")
     public void testPublisherAddCommentByNonAdminUserTest() throws Exception {
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             Thread.sleep(1000);
@@ -536,7 +518,6 @@ public class PublisherCommentTest
             assertNotNull(addRootCommentResponse, "Error adding comment");
             assertEquals(addRootCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
-            Gson getCommentsGson = new Gson();
             CommentDTO addedRootCommentDTO = getCommentsGson
                     .fromJson(addRootCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
             commentFromNonAdminUser = addedRootCommentDTO.getId();
@@ -544,7 +525,7 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = { "testPublisherAddCommentByNonAdminUserTest" }, groups = { "wso2.am" }, description = "Add Reply to Non Admin User Comment by Admin User Test Case")
+    @Test(dependsOnMethods = {"testPublisherAddCommentByNonAdminUserTest"}, groups = {"wso2.am"}, description = "Add Reply to Non Admin User Comment by Admin User Test Case")
     public void testPublisherAddReplyToNonAdminUserCommentByAdminUserTest() throws Exception {
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             Thread.sleep(1000);
@@ -553,7 +534,6 @@ public class PublisherCommentTest
             assertNotNull(addReplyCommentResponse, "Error adding comment");
             assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
-            Gson getCommentsGson = new Gson();
             CommentDTO addedCommentDTO = getCommentsGson
                     .fromJson(addReplyCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
             String replyCommentId = addedCommentDTO.getId();
@@ -561,7 +541,7 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = { "testPublisherAddReplyToNonAdminUserCommentByAdminUserTest" }, groups = { "wso2.am" }, description = "Add Reply to Non Admin User Comment by Non Admin User Test Case")
+    @Test(dependsOnMethods = {"testPublisherAddReplyToNonAdminUserCommentByAdminUserTest"}, groups = {"wso2.am"}, description = "Add Reply to Non Admin User Comment by Non Admin User Test Case")
     public void testPublisherAddReplyToAdminUserCommentByNonAdminUserTest() throws Exception {
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             Thread.sleep(1000);
@@ -570,7 +550,6 @@ public class PublisherCommentTest
             assertNotNull(addReplyCommentResponse, "Error adding comment");
             assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
-            Gson getCommentsGson = new Gson();
             CommentDTO addedCommentDTO = getCommentsGson
                     .fromJson(addReplyCommentResponse.getData().replace("publisher", "PUBLISHER"), CommentDTO.class);
             String replyCommentId = addedCommentDTO.getId();
@@ -578,7 +557,7 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = { "testPublisherAddReplyToAdminUserCommentByNonAdminUserTest" }, groups = { "wso2.am" }, description = "Add Reply to DevPortal Non Admin User Comment by Admin User Test Case")
+    @Test(dependsOnMethods = {"testPublisherAddReplyToAdminUserCommentByNonAdminUserTest"}, groups = {"wso2.am"}, description = "Add Reply to DevPortal Non Admin User Comment by Admin User Test Case")
     public void testDevPortalNonAdminUserAddReplyToCommentFromPublisherTest() throws Exception {
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             Thread.sleep(1000);
@@ -588,7 +567,6 @@ public class PublisherCommentTest
             assertNotNull(addReplyCommentResponse, "Error adding comment");
             assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
-            Gson getCommentsGson = new Gson();
             CommentDTO addedCommentDTO = getCommentsGson
                     .fromJson(addReplyCommentResponse.getData().replace("devPortal", "DEVPORTAL"), CommentDTO.class);
             String replyCommentId = addedCommentDTO.getId();
@@ -596,7 +574,7 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = { "testDevPortalNonAdminUserAddReplyToCommentFromPublisherTest" }, groups = { "wso2.am" }, description = "Add Reply to DevPortal Admin User Comment by Admin User Test Case")
+    @Test(dependsOnMethods = {"testDevPortalNonAdminUserAddReplyToCommentFromPublisherTest"}, groups = {"wso2.am"}, description = "Add Reply to DevPortal Admin User Comment by Admin User Test Case")
     public void testDevPortalAdminUserAddReplyToCommentFromPublisherTest() throws Exception {
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             Thread.sleep(1000);
@@ -606,7 +584,6 @@ public class PublisherCommentTest
             assertNotNull(addReplyCommentResponse, "Error adding comment");
             assertEquals(addReplyCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
-            Gson getCommentsGson = new Gson();
             CommentDTO addedCommentDTO = getCommentsGson
                     .fromJson(addReplyCommentResponse.getData().replace("devPortal", "DEVPORTAL"), CommentDTO.class);
             String replyCommentId = addedCommentDTO.getId();
@@ -614,7 +591,7 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testDevPortalAdminUserAddReplyToCommentFromPublisherTest"}, groups = { "wso2.am" }, description = "Delete Comment by Non Owner Non Admin User Test Case")
+    @Test(dependsOnMethods = {"testDevPortalAdminUserAddReplyToCommentFromPublisherTest"}, groups = {"wso2.am"}, description = "Delete Comment by Non Owner Non Admin User Test Case")
     public void testPublisherDeleteCommentByNonOwnerNonAdminUserTest() throws Exception {
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             HttpResponse deleteResponse = apiPublisherClientCarbonSuperNonAdminUser.removeComment(rootCommentIdToAddReplies, apiId);
@@ -623,7 +600,7 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testPublisherDeleteCommentByNonOwnerNonAdminUserTest"}, groups = { "wso2.am" }, description = "Delete Comment by Non Owner Admin User Test Case")
+    @Test(dependsOnMethods = {"testPublisherDeleteCommentByNonOwnerNonAdminUserTest"}, groups = {"wso2.am"}, description = "Delete Comment by Non Owner Admin User Test Case")
     public void testPublisherDeleteCommentByNonOwnerAdminUserTest() throws Exception {
         if (TestUserMode.SUPER_TENANT_ADMIN.equals(userMode)) {
             HttpResponse deleteResponse = apiPublisherClientCarbonSuperNewAdmin.removeComment(rootCommentIdToAddReplies, apiId);
@@ -638,7 +615,7 @@ public class PublisherCommentTest
         }
     }
 
-    @Test(dependsOnMethods = {"testPublisherDeleteCommentByNonOwnerAdminUserTest"}, groups = { "wso2.am" }, description = "Delete Comment from DevPortal Test Case")
+    @Test(dependsOnMethods = {"testPublisherDeleteCommentByNonOwnerAdminUserTest"}, groups = {"wso2.am"}, description = "Delete Comment from DevPortal Test Case")
     public void testVerifyDevPortalAdminDeleteCommentTest() throws Exception {
         HttpResponse deleteResponse = restAPIStore.removeComment(rootCommentIdForDevPortalTest, apiId);
         assertEquals(deleteResponse.getResponseCode(), Response.Status.OK.getStatusCode(),

@@ -73,7 +73,7 @@
 %>
 
 <!doctype html>
-<html>
+<html lang="en-US">
 <head>
     <%
         File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
@@ -134,7 +134,7 @@
     </div>
 </div>
 
-<!-- footer -->
+<%-- footer --%>
 <%
     File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
     if (footerFile.exists()) {

@@ -37,18 +37,13 @@ class WireMonitor extends Thread {
 
     public void run() {
 
-        OutputStream out = null;
-        InputStream in = null;
-
-        try {
+        try (ServerSocket providerSocket = new ServerSocket(port, 10);
+            Socket connection = providerSocket.accept();
+            InputStream in = connection.getInputStream();
+            OutputStream out = connection.getOutputStream()) {
             // creating a server socket
-            providerSocket = new ServerSocket(port, 10);
-
             log.info("Waiting for connection");
-            connection = providerSocket.accept();
-            log.info("Connection received from " +
-                     connection.getInetAddress().getHostName());
-            in = connection.getInputStream();
+            log.info("Connection received from " + connection.getInetAddress().getHostName());
             int ch;
             StringBuilder buffer = new StringBuilder();
             StringBuffer headerBuffer = new StringBuffer();
@@ -75,7 +70,8 @@ class WireMonitor extends Thread {
                     break;
                 }
                 // In this case no need of reading more than timeout value
-                if ((System.currentTimeMillis() > (time + trigger.READ_TIME_OUT)) || buffer.toString().contains("</soapenv:Envelope>")) {
+                if ((System.currentTimeMillis() > (time + trigger.READ_TIME_OUT)) || buffer.toString()
+                        .contains("</soapenv:Envelope>")) {
                     break;
                 }
             }
@@ -84,36 +80,13 @@ class WireMonitor extends Thread {
             trigger.response = headerBuffer.toString() + buffer.toString();
             trigger.setFinished(true);
 
-            out = connection.getOutputStream();
+            
             out.write(("HTTP/1.1 202 Accepted" + "\r\n\r\n").getBytes(Charset.defaultCharset()));
             out.flush();
-
-
-        } catch (IOException ioException) { //Throw run exception - IllegalStateException
-            throw new IllegalStateException("wire monitor error occurred", ioException);
-
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn("Stream close exception", e);
-                }
-            }
-
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    log.warn("Stream close exception", e);
-                }
-            }
-            try {
-                connection.close();
-                providerSocket.close();
-            } catch (IOException e) {
-                log.warn("Error closing provide socket or connection");
-            }
+        } catch (IOException ioException) {
+            throw new IllegalStateException("Wire monitor error occurred", ioException);
+        } catch (Exception e) {
+            log.warn("Error occurred", e);
         }
     }
 

@@ -7,7 +7,9 @@ on:
   workflow_dispatch:
     branches:
       - master
-
+concurrency:
+  group: ${{ github.event.number }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,6 +20,10 @@ jobs:
             segment: group1
           - id: 2
             segment: group2
+          - id: 3
+            segment: group3
+          - id: 4
+            segment: group4
       fail-fast: false
     steps:
     - name: Run hostname
@@ -43,7 +49,7 @@ jobs:
       with:
         node-version: '10.x'
     - name: Build product-apim with Test.
-      run: mvn clean install --file pom.xml -DskipBenchMarkTest=true
+      run: mvn clean install --file pom.xml -DskipBenchMarkTest=true -DskipRestartTests=true
       env:
         PRODUCT_APIM_TEST_GROUPS: ${{ matrix.segment }}
     - name: Prepare upload testng report
@@ -51,7 +57,7 @@ jobs:
       run: mv modules/integration/tests-integration/tests-backend/target/surefire-reports/TEST-TestSuite.xml TEST-TestSuite_${{ matrix.id }}.xml
     - name: Archive testng report
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: TEST-TestSuite_${{ matrix.id }}
         path: |
@@ -93,7 +99,7 @@ jobs:
     needs: build
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           path: reports
       - name: Publish Test Report

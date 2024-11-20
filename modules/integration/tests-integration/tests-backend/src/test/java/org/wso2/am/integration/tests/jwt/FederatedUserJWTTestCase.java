@@ -350,7 +350,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         assertTrue("JWT claim givenname  not received" + claim, claim.contains("first"));
         claim = jsonObject.getString("http://wso2.org/claims/telephone");
         assertTrue("JWT claim mobile  not received" + claim, claim.contains("424479772294778"));
-        claim = jsonObject.getString("http://wso2.org/claims/organization");
+        claim = jsonObject.getString("organization");
         assertTrue("JWT claim mobile  not received" + claim, claim.contains("abc.com"));
         claim = jsonObject.getString("http://wso2.org/claims/emailaddress");
         assertTrue("JWT claim mobile  not received" + claim, claim.contains("first@gmail.com"));
@@ -373,6 +373,7 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
                 restAPIStore.getApplicationKeysByKeyType(oauthApplicationId,
                         ApplicationKeyDTO.KeyTypeEnum.PRODUCTION.getValue());
         ApplicationKeyDTO applicationKeyDTO = applicationKeysByKeyType.getData();
+        updateServiceProviderWithRequiredClaims(applicationKeyDTO.getConsumerKey());
         String accessToken = generateTokenFromFederation(applicationKeyDTO);
         log.info("Access Token Generated in oauth ==" + accessToken);
         String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
@@ -408,13 +409,13 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
         checkDefaultUserClaims(jsonObject, oauthApplicationName);
         // check user profile info claims
         log.info("JWT Received ==" + jsonObject.toString());
-        String claim = jsonObject.getString("http://wso2.org/claims/givenname");
+        String claim = jsonObject.getString("given_name");
         assertTrue("JWT claim givenname  not received" + claim, claim.contains("first"));
-        claim = jsonObject.getString("http://wso2.org/claims/telephone");
+        claim = jsonObject.getString("phone_number");
         assertTrue("JWT claim mobile  not received" + claim, claim.contains("424479772294778"));
-        claim = jsonObject.getString("http://wso2.org/claims/organization");
+        claim = jsonObject.getString("organization");
         assertTrue("JWT claim mobile  not received" + claim, claim.contains("abc.com"));
-        claim = jsonObject.getString("http://wso2.org/claims/emailaddress");
+        claim = jsonObject.getString("email");
         assertTrue("JWT claim mobile  not received" + claim, claim.contains("first@gmail.com"));
 
         boolean bExceptionOccured = false;
@@ -431,7 +432,8 @@ public class FederatedUserJWTTestCase extends APIManagerLifecycleBaseTest {
             APIManagerIntegrationTestException, JSONException {
         HttpClientContext context = HttpClientContext.create();
         HttpGet httpGet =
-                new HttpGet(authorizeURL + "?response_type=code&state=&client_id" + "=" + applicationKeyDTO.getConsumerKey() + "&redirect_uri=" + callbackUrl);
+                new HttpGet(authorizeURL + "?response_type=code&state=&client_id" + "="
+                        + applicationKeyDTO.getConsumerKey() + "&redirect_uri=" + callbackUrl + "&scope=openid");
         try (CloseableHttpResponse responseFromBrowserToAPIM = executeRequest(httpGet,context)) {
             Assert.assertEquals(responseFromBrowserToAPIM.getStatusLine().getStatusCode(), 302);
             Assert.assertNotNull(responseFromBrowserToAPIM.getFirstHeader("Location"));

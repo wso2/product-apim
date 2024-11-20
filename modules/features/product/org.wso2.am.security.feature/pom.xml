@@ -20,7 +20,7 @@
     <parent>
         <artifactId>am-features</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>4.2.0-SNAPSHOT</version>
+        <version>4.4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -34,22 +34,6 @@
         <dependency>
             <groupId>org.wso2.orbit.org.opensaml</groupId>
             <artifactId>opensaml</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ws.security.wso2</groupId>
-            <artifactId>wss4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.rampart.wso2</groupId>
-            <artifactId>rampart-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.rampart.wso2</groupId>
-            <artifactId>rampart-trust</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.rampart.wso2</groupId>
-            <artifactId>rampart-policy</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.santuario</groupId>
@@ -80,18 +64,6 @@
                             <bundles>
                                 <bundleDef>
                                     org.wso2.orbit.org.opensaml:opensaml
-                                </bundleDef>
-                                <bundleDef>
-                                    org.apache.ws.security.wso2:wss4j
-                                </bundleDef>
-                                <bundleDef>
-                                    org.apache.rampart.wso2:rampart-core
-                                </bundleDef>
-                                <bundleDef>
-                                    org.apache.rampart.wso2:rampart-trust
-                                </bundleDef>
-                                <bundleDef>
-                                    org.apache.rampart.wso2:rampart-policy
                                 </bundleDef>
                                 <bundleDef>
                                     org.apache.santuario:xmlsec

@@ -28,6 +28,7 @@ import org.wso2.am.integration.clients.admin.ApiException;
 import org.wso2.am.integration.clients.admin.ApiResponse;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationInfoDTO;
 import org.wso2.am.integration.clients.admin.api.dto.ApplicationListDTO;
+import org.wso2.am.integration.clients.admin.api.dto.ScopeSettingsDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.test.impl.RestAPIAdminImpl;
@@ -73,6 +74,14 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
     private static final String TENANT_DOMAIN = "tenant.com";
     private static final String TENANT_ADMIN_WITH_DOMAIN = TENANT_ADMIN + "@" + TENANT_DOMAIN;
     private static final String TENANT_ADMIN_APP = "tenantAdminApp";
+    private static final String APIM_SUBSCRIBE_SCOPE = "apim:subscribe";
+    private static final String CUSTOM_ROLE1 = "customRole1";
+    private static final String CUSTOM_ROLE1_PWD = "customRole1@";
+    private static final String CUSTOM_ROLE2 = "customRole2";
+    private static final String CUSTOM_ROLE2_PWD = "customRole2@";
+    private static final String CUSTOM_ROLE1_ASSIGNED_USER = "customRole1AssignedUser";
+    private static final String CUSTOM_ROLE2_ASSIGNED_USER = "customRole2AssignedUser";
+    private static final String[] PERMISSIONS = {"/permission/admin/manage/api/subscribe"};
 
     private static final String TENANT_USER1_WITH_DOMAIN = TENANT_USER1 + "@" + TENANT_DOMAIN;
     private static final String TENANT_USER2_WITH_DOMAIN = TENANT_USER2 + "@" + TENANT_DOMAIN;
@@ -87,6 +96,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
     private RestAPIStoreImpl restAPIStoreClient5;
     private RestAPIStoreImpl restAPIStoreClient6;
     private RestAPIAdminImpl restAPIAdminClient;
+    private RestAPIStoreImpl restAPIStoreClientForCustomRole1AssignedUser;
+    private RestAPIStoreImpl restAPIStoreClientForCustomRole2AssignedUser;
 
     private String appIdOfJohnApp;
     private String appIdOfMaryApp;
@@ -95,6 +106,8 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
     private String appIdOfTenantUser1App;
     private String appIdOfTenantUser2App;
     private String appIdOfTenantUser3App;
+    private String appIdOftestAppCreatedByCustomRole1AssignedUser;
+    private String appIdOftestAppCreatedByCustomRole2AssignedUser;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -191,7 +204,7 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
         try {
             updateOwner(appIdOfTenantUser3App, TENANT_USER4_WITH_DOMAIN, TENANT_DOMAIN);
         } catch (ApiException e) {
-            Assert.assertEquals(e.getCode(), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+            Assert.assertEquals(e.getCode(), HttpStatus.SC_NOT_FOUND);
         }
     }
 
@@ -278,6 +291,33 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
 
     }
 
+    @Test(groups = {"wso2.am"}, description = "Update application ownership to another user when custom user roles assigned to them")
+    public void updateApplicationOwnerWhenHavingCustomRoles() throws Exception {
+
+        //Add custom roles
+        userManagementClient.addRole(CUSTOM_ROLE1, null, PERMISSIONS);
+        userManagementClient.addRole(CUSTOM_ROLE2, null, PERMISSIONS);
+
+        //Add users with custom roles created above
+        userManagementClient.addUser(CUSTOM_ROLE1_ASSIGNED_USER, CUSTOM_ROLE1_PWD, new String[]{CUSTOM_ROLE1}, CUSTOM_ROLE1_ASSIGNED_USER);
+        userManagementClient.addUser(CUSTOM_ROLE2_ASSIGNED_USER, CUSTOM_ROLE2_PWD, new String[]{CUSTOM_ROLE2}, CUSTOM_ROLE2_ASSIGNED_USER);
+
+        //Add role alias mapping for system scope roles
+        restAPIAdminClient = new RestAPIAdminImpl(user.getUserName(), user.getPassword(), SUPER_TENANT_DOMAIN, publisherURLHttps);
+        restAPIAdminClient.addRoleAliasMappingForSystemScopeRoles(1, APIMIntegrationConstants.APIM_INTERNAL_ROLE.SUBSCRIBER, new String[]{CUSTOM_ROLE1, CUSTOM_ROLE2});
+
+        //Create applications
+        restAPIStoreClientForCustomRole1AssignedUser = new RestAPIStoreImpl(CUSTOM_ROLE1_ASSIGNED_USER, CUSTOM_ROLE1_PWD, SUPER_TENANT_DOMAIN, storeURLHttps);
+        appIdOftestAppCreatedByCustomRole1AssignedUser = restAPIStoreClientForCustomRole1AssignedUser.addApplication("testAppCreatedByCustomRole1AssignedUser",
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "App of user customRole1AssignedUser").getApplicationId();
+        restAPIStoreClientForCustomRole2AssignedUser = new RestAPIStoreImpl(CUSTOM_ROLE2_ASSIGNED_USER, CUSTOM_ROLE2_PWD, SUPER_TENANT_DOMAIN, storeURLHttps);
+        appIdOftestAppCreatedByCustomRole2AssignedUser = restAPIStoreClientForCustomRole2AssignedUser.addApplication("testAppCreatedByCustomRole2AssignedUser",
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "App of user customRole2AssignedUser").getApplicationId();
+
+        // Change application owner of testAppCreatedByCustomRole1AssignedUser from CUSTOM_ROLE1_ASSIGNED_USER to CUSTOM_ROLE2_ASSIGNED_USER
+        updateOwner(appIdOftestAppCreatedByCustomRole1AssignedUser, CUSTOM_ROLE2_ASSIGNED_USER, SUPER_TENANT_DOMAIN);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
@@ -291,11 +331,22 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
         if (userManagementClient != null) {
             userManagementClient.deleteUser(USER_JOHN);
             userManagementClient.deleteUser(USER_MARY);
+            userManagementClient.deleteUser(CUSTOM_ROLE1_ASSIGNED_USER);
+            userManagementClient.deleteUser(CUSTOM_ROLE2_ASSIGNED_USER);
+
+            userManagementClient.deleteRole(CUSTOM_ROLE1);
+            userManagementClient.deleteRole(CUSTOM_ROLE2);
         }
         if (userManagementClient1 != null) {
             userManagementClient1.deleteUser(TENANT_USER1);
             userManagementClient1.deleteUser(TENANT_USER2);
             userManagementClient1.deleteUser(TENANT_USER3);
+        }
+        if (restAPIStoreClientForCustomRole1AssignedUser != null && appIdOftestAppCreatedByCustomRole1AssignedUser != null) {
+            restAPIStoreClientForCustomRole1AssignedUser.deleteApplication(appIdOftestAppCreatedByCustomRole1AssignedUser);
+        }
+        if (restAPIStoreClientForCustomRole2AssignedUser != null && appIdOftestAppCreatedByCustomRole2AssignedUser != null) {
+            restAPIStoreClientForCustomRole2AssignedUser.deleteApplication(appIdOftestAppCreatedByCustomRole2AssignedUser);
         }
         tenantManagementServiceClient.deleteTenant(TENANT_DOMAIN);
     }
@@ -308,13 +359,19 @@ public class OAuthApplicationOwnerUpdateTestCase extends APIMIntegrationBaseTest
      * @param appTenantDomain Tenant domain of the application
      */
     private void updateOwner(String applicationId, String newOwner, String appTenantDomain) throws ApiException {
+
+
+        // Verify whether the new owner has the scope "apim:subscribe"
+        ScopeSettingsDTO scopeSettingsDTO = restAPIAdminClient.retrieveScopesForParticularUser(APIM_SUBSCRIBE_SCOPE, newOwner);
+        Assert.assertEquals(scopeSettingsDTO.getName(), APIM_SUBSCRIBE_SCOPE);
+
         //Update owner of the application
         ApiResponse<Void> changeOwnerResponse = restAPIAdminClient.changeApplicationOwner(newOwner, applicationId);
         Assert.assertEquals(changeOwnerResponse.getStatusCode(), HttpStatus.SC_OK);
 
         //Verify the owner of the updated application
         ApiResponse<ApplicationListDTO> getApplicationsResponse =
-                restAPIAdminClient.getApplications(newOwner, null, null, appTenantDomain);
+                restAPIAdminClient.getApplications(newOwner, null, null, appTenantDomain, null);
         Assert.assertEquals(getApplicationsResponse.getStatusCode(), HttpStatus.SC_OK);
         ApplicationListDTO applicationList = getApplicationsResponse.getData();
         List<ApplicationInfoDTO> applicationInfoList = applicationList.getList();

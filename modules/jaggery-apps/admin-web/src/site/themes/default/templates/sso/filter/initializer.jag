@@ -1,8 +1,0 @@
-<%
-jagg.initializer("sso/filter", {
-
-    preInitialize:function () {
-
-    }
-});
-%>

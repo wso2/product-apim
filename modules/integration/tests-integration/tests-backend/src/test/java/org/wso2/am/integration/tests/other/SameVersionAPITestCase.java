@@ -49,7 +49,9 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
     private static final String API_NAME = "SameVersionAPITest";
     private static final String API_CONTEXT = "SameVersionAPI";
     private String version = "1.0.0";
+    private String version2 = "2.0.0";
     private String newVersion = "1.0.0";
+    private String newVersion2 = "2.0.0";
     private String TAGS = "testtag1, testtag2";
     private String providerName;
     private String visibility = "public";
@@ -58,6 +60,7 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
     private String resTier = APIMIntegrationConstants.RESOURCE_TIER.TENK_PER_MIN;
     private String endPointType = "http";
     private String apiId;
+    private String apiId2;
     private String resourceMethodAuthType = "Application & Application User";
     private String uriTemplate = "customers/{id}/";
 
@@ -77,8 +80,8 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
         if (gatewayContextWrk.getContextTenant().getDomain().equals("carbon.super")) {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
         } else {
-            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + gatewayContextWrk.getContextTenant().getDomain() +
-                    "/";
+            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + gatewayContextWrk.getContextTenant()
+                    .getDomain() + "/";
         }
 
         String endpointUrl = gatewayUrl + "jaxrs_basic/services/customers/customerservice";
@@ -103,23 +106,46 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest {
         assertEquals(serviceResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
                 "Invalid Response Code");
 
+        //Changing the version
+        apiRequest.setVersion(version2);
+
+        //Add API_2.0.0
+        HttpResponse serviceResponse2 = restAPIPublisher.addAPI(apiRequest);
+        apiId2 = serviceResponse2.getData();
+        assertEquals(serviceResponse2.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                "Invalid Response Code");
+
         //try to copy api with same version
         try {
             restAPIPublisher.copyAPI(newVersion, apiId, false);
             fail("Creating a new version has been allowed with an existing version. It should be disallowed.");
         } catch (Exception e) {
-            ApiException apiException = (ApiException)e;
+            ApiException apiException = (ApiException) e;
             assertTrue(apiException.getResponseBody().contains("The API version already exists"),
                     "Response body of the create version request doesn't contain the string " +
                             "'The API version already exists'. Response body: " + apiException.getResponseBody());
             assertEquals(409, apiException.getCode(), "Response status code of create version request is not " +
                     "'409'. Status code: " + apiException.getCode());
         }
+
+        //try to copy api with same version(version of secondly created api is used)
+        try {
+            restAPIPublisher.copyAPI(newVersion2, apiId2, false);
+            fail("Creating a new version has been allowed with an existing version. It should be disallowed.");
+        } catch (Exception e) {
+            ApiException apiException = (ApiException) e;
+            assertTrue(apiException.getResponseBody().contains("The API version already exists"),
+                    "Response body of the create version request doesn't contain the string " + "'The API version " +
+                            "already exists'. Response body: " + apiException.getResponseBody());
+            assertEquals(409, apiException.getCode(), "Response status code of create version request is not " +
+                     "'409'. Status code: " + apiException.getCode());
+        }
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         restAPIPublisher.deleteAPI(apiId);
+        restAPIPublisher.deleteAPI(apiId2);
     }
 
     @DataProvider

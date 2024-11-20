@@ -55,26 +55,4 @@ public class WebAppDeploymentUtil {
         }
     }
 
-    /**
-     * Wait until a war file is deployed
-     *
-     * @param warFilePath War file path
-     * @param timeout     Timeout
-     */
-    public static void waitForWebappToDeploy(String warFilePath, long timeout) {
-
-        long startTime = System.currentTimeMillis();
-
-        while (System.currentTimeMillis() - startTime < timeout) {
-            if (Files.exists(Paths.get(warFilePath))) {
-                log.info(warFilePath + " deployed successfully.");
-                break;
-            }
-            try {
-                Thread.sleep(1000L);
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        }
-    }
 }

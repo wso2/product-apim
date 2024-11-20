@@ -19,5 +19,5 @@
 
 <!-- localize.jsp MUST already be included in the calling script -->
 
-<!-- title -->
+<%-- title --%>
 <title>WSO2 API Manager</title>

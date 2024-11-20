@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-distribution-parent</artifactId>
-        <version>4.2.0-SNAPSHOT</version>
+        <version>4.4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -68,6 +68,10 @@
             <groupId>org.wso2.orbit.com.lmax</groupId>
             <artifactId>disruptor</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.runtime.diagnostics</groupId>
+            <artifactId>runtime-diagnostics-tool</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -91,6 +95,15 @@
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.runtime.diagnostics</groupId>
+                                    <artifactId>runtime-diagnostics-tool</artifactId>
+                                    <version>${diagnostics.tool.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                    <destFileName>diagnostics-tool</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -205,6 +218,27 @@
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes/cxf3</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-charon-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.charon</groupId>
+                                    <artifactId>org.wso2.charon3.core</artifactId>
+                                    <version>${charon3.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/apim-is-plugin-resources/dropins</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                             <overWriteReleases>true</overWriteReleases>
@@ -414,7 +448,6 @@
                                 <delete dir="target/sources" />
                                 <delete dir="target/site" />
                                 <delete dir="src/site" />
-                                <delete dir="target/forget-me" />
                             </tasks>
                         </configuration>
                         <goals>

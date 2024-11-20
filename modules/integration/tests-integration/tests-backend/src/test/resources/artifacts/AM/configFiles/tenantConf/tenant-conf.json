@@ -340,6 +340,42 @@
       {
         "Name": "apim:policies_import_export",
         "Roles": "admin,Internal/devops"
+      },
+      {
+        "Name": "apim:keymanagers_manage",
+        "Roles": "admin"
+      },
+      {
+        "Name": "apim:api_category",
+        "Roles": "admin"
+      },
+      {
+        "Name": "apim:admin_tier_manage",
+        "Roles": "admin"
+      },
+      {
+        "Name": "apim:admin_tier_view",
+        "Roles": "admin"
+      },
+      {
+        "Name": "apim:gateway_policy_manage",
+        "Roles": "admin"
+      },
+      {
+        "Name": "apim:gateway_policy_view",
+        "Roles": "admin,Internal/creator,Internal/publisher,Internal/observer"
+      },
+      {
+        "Name": "apim:api_provider_change",
+        "Roles": "admin"
+      },
+      {
+        "Name": "apim:llm_provider_manage",
+        "Roles": "admin"
+      },
+      {
+        "Name": "apim:llm_provider_read",
+        "Roles": "admin,Internal/publisher,Internal/creator"
       }
     ]
   },

@@ -469,9 +469,12 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         attributeMap.put("headerName", "TestHeader");
         attributeMap.put("headerValue", "TestValue");
 
+        List<OperationPolicyDTO> opList = getPolicyList(policyName, policyMap, attributeMap);
+        opList.get(0).setPolicyVersion("v2");
+
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, policyMap, attributeMap));
-        apiOperationPoliciesDTO.setResponse(getPolicyList(policyName, policyMap, attributeMap));
+        apiOperationPoliciesDTO.setRequest(opList);
+        apiOperationPoliciesDTO.setResponse(opList);
 
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
         restAPIPublisher.updateAPI(apidto);
@@ -514,7 +517,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
 
         HttpResponse updateResponse = restAPIPublisher.updateAPIWithHttpInfo(apidto);
-        assertEquals(updateResponse.getResponseCode(), 500);
+        assertEquals(updateResponse.getResponseCode(), 400);
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the add header operation policy",
@@ -534,7 +537,7 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
 
         HttpResponse updateResponse = restAPIPublisher.updateAPIWithHttpInfo(apidto);
-        assertEquals(updateResponse.getResponseCode(), 500);
+        assertEquals(updateResponse.getResponseCode(), 400);
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the add header operation policy",
@@ -596,9 +599,11 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
             requestPolicyList.add(getPolicyList(policyList[i], policyMap, null).get(0));
             responsePolicyList.add(getPolicyList(policyList[i], policyMap, null).get(0));
         }
+        List<OperationPolicyDTO> opList = getPolicyList(policyName, policyMap, attributeMap);
+        opList.get(0).setPolicyVersion("v2");
 
-        requestPolicyList.add(getPolicyList(policyName, policyMap, attributeMap).get(0));
-        responsePolicyList.add(getPolicyList(policyName, policyMap, attributeMap).get(0));
+        requestPolicyList.add(opList.get(0));
+        responsePolicyList.add(opList.get(0));
         apiOperationPoliciesDTO.setRequest(requestPolicyList);
         apiOperationPoliciesDTO.setResponse(responsePolicyList);
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
@@ -606,6 +611,70 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         restAPIPublisher.updateAPI(apidto);
         org.apache.http.HttpResponse invokeAPIResponse = invokeAPI(API_VERSION_1_0_0);
         assertEquals(invokeAPIResponse.getHeaders("TestHeader")[0].getValue(), "TestValue");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Add API specific operation policy using YAML Policy Definition",
+            dependsOnMethods = "testAPIInvocationAfterAddingNewMultipleOperationPolicies")
+    public void testAddAPISpecificOperationPolicyYAML() throws Exception {
+
+        HttpResponse addPolicyResponse =
+                addPolicy(apiId, "customAPISpecificLogPolicyForYAMLPolicyDefinitionTesting.yaml",
+                        "customAPISpecificLogPolicy.j2");
+        assertNotNull(addPolicyResponse, "Error adding operation policy customAPISpecificLogPolicyYAML");
+        assertEquals(addPolicyResponse.getResponseCode(), 201, "Response code mismatched");
+
+        OperationPolicyDataDTO policyDTO =
+                new Gson().fromJson(addPolicyResponse.getData(), OperationPolicyDataDTO.class);
+        String newPolicyId = policyDTO.getId();
+        assertNotNull(newPolicyId, "Policy Id is null");
+
+        Map<String, String> apiSpecificPolicyMap = restAPIPublisher.getAllAPISpecificOperationPolicies(apiId);
+        Assert.assertNotNull(apiSpecificPolicyMap.get("customAPISpecificLogPolicyYAML"),
+                "Unable to find the newly added API specific policy");
+        policyMap.put("customAPISpecificLogPolicyYAML", newPolicyId);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Delete API specific operation policy created using YAML Policy Definition",
+            dependsOnMethods = "testAddAPISpecificOperationPolicyYAML")
+    public void testDeleteAPISpecificOperationPolicyYAML() throws Exception {
+
+        int responseCode = deleteOperationPolicy(policyMap.get("customAPISpecificLogPolicyYAML"), apiId);
+        assertEquals(responseCode, 200);
+        Map<String, String> updatedAPISpecificPolicyMap = restAPIPublisher.getAllAPISpecificOperationPolicies(apiId);
+        Assert.assertNull(updatedAPISpecificPolicyMap.get("customAPISpecificLogPolicyYAML"));
+        policyMap.remove("customAPISpecificLogPolicyYAML");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Add common operation policy using YAML specification file",
+            dependsOnMethods = "testDeleteAPISpecificOperationPolicyYAML")
+    public void testAddNewCommonOperationPolicyYAML() throws Exception {
+
+        HttpResponse addPolicyResponse = addPolicy(null,
+                "customCommonLogPolicyForYAMLPolicyDefinitionTesting.yaml", "customCommonLogPolicy.j2");
+
+        assertNotNull(addPolicyResponse, "Error adding operation policy customCommonLogPolicy");
+        assertEquals(addPolicyResponse.getResponseCode(), 201, "Response code mismatched");
+
+        OperationPolicyDataDTO policyDTO =
+                new Gson().fromJson(addPolicyResponse.getData(), OperationPolicyDataDTO.class);
+        String newPolicyId = policyDTO.getId();
+        assertNotNull(newPolicyId, "Policy Id is null");
+
+        Map<String, String> updatedCommonPolicyMap = restAPIPublisher.getAllCommonOperationPolicies();
+        Assert.assertNotNull(updatedCommonPolicyMap.get("customCommonLogPolicyYAML"),
+                "Unable to find the newly added common policy");
+        policyMap.put("customCommonLogPolicyYAML", newPolicyId);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Delete common operation policy created using YAML specification file",
+            dependsOnMethods = "testAddNewCommonOperationPolicyYAML")
+    public void testDeleteCommonOperationPolicyYAML() throws Exception {
+
+        int responseCode = deleteOperationPolicy(policyMap.get("customCommonLogPolicyYAML"), null);
+        assertEquals(responseCode, 200);
+        Map<String, String> updatedCommonPolicyMap = restAPIPublisher.getAllCommonOperationPolicies();
+        Assert.assertNull(updatedCommonPolicyMap.get("customCommonLogPolicyYAML"));
+        policyMap.remove("customCommonLogPolicyYAML");
     }
 
     @AfterClass(alwaysRun = true)

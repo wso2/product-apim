@@ -97,13 +97,24 @@
     String multiOptionURIParam = "";
     if (localAuthenticatorNames.size() > 1 || idpAuthenticatorMapping != null && idpAuthenticatorMapping.size() > 1) {
         String baseURL;
-        try {
-            baseURL = ServiceURLBuilder.create().addPath(request.getRequestURI()).build().getRelativePublicURL();
-        } catch (URLBuilderException e) {
-            request.setAttribute(STATUS, AuthenticationEndpointUtil.i18n(resourceBundle, "internal.error.occurred"));
-            request.setAttribute(STATUS_MSG, AuthenticationEndpointUtil.i18n(resourceBundle, "error.when.processing.authentication.request"));
-            request.getRequestDispatcher("error.do").forward(request, response);
-            return;
+        // Check whether authentication endpoint is hosted externally.
+        String isHostedExternally = application.getInitParameter("IsHostedExternally");
+        if (Boolean.parseBoolean(isHostedExternally)) {
+            String requestURI = request.getRequestURI();
+            if (StringUtils.isNotBlank(requestURI)) {
+                requestURI = requestURI.startsWith("/") ? requestURI : "/" + requestURI;
+                requestURI = requestURI.endsWith("/") ? requestURI.substring(0, requestURI.length() - 1) : requestURI;
+            }
+            baseURL = requestURI;
+        } else {
+            try {
+                baseURL = ServiceURLBuilder.create().addPath(request.getRequestURI()).build().getRelativePublicURL();
+            } catch (URLBuilderException e) {
+                request.setAttribute(STATUS, AuthenticationEndpointUtil.i18n(resourceBundle, "internal.error.occurred"));
+                request.setAttribute(STATUS_MSG, AuthenticationEndpointUtil.i18n(resourceBundle, "error.when.processing.authentication.request"));
+                request.getRequestDispatcher("error.do").forward(request, response);
+                return;
+            }
         }
 
         String queryParamString = request.getQueryString() != null ? ("?" + request.getQueryString()) : "";
@@ -131,28 +142,6 @@
     String username = null;
     String usernameIdentifier = null;
 
-    if (isIdentifierFirstLogin(inputType)) {
-        String authAPIURL = application.getInitParameter(Constants.AUTHENTICATION_REST_ENDPOINT_URL);
-        if (StringUtils.isBlank(authAPIURL)) {
-            authAPIURL = IdentityUtil.getServerURL("/api/identity/auth/v1.1/", true, true);
-        }
-        if (!authAPIURL.endsWith("/")) {
-            authAPIURL += "/";
-        }
-        authAPIURL += "context/" + request.getParameter("sessionDataKey");
-        String contextProperties = AuthContextAPIClient.getContextProperties(authAPIURL);
-        Gson gson = new Gson();
-        Map<String, Object> parameters = gson.fromJson(contextProperties, Map.class);
-        if (parameters != null) {
-            username = (String) parameters.get("username");
-            usernameIdentifier = (String) parameters.get("username");
-        } else {
-            String redirectURL = "error.do";
-            response.sendRedirect(redirectURL);
-            return;
-        }
-    }
-
     // Login context request url.
     String sessionDataKey = request.getParameter("sessionDataKey");
     String appName = request.getParameter("sp");
@@ -166,10 +155,10 @@
     String t = request.getParameter("t");
     String ut = request.getParameter("ut");
     if (StringUtils.isNotBlank(t)) {
-        loginContextRequestUrl += "&t=" + t;
+        loginContextRequestUrl += "&t=" + Encode.forUriComponent(t);
     }
     if (StringUtils.isNotBlank(ut)) {
-        loginContextRequestUrl += "&ut=" + ut;
+        loginContextRequestUrl += "&ut=" + Encode.forUriComponent(ut);
     }
 
     if (StringUtils.isNotBlank(usernameIdentifier)) {
@@ -193,7 +182,7 @@
 <!doctype html>
 <html>
 <head>
-    <!-- header -->
+    <%-- header --%>
     <%
         File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
         if (headerFile.exists()) {
@@ -222,7 +211,7 @@
 
     <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
         <layout:component componentName="ProductHeader" >
-            <!-- product-title -->
+            <%-- product-title --%>
             <%
                 File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
                 if (productTitleFile.exists()) {
@@ -353,14 +342,14 @@
                                     <div class="external-login blurring external-login-dimmer">
                                         <div class="field">
                                             <button
-                                                class="ui button fluid"
+                                                class="ui button secondary fluid"
                                                 onclick="handleNoDomain(this,
                                                     '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpName))%>',
                                                     '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpEntry.getValue()))%>')"
                                                 id="icon-<%=iconId%>"
                                                 title="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> <%=Encode.forHtmlAttribute(idpName)%>"
                                             >
-                                                <img class="ui image" src="<%=Encode.forHtmlAttribute(imageURL)%>">
+                                                <img role="presentation" class="ui image" src="<%=Encode.forHtmlAttribute(imageURL)%>">
                                                 <span><%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> <%=Encode.forHtmlContent(idpName)%></span>
                                             </button>
                                         </div>
@@ -374,7 +363,7 @@
                                 <button class="ui blue labeled icon button fluid"
                                     onclick="handleNoDomain(this,
                                         '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(idpEntry.getKey()))%>',
-                                        'IWAAuthenticator')"
+                                        'IwaNTLMAuthenticator')"
                                     id="icon-<%=iconId%>"
                                     title="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> IWA">
                                     <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%> <strong>IWA</strong>
@@ -408,7 +397,7 @@
                                     title="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%>
                                     <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with" )%>">
                                     <i class="usb icon"></i>
-                                    <img src="libs/themes/default/assets/images/icons/fingerprint.svg" alt="Fido Logo" />
+                                    <img role="presentation" src="libs/themes/default/assets/images/icons/fingerprint.svg" alt="Fido Logo" />
                                     <span>
                                         <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with" )%>
                                         <%=AuthenticationEndpointUtil.i18n(resourceBundle, "fido.authenticator" )%>
@@ -427,7 +416,7 @@
                                         title="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with")%>
                                             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "magic.link" )%>"
                                         data-componentid="login-page-sign-in-with-magic-link">
-                                        <img class="ui image" src="libs/themes/default/assets/images/icons/magic-link-icon.svg" alt="Magic Link Logo" />
+                                        <img role="presentation" class="ui image" src="libs/themes/default/assets/images/icons/magic-link-icon.svg" alt="Magic Link Logo" />
                                         <span>
                                             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "sign.in.with" )%>
                                             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "magic.link" )%>
@@ -461,7 +450,7 @@
             </div>
         </layout:component>
         <layout:component componentName="ProductFooter" >
-            <!-- product-footer -->
+            <%-- product-footer --%>
             <%
                 File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
                 if (productFooterFile.exists()) {
@@ -473,7 +462,7 @@
         </layout:component>
     </layout:main>
 
-    <!-- footer -->
+    <%-- footer --%>
     <%
         File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
         if (footerFile.exists()) {
@@ -501,9 +490,13 @@
     <script>
         function checkSessionKey() {
             var proxyPath = "<%=contextPath%>"
+            let loginRequestPath = "<%=loginContextRequestUrl%>"
+            if (proxyPath !== "") {
+                loginRequestPath = loginRequestPath.startsWith('../') ? loginRequestPath.substring(2, loginRequestPath.length) : loginRequestPath
+            }
             $.ajax({
                 type: "GET",
-                url: proxyPath + "<%=loginContextRequestUrl%>",
+                url: proxyPath + loginRequestPath,
                 xhrFields: { withCredentials: true },
                 success: function (data) {
                     if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {

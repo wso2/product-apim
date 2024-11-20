@@ -43,14 +43,15 @@ public class DtoFactory {
         return exportPolicy;
     }
 
-    public static APIProductDTO createApiProductDTO(String provider, String name, String context, List<ProductAPIDTO> apis,
-                                                    List<String> polices) {
+    public static APIProductDTO createApiProductDTO(String provider, String name, String context, String version,
+            List<ProductAPIDTO> apis, List<String> polices) {
         return new APIProductDTO().
                 accessControl(APIProductDTO.AccessControlEnum.NONE).
                 visibility(APIProductDTO.VisibilityEnum.PUBLIC).
                 apis(apis).
                 context(context).
                 name(name).
+                version(version).
                 policies(polices).
                 provider(provider);
     }
@@ -74,6 +75,10 @@ public class DtoFactory {
         applicationThrottlePolicyDTO.setDescription(description);
         applicationThrottlePolicyDTO.setIsDeployed(isDeployed);
         applicationThrottlePolicyDTO.setDefaultLimit(defaultLimit);
+        BurstLimitDTO burstLimitDTO = new BurstLimitDTO();
+        burstLimitDTO.setRateLimitCount(0);
+        burstLimitDTO.setRateLimitTimeUnit(null);
+        applicationThrottlePolicyDTO.setBurstLimit(burstLimitDTO);
         return applicationThrottlePolicyDTO;
     }
 
@@ -276,6 +281,23 @@ public class DtoFactory {
     }
 
     /**
+     * Creates a blacklist policy DTO using the given parameters.
+     *
+     * @param conditionType     Blocking condition type
+     * @param conditionValue    Blocking condition value
+     * @param conditionStatus   Activation status of the blocking condition
+     * @return Created blocking conditions DTO.
+     */
+    public static BlockingConditionDTO createBlockingConditionDTO(BlockingConditionDTO.ConditionTypeEnum conditionType,
+            String conditionValue, boolean conditionStatus) {
+
+        return new BlockingConditionDTO().
+                conditionType(conditionType).
+                conditionValue(conditionValue).
+                conditionStatus(conditionStatus);
+    }
+
+    /**
      * Creates a header condition DTO using the given parameters.
      *
      * @param headerName  Name of the header.
@@ -430,14 +452,15 @@ public class DtoFactory {
      * @return Environment DTO object
      */
     public static EnvironmentDTO createEnvironmentDTO(String name, String displayName, String description, String
-            provider, boolean isReadOnly, List<VHostDTO> vhosts) {
+            provider, boolean isReadOnly, List<VHostDTO> vhosts, String gatewayType) {
         return new EnvironmentDTO()
                 .name(name)
                 .displayName(displayName)
                 .description(description)
                 .provider(provider)
                 .isReadOnly(isReadOnly)
-                .vhosts(vhosts);
+                .vhosts(vhosts)
+                .gatewayType(gatewayType);
     }
 
     /**

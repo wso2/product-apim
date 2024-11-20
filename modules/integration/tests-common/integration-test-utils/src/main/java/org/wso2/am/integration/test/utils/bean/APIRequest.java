@@ -84,6 +84,15 @@ public class APIRequest extends AbstractRequest {
     private List<String> apiCategories;
     private List<String> keyManagers;
     private String subscriptionAvailability;
+    private String gatewayType;
+
+    public String getGatewayType() {
+        return gatewayType;
+    }
+
+    public void setGatewayType(String gatewayType) {
+        this.gatewayType = gatewayType;
+    }
 
     public List<String> getVisibleTenants() {
 
@@ -392,6 +401,53 @@ public class APIRequest extends AbstractRequest {
             throw new APIManagerIntegrationTestException("JSON construct error", e);
         }
 
+    }
+
+    /**
+     * This method will create API request.
+     *
+     * @param apiName                  - Name of the API
+     * @param context                  - API context
+     * @param prodEndpointAvailability - True = Only Product, False = Only Sandbox
+     * @param endpointUrl              - API endpoint URL
+     * @throws APIManagerIntegrationTestException - Throws if API request cannot be generated.
+     */
+    public APIRequest(String apiName, String context, boolean prodEndpointAvailability, URL endpointUrl) throws APIManagerIntegrationTestException {
+        this.name = apiName;
+        this.context = context;
+        try {
+            String endPointString = "{\n" +
+                    "  \"sandbox_endpoints\": {\n" +
+                    "    \"url\": \"" + endpointUrl + "\",\n" +
+                    "    \"config\": null,\n" +
+                    "    \"template_not_supported\": false\n" +
+                    "  },\n" +
+                    "  \"endpoint_type\": \"http\"\n" +
+                    "}";
+            if (prodEndpointAvailability) {
+                endPointString = "{\n" +
+                        "  \"production_endpoints\": {\n" +
+                        "    \"template_not_supported\": false,\n" +
+                        "    \"config\": null,\n" +
+                        "    \"url\": \"" + endpointUrl + "\"\n" +
+                        "  },\n" +
+                        "  \"endpoint_type\": \"http\"\n" +
+                        "}";
+            }
+
+            JSONParser parser = new JSONParser();
+            this.endpoint = (org.json.simple.JSONObject) parser.parse(endPointString);
+            this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                    "\"accessControlAllowOrigins\" : [\"*\"], " +
+                    "\"accessControlAllowCredentials\" : true, " +
+                    "\"accessControlAllowHeaders\" : " +
+                    "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                    "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                    "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
+        } catch (JSONException | ParseException e) {
+            log.error("JSON construct error", e);
+            throw new APIManagerIntegrationTestException("JSON construct error", e);
+        }
     }
 
     @Override

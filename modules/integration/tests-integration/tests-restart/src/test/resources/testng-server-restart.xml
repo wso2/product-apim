@@ -7,6 +7,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.server.restart.ServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.APIThrottlingServerRestartTestCase"/>
+            <class name="org.wso2.am.integration.tests.server.restart.ApplicationThrottlingPolicyServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.JWTRevocationServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.GraphqlServerRestartTestCase"/>
             <class name="org.wso2.am.integration.tests.server.restart.DefaultVersionAPIServerRestartTestCase"/>

@@ -616,7 +616,7 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse apiLoggingLoggingResponse = HTTPSClientUtils.doGet(getStoreURLHttps()
                 + "api/am/devops/v0/tenant-logs/carbon.super/apis?log-level=full", apiLoggingHeader);
         Assert.assertEquals(apiLoggingLoggingResponse.getData(), "{\"apis\":[{\"context\":\"/" + "apiloggingtest" + "/" + "1.0.0" + "\","
-                + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiLoggingApiId + "\"}]}");
+                + "\"logLevel\":\"FULL\",\"apiId\":\"" + apiLoggingApiId + "\",\"resourceMethod\":null,\"resourcePath\":null}]}");
 
         ctx.setAttribute("apiLoggingApplicationId", apiLoggingApplicationId);
         /*
@@ -628,7 +628,7 @@ public class ServerRestartTestCase extends APIManagerLifecycleBaseTest {
         restartServer();
     }
 
-    private void restartServer() throws Exception {
+    protected static void restartServer() throws Exception {
         AutomationContext superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
                 TestUserMode.SUPER_TENANT_ADMIN);

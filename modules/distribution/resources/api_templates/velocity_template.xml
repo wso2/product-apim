@@ -31,9 +31,22 @@
         #set( $endpointClass = $endpoint_config.get("endpoint_type") )
         #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
         #set( $ep_key = "${endpointKey}_API${type}Endpoint")
+        #set( $endpointSecurityProd = $endpoint_security.get("production"))
+        #set( $endpointSecuritySand = $endpoint_security.get("sandbox"))
         #set( $endpointsecurity = $endpoint_security.get("${type}"))
         ## IF endpoint secured
         #if($endpointsecurity.enabled)
+        #if($endpointsecurity.type == "apikey" || $endpointsecurity.type == "APIKEY")
+<class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
+<property name="apiKeyIdentifier" value="$util.escapeXml($endpointsecurity.apiKeyIdentifier)" type="STRING"/>
+<property name="apiKeyIdentifierType" value="$util.escapeXml($endpointsecurity.apiKeyIdentifierType)" type="STRING"/>
+#if($isSecureVaultEnabled)
+<property name="apiKeyValue" expression="wso2:vault-lookup('$endpointsecurity.apiKeyValue')" type="STRING"/>
+#else
+<property name="apiKeyValue" value="$util.escapeXml($endpointsecurity.apiKeyValue)" type="STRING"/>
+#end
+</class>
+        #else
         #if($endpointsecurity.type == "basic" || $endpointsecurity.type == "BASIC")
         #if($isSecureVaultEnabled)
 <property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$endpointsecurity.alias')"/>
@@ -73,7 +86,7 @@
 <target type="body"/>
 </enrich>
         #else
-        #if($endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH")
+        #if(!($enableRetryCallWithNewOauthToken && $endpointClass == "http") && ($endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH"))
 <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthMediator">
 <property name="uniqueIdentifier" value="$util.escapeXml($endpointsecurity.uniqueIdentifier)" type="STRING"/>
 <property name="tokenEndpointUrl" value="$util.escapeXml($endpointsecurity.tokenUrl)" type="STRING"/>
@@ -94,6 +107,7 @@
 #end
 #end
 </class>
+        #end
         #end
         #end
         #end
@@ -208,7 +222,6 @@
 
         faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
-
                 ## check and set response caching
                 #if( $responseCacheEnabled )
 <cache scope="per-host" collector="false" hashGenerator="org.wso2.carbon.mediator.cache.digest.HttpRequestHashGenerator" timeout="$!responseCacheTimeOut">
@@ -243,8 +256,29 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                 #else
                     #set( $filterRegex = "PRODUCTION" )
                 #end
+                #if( $endpoint_config.get("endpoint_type") == 'sequence_backend' )
+                    #if( $endpoint_config.get("sandbox"))
+                        #set( $sequenceKey = $endpoint_config.get("sandbox") )
+                        <filter source="$ctx:AM_KEY_TYPE" regex="SANDBOX">
+                            <then>
+                                <sequence key="$sequenceKey"/>
+                                <loopback/>
+                            </then>
+                            <else/>
+                        </filter>
+                    #end
+                    #if( $endpoint_config.get("production"))
+                        #set( $sequenceKey = $endpoint_config.get("production") )
+                        <filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
+                            <then>
+                                <sequence key="$sequenceKey"/>
+                                <loopback/>
+                            </then>
+                            <else/>
+                        </filter>
+                    #end
                 ## AWS Lambda: start
-                #if( $endpoint_config.get("endpoint_type") == 'awslambda' )
+                #elseif( $endpoint_config.get("endpoint_type") == 'awslambda' )
                     #set( $accessKey = $!{endpoint_config.get("amznAccessKey")} )
                     #set( $secretKey = $!{endpoint_config.get("amznSecretKey")} )
                     #set( $region = $!{endpoint_config.get("amznRegion")} )
@@ -253,6 +287,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                     #set( $roleRegion = $!{endpoint_config.get("amznRoleRegion")} )
                     #set( $resourceName = $!{resource.getAmznResourceName()} )
                     #set( $resourceTimeout = $!{resource.getAmznResourceTimeout()} )
+                    #set( $isContentEncodingEnabled = $!{resource.isAmznResourceContentEncoded()} )
 <class name="org.wso2.carbon.apimgt.gateway.mediators.AWSLambdaMediator">
                     #if( $accessKey != '' )
     <property name="accessKey" value="$accessKey"/>
@@ -282,21 +317,21 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                     #if( $resourceTimeout != '' )
     <property name="resourceTimeout" value="$resourceTimeout"/>
                     #end
+                    #if( $isContentEncodingEnabled != '' )
+    <property name="isContentEncodingEnabled" value="$isContentEncodingEnabled"/>
+                    #end
 </class>
 <loopback />
                 ## AWS Lambda: end
                 #else
-                    #if( $apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected )
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
-                    #end
                     #if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
                         && ! $endpoint_config.get("production_endpoints")) )
                         #draw_endpoint( "sandbox" $endpoint_config )
                     #else
                         #draw_endpoint( "production" $endpoint_config )
                     #end
-                    #if( $apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected )
     </then>
     <else>
                         #if( $environmentType !='hybrid' )
@@ -329,7 +364,6 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                         #end
     </else>
 </filter>
-                    #end
                 #end
 </inSequence>
 <outSequence>
@@ -342,9 +376,20 @@ $out_sequences.get("$resource.getUriTemplate()").get($uri)
                 #if( $responseCacheEnabled )
 <cache scope="per-host" collector="true"/>
                 #end
-                #if( $endpointsecurity.type == "oauth" || $endpointsecurity.type == "OAUTH" )
-<class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
-                #end
+#if( $endpoint_config.get("endpoint_type") != 'sequence_backend' )
+<filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
+    <then>
+                    #if(!($enableRetryCallWithNewOauthToken && $endpointClass == "http") && $endpointSecurityProd.clientId && ($endpointSecurityProd.type == "oauth" || $endpointSecurityProd.type == "OAUTH"))
+        <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
+                    #end
+    </then>
+    <else>
+                    #if(!($enableRetryCallWithNewOauthToken && $endpointClass == "http") && $endpointSecuritySand.clientId && ($endpointSecuritySand.type == "oauth" || $endpointSecuritySand.type == "OAUTH"))
+        <class name="org.wso2.carbon.apimgt.gateway.mediators.oauth.OAuthResponseMediator"/>
+                    #end
+    </else>
+</filter>
+#end
 <send/>
 </outSequence>
         </resource>

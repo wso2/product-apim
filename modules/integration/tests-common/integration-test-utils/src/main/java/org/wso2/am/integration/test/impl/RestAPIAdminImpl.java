@@ -28,6 +28,8 @@ import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.HttpResponse;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Base64;
 
 /**
  * This util class performs the actions related to APIDTOobjects.
@@ -57,6 +59,7 @@ public class RestAPIAdminImpl {
     private ThrottlingPolicySearchApi throttlingPolicySearchApi = new ThrottlingPolicySearchApi();
     private SystemScopesApi systemScopesApi = new SystemScopesApi();
     private ApplicationApi applicationApi = new ApplicationApi();
+    private ApiProviderChangeApi apiProviderChangeApi = new ApiProviderChangeApi();
     private LabelApi labelApi = new LabelApi();
     private LabelCollectionApi labelCollectionApi = new LabelCollectionApi();
     private EnvironmentApi environmentApi = new EnvironmentApi();
@@ -104,7 +107,11 @@ public class RestAPIAdminImpl {
                 "apim:api_workflow_view " +
                 "apim:api_workflow_approve " +
                 "apim:admin_operation " +
-                "apim:policies_import_export" +
+                "apim:policies_import_export " +
+                "apim:keymanagers_manage " +
+                "apim:api_category " +
+                "apim:admin_tier_view " +
+                "apim:admin_tier_manage " +
                 "apim:scope_manage";
 
         String accessToken = ClientAuthenticator
@@ -146,6 +153,7 @@ public class RestAPIAdminImpl {
         systemScopesApi.setApiClient(apiAdminClient);
         tenantConfigApi.setApiClient(apiAdminClient);
         tenantConfigSchemaApi.setApiClient(apiAdminClient);
+        apiProviderChangeApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -172,7 +180,7 @@ public class RestAPIAdminImpl {
     public ApiResponse<ExportThrottlePolicyDTO> exportThrottlePolicy(String policyName, String policyType)
             throws ApiException {
 
-        return exportImportThrottlingPolicyApi.exportThrottlingPolicyWithHttpInfo(null, policyName, policyType, null);
+        return exportImportThrottlingPolicyApi.exportThrottlingPolicyWithHttpInfo(null, policyName, policyType);
     }
 
     /**
@@ -502,6 +510,18 @@ public class RestAPIAdminImpl {
     }
 
     /**
+     * This method is used to retrieve blocking conditions by condition type and condition value.
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while retrieving the blocking conditions.
+     */
+    public BlockingConditionListDTO getBlockingConditionsByConditionTypeAndValue(String query) throws ApiException {
+
+        return denyPolicyCollectionApi.throttlingDenyPoliciesGet(Constants.APPLICATION_JSON, null, null, query);
+    }
+
+
+    /**
      * Deletes a deny throttling policy.
      *
      * @param policyId policy id of the deny throttling policy to be deleted.
@@ -675,10 +695,10 @@ public class RestAPIAdminImpl {
      * @throws ApiException if an error occurs while retrieving applications.
      */
     public ApiResponse<ApplicationListDTO> getApplications(String user, Integer limit, Integer offset,
-            String appTenantDomain) throws ApiException {
+            String appTenantDomain, String name) throws ApiException {
 
         return applicationCollectionApi.applicationsGetWithHttpInfo(user, limit, offset, null,
-                null, null, appTenantDomain);
+                null, name, appTenantDomain);
     }
 
     /**
@@ -692,6 +712,45 @@ public class RestAPIAdminImpl {
     public ApiResponse<Void> changeApplicationOwner(String newOwner, String applicationId) throws ApiException {
 
         return applicationApi.applicationsApplicationIdChangeOwnerPostWithHttpInfo(newOwner, applicationId);
+    }
+
+
+    public ApiResponse<Void> changeApiProvider(String newProvider, String apiId) throws ApiException {
+        return apiProviderChangeApi.providerNamePostWithHttpInfo(newProvider, apiId);
+    }
+  
+    /**
+     * This method is used to retrieve scopes for a particular user.
+     *
+     * @param scopeName Scope name.
+     * @param username  Username of the user.
+     * @return ScopeSettingsDTO returned by API call.
+     * @throws ApiException if an error occurs while retrieving the scopes of a particular user.
+     */
+    public ScopeSettingsDTO retrieveScopesForParticularUser(String scopeName, String username) throws ApiException {
+        return systemScopesApi.systemScopesScopeNameGet(new String(Base64.getEncoder().encode(scopeName.getBytes())), username);
+    }
+
+    /**
+     * This method is used to add a new role alias mapping for system scope roles.
+     *
+     * @param count   The number of role aliases.
+     * @param role    Name of the role.
+     * @param aliases List of aliases.
+     * @return RoleAliasListDTO returned by API call.
+     * @throws ApiException if an error occurs while adding role aliases mappings for system scope roles.
+     */
+    public RoleAliasListDTO addRoleAliasMappingForSystemScopeRoles(int count, String role, String[] aliases) throws ApiException {
+
+        RoleAliasDTO roleAliasDTO = new RoleAliasDTO();
+        roleAliasDTO.setRole(role);
+        roleAliasDTO.setAliases(Arrays.asList(aliases));
+
+        RoleAliasListDTO roleAliasListDTO = new RoleAliasListDTO();
+        roleAliasListDTO.setCount(count);
+        roleAliasListDTO.setList(Arrays.asList(roleAliasDTO));
+
+        return systemScopesApi.systemScopesRoleAliasesPut(roleAliasListDTO);
     }
 
     public HttpResponse getWorkflowByExternalWorkflowReference(String externalWorkflowRef) throws ApiException {
@@ -742,12 +801,37 @@ public class RestAPIAdminImpl {
     }
 
     /**
+     * This method is used to reject a workflow
+     *
+     * @return API response returned by API call.
+     * @throws ApiException if an error occurs while rejecting a workflow
+     */
+    public HttpResponse rejectWorkflowStatus(String workflowReferenceId) throws ApiException {
+        WorkflowDTO workflowdto = null;
+        HttpResponse response = null;
+        Gson gson = new Gson();
+
+        WorkflowDTO body = new WorkflowDTO();
+        WorkflowDTO.StatusEnum status = WorkflowDTO.StatusEnum.valueOf(WorkflowDTO.StatusEnum.class, "REJECTED");
+        body.setStatus(status);
+        body.setDescription("Reject workflow request.");
+        //body.setAttributes();
+        try {
+            workflowdto = workflowsIndividualApi.workflowsUpdateWorkflowStatusPost(workflowReferenceId, body);
+            response = new HttpResponse(gson.toJson(workflowdto), 200);
+        } catch (ApiException e) {
+            return new HttpResponse(gson.toJson(e.getResponseBody()), e.getCode());
+        }
+        return response;
+    }
+
+    /**
      * This method is used to retrieve tenant Config.
      *
      * @return API response returned by API call.
      * @throws ApiException if an error occurs while retrieving tenant Config.
      */
-    public Object getTenantConfig() throws ApiException {
+    public String getTenantConfig() throws ApiException {
         return tenantConfigApi.exportTenantConfig();
     }
 

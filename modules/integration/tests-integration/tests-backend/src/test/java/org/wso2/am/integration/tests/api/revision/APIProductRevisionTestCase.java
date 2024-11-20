@@ -18,7 +18,6 @@
 
 package org.wso2.am.integration.tests.api.revision;
 
-import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -28,7 +27,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIProductDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIRevisionListDTO;
 import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.impl.ApiProductTestHelper;
 import org.wso2.am.integration.test.impl.ApiTestHelper;
@@ -55,6 +53,7 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
     private ApiProductTestHelper apiProductTestHelper;
     protected static final String TIER_UNLIMITED = "Unlimited";
     protected static final String TIER_GOLD = "Gold";
+    List<APIDTO> apisToBeUsed = new ArrayList<>();
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -68,7 +67,6 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "API Product Revision create test case")
     public void testAddingAPIProductRevision() throws Exception {
         // Pre-Conditions : Create APIs
-        List<APIDTO> apisToBeUsed = new ArrayList<>();
 
         apisToBeUsed.add(apiTestHelper.
                 createApiOne(getBackendEndServiceEndPointHttp("wildcard/resources")));
@@ -79,10 +77,11 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
         final String provider = UUID.randomUUID().toString();
         final String name = UUID.randomUUID().toString();
         final String context = "/" + UUID.randomUUID().toString();
+        final String version = "1.0.0";
 
         List<String> policies = Arrays.asList(TIER_UNLIMITED, TIER_GOLD);
 
-        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context,
+        APIProductDTO apiProductDTO = apiProductTestHelper.createAPIProductInPublisher(provider, name, context, version,
                 apisToBeUsed, policies);
         apiId = apiProductDTO.getId();
 
@@ -104,7 +103,7 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Check the availability of API Product Revision in publisher before deploying.",
             dependsOnMethods = "testAddingAPIProductRevision")
     public void testGetAPIProductRevisions() throws Exception {
-        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIProductRevisions(apiId,null);
+        HttpResponse apiRevisionsGetResponse = restAPIPublisher.getAPIProductRevisions(apiId, null);
         assertEquals(apiRevisionsGetResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Unable to retrieve revisions" + apiRevisionsGetResponse.getData());
         List<JSONObject> revisionList = new ArrayList<>();
@@ -114,7 +113,7 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
         for (int i = 0, l = arrayList.length(); i < l; i++) {
             revisionList.add(arrayList.getJSONObject(i));
         }
-        for (JSONObject revision :revisionList) {
+        for (JSONObject revision : revisionList) {
             revisionUUID = revision.getString("id");
         }
         assertNotNull(revisionUUID, "Unable to retrieve revision UUID");
@@ -130,9 +129,9 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
         apiRevisionDeployRequest.setDisplayOnDevportal(true);
         apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
         HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIProductRevision(apiId, revisionUUID,
-                apiRevisionDeployRequestList,"APIProduct");
+                apiRevisionDeployRequestList, "APIProduct");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
-                "Unable to deploy API Product Revisions:" +apiRevisionsDeployResponse.getData());
+                "Unable to deploy API Product Revisions:" + apiRevisionsDeployResponse.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Product Revision to gateway environments",
@@ -173,6 +172,9 @@ public class APIProductRevisionTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
+        restAPIPublisher.deleteAPI(apiId);
+        for (APIDTO api : apisToBeUsed) {
+            restAPIPublisher.deleteAPI(api.getId());
+        }
     }
 }

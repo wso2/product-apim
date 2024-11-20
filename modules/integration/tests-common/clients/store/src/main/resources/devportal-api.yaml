@@ -2912,6 +2912,55 @@ paths:
           source: curl -k "https://localhost:9443/api/am/devportal/v2/throttling-policies/application/10PerMin"
 
   ######################################################
+  # The "Throttling Policy Reset" resource APIs
+  ######################################################
+  /applications/{applicationId}/reset-throttle-policy:
+    post:
+      tags:
+        - Applications
+      summary: Reset Application-Level Throttle Policy
+      description: |
+        This operation can be used to reset the application-level throttle policy for a specific user.
+      parameters:
+        - $ref: '#/components/parameters/applicationId'
+      requestBody:
+        description: |
+          Payload for which the application-level throttle policy needs to be reset
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationThrottleReset'
+        required: true
+      responses:
+        200:
+          description: OK. Application-level throttle policy reset successfully
+          content: {}
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          description: |
+            Forbidden.
+            The request must be conditional but no condition has been specified.
+          content: { }
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:app_manage
+            - apim:subscribe
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k \
+            -H "Authorization: Bearer 80249337-fe7c-3c66-bde6-ed431c144372" \
+            -H "Content-Type: application/json" -X POST \
+            -d @payload.json \
+            "https://localhost:9443/api/am/devportal/v3/application/37dd21cc-631e-4c73-bf73-c59cc7087a63/reset-throttle-policy"'
+
+  ######################################################
   # The "Tag Collection" resource API
   ######################################################
   /tags:
@@ -4626,6 +4675,14 @@ components:
           type: object
           properties: {}
           description: Additional parameters if Authorization server needs any
+    ApplicationThrottleReset:
+      title: Reset application level throttling
+      type: object
+      properties:
+        userName:
+          type: string
+          description: The username for which the throttle policy needs to be reset
+          example: admin
     APIKeyRevokeRequest:
       title: API Key revoke request object
       type: object

@@ -169,19 +169,19 @@ rem find the version of the jdk
 
 set CMD=RUN %*
 
-:checkJdk17
+:checkJdk21
 PATH %PATH%;%JAVA_HOME%\bin\
 for /f tokens^=2-5^ delims^=.-_^" %%j in ('java -fullversion 2^>^&1') do set "JAVA_VERSION=%%j%%k"
 if %JAVA_VERSION% LSS 110 goto unknownJdk
-if %JAVA_VERSION% GTR 170 goto unknownJdk
-goto jdk17
+if %JAVA_VERSION% GTR 210 goto unknownJdk
+goto jdk21
 
 :unknownJdk
 echo Starting WSO2 Carbon (in unsupported JDK)
-echo [ERROR] CARBON is supported only between JDK 11 and JDK 17
-goto jdk17
+echo [ERROR] CARBON is supported only between JDK 11 and JDK 21
+goto jdk21
 
-:jdk17
+:jdk21
 goto runServer
 
 rem ----------------- Execute The Requested Command ----------------------------
@@ -203,7 +203,8 @@ set CARBON_CLASSPATH=".\lib\*";%CARBON_CLASSPATH%
 if %JAVA_VERSION% GEQ 110 set CARBON_CLASSPATH=".\lib\endorsed\*";%CARBON_CLASSPATH%
 
 if %JAVA_VERSION% LEQ 18 set JAVA_VER_BASED_OPTS=-Djava.endorsed.dirs=".\lib\endorsed";"%JAVA_HOME%\jre\lib\endorsed";"%JAVA_HOME%\lib\endorsed"
-if %JAVA_VERSION% GEQ 110 set JAVA_VER_BASED_OPTS=--add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED  --add-opens=java.base/java.io=ALL-UNNAMED
+if %JAVA_VERSION% GEQ 110 set JAVA_VER_BASED_OPTS=--add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED  --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.xml/com.sun.org.apache.xerces.internal.dom=ALL-UNNAMED 
+set JAVA_VER_BASED_OPTS=%JAVA_VER_BASED_OPTS% -Djdk.util.zip.disableZip64ExtraFieldValidation=true -Djdk.nio.zipfs.allowDotZipEntry=true
 
 set CMD_LINE_ARGS=-Xbootclasspath/a:%CARBON_XBOOTCLASSPATH% -Xms256m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="%CARBON_HOME%\repository\logs\heap-dump.hprof"
 set CMD_LINE_ARGS=%CMD_LINE_ARGS% -Dcom.sun.management.jmxremote -classpath %CARBON_CLASSPATH% %JAVA_OPTS% %JAVA_VER_BASED_OPTS%

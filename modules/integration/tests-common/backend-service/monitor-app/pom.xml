@@ -18,7 +18,7 @@ under the License.
     <parent>
         <artifactId>test-artifacts</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>4.2.0-SNAPSHOT</version>
+        <version>4.4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     
@@ -49,7 +49,7 @@ under the License.
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.ops4j.pax.logging</groupId>
+            <groupId>org.wso2.org.ops4j.pax.logging</groupId>
             <artifactId>pax-logging-api</artifactId>
             <scope>provided</scope>
         </dependency>

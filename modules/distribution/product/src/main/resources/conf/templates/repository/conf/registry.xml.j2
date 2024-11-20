@@ -44,7 +44,7 @@
         <id>gov</id>
         <cacheId>{{governance_data.cache_id}}</cacheId>
         <dbConfig>govregistry</dbConfig>
-        <readOnly>false</readOnly>
+        <readOnly>{{governance_data.readonly}}</readOnly>
         <enableCache>{{governance_data.enable_cache}}</enableCache>
         <registryRoot>/</registryRoot>
     </remoteInstance>
@@ -53,7 +53,7 @@
         <id>conf</id>
         <cacheId>{{config_data.cache_id}}</cacheId>
         <dbConfig>configregistry</dbConfig>
-        <readOnly>false</readOnly>
+        <readOnly>{{config_data.readonly}}</readOnly>
         <enableCache>{{config_data.enable_cache}}</enableCache>
         <registryRoot>/</registryRoot>
     </remoteInstance>
@@ -325,23 +325,26 @@
             <indexer class="org.wso2.carbon.registry.indexing.indexer.MSWordIndexer" mediaTypeRegEx="application/msword"/>
             <indexer class="org.wso2.carbon.registry.indexing.indexer.PDFIndexer" mediaTypeRegEx="application/pdf"/>
             <indexer class="org.wso2.carbon.registry.indexing.indexer.XMLIndexer" mediaTypeRegEx="application/xml"/-->
-            <!--indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/wsdl\+xml" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
-            <indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/x-xsd\+xml " profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
-            <indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/policy\+xml" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/-->
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.DocumentIndexer" mediaTypeRegEx="application/vnd.wso2-document\+xml" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.CustomAPIIndexer" mediaTypeRegEx="application/vnd.(.)+\+xml" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
+            <!--indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/wsdl\+xml" profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/x-xsd\+xml " profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/policy\+xml" profiles ="default,control-plane"/-->
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.DocumentIndexer" mediaTypeRegEx="application/vnd.wso2-document\+xml" profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.CustomAPIIndexer" mediaTypeRegEx="application/vnd.(.)+\+xml" profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.RESTAsyncAPIDefinitionIndexer" mediaTypeRegEx="application/json" profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.GraphQLAPIDefinitionIndexer" mediaTypeRegEx="text/plain(.)+charset=ISO-8859-1" profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.SOAPAPIDefinitionIndexer" mediaTypeRegEx="application/wsdl\+xml|application/octet-stream" profiles ="default,control-plane"/>
             <!--indexer class="org.wso2.carbon.registry.indexing.indexer.XMLIndexer" mediaTypeRegEx="application/(.)+\+xml"/>
             <indexer class="org.wso2.carbon.registry.indexing.indexer.PlainTextIndexer" mediaTypeRegEx="text/(.)+"/>
             <indexer class="org.wso2.carbon.registry.indexing.indexer.PlainTextIndexer" mediaTypeRegEx="application/x-javascript"/-->
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.PlainTextIndexer" mediaTypeRegEx="text/plain+" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.PDFIndexer" mediaTypeRegEx="application/pdf" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.MSWordIndexer" mediaTypeRegEx="application/msword" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.MSPowerpointIndexer" mediaTypeRegEx="application/vnd.ms-powerpoint" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.MSExcelIndexer" mediaTypeRegEx="application/vnd.ms-excel" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.XMLIndexer" mediaTypeRegEx="application/xml" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
-    	    <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.WSDLIndexer" mediaTypeRegEx="application/api-wsdl" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.PlainTextIndexer" mediaTypeRegEx="text/plain+" profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.PDFIndexer" mediaTypeRegEx="application/pdf" profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.MSWordIndexer" mediaTypeRegEx="application/msword" profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.MSPowerpointIndexer" mediaTypeRegEx="application/vnd.ms-powerpoint" profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.MSExcelIndexer" mediaTypeRegEx="application/vnd.ms-excel" profiles ="default,control-plane"/>
+            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.XMLIndexer" mediaTypeRegEx="application/xml" profiles ="default,control-plane"/>
+    	    <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.WSDLIndexer" mediaTypeRegEx="application/api-wsdl" profiles ="default,control-plane"/>
     	    {% for custom_indexer in custom_indexers %}
-    	        <indexer class="{{custom_indexer.class}}" mediaTypeRegEx="{{custom_indexer.media_type_regex}}" profiles ="default,api-devportal-deprecated,api-publisher-deprecated,control-plane"/>
+    	        <indexer class="{{custom_indexer.class}}" mediaTypeRegEx="{{custom_indexer.media_type_regex}}" profiles ="default,control-plane"/>
     	    {% endfor %}
         </indexers>
         <exclusions>

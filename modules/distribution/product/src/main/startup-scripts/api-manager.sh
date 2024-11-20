@@ -235,9 +235,9 @@ fi
 # ---------- Handle the SSL Issue with proper JDK version --------------------
 java_version=$("$JAVACMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
 java_version_formatted=$(echo "$java_version" | awk -F. '{printf("%02d%02d",$1,$2);}')
-if [ $java_version_formatted -lt 1100 ] || [ $java_version_formatted -gt 1700 ]; then
+if [ $java_version_formatted -lt 1100 ] || [ $java_version_formatted -gt 2100 ]; then
    echo " Starting WSO2 Carbon (in unsupported JDK)"
-   echo " [ERROR] CARBON is supported only between JDK 11 and JDK 17"
+   echo " [ERROR] CARBON is supported only between JDK 11 and JDK 21"
 fi
 
 CARBON_XBOOTCLASSPATH=""
@@ -307,11 +307,21 @@ echo "Using Java memory options: $JVM_MEM_OPTS"
 #To monitor a Carbon server in remote JMX mode on linux host machines, set the below system property.
 #   -Djava.rmi.server.hostname="your.IP.goes.here"
 
-JAVA_VER_BASED_OPTS="--add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED"
+JAVA_VER_BASED_OPTS="--add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens java.xml/com.sun.org.apache.xerces.internal.dom=ALL-UNNAMED "
 
 if [ $java_version_formatted -ge 1700 ]; then
-    JAVA_VER_BASED_OPTS="$JAVA_VER_BASED_OPTS --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED"
+    JAVA_VER_BASED_OPTS="$JAVA_VER_BASED_OPTS --add-opens=java.naming/com.sun.jndi.ldap=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED"
 fi
+
+# start diagnostic tool in background in diagnostic-tool/bin/diagnostic
+"$CARBON_HOME"/diagnostics-tool/bin/diagnostics.sh &
+diagnostic_tool_pid=$!
+
+# trap signals so we can shutdown the diagnostic tool
+cleanup() {
+    kill "$diagnostic_tool_pid"
+}
+trap 'cleanup' EXIT INT
 
 while [ "$status" = "$START_EXIT_STATUS" ]
 do
@@ -355,6 +365,8 @@ do
     -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector \
     -Dorg.ops4j.pax.logging.logReaderEnabled=false \
     -Dorg.ops4j.pax.logging.eventAdminEnabled=false \
+    -Djdk.util.zip.disableZip64ExtraFieldValidation=true \
+    -Djdk.nio.zipfs.allowDotZipEntry=true \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?
 done

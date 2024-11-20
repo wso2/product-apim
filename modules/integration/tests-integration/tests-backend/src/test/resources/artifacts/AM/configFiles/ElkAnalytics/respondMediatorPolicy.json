@@ -1,0 +1,18 @@
+{
+  "category": "Mediation",
+  "name": "respondMediatorPolicy",
+  "version": "v1",
+  "displayName": "Respond Mediator Policy",
+  "description": "Adds a respond medaitor to the in/out/fault sequence",
+  "applicableFlows": [
+    "request",
+    "response",
+    "fault"
+  ],
+  "supportedGateways": [
+    "Synapse"
+  ],
+  "supportedApiTypes": [
+    "HTTP"
+  ]
+}

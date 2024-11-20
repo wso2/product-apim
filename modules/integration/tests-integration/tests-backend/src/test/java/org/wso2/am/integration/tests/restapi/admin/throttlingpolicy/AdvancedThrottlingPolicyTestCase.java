@@ -646,7 +646,7 @@ public class AdvancedThrottlingPolicyTestCase extends APIMIntegrationBaseTest {
      * @param requestHeaders
      */
     private void verifyThrottling(String apiContext, Map<String, String> requestHeaders) throws Exception {
-        waitUntilClockHour();
+        waitUntilClockMinute();
         boolean isThrottled = false;
         for (int invocationCount = 0; invocationCount < 20; invocationCount++) {
             //Invoke  API

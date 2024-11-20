@@ -22,7 +22,8 @@ associated libraries are also specified here.
 relevant, org.wso2.andes.configuration.enums.AndesConfiguration, enum value using the Xpath
 expression of the property.
 
-This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/cipher-text.properties for examples.--><broker>
+This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/cipher-text.properties for examples.-->
+<broker xmlns:svns="http://org.wso2.securevault/configuration">
 
     <coordination>
         <!-- You can override the cluster node identifier of this MB node using the nodeID.
@@ -100,6 +101,10 @@ This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/c
             <maximumRedeliveryAttempts>{{broker.transport.amqp.maximum_redelivery_attempts}}</maximumRedeliveryAttempts>
             <allowSharedTopicSubscriptions>{{broker.transport.amqp.allow_shared_topic_subscriptions}}</allowSharedTopicSubscriptions>
             <allowStrictNameValidation>{{broker.transport.amqp.allow_strict_name_validation}}</allowStrictNameValidation>
+
+            <security>
+                <authorization>{{broker.transport.amqp.authorization}}</authorization>
+            </security>
 
             <!-- Refer repository/conf/advanced/qpid-config.xml for further AMQP-specific configurations.-->
         </amqp>

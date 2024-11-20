@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.websocket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +47,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.test.impl.DtoFactory;
@@ -70,6 +72,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.xml.StringUtils;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -93,11 +96,13 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
     private final Log log = LogFactory.getLog(WebSocketAPITestCase.class);
     enum AUTH_IN {
-        HEADER,
-        QUERY
+        OAUTH_HEADER,
+        OAUTH_QUERY,
+        APIKEY_HEADER,
+        APIKEY_QUERY
     }
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final String apiName = "WebSocketAPI";
+    private final String apiNameWithMalformedContext = "WebSocketAPIWithMalformedContext";
     private final String applicationName = "WebSocketApplication";
     private final String applicationJWTName = "WebSocketJWTTypeApplication";
     private static final String OAUTH_TYPE_APPLICATION_NAME = "WebSocketOAuthTypeApplication";
@@ -130,6 +135,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     long throttleMarkTime = 0;
     String apiVersion2 = "2.0.0";
     String endPointApplication = "EndPointApplication";
+    ArrayList<String> securityScheme = new ArrayList<>();
+    String apiKey = "api_key";
+    Server server = null;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPITestCase(TestUserMode userMode) {
@@ -159,15 +167,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 (new File(wsEventPublisherSource + wsThrottleOutEventPublisherSource),
                         new File(wsEventPublisherTarget + wsThrottleOutEventPublisherSource), false);
         webSocketServerHost = InetAddress.getLocalHost().getHostName();
-        int lowerPortLimit = 9950;
-        int upperPortLimit = 9999;
-        webSocketServerPort = getAvailablePort(lowerPortLimit, upperPortLimit);
-        if (webSocketServerPort == -1) {
-            throw new APIManagerIntegrationTestException("No available port in the range " +
-                    lowerPortLimit + "-" + upperPortLimit + " was found");
-        }
-        log.info("Selected port " + webSocketServerPort + " to start backend server");
-        startWebSocketServer(webSocketServerPort);
+        startWebSocketServer();
     }
 
     @Test(description = "Publish WebSocket API")
@@ -236,13 +236,15 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         applicationKeyDTO = restAPIStore.generateKeys(appId, "3600", null,
                 ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, null, grantTypes);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
-        String tokenJti = TokenUtils.getJtiOfJwtToken(accessToken);
+        String opaqueToken = TokenUtils.getJtiOfJwtToken(accessToken);
         consumerKey = applicationKeyDTO.getConsumerKey();
         consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, tokenJti, AUTH_IN.HEADER, null, apiEndPoint);
-            invokeAPI(client, tokenJti, AUTH_IN.QUERY, null, apiEndPoint);
+            invokeAPI(client, accessToken, AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
+            invokeAPI(client, accessToken, AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
+            invokeAPI(client, opaqueToken, AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
+            invokeAPI(client, opaqueToken, AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -273,8 +275,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         //consumerSecret = applicationKeyDTO.getConsumerSecret();
         WebSocketClient client = new WebSocketClient();
         try {
-            invokeAPI(client, accessToken, AUTH_IN.HEADER, null, apiEndPoint);
-            invokeAPI(client, accessToken, AUTH_IN.QUERY, null, apiEndPoint);
+            invokeAPI(client, accessToken, AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
+            invokeAPI(client, accessToken, AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -464,8 +466,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
         WebSocketClient client0 = new WebSocketClient();
         try {
-            invokeAPI(client0, sandboxAccessToken, AUTH_IN.HEADER, null, apiEndPoint);
-            invokeAPI(client0, sandboxAccessToken, AUTH_IN.QUERY, null, apiEndPoint);
+            invokeAPI(client0, sandboxAccessToken, AUTH_IN.OAUTH_HEADER, null, apiEndPoint);
+            invokeAPI(client0, sandboxAccessToken, AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
             Assert.assertTrue(true, "Client can connect to the sandbox endpoint");
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
@@ -480,7 +482,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         String prodAccessToken = prodApplicationKeyDTO.getToken().getAccessToken();
         WebSocketClient client1 = new WebSocketClient();
         try {
-            invokeAPI(client1, prodAccessToken, AUTH_IN.QUERY, null, apiEndPoint);
+            invokeAPI(client1, prodAccessToken, AUTH_IN.OAUTH_QUERY, null, apiEndPoint);
             Assert.fail("Client can connect to the production endpoint when production endpoint is not configured");
         } catch (Exception e) {
             log.debug("Exception in connecting to server", e);
@@ -584,7 +586,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         WebSocketClient client = new WebSocketClient();
         boolean apiInvocationFailed = false;
         try {
-            invokeAPI(client, "00000000-0000-0000-0000-000000000000", AUTH_IN.HEADER, null, apiEndPoint);
+            invokeAPI(client, "00000000-0000-0000-0000-000000000000", AUTH_IN.OAUTH_HEADER,
+                    null, apiEndPoint);
         } catch (APIManagerIntegrationTestException e) {
             log.error("Exception in connecting to server", e);
             apiInvocationFailed = true;
@@ -598,6 +601,223 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             }
             client.stop();
         }
+    }
+
+    @Test(description = "Invoke API using API key when API Key authentication is not enabled",
+            dependsOnMethods = "testWebSocketAPIInvalidTokenInvocation")
+    public void testWebSocketAPIInvocationUsingAPIKeyWhenAPIKeyAuthenticationDisabled() throws Exception {
+
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
+                PRODUCTION.toString(), -1, null, null);
+        String accessToken = apiKeyDTO.getApikey();
+        WebSocketClient client = new WebSocketClient();
+        boolean apiInvocationFailed = false;
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.APIKEY_HEADER, null, apiEndPoint);
+        } catch (APIManagerIntegrationTestException e) {
+            apiInvocationFailed = true;
+            assertTrue(true, "Exception in connecting to server because API Key authentication is not enabled");
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            if (!apiInvocationFailed) {
+                Assert.fail("WS API was invoked using API key when API Key authentication is not enabled");
+            }
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using API key",
+            dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyWhenAPIKeyAuthenticationDisabled")
+    public void testWebSocketAPIInvocationUsingAPIKey() throws Exception {
+
+        // Update API to enable API Key authentication
+        HttpResponse response = restAPIPublisher.getAPI(websocketAPIID);
+        Gson g = new Gson();
+        APIDTO apidto = g.fromJson(response.getData(), APIDTO.class);
+        securityScheme.add(apiKey);
+        apidto.setSecurityScheme(securityScheme);
+        restAPIPublisher.updateAPI(apidto);
+        Thread.sleep(1000); // Delay is needed to propagate changes to the components
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
+                PRODUCTION.toString(), -1, null, null);
+        String accessToken = apiKeyDTO.getApikey();
+        WebSocketClient client = new WebSocketClient();
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.APIKEY_HEADER, null, apiEndPoint);
+            invokeAPI(client, accessToken, AUTH_IN.APIKEY_QUERY, null, apiEndPoint);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using OAuth access token when OAuth authentication is not enabled",
+            dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKey")
+    public void testWebSocketAPIInvocationUsingOAuthWhenOAuthAuthenticationDisabled() throws Exception {
+
+        WebSocketClient client = new WebSocketClient();
+        boolean apiInvocationFailed = false;
+        try {
+            invokeAPI(client, applicationKeyDTO.getToken().getAccessToken(), AUTH_IN.OAUTH_HEADER,
+                    null, apiEndPoint);
+        } catch (APIManagerIntegrationTestException e) {
+            apiInvocationFailed = true;
+            assertTrue(true, "Exception in connecting to server because OAuth authentication is not enabled");
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            if (!apiInvocationFailed) {
+                Assert.fail("WS API was invoked using OAuth access token when OAuth authentication is not enabled");
+            }
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using Expired API key",
+            dependsOnMethods = "testWebSocketAPIInvocationUsingOAuthWhenOAuthAuthenticationDisabled")
+    public void testWebSocketAPIInvocationUsingExpiredAPIKey() throws Exception {
+
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
+                PRODUCTION.toString(), 1, null, null);
+        String accessToken = apiKeyDTO.getApikey();
+        WebSocketClient client = new WebSocketClient();
+        boolean apiInvocationFailed = false;
+        try {
+            Thread.sleep(2000);
+            invokeAPI(client, accessToken, AUTH_IN.APIKEY_HEADER, null, apiEndPoint);
+        } catch (APIManagerIntegrationTestException e) {
+            apiInvocationFailed = true;
+            assertTrue(true, "Exception in connecting to server because the API Key is expired");
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            if (!apiInvocationFailed) {
+                Assert.fail("WS API was invoked with an expired API key");
+            }
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using API key generated using IP restrictions",
+            dependsOnMethods = "testWebSocketAPIInvocationUsingExpiredAPIKey")
+    public void testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingIPRestrictions() throws Exception {
+
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
+                PRODUCTION.toString(), -1, "192.168.1.2, 152.12.0.0/13, 2002:eb8::2, 1001:ab8::/44," +
+                " 127.0.0.1", null);
+        String accessToken = apiKeyDTO.getApikey();
+        WebSocketClient client = new WebSocketClient();
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.APIKEY_HEADER, null, apiEndPoint);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using an API key restricted for another IP",
+            dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingIPRestrictions")
+    public void testWebSocketAPIInvocationUsingAPIKeyRestrictedForAnotherIP() throws Exception {
+
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
+                PRODUCTION.toString(), -1, "192.168.1.2, 152.12.0.0/13, 2002:eb8::2, 1001:ab8::/44," +
+                " 1.1.1.1", null);
+        String accessToken = apiKeyDTO.getApikey();
+        WebSocketClient client = new WebSocketClient();
+        boolean apiInvocationFailed = false;
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.APIKEY_HEADER, null, apiEndPoint);
+        } catch (APIManagerIntegrationTestException e) {
+            apiInvocationFailed = true;
+            assertTrue(true, "Client cannot connect to server because the API Key is restricted for another IP");
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            if (!apiInvocationFailed) {
+                Assert.fail("WS API was invoked using API key restricted for another IP");
+            }
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using API key generated using Referer restrictions",
+            dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyRestrictedForAnotherIP")
+    public void testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingRefererRestrictions() throws Exception {
+
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
+                PRODUCTION.toString(), -1, null, "www.example.com/path, " +
+                "sub.example.com/*, *.example.com/*, www.wso2.com");
+        HttpHeaders headers = new DefaultHttpHeaders();
+        headers.add("Referer", "www.wso2.com");
+        String accessToken = apiKeyDTO.getApikey();
+        WebSocketClient client = new WebSocketClient();
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.APIKEY_HEADER, headers, apiEndPoint);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+    }
+
+    @Test(description = "Invoke API using API key restricted for another Referer",
+            dependsOnMethods = "testWebSocketAPIInvocationUsingAPIKeyGeneratedUsingRefererRestrictions")
+    public void testWebSocketAPIInvocationUsingAPIKeyGeneratedForAnotherReferer() throws Exception {
+
+        APIKeyDTO apiKeyDTO = restAPIStore.generateAPIKeys(appId, ApplicationKeyGenerateRequestDTO.KeyTypeEnum.
+                PRODUCTION.toString(), -1, null, "www.example.com/path, " +
+                "sub.example.com/*, *.example.com/*, www.wso2.com");
+        HttpHeaders headers = new DefaultHttpHeaders();
+        headers.add("Referer", "www.wso2.org");
+        String accessToken = apiKeyDTO.getApikey();
+        WebSocketClient client = new WebSocketClient();
+        boolean apiInvocationFailed = false;
+        try {
+            invokeAPI(client, accessToken, AUTH_IN.APIKEY_HEADER, null, apiEndPoint);
+        } catch (APIManagerIntegrationTestException e) {
+            apiInvocationFailed = true;
+            assertTrue(true, "Client cannot connect to server because the API Key is restricted for another Referer");
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            if (!apiInvocationFailed) {
+                Assert.fail("WS API was invoked using API key generated for another Referer");
+            }
+            client.stop();
+        }
+    }
+
+    @Test(description = "Create WebSocket API with malformed context",
+            dependsOnMethods = "testWebSocketAPIRemoveEndpoint")
+    public void testCreateWebSocketAPIWithMalformedContext() throws Exception {
+
+        provider = user.getUserName();
+        String apiContext = "echo{version}";
+        String apiVersion = "1.0.0";
+
+        URI endpointUri = new URI("ws://" + webSocketServerHost + ":" + webSocketServerPort);
+
+        //Create the api creation request object
+        apiRequest = new APIRequest(apiNameWithMalformedContext, apiContext, endpointUri, endpointUri);
+        apiRequest.setVersion(apiVersion);
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.ASYNC_UNLIMITED);
+        apiRequest.setProvider(provider);
+        apiRequest.setType("WS");
+        apiRequest.setApiTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        HttpResponse response = restAPIPublisher.addAPIWithMalformedContext(apiRequest);
+        Assert.assertEquals(response.getResponseCode(), Response.Status.BAD_REQUEST.getStatusCode(), "Response Code miss matched when creating the API");
     }
 
     /**
@@ -623,33 +843,25 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     /**
      * Starts backend web socket server in given port
      *
-     * @param serverPort Port that WebSocket Server starts
      */
-    private void startWebSocketServer(final int serverPort) {
-
-        executorService.execute(new Runnable() {
-            public void run() {
-
-                WebSocketHandler wsHandler = new WebSocketHandler() {
-                    @Override
-                    public void configure(WebSocketServletFactory factory) {
-
-                        factory.register(WebSocketServerImpl.class);
-                    }
-                };
-                Server server = new Server(serverPort);
-                server.setHandler(wsHandler);
-                try {
-                    server.start();
-                    log.info("WebSocket backend server started at port: " + serverPort);
-                } catch (InterruptedException ignore) {
-                } catch (Exception e) {
-                    log.error("Error while starting backend server at port: " + serverPort, e);
-                    Assert.fail("Cannot start WebSocket server");
-                }
+    private void startWebSocketServer() {
+        WebSocketHandler wsHandler = new WebSocketHandler() {
+            @Override
+            public void configure(WebSocketServletFactory factory) {
+                factory.register(WebSocketServerImpl.class);
             }
-
-        });
+        };
+        server = new Server(0);
+        server.setHandler(wsHandler);
+        try {
+            server.start();
+            webSocketServerPort = server.getURI().getPort();
+            log.info("WebSocket backend server started at port :" + webSocketServerPort);
+        } catch (InterruptedException ignore) {
+        } catch (Exception e) {
+            log.error("Error while starting backend server at port: " + webSocketServerPort, e);
+            Assert.fail("Cannot start WebSocket server");
+        }
     }
 
     /**
@@ -659,7 +871,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      */
     private void testThrottling(String accessToken) throws Exception {
 
-        waitUntilClockHour();
+        waitUntilClockMinute();
         int startingDistinctUnitTime = LocalDateTime.now().getMinute();
         int limit = 2;
         WebSocketClient client = new WebSocketClient();
@@ -688,6 +900,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                         log.info("Repeating the test as throttling testing time duration is dispersed into two " +
                                 "separate units of time");
                         testThrottling(accessToken);
+                        return;
                     }
                     assertEquals(socket.getResponseMessage(), "Error code: 4003 reason: Websocket frame throttled out",
                             "Received response is not matching");
@@ -729,11 +942,18 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         URI echoUri = null;
 
-        if (AUTH_IN.HEADER == in) {
+        if (AUTH_IN.OAUTH_HEADER == in) {
             request.setHeader("Authorization", "Bearer " + accessToken);
             echoUri = new URI(apiEndPoint);
-        } else if (AUTH_IN.QUERY == in) {
+        } else if (AUTH_IN.OAUTH_QUERY == in) {
             echoUri = new URI(apiEndPoint + "?access_token=" + accessToken);
+        } else if (AUTH_IN.APIKEY_HEADER == in) {
+            Thread.sleep(24000);
+            request.setHeader("apikey", accessToken);
+            echoUri = new URI(apiEndPoint);
+        } else if (AUTH_IN.APIKEY_QUERY == in) {
+            Thread.sleep(24000);
+            echoUri = new URI(apiEndPoint + "?apikey=" + accessToken);
         }
 
         if (optionalRequestHeaders != null) {
@@ -763,9 +983,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
+        if (server != null) {
+            server.stop();
+        }
         serverConfigurationManager.restoreToLastConfiguration(false);
-        executorService.shutdownNow();
         super.cleanUp();
     }
 }

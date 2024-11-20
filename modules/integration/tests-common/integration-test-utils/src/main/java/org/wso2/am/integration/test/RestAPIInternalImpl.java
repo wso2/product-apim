@@ -3,6 +3,7 @@ package org.wso2.am.integration.test;
 import org.wso2.am.integration.clients.internal.ApiClient;
 import org.wso2.am.integration.clients.internal.ApiException;
 import org.wso2.am.integration.clients.internal.api.RevokeJwt_Api;
+import org.wso2.am.integration.clients.internal.api.dto.RevokedEventsDTO;
 import org.wso2.am.integration.clients.internal.api.dto.RevokedJWTListDTO;
 
 import javax.xml.bind.DatatypeConverter;
@@ -25,7 +26,7 @@ public class RestAPIInternalImpl {
         revokedListAPI.setApiClient(apiClient);
     }
 
-    public RevokedJWTListDTO retrieveRevokedList() throws ApiException {
+    public RevokedEventsDTO retrieveRevokedList() throws ApiException {
         return revokedListAPI.revokedjwtGet();
 
     }

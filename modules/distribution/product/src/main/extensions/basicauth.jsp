@@ -16,10 +16,14 @@
   ~ under the License.
   --%>
 
+<%@ page import="org.apache.cxf.jaxrs.client.Client" %>
+<%@ page import="org.apache.cxf.configuration.jsse.TLSClientParameters" %>
+<%@ page import="org.apache.cxf.transport.http.HTTPConduit" %>
 <%@ page import="org.apache.cxf.jaxrs.client.JAXRSClientFactory" %>
 <%@ page import="org.apache.cxf.jaxrs.provider.json.JSONProvider" %>
 <%@ page import="org.apache.cxf.jaxrs.client.WebClient" %>
 <%@ page import="org.apache.http.HttpStatus" %>
+<%@ page import="org.json.JSONObject" %>
 <%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.client.SelfUserRegistrationResource" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.AuthenticationEndpointUtil" %>
@@ -37,16 +41,25 @@
 <%@ page import="static org.wso2.carbon.identity.core.util.IdentityUtil.getServerURL" %>
 <%@ page import="org.apache.commons.codec.binary.Base64" %>
 <%@ page import="org.apache.commons.text.StringEscapeUtils" %>
+<%@ page import="org.apache.commons.logging.Log" %>
+<%@ page import="org.apache.commons.logging.LogFactory" %>
 <%@ page import="java.nio.charset.Charset" %>
 <%@ page import="org.wso2.carbon.base.ServerConfiguration" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.EndpointConfigManager" %>
 <%@ page import="org.wso2.carbon.identity.core.URLBuilderException" %>
 <%@ page import="org.wso2.carbon.identity.core.ServiceURLBuilder" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
+<%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.AdminAdvisoryDataRetrievalClient" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApplicationDataRetrievalClient" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.ApplicationDataRetrievalClientException" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.PreferenceRetrievalClient" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.client.PreferenceRetrievalClientException" %>
+<%@ page import="org.wso2.carbon.utils.CustomHostNameVerifier" %>
+<%@ page import="javax.net.ssl.HostnameVerifier" %>
+<%@ page import="static org.wso2.carbon.CarbonConstants.ALLOW_ALL" %>
+<%@ page import="static org.wso2.carbon.CarbonConstants.DEFAULT_AND_LOCALHOST" %>
+<%@ page import="static org.wso2.carbon.CarbonConstants.HOST_NAME_VERIFIER" %>
+<%@ page import="org.apache.http.conn.ssl.AllowAllHostnameVerifier" %>
 
 <jsp:directive.include file="includes/init-loginform-action-url.jsp"/>
 <jsp:directive.include file="plugins/basicauth-extensions.jsp"/>
@@ -93,14 +106,16 @@
 
                     if (userName.value) {
                         let contextPath = "<%=proxyContextPath%>"
+                        let loginRequestPath = "<%=loginContextRequestUrl%>"
                         if (contextPath !== "") {
                             contextPath = contextPath.startsWith('/') ? contextPath : "/" + contextPath
                             contextPath = contextPath.endsWith('/') ?
                                 contextPath.substring(0, contextPath.length - 1) : contextPath
+                            loginRequestPath = loginRequestPath.startsWith('../') ? loginRequestPath.substring(2, loginRequestPath.length) : loginRequestPath
                         }
                         $.ajax({
                             type: "GET",
-                            url: contextPath + "<%=loginContextRequestUrl%>",
+                            url: contextPath + loginRequestPath,
                             xhrFields: { withCredentials: true },
                             success: function (data) {
                                 if (data && data.status == 'redirect' && data.redirectUrl && data.redirectUrl.length > 0) {
@@ -132,14 +147,31 @@
     private static final String ACCOUNT_RECOVERY_ENDPOINT = "/accountrecoveryendpoint";
     private static final String ACCOUNT_RECOVERY_ENDPOINT_RECOVER = "/recoveraccountrouter.do";
     private static final String ACCOUNT_RECOVERY_ENDPOINT_REGISTER = "/register.do";
+    private Log log = LogFactory.getLog(this.getClass());
 %>
 <%
+    String system_app = request.getParameter("sp");
+    Boolean isAdminBannerAllowedInSP = system_app != null && system_app.endsWith("apim_admin_portal");
+    Boolean isAdminAdvisoryBannerEnabledInTenant = false;
+    String adminAdvisoryBannerContentOfTenant = "";
+
+    try {
+        if (isAdminBannerAllowedInSP) {
+            AdminAdvisoryDataRetrievalClient adminBannerPreferenceRetrievalClient =
+                new AdminAdvisoryDataRetrievalClient();
+            JSONObject adminAdvisoryBannerConfig = adminBannerPreferenceRetrievalClient
+                .getAdminAdvisoryBannerDataFromServiceStub();
+            isAdminAdvisoryBannerEnabledInTenant = adminAdvisoryBannerConfig.getBoolean("enableBanner");
+            adminAdvisoryBannerContentOfTenant = adminAdvisoryBannerConfig.getString("bannerContent");
+        }
+    } catch (Exception e) {
+        log.error("Error in displaying admin advisory banner", e);
+    }
+
     String emailUsernameEnable = application.getInitParameter("EnableEmailUserName");
     Boolean isEmailUsernameEnabled = false;
     String usernameLabel = "username";
     Boolean isSelfSignUpEnabledInTenant;
-    Boolean isUsernameRecoveryEnabledInTenant;
-    Boolean isPasswordRecoveryEnabledInTenant;
     Boolean isMultiAttributeLoginEnabledInTenant;
     if (StringUtils.isNotBlank(emailUsernameEnable)) {
         isEmailUsernameEnabled = Boolean.valueOf(emailUsernameEnable);
@@ -149,8 +181,6 @@
     try {
         PreferenceRetrievalClient preferenceRetrievalClient = new PreferenceRetrievalClient();
         isSelfSignUpEnabledInTenant = preferenceRetrievalClient.checkSelfRegistration(tenantDomain);
-        isUsernameRecoveryEnabledInTenant = preferenceRetrievalClient.checkUsernameRecovery(tenantDomain);
-        isPasswordRecoveryEnabledInTenant = preferenceRetrievalClient.checkPasswordRecovery(tenantDomain);
         isMultiAttributeLoginEnabledInTenant = preferenceRetrievalClient.checkMultiAttributeLogin(tenantDomain);
     } catch (PreferenceRetrievalClientException e) {
         request.setAttribute("error", true);
@@ -208,6 +238,32 @@
 
         SelfUserRegistrationResource selfUserRegistrationResource = JAXRSClientFactory
                 .create(url, SelfUserRegistrationResource.class, providers);
+
+        Client client = WebClient.client(selfUserRegistrationResource);
+        HTTPConduit conduit = WebClient.getConfig(client).getHttpConduit();
+        TLSClientParameters tlsParams = conduit.getTlsClientParameters();
+        if (tlsParams == null) {
+            tlsParams = new TLSClientParameters();
+        }
+        HostnameVerifier allowAllHostnameVerifier = new AllowAllHostnameVerifier();
+        if (EndpointConfigManager.isHostnameVerificationEnabled()) {
+            if (DEFAULT_AND_LOCALHOST.equals(System.getProperty(HOST_NAME_VERIFIER))) {
+                /*
+                 * If hostname verifier is set to DefaultAndLocalhost, allow following domains in addition to the
+                 * hostname:
+                 *      ["::1", "127.0.0.1", "localhost", "localhost.localdomain"]
+                 */
+                tlsParams.setHostnameVerifier(new CustomHostNameVerifier());
+            } else if (ALLOW_ALL.equals(System.getProperty(HOST_NAME_VERIFIER))) {
+                // If hostname verifier is set to AllowAll, disable hostname verification.
+                tlsParams.setHostnameVerifier(allowAllHostnameVerifier);
+            }
+        } else {
+            // Disable hostname verification
+            tlsParams.setHostnameVerifier(allowAllHostnameVerifier);
+        }
+        conduit.setTlsClientParameters(tlsParams);
+
         WebClient.client(selfUserRegistrationResource).header("Authorization", header);
         Response selfRegistrationResponse = selfUserRegistrationResource.regenerateCode(selfRegistrationRequest);
         if (selfRegistrationResponse != null &&  selfRegistrationResponse.getStatus() == HttpStatus.SC_CREATED) {
@@ -226,6 +282,12 @@
     }
 %>
 
+<% if (isAdminBannerAllowedInSP && isAdminAdvisoryBannerEnabledInTenant) { %>
+    <div class="ui warning message" data-componentid="login-page-admin-session-advisory-banner">
+        <%=Encode.forHtmlContent(adminAdvisoryBannerContentOfTenant)%>
+    </div>
+<% } %>
+
 <form class="ui large form" action="<%=loginFormActionURL%>" method="post" id="loginForm">
     <%
         if (loginFormActionURL.equals(samlssoURL) || loginFormActionURL.equals(oauth2AuthorizeURL)) {
@@ -235,7 +297,13 @@
         }
     %>
 
-    <% if (Boolean.parseBoolean(loginFailed)) { %>
+    <% if (StringUtils.equals(request.getParameter("errorCode"), IdentityCoreConstants.USER_ACCOUNT_LOCKED_ERROR_CODE) &&
+            StringUtils.equals(request.getParameter("remainingAttempts"), "0") ) { %>
+        <div class="ui visible negative message" id="error-msg" data-testid="login-page-error-message">
+            <%=AuthenticationEndpointUtil.i18n(resourceBundle, "error.user.account.locked.incorrect.login.attempts")%>
+        </div>
+    <% } else if (Boolean.parseBoolean(loginFailed) &&
+            !errorCode.equals(IdentityCoreConstants.USER_ACCOUNT_NOT_CONFIRMED_ERROR_CODE)) { %>
     <div class="ui visible negative message" id="error-msg" data-testid="login-page-error-message">
         <%= AuthenticationEndpointUtil.i18n(resourceBundle, errorMessage) %>
     </div>
@@ -279,6 +347,7 @@
                     name="password"
                     value=""
                     autocomplete="off"
+                    required
                     tabindex="2"
                     placeholder="<%=AuthenticationEndpointUtil.i18n(resourceBundle, "password")%>"
                     data-testid="login-page-password-input"
@@ -297,7 +366,7 @@
                 data-size="invisible"
                 data-callback="onCompleted"
                 data-action="login"
-                                data-sitekey="<%=Encode.forHtmlContent(request.getParameter("reCaptchaKey"))%>"
+                data-sitekey="<%=Encode.forHtmlContent(reCaptchaKey)%>">
         </div>
     <%
         }
@@ -370,7 +439,7 @@
     %>
 
     <div class="buttons">
-        <% if (isRecoveryEPAvailable && (isUsernameRecoveryEnabledInTenant || isPasswordRecoveryEnabledInTenant)) { %>
+        <% if (isRecoveryEPAvailable) { %>
         <div class="field">
             <%=AuthenticationEndpointUtil.i18n(resourceBundle, "forgot.username.password")%>
             <a
@@ -405,7 +474,7 @@
                 name="chkRemember"
                 data-testid="login-page-remember-me-checkbox"
             >
-            <label><%=AuthenticationEndpointUtil.i18n(resourceBundle, "remember.me")%></label>
+            <label for="chkRemember"><%=AuthenticationEndpointUtil.i18n(resourceBundle, "remember.me")%></label>
         </div>
     </div>
     <input type="hidden" name="sessionDataKey" value='<%=Encode.forHtmlAttribute

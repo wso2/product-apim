@@ -24,6 +24,7 @@ import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,6 +37,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.ApiException;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIOperationsDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -55,6 +57,7 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertNotNull;
 
 /**
  * Create an API through the Publisher Rest API and validate the API
@@ -143,7 +146,31 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
         assertTrue(response.getData().contains(apiNameTest), "Invalid API Name");
         assertTrue(response.getData().contains(apiVersion), "Invalid API Version");
         assertTrue(response.getData().contains(apiContextTest), "Invalid API Context");
+        assertTrue(response.getData().contains("lastUpdatedTimestamp"), "Last Updated Timestamp is not available");
+    }
 
+    @Test(groups = {
+            "wso2.am" }, description = "Create an API Through the Publisher Rest API with malformed context")
+    public void testCreateAnAPIWithMalformedContextThroughThePublisherRest()
+            throws Exception {
+
+        // Now APIs with malformed context should not be allowed to create
+        String apiContextTest = "apim18PublisherTestAPIMalformed`";
+        String apiDescription = "This is Test API Created by API Manager Integration Test";
+        String apiTag = "tag18-4, tag18-5, tag18-6";
+        String apiName = "APIM18PublisherTestMalformed";
+
+        APIRequest apiCreationRequestBean;
+        apiCreationRequestBean = new APIRequest(apiName, apiContextTest, new URL(apiProductionEndPointUrl));
+
+        apiCreationRequestBean.setVersion(apiVersion);
+        apiCreationRequestBean.setDescription(apiDescription);
+        apiCreationRequestBean.setTags(apiTag);
+        apiCreationRequestBean.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+
+        HttpResponse response = restAPIPublisher.addAPIWithMalformedContext(apiCreationRequestBean);
+        Assert.assertNotNull(response, "Response cannot be null");
+        Assert.assertEquals(response.getResponseCode(), Response.Status.BAD_REQUEST.getStatusCode(), "Response Code miss matched when creating the API");
     }
 
     @Test(groups = {"wso2.am"}, description = "Remove an API Through the Publisher Rest API",
@@ -222,6 +249,66 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
         String retrievedSwagger = restAPIPublisher.getSwaggerByID(apiId2);
 
         validateRemoteReference(retrievedSwagger);
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Create APIs with only Sandbox Endpoints")
+    public void testCreateApiWithOnlySandboxEndpoints() throws Exception {
+        String apiContextTest = "publisherTestAPIWithNoProductEndpoint";
+        String apiNameNoProdEndpointTest = "APIM18PublisherTestNoProduction";
+        String apiDescription = "This is Test API Created by API Manager Integration Test. This has no production endpoints";
+        String apiTag = "tag18-1, tag18-2, tag18-3";
+
+        APIRequest apiCreationRequestBean;
+        apiCreationRequestBean = new APIRequest(apiNameNoProdEndpointTest, apiContextTest, false, new URL(apiProductionEndPointUrl));
+
+        apiCreationRequestBean.setVersion(apiVersion);
+        apiCreationRequestBean.setDescription(apiDescription);
+        apiCreationRequestBean.setTags(apiTag);
+        apiCreationRequestBean.setTiersCollection("Gold,Bronze");
+        apiCreationRequestBean.setTier("Gold");
+
+        APIOperationsDTO apiOperationsDTO = new APIOperationsDTO();
+        apiOperationsDTO.setVerb("GET");
+        apiOperationsDTO.setTarget("/customers/{id}");
+
+        List<APIOperationsDTO> operationsDTOS = new ArrayList<>();
+        operationsDTOS.add(apiOperationsDTO);
+
+        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
+        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
+        apiCreationRequestBean.setDefault_version_checked("true");;
+        apiCreationRequestBean.setBusinessOwner("api18b");
+        apiCreationRequestBean.setBusinessOwnerEmail("api18b@ee.com");
+        apiCreationRequestBean.setTechnicalOwner("api18t");
+        apiCreationRequestBean.setTechnicalOwnerEmail("api18t@ww.com");
+        apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
+
+        HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
+        apiId = apiCreationResponse.getData();
+
+        assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
+                "Response Code miss matched when creating the API");
+
+        //Check the availability of an API in Publisher
+        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code miss matched when creating the API");
+        assertTrue(response.getData().contains(apiNameNoProdEndpointTest), "Invalid API Name");
+        assertTrue(response.getData().contains(apiVersion), "Invalid API Version");
+        assertTrue(response.getData().contains(apiContextTest), "Invalid API Context");
+
+        ApiResponse<APIKeyDTO> apiKeyDTO = restAPIPublisher.generateInternalApiKey(apiId);
+        assertEquals(200, apiKeyDTO.getStatusCode(),
+                "Key generation is failed for APIs which don't have product endpoints");
+        String apiKey = apiKeyDTO.getData().getApikey();
+        assertNotNull(apiKey, "API Key is null");
+        String[] split_string = apiKey.split("\\.");
+        String base64EncodedBody = split_string[1];
+        Base64 base64Url = new Base64(true);
+        String body = new String(base64Url.decode(base64EncodedBody));
+        JSONObject keyBody = new JSONObject(body);
+        String keyType = keyBody.getString("keytype");
+        assertEquals("SANDBOX", keyType, "API Key is not type SANDBOX");
     }
 
     @Test(groups = {"wso2.am"}, description = "Create APIs with archives with a random master swagger file name")

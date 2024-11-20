@@ -112,6 +112,7 @@
                 <Valve className="org.wso2.carbon.tomcat.ext.valves.SameSiteCookieValve"/>
                 <Valve className="org.wso2.carbon.identity.context.rewrite.valve.OrganizationContextRewriteValve"/>
                 <Valve className="org.wso2.carbon.identity.context.rewrite.valve.TenantContextRewriteValve"/>
+                <Valve className="org.wso2.carbon.identity.context.cors.valve.CORSValve"/>
                 <!--Error pages -->
                 <Valve className="org.apache.catalina.valves.ErrorReportValve" showServerInfo="false" showReport="false"/>
             </Host>

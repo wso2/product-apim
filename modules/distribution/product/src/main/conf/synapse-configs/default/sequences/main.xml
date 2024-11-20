@@ -26,6 +26,7 @@
             <property name="RESOURCE" expression="fn:concat('/', $axis2:REST_URL_POSTFIX)"/>
             <property name="HEALTH CHECK URL" expression="$axis2:TransportInURL"/>
         </log>
+        <property name="message.builder.invoked" value="true" scope="axis2" type="BOOLEAN"/>
         <property name="url_axis2" expression="$axis2:TransportInURL"/>
         <filter source="$axis2:TransportInURL" regex="/">
             <payloadFactory media-type="xml">

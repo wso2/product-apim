@@ -1,6 +1,6 @@
 <handlers xmlns:svns="http://org.wso2.securevault/configuration">
-    <handler name="external_call_logger" class="org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"/>
     <handler name="external_call_logger" class="org.wso2.carbon.apimgt.gateway.handlers.DefaultAPIHandler"/>
+    <handler name="external_call_logger" class="org.wso2.carbon.apimgt.gateway.handlers.LogsHandler"/>
     <handler name="open_tracing" class="org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencySynapseHandler"/>
 {% if apim.transport_headers is defined %}
 {% if apim.transport_headers.enable %}
@@ -18,6 +18,11 @@
         <parameter name="excludeResponseHeaders" value="{{apim.transport_headers.excludeResponseHeaders}}"/>
     {% endif %}
     </handler>
+{% endif %}
+{% endif %}
+{% if apim.transaction_counter is defined %}
+{% if apim.transaction_counter.enable %}
+    <handler name="TransactionCountHandler" class="org.wso2.integration.transaction.counter.TransactionCountHandler"/>
 {% endif %}
 {% endif %}
 {% for key,value in synapse_handlers.items() %}

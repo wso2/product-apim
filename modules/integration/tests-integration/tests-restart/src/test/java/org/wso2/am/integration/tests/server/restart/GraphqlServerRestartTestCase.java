@@ -391,7 +391,10 @@ public class GraphqlServerRestartTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        userManagementClient.deleteRole(GRAPHQL_ROLE);
+        // Clean up the role only if it is available
+        if(userManagementClient.roleNameExists(GRAPHQL_ROLE)){
+                userManagementClient.deleteRole(GRAPHQL_ROLE);
+            }
         userManagementClient.deleteUser(GRAPHQL_TEST_USER);
         restAPIStore.deleteApplication(testAppId1);
         restAPIStore.deleteApplication(testAppId2);

@@ -9,11 +9,13 @@ Name | Type | Description | Notes
 **id** | **String** | UUID of the api product  |  [optional] [readonly]
 **name** | **String** | Name of the API Product | 
 **context** | **String** |  |  [optional]
+**version** | **String** |  |  [optional]
 **description** | **String** | A brief description about the API |  [optional]
 **provider** | **String** | If the provider value is not given, the user invoking the API will be used as the provider.  |  [optional]
 **hasThumbnail** | **Boolean** |  |  [optional]
-**state** | [**StateEnum**](#StateEnum) | State of the API product. Only published api products are visible on the Developer Portal  |  [optional]
+**state** | **String** | State of the API product. Only published api products are visible on the Developer Portal  |  [optional]
 **enableSchemaValidation** | **Boolean** |  |  [optional]
+**isDefaultVersion** | **Boolean** |  |  [optional]
 **isRevision** | **Boolean** |  |  [optional]
 **revisionedApiProductId** | **String** | UUID of the api product registry artifact  |  [optional] [readonly]
 **revisionId** | **Integer** |  |  [optional]
@@ -30,6 +32,7 @@ Name | Type | Description | Notes
 **policies** | **List&lt;String&gt;** |  |  [optional]
 **apiThrottlingPolicy** | **String** | The API level throttling policy selected for the particular API Product |  [optional]
 **authorizationHeader** | **String** | Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified in tenant or system level will be used.  |  [optional]
+**apiKeyHeader** | **String** | Name of the API key header used for invoking the API. If it is not set, default value &#x60;apiKey&#x60; will be used.  |  [optional]
 **securityScheme** | **List&lt;String&gt;** | Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If it is not set OAuth2 will be set as the security for the current API.  |  [optional]
 **subscriptionAvailability** | [**SubscriptionAvailabilityEnum**](#SubscriptionAvailabilityEnum) | The subscription availability. Accepts one of the following. CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS. |  [optional]
 **subscriptionAvailableTenants** | **List&lt;String&gt;** |  |  [optional]
@@ -39,25 +42,14 @@ Name | Type | Description | Notes
 **businessInformation** | [**APIProductBusinessInformationDTO**](APIProductBusinessInformationDTO.md) |  |  [optional]
 **corsConfiguration** | [**APICorsConfigurationDTO**](APICorsConfigurationDTO.md) |  |  [optional]
 **createdTime** | **String** |  |  [optional]
+**lastUpdatedTimestamp** | **String** |  |  [optional]
 **lastUpdatedTime** | **String** |  |  [optional]
 **gatewayVendor** | **String** |  |  [optional]
 **apis** | [**List&lt;ProductAPIDTO&gt;**](ProductAPIDTO.md) | APIs and resources in the API Product.  |  [optional]
 **scopes** | [**List&lt;APIScopeDTO&gt;**](APIScopeDTO.md) |  |  [optional]
 **categories** | **List&lt;String&gt;** | API categories  |  [optional]
 **workflowStatus** | **String** |  |  [optional]
-
-
-
-## Enum: StateEnum
-
-Name | Value
----- | -----
-CREATED | &quot;CREATED&quot;
-PUBLISHED | &quot;PUBLISHED&quot;
-DEPRECATED | &quot;DEPRECATED&quot;
-RETIRED | &quot;RETIRED&quot;
-BLOCKED | &quot;BLOCKED&quot;
-PROTOTYPED | &quot;PROTOTYPED&quot;
+**audiences** | **List&lt;String&gt;** | The audiences of the API for jwt validation. Accepted values are any String values |  [optional]
 
 
 

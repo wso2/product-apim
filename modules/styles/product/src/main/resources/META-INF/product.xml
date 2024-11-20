@@ -17,10 +17,9 @@
  -->
 <product xmlns="http://products.wso2.org/carbon">
     <properties>
-       <property name="userforum">http://wso2.org/forum/187</property>
-       <property name="userguide">https://apim.docs.wso2.com/en/4.2.0/</property>
-       <property name="mailinglist">http://wso2.org/mail</property>
-       <property name="issuetracker">https://wso2.org/jira/browse/APIMANAGER</property>
+       <property name="userforum">https://wso2.com/community</property>
+       <property name="userguide">https://apim.docs.wso2.com/en/4.4.0/</property>
+       <property name="issuetracker">https://github.com/wso2/api-manager/issues</property>
        <property name="collapsedmenus">region1_configure_menu,region3_registry_menu,region4_monitor_menu,region5_tools_menu</property>
        <property name="webAdminConsoleTitle">WSO2 API Manager</property>
     </properties>

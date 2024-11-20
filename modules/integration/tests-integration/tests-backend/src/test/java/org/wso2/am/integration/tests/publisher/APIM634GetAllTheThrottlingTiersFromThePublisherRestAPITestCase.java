@@ -24,10 +24,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.SubscriptionPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.ThrottlingPolicyListDTO;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+
+import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -67,7 +70,7 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
                 ThrottlingPolicyDTO.PolicyLevelEnum.SUBSCRIPTION.getValue());
         assertNotNull(throttlingPolicyListDTO, "There are no API level policies available");
         assertNotNull(throttlingPolicyListDTO.getCount(), "Throttle policy count should be available");
-        assertEquals(throttlingPolicyListDTO.getCount().intValue(), 4, "There must be only 4 policies by default");
+        assertEquals(throttlingPolicyListDTO.getCount().intValue(), 5, "There must be only 5 policies by default");
 
         //Validate the Tier Bronze
         ThrottlingPolicyDTO tierBronze = throttlingPolicyListDTO.getList().get(0);
@@ -78,8 +81,18 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
         assertEquals(tierBronze.getName(), "Bronze",
                 "Invalid name of the tier Bronze");
 
+        //Validate the Default Subscriptionless tier
+        ThrottlingPolicyDTO tierSubscriptionless = throttlingPolicyListDTO.getList().get(1);
+        assertEquals(tierSubscriptionless.getDescription(),
+                "Allows 10000 requests per minute when subscription validation is disabled",
+                "Invalid description of the tier DefaultSubscriptionless");
+        assertEquals(tierSubscriptionless.getDisplayName(), "DefaultSubscriptionless",
+                "Invalid display name of the tier DefaultSubscriptionless");
+        assertEquals(tierSubscriptionless.getName(), "DefaultSubscriptionless",
+                "Invalid name of the tier DefaultSubscriptionless");
+
         //Validate the Tier Gold
-        ThrottlingPolicyDTO tierGold = throttlingPolicyListDTO.getList().get(1);
+        ThrottlingPolicyDTO tierGold = throttlingPolicyListDTO.getList().get(2);
         assertEquals(tierGold.getDescription(), "Allows 5000 requests per minute",
                 "Invalid description of the tier Gold");
         assertEquals(tierGold.getDisplayName(), "Gold",
@@ -88,7 +101,7 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
                 "Invalid name of the tier Gold");
 
         //Validate the Tier Silver
-        ThrottlingPolicyDTO tierSilver = throttlingPolicyListDTO.getList().get(2);
+        ThrottlingPolicyDTO tierSilver = throttlingPolicyListDTO.getList().get(3);
         assertEquals(tierSilver.getDescription(), "Allows 2000 requests per minute",
                 "Invalid description of the tier Silver");
         assertEquals(tierSilver.getDisplayName(), "Silver",
@@ -97,7 +110,7 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
                 "Invalid name of the tier Silver");
 
         //Validate the Tier Unlimited
-        ThrottlingPolicyDTO tierUnlimited = throttlingPolicyListDTO.getList().get(3);
+        ThrottlingPolicyDTO tierUnlimited = throttlingPolicyListDTO.getList().get(4);
         assertEquals(tierUnlimited.getDescription(), "Allows unlimited requests",
                 "Invalid description of the tier Unlimited");
         assertEquals(tierUnlimited.getDisplayName(), "Unlimited",
@@ -107,6 +120,5 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
 
 
     }
-
 
 }

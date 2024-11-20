@@ -19,7 +19,7 @@
 
 <!-- localize.jsp MUST already be included in the calling script -->
 
-<!-- footer -->
+<%-- footer --%>
 <footer class="footer" style="text-align: center">
     <div class="container-fluid">
         <p><%=request.getAttribute("footerText")%> | &copy;

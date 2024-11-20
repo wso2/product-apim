@@ -42,6 +42,18 @@ public class APIMIntegrationConstants {
     public static final String API_RESPONSE_ELEMENT_NAME_APIS = "apis";
     public static final String API_RESPONSE_ELEMENT_NAME_ID = "id";
 
+    public static final String API_NAME = "name";
+    public static final String API_CONTEXT = "context";
+    public static final String API_VERSION = "version";
+    public static final String ENDPOINT_TYPE = "endpoint_type";
+    public static final String SANDBOX_ENDPOINTS = "sandbox_endpoints";
+    public static final String PRODUCTION_ENDPOINTS = "production_endpoints";
+    public static final String ENDPOINT_CONFIG = "endpointConfig";
+    public static final String POLICIES = "policies";
+    public static final String OPERATIONS = "operations";
+    public static final String API_CONTEXT_MALFORMED_ERROR = "The API context is malformed";
+    public static final String API_PRODUCT_CONTEXT_MALFORMED_ERROR = "The API Product context is malformed";
+
     public static final String OAUTH_DEFAULT_APPLICATION_NAME = "DefaultApplication";
 
     public static final String IS_API_EXISTS = "\"isApiExists\":true";
@@ -108,11 +120,17 @@ public class APIMIntegrationConstants {
         public static final String BRONZE = "Bronze";
         public static final String ASYNC_UNLIMITED = "AsyncUnlimited";
         public static final String ASYNC_WH_UNLIMITED = "AsyncWHUnlimited";
+        public static final String DEFAULT_SUBSCRIPTIONLESSS = "DefaultSubscriptionless";
 
         public static final int GOLD_LIMIT = 20;
         public static final int SILVER_LIMIT = 5;
         public static final int BRONZE_LIMIT = 1;
 
+    }
+
+    public static class KEY_TYPE {
+        public static final String PRODUCTION = "PRODUCTION";
+        public static final String SANDBOX = "SANDBOX";
     }
 
     public static class GRANT_TYPE {

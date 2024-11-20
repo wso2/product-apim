@@ -23,9 +23,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.testng.annotations.AfterClass;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.clients.publisher.api.ApiResponse;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -40,6 +41,7 @@ import org.wso2.am.integration.test.utils.bean.APIRevisionDeployUndeployRequest;
 import org.wso2.am.integration.test.utils.bean.APIRevisionRequest;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.registry.resource.stub.common.xsd.ResourceData;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -68,10 +70,13 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
     private final String API_END_POINT_METHOD = "/customers/123";
     private final String INVALID_API_UUID = "2C0q51h4-621g-3163-7eip-as246v8x681m";
     private final String INVALID_REVISION_UUID = "4bm28320-l75v-3895-70ks-025294jd85a5";
+    private final String INVALID_VHOST = "ws.wso2.com";
+    private  String API_TRACES_LOCATION = "/_system/governance/apimgt/applicationdata/apis/";
     private String apiEndPointUrl;
     private String apiId;
     private String revisionUUID;
     private String accessToken;
+    private ResourceAdminServiceClient resourceAdminServiceClient;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -235,6 +240,23 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 apiRevisionDeployRequestList,"API");
         assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
                 "Unable to deploy API Revisions:" + apiRevisionsDeployResponse.getData());
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Test deploying API Revision to gateway environments " +
+            "with invalid vhost", dependsOnMethods = "testDeployAPIRevisionWithInvalidDeploymentInfo", enabled = false)
+    public void testDeployAPIRevisionWithInvalidVhost() throws Exception {
+
+        List<APIRevisionDeployUndeployRequest> apiRevisionDeployRequestList = new ArrayList<>();
+        APIRevisionDeployUndeployRequest apiRevisionDeployRequest = new APIRevisionDeployUndeployRequest();
+        apiRevisionDeployRequest.setName(Constants.GATEWAY_ENVIRONMENT);
+        apiRevisionDeployRequest.setVhost(INVALID_VHOST);
+        apiRevisionDeployRequest.setDisplayOnDevportal(true);
+        apiRevisionDeployRequestList.add(apiRevisionDeployRequest);
+        HttpResponse apiRevisionsDeployResponse = restAPIPublisher.deployAPIRevision(apiId, revisionUUID,
+                apiRevisionDeployRequestList, "API");
+        assertEquals(apiRevisionsDeployResponse.getResponseCode(), HTTP_RESPONSE_CODE_BAD_REQUEST,
+                "Invalid response code for deploying API Revision with invalid Vhost:"
+                        + apiRevisionsDeployResponse.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test UnDeploying API Revision to gateway environments",
@@ -526,8 +548,21 @@ public class APIRevisionTestCase extends APIMIntegrationBaseTest {
                 "Unable to get error for invoking API in RETIRED stage using application subscription token");
     }
 
-    @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Test traces of the deleted API wont appear in admin console",
+            dependsOnMethods = "testInvokeAPIInRetiredLifecycleStage")
+    public void testIfTracesOfDeletedApisVisible() throws Exception {
+        API_TRACES_LOCATION = API_TRACES_LOCATION.concat(apiId);
+        resourceAdminServiceClient =
+                new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(),
+                        createSession(publisherContext));
+        ResourceData[] apiResourcesTraces = resourceAdminServiceClient.getResourceData(API_TRACES_LOCATION);
+        assertTrue(apiId.equals(apiResourcesTraces[0].getName()));
         restAPIPublisher.deleteAPI(apiId);
+        try {
+            resourceAdminServiceClient.getResourceData(API_TRACES_LOCATION);
+            Assert.fail("The resource should not be accessible");
+        } catch (org.apache.axis2.AxisFault e) {
+            assertTrue(e.getMessage().contains("Resource does not exist at path"));
+        }
     }
 }

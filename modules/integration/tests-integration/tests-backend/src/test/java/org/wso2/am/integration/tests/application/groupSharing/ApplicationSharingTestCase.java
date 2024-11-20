@@ -30,6 +30,8 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.store.api.ApiException;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationInfoDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
+import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.test.impl.RestAPIStoreImpl;
 import org.wso2.am.integration.test.utils.UserManagementUtils;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -79,8 +81,8 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
 
         super.init(userMode);
-        createUsersAndApplications();
         groups.add(ORGANIZATION);
+        createUsersAndApplications();
     }
 
     @Test(groups = "wso2.am", description = "Remove user one's application and check if user two's application also " +
@@ -125,10 +127,21 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_FORBIDDEN);
     }
 
-    @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception {
-        restAPIStoreClientUser2.removeApplicationById(userTwoApplicationId);
-        super.cleanUp();
+    @Test(groups = "wso2.am", description = "Generate API key from user 1 and make sure that user 2 can revoke the key")
+    public void testAPIKeyRevocationBySharedUser()
+            throws ApiException {
+
+        //Check for application availability
+        List<ApplicationInfoDTO> user1AllAppsList = restAPIStoreClientUser1.getAllApps().getList();
+        ApplicationDTO applicationDTO = restAPIStoreClientUser1.getApplicationById(userOneSharedApplicationId);
+        Assert.assertNotNull(applicationDTO);
+        Assert.assertEquals(applicationDTO.getName(), SHARED_APPLICATION_NAME);
+
+        //Generate api key by user 1
+        APIKeyDTO key = restAPIStoreClientUser1.generateAPIKeys(userOneSharedApplicationId,
+                ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION.toString(), -1, null, null);
+        //Revoke api key by user 2
+        restAPIStoreClientUser2.revokeAPIKey(userOneSharedApplicationId, key.getApikey());
     }
 
     private void createUsersAndApplications() throws Exception {
@@ -156,5 +169,10 @@ public class ApplicationSharingTestCase extends APIMIntegrationBaseTest {
                 "App created by user1", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT, groups);
         userOneSharedApplicationId = appCreationResponse3.getData();
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        restAPIStoreClientUser2.removeApplicationById(userTwoApplicationId);
     }
 }

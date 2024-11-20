@@ -1712,15 +1712,6 @@ paths:
               - app
               - api
               - global
-        - name: format
-          in: query
-          description: |
-            Format of output documents. Can be YAML or JSON.
-          schema:
-            type: string
-            enum:
-              - JSON
-              - YAML
       responses:
         200:
           description: |
@@ -1843,6 +1834,18 @@ paths:
         - $ref: '#/components/parameters/Accept'
         - $ref: '#/components/parameters/If-None-Match'
         - $ref: '#/components/parameters/If-Modified-Since'
+        - name: query
+          in: query
+          description: |
+            **Search condition**.
+            You can search in attributes by using **"conditionType:"** modifier and **"conditionValue:"** modifier.
+            Eg.
+            The entry "conditionType:API" will result in a match with blocking conditions only if the conditionType is "API". Similarly, "conditionValue:test/1.0.0" will result in a match with blocking conditions only if the conditionValue is "test/1.0.0".
+            When you use "conditionType:API & conditionValue:test/1.0.0" as a combination, it will result in a match with blocking conditions only if both the conditionType is "API" and the conditionValue is "test/1.0.0".
+            If query attribute is provided, this returns the blocking conditions that match the specified attributes.
+            Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)
+          schema:
+            type: string
       responses:
         200:
           description: |
@@ -3040,6 +3043,7 @@ paths:
               - AM_APPLICATION_DELETION
               - AM_API_STATE
               - AM_API_PRODUCT_STATE
+              - AM_REVISION_DEPLOYMENT
       responses:
         200:
           description: |
@@ -3982,7 +3986,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: string
         403:
           $ref: '#/components/responses/Forbidden'
         404:
@@ -4275,7 +4279,106 @@ paths:
         - lang: Shell
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -F "type=WSO2-IS" "https://127.0.0.1:9443/api/am/admin/v4/key-managers/discover"'
+  ######################################################
+  # The "API Collection" resource APIs
+  ######################################################
+  /apis:
+    get:
+      tags:
+        - APIs
+      summary: |
+        Retrieve/Search APIs
+      description: |
+        This operation provides you a list of available APIs qualifying under a given search condition.
+        Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - name: query
+          in: query
+          description: |
+            **Search and get all apis in admin portal**.
 
+            You can search by proving a keyword.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            List of qualifying APIs is returned.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Content-Type:
+              description: The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultList'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+          content: { }
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:api_provider_change
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis"'
+      operationId: getAllAPIs
+  ######################################################
+  # Change Api Provider
+  ######################################################
+  /apis/{apiId}/change-provider:
+    post:
+      tags:
+        - Api Provider Change
+      summary: Update the api provider
+      description: |
+        Update the api provider
+      operationId: providerNamePost
+      parameters:
+        - name: provider
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/apiId'
+      responses:
+        200:
+          description: |
+            OK.
+            Api Provider updated.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:api_provider_change
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+              -H "Content-Type: application/json" "https://127.0.0.1:9443/api/am/admin/v4/provider/admin/apis/33662a62-8db1-4d75-af08-afd63c6bd0b4"'
 components:
   schemas:
     Error:
@@ -4468,6 +4571,8 @@ components:
           properties:
             defaultLimit:
               $ref: '#/components/schemas/ThrottleLimit'
+            burstLimit:
+              $ref: '#/components/schemas/BurstLimit'
     ApplicationThrottlePolicyList:
       title: Application Level Throttling Policy List
       type: object
@@ -4781,20 +4886,36 @@ components:
         type:
           type: string
           description: |
-            Type of the throttling limit. Allowed values are "REQUESTCOUNTLIMIT" and "BANDWIDTHLIMIT".
-            Please see schemas of "RequestCountLimit" and "BandwidthLimit" throttling limit types in
-            Definitions section.
+            Type of the throttling limit. Allowed values are "REQUESTCOUNTLIMIT", "BANDWIDTHLIMIT", "EVENTCOUNTLIMIT"
+            and "AIAPIQUOTALIMIT".
+            Please see schemas of "RequestCountLimit", "BandwidthLimit", "EventCountLimit" and "AIAPIQuotaLimit" 
+            throttling limit types in Definitions section.
           example: REQUESTCOUNTLIMIT
           enum:
             - REQUESTCOUNTLIMIT
             - BANDWIDTHLIMIT
             - EVENTCOUNTLIMIT
+            - AIAPIQUOTALIMIT
         requestCount:
           $ref: '#/components/schemas/RequestCountLimit'
         bandwidth:
           $ref: '#/components/schemas/BandwidthLimit'
         eventCount:
           $ref: '#/components/schemas/EventCountLimit'
+        aiApiQuota:
+          $ref: '#/components/schemas/AIAPIQuotaLimit'
+    BurstLimit:
+      title: Burst Limit object
+      type: object
+      properties:
+        rateLimitCount:
+          type: integer
+          description: Burst control request count
+          example: 10
+        rateLimitTimeUnit:
+          type: string
+          description: Burst control time unit
+          example: min
     MonetizationInfo:
       title: API monetization details object
       required:
@@ -4846,6 +4967,34 @@ components:
               description: Maximum number of requests allowed
               format: int64
               example: 30
+    AIAPIQuotaLimit:
+      title: AI API Quota Limit object
+      allOf:
+        - $ref: '#/components/schemas/ThrottleLimitBase'
+        - required:
+            - requestCount
+          type: object
+          properties:
+            requestCount:
+              type: integer
+              description: Maximum number of requests allowed
+              format: int64
+              example: 300
+            totalTokenCount:
+              type: integer
+              description: Maximum number of total tokens allowed
+              format: int64
+              example: 800
+            promptTokenCount:
+              type: integer
+              description: Maximum number of prompt tokens allowed
+              format: int64
+              example: 400
+            completionTokenCount:
+              type: integer
+              description: Maximum number of completion tokens allowed
+              format: int64
+              example: 500
     EventCountLimit:
       title: Event Count Limit object
       allOf:
@@ -5147,6 +5296,10 @@ components:
         provider:
           type: string
           example: wso2
+        gatewayType:
+          type: string
+          example: Regular
+          default: Regular
         isReadOnly:
           type: boolean
           readOnly: true
@@ -5378,6 +5531,10 @@ components:
           type: array
           items:
             type: string
+        gatewayTypes:
+          type: array
+          items:
+            type: string
         keyManagerConfiguration:
           type: array
           items:
@@ -5589,6 +5746,22 @@ components:
             self_validate_jwt: true
             Username: admin
             Password: admin
+        permissions:
+          type: object
+          properties:
+            permissionType:
+              type: string
+              example: ALLOW
+              default: PUBLIC
+              enum:
+                - PUBLIC
+                - ALLOW
+                - DENY
+            roles:
+              type: array
+              items:
+                type: string
+                example: Internal/subscriber
         tokenType:
           type: string
           description: The type of the tokens to be used (exchanged or without exchanged).
@@ -5824,6 +5997,7 @@ components:
             - SUBSCRIPTION_DELETION
             - SUBSCRIPTION_UPDATE
             - API_PRODUCT_STATE
+            - REVISION_DEPLOYMENT
         workflowStatus:
           type: string
           description: |
@@ -5946,6 +6120,57 @@ components:
             - Internal/subscriber
           items:
             type: string
+    SearchResultList:
+      title: Unified Search Result List
+      type: object
+      properties:
+        apis:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiResult'
+        count:
+          type: integer
+          description: |
+            Number of results returned.
+          example: 1
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    ApiResult:
+      type: object
+      properties:
+        provider:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        id:
+          type: string
+    Pagination:
+      title: Pagination
+      type: object
+      properties:
+        offset:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 1
+        total:
+          type: integer
+          example: 10
+        next:
+          type: string
+          description: |
+            Link to the next subset of resources qualified.
+            Empty if no more resources are to be returned.
+            example: ""
+        previous:
+          type: string
+          description: |
+            Link to the previous subset of resources qualified.
+            Empty if current subset is the first subset returned.
+            example: ""
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
@@ -6238,6 +6463,14 @@ components:
       in: path
       description: |
         Key Manager UUID
+      required: true
+      schema:
+        type: string
+    apiId:
+      name: apiId
+      in: path
+      description: |
+        **API ID** consisting of the **UUID** of the API.
       required: true
       schema:
         type: string

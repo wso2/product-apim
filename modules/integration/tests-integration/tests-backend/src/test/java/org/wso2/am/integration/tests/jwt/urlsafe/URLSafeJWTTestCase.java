@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import javax.ws.rs.core.Response;
 
 import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.assertFalse;
 
 public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
 
@@ -156,7 +157,7 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
         Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
         Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
-        Assert.assertFalse(jsonHeaderObject.has("kid"));
+        Assert.assertTrue(jsonHeaderObject.has("kid"));
         JSONObject jsonObject = new JSONObject(decodedJWTString);
         log.info("JWT Received ==" + jsonObject.toString());
         // check default claims
@@ -173,6 +174,15 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
             bExceptionOccured = true;
         }
         assertTrue("JWT claim received is invalid", bExceptionOccured);
+
+        // http://wso2.org/claims/applicationAttributes should not contain 'Optional attribute' as
+        // enable_empty_values_in_application_attributes is false and therefore empty values for custom application
+        // attributes are not allowed
+        assertTrue(jsonObject.getString("http://wso2.org/claims/applicationAttributes").
+                equals("{\"Production access required\":\"Yes\",\"Sandbox access required\":\"Yes\"}"));
+        assertFalse(jsonObject.getString("http://wso2.org/claims/applicationAttributes").
+                equals("{\"Production access required\":\"Yes\",\"Optional attribute\":\"\",\"Sandbox access required\":" +
+                        "\"Yes\"}"));
     }
 
     @Test(groups = {"wso2.am"}, description = "Backend JWT Token Generation for JWT Based App")
@@ -212,13 +222,22 @@ public class URLSafeJWTTestCase extends APIManagerLifecycleBaseTest {
         JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
         Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
         Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
-        Assert.assertFalse(jsonHeaderObject.has("kid"));
+        Assert.assertTrue(jsonHeaderObject.has("kid"));
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
         // check default claims
         checkDefaultUserClaims(jsonObject, jwtApplicationName);
         // check user profile info claims
         log.info("JWT Received ==" + jsonObject.toString());
+
+        // http://wso2.org/claims/applicationAttributes should not contain 'Optional attribute' as
+        // enable_empty_values_in_application_attributes is false and therefore empty values for custom application
+        // attributes are not allowed
+        assertTrue(jsonObject.getString("http://wso2.org/claims/applicationAttributes").
+                equals("{\"Production access required\":\"Yes\",\"Sandbox access required\":\"Yes\"}"));
+        assertFalse(jsonObject.getString("http://wso2.org/claims/applicationAttributes").
+                equals("{\"Production access required\":\"Yes\",\"Optional attribute\":\"\",\"Sandbox access required\":" +
+                        "\"Yes\"}"));
     }
 
     @AfterClass(alwaysRun = true)

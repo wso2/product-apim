@@ -16,14 +16,14 @@
   ~ under the License.
 --%>
 
-<!-- page content -->
+<%-- page content --%>
 <div class="ui grid">
     <div class="two column row"></div>
         <div class="four wide computer four wide tablet column">
             <div id="toc" class="ui segment toc"></div>
         </div>
         <div class="twelve wide computer twelve wide tablet column">
-            <!-- content -->
+            <%-- content --%>
             <div>
                 <div>
                     <h1>
@@ -174,7 +174,7 @@
                 <%-- /Customizable content --%>
             </div>
         </div>
-        <!-- /content -->
+        <%-- /content --%>
     </div>
   </div>
 </div>

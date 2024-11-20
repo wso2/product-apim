@@ -12,8 +12,8 @@ WSO2 API Manager consists of several loosely coupled modules.
         * API publisher
         * API Developer Portal
         * API gateway
-	* API Key Manager
-	* API Traffic Manager
+	    * API Key Manager
+	    * API Traffic Manager
 
 The API publisher module allows API publishers to easily define APIs and manage them 
 using a strong governance model that consists of well-established concepts such as, 
@@ -168,7 +168,7 @@ is recommended.
 Installation & Running
 ==================================
 
-1. Extract the wso2am-4.2.0-alpha.zip and go to the 'bin' directory
+1. Extract the wso2am-4.4.0.zip and go to the 'bin' directory
 2. Run the api-manager.sh or api-manager.bat script based on you operating system.
 3. Access the respective WSO2 API-M interfaces
     * API Publisher web application is running at - https://localhost:9443/publisher
@@ -182,7 +182,7 @@ Documentation
 ==============
 
 Online product documentation is available at:
-        https://apim.docs.wso2.com/en/4.2.0/
+        https://apim.docs.wso2.com/en/4.3.0/
 
 Support
 ==================================
