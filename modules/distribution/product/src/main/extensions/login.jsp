@@ -155,10 +155,10 @@
     String t = request.getParameter("t");
     String ut = request.getParameter("ut");
     if (StringUtils.isNotBlank(t)) {
-        loginContextRequestUrl += "&t=" + t;
+        loginContextRequestUrl += "&t=" + Encode.forUriComponent(t);
     }
     if (StringUtils.isNotBlank(ut)) {
-        loginContextRequestUrl += "&ut=" + ut;
+        loginContextRequestUrl += "&ut=" + Encode.forUriComponent(ut);
     }
 
     if (StringUtils.isNotBlank(usernameIdentifier)) {

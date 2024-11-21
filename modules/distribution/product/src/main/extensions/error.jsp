@@ -20,8 +20,10 @@
 <%@ page isErrorPage="true" %>
 <%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="org.apache.commons.lang.StringUtils" %>
+<%@ page import="org.wso2.carbon.identity.event.IdentityEventException" %>
 <%@ page import="org.wso2.carbon.identity.mgt.endpoint.util.IdentityManagementEndpointUtil" %>
 <%@ page import="org.wso2.carbon.identity.recovery.IdentityRecoveryConstants" %>
+<%@ page import="org.wso2.carbon.identity.recovery.util.Utils" %>
 <%@ page import="org.owasp.encoder.Encode" %>
 <%@ page import="java.io.File" %>
 <%@ page import="java.net.URISyntaxException" %>
@@ -32,8 +34,27 @@
 <%
     String errorMsg = IdentityManagementEndpointUtil.getStringValue(request.getAttribute("errorMsg"));
     String errorCode = IdentityManagementEndpointUtil.getStringValue(request.getAttribute("errorCode"));
+    String invalidConfirmationErrorCode = IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_INVALID_CODE.getCode();
     String callback = request.getParameter("callback");
     boolean isValidCallback = true;
+
+    if (invalidConfirmationErrorCode.equals(errorCode)) {
+        String tenantDomain = StringUtils.EMPTY;
+        if (StringUtils.isNotBlank(request.getParameter("tenantdomain"))){
+            tenantDomain = request.getParameter("tenantdomain").trim();
+        } else if (StringUtils.isNotBlank(request.getParameter("tenantDomain"))){
+            tenantDomain = request.getParameter("tenantDomain").trim();
+        }
+        try {
+            if (StringUtils.isNotBlank(callback) && !Utils.validateCallbackURL
+                (callback, tenantDomain, IdentityRecoveryConstants.ConnectorConfig.RECOVERY_CALLBACK_REGEX)) {
+                    isValidCallback = false;
+                }
+        } catch (IdentityEventException e) {
+            isValidCallback = false;
+        }
+    }
+
     try {
         IdentityManagementEndpointUtil.getURLEncodedCallback(callback);
     } catch (URISyntaxException e) {
@@ -92,13 +113,11 @@
                         %>
                     </div>
 
-                    <% if (isValidCallback) { %>
                     <div id="action-buttons" class="buttons">
-                        <a href="javascript:goBack()" class="ui button primary button">
+                        <a id = "go-back-button" href="javascript:goBack()" class="ui button primary button">
                             <%=IdentityManagementEndpointUtil.i18n(recoveryResourceBundle, "Go back")%>
                         </a>
                     </div>
-                    <% } %>
                 </div>
             </div>
         </layout:component>
@@ -131,13 +150,17 @@
             if ("<%=StringUtils.isEmpty(callback)%>" === "true") {
                 $("#action-buttons").hide();
             }
+            if ("<%=isValidCallback%>" === "false") {
+                $("#go-back-button").addClass("disabled");
+                $("#action-buttons").attr("title", "Request has an invalid callback URL.");
+            }
         });
 
         <% if (isValidCallback) { %>
         function goBack() {
 
             var errorCodeFromParams = "<%=errorCode%>";
-            var invalidConfirmationErrorCode = "<%=IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_INVALID_CODE.getCode()%>";
+            var invalidConfirmationErrorCode = "<%=invalidConfirmationErrorCode%>";
 
             // Check if the error is related to the confirmation code being invalid.
             // If so, navigate the users to the URL defined in `callback` URL param.

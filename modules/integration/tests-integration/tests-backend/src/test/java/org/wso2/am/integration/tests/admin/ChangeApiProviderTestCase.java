@@ -169,6 +169,5 @@ public class ChangeApiProviderTestCase extends APIMIntegrationBaseTest {
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(apiID);
         userManagementClient.deleteUser(newUser);
-        super.cleanUp();
     }
 }

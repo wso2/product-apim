@@ -115,7 +115,7 @@ public class ELKAnalyticsWithRespondMediatorTestCase extends APIManagerLifecycle
 
         // Add common operation policy with respond mediator
         addNewOperationPolicy();
-        Map<String, String> updatedCommonPolicyMap = restAPIPublisher.getAllCommonOperationPolicies();
+        Map<String, String> updatedCommonPolicyMap = restAPIPublisher.getAllCommonOperationPolicies(60, 0, null);
         Assert.assertNotNull(updatedCommonPolicyMap.get("respondMediatorPolicy"),
                 "Unable to find the newly added common policy");
 

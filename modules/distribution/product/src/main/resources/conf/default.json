@@ -55,9 +55,10 @@
   "oauth.grant_type.uma_ticket.grant_validator": "org.wso2.carbon.identity.oauth.uma.grant.GrantValidator",
   "oauth.revoked_token_headers_in_response.enable": true,
   "oauth.token_persistence.enable": true,
+  "apim.token.validation.enforce_type_header_validation": false,
   "system.parameter.'org.wso2.CipherTransformation'": "RSA/ECB/OAEPwithSHA1andMGF1Padding",
-  "server.userAgent": "WSO2 AM 4.3.0",
-  "server.serverDetails": "WSO2 AM 4.3.0",
+  "server.userAgent": "WSO2 AM 4.4.0",
+  "server.serverDetails": "WSO2 AM 4.4.0",
   "message_formatter.form_urlencoded": "org.apache.axis2.transport.http.XFormURLEncodedFormatter",
   "message_formatter.multipart_form_data": "org.apache.axis2.transport.http.MultipartFormDataFormatter",
   "message_formatter.application_xml": "org.apache.axis2.transport.http.ApplicationXMLFormatter",
@@ -174,6 +175,7 @@
   "synapse_properties.'synapse.main.xml.location'": "repository/resources/apim-synapse-config/main.xml",
   "synapse_properties.'synapse.fault.xml.location'": "repository/resources/apim-synapse-config/fault.xml",
   "synapse_properties.'synapse.registry.xml.location'": "repository/resources/apim-synapse-config/registry.xml",
+  "synapse_properties.'synapse.script.mediator.default.engine'": "rhinoJs",
   "passthru_http.'http.socket.timeout'": "180000",
   "passthru_http.worker_pool_size_core": "400",
   "passthru_http.worker_pool_size_max": "500",
@@ -339,6 +341,8 @@
   "apim.auth_manager.service_url" : "https://localhost:${mgt.transport.https.port}${carbon.context}services/",
   "config_data.overwrite": "true",
   "governance_data.overwrite": "true",
+  "config_data.readonly": "false",
+  "governance_data.readonly": "false",
   "static_configuration.versioning_properties.enable": false,
   "static_configuration.versioning_comments.enable": false,
   "static_configuration.versioning_tags.enable": false,
@@ -482,6 +486,7 @@
   "tenant_mgt.disable_email_domain_validation": true,
   "apim.jwt.use_kid_property": true,
   "apim.jwt.use_sha256_hash": false,
+  "apim.hashing.hashing_algorithm": "SHA-256",
   "server_configuration": {
     "diagnostic_tool_enabled": "true",
     "deployment_toml_path": "../conf/deployment.toml",
@@ -491,7 +496,7 @@
     "carbon_log_file_path": "../repository/logs/wso2-apigw-errors.log",
     "process_id_path": "../wso2carbon.pid",
     "server_name": "WSO2 API Manager",
-    "server_version": "4.3.0"
+    "server_version": "4.4.0"
   },
   "cpu_watcher": {
     "enabled": "true",
@@ -541,5 +546,7 @@
       "pattern.executors": "ServerInfo",
       "pattern.reload_time": "10"
     }
-  ]
+  ],
+  "service_provider.use_username_as_sub_claim": false,
+  "apim.ai.llm_provider_events_enabled": true
 }

@@ -20,7 +20,7 @@
 
 
         {% if apim.throttling.event_duplicate_url is defined %}
-        connectionfactory.TopicConnectionFactory = amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{% for url in apim.throttling.event_duplicate_url %}{{url}}?retries='5'%26connectdelay='50'{% if apim.throttling.jms.ssl is defined %}%26ssl='{{apim.throttling.jms.ssl}}'{% endif %};{% endfor %}'
+        connectionfactory.TopicConnectionFactory = amqp://{{apim.throttling.jms.username}}:{{apim.throttling.jms.password}}@clientid/carbon?brokerlist='{% for url in apim.throttling.event_duplicate_url %}{{url}}{% if '?' in url %}%26{% else %}?{% endif %}retries='5'%26connectdelay='50'{% if apim.throttling.jms.ssl is defined %}%26ssl='{{apim.throttling.jms.ssl}}'{% endif %};{% endfor %}'
         {% endif %}
 
         # register some queues in JNDI using the form

@@ -20,6 +20,7 @@
 
 package org.wso2.am.integration.tests.publisher;
 
+import com.google.gson.Gson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
@@ -122,6 +123,8 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
 
         //Check availability of the API in publisher
         JSONObject jsonObject = null;
+        Gson gson = new Gson();
+
         boolean available = false;
         int maxRetry = 10;
         int currentTry = 0;
@@ -130,7 +133,8 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
             APIListDTO apiResponsePublisher = restAPIPublisher
                     .getAllAPIs();
             if (apiResponsePublisher != null) {
-                jsonObject = new JSONObject(apiResponsePublisher);
+                String json = gson.toJson(apiResponsePublisher);
+                jsonObject = new JSONObject(json);
                 available = true;
                 break;
             }
@@ -161,7 +165,8 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
             Thread.sleep(2000);
             APIListDTO allApiResponse = restAPIPublisher.getAllAPIs();
             if (allApiResponse != null) {
-                allApiObject = new JSONObject(allApiResponse);
+                String json = gson.toJson(allApiResponse);
+                allApiObject = new JSONObject(json);
                 available = true;
                 break;
             }

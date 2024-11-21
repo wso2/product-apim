@@ -80,6 +80,7 @@ import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.CommentListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.DocumentListDTO;
+import org.wso2.am.integration.clients.publisher.api.v1.dto.FileInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyDeploymentDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyMappingInfoDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.GatewayPolicyMappingsDTO;
@@ -192,7 +193,7 @@ public class RestAPIPublisherImpl {
                                 "apim:ep_certificates_add apim:ep_certificates_update apim:publisher_settings " +
                                 "apim:pub_alert_manage apim:shared_scope_manage apim:api_generate_key apim:comment_view " +
                                 "apim:comment_write apim:common_operation_policy_view apim:common_operation_policy_manage " +
-                                "apim:policies_import_export apim:gateway_policy_view apim:gateway_policy_manage",
+                                "apim:policies_import_export apim:gateway_policy_view apim:gateway_policy_manage apim:subscription_manage",
                         appName, callBackURL, tokenScope, appOwner, grantType, dcrURL, username, password, tenantDomain, tokenURL);
 
         apiPublisherClient.addDefaultHeader("Authorization", "Bearer " + accessToken);
@@ -397,6 +398,10 @@ public class RestAPIPublisherImpl {
         ApiResponse<APIDTO> httpInfo = apIsApi.createAPIWithHttpInfo(apidto, osVersion);
         Assert.assertEquals(201, httpInfo.getStatusCode());
         return httpInfo.getData();
+    }
+
+    public FileInfoDTO updateAPIThumbnail(String apiId, File file) throws ApiException {
+        return apIsApi.updateAPIThumbnail(apiId, file, null);
     }
 
     private boolean isAsyncApi(APIRequest apiRequest) {
@@ -1414,14 +1419,15 @@ public class RestAPIPublisherImpl {
      *
      * @param certificate certificate
      * @param alias       alis
+     * @param keyType key type (whether PRODUCTION or SANDBOX)
      * @return
      * @throws ApiException if an error occurred while uploading the certificate.
      */
-    public HttpResponse uploadCertificate(File certificate, String alias, String apiId, String tier)
+    public HttpResponse uploadCertificate(File certificate, String alias, String apiId, String tier, String keyType)
             throws ApiException {
 
-        ClientCertMetadataDTO certificateDTO = clientCertificatesApi.addAPIClientCertificate(apiId, certificate,
-                alias, tier);
+        ClientCertMetadataDTO certificateDTO = clientCertificatesApi.addAPIClientCertificateOfGivenKeyType(keyType,
+                apiId, certificate, alias, tier);
         HttpResponse response = null;
         if (StringUtils.isNotEmpty(certificateDTO.getAlias())) {
             response = new HttpResponse("Successfully uploaded the certificate", 200);
@@ -2412,6 +2418,35 @@ public class RestAPIPublisherImpl {
         return null;
     }
 
+    /**
+     * Method to get all common operation policies passing limit, offset and query as parameters
+     *
+     * @param limit  limit
+     * @param offset offset
+     * @param query  query
+     * @return A map of policy name and policy UUID
+     * @throws ApiException - Throws if policy information cannot be retrieved.
+     */
+    public Map<String, String> getAllCommonOperationPolicies(Integer limit, Integer offset, String query)
+            throws ApiException {
+
+        setActivityID();
+        if (limit == null) {
+            limit = 50;
+        }
+        if (offset == null) {
+            offset = 0;
+        }
+        ApiResponse<OperationPolicyDataListDTO> apiResponse = operationPoliciesApi.getAllCommonOperationPoliciesWithHttpInfo(
+                limit, offset, query);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK,
+                "Unable to retrieve common policies " + apiResponse.getData());
+        if (apiResponse != null && apiResponse.getData().getCount() >= 0) {
+            return mapPolicyNameToId(apiResponse.getData());
+        }
+        return null;
+    }
+
     public Map<String, String> getAllCommonOperationPolicies(int limit) throws ApiException {
 
         setActivityID();
@@ -2752,5 +2787,17 @@ public class RestAPIPublisherImpl {
 
     public SettingsDTO getSettings() throws ApiException {
         return settingsApi.getSettings();
+    }
+
+    /**
+     * Changes the business plan of a subscription.
+     *
+     * @param subscriptionId the ID of the subscription to be updated
+     * @param businessPlan the new business plan to be assigned to the subscription
+     * @param ifMatch the ETag value to check for concurrency control
+     * @throws ApiException if an error occurs while changing the business plan
+     */
+    public void changeSubscriptionBusinessPlan(String subscriptionId, String businessPlan, String ifMatch) throws ApiException {
+        subscriptionsApi.changeSubscriptionBusinessPlan(subscriptionId, businessPlan, ifMatch);
     }
 }

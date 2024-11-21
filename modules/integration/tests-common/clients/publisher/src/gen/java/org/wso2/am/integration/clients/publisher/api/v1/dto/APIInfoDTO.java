@@ -122,6 +122,10 @@ public static AudienceEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_AUDIENCE)
             private AudienceEnum audience;
 
+        public static final String SERIALIZED_NAME_AUDIENCES = "audiences";
+        @SerializedName(SERIALIZED_NAME_AUDIENCES)
+            private List<String> audiences = null;
+
         public static final String SERIALIZED_NAME_LIFE_CYCLE_STATUS = "lifeCycleStatus";
         @SerializedName(SERIALIZED_NAME_LIFE_CYCLE_STATUS)
             private String lifeCycleStatus;
@@ -385,6 +389,29 @@ public static AudienceEnum fromValue(String value) {
     }
 
 
+        public APIInfoDTO audiences(List<String> audiences) {
+        
+        this.audiences = audiences;
+        return this;
+        }
+
+    /**
+        * The audiences of the API for jwt validation. Accepted values are any String values
+    * @return audiences
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "The audiences of the API for jwt validation. Accepted values are any String values")
+    
+    public List<String> getAudiences() {
+        return audiences;
+    }
+
+
+    public void setAudiences(List<String> audiences) {
+        this.audiences = audiences;
+    }
+
+
         public APIInfoDTO lifeCycleStatus(String lifeCycleStatus) {
         
         this.lifeCycleStatus = lifeCycleStatus;
@@ -588,6 +615,7 @@ public static AudienceEnum fromValue(String value) {
             Objects.equals(this.provider, apIInfo.provider) &&
             Objects.equals(this.type, apIInfo.type) &&
             Objects.equals(this.audience, apIInfo.audience) &&
+            Objects.equals(this.audiences, apIInfo.audiences) &&
             Objects.equals(this.lifeCycleStatus, apIInfo.lifeCycleStatus) &&
             Objects.equals(this.workflowStatus, apIInfo.workflowStatus) &&
             Objects.equals(this.hasThumbnail, apIInfo.hasThumbnail) &&
@@ -600,7 +628,7 @@ public static AudienceEnum fromValue(String value) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, context, additionalProperties, additionalPropertiesMap, version, provider, type, audience, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme, createdTime, updatedTime, gatewayVendor, advertiseOnly);
+        return Objects.hash(id, name, description, context, additionalProperties, additionalPropertiesMap, version, provider, type, audience, audiences, lifeCycleStatus, workflowStatus, hasThumbnail, securityScheme, createdTime, updatedTime, gatewayVendor, advertiseOnly);
     }
 
 
@@ -618,6 +646,7 @@ sb.append("class APIInfoDTO {\n");
     sb.append("    provider: ").append(toIndentedString(provider)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    audience: ").append(toIndentedString(audience)).append("\n");
+    sb.append("    audiences: ").append(toIndentedString(audiences)).append("\n");
     sb.append("    lifeCycleStatus: ").append(toIndentedString(lifeCycleStatus)).append("\n");
     sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
     sb.append("    hasThumbnail: ").append(toIndentedString(hasThumbnail)).append("\n");

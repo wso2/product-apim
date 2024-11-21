@@ -425,6 +425,26 @@
                 <include>**/**.xml</include>
             </includes>
         </fileSet>
+
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/api_definitions
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/api_definitions</outputDirectory>
+            <includes>
+                <include>**/**.yaml</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/api_definitions
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/api_definitions</outputDirectory>
+            <includes>
+                <include>**/**.yaml</include>
+            </includes>
+        </fileSet>
         <fileSet>
             <directory>src/main/conf/governance</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>

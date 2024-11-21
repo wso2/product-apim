@@ -735,7 +735,7 @@ public class APIProductCreationTestCase extends APIManagerLifecycleBaseTest {
         String certificate = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "example.crt";
         restAPIPublisher.uploadCertificate(new File(certificate), "example", apiProductDTO.getId(),
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.SANDBOX);
 
         // Step 4: Verify deployment of APIProduct with Mutual SSL enabled
         String revisionUUID = createAPIProductRevisionAndDeployUsingRest(apiProductDTO.getId(), restAPIPublisher);

@@ -26,7 +26,7 @@ $mapping.get('properties')
     #end
 <payloadFactory description="transform" media-type="xml">
       <format>
-        <soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" xmlns:web="${namespace}">
+        <soapenv:Envelope xmlns:soapenv="${soapNamespace}" xmlns:web="${namespace}">
           <soapenv:Header/>
           <soapenv:Body>
             $mapping.get('sequence')
@@ -37,7 +37,7 @@ $mapping.get('properties')
         $mapping.get('args')
       </args>
     </payloadFactory>
-    <property description="messageProperty" name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+    <property description="messageProperty" name="messageType" scope="axis2" type="STRING" value="${mediaType}"/>
   </then>
   <else>
     <payloadFactory media-type="json" description="transform">

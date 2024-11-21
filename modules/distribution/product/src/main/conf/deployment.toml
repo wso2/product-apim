@@ -107,7 +107,7 @@ enable = true
 token = ""
 
 [apim.key_manager]
-enable_apikey_subscription_validation = true
+enable_lightweight_apikey_generation = true
 #service_url = "https://localhost:${mgt.transport.https.port}/services/"
 #username = "$ref{super_admin.username}"
 #password = "$ref{super_admin.password}"
@@ -268,7 +268,7 @@ enable = true
 allow_refresh_tokens = true
 iat_validity_period = "1h"
 
-#[integration.transaction_counter]
+#[apim.transaction_counter]
 #enable = true
 #server_id = "Gateway1"
 #producer_counting_thread_pool_size = 10

@@ -110,7 +110,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
     private String accessToken;
-    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_END_POINT_POSTFIX_URL1 = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_END_POINT_POSTFIX_URL2 = "jaxrs_basic/services/customers/customerservice2/";
     private String apiEndPointUrl;
     private String applicationId;
     private String consumerKey;
@@ -156,9 +157,11 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
             UserStoreException {
         super.init(userMode);
         createUser();
-        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        String apiSandboxEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL2;
+        apiEndPointUrl = backEndServerUrl.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL1;
 
-        APIRequest apiRequest1 = new APIRequest(mutualSSLOnlyAPIName, mutualSSLOnlyAPIContext, new URL(apiEndPointUrl));
+        APIRequest apiRequest1 = new APIRequest(mutualSSLOnlyAPIName, mutualSSLOnlyAPIContext,
+                new URL(apiEndPointUrl), new URL(apiSandboxEndPointUrl));
         apiRequest1.setVersion(API_VERSION_1_0_0);
         apiRequest1.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest1.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
@@ -186,10 +189,16 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         HttpResponse response1 = restAPIPublisher.addAPI(apiRequest1);
         apiId1 = response1.getData();
 
-        String certOne = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+        String certOneSandbox = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                + File.separator + "abcde.crt";
+
+        String certOneProduction = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "example.crt";
-        restAPIPublisher.uploadCertificate(new File(certOne), "example", apiId1,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        restAPIPublisher.uploadCertificate(new File(certOneSandbox), "example_sand", apiId1,
+                APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.SANDBOX);
+        restAPIPublisher.uploadCertificate(new File(certOneProduction), "example_prod", apiId1,
+                APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.PRODUCTION);
 
         APIRequest apiRequest2 = new APIRequest(mutualSSLWithOAuthAPI, mutualSSLWithOAuthAPIContext,
                 new URL(apiEndPointUrl));
@@ -217,7 +226,7 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         String certTwo = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "example.crt";
         restAPIPublisher.uploadCertificate(new File(certTwo), "abcde", apiId2,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+                APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.SANDBOX);
 
 
         APIRequest apiRequest3 = new APIRequest(mutualSSLandOauthMandatoryAPI, mutualSSLandOAuthMandatoryAPIContext,
@@ -245,8 +254,8 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         apiId3 = response3.getData();
         String certThree = getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
                 + File.separator + "example.crt";
-        restAPIPublisher
-                .uploadCertificate(new File(certThree), "abcdef", apiId3, APIMIntegrationConstants.API_TIER.UNLIMITED);
+        restAPIPublisher.uploadCertificate(new File(certThree), "abcdef", apiId3,
+                        APIMIntegrationConstants.API_TIER.UNLIMITED, APIMIntegrationConstants.KEY_TYPE.SANDBOX);
         // Create Revision and Deploy to Gateway
 
         // Add an API Secured with APIKey only
@@ -530,6 +539,37 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_UNAUTHORIZED);
         Assert.assertEquals(defaultResponse.getResponseCode(), HttpStatus.SC_UNAUTHORIZED);
     }
+
+    @Test(description = "Invoke mutual SSL only API with supported certificate", dependsOnMethods =
+            "testAPIInvocationWithMutualSSLOnlyAPINegative")
+    public void testAPIInvocationWithMutualSSLOnlyAPI()
+            throws IOException, XPathExpressionException,
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("accept", "text/xml");
+        //(production) example.crt ->test.jks
+        //(sandbox) abcde.crt -> new-keystore.jks
+        HttpResponse response1 = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLOnlyAPIName, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeaders);
+        HttpResponse defaultResponse1 = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "new-keystore.jks",
+                getAPIInvocationURLHttps(mutualSSLOnlyAPIName) + API_END_POINT_METHOD,
+                requestHeaders);
+
+        HttpResponse response2 = HTTPSClientUtils.doMutulSSLGet(
+                getAMResourceLocation() + File.separator + "lifecycletest" + File.separator + "mutualssl"
+                        + File.separator + "test.jks",
+                getAPIInvocationURLHttps(mutualSSLOnlyAPIName, API_VERSION_1_0_0) + API_END_POINT_METHOD,
+                requestHeaders);
+        Assert.assertEquals(response1.getResponseCode(), HttpStatus.SC_OK);
+        Assert.assertEquals(defaultResponse1.getResponseCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(response2.getResponseCode(), HttpStatus.SC_OK);
+    }
+
 
     @Test(description = "This method test to validate how application security mandatory and mutual ssl optional api " +
             "behaviour in success scenario",
@@ -1198,6 +1238,40 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
         Assert.assertFalse(isApiKeyValid, "API Key internal subscription validation failed. " +
                 "API invocation response code is expected to be : " + HTTP_RESPONSE_CODE_FORBIDDEN +
                 ", but got " + invocationResponseAfterSubscriptionRemoved.getResponseCode());
+    }
+
+    @Test(description = "Testing the WWW-Authorization header when invocating an API with API Keys using invalid Authorization header",
+            dependsOnMethods = {"testCreateAndPublishAPIWithOAuth2"})
+    public void testWWWAuthorizationHeaderForApiWithApiKeys() throws Exception{
+
+        String expectedValue = "API Key realm=\"WSO2 API Manager\"";
+
+        // Validate WWW-Authenticate response header when request is made without Authorization header
+        Map<String, String> requestHeaders1 = new HashMap<>();
+        requestHeaders1.put("accept", "application/json");
+
+        HttpResponse response1 =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0) +
+                        API_END_POINT_METHOD, requestHeaders1);
+
+        String wwwAuthenticateHeader = response1.getHeaders().get("WWW-Authenticate");
+
+        Assert.assertTrue(wwwAuthenticateHeader.contains(expectedValue),
+                "The WWW-Authenticate header does not contain the expected API Key value.");
+
+        // Validate WWW-Authenticate response header when request is made with invalid Authorization header
+        Map<String, String> requestHeaders2 = new HashMap<>();
+        requestHeaders2.put("accept", "application/json");
+        requestHeaders2.put("Authorization", null);
+
+        HttpResponse response2 =
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttps(mutualSSLandOAuthMandatoryAPIContext, API_VERSION_1_0_0) +
+                        API_END_POINT_METHOD, requestHeaders2);
+
+        wwwAuthenticateHeader = response2.getHeaders().get("WWW-Authenticate");
+
+        Assert.assertTrue(wwwAuthenticateHeader.contains(expectedValue),
+                "The WWW-Authenticate header does not contain the expected API Key value.");
     }
 
     @AfterClass(alwaysRun = true)

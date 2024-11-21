@@ -4390,6 +4390,44 @@ paths:
           "https://127.0.0.1:9443/api/am/publisher/v4/subscriptions/unblock-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809"'
       operationId: unBlockSubscription
 
+  /subscriptions/change-business-plan:
+    post:
+      tags:
+        - Subscriptions
+      summary: Change subscription business plan
+      description: |
+        This operation can be used to change the business plan of a subscription specifying the subscription Id and the business plan.
+      parameters:
+        - $ref: '#/components/parameters/subscriptionId-Q'
+        - name: businessPlan
+          in: query
+          description: |
+            The business plan to be assigned to the subscription.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/If-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Subscription business plan was changed successfully.
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+      security:
+        - OAuth2Security:
+            - apim:subscription_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" -X POST
+          "https://127.0.0.1:9443/api/am/publisher/v4/subscriptions/change-business-plan?subscriptionId=92c50632-012f-4739-b37d-baa23008c813&businessPlan=Silver"'
+      operationId: changeSubscriptionBusinessPlan
 
   ######################################################
   # The "Thorttling Tier Collection" resource APIs
@@ -4558,6 +4596,9 @@ paths:
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/throttling-policies/api/Platinum"'
 
+  ######################################################
+  # The "Client Certificates" resource APIs (Deprecated)
+  ######################################################
   /apis/{apiId}/client-certificates:
     get:
       tags:
@@ -4870,6 +4911,342 @@ paths:
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon/content"'
       operationId: getAPIClientCertificateContentByAlias
+
+  ######################################################
+  # The "Client Certificates" resource APIs (New)
+  ######################################################
+  /apis/{apiId}/client-certs/{keyType}:
+    parameters:
+      - in: path
+        name: keyType
+        schema:
+          type: string
+        required: true
+        description: Key type for the certificate
+    get:
+      tags:
+        - Client Certificates
+      summary: Retrieve/ Search Uploaded Client Certificates of a given key type
+      description: |
+        This operation can be used to retrieve and search the uploaded client certificates of a given key type.
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - name: alias
+          in: query
+          description: Alias for the client certificate
+          schema:
+            type: string
+        - $ref: '#/components/parameters/apiId'
+      responses:
+        200:
+          description: |
+            OK. Successful response with the list of matching certificate information in the body.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertificates'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+            - apim:api_manage
+            - apim:client_certificates_view
+            - apim:client_certificates_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION?alias=wso2carbon"'
+      operationId: getAPIClientCertificatesByKeyType
+    post:
+      tags:
+        - Client Certificates
+      summary: Upload a New Certificate of the given key type
+      description: |
+        This operation can be used to upload a new certificate for an endpoint of the given type.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - alias
+                - certificate
+                - tier
+              properties:
+                certificate:
+                  type: string
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+                alias:
+                  maxLength: 30
+                  minLength: 1
+                  type: string
+                  description: Alias for the certificate
+                tier:
+                  type: string
+                  description: API tier to which the certificate should be applied.
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            The Certificate added successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertMetadata'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+            - apim:api_manage
+            - apim:client_certificates_add
+            - apim:client_certificates_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: multipart/form-data" -F certificate=@test.crt -F alias=wso2carbon -F tier=Gold
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION"'
+      operationId: addAPIClientCertificateOfGivenKeyType
+
+  /apis/{apiId}/client-certs/{keyType}/{alias}:
+    parameters:
+      - in: path
+        name: keyType
+        schema:
+          type: string
+        required: true
+        description: Key type for the certificate
+    get:
+      tags:
+        - Client Certificates
+      summary: Get the Certificate Information of a Given Key Type
+      description: |
+        This operation can be used to get the information about a certificate of a given key type.
+      parameters:
+        - name: alias
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/apiId'
+      responses:
+        200:
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateInfo'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+            - apim:api_manage
+            - apim:client_certificates_view
+            - apim:client_certificates_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION/wso2carbon"'
+      operationId: getAPIClientCertificateByKeyTypeAndAlias
+
+    put:
+      tags:
+        - Client Certificates
+      summary: Update a Certificate of a Given Key Type
+      description: |
+        This operation can be used to update an uploaded certificate of a given key type.
+      parameters:
+        - name: alias
+          in: path
+          description: Alias for the certificate
+          required: true
+          schema:
+            maxLength: 30
+            minLength: 1
+            type: string
+        - $ref: '#/components/parameters/apiId'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                certificate:
+                  type: string
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+                tier:
+                  type: string
+                  description: The tier of the certificate
+      responses:
+        200:
+          description: |
+            OK.
+            The Certificate updated successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertMetadata'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+            - apim:api_manage
+            - apim:client_certificates_update
+            - apim:client_certificates_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: multipart/form-data" -F certificate=@test.crt -F alias=wso2carbon
+          -F apiId=fea749dd-d548-4a8b-b308-34903b39a34b -F tier=Gold "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION/wso2carbon"'
+      operationId: updateAPIClientCertificateByKeyTypeAndAlias
+
+    delete:
+      tags:
+        - Client Certificates
+      summary: Delete a Certificate of a Given Key Type
+      description: |
+        This operation can be used to delete an uploaded certificate of a given key type.
+      parameters:
+        - name: alias
+          in: path
+          description: |
+            The alias of the certificate that should be deleted.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/apiId'
+      responses:
+        200:
+          description: |
+            OK.
+            The Certificate deleted successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content: { }
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+            - apim:api_manage
+            - apim:client_certificates_update
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon"'
+      operationId: deleteAPIClientCertificateByKeyTypeAndAlias
+
+  /apis/{apiId}/client-certs/{keyType}/{alias}/content:
+    get:
+      tags:
+        - Client Certificates
+      summary: Download a Certificate of Given Key Type
+      description: |
+        This operation can be used to download a certificate which matches the given alias and key type.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - name: alias
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: keyType
+          in: path
+          description: |
+            The key type of the certificate that should be deleted.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content: {}
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - OAuth2Security:
+            - apim:api_view
+            - apim:api_manage
+            - apim:client_certificates_view
+            - apim:client_certificates_manage
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION/wso2carbon/content" > test.crt'
+      operationId: getAPIClientCertificateContentByKeyTypeAndAlias
 
   ######################################################
   # The "Certificate Management" resource APIs
@@ -8832,6 +9209,12 @@ components:
           enum:
             - PUBLIC
             - SINGLE
+        audiences:
+          type: array
+          description: The audiences of the API for jwt validation. Accepted values are any String values
+          items:
+            type: string
+            example: [ "aud1","aud2","aud3" ]
         lifeCycleStatus:
           type: string
           example: CREATED
@@ -9026,6 +9409,12 @@ components:
           enum:
             - PUBLIC
             - SINGLE
+        audiences:
+          type: array
+          description: The audiences of the API for jwt validation. Accepted values are any String values
+          items:
+            type: string
+            example: [ "aud1","aud2","aud3" ]
         transport:
           type: array
           description: |
@@ -9596,6 +9985,12 @@ components:
         gatewayVendor:
           type: string
           example: wso2
+        audiences:
+          type: array
+          description: The audiences of the API product for jwt validation. Accepted values are any String values
+          items:
+            type: string
+            example: [ "aud1","aud2","aud3" ]
     APIProduct:
       title: API Product object
       required:
@@ -9854,6 +10249,12 @@ components:
         workflowStatus:
           type: string
           example: APPROVED
+        audiences:
+          type: array
+          description: The audiences of the API for jwt validation. Accepted values are any String values
+          items:
+            type: string
+            example: [ "aud1","aud2","aud3" ]
     ProductAPI:
       title: ProductAPI
       required:

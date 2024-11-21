@@ -7842,6 +7842,105 @@ paths:
         source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/subscriptions/unblock-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809"'
       x-accepts: application/json
+  /subscriptions/change-business-plan:
+    post:
+      description: |
+        This operation can be used to change the business plan of a subscription specifying the subscription Id and the business plan.
+      operationId: changeSubscriptionBusinessPlan
+      parameters:
+      - description: |
+          Subscription Id
+        explode: true
+        in: query
+        name: subscriptionId
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: |
+          The business plan to be assigned to the subscription.
+        explode: true
+        in: query
+        name: businessPlan
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: |
+          Validator for conditional requests; based on ETag.
+        explode: false
+        in: header
+        name: If-Match
+        required: false
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: |
+            OK.
+            Subscription business plan was changed successfully.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "409":
+          content:
+            application/json:
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict. Specified resource already exists.
+      security:
+      - OAuth2Security:
+        - apim:subscription_manage
+      summary: Change subscription business plan
+      tags:
+      - Subscriptions
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -X POST "https://127.0.0.1:9443/api/am/publisher/v4/subscriptions/change-business-plan?subscriptionId=92c50632-012f-4739-b37d-baa23008c813&businessPlan=Silver"'
+      x-accepts: application/json
   /throttling-policies/{policyLevel}:
     get:
       description: |
@@ -8720,6 +8819,630 @@ paths:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon/content"'
+      x-accepts: application/json
+  /apis/{apiId}/client-certs/{keyType}:
+    get:
+      description: |
+        This operation can be used to retrieve and search the uploaded client certificates of a given key type.
+      operationId: getAPIClientCertificatesByKeyType
+      parameters:
+      - description: Key type for the certificate
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          Maximum size of resource array to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          type: integer
+        style: form
+      - description: |
+          Starting point within the complete list of items qualified.
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: Alias for the client certificate
+        explode: true
+        in: query
+        name: alias
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertificates'
+          description: |
+            OK. Successful response with the list of matching certificate information in the body.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:client_certificates_view
+        - apim:client_certificates_manage
+      summary: Retrieve/ Search Uploaded Client Certificates of a given key type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION?alias=wso2carbon"'
+      x-accepts: application/json
+    post:
+      description: |
+        This operation can be used to upload a new certificate for an endpoint of the given type.
+      operationId: addAPIClientCertificateOfGivenKeyType
+      parameters:
+      - description: Key type for the certificate
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                certificate:
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+                  type: string
+                alias:
+                  description: Alias for the certificate
+                  maxLength: 30
+                  minLength: 1
+                  type: string
+                tier:
+                  description: API tier to which the certificate should be applied.
+                  type: string
+              required:
+              - alias
+              - certificate
+              - tier
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertMetadata'
+          description: |
+            OK.
+            The Certificate added successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:client_certificates_add
+        - apim:client_certificates_manage
+      summary: Upload a New Certificate of the given key type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: multipart/form-data" -F certificate=@test.crt -F alias=wso2carbon
+          -F tier=Gold "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /apis/{apiId}/client-certs/{keyType}/{alias}:
+    delete:
+      description: |
+        This operation can be used to delete an uploaded certificate of a given key type.
+      operationId: deleteAPIClientCertificateByKeyTypeAndAlias
+      parameters:
+      - description: Key type for the certificate
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          The alias of the certificate that should be deleted.
+        explode: false
+        in: path
+        name: alias
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            The Certificate deleted successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:client_certificates_update
+      summary: Delete a Certificate of a Given Key Type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certificates/wso2carbon"'
+      x-accepts: application/json
+    get:
+      description: |
+        This operation can be used to get the information about a certificate of a given key type.
+      operationId: getAPIClientCertificateByKeyTypeAndAlias
+      parameters:
+      - description: Key type for the certificate
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: alias
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateInfo'
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:client_certificates_view
+        - apim:client_certificates_manage
+      summary: Get the Certificate Information of a Given Key Type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION/wso2carbon"'
+      x-accepts: application/json
+    put:
+      description: |
+        This operation can be used to update an uploaded certificate of a given key type.
+      operationId: updateAPIClientCertificateByKeyTypeAndAlias
+      parameters:
+      - description: Key type for the certificate
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Alias for the certificate
+        explode: false
+        in: path
+        name: alias
+        required: true
+        schema:
+          maxLength: 30
+          minLength: 1
+          type: string
+        style: simple
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                certificate:
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+                  type: string
+                tier:
+                  description: The tier of the certificate
+                  type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientCertMetadata'
+          description: |
+            OK.
+            The Certificate updated successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:client_certificates_update
+        - apim:client_certificates_manage
+      summary: Update a Certificate of a Given Key Type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: multipart/form-data" -F certificate=@test.crt -F alias=wso2carbon
+          -F apiId=fea749dd-d548-4a8b-b308-34903b39a34b -F tier=Gold "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION/wso2carbon"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /apis/{apiId}/client-certs/{keyType}/{alias}/content:
+    get:
+      description: |
+        This operation can be used to download a certificate which matches the given alias and key type.
+      operationId: getAPIClientCertificateContentByKeyTypeAndAlias
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: alias
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          The key type of the certificate that should be deleted.
+        explode: false
+        in: path
+        name: keyType
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "500":
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact
+                  administrator.
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal Server Error.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:client_certificates_view
+        - apim:client_certificates_manage
+      summary: Download a Certificate of Given Key Type
+      tags:
+      - Client Certificates
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/client-certs/PRODUCTION/wso2carbon/content"
+          > test.crt'
       x-accepts: application/json
   /endpoint-certificates:
     get:
@@ -16443,6 +17166,9 @@ components:
           - securityScheme
           name: CalculatorAPI
           context: CalculatorAPI
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
           additionalProperties:
@@ -16473,6 +17199,9 @@ components:
           - securityScheme
           name: CalculatorAPI
           context: CalculatorAPI
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           createdTime: 2021-02-11 09:57:25
           id: 01234567-0123-0123-0123-012345678901
           additionalProperties:
@@ -16553,6 +17282,9 @@ components:
         - securityScheme
         name: CalculatorAPI
         context: CalculatorAPI
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         createdTime: 2021-02-11 09:57:25
         id: 01234567-0123-0123-0123-012345678901
         additionalProperties:
@@ -16608,6 +17340,13 @@ components:
           - SINGLE
           example: PUBLIC
           type: string
+        audiences:
+          description: The audiences of the API for jwt validation. Accepted values
+            are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
         lifeCycleStatus:
           example: CREATED
           type: string
@@ -16834,6 +17573,9 @@ components:
             url: https://localhost:9443/am/sample/pizzashack/v1/api/
           production_endpoints:
             url: https://localhost:9443/am/sample/pizzashack/v1/api/
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         mediationPolicies:
         - name: json_to_xml_in_message
           type: in
@@ -16994,6 +17736,13 @@ components:
           - SINGLE
           example: PUBLIC
           type: string
+        audiences:
+          description: The audiences of the API for jwt validation. Accepted values
+            are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
         transport:
           description: |
             Supported transports for the API (http and/or https).
@@ -17569,6 +18318,9 @@ components:
           context: pizzaproduct
           description: This is a simple API for Pizza Shack online pizza delivery
             store
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           id: 01234567-0123-0123-0123-012345678901
           state: state
         - hasThumbnail: true
@@ -17580,6 +18332,9 @@ components:
           context: pizzaproduct
           description: This is a simple API for Pizza Shack online pizza delivery
             store
+          audiences:
+          - '["aud1","aud2","aud3"]'
+          - '["aud1","aud2","aud3"]'
           id: 01234567-0123-0123-0123-012345678901
           state: state
       properties:
@@ -17606,6 +18361,9 @@ components:
         name: PizzaShackAPIProduct
         context: pizzaproduct
         description: This is a simple API for Pizza Shack online pizza delivery store
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         id: 01234567-0123-0123-0123-012345678901
         state: state
       properties:
@@ -17650,6 +18408,13 @@ components:
         gatewayVendor:
           example: wso2
           type: string
+        audiences:
+          description: The audiences of the API product for jwt validation. Accepted
+            values are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
       title: API Info object with basic API details.
       type: object
     APIProduct:
@@ -17684,6 +18449,9 @@ components:
         provider: admin
         context: pizzaproduct
         createdTime: createdTime
+        audiences:
+        - '["aud1","aud2","aud3"]'
+        - '["aud1","aud2","aud3"]'
         lastUpdatedTime: lastUpdatedTime
         id: 01234567-0123-0123-0123-012345678901
         state: CREATED
@@ -17980,6 +18748,13 @@ components:
         workflowStatus:
           example: APPROVED
           type: string
+        audiences:
+          description: The audiences of the API for jwt validation. Accepted values
+            are any String values
+          items:
+            example: '["aud1","aud2","aud3"]'
+            type: string
+          type: array
       required:
       - name
       title: API Product object

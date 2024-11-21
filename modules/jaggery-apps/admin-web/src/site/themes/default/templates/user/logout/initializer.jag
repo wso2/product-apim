@@ -1,6 +1,0 @@
-<%
-jagg.initializer("user/logout", {
-
-});
-%>
-

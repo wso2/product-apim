@@ -120,11 +120,17 @@ public class APIMIntegrationConstants {
         public static final String BRONZE = "Bronze";
         public static final String ASYNC_UNLIMITED = "AsyncUnlimited";
         public static final String ASYNC_WH_UNLIMITED = "AsyncWHUnlimited";
+        public static final String DEFAULT_SUBSCRIPTIONLESSS = "DefaultSubscriptionless";
 
         public static final int GOLD_LIMIT = 20;
         public static final int SILVER_LIMIT = 5;
         public static final int BRONZE_LIMIT = 1;
 
+    }
+
+    public static class KEY_TYPE {
+        public static final String PRODUCTION = "PRODUCTION";
+        public static final String SANDBOX = "SANDBOX";
     }
 
     public static class GRANT_TYPE {

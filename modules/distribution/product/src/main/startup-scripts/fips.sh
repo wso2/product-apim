@@ -14,10 +14,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-BC_FIPS_VERSION=1.0.2.4;
+BC_FIPS_VERSION=1.0.2.5;
 BCPKIX_FIPS_VERSION=1.0.7;
 
-EXPECTED_BC_FIPS_CHECKSUM="9008d04fc13da6455e6a792935b93b629757335d"
+EXPECTED_BC_FIPS_CHECKSUM="704e65f7e4fe679e5ab2aa8a840f27f8ced4c522"
 EXPECTED_BCPKIX_FIPS_CHECKSUM="fe07959721cfa2156be9722ba20fdfee2b5441b0"
 
 # Get standard environment variables

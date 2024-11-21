@@ -37,6 +37,7 @@
             <class name="org.wso2.am.integration.tests.api.APICreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationWithMessageTypeProperty"/>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigurationsTestCase"/>
+            <class name="org.wso2.am.integration.tests.aiapi.AIAPITestCase"/>
         </classes>
     </test>
 
@@ -96,6 +97,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateUsageTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.UpdateAPINullPointerTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AudienceValidationTestCase"/>
         </classes>
     </test>
 
@@ -236,9 +238,10 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
-            <class name="org.wso2.am.integration.tests.rest.DocAPIParameterTamperingTest"/>
             <class name="org.wso2.am.integration.tests.publisher.GetLinterCustomRulesThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.CheckEmptyCORSConfigurationsTestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.ChangeSubscriptionBusinessPlanForcefullyTestCase"/>
+            <class name="org.wso2.am.integration.tests.rest.DocAPIParameterTamperingTest"/>
         </classes>
     </test>
 
@@ -267,6 +270,7 @@
             <class name="org.wso2.am.integration.tests.application.ApplicationAttributesTestCase"/>
             <class name="org.wso2.am.integration.tests.application.PkceEnabledApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationBlockSubscriptionTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.SubscriptionValidationDisableTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5417PrototypedAPIsInMonetizedTestCase"/>-->
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
@@ -303,6 +307,8 @@
             <class name="org.wso2.am.integration.tests.restapi.admin.APISystemScopesTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.ThrottlePolicyExportImportTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.GetThrottlingPoliciesTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.throttlingpolicy.DenyPolicySearchTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.admin.ApplicationsSearchByNameOrOwnerTestCase"/>
         </classes>
     </test>
 
@@ -366,12 +372,11 @@
         </classes>
     </test>
 
-
-
     <test name="apim-integration-tests-application-sharing" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingConfig"/>
+<!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />-->
             <class name="org.wso2.am.integration.tests.application.groupSharing.ApplicationSharingTestCase"/>
 <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityMutualSSLCertificateChainValidationTestCase" />-->
         </classes>

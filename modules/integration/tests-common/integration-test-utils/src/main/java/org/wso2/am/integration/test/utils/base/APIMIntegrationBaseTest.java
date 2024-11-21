@@ -73,8 +73,10 @@ import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -850,6 +852,7 @@ public class APIMIntegrationBaseTest {
             throws ApiException, JSONException, APIManagerIntegrationTestException {
         int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
         int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
+        int HTTP_RESPONSE_CODE_BAD_REQUEST = Response.Status.BAD_REQUEST.getStatusCode();
         int HTTP_RESPONSE_CODE_INTERNAL_SERVER_ERROR = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
         String revisionUUID = null;
         //Add the API Revision using the API publisher.
@@ -858,8 +861,9 @@ public class APIMIntegrationBaseTest {
         apiRevisionRequest.setDescription("Test Revision 1");
 
         HttpResponse apiRevisionResponse = restAPIPublisher.addAPIRevision(apiRevisionRequest);
-
-        if (apiRevisionResponse.getResponseCode() != HTTP_RESPONSE_CODE_INTERNAL_SERVER_ERROR) {
+        int responseCode = apiRevisionResponse.getResponseCode();
+        if (responseCode != HTTP_RESPONSE_CODE_INTERNAL_SERVER_ERROR && responseCode
+                != HTTP_RESPONSE_CODE_BAD_REQUEST) {
             assertEquals(apiRevisionResponse.getResponseCode(), HTTP_RESPONSE_CODE_CREATED,
                     "Create API Response Code is invalid." + apiRevisionResponse.getData());
             JSONObject jsonObject = new JSONObject(apiRevisionResponse.getData());
@@ -1130,5 +1134,37 @@ public class APIMIntegrationBaseTest {
         Calendar calendar = Calendar.getInstance();
         int secondsInTime = calendar.get(Calendar.SECOND);
         return 60 - secondsInTime;
+    }
+
+
+    /**
+     * Read the file content and return the content as String.
+     *
+     * @param fileLocation Location of the file.
+     * @return String Content of the file.
+     * @throws APIManagerIntegrationTestException exception throws when reading the file.
+     */
+    protected String readFile(String fileLocation) throws APIManagerIntegrationTestException {
+        BufferedReader bufferedReader = null;
+        try {
+            bufferedReader = new BufferedReader(new FileReader(new File(fileLocation)));
+            String line;
+            StringBuilder stringBuilder = new StringBuilder();
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+            return stringBuilder.toString();
+        } catch (IOException ioE) {
+            throw new APIManagerIntegrationTestException("IOException when reading the file from:" + fileLocation, ioE);
+        } finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    log.warn("Error when closing the buffer reade which used to reed the file:" + fileLocation +
+                            ". Error:" + e.getMessage());
+                }
+            }
+        }
     }
 }

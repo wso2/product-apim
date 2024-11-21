@@ -221,6 +221,11 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
+    /**
+     * Although API visibility on the publisher portal is restricted (eg, to the 'admin' role), if a user has the
+     * 'internal/publisher' role, the API should still be visible to them.
+     * This ensures that publishers can view all APIs of the organization on the publisher portal
+     */
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for API creator ")
     public void testVisibilityForCreatorInPublisher()
             throws APIManagerIntegrationTestException, MalformedURLException, XPathExpressionException, ApiException {
@@ -270,7 +275,11 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
                    getAPIIdentifierString(apiIdentifierSubscriberVisibility));
     }
 
-
+    /**
+     * Although API visibility on the devportal is restricted (eg, to the 'admin' role), if a user has the
+     * 'internal/publisher' role, the API should still be visible to them.
+     * This ensures that publishers can view all APIs of the organization on the devportal
+     */
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for API creator",
           dependsOnMethods = "testVisibilityForCreatorInPublisher")
     public void testVisibilityForCreatorInStore()
@@ -486,7 +495,6 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         deleteAPI(apiVisibilityByRoleId, apiPublisherClientCarbonSuperAdmin);
         userManagementClient1.deleteUser(CARBON_SUPER_SUBSCRIBER_USERNAME);
         userManagementClient2.deleteUser(TENANT_SUBSCRIBER_USERNAME);
-        super.cleanUp();
     }
 
 }

@@ -57,7 +57,7 @@ jobs:
       run: mv modules/integration/tests-integration/tests-backend/target/surefire-reports/TEST-TestSuite.xml TEST-TestSuite_${{ matrix.id }}.xml
     - name: Archive testng report
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: TEST-TestSuite_${{ matrix.id }}
         path: |
@@ -99,7 +99,7 @@ jobs:
     needs: build
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           path: reports
       - name: Publish Test Report

@@ -404,6 +404,10 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
         @SerializedName(SERIALIZED_NAME_WORKFLOW_STATUS)
             private String workflowStatus;
 
+        public static final String SERIALIZED_NAME_AUDIENCES = "audiences";
+        @SerializedName(SERIALIZED_NAME_AUDIENCES)
+            private List<String> audiences = null;
+
 
         public APIProductDTO id(String id) {
         
@@ -1393,6 +1397,29 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
     }
 
 
+        public APIProductDTO audiences(List<String> audiences) {
+        
+        this.audiences = audiences;
+        return this;
+        }
+
+    /**
+        * The audiences of the API for jwt validation. Accepted values are any String values
+    * @return audiences
+    **/
+        @javax.annotation.Nullable
+      @ApiModelProperty(value = "The audiences of the API for jwt validation. Accepted values are any String values")
+    
+    public List<String> getAudiences() {
+        return audiences;
+    }
+
+
+    public void setAudiences(List<String> audiences) {
+        this.audiences = audiences;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -1444,12 +1471,13 @@ public static SubscriptionAvailabilityEnum fromValue(String value) {
             Objects.equals(this.apis, apIProduct.apis) &&
             Objects.equals(this.scopes, apIProduct.scopes) &&
             Objects.equals(this.categories, apIProduct.categories) &&
-            Objects.equals(this.workflowStatus, apIProduct.workflowStatus);
+            Objects.equals(this.workflowStatus, apIProduct.workflowStatus) &&
+            Objects.equals(this.audiences, apIProduct.audiences);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, context, version, description, provider, hasThumbnail, state, enableSchemaValidation, isDefaultVersion, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, apiKeyHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTimestamp, lastUpdatedTime, gatewayVendor, apis, scopes, categories, workflowStatus);
+        return Objects.hash(id, name, context, version, description, provider, hasThumbnail, state, enableSchemaValidation, isDefaultVersion, isRevision, revisionedApiProductId, revisionId, responseCachingEnabled, cacheTimeout, visibility, visibleRoles, visibleTenants, accessControl, accessControlRoles, apiType, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, apiKeyHeader, securityScheme, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, additionalPropertiesMap, monetization, businessInformation, corsConfiguration, createdTime, lastUpdatedTimestamp, lastUpdatedTime, gatewayVendor, apis, scopes, categories, workflowStatus, audiences);
     }
 
 
@@ -1500,6 +1528,7 @@ sb.append("class APIProductDTO {\n");
     sb.append("    scopes: ").append(toIndentedString(scopes)).append("\n");
     sb.append("    categories: ").append(toIndentedString(categories)).append("\n");
     sb.append("    workflowStatus: ").append(toIndentedString(workflowStatus)).append("\n");
+    sb.append("    audiences: ").append(toIndentedString(audiences)).append("\n");
 sb.append("}");
 return sb.toString();
 }

@@ -3219,6 +3219,21 @@ paths:
         schema:
           type: string
         style: simple
+      - description: |
+          **Search condition**.
+          You can search in attributes by using **"conditionType:"** modifier and **"conditionValue:"** modifier.
+          Eg.
+          The entry "conditionType:API" will result in a match with blocking conditions only if the conditionType is "API". Similarly, "conditionValue:test/1.0.0" will result in a match with blocking conditions only if the conditionValue is "test/1.0.0".
+          When you use "conditionType:API & conditionValue:test/1.0.0" as a combination, it will result in a match with blocking conditions only if both the conditionType is "API" and the conditionValue is "test/1.0.0".
+          If query attribute is provided, this returns the blocking conditions that match the specified attributes.
+          Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)
+        explode: true
+        in: query
+        name: query
+        required: false
+        schema:
+          type: string
+        style: form
       responses:
         "200":
           content:
@@ -8124,14 +8139,15 @@ components:
     ThrottleLimit:
       properties:
         type:
-          description: |
-            Type of the throttling limit. Allowed values are "REQUESTCOUNTLIMIT" and "BANDWIDTHLIMIT".
-            Please see schemas of "RequestCountLimit" and "BandwidthLimit" throttling limit types in
-            Definitions section.
+          description: "Type of the throttling limit. Allowed values are \"REQUESTCOUNTLIMIT\"\
+            , \"BANDWIDTHLIMIT\", \"EVENTCOUNTLIMIT\"\nand \"AIAPIQUOTALIMIT\".\n\
+            Please see schemas of \"RequestCountLimit\", \"BandwidthLimit\", \"EventCountLimit\"\
+            \ and \"AIAPIQuotaLimit\" \nthrottling limit types in Definitions section.\n"
           enum:
           - REQUESTCOUNTLIMIT
           - BANDWIDTHLIMIT
           - EVENTCOUNTLIMIT
+          - AIAPIQUOTALIMIT
           example: REQUESTCOUNTLIMIT
           type: string
         requestCount:
@@ -8140,6 +8156,8 @@ components:
           $ref: '#/components/schemas/BandwidthLimit'
         eventCount:
           $ref: '#/components/schemas/EventCountLimit'
+        aiApiQuota:
+          $ref: '#/components/schemas/AIAPIQuotaLimit'
       required:
       - type
       title: Throttle Limit
@@ -8185,6 +8203,11 @@ components:
       - $ref: '#/components/schemas/ThrottleLimitBase'
       - $ref: '#/components/schemas/RequestCountLimit_allOf'
       title: Request Count Limit object
+    AIAPIQuotaLimit:
+      allOf:
+      - $ref: '#/components/schemas/ThrottleLimitBase'
+      - $ref: '#/components/schemas/AIAPIQuotaLimit_allOf'
+      title: AI API Quota Limit object
     EventCountLimit:
       allOf:
       - $ref: '#/components/schemas/ThrottleLimitBase'
@@ -10006,6 +10029,30 @@ components:
         requestCount:
           description: Maximum number of requests allowed
           example: 30
+          format: int64
+          type: integer
+      required:
+      - requestCount
+    AIAPIQuotaLimit_allOf:
+      properties:
+        requestCount:
+          description: Maximum number of requests allowed
+          example: 300
+          format: int64
+          type: integer
+        totalTokenCount:
+          description: Maximum number of total tokens allowed
+          example: 800
+          format: int64
+          type: integer
+        promptTokenCount:
+          description: Maximum number of prompt tokens allowed
+          example: 400
+          format: int64
+          type: integer
+        completionTokenCount:
+          description: Maximum number of completion tokens allowed
+          example: 500
           format: int64
           type: integer
       required:

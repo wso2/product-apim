@@ -1,9 +1,0 @@
-<%
-jagg.initializer("errors", {
-
-    preInitialize:function () {
-
-    }
-
-});
-%>

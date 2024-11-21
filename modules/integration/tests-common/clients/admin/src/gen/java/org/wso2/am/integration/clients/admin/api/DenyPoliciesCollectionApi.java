@@ -61,6 +61,7 @@ public class DenyPoliciesCollectionApi {
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
+     * @param query **Search condition**. You can search in attributes by using **\&quot;conditionType:\&quot;** modifier and **\&quot;conditionValue:\&quot;** modifier. Eg. The entry \&quot;conditionType:API\&quot; will result in a match with blocking conditions only if the conditionType is \&quot;API\&quot;. Similarly, \&quot;conditionValue:test/1.0.0\&quot; will result in a match with blocking conditions only if the conditionValue is \&quot;test/1.0.0\&quot;. When you use \&quot;conditionType:API &amp; conditionValue:test/1.0.0\&quot; as a combination, it will result in a match with blocking conditions only if both the conditionType is \&quot;API\&quot; and the conditionValue is \&quot;test/1.0.0\&quot;. If query attribute is provided, this returns the blocking conditions that match the specified attributes. Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -72,7 +73,7 @@ public class DenyPoliciesCollectionApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call throttlingDenyPoliciesGetCall(String accept, String ifNoneMatch, String ifModifiedSince, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call throttlingDenyPoliciesGetCall(String accept, String ifNoneMatch, String ifModifiedSince, String query, final ApiCallback _callback) throws ApiException {
         Object localVarPostBody = null;
 
         // create path and map variables
@@ -80,6 +81,10 @@ public class DenyPoliciesCollectionApi {
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        if (query != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("query", query));
+        }
+
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (accept != null) {
             localVarHeaderParams.put("Accept", localVarApiClient.parameterToString(accept));
@@ -114,10 +119,10 @@ public class DenyPoliciesCollectionApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call throttlingDenyPoliciesGetValidateBeforeCall(String accept, String ifNoneMatch, String ifModifiedSince, final ApiCallback _callback) throws ApiException {
+    private okhttp3.Call throttlingDenyPoliciesGetValidateBeforeCall(String accept, String ifNoneMatch, String ifModifiedSince, String query, final ApiCallback _callback) throws ApiException {
         
 
-        okhttp3.Call localVarCall = throttlingDenyPoliciesGetCall(accept, ifNoneMatch, ifModifiedSince, _callback);
+        okhttp3.Call localVarCall = throttlingDenyPoliciesGetCall(accept, ifNoneMatch, ifModifiedSince, query, _callback);
         return localVarCall;
 
     }
@@ -128,6 +133,7 @@ public class DenyPoliciesCollectionApi {
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
+     * @param query **Search condition**. You can search in attributes by using **\&quot;conditionType:\&quot;** modifier and **\&quot;conditionValue:\&quot;** modifier. Eg. The entry \&quot;conditionType:API\&quot; will result in a match with blocking conditions only if the conditionType is \&quot;API\&quot;. Similarly, \&quot;conditionValue:test/1.0.0\&quot; will result in a match with blocking conditions only if the conditionValue is \&quot;test/1.0.0\&quot;. When you use \&quot;conditionType:API &amp; conditionValue:test/1.0.0\&quot; as a combination, it will result in a match with blocking conditions only if both the conditionType is \&quot;API\&quot; and the conditionValue is \&quot;test/1.0.0\&quot;. If query attribute is provided, this returns the blocking conditions that match the specified attributes. Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @return BlockingConditionListDTO
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -138,8 +144,8 @@ public class DenyPoliciesCollectionApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public BlockingConditionListDTO throttlingDenyPoliciesGet(String accept, String ifNoneMatch, String ifModifiedSince) throws ApiException {
-        ApiResponse<BlockingConditionListDTO> localVarResp = throttlingDenyPoliciesGetWithHttpInfo(accept, ifNoneMatch, ifModifiedSince);
+    public BlockingConditionListDTO throttlingDenyPoliciesGet(String accept, String ifNoneMatch, String ifModifiedSince, String query) throws ApiException {
+        ApiResponse<BlockingConditionListDTO> localVarResp = throttlingDenyPoliciesGetWithHttpInfo(accept, ifNoneMatch, ifModifiedSince, query);
         return localVarResp.getData();
     }
 
@@ -149,6 +155,7 @@ public class DenyPoliciesCollectionApi {
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
+     * @param query **Search condition**. You can search in attributes by using **\&quot;conditionType:\&quot;** modifier and **\&quot;conditionValue:\&quot;** modifier. Eg. The entry \&quot;conditionType:API\&quot; will result in a match with blocking conditions only if the conditionType is \&quot;API\&quot;. Similarly, \&quot;conditionValue:test/1.0.0\&quot; will result in a match with blocking conditions only if the conditionValue is \&quot;test/1.0.0\&quot;. When you use \&quot;conditionType:API &amp; conditionValue:test/1.0.0\&quot; as a combination, it will result in a match with blocking conditions only if both the conditionType is \&quot;API\&quot; and the conditionValue is \&quot;test/1.0.0\&quot;. If query attribute is provided, this returns the blocking conditions that match the specified attributes. Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @return ApiResponse&lt;BlockingConditionListDTO&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
@@ -159,8 +166,8 @@ public class DenyPoliciesCollectionApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<BlockingConditionListDTO> throttlingDenyPoliciesGetWithHttpInfo(String accept, String ifNoneMatch, String ifModifiedSince) throws ApiException {
-        okhttp3.Call localVarCall = throttlingDenyPoliciesGetValidateBeforeCall(accept, ifNoneMatch, ifModifiedSince, null);
+    public ApiResponse<BlockingConditionListDTO> throttlingDenyPoliciesGetWithHttpInfo(String accept, String ifNoneMatch, String ifModifiedSince, String query) throws ApiException {
+        okhttp3.Call localVarCall = throttlingDenyPoliciesGetValidateBeforeCall(accept, ifNoneMatch, ifModifiedSince, query, null);
         Type localVarReturnType = new TypeToken<BlockingConditionListDTO>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
@@ -171,6 +178,7 @@ public class DenyPoliciesCollectionApi {
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to &quot;application/json&quot;)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource (Will be supported in future).  (optional)
+     * @param query **Search condition**. You can search in attributes by using **\&quot;conditionType:\&quot;** modifier and **\&quot;conditionValue:\&quot;** modifier. Eg. The entry \&quot;conditionType:API\&quot; will result in a match with blocking conditions only if the conditionType is \&quot;API\&quot;. Similarly, \&quot;conditionValue:test/1.0.0\&quot; will result in a match with blocking conditions only if the conditionValue is \&quot;test/1.0.0\&quot;. When you use \&quot;conditionType:API &amp; conditionValue:test/1.0.0\&quot; as a combination, it will result in a match with blocking conditions only if both the conditionType is \&quot;API\&quot; and the conditionValue is \&quot;test/1.0.0\&quot;. If query attribute is provided, this returns the blocking conditions that match the specified attributes. Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)  (optional)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -182,9 +190,9 @@ public class DenyPoliciesCollectionApi {
         <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call throttlingDenyPoliciesGetAsync(String accept, String ifNoneMatch, String ifModifiedSince, final ApiCallback<BlockingConditionListDTO> _callback) throws ApiException {
+    public okhttp3.Call throttlingDenyPoliciesGetAsync(String accept, String ifNoneMatch, String ifModifiedSince, String query, final ApiCallback<BlockingConditionListDTO> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = throttlingDenyPoliciesGetValidateBeforeCall(accept, ifNoneMatch, ifModifiedSince, _callback);
+        okhttp3.Call localVarCall = throttlingDenyPoliciesGetValidateBeforeCall(accept, ifNoneMatch, ifModifiedSince, query, _callback);
         Type localVarReturnType = new TypeToken<BlockingConditionListDTO>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
