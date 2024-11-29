@@ -90,17 +90,10 @@ public class GatewayRestAPITestCase extends APIMIntegrationBaseTest {
         faultAttributeMap.put("headerName", "FaultTestHeader");
         faultAttributeMap.put("headerValue", "FaultTestValue");
 
-        List<OperationPolicyDTO> requestOpList = getPolicyList(policyName, commonPolicyMap, requestAttributeMap);
-        requestOpList.get(0).setPolicyVersion("v2");
-        List<OperationPolicyDTO> responseOpList = getPolicyList(policyName, commonPolicyMap, responseAttributeMap);
-        responseOpList.get(0).setPolicyVersion("v2");
-        List<OperationPolicyDTO> faultOpList = getPolicyList(policyName, commonPolicyMap, faultAttributeMap);
-        faultOpList.get(0).setPolicyVersion("v2");
-
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setRequest(requestOpList);
-        apiOperationPoliciesDTO.setResponse(responseOpList);
-        apiOperationPoliciesDTO.setFault(faultOpList);
+        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, commonPolicyMap, requestAttributeMap));
+        apiOperationPoliciesDTO.setResponse(getPolicyList(policyName, commonPolicyMap, responseAttributeMap));
+        apiOperationPoliciesDTO.setFault(getPolicyList(policyName, commonPolicyMap, faultAttributeMap));
 
         APIDTO api = restAPIPublisher.getAPIByID(apiId);
         api.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);

@@ -469,12 +469,9 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
         attributeMap.put("headerName", "TestHeader");
         attributeMap.put("headerValue", "TestValue");
 
-        List<OperationPolicyDTO> opList = getPolicyList(policyName, policyMap, attributeMap);
-        opList.get(0).setPolicyVersion("v2");
-
         APIOperationPoliciesDTO apiOperationPoliciesDTO = new APIOperationPoliciesDTO();
-        apiOperationPoliciesDTO.setRequest(opList);
-        apiOperationPoliciesDTO.setResponse(opList);
+        apiOperationPoliciesDTO.setRequest(getPolicyList(policyName, policyMap, attributeMap));
+        apiOperationPoliciesDTO.setResponse(getPolicyList(policyName, policyMap, attributeMap));
 
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
         restAPIPublisher.updateAPI(apidto);
@@ -600,11 +597,8 @@ public class OperationPolicyTestCase extends APIManagerLifecycleBaseTest {
             responsePolicyList.add(getPolicyList(policyList[i], policyMap, null).get(0));
         }
 
-        List<OperationPolicyDTO> opList = getPolicyList(policyName, policyMap, attributeMap);
-        opList.get(0).setPolicyVersion("v2");
-
-        requestPolicyList.add(opList.get(0));
-        responsePolicyList.add(opList.get(0));
+        requestPolicyList.add(getPolicyList(policyName, policyMap, attributeMap).get(0));
+        responsePolicyList.add(getPolicyList(policyName, policyMap, attributeMap).get(0));
         apiOperationPoliciesDTO.setRequest(requestPolicyList);
         apiOperationPoliciesDTO.setResponse(responsePolicyList);
         apidto.getOperations().get(0).setOperationPolicies(apiOperationPoliciesDTO);
