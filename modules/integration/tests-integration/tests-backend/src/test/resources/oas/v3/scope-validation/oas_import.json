@@ -1,0 +1,262 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ExampleAPI",
+    "description": "API with meaningful resources following the specified template.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "default": []
+    }
+  ],
+  "paths": {
+    "/products/catalog/{categoryId}": {
+      "get": {
+        "summary": "Get products by category",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "description": "The ID of the product category.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of products in the specified category."
+          },
+          "404": {
+            "description": "Category not found."
+          }
+        },
+        "security": [
+          {
+            "default": [
+              "ScopeA"
+            ]
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited",
+        "x-mediation-script": "mc.setProperty('CONTENT_TYPE', 'application/json');\nmc.setPayloadJSON('{ \"data\" : \"sample JSON\"}');",
+        "x-wso2-application-security": {
+          "security-types": [
+            "oauth2"
+          ],
+          "optional": false
+        }
+      }
+    },
+    "/products/popular": {
+      "get": {
+        "summary": "Get popular products",
+        "responses": {
+          "200": {
+            "description": "List of popular products retrieved successfully."
+          }
+        },
+        "security": [
+          {
+            "default": [
+              "ScopeB"
+            ]
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited",
+        "x-mediation-script": "mc.setProperty('CONTENT_TYPE', 'application/json');\nmc.setPayloadJSON('{ \"data\" : \"sample JSON\"}');",
+        "x-wso2-application-security": {
+          "security-types": [
+            "oauth2"
+          ],
+          "optional": false
+        }
+      }
+    },
+    "/products/*": {
+      "get": {
+        "summary": "Retrieve product details with wildcard path",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Optional query string to filter products by name or attributes.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Products retrieved successfully."
+          },
+          "404": {
+            "description": "Product not found."
+          }
+        },
+        "security": [
+          {
+            "default": [
+              "ScopeC"
+            ]
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited",
+        "x-mediation-script": "mc.setProperty('CONTENT_TYPE', 'application/json');\nmc.setPayloadJSON('{ \"data\" : \"sample JSON\"}');",
+        "x-wso2-application-security": {
+          "security-types": [
+            "oauth2"
+          ],
+          "optional": false
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "summary": "Retrieve all orders",
+        "responses": {
+          "200": {
+            "description": "List of orders retrieved successfully."
+          }
+        },
+        "security": [
+          {
+            "default": [
+              "ScopeD"
+            ]
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited",
+        "x-mediation-script": "mc.setProperty('CONTENT_TYPE', 'application/json');\nmc.setPayloadJSON('{ \"data\" : \"sample JSON\"}');",
+        "x-wso2-application-security": {
+          "security-types": [
+            "oauth2"
+          ],
+          "optional": false
+        }
+      }
+    },
+    "/*": {
+      "get": {
+        "summary": "Catch-all route",
+        "responses": {
+          "200": {
+            "description": "Fallback response for undefined routes."
+          },
+          "404": {
+            "description": "Resource not found."
+          }
+        },
+        "security": [
+          {
+            "default": [
+              "ScopeE"
+            ]
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited",
+        "x-mediation-script": "mc.setProperty('CONTENT_TYPE', 'application/json');\nmc.setPayloadJSON('{ \"data\" : \"sample JSON\"}');",
+        "x-wso2-application-security": {
+          "security-types": [
+            "oauth2"
+          ],
+          "optional": false
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "default": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://test.com",
+            "scopes": {
+              "ScopeA": "",
+              "ScopeC": "",
+              "ScopeB": "",
+              "ScopeD": "",
+              "ScopeE": ""
+            },
+            "x-scopes-bindings": {
+              "ScopeA": "admin",
+              "ScopeC": "admin",
+              "ScopeB": "admin",
+              "ScopeE": "admin",
+              "ScopeD": "admin"
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-wso2-auth-header": "Authorization",
+  "x-wso2-cors": {
+    "corsConfigurationEnabled": false,
+    "accessControlAllowOrigins": [
+      "*"
+    ],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": [
+      "authorization",
+      "Access-Control-Allow-Origin",
+      "Content-Type",
+      "SOAPAction",
+      "apikey",
+      "Internal-Key"
+    ],
+    "accessControlAllowMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "DELETE",
+      "PATCH",
+      "OPTIONS"
+    ]
+  },
+  "x-wso2-production-endpoints": {
+    "urls": [
+      "http://localhost"
+    ],
+    "type": "http"
+  },
+  "x-wso2-sandbox-endpoints": {
+    "urls": [
+      "http://localhost"
+    ],
+    "type": "http"
+  },
+  "x-wso2-basePath": "/exampleapi/1.0.0",
+  "x-wso2-transports": [
+    "http",
+    "https"
+  ],
+  "x-wso2-application-security": {
+    "security-types": [
+      "oauth2"
+    ],
+    "optional": false
+  },
+  "x-wso2-response-cache": {
+    "enabled": false,
+    "cacheTimeoutInSeconds": 300
+  }
+}
