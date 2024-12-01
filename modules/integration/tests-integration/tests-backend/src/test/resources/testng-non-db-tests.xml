@@ -43,6 +43,7 @@
         <classes>
             <class name="org.wso2.am.integration.tests.websocket.APIMANAGER5869WSGayewatURLTestCase"/>
             <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPIScopeTestCase"/>
         </classes>
     </test>
 

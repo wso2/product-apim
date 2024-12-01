@@ -140,6 +140,7 @@
             <class name="org.wso2.am.integration.tests.restapi.GatewayRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.ServiceCatalogRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.other.AllowedScopesTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.AllowedScopesTestWithCorsDisabled"/>
             <class name="org.wso2.am.integration.tests.other.SecondaryUserStoreCaseInsensitiveTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
