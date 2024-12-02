@@ -273,6 +273,8 @@
   "keystore.ssl_profile.default.servers": "*",
   "keystore.listener_profile.ssl_verify_client": "optional",
   "keystore.listener_profile.bind_address": "0.0.0.0",
+  "broker.performance_tuning.delivery.topic_message_delivery_strategy.strategy_name": "DISCARD_NONE",
+  "broker.performance_tuning.delivery.topic_message_delivery_strategy.delivery_timeout": "60",
   "broker.transport.amqp.enabled": true,
   "broker.transport.amqp.bind_address": "0.0.0.0",
   "broker.transport.amqp.default_connection.enabled": true,
