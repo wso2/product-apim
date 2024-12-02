@@ -335,14 +335,18 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
     </then>
     <else>
                         #if( $environmentType !='hybrid' )
+                            #if( $resource.getAuthType() == 'None' && $environmentType == 'sandbox'
+                                && $endpoint_config.get("sandbox_endpoints") )
+                                #draw_endpoint( "sandbox" $endpoint_config )
+                            #else
         <payloadFactory>
             <format>
                 <error xmlns="">
-                            #if( $environmentType == 'production' )
+                                #if( $environmentType == 'production' )
                     <message>Sandbox Key Provided for Production Gateway</message>
-                            #elseif( $environmentType == 'sandbox' )
+                                #elseif( $environmentType == 'sandbox' )
                     <message>Production Key Provided for Sandbox Gateway</message>
-                            #end
+                                #end
                 </error>
             </format>
         </payloadFactory>
@@ -352,6 +356,7 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
         <property name="HTTP_SC" value="401" scope="axis2"/>
         <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
         <send/>
+                            #end
                         #else
                             #if( $endpoint_config.get("production_endpoints")
                                 && $endpoint_config.get("sandbox_endpoints") )
@@ -359,7 +364,11 @@ $in_sequences.get("$resource.getUriTemplate()").get($uri)
                             #elseif( $endpoint_config.get("production_endpoints") )
         <sequence key="_sandbox_key_error_"/>
                             #elseif( $endpoint_config.get("sandbox_endpoints") )
+                                #if( $resource.getAuthType() == 'None' )
+                                    #draw_endpoint( "sandbox" $endpoint_config )
+                                #else
         <sequence key="_production_key_error_"/>
+                                #end
                             #end
                         #end
     </else>
