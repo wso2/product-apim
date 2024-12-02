@@ -707,6 +707,7 @@
   "apim.gateway_type": "Synapse",
   "apim.enable_secure_vault": "false",
   "apim.jwt.enable": false,
+  "apim.jwt.enable_jwks_api": true,
   "apim.jwt.header": "X-JWT-Assertion",
   "apim.jwt.claim_dialect": "http://wso2.org/claims",
   "apim.jwt.convert_dialect": false,
@@ -2460,5 +2461,6 @@
   "multi_tenancy.stratos.manager_service.admin_username": "admin",
   "multi_tenancy.stratos.manager_service.admin_password": "admin",
   "multi_tenancy.stratos.google_analytics_url": "http://google-analytics.js",
-  "multi_tenancy.stratos.sso_loading_message": "Loading..."
+  "multi_tenancy.stratos.sso_loading_message": "Loading...",
+  "request_parameters.allow_sensitive_data_in_url": true
 }

@@ -35,7 +35,8 @@
     <JWTConfiguration>
         <!-- Enable/Disable JWT generation. Default is false. -->
         <EnableJWTGeneration>{{apim.jwt.enable}}</EnableJWTGeneration>
-
+        <!-- Enable/Disable JWKS in memory API deployment. Default is true. -->
+        <EnableJWKSApi>{{apim.jwt.enable_jwks_api}}</EnableJWKSApi>
         <!-- Name of the security context header to be added to the validated requests. -->
         <JWTHeader>{{apim.jwt.header}}</JWTHeader>
 
@@ -1539,6 +1540,7 @@
         <Username>{{apim.proxy_config.username}}</Username>
         <Password>{{apim.proxy_config.password}}</Password>
         <NonProxyHosts>{{apim.proxy_config.nonProxyHosts}}</NonProxyHosts>
+        <TargetProxyHosts>{{apim.proxy_config.targetProxyHosts}}</TargetProxyHosts>
         <Protocol>{{apim.proxy_config.protocol}}</Protocol>
     </ProxyConfig>
      <!--This parameter is used to Enable the password changing feature in devportal. When this is enabled, a user can
