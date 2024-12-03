@@ -40,7 +40,7 @@
   "subtypeConfiguration": {
     "subtype": "AIAPI",
     "configuration": {
-      "llmProviderName": "MistralAI",
+      "llmProviderName": "TestAIService",
       "llmProviderApiVersion": "1.0.0"
     }
   },

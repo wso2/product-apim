@@ -30,6 +30,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.clients.admin.ApiResponse;
+import org.wso2.am.integration.clients.admin.api.dto.LLMProviderResponseDTO;
+import org.wso2.am.integration.clients.admin.api.dto.LLMProviderSummaryResponseDTO;
+import org.wso2.am.integration.clients.admin.api.dto.LLMProviderSummaryResponseListDTO;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.APIKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
@@ -51,7 +55,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -63,7 +69,7 @@ import static org.testng.Assert.assertNotNull;
 /**
  * AI API Test Case
  */
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class AIAPITestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(AIAPITestCase.class);
@@ -90,14 +96,44 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     private int lowerPortLimit = 9950;
     private int upperPortLimit = 9999;
 
+    private String llmProviderId;
+    private final String llmProviderName = "TestAIService";
+    private final String llmProviderApiVersion = "1.0.0";
 
+    private final String llmProviderDescription = "This is a copy of MistralAI service";
+
+    private final String incorrectLlmProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
+            "\"metadata\":[{\"attributeName\":\"model\"," +
+            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.model\"}," +
+            "{\"attributeName\":\"promptTokenCount\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$" +
+            ".usage.prompt_tokens\"},{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
+            "\"attributeIdentifier\":\"$.usage.completion_tokens\"},{\"attributeName\":\"totalTokenCount\"," +
+            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.total_tokens\"}]," +
+            "\"authHeader\":\"Authorization\"}";
+
+    private final String correctLlmProviderConfigurations = "{\"connectorType\":\"mistralAi_1.0.0\"," +
+            "\"metadata\":[{\"attributeName\":\"model\"," +
+            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.model\"}," +
+            "{\"attributeName\":\"promptTokenCount\",\"inputSource\":\"payload\",\"attributeIdentifier\":\"$" +
+            ".usage.prompt_tokens\"},{\"attributeName\":\"completionTokenCount\",\"inputSource\":\"payload\"," +
+            "\"attributeIdentifier\":\"$.usage.completion_tokens\"},{\"attributeName\":\"totalTokenCount\"," +
+            "\"inputSource\":\"payload\",\"attributeIdentifier\":\"$.usage.total_tokens\"}]," +
+            "\"authHeader\":\"Authorization\"}";
+
+    private List<String> defaultLlmProviders = new ArrayList<>();
+
+    private final String apiDefinitionFileName = "mistral-def.json";
+
+    private final String mistralResponseFileName = "mistral-response.json";
     @Factory(dataProvider = "userModeDataProvider")
     public AIAPITestCase(TestUserMode userMode) {
+
         this.userMode = userMode;
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
+
         return new Object[][]{
                 {TestUserMode.SUPER_TENANT_ADMIN},
                 {TestUserMode.TENANT_ADMIN},
@@ -106,7 +142,11 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
+
         super.init(userMode);
+        defaultLlmProviders.add("MistralAI");
+        defaultLlmProviders.add("OpenAI");
+        defaultLlmProviders.add("AzureOpenAI");
 
         // Add application
         ApplicationDTO applicationDTO = restAPIStore.addApplication(applicationName,
@@ -115,18 +155,101 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(applicationId);
 
         resourcePath = TestConfigurationProvider.getResourceLocation() + "ai-api" + File.separator;
-        mistralResponse = readFile(resourcePath + "mistral-response.json");
+        mistralResponse = readFile(resourcePath + mistralResponseFileName);
 
         // Start WireMock server
         startWiremockServer();
     }
 
     /**
+     * Tests the retrieval of predefined LLM providers and verifies all are present.
+     * Ensures that all predefined LLM providers are retrieved successfully.
+     */
+    @Test(groups = {"wso2.am"}, description = "Test retrieve LLM Providers")
+    public void testPredefinedLLMProviders() throws Exception {
+
+        List<String> copyDefaultLlmProviders = new ArrayList<>(defaultLlmProviders);
+        ApiResponse<LLMProviderSummaryResponseListDTO> llmProviders = restAPIAdmin.getLLMProviders();
+        assertEquals(Response.Status.OK.getStatusCode(),
+                llmProviders.getStatusCode(), "Failed to retrieve LLM providers");
+        for (LLMProviderSummaryResponseDTO provider : llmProviders.getData().getList()) {
+            if (defaultLlmProviders.contains(provider.getName())) {
+                copyDefaultLlmProviders.remove(provider.getName());
+            }
+        }
+        assertEquals(0,
+                copyDefaultLlmProviders.size(), "Failed to retrieve all predefined LLM providers");
+    }
+
+    /**
+     * Adds a custom LLM provider and verifies successful creation.
+     * Ensures the provider is created with the given details and retrieves its ID.
+     */
+    @Test(groups = {"wso2.am"}, description = "Add LLM Provider",
+            dependsOnMethods = "testPredefinedLLMProviders")
+    public void addCustomLLMProvider() throws Exception {
+
+        String originalDefinition = readFile(resourcePath + apiDefinitionFileName);
+        File file = getTempFileWithContent(originalDefinition);
+
+        ApiResponse<LLMProviderResponseDTO> createProviderResponse = restAPIAdmin.addLLMProvider(llmProviderName,
+                llmProviderApiVersion, llmProviderDescription, incorrectLlmProviderConfigurations, file);
+
+        assertEquals(Response.Status.CREATED.getStatusCode(),
+                createProviderResponse.getStatusCode(), "Failed to add a LLM provider");
+        llmProviderId = createProviderResponse.getData().getId();
+    }
+
+    /**
+     * Retrieves a specified LLM provider and verifies the provider's details.
+     * Ensures the provider is retrieved successfully and the name and API version match.
+     */
+    @Test(groups = {"wso2.am"}, description = "Get LLM Provider",
+            dependsOnMethods = "addCustomLLMProvider")
+    public void retrieveCustomLLMProvider() throws Exception {
+
+        ApiResponse<LLMProviderResponseDTO> getProviderResponse = restAPIAdmin.getLLMProvider(llmProviderId);
+        assertEquals(Response.Status.OK.getStatusCode(),
+                getProviderResponse.getStatusCode(), "Failed to retrieve LLM provider");
+        assertEquals(getProviderResponse.getData().getName(), llmProviderName, "LLM provider name does not " +
+                "match");
+        assertEquals(getProviderResponse.getData().getApiVersion(),
+                llmProviderApiVersion, "LLM provider API version does not match");
+    }
+
+    /**
+     * Updates a specified LLM provider with new configurations and verifies the update.
+     * Ensures the updated provider is retrieved successfully and the configurations are correct.
+     */
+    @Test(groups = {"wso2.am"}, description = "Update LLM Provider",
+            dependsOnMethods = "addCustomLLMProvider")
+    public void updateCustomLLMProvider() throws Exception {
+
+        String originalDefinition = readFile(resourcePath + apiDefinitionFileName);
+        File file = getTempFileWithContent(originalDefinition);
+
+        ApiResponse<LLMProviderResponseDTO> updateProviderResponse = restAPIAdmin.updateLLMProvider(llmProviderId,
+                llmProviderName, llmProviderApiVersion, llmProviderDescription,
+                correctLlmProviderConfigurations, file);
+
+        assertEquals(Response.Status.OK.getStatusCode(),
+                updateProviderResponse.getStatusCode(), "Failed to update LLM provider");
+
+        ApiResponse<LLMProviderResponseDTO> getProviderResponse = restAPIAdmin.getLLMProvider(llmProviderId);
+        assertEquals(Response.Status.OK.getStatusCode(),
+                getProviderResponse.getStatusCode(), "Failed to retrieve LLM provider");
+        assertEquals(getProviderResponse.getData().getConfigurations(),
+                correctLlmProviderConfigurations, "Failed to update LLM provider configurations");
+    }
+
+    /**
      * Test Mistral AI API creation, deployment, and publishing
      */
-    @Test(groups = { "wso2.am" }, description = "Test Mistral AI API creation, deployment and publishing")
+    @Test(groups = {"wso2.am"}, description = "Test Mistral AI API creation, deployment and publishing",
+            dependsOnMethods = "updateCustomLLMProvider")
     public void testMistralAIAPICreationAndPublish() throws Exception {
-        String originalDefinition = readFile(resourcePath + "mistral-def.json");
+
+        String originalDefinition = readFile(resourcePath + apiDefinitionFileName);
         String additionalProperties = readFile(resourcePath + "mistral-add-props.json");
         JSONObject additionalPropertiesObj = new JSONObject(additionalProperties);
 
@@ -162,7 +285,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     /**
      * Test Mistral AI API invocation
      */
-    @Test(groups = { "wso2.am" }, description = "Test AI API invocation",
+    @Test(groups = {"wso2.am"}, description = "Test AI API invocation",
             dependsOnMethods = "testMistralAIAPICreationAndPublish")
     public void testMistralAIApiInvocation() throws Exception {
 
@@ -191,17 +314,43 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         assertEquals(mistralResponse, serviceResponse.getData(), "Mistral AI API response mismatch");
     }
 
-    @AfterClass(alwaysRun = true)
-    public void destroyAPIs() throws Exception {
-        if (wireMockServer != null) {
-            wireMockServer.stop();
-        }
+    /**
+     * Deletes a specified LLM provider after removing API subscriptions and applications.
+     * Verifies that the provider is successfully deleted and no longer listed.
+     */
+    @Test(groups = {"wso2.am"}, description = "Delete LLM Provider",
+            dependsOnMethods = "testMistralAIApiInvocation")
+    public void deleteLLMProvider() throws Exception {
+
         restAPIStore.removeAPISubscriptionByName(mistralAPIName, mistralAPIVersion, apiProvider, applicationName);
         restAPIStore.deleteApplication(applicationId);
         restAPIPublisher.deleteAPI(mistralAPIId);
+
+        ApiResponse<Void> deleteProviderResponse = restAPIAdmin.deleteLLMProvider(llmProviderId);
+        assertEquals(Response.Status.OK.getStatusCode(),
+                deleteProviderResponse.getStatusCode(), "Failed to delete LLM provider");
+
+        ApiResponse<LLMProviderSummaryResponseListDTO> llmProviders = restAPIAdmin.getLLMProviders();
+        assertEquals(Response.Status.OK.getStatusCode(),
+                llmProviders.getStatusCode(), "Failed to retrieve LLM providers");
+        for (LLMProviderSummaryResponseDTO provider : llmProviders.getData().getList()) {
+            if (provider.getName().equals(llmProviderName)) {
+                Assert.fail("LLM Provider " + llmProviderName + " has not deleted correctly");
+            }
+        }
+
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void destroyAPIs() throws Exception {
+
+        if (wireMockServer != null) {
+            wireMockServer.stop();
+        }
     }
 
     private File getTempFileWithContent(String content) throws IOException {
+
         File temp = File.createTempFile("swagger", ".json");
         try (BufferedWriter out = new BufferedWriter(new FileWriter(temp))) {
             out.write(content);
@@ -211,6 +360,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
     }
 
     private void startWiremockServer() throws Exception {
+
         endpointPort = getAvailablePort();
         wireMockServer = new WireMockServer(options().port(endpointPort));
 
@@ -222,13 +372,13 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
         log.info("Wiremock server started on port " + endpointPort);
     }
 
-
     /**
      * Find a free port to start backend WebSocket server in given port range
      *
      * @return Available Port Number
      */
     private int getAvailablePort() {
+
         while (lowerPortLimit < upperPortLimit) {
             if (isPortFree(lowerPortLimit)) {
                 return lowerPortLimit;
@@ -245,6 +395,7 @@ public class AIAPITestCase extends APIMIntegrationBaseTest {
      * @return status
      */
     private boolean isPortFree(int port) {
+
         Socket s = null;
         try {
             s = new Socket(endpointHost, port);
