@@ -1,0 +1,12 @@
+<sequence name="_api_blocked_sequence_" xmlns="http://ws.apache.org/ns/synapse">
+    <payloadFactory media-type="json">
+        <format>{"code":"700700","type":"API blocked","description":"This API has been blocked temporarily. Please try again later or contact the system administrators."}
+        </format>
+        <args/>
+    </payloadFactory>
+    <property name="HTTP_SC" value="503" scope="axis2"/>
+    <property name="RESPONSE" value="true"/>
+    <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+    <header name="To" action="remove"/>
+
+</sequence>
