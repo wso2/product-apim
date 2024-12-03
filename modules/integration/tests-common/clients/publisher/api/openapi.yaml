@@ -798,6 +798,382 @@ paths:
       - APIs
       x-contentType: application/json
       x-accepts: application/json
+  /apis/{apiId}/sequence-backend/{type}/content:
+    get:
+      description: This operation can be used to get Sequence of the Custom Backend
+      operationId: getSequenceBackendContent
+      parameters:
+      - description: |
+          Type of the Endpoint.
+          SANDBOX or PRODUCTION
+        explode: false
+        in: path
+        name: type
+        required: true
+        schema:
+          maxLength: 15
+          type: string
+        style: simple
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/xml:
+              schema:
+                format: binary
+                type: string
+          description: |
+            OK.
+            Requested API Custom Backend is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:api_import_export
+        - apim:api_product_import_export
+      summary: Get Sequence of Custom Backend
+      tags:
+      - APIs
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/7a2298c4-c905-403f-8fac-38c73301631f/custom-backend/7a2298c4-c915-483f-8fac-38c73301631f/content"'
+      x-accepts: application/json
+  /apis/{apiId}/sequence-backend/{type}:
+    delete:
+      description: This operation can be used to remove the Sequence Backend of the
+        API
+      operationId: sequenceBackendDelete
+      parameters:
+      - description: |
+          Type of the Endpoint.
+          SANDBOX or PRODUCTION
+        explode: false
+        in: path
+        name: type
+        required: true
+        schema:
+          maxLength: 15
+          type: string
+        style: simple
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            Resource successfully deleted.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "409":
+          content:
+            application/json:
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict. Specified resource already exists.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:api_delete
+        - apim:api_manage
+        - apim:api_import_export
+      summary: Delete Sequence Backend of the API
+      tags:
+      - APIs
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/7a2298c4-c905-403f-8fac-38c73301631f/custom-backend/7a2298c4-c915-483f-8fac-38c73301631f"'
+      x-accepts: application/json
+  /apis/{apiId}/sequence-backend:
+    get:
+      description: This operation can be used to get Sequence Backend data of the
+        API
+      operationId: getSequenceBackendData
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SequenceBackendList'
+          description: |
+            OK.
+            Requested API Sequence Backend is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:api_view
+        - apim:api_manage
+        - apim:api_import_export
+        - apim:api_product_import_export
+      summary: Get Sequence Backends of the API
+      tags:
+      - APIs
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v4/apis/7a2298c4-c905-403f-8fac-38c73301631f/custom-backend/7a2298c4-c915-483f-8fac-38c73301631f"'
+      x-accepts: application/json
+    put:
+      description: This operation can be used to change the endpoint of the API to
+        Sequence Backend
+      operationId: sequenceBackendUpdate
+      parameters:
+      - description: |
+          **API ID** consisting of the **UUID** of the API.
+        explode: false
+        in: path
+        name: apiId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                sequence:
+                  description: The sequence that needs to be uploaded.
+                  format: binary
+                  type: string
+                type:
+                  description: Type of the Endpoint
+                  type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+          description: |
+            OK.
+            Successful response with updated API object
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              explode: false
+              schema:
+                type: string
+              style: simple
+            Content-Type:
+              description: |
+                The content type of the body.
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "403":
+          content:
+            application/json:
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has
+                  been specified
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden. The request must be conditional but no condition
+            has been specified.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "409":
+          content:
+            application/json:
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict. Specified resource already exists.
+        "412":
+          content:
+            application/json:
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the
+                  preconditions is not met
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Precondition Failed. The request has not been performed because
+            one of the preconditions is not met.
+      security:
+      - OAuth2Security:
+        - apim:api_create
+        - apim:api_manage
+        - apim:api_publish
+      summary: Upload Sequence Sequence as the Endpoint of the API
+      tags:
+      - APIs
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v4/apis/7a2298c4-c905-403f-8fac-38c73301631f/custom-backend"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
   /apis/{apiId}/reimport-service:
     put:
       description: This operation can be used to re-import the Service used to create
@@ -17017,6 +17393,55 @@ components:
       description: Unsupported Media Type. The entity of the request was not in a
         supported format.
   schemas:
+    SequenceBackendList:
+      example:
+        count: 1
+        list:
+        - sequence: ""
+          sequenceId: 943d3002-000c-42d3-a1b9-d6559f8a4d49
+          sequenceName: 943d3002-000c-42d3-a1b9-d6559f8a4d49-SANDBOX
+          sequenceType: SANDBOX
+        - sequence: ""
+          sequenceId: 943d3002-000c-42d3-a1b9-d6559f8a4d49
+          sequenceName: 943d3002-000c-42d3-a1b9-d6559f8a4d49-SANDBOX
+          sequenceType: SANDBOX
+      properties:
+        count:
+          description: |
+            Number of Sequence Backends returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/SequenceBackend'
+          type: array
+      title: Sequence Backend List
+      type: object
+    SequenceBackend:
+      example:
+        sequence: ""
+        sequenceId: 943d3002-000c-42d3-a1b9-d6559f8a4d49
+        sequenceName: 943d3002-000c-42d3-a1b9-d6559f8a4d49-SANDBOX
+        sequenceType: SANDBOX
+      properties:
+        sequenceId:
+          example: 943d3002-000c-42d3-a1b9-d6559f8a4d49
+          readOnly: true
+          type: string
+        sequenceName:
+          example: 943d3002-000c-42d3-a1b9-d6559f8a4d49-SANDBOX
+          readOnly: true
+          type: string
+        sequenceType:
+          example: SANDBOX
+          readOnly: true
+          type: string
+        sequence:
+          format: binary
+          readOnly: true
+          type: string
+      title: Sequence Backend
+      type: object
     Comment:
       example:
         updatedTime: 2021-02-12-19:57:25
