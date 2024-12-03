@@ -1,0 +1,651 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ WSO2 Inc. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0" metadata-complete="true">
+    <absolute-ordering />
+
+    <!--  Custom Page configurations -->
+    <!-- *************** Application specific configurations ********************** -->
+    <!--context-param>
+        <param-name>ServiceProviderApp-/samlsso_login.do</param-name>
+        <param-value>http://localhost:8080/customauthenticationendpoint/login.do</param-value>
+    </context-param-->
+    <!--context-param>
+        <param-name>ServiceProviderApp-/oauth2_authz.do</param-name>
+        <param-value>http://localhost:8080/authenticationendpoint/oauth2_authz.do</param-value>
+    </context-param-->
+    <!--context-param>
+        <param-name>ServiceProviderApp-/oauth2_error.do</param-name>
+        <param-value>http://localhost:8080/authenticationendpoint/oauth2_error.do</param-value>
+    </context-param-->
+    <!--context-param>
+        <param-name>ServiceProviderApp-/oauth2_consent.do</param-name>
+        <param-value>http://localhost:8080/authenticationendpoint/oauth2_consent.do</param-value>
+    </context-param-->
+    <!-- **************** End of Application specific configurations ************************* -->
+
+    <!-- *************** Global configurations ********************** -->
+    <!--context-param>
+        <param-name>/retry.do</param-name>
+        <param-value>http://localhost:8080/customauthenticationendpoint/retry.do?type=retry.do</param-value>
+    </context-param-->
+    <!-- *************** End of Global configurations ********************** -->
+
+    <!-- *************** Account Recovery Endpoint Context URL Configuration ********************** -->
+    {% if authenticationendpoint.account_recovery_endpoint_url is defined %}
+    <context-param>
+       <param-name>IdentityManagementEndpointContextURL</param-name>
+       <param-value>{{ authenticationendpoint.account_recovery_endpoint_url }}</param-value>
+   </context-param>
+   {% endif %}
+    <context-param>
+       <param-name>AccountRecoveryRESTEndpointURL</param-name>
+       <param-value>/t/tenant-domain/api/identity/user/v1.0/</param-value>
+   </context-param>
+    <!--context-param>
+        <param-name>EnableRecoveryEndpoint</param-name>
+        <param-value>true</param-value>
+    </context-param-->
+    <!--context-param>
+        <param-name>EnableSelfSignUpEndpoint</param-name>
+        <param-value>true</param-value>
+    </context-param-->
+
+    {% if authenticationendpoint.registration_url is defined %}
+    <context-param>
+        <param-name>AccountRegisterEndpointURL</param-name>
+        <param-value>{{ authenticationendpoint.registration_url }}</param-value>
+    </context-param>
+    {% endif %}
+
+    <!-- *************** My Account URL ********************** -->
+    {% if authenticationendpoint.my_account_url is defined %}
+        <context-param>
+            <param-name>MyAccountURL</param-name>
+            <param-value>{{ authenticationendpoint.my_account_url }}</param-value>
+        </context-param>
+    {% endif %}
+
+    {% if authenticationendpoint.console_url is defined %}
+     <!-- *************** Console URL ********************** -->
+        <context-param>
+            <param-name>ConsoleURL</param-name>
+            <param-value>{{ authenticationendpoint.console_url }}</param-value>
+        </context-param>
+    {% endif %}
+
+    <!-- *************** End of Account Recovery Endpoint Context URL Configuration ********************** -->
+    <!-- *************** Identity Server Endpoint URL Configuration ********************** -->
+    {% if authenticationendpoint.identity_server_endpoint_url is defined %}
+    <context-param>
+        <param-name>IdentityServerEndpointContextURL</param-name>
+        <param-value>{{ authenticationendpoint.identity_server_endpoint_url }}</param-value>
+    </context-param>
+    {% endif %}
+    <!-- *************** End of Identity Server Endpoint URL Configuration ********************** -->
+    <!--context-param>
+        <param-name>EnableAuthenticationWithAuthenticationRESTAPI</param-name>
+        <param-value>true</param-value>
+    </context-param-->
+
+    <!-- *************** Authentication REST API URL Configuration ********************** -->
+    {% if authenticationendpoint.auth_rest_endpoint_url is defined %}
+    <context-param>
+        <param-name>AuthenticationRESTEndpointURL</param-name>
+        <param-value>{{ authenticationendpoint.auth_rest_endpoint_url }}</param-value>
+    </context-param>
+    {% endif %}
+    <!-- *************** End of Authentication REST API URL Configuration ********************** -->
+
+    <!-- *************** ToS URL Configuration ********************** -->
+    {% if authenticationendpoint.terms_of_service_url is defined %}
+    <context-param>
+        <param-name>TermsOfServiceURL</param-name>
+        <param-value>{{ authenticationendpoint.terms_of_service_url }}</param-value>
+    </context-param>
+    {% endif %}
+    <!-- *************** End of ToS URL Configuration ********************** -->
+
+    <!-- *************** Privacy Policy URL Configuration ********************** -->
+    {% if authenticationendpoint.privacy_policy_url is defined %}
+    <context-param>
+        <param-name>PrivacyPolicyURL</param-name>
+        <param-value>{{ authenticationendpoint.privacy_policy_url }}</param-value>
+    </context-param>
+    {% endif %}
+    <!-- *************** End of Privacy Policy URL Configuration ********************** -->
+
+    <!--Display scopes in the consent page.-->
+    <context-param>
+        <param-name>displayScopes</param-name>
+        <param-value>true</param-value>
+    </context-param>
+
+    <!-- *************** Authentication Portal Context Parameters ********************** -->
+    {% if authenticationendpoint.context_params is defined %}
+    {% for key, value in authenticationendpoint.context_params.items() %}
+    <context-param>
+        <param-name>{{ key }}</param-name>
+        <param-value>{{ value }}</param-value>
+    </context-param>
+    {% endfor %}
+    {% endif %}
+    <!-- *************** End of Authentication Portal Context Parameters ********************** -->
+
+    <filter>
+        <filter-name>HttpHeaderSecurityFilter</filter-name>
+        <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+        <init-param>
+            <param-name>hstsEnabled</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>HttpHeaderSecurityFilter</filter-name>
+        <url-pattern>*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>AuthenticationEndpointFilter</filter-name>
+        <filter-class>
+            org.wso2.carbon.identity.application.authentication.endpoint.util.filter.AuthenticationEndpointFilter
+        </filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>AuthenticationEndpointFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>ContentTypeBasedCachePreventionFilter</filter-name>
+        <filter-class>
+           org.wso2.carbon.ui.filters.cache.ContentTypeBasedCachePreventionFilter
+        </filter-class>
+        <init-param>
+           <param-name>patterns</param-name>
+           <param-value>"text/html.*" ,"application/json" ,"plain/text"</param-value>
+        </init-param>
+        <init-param>
+           <param-name>filterAction</param-name>
+           <param-value>enforce</param-value>
+        </init-param>
+        <init-param>
+           <param-name>httpHeaders</param-name>
+           <param-value>
+               Cache-Control: no-store, no-cache, must-revalidate, private
+           </param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>ContentTypeBasedCachePreventionFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+
+    <listener>
+        <listener-class>
+            org.wso2.carbon.identity.application.authentication.endpoint.util.listener.AuthenticationEndpointContextListener
+        </listener-class>
+        <listener-class>
+            org.wso2.carbon.identity.mgt.endpoint.util.listener.IdentityManagementEndpointContextListener
+        </listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>retry.do</servlet-name>
+        <jsp-file>/retry.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>wait.do</servlet-name>
+        <jsp-file>/long-wait.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>resend-confirmation-captcha.do</servlet-name>
+        <jsp-file>/resend-confirmation-captcha.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>idf-confirm.do</servlet-name>
+        <jsp-file>/identifier-logout-confirm.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>dynamic_prompt.do</servlet-name>
+        <jsp-file>/dynamic_prompt.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>handle-multiple-sessions.do</servlet-name>
+        <jsp-file>/handle-multiple-sessions.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>claims.do</servlet-name>
+        <jsp-file>/requested-claims.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>oauth2_login.do</servlet-name>
+        <jsp-file>/login.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>oauth2_authz.do</servlet-name>
+        <jsp-file>/oauth2_authz.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>oauth2_consent.do</servlet-name>
+        <jsp-file>/oauth2_consent.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>oauth2_logout_consent.do</servlet-name>
+        <jsp-file>/oauth2_logout_consent.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>oauth2_logout.do</servlet-name>
+        <jsp-file>/logout.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>oauth2_error.do</servlet-name>
+        <jsp-file>/oauth2_error.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>samlsso_login.do</servlet-name>
+        <jsp-file>/login.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>samlsso_logout.do</servlet-name>
+        <jsp-file>/logout.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>samlsso_redirect.do</servlet-name>
+        <jsp-file>/login.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>samlsso_notification.do</servlet-name>
+        <jsp-file>/samlsso_notification.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>openid_login.do</servlet-name>
+        <jsp-file>/login.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>openid_profile.do</servlet-name>
+        <jsp-file>/openid_profile.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>passivests_login.do</servlet-name>
+        <jsp-file>/login.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>tenantlistrefresher.do</servlet-name>
+        <jsp-file>/tenant_refresh_endpoint.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>consent.do</servlet-name>
+        <jsp-file>/consent.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>cookie_policy.do</servlet-name>
+        <jsp-file>/cookie_policy.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>privacy_policy.do</servlet-name>
+        <jsp-file>/privacy_policy.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>authenticate.do</servlet-name>
+        <jsp-file>/authenticate.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>error.do</servlet-name>
+        <jsp-file>/generic-exception-response.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>device.do</servlet-name>
+        <jsp-file>/enter-user-code.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>device_success.do</servlet-name>
+        <jsp-file>/device-success.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>totp_enroll.do</servlet-name>
+        <jsp-file>/enableTOTP.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>totp_error.do</servlet-name>
+        <jsp-file>/totpError.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>email_capture.do</servlet-name>
+        <jsp-file>/emailAddressCapture.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>email_otp.do</servlet-name>
+        <jsp-file>/emailOtp.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>email_otp_error.do</servlet-name>
+        <jsp-file>/emailOtpError.jsp</jsp-file>
+    </servlet>
+
+    {% for custom_servlet in servlet %}
+    <servlet>
+        <servlet-name>{{custom_servlet.name}}</servlet-name>
+        <jsp-file>{{custom_servlet.jsp}}</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>{{custom_servlet.name}}</servlet-name>
+        <url-pattern>{{custom_servlet.url}}</url-pattern>
+    </servlet-mapping>
+    {% endfor %}
+
+    <servlet>
+        <servlet-name>magic_link_notification.do</servlet-name>
+        <jsp-file>/magic_link_notification.jsp</jsp-file>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>magic_link_notification.do</servlet-name>
+        <url-pattern>/magic_link_notification.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>org_name.do</servlet-name>
+        <jsp-file>/org_name.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>select_org.do</servlet-name>
+        <jsp-file>/select_org.jsp</jsp-file>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>totp_enroll.do</servlet-name>
+        <url-pattern>/totp_enroll.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>totp_error.do</servlet-name>
+        <url-pattern>/totp_error.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>email_capture.do</servlet-name>
+        <url-pattern>/email_capture.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>email_otp.do</servlet-name>
+        <url-pattern>/email_otp.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>email_otp_error.do</servlet-name>
+        <url-pattern>/email_otp_error.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org_name.do</servlet-name>
+        <url-pattern>/org_name.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>select_org.do</servlet-name>
+        <url-pattern>/select_org.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>device.do</servlet-name>
+        <url-pattern>/device.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>device_success.do</servlet-name>
+        <url-pattern>/device_success.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>retry.do</servlet-name>
+        <url-pattern>/retry.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>wait.do</servlet-name>
+        <url-pattern>/wait.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>resend-confirmation-captcha.do</servlet-name>
+        <url-pattern>/resend-confirmation-captcha.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>idf-confirm.do</servlet-name>
+        <url-pattern>/idf-confirm.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>dynamic_prompt.do</servlet-name>
+        <url-pattern>/dynamic_prompt.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>handle-multiple-sessions.do</servlet-name>
+        <url-pattern>/handle-multiple-sessions.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>oauth2_login.do</servlet-name>
+        <url-pattern>/oauth2_login.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>oauth2_authz.do</servlet-name>
+        <url-pattern>/oauth2_authz.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>oauth2_consent.do</servlet-name>
+        <url-pattern>/oauth2_consent.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>oauth2_logout_consent.do</servlet-name>
+        <url-pattern>/oauth2_logout_consent.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>oauth2_logout.do</servlet-name>
+        <url-pattern>/oauth2_logout.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>oauth2_error.do</servlet-name>
+        <url-pattern>/oauth2_error.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>samlsso_login.do</servlet-name>
+        <url-pattern>/samlsso_login.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>samlsso_logout.do</servlet-name>
+        <url-pattern>/samlsso_logout.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>samlsso_redirect.do</servlet-name>
+        <url-pattern>/samlsso_redirect.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>samlsso_notification.do</servlet-name>
+        <url-pattern>/samlsso_notification.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>openid_login.do</servlet-name>
+        <url-pattern>/openid_login.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>openid_profile.do</servlet-name>
+        <url-pattern>/openid_profile.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>passivests_login.do</servlet-name>
+        <url-pattern>/passivests_login.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>tenantlistrefresher.do</servlet-name>
+        <url-pattern>/tenantlistrefresher.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>claims.do</servlet-name>
+        <url-pattern>/claims.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>consent.do</servlet-name>
+        <url-pattern>/consent.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>cookie_policy.do</servlet-name>
+        <url-pattern>/cookie_policy.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>privacy_policy.do</servlet-name>
+        <url-pattern>/privacy_policy.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>authenticate.do</servlet-name>
+        <url-pattern>/authenticate.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>error.do</servlet-name>
+        <url-pattern>/error.do</url-pattern>
+    </servlet-mapping>
+
+    <error-page>
+        <exception-type>java.lang.Throwable</exception-type>
+        <location>/generic-exception-response.jsp</location>
+    </error-page>
+
+    <!-- custom error pages -->
+    <error-page>
+        <error-code>400</error-code>
+        <location>/errors/error_400.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>401</error-code>
+        <location>/errors/error_401.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/errors/error_403.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/errors/error_404.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>405</error-code>
+        <location>/errors/error_405.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>408</error-code>
+        <location>/errors/error_408.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>410</error-code>
+        <location>/errors/error_410.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/errors/error_500.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>502</error-code>
+        <location>/errors/error_502.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>503</error-code>
+        <location>/errors/error_503.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>504</error-code>
+        <location>/errors/error_504.jsp</location>
+    </error-page>
+    <error-page>
+        <location>/errors/error.jsp</location>
+    </error-page>
+
+    <session-config>
+        <cookie-config>
+            <secure>true</secure>
+        </cookie-config>
+    </session-config>
+
+</web-app>
