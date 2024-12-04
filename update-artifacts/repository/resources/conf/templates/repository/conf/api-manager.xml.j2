@@ -756,6 +756,17 @@
                 <HTTPMethods>GET</HTTPMethods>
             </AllowedURI>
         </AllowedURIs>
+        <BasicAuthBlockedURIs>
+        <!--Configure Basic Auth blocked URIs of REST API. URIs included cannot be invoked with basic auth-->
+        {% if apim.rest_api.basic_auth_blocked_uri is defined %}
+            {% for uri in apim.rest_api.basic_auth_blocked_uri %}
+                <BasicAuthBlockedURI>
+                    <URI>{{uri.uri_path}}</URI>
+                    <HTTPMethods>{{uri.http_method}}</HTTPMethods>
+                </BasicAuthBlockedURI>
+            {% endfor %}
+        {% endif %}
+        </BasicAuthBlockedURIs>
         <ETagSkipList>
             <ETagSkipURI>
                 <URI>/api/am/devportal/{version}/apis</URI>
