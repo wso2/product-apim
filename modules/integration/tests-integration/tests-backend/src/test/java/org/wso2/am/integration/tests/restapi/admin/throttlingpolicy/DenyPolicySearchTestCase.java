@@ -116,8 +116,8 @@ public class DenyPolicySearchTestCase extends APIMIntegrationBaseTest {
         blockingCondition2ID = addedBlacklistThrottlingPolicy.getData().getConditionId();
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test retrieve block conditions by condition type and value",
-            dependsOnMethods = "testAddNewBlockingConditions")
+    @Test(groups = {
+            "wso2.am" }, description = "Test retrieve block conditions by condition type and value", dependsOnMethods = "testAddNewBlockingConditions")
     public void testGetBlockConditionsByConditionTypeAndValue() throws Exception {
         // Retrieve blocking condition values that contains /test
         BlockingConditionListDTO conditionsList = restAPIAdmin.getBlockingConditionsByConditionTypeAndValue(
@@ -152,6 +152,34 @@ public class DenyPolicySearchTestCase extends APIMIntegrationBaseTest {
         }
         Assert.assertEquals(countTest1, 0);
         Assert.assertEquals(countTest2, 1);
+    }
+
+    @Test(groups = {
+            "wso2.am" }, description = "Test retrieve block conditions by condition type and exact value", dependsOnMethods = "testAddNewBlockingConditions")
+    public void testGetBlockConditionsByConditionTypeAndExactValue() throws Exception {
+        BlockingConditionListDTO conditionsList = restAPIAdmin.getBlockingConditionsByConditionTypeAndValue(
+                "conditionType:API&conditionValue:\"/test\"");
+        Assert.assertNotNull(conditionsList);
+        Assert.assertEquals(conditionsList.getList().size(), 0);
+
+        conditionsList = restAPIAdmin.getBlockingConditionsByConditionTypeAndValue(
+                "conditionType:API&conditionValue:\"/test/abc\"");
+        Assert.assertNotNull(conditionsList);
+        Assert.assertEquals(conditionsList.getList().size(), 0);
+
+        String conditionValue = apiContextResolver(API1_CONTEXT, API1_VERSION);
+        conditionsList = restAPIAdmin.getBlockingConditionsByConditionTypeAndValue(
+                "conditionType:API&conditionValue:" + conditionValue);
+        Assert.assertNotNull(conditionsList);
+        Assert.assertEquals(conditionsList.getList().size(), 1);
+        Assert.assertEquals(conditionsList.getList().get(0).getConditionValue(), conditionValue);
+
+        conditionValue = apiContextResolver(API2_CONTEXT, API2_VERSION);
+        conditionsList = restAPIAdmin.getBlockingConditionsByConditionTypeAndValue(
+                "conditionType:API&conditionValue:" + conditionValue);
+        Assert.assertNotNull(conditionsList);
+        Assert.assertEquals(conditionsList.getList().size(), 1);
+        Assert.assertEquals(conditionsList.getList().get(0).getConditionValue(), conditionValue);
     }
 
     private String apiContextResolver(String context, String version) {
