@@ -8,7 +8,7 @@ import java.security.KeyStore;
 public class AbstractSSLClient {
 
     public static int port = 8743;
-    public  String keyStoreLocation = "/Users/jithmir/Work/Patch/product-apim-jithmi/modules/integration/tests-integration/tests-benchmark/src/test/resources/keystores/products/wso2carbon.jks";
+    public  String keyStoreLocation = "../src/test/resources/keystores/products/wso2carbon.jks";
     public static String keyStorePassword = "wso2carbon";
     public void run(String payload, RequestMethod method) {}
     protected SSLContext createSSLContext() {

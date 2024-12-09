@@ -18,7 +18,7 @@ public class SSLServerSendImmediateResponse extends AbstractSSLServer {
             SSLContext sslContext = SSLContext.getInstance("TLS");
 
             KeyStore keyStore = KeyStore.getInstance("JKS");
-            FileInputStream fis = new FileInputStream("/Users/jithmir/Work/Patch/product-apim-jithmi/modules/integration/tests-integration/tests-benchmark/src/test/resources/keystores/products/wso2carbon.jks");
+            FileInputStream fis = new FileInputStream("../src/test/resources/keystores/products/wso2carbon.jks");
             keyStore.load(fis, "wso2carbon".toCharArray());
 
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");

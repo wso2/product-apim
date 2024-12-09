@@ -61,7 +61,7 @@ public class CoreScenarioTestCase extends APIMIntegrationBaseTest {
 
     {
         try {
-            Content1MB = readThisFile("/Users/jithmir/Work/IntegrationTests/HTTPCoreScenarioTests/src/main/resources/1MB.json");
+            Content1MB = readThisFile("../src/test/java/org/wso2/am/integration/tests/scenariotest/1MB.json");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -71,7 +71,7 @@ public class CoreScenarioTestCase extends APIMIntegrationBaseTest {
 
     {
         try {
-            Content2KB = readThisFile("/Users/jithmir/Work/IntegrationTests/HTTPCoreScenarioTests/src/main/resources/2KB.json");
+            Content2KB = readThisFile("../src/test/java/org/wso2/am/integration/tests/scenariotest/2KB.json");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
