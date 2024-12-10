@@ -135,6 +135,8 @@ public class ClientAuthenticator {
             json.addProperty("tokenScope", dcrParamRequest.getTokenScope());
             json.addProperty("grantType", dcrParamRequest.getGrantType());
             json.addProperty("saasApp", true);
+            json.addProperty("tokenType", "JWT");
+            json.addProperty("userStoreDomainInSubject", true);
 
             String clientEncoded;
 
