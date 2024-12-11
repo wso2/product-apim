@@ -32,4 +32,10 @@
         </classes>
     </test>
 
+    <test name="apim-integration-core-scenario-test" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.am.integration.tests.scenariotest.CoreScenarioTestCase"/>
+        </classes>
+    </test>
+
 </suite>
