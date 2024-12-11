@@ -1,10 +1,11 @@
-<img src="https://wso2.cachefly.net/wso2/sites/all/image_resources/wso2-branding-logos/wso2-logo.png" alt="WSO2 logo" width=50% height=50% />
+<img src="https://wso2.cachefly.net/wso2/sites/all/image_resources/wso2-branding-logos/wso2-logo.png" alt="WSO2 logo" width=30% height=30% />
 
 # WSO2 API Manager
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![stackoverflow](https://img.shields.io/badge/Get%20Support%20on%20Stack%20Overflow-wso2am-orange)](https://stackoverflow.com/tags/wso2-am/)
 [![Join the community on Discord](https://img.shields.io/badge/Join%20us%20on%20Discord-wso2--apim-blueviolet)](https://discord.com/invite/wso2)
+[![X](https://img.shields.io/twitter/follow/wso2.svg?style=social&label=Follow Us)](https://twitter.com/intent/follow?screen_name=wso2)
 
 ---
 
