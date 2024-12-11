@@ -1,4 +1,4 @@
-<img src="https://wso2.cachefly.net/wso2/sites/all/image_resources/wso2-branding-logos/wso2-logo.png" alt="WSO2 logo" width=50% height=50% />
+<img src="https://wso2.cachefly.net/wso2/sites/all/image_resources/wso2-branding-logos/wso2-logo.png" alt="WSO2 logo" width=30% height=30% />
 
 # WSO2 API Manager
 
