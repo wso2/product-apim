@@ -18,47 +18,38 @@
  */
 package org.wso2.am.integration.tests.websocket;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
-import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import org.wso2.am.integration.clients.admin.ApiResponse;
-import org.wso2.am.integration.clients.admin.api.dto.AdvancedThrottlePolicyDTO;
-import org.wso2.am.integration.clients.admin.api.dto.RequestCountLimitDTO;
-import org.wso2.am.integration.clients.admin.api.dto.ThrottleLimitDTO;
-import org.wso2.am.integration.clients.publisher.api.v1.dto.APIDTO;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.clients.publisher.api.v1.dto.APIListDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
-import org.wso2.am.integration.test.impl.DtoFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleAction;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.token.TokenUtils;
 import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
 import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
@@ -67,19 +58,17 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.xml.StringUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
-import java.net.URL;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class WebSocketAPICorsValidationTestCase extends APIMIntegrationBaseTest {
@@ -247,7 +236,7 @@ public class WebSocketAPICorsValidationTestCase extends APIMIntegrationBaseTest 
         }
 
         try {
-            invokeAPI(client, accessToken, AUTH_IN.HEADER, headers1);
+            invokeAPI(client, accessToken, AUTH_IN.HEADER, headers1, null);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -259,7 +248,7 @@ public class WebSocketAPICorsValidationTestCase extends APIMIntegrationBaseTest 
         // the fix for the issue https://github.com/wso2/api-manager/issues/612
         HttpHeaders headers2 = new DefaultHttpHeaders();
         try {
-            invokeAPI(client, accessToken, AUTH_IN.HEADER, headers2);
+            invokeAPI(client, accessToken, AUTH_IN.HEADER, headers2, null);
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             Assert.fail("Client cannot connect to server");
@@ -326,9 +315,11 @@ public class WebSocketAPICorsValidationTestCase extends APIMIntegrationBaseTest 
      * @param client      WebSocketClient object
      * @param accessToken API access Token
      * @param in location of the Auth header. {@code query} or {@code header}
+     * @param optionalQueryParams  Optional query parameters
      * @throws Exception If an error occurs while invoking WebSocket API
      */
-    private void invokeAPI(WebSocketClient client, String accessToken, AUTH_IN in, HttpHeaders optionalRequestHeaders) throws Exception {
+    private void invokeAPI(WebSocketClient client, String accessToken, AUTH_IN in, HttpHeaders optionalRequestHeaders,
+                           String optionalQueryParams) throws Exception {
 
         WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
@@ -337,17 +328,22 @@ public class WebSocketAPICorsValidationTestCase extends APIMIntegrationBaseTest 
 
         if (AUTH_IN.HEADER == in) {
             request.setHeader("Authorization", "Bearer " + accessToken);
-            echoUri = new URI(apiEndPoint);
+            if (optionalQueryParams != null) {
+                echoUri = new URI(apiEndPoint + optionalQueryParams);
+            } else {
+                echoUri = new URI(apiEndPoint);
+            }
         } else if (AUTH_IN.QUERY == in) {
             echoUri = new URI(apiEndPoint + "?access_token=" + accessToken);
         }
+
 
         if (optionalRequestHeaders != null) {
             for (Map.Entry<String, String> headerEntry : optionalRequestHeaders.entries()) {
                 request.setHeader(headerEntry.getKey(), headerEntry.getValue());
             }
         }
-
+        log.info("Client connecting to API URL: " + echoUri);
         client.connect(socket, echoUri, request);
         if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             socket.sendMessage(testMessage);
@@ -364,6 +360,54 @@ public class WebSocketAPICorsValidationTestCase extends APIMIntegrationBaseTest 
             throw new APIManagerIntegrationTestException("Unable to create client connection");
         }
     }
+
+    @Test(description = "Test Lengthy URL for Websocket API invocations",
+            dependsOnMethods = "testWebsocketAPICORSValidation")
+    public void testWebsocketAPIURLLengthInvocation() throws Exception {
+
+        /*
+         * The configuration to allow length urls are added in replacing deployment.toml of
+         * testWebsocketAPICORSValidation.
+         *
+         * [synapse_properties]
+         * 'ws.transport.max.http.codec.init.length' = 8192
+         */
+        String accessToken = applicationKeyDTO.getToken().getAccessToken();
+        WebSocketClient client = new WebSocketClient();
+        // Create a Map to store parameters
+        Map<String, String> parameters = new HashMap<>();
+        // Populate the map with sample parameters
+        for (int i = 1; i <= 399; i++) {
+            parameters.put("param" + i, "value" + i);
+        }
+        // Generate the parameter string
+        String parameterString = buildParameterString(parameters);
+        try {
+            invokeAPI(client, accessToken, WebSocketAPICorsValidationTestCase.AUTH_IN.HEADER, null, parameterString);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            Assert.fail("Client cannot connect to server");
+        } finally {
+            client.stop();
+        }
+    }
+
+    public static String buildParameterString(Map<String, String> parameters) {
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            if (result.length() == 0) {
+                result.append("?");
+            }
+            if (result.length() > 0) {
+                result.append("&");
+            }
+            result.append(entry.getKey());
+            result.append("=");
+            result.append(entry.getValue());
+        }
+        return result.toString();
+    }
+
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
