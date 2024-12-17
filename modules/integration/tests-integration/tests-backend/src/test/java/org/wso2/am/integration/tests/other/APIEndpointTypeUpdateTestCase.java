@@ -140,6 +140,7 @@ public class APIEndpointTypeUpdateTestCase extends APIManagerLifecycleBaseTest {
             createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
             waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                     APIMIntegrationConstants.IS_API_EXISTS);
+            Thread.sleep(10000);
 
             HttpResponse response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(apiContext, APIVersion),
                     requestHeaders);
