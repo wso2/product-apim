@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.parser.JSONParser;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -30,10 +31,8 @@ import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.ApplicationKeyGenerateRequestDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionDTO;
 import org.wso2.am.integration.clients.store.api.v1.dto.SubscriptionListDTO;
-import org.wso2.am.integration.test.Constants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -42,14 +41,14 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
+import static org.testng.Assert.*;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class APIEndpointTypeUpdateTestCase extends APIManagerLifecycleBaseTest {
@@ -94,7 +93,11 @@ public class APIEndpointTypeUpdateTestCase extends APIManagerLifecycleBaseTest {
             String apiName = "APIEndpointTypeUpdateTestCaseAPIName";
             String description = "This is test API create by API manager integration test";
             String tags = "test, EndpointType";
-            apiRequest = new APIRequest(apiName, apiContext, endpointUrl);
+            apiRequest = new APIRequest(apiName, apiContext);
+            String endPointString = "{\n" + "  \"endpoint_type\": \"sequence_backend\"\n" + "}";
+
+            JSONParser parser = new JSONParser();
+            apiRequest.setEndpoint((org.json.simple.JSONObject) parser.parse(endPointString));
             apiRequest.setTags(tags);
             apiRequest.setDescription(description);
             apiRequest.setVersion(APIVersion);
@@ -121,83 +124,30 @@ public class APIEndpointTypeUpdateTestCase extends APIManagerLifecycleBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Invoke HTTP before Update", dependsOnMethods = "testAPICreation")
-    public void testHTTPTransportBeforeUpdate() {
+    @Test(groups = {
+            "wso2.am" }, description = "Update to only Sequence Backend endpoint and invoke", dependsOnMethods = "testAPICreation")
+    public void testUpdatedSequenceBackendEndpoint() {
         try {
+            File seqProd = new File(getAMResourceLocation() + File.separator + "sequenceBackend" + File.separator
+                    + "sequence_prod.xml");
+            File seqSand = new File(getAMResourceLocation() + File.separator + "sequenceBackend" + File.separator
+                    + "sequence_sand.xml");
+            restAPIPublisher.addSequenceBackend(seqProd, apiId, "PRODUCTION");
+            restAPIPublisher.addSequenceBackend(seqSand, apiId, "SANDBOX");
+            final String responseDataExpected = "{\"Response\" : \"Sample Response\"}";
+
+            // Create Revision and Deploy to Gateway
+            createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
             waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                     APIMIntegrationConstants.IS_API_EXISTS);
-            //invoke HTTP transport
-            HttpResponse serviceResponse = HttpRequestUtil
-                    .doGet(getAPIInvocationURLHttp(apiContext, APIVersion), requestHeaders);
-            assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Response code mismatched when api http invocation");
+            Thread.sleep(10000);
 
-            serviceResponse = HttpRequestUtil
-                    .doGet(getAPIInvocationURLHttps(apiContext, APIVersion), requestHeaders);
-            assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+            HttpResponse response = HttpRequestUtil.doGet(getAPIInvocationURLHttps(apiContext, APIVersion),
+                    requestHeaders);
+            assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched when api https invocation");
-        } catch (Exception e) {
-            log.error("Error while executing test case " + e.getMessage(), e);
-            fail(e.getMessage());
-        }
-
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Update to only HTTP transport and invoke",
-            dependsOnMethods = "testHTTPTransportBeforeUpdate")
-    public void testUpdatedHTTPTransport() {
-
-        try {
-            apiRequest.setHttps_checked("");
-            apiRequest.setHttp_checked(Constants.PROTOCOL_HTTP);
-            HttpResponse apiUpdateResponse = restAPIPublisher.updateAPI(apiRequest, apiId);
-            assertEquals(apiUpdateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Response Code miss matched when creating the API");
-            // Create Revision and Deploy to Gateway
-            createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-            waitForAPIDeployment();
-
-            //invoke HTTP transport
-            HttpResponse serviceResponse = HttpRequestUtil
-                    .doGet(getAPIInvocationURLHttp(apiContext, APIVersion), requestHeaders);
-            assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Response code mismatched when api http invocation");
-
-            //invoke HTTPS transport
-            serviceResponse = HTTPSClientUtils.doGet(getAPIInvocationURLHttps(apiContext, APIVersion), requestHeaders);
-            assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
-                    "Response code mismatched when api https invocation");
-        } catch (Exception e) {
-            log.error("Error while executing test case " + e.getMessage(), e);
-            fail(e.getMessage());
-        }
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Update to only HTTPS transport and invoke",
-            dependsOnMethods = "testHTTPTransportBeforeUpdate")
-    public void testUpdatedHTTPSTransport() {
-        try {
-            //create update request for restrict HTTP
-            apiRequest.setHttps_checked(Constants.PROTOCOL_HTTPS);
-            apiRequest.setHttp_checked("");
-            HttpResponse apiUpdateResponse = restAPIPublisher.updateAPI(apiRequest, apiId);
-            assertEquals(apiUpdateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Response Code miss matched when creating the API");
-            // Create Revision and Deploy to Gateway
-            createAPIRevisionAndDeployUsingRest(apiId, restAPIPublisher);
-            waitForAPIDeployment();
-
-            //invoke HTTP transport
-            HttpResponse serviceResponse = HttpRequestUtil
-                    .doGet(getAPIInvocationURLHttp(apiContext, APIVersion), requestHeaders);
-            assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
-                    "Response code mismatched when api http invocation");
-
-            //invoke HTTPS transport
-            serviceResponse = HttpRequestUtil
-                    .doGet(getAPIInvocationURLHttps(apiContext, APIVersion), requestHeaders);
-            assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Response code mismatched when api https invocation");
+            assertNotNull(response.getData());
+            assertEquals(response.getData(), responseDataExpected);
         } catch (Exception e) {
             log.error("Error while executing test case " + e.getMessage(), e);
             fail(e.getMessage());

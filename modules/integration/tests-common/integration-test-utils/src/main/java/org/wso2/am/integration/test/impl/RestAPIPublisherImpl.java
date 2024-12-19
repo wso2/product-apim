@@ -589,6 +589,20 @@ public class RestAPIPublisherImpl {
     }
 
     /**
+     * Add Sequence Backend to the API Endpoint
+     *
+     * @param file Sequence Backend file
+     * @param apiId APIID
+     * @param type Key Type
+     * @throws ApiException API Exception if an error occurs
+     */
+
+    public void addSequenceBackend(File file, String apiId, String type) throws ApiException {
+        ApiResponse<APIDTO> response = apIsApi.sequenceBackendUpdateWithHttpInfo(apiId, file, type);
+        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+    }
+
+    /**
      * Facilitate update API
      *
      * @param apiRequest - constructed API request object
