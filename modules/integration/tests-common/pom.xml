@@ -38,6 +38,7 @@ under the License.
         <module>ui-pages</module>
         <module>clients</module>
         <module>extenstions</module>
+        <module>backend-service/ssl-server</module>
     </modules>
 
 </project>
