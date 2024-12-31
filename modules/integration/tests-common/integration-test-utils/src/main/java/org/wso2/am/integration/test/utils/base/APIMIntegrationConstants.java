@@ -75,6 +75,7 @@ public class APIMIntegrationConstants {
 
     public static final String HTTP_VERB_GET = "GET";
     public static final String HTTP_VERB_POST = "POST";
+    public static final String HTTP_VERB_OPTIONS = "OPTIONS";
 
     public static final String API_DOCUMENT_TYPE_HOW_TO = "How To";
     public static final String API_DOCUMENT_SOURCE_INLINE = "Inline";
