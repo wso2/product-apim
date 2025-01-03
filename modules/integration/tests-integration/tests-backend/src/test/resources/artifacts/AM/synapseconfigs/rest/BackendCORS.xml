@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://ws.apache.org/ns/synapse">
+    <api xmlns="http://ws.apache.org/ns/synapse"
+         name="BackendCORS"
+         context="/backend-cors">
+        <resource methods="OPTIONS" url-mapping="/*">
+            <inSequence>
+                <property name="NO_ENTITY_BODY" action="remove" scope="axis2"/>
+                <payloadFactory>
+                    <format>
+                        <response xmlns="">
+                            <value>Received Request</value>
+                        </response>
+                    </format>
+                </payloadFactory>
+                <property name="RESPONSE" value="true" scope="default" type="STRING"/>
+                <header name="To" action="remove"/>
+                <property name="HTTP_SC" value="200" scope="axis2"/>
+                <header name="Access-Control-Allow-Origin" scope="transport" value="http://localhost"/>
+                <header name="Access-Control-Allow-Methods" scope="transport" value="GET, POST, OPTIONS"/>
+                <header name="Access-Control-Allow-Headers" scope="transport" value="authorization,Access-Control-Allow-Origin"/>
+                <send/>
+            </inSequence>
+        </resource>
+    </api>
+</definitions>
