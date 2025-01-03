@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+4.8.32<?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
   ~
   ~  WSO2 Inc. licenses this file to you under the Apache License,
@@ -1293,7 +1293,7 @@
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.8.36</carbon.registry.version>
+        <carbon.registry.version>4.8.40</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.7.0, 5.0.0)</carbon.registry.package.import.version.range>
 
 
