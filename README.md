@@ -64,8 +64,7 @@ Follow our [Quick Start guide ](https://apim.docs.wso2.com/en/latest/get-started
 
 All known issues of WSO2 API Manager are filed at: https://github.com/wso2/api-manager/issues. Please check this list before opening a new issue.
 
-Opening an issue
-----------------------------------
+### Opening an issue
 
 Help us make our software better! Submit any bug reports or feature requests through GitHub:  https://github.com/wso2/api-manager/issues. 
 
@@ -86,14 +85,12 @@ You can take advantage of a WSO2 on-prem product subscription for the full range
 
 To learn more, check [WSO2 Subscription](https://wso2.com/subscription/).
 
-Can you fill this survey ?
-==================================
+# Can you fill this survey ?
 
 WSO2 wants to learn more about our open source software (OSS) community and your communication preferences to serve you better.
-
 In addition, we may reach out to a small number of respondents to ask additional questions and offer a small gift.
 
 Survey is available at: https://forms.gle/h5q4M3K7vyXba3bK6
 
 --------------------------------------------------------------------------------
-(c) Copyright 2012 - 2024 WSO2 Inc.
+(c) Copyright 2012 - 2025 WSO2 Inc.
