@@ -79,6 +79,11 @@ Please **do not** report security issues via GitHub issues. Instead, follow the 
 - Join the conversation on [Discord](https://discord.gg/wso2).
 - Learn more by reading articles from our [library](https://wso2.com/library/).
 
+# Contributing
+If you are planning on contributing to the development efforts of WSO2 <Product Name>, you can do that by checking out the latest development version. The master branch holds the latest unreleased source code.
+
+Please follow the detailed instructions available here: https://wso2.github.io  
+
 # Commercial Support
 
 You can take advantage of a WSO2 on-prem product subscription for the full range of software product benefits needed in your enterprise, like expert support, continuous product updates, vulnerability monitoring, and access to the licensed distribution for commercial use.
