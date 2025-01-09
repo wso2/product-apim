@@ -76,14 +76,18 @@
         boolean isEnableEmailUserName = Util.isEnableEmailUserName();
         Map introspect = gson.fromJson(introspectResult.body(), Map.class);
         String username = (String) introspect.get("username");
-        Pattern regPattern = Pattern.compile("(@)");
-        boolean found = regPattern.matcher(username).find();
-        int count = !found ? 0 : (int) username.chars().filter(ch -> ch == '@').count();
-        if (isEnableEmailUserName || (username.indexOf("@carbon.super") > 0 && count <= 1)) {
-            introspect.put("username", username.replace("@carbon.super", ""));
+        if (username != null && !username.isEmpty()) {
+            Pattern regPattern = Pattern.compile("(@)");
+            boolean found = regPattern.matcher(username).find();
+            int count = !found ? 0 : (int) username.chars().filter(ch -> ch == '@').count();
+            if (isEnableEmailUserName || (username.indexOf("@carbon.super") > 0 && count <= 1)) {
+                introspect.put("username", username.replace("@carbon.super", ""));
+            }
+            response.setContentType("application/json");
+            out.println(gson.toJson(introspect));
+        } else {
+            log.warn("Username is undefined in the introspect response.");
         }
-        response.setContentType("application/json");
-        out.println(gson.toJson(introspect));
     } else {
         log.warn("Something went wrong while introspecting the token " + tokenP1 + tokenP2);
         log.error(introspectResult.body());
