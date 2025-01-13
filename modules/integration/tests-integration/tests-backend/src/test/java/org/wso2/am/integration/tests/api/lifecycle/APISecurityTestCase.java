@@ -371,6 +371,13 @@ public class APISecurityTestCase extends APIManagerLifecycleBaseTest {
                 API_END_POINT_METHOD, keyDTOApiResponse1.getData().getApikey());
         Assert.assertEquals(httpResponse1.getResponseCode(), 200);
         restAPIPublisher.changeAPILifeCycleStatus(apiId1, APILifeCycleAction.PUBLISH.getAction());
+        api1 = restAPIPublisher.getAPIByID(apiId1);
+        List<String> updatedSecurityScheme = api1.getSecurityScheme();
+        updatedSecurityScheme.add("api_key");
+        updatedSecurityScheme.add("oauth2");
+        updatedSecurityScheme.add("oauth_basic_auth_api_key_mandatory");
+        api1.setSecurityScheme(updatedSecurityScheme);
+        restAPIPublisher.updateAPI(api1, api1.getId());
         createAPIRevisionAndDeployUsingRest(apiId2, restAPIPublisher);
         APIDTO api2 = restAPIPublisher.getAPIByID(apiId2);
         waitForAPIDeploymentSync(api2.getProvider(), api2.getName(), api2.getVersion(),
