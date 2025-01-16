@@ -1584,8 +1584,7 @@
         </file>
         <file>
             <source>target/apim-is-plugin-resources/dropins/org.wso2.charon3.core-${charon3.version}.jar</source>
-            <outputDirectory>wso2am-acp-${pom.version}/
-                /dropins</outputDirectory>
+            <outputDirectory>wso2am-acp-${pom.version}/repository/components/dropins</outputDirectory>
         </file>
     </files>
 
