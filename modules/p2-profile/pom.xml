@@ -42,6 +42,8 @@
 
     <modules>
         <module>product</module>
+        <module>control-plane</module>
+        <module>gateway</module>
     </modules>
 
 </project>
