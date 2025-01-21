@@ -1313,7 +1313,7 @@
         <carbon.mediation.version>4.7.221</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.713</carbon.identity.version>
+        <carbon.identity.version>5.25.719</carbon.identity.version>
         <carbon.identity.governance.version>1.8.108</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
@@ -1344,7 +1344,7 @@
 
         <siddhi.version>3.2.13</siddhi.version>
 
-        <axis2-transports.wso2.version>2.0.0-wso2v42</axis2-transports.wso2.version>
+        <axis2-transport-mail.wso2.version>2.0.0-wso2v70</axis2-transport-mail.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.17</log4j.version>
