@@ -58,7 +58,7 @@ public class ThrottlePolicyExportImportTestCase extends APIMIntegrationBaseTest 
     private final String DISPLAY_NAME = "Test Policy";
     private final String TIME_UNIT = "min";
     private final Integer UNIT_TIME = 1;
-    private final String APIM_VERSION = "v4.4.0";
+    private final String APIM_VERSION = "v4.5.0";
     private final String DESCRIPTION = "This is a test throttle policy";
     private final String ADVANCED_POLICY_NAME = "TestPolicyAdvanced";
     private final String APPLICATION_POLICY_NAME = "TestPolicyApplication";
