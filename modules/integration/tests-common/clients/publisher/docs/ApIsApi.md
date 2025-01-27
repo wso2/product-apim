@@ -20,6 +20,8 @@ Method | HTTP request | Description
 [**getAPIThumbnail**](ApIsApi.md#getAPIThumbnail) | **GET** /apis/{apiId}/thumbnail | Get Thumbnail Image
 [**getAllAPIs**](ApIsApi.md#getAllAPIs) | **GET** /apis | Retrieve/Search APIs 
 [**getGeneratedMockScriptsOfAPI**](ApIsApi.md#getGeneratedMockScriptsOfAPI) | **GET** /apis/{apiId}/generated-mock-scripts | Get Generated Mock Response Payloads
+[**getSequenceBackendContent**](ApIsApi.md#getSequenceBackendContent) | **GET** /apis/{apiId}/sequence-backend/{type}/content | Get Sequence of Custom Backend
+[**getSequenceBackendData**](ApIsApi.md#getSequenceBackendData) | **GET** /apis/{apiId}/sequence-backend | Get Sequence Backends of the API
 [**getWSDLInfoOfAPI**](ApIsApi.md#getWSDLInfoOfAPI) | **GET** /apis/{apiId}/wsdl-info | Get WSDL Meta Information
 [**getWSDLOfAPI**](ApIsApi.md#getWSDLOfAPI) | **GET** /apis/{apiId}/wsdl | Get WSDL definition
 [**importAsyncAPISpecification**](ApIsApi.md#importAsyncAPISpecification) | **POST** /apis/import-asyncapi | import an AsyncAPI Specification
@@ -28,6 +30,8 @@ Method | HTTP request | Description
 [**importServiceFromCatalog**](ApIsApi.md#importServiceFromCatalog) | **POST** /apis/import-service | Import a Service from Service Catalog
 [**importWSDLDefinition**](ApIsApi.md#importWSDLDefinition) | **POST** /apis/import-wsdl | Import a WSDL Definition
 [**reimportServiceFromCatalog**](ApIsApi.md#reimportServiceFromCatalog) | **PUT** /apis/{apiId}/reimport-service | Update the Service that is used to create the API
+[**sequenceBackendDelete**](ApIsApi.md#sequenceBackendDelete) | **DELETE** /apis/{apiId}/sequence-backend/{type} | Delete Sequence Backend of the API
+[**sequenceBackendUpdate**](ApIsApi.md#sequenceBackendUpdate) | **PUT** /apis/{apiId}/sequence-backend | Upload Sequence Sequence as the Endpoint of the API
 [**updateAPI**](ApIsApi.md#updateAPI) | **PUT** /apis/{apiId} | Update an API
 [**updateAPISwagger**](ApIsApi.md#updateAPISwagger) | **PUT** /apis/{apiId}/swagger | Update Swagger Definition
 [**updateAPIThumbnail**](ApIsApi.md#updateAPIThumbnail) | **PUT** /apis/{apiId}/thumbnail | Upload a Thumbnail Image
@@ -1213,6 +1217,146 @@ Name | Type | Description  | Notes
 **404** | Not Found. The specified resource does not exist. |  -  |
 **406** | Not Acceptable. The requested media type is not supported. |  -  |
 
+<a name="getSequenceBackendContent"></a>
+# **getSequenceBackendContent**
+> File getSequenceBackendContent(type, apiId)
+
+Get Sequence of Custom Backend
+
+This operation can be used to get Sequence of the Custom Backend
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String type = "type_example"; // String | Type of the Endpoint. SANDBOX or PRODUCTION 
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    try {
+      File result = apiInstance.getSequenceBackendContent(type, apiId);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#getSequenceBackendContent");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **type** | **String**| Type of the Endpoint. SANDBOX or PRODUCTION  |
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+
+### Return type
+
+[**File**](File.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/xml, application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Requested API Custom Backend is returned  |  * Content-Type - The content type of the body.  <br>  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**406** | Not Acceptable. The requested media type is not supported. |  -  |
+
+<a name="getSequenceBackendData"></a>
+# **getSequenceBackendData**
+> SequenceBackendListDTO getSequenceBackendData(apiId)
+
+Get Sequence Backends of the API
+
+This operation can be used to get Sequence Backend data of the API
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    try {
+      SequenceBackendListDTO result = apiInstance.getSequenceBackendData(apiId);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#getSequenceBackendData");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+
+### Return type
+
+[**SequenceBackendListDTO**](SequenceBackendListDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Requested API Sequence Backend is returned  |  * Content-Type - The content type of the body.  <br>  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**406** | Not Acceptable. The requested media type is not supported. |  -  |
+
 <a name="getWSDLInfoOfAPI"></a>
 # **getWSDLInfoOfAPI**
 > WSDLInfoDTO getWSDLInfoOfAPI(apiId)
@@ -1790,6 +1934,154 @@ Name | Type | Description  | Notes
 **200** | OK. Successful response with updated API object  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
 **404** | Not Found. The specified resource does not exist. |  -  |
 **500** | Internal Server Error. |  -  |
+
+<a name="sequenceBackendDelete"></a>
+# **sequenceBackendDelete**
+> sequenceBackendDelete(type, apiId)
+
+Delete Sequence Backend of the API
+
+This operation can be used to remove the Sequence Backend of the API
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String type = "type_example"; // String | Type of the Endpoint. SANDBOX or PRODUCTION 
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    try {
+      apiInstance.sequenceBackendDelete(type, apiId);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#sequenceBackendDelete");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **type** | **String**| Type of the Endpoint. SANDBOX or PRODUCTION  |
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Resource successfully deleted.  |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**409** | Conflict. Specified resource already exists. |  -  |
+**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
+
+<a name="sequenceBackendUpdate"></a>
+# **sequenceBackendUpdate**
+> APIDTO sequenceBackendUpdate(apiId, sequence, type)
+
+Upload Sequence Sequence as the Endpoint of the API
+
+This operation can be used to change the endpoint of the API to Sequence Backend
+
+### Example
+```java
+// Import classes:
+import org.wso2.am.integration.clients.publisher.api.ApiClient;
+import org.wso2.am.integration.clients.publisher.api.ApiException;
+import org.wso2.am.integration.clients.publisher.api.Configuration;
+import org.wso2.am.integration.clients.publisher.api.auth.*;
+import org.wso2.am.integration.clients.publisher.api.models.*;
+import org.wso2.am.integration.clients.publisher.api.v1.ApIsApi;
+
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://apis.wso2.com/api/am/publisher/v4");
+    
+    // Configure OAuth2 access token for authorization: OAuth2Security
+    OAuth OAuth2Security = (OAuth) defaultClient.getAuthentication("OAuth2Security");
+    OAuth2Security.setAccessToken("YOUR ACCESS TOKEN");
+
+    ApIsApi apiInstance = new ApIsApi(defaultClient);
+    String apiId = "apiId_example"; // String | **API ID** consisting of the **UUID** of the API. 
+    File sequence = new File("/path/to/file"); // File | The sequence that needs to be uploaded.
+    String type = "type_example"; // String | Type of the Endpoint
+    try {
+      APIDTO result = apiInstance.sequenceBackendUpdate(apiId, sequence, type);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling ApIsApi#sequenceBackendUpdate");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiId** | **String**| **API ID** consisting of the **UUID** of the API.  |
+ **sequence** | **File**| The sequence that needs to be uploaded. | [optional]
+ **type** | **String**| Type of the Endpoint | [optional]
+
+### Return type
+
+[**APIDTO**](APIDTO.md)
+
+### Authorization
+
+[OAuth2Security](../README.md#OAuth2Security)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK. Successful response with updated API object  |  * Location - The URL of the newly created resource.  <br>  * Content-Type - The content type of the body.  <br>  |
+**400** | Bad Request. Invalid request or validation error. |  -  |
+**403** | Forbidden. The request must be conditional but no condition has been specified. |  -  |
+**404** | Not Found. The specified resource does not exist. |  -  |
+**409** | Conflict. Specified resource already exists. |  -  |
+**412** | Precondition Failed. The request has not been performed because one of the preconditions is not met. |  -  |
 
 <a name="updateAPI"></a>
 # **updateAPI**

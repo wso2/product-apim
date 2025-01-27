@@ -4840,6 +4840,219 @@ paths:
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/labels/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       x-contentType: application/json
       x-accepts: application/json
+  /llm-providers:
+    get:
+      description: |
+        Get all LLM providers
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LLMProviderSummaryResponseList'
+          description: |
+            OK.
+            LLM providers returned
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Get all LLM providers
+      tags:
+      - LLMProviders
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/llm-providers"'
+      x-accepts: application/json
+    post:
+      description: |
+        Add a new LLM provider
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LLMProviderRequest'
+        description: |
+          LLM provider object that should to be added
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LLMProviderResponse'
+          description: |
+            Created.
+            Successful response with the newly created LLM provider as entity in the body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:llm_provider_manage
+      summary: Add a LLM provider
+      tags:
+      - LLMProviders
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/llm-providers"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
+  /llm-providers/{llmProviderId}:
+    delete:
+      description: |
+        Delete a LLM Provider by llmProviderId
+      parameters:
+      - description: |
+          LLM Provider UUID
+        explode: false
+        in: path
+        name: llmProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: |
+            OK.
+            LLM provider successfully deleted.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:llm_provider_manage
+      summary: Delete a LLM Provider
+      tags:
+      - LLMProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      x-accepts: application/json
+    get:
+      description: |
+        Get a LLM Provider
+      parameters:
+      - description: |
+          LLM Provider UUID
+        explode: false
+        in: path
+        name: llmProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LLMProviderResponse'
+          description: |
+            OK.
+            OpenAPI specification
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Get LLM Provider
+      tags:
+      - LLMProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      x-accepts: application/json
+    put:
+      description: |
+        Update a LLM provider by LLMProviderId
+      parameters:
+      - description: |
+          LLM Provider UUID
+        explode: false
+        in: path
+        name: llmProviderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LLMProviderRequest'
+        description: |
+          LLM Provider object with updated information
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LLMProviderResponse'
+          description: |
+            OK.
+            LLM Provider updated.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:llm_provider_manage
+      summary: Update an LLM provider
+      tags:
+      - LLMProvider
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/llm-providers/a2f1e643-9b2a-4f58-bd7a-8c2d3f1e9d6f"'
+      x-contentType: multipart/form-data
+      x-accepts: application/json
   /environments:
     get:
       description: |
@@ -7349,6 +7562,16 @@ components:
       schema:
         type: string
       style: simple
+    llmProviderId:
+      description: |
+        LLM Provider UUID
+      explode: false
+      in: path
+      name: llmProviderId
+      required: true
+      schema:
+        type: string
+      style: simple
     policyId:
       description: |
         Thorttle policy UUID
@@ -8712,6 +8935,127 @@ components:
             $ref: '#/components/schemas/Environment'
           type: array
       title: Environment List
+      type: object
+    LLMProviderRequest:
+      properties:
+        name:
+          example: OpenAI
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        description:
+          example: OpenAI LLM
+          maxLength: 1023
+          type: string
+        configurations:
+          description: LLM Provider configurations
+          type: string
+        apiDefinition:
+          description: OpenAPI specification
+          format: binary
+          type: string
+      title: LLMProvider
+      type: object
+    LLMProviderResponse:
+      example:
+        apiVersion: 1.0.0
+        builtInSupport: true
+        configurations: configurations
+        name: OpenAI
+        description: OpenAI LLM
+        id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        apiDefinition: apiDefinition
+      properties:
+        id:
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        name:
+          example: OpenAI
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        builtInSupport:
+          description: Is built-in support
+          type: boolean
+        description:
+          example: OpenAI LLM
+          maxLength: 1023
+          type: string
+        configurations:
+          description: LLM Provider configurations
+          type: string
+        apiDefinition:
+          description: OpenAPI specification
+          type: string
+      title: LLMProviderResponse
+      type: object
+    LLMProviderSummaryResponse:
+      example:
+        apiVersion: 1.0.0
+        builtInSupport: true
+        name: open-ai
+        description: OpenAI LLM Provider
+        id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        id:
+          example: ece92bdc-e1e6-325c-b6f4-656208a041e9
+          readOnly: true
+          type: string
+        name:
+          example: open-ai
+          maxLength: 255
+          minLength: 1
+          type: string
+        apiVersion:
+          example: 1.0.0
+          maxLength: 255
+          minLength: 1
+          type: string
+        builtInSupport:
+          description: Is built-in support
+          type: boolean
+        description:
+          example: OpenAI LLM Provider
+          maxLength: 1023
+          type: string
+      title: LLMProviderSummaryResponse
+      type: object
+    LLMProviderSummaryResponseList:
+      example:
+        count: 1
+        list:
+        - apiVersion: 1.0.0
+          builtInSupport: true
+          name: open-ai
+          description: OpenAI LLM Provider
+          id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+        - apiVersion: 1.0.0
+          builtInSupport: true
+          name: open-ai
+          description: OpenAI LLM Provider
+          id: ece92bdc-e1e6-325c-b6f4-656208a041e9
+      properties:
+        count:
+          description: |
+            Number of LLM Providers returned.
+          example: 1
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/LLMProviderSummaryResponse'
+          type: array
+      title: LLMProviderSummaryResponseList
       type: object
     VHost:
       example:
@@ -10186,6 +10530,7 @@ components:
             apim:admin_alert_manage: Manage admin alerts
             apim:api_workflow_view: Retrive workflow requests
             apim:scope_manage: Manage system scopes
+            apim:llm_provider_manage: Manage LLM Providers
           tokenUrl: https://localhost:9443/oauth2/token
       type: oauth2
 
