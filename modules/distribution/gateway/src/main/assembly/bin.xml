@@ -485,9 +485,16 @@
                 <include>*.rxt</include>
             </includes>
         </fileSet>
-
-
-
+        <fileSet>
+            <directory>
+                ../../p2-profile/gateway/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>api#am#gateway#v2.war</include>
+            </includes>
+        </fileSet>
         <!--Multitenancy related file -->
         <fileSet>
             <directory>
@@ -985,20 +992,6 @@
         </file>
 
         <file>
-            <source>src/main/startup-scripts/profileSetup.sh</source>
-            <outputDirectory>wso2am-gw-${pom.version}/bin/</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>755</fileMode>
-        </file>
-
-        <file>
-            <source>src/main/startup-scripts/profileSetup.bat</source>
-            <outputDirectory>wso2am-gw-${pom.version}/bin/</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>755</fileMode>
-        </file>
-
-        <file>
             <source>src/main/startup-scripts/api-gateway.sh</source>
             <outputDirectory>wso2am-gw-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
@@ -1007,20 +1000,6 @@
 
         <file>
             <source>src/main/startup-scripts/api-gateway.bat</source>
-            <outputDirectory>wso2am-gw-${pom.version}/bin/</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>755</fileMode>
-        </file>
-
-        <file>
-            <source>src/main/startup-scripts/traffic-manager.sh</source>
-            <outputDirectory>wso2am-gw-${pom.version}/bin/</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>755</fileMode>
-        </file>
-
-        <file>
-            <source>src/main/startup-scripts/traffic-manager.bat</source>
             <outputDirectory>wso2am-gw-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>

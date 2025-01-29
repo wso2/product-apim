@@ -44,5 +44,6 @@
         <module>product</module>
         <module>control-plane</module>
         <module>gateway</module>
+        <module>traffic-manager</module>
     </modules>
 </project>
