@@ -1,0 +1,92 @@
+[
+  {
+    "_id": "645b6ca620f6f5207e20e649",
+    "index": 0,
+    "guid": "1bd35be9-b1bb-473e-8a8e-129f95841f6e",
+    "isActive": true,
+    "balance": "$2,020.59",
+    "picture": "http://placehold.it/32x32",
+    "age": 40,
+    "eyeColor": "green",
+    "name": "Susie Guerrero",
+    "gender": "female",
+    "company": "ORGANICA",
+    "email": "susieguerrero@organica.com",
+    "phone": "+1 (816) 535-2569",
+    "address": "741 Plymouth Street, Ypsilanti, Massachusetts, 9507",
+    "about": "Pariatur aliquip ad qui id eiusmod labore quis aute in veniam elit anim deserunt mollit. Duis mollit eiusmod sit proident laboris do laboris culpa sint enim dolore id officia. Labore ea quis Lorem occaecat minim. Pariatur incididunt velit consectetur nostrud. Ea fugiat commodo occaecat elit cillum proident amet duis eu nisi.\r\n",
+    "registered": "2016-05-19T12:13:11 -06:-30",
+    "latitude": 37.712746,
+    "longitude": 59.669854,
+    "tags": [
+      "esse",
+      "voluptate",
+      "proident",
+      "enim",
+      "reprehenderit",
+      "nulla",
+      "commodo"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "name": "Tanner Hardin"
+      },
+      {
+        "id": 1,
+        "name": "Marla Sullivan"
+      },
+      {
+        "id": 2,
+        "name": "Celeste Dodson"
+      }
+    ],
+    "greeting": "Hello, Susie Guerrero! You have 10 unread messages.",
+    "favoriteFruit": "banana"
+  },
+  {
+    "_id": "645b6ca68b2c950a7af1c0f8",
+    "index": 1,
+    "guid": "a353d976-2dd0-4fa8-b72f-921f3fefe0fe",
+    "isActive": false,
+    "balance": "$2,282.67",
+    "picture": "http://placehold.it/32x32",
+    "age": 38,
+    "eyeColor": "blue",
+    "name": "Campbell Preston",
+    "gender": "male",
+    "company": "NEBULEAN",
+    "email": "campbellpreston@nebulean.com",
+    "phone": "+1 (946) 452-2131",
+    "address": "277 Bergen Avenue, Orason, West Virginia, 921",
+    "about": "Ut magna ea ex aliquip laboris anim id laborum. Dolore laboris est ex duis officia dolore esse ex culpa tempor adipisicing esse occaecat sunt. Eiusmod occaecat consequat sint non proident exercitation cupidatat eiusmod tempor non consectetur occaecat occaecat adipisicing.\r\n",
+    "registered": "2018-07-29T02:56:54 -06:-30",
+    "latitude": 34.088233,
+    "longitude": 36.770568,
+    "tags": [
+      "minim",
+      "do",
+      "ipsum",
+      "incididunt",
+      "laboris",
+      "in",
+      "velit"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "name": "Misty Glass"
+      },
+      {
+        "id": 1,
+        "name": "Rocha Gates"
+      },
+      {
+        "id": 2,
+        "name": "Gray Mason"
+      }
+    ],
+    "greeting": "Hello, Campbell Preston! You have 9 unread messages.",
+    "favoriteFruit": "banana"
+  }
+]

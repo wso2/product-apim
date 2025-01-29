@@ -451,5 +451,11 @@ under the License.
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.am.integration.backend.service</groupId>
+            <artifactId>ssl-server</artifactId>
+            <version>4.4.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
