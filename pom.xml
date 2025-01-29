@@ -23,7 +23,7 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.4.0-SNAPSHOT</version>
+    <version>4.5.0-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>https://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
@@ -1284,11 +1284,11 @@
         <carbon.analytics.common.version>5.3.15</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.1.166</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.2.2-SNAPSHOT</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
 
-        <carbon.apimgt.version>9.30.101-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.version>9.31.3-SNAPSHOT</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1302,7 +1302,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.9.27</carbon.kernel.version>
-        <apimserver.version>4.4.0-SNAPSHOT</apimserver.version>
+        <apimserver.version>4.5.0-SNAPSHOT</apimserver.version>
 
         <cipher.tool.version>1.1.26</cipher.tool.version>
 
@@ -1310,10 +1310,10 @@
         <carbon.kernel.imp.pkg.version>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.7.221</carbon.mediation.version>
+        <carbon.mediation.version>4.7.228</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.713</carbon.identity.version>
+        <carbon.identity.version>5.25.719</carbon.identity.version>
         <carbon.identity.governance.version>1.8.108</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
@@ -1344,7 +1344,7 @@
 
         <siddhi.version>3.2.13</siddhi.version>
 
-        <axis2-transports.wso2.version>2.0.0-wso2v42</axis2-transports.wso2.version>
+        <axis2-transport-mail.wso2.version>2.0.0-wso2v70</axis2-transport-mail.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.17</log4j.version>
@@ -1354,9 +1354,9 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>4.0.0-wso2v152</synapse.version>
+        <synapse.version>4.0.0-wso2v186</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1-wso2v99</axis2.wso2.version>
+        <axis2.wso2.version>1.6.1-wso2v102</axis2.wso2.version>
         <axiom.wso2.version>1.2.11-wso2v29</axiom.wso2.version>
         <servlet-api.version>2.5</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
@@ -1475,7 +1475,7 @@
         <!-- WSDL4J dependencies -->
         <wsdl4j.version>1.6.3.wso2v3</wsdl4j.version>
         <wso2is.km.version>1.7.11</wso2is.km.version>
-        <wso2is7.km.version>2.0.3</wso2is7.km.version>
+        <wso2is7.km.version>2.0.4</wso2is7.km.version>
         <okta.keymanager.feature.version>3.2.1</okta.keymanager.feature.version>
         <azure.keymanager.feature.version>1.0.11</azure.keymanager.feature.version>
         <keycloak.keymanager.feature.version>2.1.1</keycloak.keymanager.feature.version>

@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-p2-profile-gen-parent</artifactId>
-        <version>4.4.0-SNAPSHOT</version>
+        <version>4.5.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -139,7 +139,7 @@
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.functions.library.mgt.feature:${carbon.identity.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.apache.axis2.transport:org.apache.axis2.transport.mail.feature:${axis2-transports.wso2.version}
+                                    org.apache.axis2.transport:org.apache.axis2.transport.mail.feature:${axis2-transport-mail.wso2.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon:org.wso2.carbon.core.runtime.feature:${carbon.kernel.version}
@@ -856,7 +856,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.apache.axis2.transport.mail.feature.group</id>
-                                    <version>${axis2-transports.wso2.version}</version>
+                                    <version>${axis2-transport-mail.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
@@ -1578,7 +1578,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.apache.axis2.transport.mail.feature.group</id>
-                                    <version>${axis2-transports.wso2.version}</version>
+                                    <version>${axis2-transport-mail.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
@@ -2203,7 +2203,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.apache.axis2.transport.mail.feature.group</id>
-                                    <version>${axis2-transports.wso2.version}</version>
+                                    <version>${axis2-transport-mail.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.andes.server.feature.group</id>
@@ -2692,7 +2692,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.apache.axis2.transport.mail.feature.group</id>
-                                    <version>${axis2-transports.wso2.version}</version>
+                                    <version>${axis2-transport-mail.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
@@ -3229,7 +3229,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.apache.axis2.transport.mail.feature.group</id>
-                                    <version>${axis2-transports.wso2.version}</version>
+                                    <version>${axis2-transport-mail.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
@@ -3721,7 +3721,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.apache.axis2.transport.mail.feature.group</id>
-                                    <version>${axis2-transports.wso2.version}</version>
+                                    <version>${axis2-transport-mail.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
@@ -4187,7 +4187,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.apache.axis2.transport.mail.feature.group</id>
-                                    <version>${axis2-transports.wso2.version}</version>
+                                    <version>${axis2-transport-mail.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.as.runtimes.cxf3.feature.group</id>
