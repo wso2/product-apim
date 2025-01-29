@@ -156,6 +156,7 @@ public class GatewayRestAPITestCase extends APIMIntegrationBaseTest {
         List<OperationPolicyDTO> policyList = new ArrayList<>();
         OperationPolicyDTO policyDTO = new OperationPolicyDTO();
         policyDTO.setPolicyName(policyName);
+        policyDTO.setPolicyType("common");
         policyDTO.setPolicyId(commonPolicyMap.get(policyName));
         policyDTO.setParameters(attributeMap);
         policyList.add(policyDTO);
