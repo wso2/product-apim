@@ -16,7 +16,8 @@
   ~ limitations under the License.
   -->
 <wso2registry xmlns:svns="http://org.wso2.securevault/configuration">
-    <!-- 
+
+    <!--
     For details on configuring different config & governance registries see;
     http://wso2.org/library/tutorials/2010/04/sharing-registry-space-across-multiple-product-instances
     -->
@@ -44,7 +45,7 @@
         <id>gov</id>
         <cacheId>{{governance_data.cache_id}}</cacheId>
         <dbConfig>govregistry</dbConfig>
-        <readOnly>{{governance_data.readonly}}</readOnly>
+        <readOnly>false</readOnly>
         <enableCache>{{governance_data.enable_cache}}</enableCache>
         <registryRoot>/</registryRoot>
     </remoteInstance>
@@ -53,7 +54,7 @@
         <id>conf</id>
         <cacheId>{{config_data.cache_id}}</cacheId>
         <dbConfig>configregistry</dbConfig>
-        <readOnly>{{config_data.readonly}}</readOnly>
+        <readOnly>false</readOnly>
         <enableCache>{{config_data.enable_cache}}</enableCache>
         <registryRoot>/</registryRoot>
     </remoteInstance>
@@ -69,220 +70,47 @@
 
     <!-- This handler provides the feature to add a simlink to a given resource -->
 
-    <handler class="org.wso2.carbon.registry.extensions.handlers.ExtensionsSymLinkHandler">
-        <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.URLMatcher">
-            <property name="pattern">.*</property>
-        </filter>
-    </handler>
-
-    <!-- This handler provides resource retention locking for the resources -->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.RetentionHandler" 
-            methods="PUT,DELETE,MOVE,RENAME,IMPORT,COPY,ADD_ASSOCIATION,REMOVE_ASSOCIATION,RESTORE,RESTORE_VERSION">
-        <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.URLMatcher">
-            <property name="pattern">.*</property>
-        </filter>
-    </handler>
-
-    <!-- This handler processes the services being added to the registry -->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.ServiceMediaTypeHandler">
-        <!--property name="disableWSDLValidation">true</property-->
-        <property name="defaultServiceVersion">1.0.0-SNAPSHOT</property>
-        <property name="disableSymlinkCreation">true</property>
-        <property name="smartLifecycleLinks" type="xml">
-            <key>dev</key>
-            <key>qa</key>
-            <key>live</key>
-        </property>        
+    <!--<handler class="org.wso2.carbon.registry.extensions.handlers.SynapseRepositoryHandler">
         <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-            <property name="mediaType">application/vnd.wso2-service+xml</property>
+            <property name="mediaType">application/vnd.apache.synapse</property>
         </filter>
     </handler>
 
-    <!-- This handler provides the ability to remove the entire heirarchy for a given service while deleting the service -->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.DeleteHierarchyHandler">
+    <handler class="org.wso2.carbon.registry.extensions.handlers.SynapseRepositoryHandler">
         <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-            <property name="mediaType">application/vnd.wso2-service+xml</property>
-        </filter>
-    </handler>    
-
-
-    <!-- This handler use to index APIs when there change in Api artifact-->
-    <handler class="org.wso2.carbon.apimgt.impl.handlers.APIIndexingHandler">
-        <filter class = "org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-            <property name="mediaType">application/vnd.wso2-api+xml</property>
+            <property name="mediaType">application/vnd.apache.esb</property>
         </filter>
     </handler>
 
-   <!--This handler delete the subscription hierarcy generated in the notifications path when a subscription is deleted directly -->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.DeleteHierarchyHandler">
-         <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.URLMatcher">
-                <property name="deletePattern">/_system/governance/event/topics/registry/notifications/.*</property>
-         </filter>
-    </handler>
-
-    <!--Config for custom registry handlers.-->
-    {% for handler in registry_handler %}
-    <handler class="{{handler.class}}" {% if handler.method is defined %} method="{{handler.method}}" {% endif %}>
-        {% for propKey,propValue in handler.properties.items() %}
-        <property name="{{propKey}}">{{propValue}}</property>
-        {% endfor %}
-        {% for nestedProperty in handler.nested_property %}
-        {% if nestedProperty.enable %}
-        <property name="{{nestedProperty.name}}" type="{{nestedProperty.type}}">
-            {% for prop in nestedProperty[nestedProperty.name] %}
-                <{{prop.tag}} {% if prop.key is defined %} key="{{prop.key}}" {% endif %}>{{prop.value}}</{{prop.tag}}>
-            {% endfor %}
-        </property>
-        {% endif %}
-        {% endfor %}
-        <filter class="{{handler.filter_class}}">
-            {% for filterPropKey,filterPropValue in handler.filter_properties.items() %}
-            <property name="{{filterPropKey}}">{{filterPropValue}}</property>
-            {% endfor %}
-        </filter>
-    </handler>
-    {% endfor %}
-
-    <!--This handler clears the caches when tenant-config is updated.-->
-   <handler class="org.wso2.carbon.apimgt.impl.handlers.TenantConfigMediaTypeHandler" methods="PUT,DELETE">
-      <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-        <property name="mediaType">tenant-config</property>
-    </filter>
-   </handler>
-
-   <!--This handler clears the extensions caches when tenant-config is updated.-->
-   <handler class="org.wso2.is.key.manager.core.handlers.TenantConfigMediaTypeHandler" methods="PUT,DELETE">
-      <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-        <property name="mediaType">tenant-config</property>
-     </filter>
-   </handler>
-
-   <!--This handler updates ga-config local entry when ga-config in the registry is updated.-->
-   <handler class="org.wso2.carbon.apimgt.impl.handlers.GAConfigMediaTypeHandler" methods="PUT">
-      <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-        <property name="mediaType">ga-config</property>
-      </filter>
-   </handler>
-
-    <!-- This handler processes the links for the lifecycle -->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.SmartLifecycleLinkHandler">
-        <property name="states" type="xml">
-            <state key="dev">Created</state>
-            <state key="qa">Tested</state>
-            <state key="live">Deployed</state>
-        </property>
+    <handler class="org.wso2.carbon.registry.extensions.handlers.Axis2RepositoryHandler">
         <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-            <property name="mediaType">application/vnd.wso2-smart-link</property>
+            <property name="mediaType">application/vnd.apache.axis2</property>
         </filter>
     </handler>
 
-    <!-- This handler processes the policy files of the given media type defined by the filter -->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.PolicyMediaTypeHandler">
-	<property name="policyLocationConfiguration" type="xml">
-            <location>/trunk/policies/</location>            
-	</property>
+    <handler class="org.wso2.carbon.registry.extensions.handlers.Axis2RepositoryHandler">
         <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-            <property name="mediaType">application/policy+xml</property>
+            <property name="mediaType">application/vnd.apache.wsas</property>
         </filter>
     </handler>
 
-    <!-- This handler processes the schema types which are defined by the filter  -->
+    <handler class="org.wso2.carbon.registry.extensions.handlers.WSDLMediaTypeHandler">
+        <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
+            <property name="mediaType">application/wsdl+xml</property>
+        </filter>
+    </handler>
 
     <handler class="org.wso2.carbon.registry.extensions.handlers.XSDMediaTypeHandler">
-        <!--property name="disableSchemaValidation">true</property-->
-        <property name="disableSymlinkCreation">true</property>
-        <property name="locationConfiguration" type="xml">
-            <location>/trunk/schemas/</location>            
-        </property>
         <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
             <property name="mediaType">application/x-xsd+xml</property>
         </filter>
-    </handler>
-
-    <!-- This handler processes making an external link to a given resource -->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.ExternalLinkHandler">
-        <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-            <property name="mediaType">application/vnd.wso2-hyperlink</property>
-        </filter>
-    </handler>
-
-    <!-- This handler processes service end-points defined in the WSDL files being uploaded to the registry -->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.EndpointMediaTypeHandler">
-        <property name="endpointMediaType">application/vnd.wso2.endpoint</property>
-        <property name="endpointLocationConfiguration" type="xml">
-            <location>/trunk/endpoints/</location>
-        </property>
-        <filter class="org.wso2.carbon.registry.extensions.filters.EndpointMediaTypeMatcher">
-        </filter>
-    </handler>
-
-    <handler class="org.wso2.carbon.governance.registry.extensions.handlers.UriMediaTypeHandler">
-	<filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-	    <property name="mediaType">application/vnd.wso2-uri+xml</property>
-	</filter>
-    </handler>
-
-    <!-- When a resource/governance artifact is deleted, this handler will cleanup all its bounded subscriptions from registry-->
-
-    <handler class="org.wso2.carbon.registry.extensions.handlers.DeleteSubscriptionHandler">
-         <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.URLMatcher">
-                 <property name="pattern">.*</property>
-         </filter>
-    </handler>
-
-    <!--This handler manage the meta data resource caching-->
-    <handler class="org.wso2.carbon.governance.registry.extensions.handlers.MetaDataCacheHandler">
-        <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.URLMatcher">
-            <property name="pattern">.*</property>
-        </filter>
-    </handler>
-
-    <!--This handler clears the caches when workflow-extension config is updated.-->
-   <handler class="org.wso2.carbon.apimgt.impl.handlers.APIConfigMediaTypeHandler" methods="PUT,DELETE">
-      <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-        <property name="mediaType">workflow-config</property>
-    </filter>
-   </handler>
-
-    <!--This handler clears the caches when APILifecycle config is updated.-->
-    <handler class="org.wso2.carbon.apimgt.impl.handlers.LifecycleModificationHandler" methods="PUT,DELETE">
-        <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.URLMatcher">
-            <property name="pattern">.*</property>
-        </filter>
-    </handler>
-    <!--This handler hides the password of secure endpoints if specified, in an API-->
-    <!--handler class="org.wso2.carbon.apimgt.impl.handlers.APIEndpointPasswordRegistryHandler" methods="GET,PUT">
-        <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
-            <property name="mediaType">application/vnd.wso2-api+xml</property>
-        </filter>
-    </handler-->
-
-    <!--remoteInstance url="https://localhost:9443/registry">
-	<id>instanceid</id>
-	    <username>username</username>
-	    <password>password</password>
-        <cacheId>wso2carbon@jdbc:h2:repository/database/WSO2CARBON_DB</cacheId>
-    </remoteInstance-->
-
-    <!-- This defines the Atom based remote registry instance configuration -->
+    </handler> -->
 
     <!--remoteInstance url="https://localhost:9443/registry">
         <id>instanceid</id>
         <username>username</username>
         <password>password</password>
-        <type>ws</type>
-        <cacheId>wso2carbon@jdbc:h2:repository/database/WSO2CARBON_DB</cacheId>
     </remoteInstance-->
-
-    <!-- This defines the JDBC based remote registry instance configuration  -->
 
     <!--remoteInstance url="https://localhost:9443/registry">
         <id>instanceid</id>
@@ -292,64 +120,51 @@
         <registryRoot>/</registryRoot>
     </remoteInstance-->
 
-    <!-- This defines the mount configuration to be used with the remote instance and the target path for the mount -->
-
     <!--mount path="/_system/config" overwrite="true|false|virtual">
         <instanceId>instanceid</instanceId>
         <targetPath>/_system/nodes</targetPath>
     </mount-->
 
-    <!-- This defines index configuration which is used in meta data search feature of the registry -->
     <indexingConfiguration>
-        {% if indexing.skip_roles_regex is defined %}
-        <skipRolesByRegex>{{indexing.skip_roles_regex}}</skipRolesByRegex>
-        {% endif %}
-        <startIndexing>{{indexing.enable}}</startIndexing>
-        <skipCache>true</skipCache>
-        <startingDelayInSeconds>{{indexing.starting_delay}}</startingDelayInSeconds>
-        <indexingFrequencyInSeconds>{{indexing.frequency}}</indexingFrequencyInSeconds>
+        <startIndexing>false</startIndexing>
+        <startingDelayInSeconds>35</startingDelayInSeconds>
+        <indexingFrequencyInSeconds>5</indexingFrequencyInSeconds>
         <!--number of resources submit for given indexing thread -->
-        <batchSize>{{indexing.bach_size}}</batchSize>
+        <batchSize>30</batchSize>
         <!--number of worker threads for indexing -->
-        <indexerPoolSize>{{indexing.pool_size}}</indexerPoolSize>
+        <indexerPoolSize>30</indexerPoolSize>
         <!-- location storing the time the indexing took place-->
-        {% if indexing.re_indexing is defined %}
-        <lastAccessTimeLocation>/_system/local/repository/components/org.wso2.carbon.registry/indexing/lastaccesstime_{{indexing.re_indexing}}</lastAccessTimeLocation>
-        {%else%}
-        <lastAccessTimeLocation>/_system/local/repository/components/org.wso2.carbon.registry/indexing/lastaccesstime</lastAccessTimeLocation>
-        {%endif%}
+        <lastAccessTimeLocation>
+            /_system/local/repository/components/org.wso2.carbon.registry/indexing/lastaccesstime
+        </lastAccessTimeLocation>
         <!-- the indexers that implement the indexer interface for a relevant media type/(s) -->
         <indexers>
-            <!--indexer class="org.wso2.carbon.registry.indexing.indexer.MSExcelIndexer" mediaTypeRegEx="application/vnd.ms-excel"/>
-            <indexer class="org.wso2.carbon.registry.indexing.indexer.MSPowerpointIndexer" mediaTypeRegEx="application/vnd.ms-powerpoint"/>
-            <indexer class="org.wso2.carbon.registry.indexing.indexer.MSWordIndexer" mediaTypeRegEx="application/msword"/>
-            <indexer class="org.wso2.carbon.registry.indexing.indexer.PDFIndexer" mediaTypeRegEx="application/pdf"/>
-            <indexer class="org.wso2.carbon.registry.indexing.indexer.XMLIndexer" mediaTypeRegEx="application/xml"/-->
-            <!--indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/wsdl\+xml" profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/x-xsd\+xml " profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.governance.registry.extensions.indexers.RXTIndexer" mediaTypeRegEx="application/policy\+xml" profiles ="default,control-plane"/-->
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.DocumentIndexer" mediaTypeRegEx="application/vnd.wso2-document\+xml" profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.CustomAPIIndexer" mediaTypeRegEx="application/vnd.(.)+\+xml" profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.RESTAsyncAPIDefinitionIndexer" mediaTypeRegEx="application/json" profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.GraphQLAPIDefinitionIndexer" mediaTypeRegEx="text/plain(.)+charset=ISO-8859-1" profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.SOAPAPIDefinitionIndexer" mediaTypeRegEx="application/wsdl\+xml|application/octet-stream" profiles ="default,control-plane"/>
-            <!--indexer class="org.wso2.carbon.registry.indexing.indexer.XMLIndexer" mediaTypeRegEx="application/(.)+\+xml"/>
-            <indexer class="org.wso2.carbon.registry.indexing.indexer.PlainTextIndexer" mediaTypeRegEx="text/(.)+"/>
-            <indexer class="org.wso2.carbon.registry.indexing.indexer.PlainTextIndexer" mediaTypeRegEx="application/x-javascript"/-->
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.PlainTextIndexer" mediaTypeRegEx="text/plain+" profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.PDFIndexer" mediaTypeRegEx="application/pdf" profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.MSWordIndexer" mediaTypeRegEx="application/msword" profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.MSPowerpointIndexer" mediaTypeRegEx="application/vnd.ms-powerpoint" profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.MSExcelIndexer" mediaTypeRegEx="application/vnd.ms-excel" profiles ="default,control-plane"/>
-            <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.XMLIndexer" mediaTypeRegEx="application/xml" profiles ="default,control-plane"/>
-    	    <indexer class="org.wso2.carbon.apimgt.impl.indexing.indexer.WSDLIndexer" mediaTypeRegEx="application/api-wsdl" profiles ="default,control-plane"/>
-    	    {% for custom_indexer in custom_indexers %}
-    	        <indexer class="{{custom_indexer.class}}" mediaTypeRegEx="{{custom_indexer.media_type_regex}}" profiles ="default,control-plane"/>
-    	    {% endfor %}
+            <indexer class="org.wso2.carbon.registry.indexing.indexer.MSExcelIndexer"
+                     mediaTypeRegEx="application/vnd.ms-excel"/>
+            <indexer class="org.wso2.carbon.registry.indexing.indexer.MSPowerpointIndexer"
+                     mediaTypeRegEx="application/vnd.ms-powerpoint"/>
+            <indexer class="org.wso2.carbon.registry.indexing.indexer.MSWordIndexer"
+                     mediaTypeRegEx="application/msword"/>
+            <indexer class="org.wso2.carbon.registry.indexing.indexer.PDFIndexer"
+                     mediaTypeRegEx="application/pdf"/>
+            <indexer class="org.wso2.carbon.registry.indexing.indexer.XMLIndexer"
+                     mediaTypeRegEx="application/xml"/>
+            <indexer class="org.wso2.carbon.registry.indexing.indexer.XMLIndexer"
+                     mediaTypeRegEx="application/(.)+\+xml"/>
+            <indexer class="org.wso2.carbon.registry.indexing.indexer.PlainTextIndexer"
+                     mediaTypeRegEx="application/swagger\+json"/>
+            <indexer class="org.wso2.carbon.registry.indexing.indexer.PlainTextIndexer"
+                     mediaTypeRegEx="application/(.)+\+json"/>
+            <indexer class="org.wso2.carbon.registry.indexing.indexer.PlainTextIndexer"
+                     mediaTypeRegEx="text/(.)+"/>
+            <indexer class="org.wso2.carbon.registry.indexing.indexer.PlainTextIndexer"
+                     mediaTypeRegEx="application/x-javascript"/>
         </indexers>
         <exclusions>
-            <exclusion pathRegEx="/_system/config/repository/dashboards/gadgets/swfobject1-5/.*[.]html"/>
-            <exclusion pathRegEx="/_system/local/repository/components/org[.]wso2[.]carbon[.]registry/mount/.*"/>
+            <exclusion
+                    pathRegEx="/_system/config/repository/dashboards/gadgets/swfobject1-5/.*[.]html"/>
+            <exclusion
+                    pathRegEx="/_system/local/repository/components/org[.]wso2[.]carbon[.]registry/mount/.*"/>
         </exclusions>
     </indexingConfiguration>
 
@@ -365,50 +180,4 @@
         <!-- Location you want to add service and default location will be /services/ -->
         <servicePath>/trunk/services/</servicePath>
     </staticConfiguration>
-
-    <!-- This enables auto-versioning of resources (non-collection). Whenever a resource is updated a new version will be created -->
-  
-    <versionResourcesOnChange>false</versionResourcesOnChange>
-    
-    <!-- This enables JMX management for G-Reg -->
-    
-    <jmx enabled="false">
-        <service name="InvocationStatistics" enabled="true"/>
-        <service name="Activities" enabled="true"/>
-        <service name="Properties" enabled="true"/>
-        <service name="Subscriptions" enabled="true"/>
-        <service name="Events" enabled="true"/>
-    </jmx>
-    
-    <!-- If you need to use a Remote Human Task to provide the Work List functionality instead of the Embedded Human Task or if you want
-         to use Work List notifications, uncomment the following configuration. Please note that you need to provide the credentials 
-         and URL to connect to the remote instance (ex:- remote BPS server) if you are planning to use a Remote Human Task. You should
-         provide credentials and URL to connect to the local instance if you simply want to use Work List notifications. -->
-    
-    <!--workList serverURL="local://services/" remote="false">
-        <username>admin</username>
-        <password>admin</password>
-    </workList-->
-    
-    <!-- Sample SCM configuration. Please note that checkOutURL, workingDir, and mountPoint are mandatory for each connection. 
-         The update frequency is in minutes. Setting readOnly would disable checkIn even if the checkInURL is set. The credentials
-         are to connect to the corresponding repository and must be provided if required. -->
-    
-    <!--scm>
-        <connection checkOutURL="scm:svn:http://svn.wso2.org/repos/wso2" workingDir="/valid/filesystem/path" mountPoint="/_system/foo" checkInURL="" readOnly="" updateFrequency="">
-        	<username>admin</username>
-        	<password>admin</password>
-        </connection>
-    </scm-->
-    
-    <!-- This defines the list of scheduled tasks for the registry -->
-    
-    <!--tasks>
-        <task name="TaskName" class="com.foo.TaskClass">
-            <trigger cron="cronExpr"/>
-            <property key="foo" value="FooVal" />
-            <property key="bar" value="BarVal" />
-        </task>
-    </tasks-->
-
 </wso2registry>

@@ -26,10 +26,6 @@
         <param-name>Owasp.CsrfGuard.Config</param-name>
         <param-value>repository/conf/security/Owasp.CsrfGuard.Carbon.properties</param-value>
     </context-param>
-    <context-param>
-        <param-name>contextPath</param-name>
-        <param-value>{{server.proxy_context_path}}</param-value>
-    </context-param>
 
     <servlet id="bridge">
         <servlet-name>bridgeservlet</servlet-name>
@@ -112,19 +108,6 @@
 <param-value>false</param-value>
 </init-param>
 </filter>
-
-<filter>
-    <filter-name>CaptchaFilter</filter-name>
-    <filter-class>org.wso2.carbon.identity.captcha.filter.CaptchaFilter</filter-class>
-</filter>
-<filter-mapping>
-    <filter-name>CaptchaFilter</filter-name>
-    <url-pattern>/samlsso</url-pattern>
-    <url-pattern>/oauth2</url-pattern>
-    <url-pattern>/commonauth</url-pattern>
-    <dispatcher>FORWARD</dispatcher>
-    <dispatcher>REQUEST</dispatcher>
-</filter-mapping>
 
 <filter-mapping>
  <filter-name>HttpHeaderSecurityFilter</filter-name>

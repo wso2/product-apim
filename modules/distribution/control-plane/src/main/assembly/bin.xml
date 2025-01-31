@@ -1003,6 +1003,16 @@
             </source>
             <outputDirectory>wso2am-acp-${pom.version}/repository/conf</outputDirectory>
         </file>
+        <file>
+            <source>src/main/conf/axis2_KM.xml</source>
+            <outputDirectory>wso2am-acp-${pom.version}/repository/conf/axis2</outputDirectory>
+            <destName>axis2_KM.xml</destName>
+        </file>
+        <file>
+            <source>src/main/conf/tenant-axis2_KM.xml</source>
+            <outputDirectory>wso2am-acp-${pom.version}/repository/conf/axis2</outputDirectory>
+            <destName>tenant-axis2_KM.xml</destName>
+        </file>
         <!--End of claim management feature-->
 
 
@@ -1216,6 +1226,20 @@
 
         <file>
             <source>src/main/startup-scripts/api-cp.bat</source>
+            <outputDirectory>wso2am-acp-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/startup-scripts/key-manager.sh</source>
+            <outputDirectory>wso2am-acp-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>src/main/startup-scripts/key-manager.bat</source>
             <outputDirectory>wso2am-acp-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>

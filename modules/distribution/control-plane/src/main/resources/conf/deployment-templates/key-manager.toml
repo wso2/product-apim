@@ -1,6 +1,6 @@
 [server]
-#hostname = "km.wso2.com"
-server_role = "control-plane"
+hostname = "localhost"
+server_role = "default"
 
 [user_store]
 type = "database_unique_id"

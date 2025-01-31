@@ -277,25 +277,6 @@
             <outputDirectory>wso2am-tm-${pom.version}/lib</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>src/main/conf/synapse-configs</directory>
-            <outputDirectory>wso2am-tm-${pom.version}/repository/deployment/server/synapse-configs</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/conf/synapse-configs/default</directory>
-            <outputDirectory>wso2am-tm-${pom.version}/repository/resources/apim-synapse-config/</outputDirectory>
-            <includes>
-                <include>**/registry.xml</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/conf/synapse-configs/default/sequences</directory>
-            <outputDirectory>wso2am-tm-${pom.version}/repository/resources/apim-synapse-config/</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/conf/synapse-configs/default/inbound-endpoints</directory>
-            <outputDirectory>wso2am-tm-${pom.version}/repository/resources/apim-synapse-config/</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>
                 ../../p2-profile/traffic-manager/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/advanced/
             </directory>
@@ -653,6 +634,17 @@
             </includes>
         </fileSet>
 
+        <fileSet>
+            <directory>
+                ../../p2-profile/traffic-manager/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>internal#data#v1.war</include>
+            </includes>
+        </fileSet>
+
 
         <!-- copy cxf filter extensions -->
         <fileSet>
@@ -730,22 +722,7 @@
             <destName>listenerprofiles.xml</destName>
         </file>
         <file>
-            <source>src/main/conf/axis2.xml</source>
-            <outputDirectory>wso2am-tm-${pom.version}/repository/conf/axis2</outputDirectory>
-            <destName>axis2.xml</destName>
-        </file>
-        <file>
             <source>src/main/conf/axis2_TM.xml</source>
-            <outputDirectory>wso2am-tm-${pom.version}/repository/conf/axis2</outputDirectory>
-            <destName>axis2_TM.xml</destName>
-        </file>
-        <file>
-            <source>src/main/conf/axis2_KM.xml</source>
-            <outputDirectory>wso2am-tm-${pom.version}/repository/conf/axis2</outputDirectory>
-            <destName>axis2_KM.xml</destName>
-        </file>
-        <file>
-            <source>src/main/conf/axis2.xml</source>
             <outputDirectory>wso2am-tm-${pom.version}/repository/conf/axis2</outputDirectory>
             <destName>axis2.xml</destName>
         </file>
@@ -760,17 +737,12 @@
             <destName>tenant-axis2.xml</destName>
         </file>
         <file>
-            <source>src/main/conf/tenant-axis2_KM.xml</source>
-            <outputDirectory>wso2am-tm-${pom.version}/repository/conf/axis2</outputDirectory>
-            <destName>tenant-axis2_KM.xml</destName>
-        </file>
-        <file>
             <source>src/main/conf/master-datasources.xml</source>
             <outputDirectory>wso2am-tm-${pom.version}/repository/conf/datasources</outputDirectory>
             <destName>master-datasources.xml</destName>
         </file>
         <file>
-            <source>src/main/conf/registry.xml</source>
+            <source>src/main/conf/registry_TM.xml</source>
             <outputDirectory>wso2am-tm-${pom.version}/repository/conf</outputDirectory>
             <destName>registry.xml</destName>
             <filtered>true</filtered>
@@ -779,7 +751,7 @@
         <file>
             <source>src/main/conf/registry_TM.xml</source>
             <outputDirectory>wso2am-tm-${pom.version}/repository/conf</outputDirectory>
-            <destName>registry_TM.xml</destName>
+            <destName>registry.xml</destName>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
