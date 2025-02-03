@@ -257,6 +257,12 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         endpointCertificates = restAPIPublisher.getEndpointCertificiates("https://abc.com", null);
         Assert.assertNotNull(endpointCertificates.getCertificates());
         Assert.assertEquals(endpointCertificates.getCertificates().size(), 0);
+        endpointCertificates = restAPIPublisher.getEndpointCertificiates("https://localhost", null);
+        Assert.assertNotNull(endpointCertificates.getCertificates());
+        Assert.assertEquals(endpointCertificates.getCertificates().size(), 2);
+        endpointCertificates = restAPIPublisher.getEndpointCertificiates(endpoint + "/api/v1", null);
+        Assert.assertNotNull(endpointCertificates.getCertificates());
+        Assert.assertEquals(endpointCertificates.getCertificates().size(), 2);
     }
 
     @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
