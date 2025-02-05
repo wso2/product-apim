@@ -16156,33 +16156,39 @@ components:
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           response:
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           fault:
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
         monetization:
@@ -18757,33 +18763,39 @@ components:
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           response:
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           fault:
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
           - policyVersion: v1
             policyId: policyId
             policyName: policyName
+            policyType: policyType
             parameters:
               key: '{}'
         verb: POST
@@ -19286,33 +19298,39 @@ components:
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
               response:
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
               fault:
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
             verb: POST
@@ -19331,33 +19349,39 @@ components:
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
               response:
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
               fault:
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
               - policyVersion: v1
                 policyId: policyId
                 policyName: policyName
+                policyType: policyType
                 parameters:
                   key: '{}'
             verb: POST
@@ -20198,6 +20222,7 @@ components:
         policyVersion: v1
         policyId: policyId
         policyName: policyName
+        policyType: policyType
         parameters:
           key: '{}'
       properties:
@@ -20205,6 +20230,8 @@ components:
           type: string
         policyVersion:
           default: v1
+          type: string
+        policyType:
           type: string
         policyId:
           type: string
@@ -20222,33 +20249,39 @@ components:
         - policyVersion: v1
           policyId: policyId
           policyName: policyName
+          policyType: policyType
           parameters:
             key: '{}'
         - policyVersion: v1
           policyId: policyId
           policyName: policyName
+          policyType: policyType
           parameters:
             key: '{}'
         response:
         - policyVersion: v1
           policyId: policyId
           policyName: policyName
+          policyType: policyType
           parameters:
             key: '{}'
         - policyVersion: v1
           policyId: policyId
           policyName: policyName
+          policyType: policyType
           parameters:
             key: '{}'
         fault:
         - policyVersion: v1
           policyId: policyId
           policyName: policyName
+          policyType: policyType
           parameters:
             key: '{}'
         - policyVersion: v1
           policyId: policyId
           policyName: policyName
+          policyType: policyType
           parameters:
             key: '{}'
       properties:
@@ -20881,33 +20914,39 @@ components:
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
             response:
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
             fault:
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
           verb: POST
@@ -20926,33 +20965,39 @@ components:
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
             response:
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
             fault:
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
             - policyVersion: v1
               policyId: policyId
               policyName: policyName
+              policyType: policyType
               parameters:
                 key: '{}'
           verb: POST
