@@ -22,7 +22,8 @@ associated libraries are also specified here.
 relevant, org.wso2.andes.configuration.enums.AndesConfiguration, enum value using the Xpath
 expression of the property.
 
-This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/cipher-text.properties for examples.--><broker>
+This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/cipher-text.properties for examples.-->
+<broker xmlns:svns="http://org.wso2.securevault/configuration">
 
     <coordination>
         <!-- You can override the cluster node identifier of this MB node using the nodeID.
@@ -384,13 +385,17 @@ This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/c
                                      sent but ack is not honoured.
             -->
             <topicMessageDeliveryStrategy>
-                <strategyName>DISCARD_NONE</strategyName>
+                {% if broker.performance_tuning.delivery.topic_message_delivery_strategy.strategy_name is defined %}
+                    <strategyName>{{broker.performance_tuning.delivery.topic_message_delivery_strategy.strategy_name}}</strategyName>
+                {% endif %}
                 <!-- If you choose DISCARD_ALLOWED topic message delivery strategy,
                      broker keep messages in memory until ack is done until this timeout.
                      If an ack is not received under this timeout, ack will be simulated
                      internally and real acknowledgement is discarded.
                      deliveryTimeout is in seconds -->
-                <deliveryTimeout>60</deliveryTimeout>
+                {% if broker.performance_tuning.delivery.topic_message_delivery_strategy.delivery_timeout is defined %}
+                    <deliveryTimeout>{{broker.performance_tuning.delivery.topic_message_delivery_strategy.delivery_timeout}}</deliveryTimeout>
+                {% endif %}
             </topicMessageDeliveryStrategy>
         </delivery>
 

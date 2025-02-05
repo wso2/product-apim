@@ -270,10 +270,6 @@
             <outputDirectory>wso2am-gw-${pom.version}/repository/resources/conf/templates</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>src/main/resources/conf/deployment-templates</directory>
-            <outputDirectory>wso2am-gw-${pom.version}/repository/resources/conf/deployment-templates</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>./src/main/lib</directory>
             <outputDirectory>wso2am-gw-${pom.version}/lib</outputDirectory>
         </fileSet>
