@@ -1387,7 +1387,7 @@
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
-        <opensaml2.wso2.version>3.3.1.wso2v11</opensaml2.wso2.version>
+        <opensaml2.wso2.version>3.3.1.wso2v14</opensaml2.wso2.version>
         <transport.http.netty.version>6.3.51</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
