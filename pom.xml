@@ -1313,11 +1313,11 @@
         <carbon.mediation.version>4.7.228</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.719</carbon.identity.version>
+        <carbon.identity.version>5.25.720</carbon.identity.version>
         <carbon.identity.governance.version>1.8.108</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.13.19</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.13.23</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.10</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.7.5</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.9.10</carbon.identity-inbound-auth-openid.version>
@@ -1337,7 +1337,7 @@
         <saml.common.util.version.range>[1.0.0,2.0.0)</saml.common.util.version.range>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.11.17</carbon.deployment.version>
+        <carbon.deployment.version>4.11.18</carbon.deployment.version>
 
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.9.31</carbon.multitenancy.version>
