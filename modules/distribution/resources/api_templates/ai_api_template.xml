@@ -1,7 +1,7 @@
 <!--
- ~ Copyright (c) 2025, WSO2 LLC (http://www.wso2.org) All Rights Reserved.
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  ~
- ~ WSO2 LLC licenses this file to you under the Apache License,
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
  ~ Version 2.0 (the "License"); you may not use this file except
  ~ in compliance with the License.
  ~ You may obtain a copy of the License at
@@ -26,40 +26,24 @@
         #end
         #end
 
-        #macro ( draw_endpoint $type $endpoint_config )
-
-        #set( $endpointClass = $endpoint_config.get("endpoint_type") )
-        #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
-        #set( $ep_key = "${endpointKey}_API${type}Endpoint")
-        #set( $endpointSecurityProd = $endpoint_security.get("production"))
-        #set( $endpointSecuritySand = $endpoint_security.get("sandbox"))
-        #set( $endpointsecurity = $endpoint_security.get("${type}"))
-
-        ## IF endpoint secured
-        #if($endpointsecurity.enabled)
+        #macro ( draw_endpoint $type $endpoint )
+        #if($endpoint.endpointSecurityEnabled)
 <class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
-    <property name="apiKeyIdentifier" value="$util.escapeXml($endpointsecurity.apiKeyIdentifier)" type="STRING"/>
-    <property name="apiKeyIdentifierType" value="$util.escapeXml($endpointsecurity.apiKeyIdentifierType)" type="STRING"/>
-    #if($isSecureVaultEnabled)
-    <property name="apiKeyValue" expression="wso2:vault-lookup('$endpointsecurity.apiKeyValue')" type="STRING"/>
-    #else
-    <property name="apiKeyValue" value="$util.escapeXml($endpointsecurity.apiKeyValue)" type="STRING"/>
-    #end
+    <property name="apiKeyIdentifier" value="${endpoint.apiKeyIdentifier}" type="STRING"/>
+    <property name="apiKeyIdentifierType" value="${endpoint.apiKeyIdentifierType}" type="STRING"/>
+    <property name="apiKeyValue" value="${endpoint.apiKeyValue}" type="STRING"/>
 </class>
         #end
-<sequence name="SeqRemoveEncoding" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
-<header name="Accept-Encoding" scope="transport" action="remove"/>
-</sequence>
-<class name="org.wso2.carbon.apimgt.gateway.mediators.AIAPIMediator">
-<property name="llmProviderId" value="$util.escapeXml($!llmProviderId)" type="STRING"/>
-</class>
 
-<send>
-## If endpoint is http
-#if ($endpointClass == "http")
-<endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
-#end
-</send>
+        #if( $endpoint && $endpoint.endpointUuid )
+            #set( $ep_key = "${endpointKey}_API_LLMEndpoint_${endpoint.endpointUuid}" )
+        #else
+            #set( $ep_key = "${endpointKey}_API${type}Endpoint")
+        #end
+<call>
+    <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
+</call>
+<loopback/>
         #end
 
         ######################## End of Macros ######################################
@@ -111,19 +95,15 @@
         #end
 
         #if( $isSubscriptionAvailable )
-        #if( $resource.getMethodsAsString() == "" )
-        #set( $isGQLWSResource = true )
-        binds-to="WebSocketInboundEndpoint, SecureWebSocketEP"
-        #else
         binds-to="default"
         #set( $isGQLWSResource = false )
-        #end
         #end
         methods="$resource.getMethodsAsString()"
 
         faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
-
+<property name="llmProviderId" value="$util.escapeXml($!llmProviderId)" scope="default" type="STRING"/>
+<sequence key="_ai_api_request_seq_"/>
 <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
 ##############  define the filter based on environment type production only, sandbox only , hybrid ############
 
@@ -157,18 +137,73 @@
 #else
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
-        #if( ($environmentType == 'sandbox') || ($environmentType =='hybrid'
-        && ! $endpoint_config.get("production_endpoints")) )
-        #draw_endpoint( "sandbox" $endpoint_config )
+        #if( ($environmentType == 'sandbox') || ($environmentType == 'hybrid' && !$defaultProductionEndpoint)) )
+        #if( $defaultSandboxEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!sandboxEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("sandbox", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
+            </case>
+            <case regex="REJECT">
+                <log level="full"/>
+                <property name="HTTP_SC" value="503" scope="axis2"/>
+                <property name="RESPONSE" value="true"/>
+                <property name="NO_ENTITY_BODY" value="false"/>
+                <property name="CONTENT_TYPE" value="application/json" scope="axis2"/>
+                <respond/>
+            </case>
+        </switch>
+        #end
         #else
-        #draw_endpoint( "production" $endpoint_config )
+        #if( $defaultProductionEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!productionEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("production", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("production", $defaultProductionEndpoint)
+            </case>
+            <case regex="REJECT">
+                <log level="full"/>
+                <property name="HTTP_SC" value="503" scope="axis2"/>
+                <property name="RESPONSE" value="true"/>
+                <property name="NO_ENTITY_BODY" value="false"/>
+                <property name="CONTENT_TYPE" value="application/json" scope="axis2"/>
+                <respond/>
+            </case>
+        </switch>
+        #end
         #end
     </then>
     <else>
         #if( $environmentType !='hybrid' )
-        #if( $resource.getAuthType() == 'None' && $environmentType == 'sandbox'
-        && $endpoint_config.get("sandbox_endpoints") )
-        #draw_endpoint( "sandbox" $endpoint_config )
+        #if( $resource.getAuthType() == 'None' && $environmentType == 'sandbox' && $defaultSandboxEndpoint)) )
+        #if( $defaultSandboxEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!sandboxEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("sandbox", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
+            </case>
+            <case regex="REJECT">
+                <log level="full"/>
+                <property name="HTTP_SC" value="503" scope="axis2"/>
+                <property name="RESPONSE" value="true"/>
+                <property name="NO_ENTITY_BODY" value="false"/>
+                <property name="CONTENT_TYPE" value="application/json" scope="axis2"/>
+                <respond/>
+            </case>
+        </switch>
+        #end
         #else
         <payloadFactory>
             <format>
@@ -189,14 +224,52 @@
         <send/>
         #end
         #else
-        #if( $endpoint_config.get("production_endpoints")
-        && $endpoint_config.get("sandbox_endpoints") )
-        #draw_endpoint( "sandbox" $endpoint_config )
-        #elseif( $endpoint_config.get("production_endpoints") )
+        #if( $defaultSandboxEndpoint && $defaultProductionEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!sandboxEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("sandbox", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
+            </case>
+            <case regex="REJECT">
+                <log level="full"/>
+                <property name="HTTP_SC" value="503" scope="axis2"/>
+                <property name="RESPONSE" value="true"/>
+                <property name="NO_ENTITY_BODY" value="false"/>
+                <property name="CONTENT_TYPE" value="application/json" scope="axis2"/>
+                <respond/>
+            </case>
+        </switch>
+        #elseif( $defaultProductionEndpoint )
         <sequence key="_sandbox_key_error_"/>
-        #elseif( $endpoint_config.get("sandbox_endpoints") )
+        #elseif( $defaultSandboxEndpoint )
         #if( $resource.getAuthType() == 'None' )
-        #draw_endpoint( "sandbox" $endpoint_config )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!sandboxEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("sandbox", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
+            </case>>
+            <case regex="REJECT">
+                <log level="full"/>
+                <property name="HTTP_SC" value="503" scope="axis2"/>
+                <property name="RESPONSE" value="true"/>
+                <property name="NO_ENTITY_BODY" value="false"/>  <!-- Ensure response body is sent -->
+                <payloadFactory>
+                    <format>
+                        {"error": "Service Unavailable", "message": "The service is temporarily unavailable."}
+                    </format>
+                </payloadFactory>
+                <property name="CONTENT_TYPE" value="application/json" scope="axis2"/>
+                <respond/>
+            </case>
+        </switch>
         #else
         <sequence key="_production_key_error_"/>
         #end
@@ -207,6 +280,7 @@
 #end
 </inSequence>
 <outSequence>
+<sequence key="_ai_api_response_seq_"/>
 <send/>
 </outSequence>
         </resource>
