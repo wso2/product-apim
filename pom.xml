@@ -1313,11 +1313,11 @@
         <carbon.mediation.version>4.7.228</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.25.720</carbon.identity.version>
+        <carbon.identity.version>5.25.721</carbon.identity.version>
         <carbon.identity.governance.version>1.8.108</carbon.identity.governance.version>
         <carbon.identity.event.handler.account.lock.version>1.8.14</carbon.identity.event.handler.account.lock.version>
         <carbon.identity.event.handler.notification.version>1.7.33</carbon.identity.event.handler.notification.version>
-        <carbon.identity-inbound-auth-oauth.version>6.13.23</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-inbound-auth-oauth.version>6.13.25</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-data-publisher-oauth.version>1.6.10</carbon.identity-data-publisher-oauth.version>
         <carbon.identity-user-ws.version>5.7.5</carbon.identity-user-ws.version>
         <carbon.identity-inbound-auth-openid.version>5.9.10</carbon.identity-inbound-auth-openid.version>
@@ -1388,7 +1388,7 @@
         <waffle-jna.version>1.6.wso2v6</waffle-jna.version>
         <version.org.wso2.orbit.javax.xml.bind>2.3.1.wso2v1</version.org.wso2.orbit.javax.xml.bind>
         <opensaml2.wso2.version>3.3.1.wso2v14</opensaml2.wso2.version>
-        <transport.http.netty.version>6.3.51</transport.http.netty.version>
+        <transport.http.netty.version>6.3.52</transport.http.netty.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
