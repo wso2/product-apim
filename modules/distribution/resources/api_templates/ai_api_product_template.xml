@@ -28,36 +28,25 @@
 
         #macro ( draw_endpoint $type $endpoint_config $endpoint_security)
 
-        #set( $endpointClass = $endpoint_config.get("endpoint_type") )
-        #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
-        #set( $ep_key = "${endpointKey}_API${type}Endpoint")
-        #set( $endpointsecurity = $endpoint_security.get("${type}"))
-
         ## IF endpoint secured
-        #if($endpointsecurity.enabled)
+        #if($endpoint.endpointSecurityEnabled)
 <class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
-    <property name="apiKeyIdentifier" value="$util.escapeXml($endpointsecurity.apiKeyIdentifier)" type="STRING"/>
-    <property name="apiKeyIdentifierType" value="$util.escapeXml($endpointsecurity.apiKeyIdentifierType)" type="STRING"/>
-    #if($isSecureVaultEnabled)
-    <property name="apiKeyValue" expression="wso2:vault-lookup('$endpointsecurity.apiKeyValue')" type="STRING"/>
-    #else
-    <property name="apiKeyValue" value="$util.escapeXml($endpointsecurity.apiKeyValue)" type="STRING"/>
-    #end
+    <property name="apiKeyIdentifier" value="${endpoint.apiKeyIdentifier}" type="STRING"/>
+    <property name="apiKeyIdentifierType" value="${endpoint.apiKeyIdentifierType}" type="STRING"/>
+    <property name="apiKeyValue" value="${endpoint.apiKeyValue}" type="STRING"/>
 </class>
         #end
-<sequence name="SeqRemoveEncoding" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
-<header name="Accept-Encoding" scope="transport" action="remove"/>
-</sequence>
-<class name="org.wso2.carbon.apimgt.gateway.mediators.AIAPIMediator">
-<property name="llmProviderId" value="$util.escapeXml($!llmProviderId)" type="STRING"/>
-</class>
 
-<send>
-## If endpoint is http
-#if ($endpointClass == "http")
+        #if( $endpoint && $endpoint.endpointUuid )
+        #set( $ep_key = "${endpointKey}_API_LLMEndpoint_${endpoint.endpointUuid}" )
+        #else
+        #set( $ep_key = "${endpointKey}_API${type}Endpoint")
+        #end
+
+<call>
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
-#end
-</send>
+</call>
+<loopback/>
         #end
 
         ######################## End of Macros ######################################
@@ -122,10 +111,32 @@
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
-        #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_json.get("production_endpoints") ))
-        #draw_endpoint( "sandbox" $endpoint_json $endpointSecurity)
+        #if( ($environmentType == 'sandbox') || ($environmentType == 'hybrid' && !$defaultProductionEndpoint)) )
+        #if( $defaultSandboxEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!sandboxEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("sandbox", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
+            </case>
+        </switch>
+        #end
         #else
-        #draw_endpoint( "production" $endpoint_json $endpointSecurity)
+        #if( $defaultProductionEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!productionEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("production", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("production", $defaultProductionEndpoint)
+            </case>
+        </switch>
+        #end
         #end
         #if($apiStatus != 'PROTOTYPED' && ($apiIsOauthProtected || $apiIsApiKeyProtected || $apiIsBasicAuthProtected))
     </then>
@@ -150,7 +161,17 @@
         <send/>
         #else
         #if($endpoint_json.get("production_endpoints") && $endpoint_json.get("sandbox_endpoints"))
-        #draw_endpoint( "sandbox" $endpoint_json $endpointSecurity)
+        #if( $defaultSandboxEndpoint && $defaultProductionEndpoint )
+        <switch source="get-property('targetEndpoint')">
+            #foreach( $endpoint in $!sandboxEndpoints )
+            <case regex="$endpoint.endpointUuid">
+                #draw_endpoint("sandbox", $endpoint)
+            </case>
+            #end
+            <case regex="DEFAULT">
+                #draw_endpoint("sandbox", $defaultSandboxEndpoint)
+            </case>>
+        </switch>
         #elseif($endpoint_json.get("production_endpoints"))
         <sequence key="_sandbox_key_error_"/>
         #elseif($endpoint_json.get("sandbox_endpoints"))
