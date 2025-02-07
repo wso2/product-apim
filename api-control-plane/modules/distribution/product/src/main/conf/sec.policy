@@ -2,7 +2,7 @@ grant {
     // Allow socket connections for any host
     permission java.net.SocketPermission "*:1-65535", "connect,resolve";
 
-    // Allow to read all properties. Use -Ddenied.system.properties in acp.sh to restrict properties
+    // Allow to read all properties. Use -Ddenied.system.properties in api-cp.sh to restrict properties
     permission java.util.PropertyPermission "*", "read";
 
     permission java.lang.RuntimePermission "getClassLoader";

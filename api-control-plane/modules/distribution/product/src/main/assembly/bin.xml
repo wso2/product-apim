@@ -168,9 +168,7 @@
                 <exclude>**/repository/components/plugins/org.apache.aries.util*.jar</exclude>
                 <exclude>**/repository/components/plugins/slf4j*.jar</exclude>
                 <exclude>**/repository/components/plugins/commons-io_2.4.0.wso2v1.jar</exclude>
-                <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v1.jar</exclude>
-                <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v2.jar</exclude>
-                <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v4.jar</exclude>
+                <exclude>**/repository/components/plugins/opensaml_3.3.1.wso2v11.jar</exclude>
                 <exclude>**/lib/xalan*.jar</exclude>
             </excludes>
         </fileSet>
@@ -969,9 +967,9 @@
             </excludes>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet-->
-<!--        <dependencySet>-->
-<!--            <outputDirectory>wso2am-acp-${pom.version}/repository/deployment/client/modules</outputDirectory>-->
-<!--        </dependencySet>-->
+        <!--        <dependencySet>-->
+        <!--            <outputDirectory>wso2am-acp-${pom.version}/repository/deployment/client/modules</outputDirectory>-->
+        <!--        </dependencySet>-->
         <dependencySet>
             <outputDirectory>wso2am-acp-${pom.version}/repository/components/lib</outputDirectory>
             <includes>
@@ -1483,14 +1481,14 @@
             <filtered>false</filtered>
         </file>
 
-<!--        <file>-->
-<!--            <source>-->
-<!--                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/stream-interceptors.xml-->
-<!--            </source>-->
-<!--            <outputDirectory>${project.artifactId}-${project.version}/repository/conf/</outputDirectory>-->
-<!--            <filtered>false</filtered>-->
-<!--            <fileMode>644</fileMode>-->
-<!--        </file>-->
+        <!--        <file>-->
+        <!--            <source>-->
+        <!--                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/stream-interceptors.xml-->
+        <!--            </source>-->
+        <!--            <outputDirectory>${project.artifactId}-${project.version}/repository/conf/</outputDirectory>-->
+        <!--            <filtered>false</filtered>-->
+        <!--            <fileMode>644</fileMode>-->
+        <!--        </file>-->
 
         <file>
             <source>
