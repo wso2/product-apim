@@ -120,10 +120,14 @@
             <class name="org.wso2.am.integration.tests.operationPolicy.OperationPolicyTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APICreationForTenantsTestCase" />
             <class name="org.wso2.am.integration.tests.operationPolicy.JWTClaimBasedAccessValidatorPolicyTestCase"/>
+        </classes>
+    </test>
+    <test name="apim-integration-tests-api-lifecycle-3" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group3"/>
+        <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
         </classes>
     </test>
-
     <test name="apim-email-secondary-userstore-tests" preserve-order="true" parallel="false" group-by-instances="true">
         <parameter name="group" value="group3"/>
         <classes>
