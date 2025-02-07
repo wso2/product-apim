@@ -1,22 +1,22 @@
-Installing  WSO2 API Manager (APIM)
+Installing  WSO2 Traffic Manager (APIM-TM)
 =================================
 
 
-Running WSO2 API Manager in standalone mode
+Running WSO2 Traffic Manager
 ===========================================
 1. The directory containing this INSTALL.txt file will be the root and it will be
-   treated as Carbon home directory and let it be <APIM_HOME>.
+   treated as Carbon home directory and let it be <APIM_TM_HOME>.
 
-2. All the shell scripts and .bat files are available in <APIM_HOME>/bin folder.
+2. All the shell scripts and .bat files are available in <APIM_TM_HOME>/bin folder.
 
-3. To start WSO2 APIM one can use either api-manager.sh or daemon.sh in all Unix
-   systems & api-manager.bat file on Windows operating systems.
+3. To start WSO2 APIM-TM one can use either traffic-manager.sh in all Unix
+   systems & traffic-manager.bat file on Windows operating systems.
 
-4. Either of the following commands can be used to start APIM
-      i)  ./api-manager.sh {console|start|stop|restart|version}
-     ii)  api-manager.bat {start|stop|version}
+4. Either of the following commands can be used to start APIM-TM
+      i)  ./traffic-manager.sh {console|start|stop|restart|version}
+     ii)  traffic-manager.bat {start|stop|version}
 
-        Usage: api-manager.sh [command] [options] [system-properties]
+        Usage: traffic-manager.sh [command] [options] [system-properties]
 
             command:               
                 --start		    Start APIM as a Unix daemon in the background
@@ -24,8 +24,7 @@ Running WSO2 API Manager in standalone mode
                 --stop		    Stop the APIM Unix daemon
                 --restart	    Restart the APIM Unix daemon
                 --version	    What version of the APIM server are you running
-                --optimize      Start APIM with specific features of the profile
-               
+
             options:
                 --debug <port> 	Start the server in remote debugging mode.
                                 port: The remote debugging port.               
@@ -48,9 +47,6 @@ Running WSO2 API Manager in standalone mode
                                 Start Carbon with OSGi debugging enabled.
                                 If the optional 'options-file is provided, the
                                 OSGi debug options will be loaded from it.
-                -Dsetup		Clean the Registry database & other
-                                configuration, recreate DB, re-populate the
-                                configuration, and start Carbon
                 -Dcarbon.registry.root
                                 The root of the Registry used by
                                 this Carbon instance
@@ -81,9 +77,7 @@ System Requirements
    with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
    medium or lower.
-5. To compile and run the sample clients in <APIM_HOME>/samples, an Ant version is required. Ant 1.7.0
-   version is recommended
-6. To build WSO2 APIM from the Source distribution, it is necessary that you have
+5. To build WSO2 APIM from the Source distribution, it is necessary that you have
    JDK 11 version and Maven 3.0.4 or later
 
 For more details see

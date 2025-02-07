@@ -1,32 +1,30 @@
 ================================================================================
-                               WSO2 API Manager
+                               WSO2 API Control Plane
 ================================================================================
 
-WSO2 API Manager (WSO2 API-M) is a powerful platform for creating, managing, consuming, 
+WSO2 API Control Plane (WSO2 ACP) is a powerful platform for creating, managing, consuming,
 and monitoring web APIs. It combines tried and tested SOA best practices with modern 
 day API management principles to solve a wide range of enterprise challenges associated 
 with API provisioning, governance, and integration.
 
-WSO2 API Manager consists of several loosely coupled modules.
+WSO2 API Control Plane consists of several loosely coupled modules.
 
-        * API publisher
+        * API Publisher
         * API Developer Portal
-        * API gateway
+        * Admin Portal
 	    * API Key Manager
-	    * API Traffic Manager
 
 The API publisher module allows API publishers to easily define APIs and manage them 
 using a strong governance model that consists of well-established concepts such as, 
 versioning and lifecycles. API consumers can use the API Developer Portal module to discover
 published, production-ready APIs and access them in a secure and reliable manner 
-using unique API keys. The built-in API Gateway module provides powerful tools to 
-secure and control the load on individual APIs.
+using unique API keys.
 
-WSO2 API Manager is based on the revolutionary WSO2 Carbon [Middleware a' la carte]
+WSO2 API Control Plane is based on the revolutionary WSO2 Carbon [Middleware a' la carte]
 framework. All the major features have been developed as reusable Carbon
 components.
 
-To learn more about WSO2 API Manager please visit http://wso2.com/products/api-manager.
+To learn more about WSO2 API Control Plane please visit http://wso2.com/products/api-manager.
 
 Key Features
 =============
@@ -109,8 +107,7 @@ Key Features
       - View metrics by user, API, and more.
       - Customized reporting via plugging reporting engines.
       - Monitor SLA compliance.
-      - Powered by WSO2 Data Analytics Server (WSO2 DAS).     
-    
+
 * Pluggable, Extensible and Themeable:        
       - All components are highly customizable through styling, theming, and open source code.
       - Developer Portal implemented with React.
@@ -160,17 +157,15 @@ System Requirements
    with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
    medium or lower.
-5. Apache Ant is required to compile and run the sample clients. Apache Ant 1.7.0 
-is recommended.
-6. To build WSO2 API Manager from the Source distribution, it is necessary that you have
+5. To build WSO2 API Control Plane from the Source distribution, it is necessary that you have
    JDK 11 version and Maven 3.0.4 or later
 
 Installation & Running
 ==================================
 
-1. Extract the wso2am-4.5.0.zip and go to the 'bin' directory
-2. Run the api-manager.sh or api-manager.bat script based on you operating system.
-3. Access the respective WSO2 API-M interfaces
+1. Extract the wso2am-acp-4.5.0.zip and go to the 'bin' directory
+2. Run the api-cp.sh or api-cp.bat script based on you operating system.
+3. Access the respective WSO2 ACP interfaces
     * API Publisher web application is running at - https://localhost:9443/publisher
       You may sign in to the Publisher using the default administrator credentials 
       (username: admin, password: admin).
@@ -182,7 +177,7 @@ Documentation
 ==============
 
 Online product documentation is available at:
-        https://apim.docs.wso2.com/en/4.3.0/
+        https://apim.docs.wso2.com/en/latest/
 
 Support
 ==================================
