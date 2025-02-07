@@ -1,9 +1,0 @@
-org.wso2.carbon.apimgt.api_
-org.wso2.carbon.apimgt.gateway_
-org.wso2.carbon.apimgt.hostobjects_
-org.wso2.carbon.apimgt.impl_
-org.wso2.carbon.apimgt.keymgt_
-org.wso2.carbon.apimgt.keymgt.client_
-org.wso2.carbon.throttle.core_
-wso2-uri-templates_
-wso2throttle-core_

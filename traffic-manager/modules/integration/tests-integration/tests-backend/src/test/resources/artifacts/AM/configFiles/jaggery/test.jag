@@ -1,5 +1,0 @@
-<%
-	application.put("wso2", "test artifacts.AM.configFiles.jaggery application value");
-	print(application.get("wso2"));
-	application.remove("wso2");
-%>

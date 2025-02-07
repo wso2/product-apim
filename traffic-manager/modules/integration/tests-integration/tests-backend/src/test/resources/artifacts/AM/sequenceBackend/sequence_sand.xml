@@ -1,5 +1,0 @@
-<payloadFactory media-type="json">
-    <format>{"Response" : "Sample Response"}</format>
-    <args/>
-</payloadFactory>
-<loopback/>
